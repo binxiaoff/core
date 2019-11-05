@@ -41,10 +41,10 @@ services:
     Unilend\:
         resource: '%kernel.project_dir%/src/*'
         # The directory Unilend contains the legacy bundles. The services are managed by their own configurations.
-        exclude: '%kernel.project_dir%/src/{Console,Entity,Migrations,Tests,Traits,Kernel.php,Listener/Doctrine}'
+        exclude: '%kernel.project_dir%/src/{Console,Entity,Migrations, Controller, Tests,Traits,Kernel.php,Listener/Doctrine}'
 
     Unilend\Controller\:
-        resource: '%kernel.project_dir%/src/Controller/*'
+        resource: '%kernel.project_dir%/src/Controller'
         tags:
             - { name: 'controller.service_arguments' }
 

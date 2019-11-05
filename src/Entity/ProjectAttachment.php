@@ -4,12 +4,37 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectAttachmentRepository")
+ * @UniqueEntity({"project", "attachment"})
+ *
+ * @ORM\Table(
+ *     uniqueConstraints={
+ *         @ORM\UniqueConstraint(columns={"id_project", "id_attachment"})
+ *     }
+ * )
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
+ *
+ * @ApiResource(
+ *     collectionOperations={
+ *         "post": {"security_post_denormalize": "is_granted('edit', object.getProject())"}
+ *     },
+ *     itemOperations={
+ *         "get": {
+ *             "controller": NotFoundAction::class,
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *         "delete": {"security": "is_granted('edit', object.getProject())"},
+ *     }
+ * )
  */
 class ProjectAttachment
 {
@@ -18,8 +43,8 @@ class ProjectAttachment
     /**
      * @var int
      *
-     * @ORM\Column(name="id", type="integer")
      * @ORM\Id
+     * @ORM\Column(name="id", type="integer")
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
@@ -43,6 +68,19 @@ class ProjectAttachment
      * })
      */
     private $attachment;
+
+    /**
+     * @param Project    $project
+     * @param Attachment $attachment
+     *
+     * @throws Exception
+     */
+    public function __construct(Project $project, Attachment $attachment)
+    {
+        $this->project    = $project;
+        $this->attachment = $attachment;
+        $this->added      = new DateTimeImmutable();
+    }
 
     /**
      * @return int|null

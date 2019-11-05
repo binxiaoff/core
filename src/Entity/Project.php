@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource, ApiSubresource};
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
+use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria, ExpressionBuilder};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -29,7 +28,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
- *         "put": {"security": "is_granted('edit', object)"},
+ *         "put": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"project:update"}}}
  *     }
  * )
  *
@@ -110,7 +109,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -150,7 +149,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $title;
 
@@ -165,7 +164,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $marketSegment;
 
@@ -176,7 +175,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $description;
 
@@ -187,7 +186,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $confidential = false;
 
@@ -198,7 +197,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $confidentialityDisclaimer;
 
@@ -211,7 +210,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $replyDeadline;
 
@@ -224,7 +223,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $expectedClosingDate;
 
@@ -237,7 +236,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $lenderConsultationClosingDate;
 
@@ -250,7 +249,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $internalRatingScore;
 
@@ -264,19 +263,21 @@ class Project
      * @Assert\NotBlank
      * @Assert\Choice(callback="getOfferVisibilities")
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $offerVisibility;
 
     /**
-     * @var ProjectAttachment[]
+     * @var ProjectAttachment[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="project")
+     *
+     * @ApiSubresource
      */
     private $projectAttachments;
 
     /**
-     * @var ProjectParticipation[]
+     * @var ProjectParticipation[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      */
@@ -346,7 +347,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $syndicationType;
 
@@ -360,7 +361,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $participationType;
 
@@ -374,7 +375,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $riskType;
 
@@ -504,7 +505,7 @@ class Project
      *
      * @return Project
      */
-    public function setDescription($description): Project
+    public function setDescription(?string $description): Project
     {
         $this->description = $description;
 
@@ -677,7 +678,7 @@ class Project
     }
 
     /**
-     * @return int
+     * @return string
      */
     public function getOfferVisibility(): string
     {
@@ -705,7 +706,7 @@ class Project
     }
 
     /**
-     * @return ProjectAttachment[]
+     * @return Attachment[]
      */
     public function getProjectAttachments(): iterable
     {
@@ -713,31 +714,25 @@ class Project
     }
 
     /**
-     * @param ProjectAttachment $projectAttachment
+     * @param AttachmentType $type
      *
-     * @return Project
+     * @return ArrayCollection|Collection
      */
-    public function addProjectAttachment(ProjectAttachment $projectAttachment): Project
+    public function getAttachmentByAttachmentType(AttachmentType $type): Collection
     {
-        $projectAttachment->setProject($this);
-
-        if (false === $this->projectAttachments->contains($projectAttachment)) {
-            $this->projectAttachments->add($projectAttachment);
-        }
-
-        return $this;
+        return $this->projectAttachments->matching(
+            (new Criteria())->where((new ExpressionBuilder())->eq('type', $type))
+        );
     }
 
     /**
-     * @param ProjectAttachment $projectAttachment
+     * @param ProjectAttachmentType $projectType
      *
-     * @return Project
+     * @return ArrayCollection|Collection
      */
-    public function removeProjectAttachment(ProjectAttachment $projectAttachment): Project
+    public function getAttachmentByProjectAttachmentType(ProjectAttachmentType $projectType)
     {
-        $this->projectAttachments->removeElement($projectAttachment);
-
-        return $this;
+        return $this->getAttachmentByAttachmentType($projectType->getAttachmentType());
     }
 
     /**

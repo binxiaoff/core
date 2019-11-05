@@ -10,13 +10,68 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, BlamableUpdatedTrait, TimestampableTrait};
-use Unilend\Service\User\RealUserFinder;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, TimestampableTrait, TraceableBlamableUpdatedTrait};
 
 /**
- * @ApiResource
+ * @ApiResource(
+ *     normalizationContext={"groups": "attachment:read"},
+ *     denormalizationContext={"attachment:read"},
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "method": "POST",
+ *             "controller": "Unilend\Controller\Attachment\Upload",
+ *             "deserialize": false,
+ *             "input": false,
+ *             "swagger_context": {
+ *                 "consumes": {"multipart/form-data"},
+ *                 "parameters": {
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "file",
+ *                         "type": "file",
+ *                         "description": "The uploaded file",
+ *                         "required": true
+ *                     },
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "type",
+ *                         "type": "string",
+ *                         "description": "The attachmentType as an IRI"
+ *                     },
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "company",
+ *                         "type": "string",
+ *                         "description": "The companyOwner as an IRI"
+ *                     },
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "description",
+ *                         "type": "string",
+ *                         "description": "The description"
+ *                     },
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "user",
+ *                         "type": "string",
+ *                         "description": "The uploader as an IRI (available as an admin)"
+ *                     }
+ *                 }
+ *             }
+ *         }
+ *     }
+ * )
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedAttachment")
+ * @Gedmo\SoftDeleteable(fieldName="archived")
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\AttachmentRepository")
  * @ORM\HasLifecycleCallbacks
@@ -26,21 +81,25 @@ class Attachment
     use TimestampableTrait;
     use BlamableAddedTrait;
     use BlamableArchivedTrait;
-    use BlamableUpdatedTrait;
+    use TraceableBlamableUpdatedTrait;
 
     /**
      * @var string
      *
      * @ORM\Column(length=191)
+     *
+     * @Gedmo\Versioned
      */
     private $path;
 
     /**
      * @var DateTimeImmutable
      *
-     * @ORM\Column(type="datetime_immutable", nullable=true)
+     * @ORM\Column(type="datetime", nullable=true)
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"attachment:read"})
      */
     private $archived;
 
@@ -50,6 +109,8 @@ class Attachment
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"attachment:read"})
      */
     private $downloaded;
 
@@ -59,28 +120,24 @@ class Attachment
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     *
+     * @Groups({"attachment:read"})
      */
     private $id;
 
     /**
+     * @todo Make not nullable when type are defined
+     *
      * @var AttachmentType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\AttachmentType")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_type", nullable=false)
+     *     @ORM\JoinColumn(name="id_type", nullable=true)
      * })
+     *
+     * @Groups({"attachment:read"})
      */
     private $type;
-
-    /**
-     * @var Clients
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client_owner", referencedColumnName="id_client")
-     * })
-     */
-    private $clientOwner;
 
     /**
      * @var Companies
@@ -89,13 +146,17 @@ class Attachment
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company_owner", referencedColumnName="id_company")
      * })
+     *
+     * @Groups({"attachment:read"})
      */
     private $companyOwner;
 
     /**
      * @var string
      *
-     * @ORM\Column(length=191)
+     * @ORM\Column(length=191, nullable=true)
+     *
+     * @Groups({"attachment:read"})
      */
     private $originalName;
 
@@ -112,15 +173,30 @@ class Attachment
      * @var AttachmentSignature[]
      *
      * @ORM\OneToMany(targetEntity="AttachmentSignature", mappedBy="attachment")
+     *
+     * @Groups({"attachment:read"})
      */
     private $signatures;
 
     /**
      * Attachment constructor.
+     *
+     * @param string  $path
+     * @param Clients $addedBy
      */
-    public function __construct()
+    public function __construct(string $path, Clients $addedBy)
     {
         $this->signatures = new ArrayCollection();
+        $this->path       = $path;
+        $this->addedBy    = $addedBy;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPath(): string
+    {
+        return $this->path;
     }
 
     /**
@@ -136,14 +212,6 @@ class Attachment
     }
 
     /**
-     * @return string
-     */
-    public function getPath(): string
-    {
-        return $this->path;
-    }
-
-    /**
      * @param DateTimeImmutable $archived
      *
      * @return Attachment
@@ -156,16 +224,16 @@ class Attachment
     }
 
     /**
-     * @param RealUserFinder $realUserFinder
+     * @param Clients $clients
      *
      * @throws Exception
      *
      * @return Attachment
      */
-    public function archive(RealUserFinder $realUserFinder): Attachment
+    public function archive(Clients $clients): Attachment
     {
         $this->setArchived(new DateTimeImmutable())
-            ->setArchivedByValue($realUserFinder)
+            ->setArchivedBy($clients)
         ;
 
         return $this;
@@ -182,7 +250,7 @@ class Attachment
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -192,7 +260,7 @@ class Attachment
      *
      * @return Attachment
      */
-    public function setType(AttachmentType $type)
+    public function setType(?AttachmentType $type): Attachment
     {
         $this->type = $type;
 
@@ -208,31 +276,11 @@ class Attachment
     }
 
     /**
-     * @param Clients|null $clientOwner
-     *
-     * @return Attachment
-     */
-    public function setClientOwner(?Clients $clientOwner)
-    {
-        $this->clientOwner = $clientOwner;
-
-        return $this;
-    }
-
-    /**
-     * @return Clients|null
-     */
-    public function getClientOwner(): ?Clients
-    {
-        return $this->clientOwner;
-    }
-
-    /**
      * @param string $originalName
      *
      * @return Attachment
      */
-    public function setOriginalName(string $originalName)
+    public function setOriginalName(string $originalName): Attachment
     {
         $this->originalName = $originalName;
 
@@ -310,7 +358,7 @@ class Attachment
     /**
      * @return DateTimeImmutable
      */
-    public function getDownloaded(): DateTimeImmutable
+    public function getDownloaded(): ?DateTimeImmutable
     {
         return $this->downloaded;
     }
