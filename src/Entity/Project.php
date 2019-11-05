@@ -270,7 +270,7 @@ class Project
     private $offerVisibility;
 
     /**
-     * @var Attachment[]
+     * @var ProjectAttachment[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="project")
      *
@@ -279,7 +279,7 @@ class Project
     private $attachments;
 
     /**
-     * @var ProjectParticipation[]
+     * @var ProjectParticipation[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      */

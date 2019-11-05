@@ -47,7 +47,7 @@ trait BlamableAddedTrait
      *
      * @return self
      */
-    public function setAddedBy(Clients $addedBy): self
+    private function setAddedBy(Clients $addedBy): self
     {
         $this->addedBy = $addedBy;
 
