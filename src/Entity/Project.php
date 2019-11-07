@@ -1402,6 +1402,21 @@ class Project
     }
 
     /**
+     * @return int
+     */
+    public function getSyndicatedAmount()
+    {
+        $tranchesOffers = $this->getTrancheOffers();
+        $sum            = 0;
+
+        foreach ($tranchesOffers as $trancheOffer) {
+            $sum += (int) $trancheOffer->getMoney()->getAmount();
+        }
+
+        return $sum;
+    }
+
+    /**
      * @param string $role
      *
      * @return bool
