@@ -116,6 +116,11 @@ class Companies
     private $emailDomain;
 
     /**
+     * @ORM\Column(type="string", length=4, nullable=true, unique=true)
+     */
+    private $shortCode;
+
+    /**
      * @param string $name
      */
     public function __construct(string $name)
@@ -354,6 +359,26 @@ class Companies
     public function setEmailDomain(?string $emailDomain): Companies
     {
         $this->emailDomain = $emailDomain;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getShortCode()
+    {
+        return $this->shortCode;
+    }
+
+    /**
+     * @param string $shortCode
+     *
+     * @return Companies
+     */
+    public function setShortCode(string $shortCode): Companies
+    {
+        $this->shortCode = $shortCode;
 
         return $this;
     }
