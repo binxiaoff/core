@@ -96,6 +96,8 @@ class ProjectOffer
      * @param Companies $lender
      * @param Project   $project
      * @param string    $committeeStatus
+     *
+     * @throws \Exception
      */
     public function __construct(Companies $lender, Project $project, string $committeeStatus = self::COMMITTEE_STATUS_PENDED)
     {
@@ -103,6 +105,7 @@ class ProjectOffer
         $this->project         = $project;
         $this->committeeStatus = $committeeStatus;
         $this->trancheOffers   = new ArrayCollection();
+        $this->added           = new DateTimeImmutable();
     }
 
     /**

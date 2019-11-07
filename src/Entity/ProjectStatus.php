@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Unilend\Entity\Interfaces\StatusInterface;
@@ -94,6 +95,7 @@ class ProjectStatus implements StatusInterface
         $this->status  = $status;
         $this->project = $project;
         $this->addedBy = $addedBy;
+        $this->added   = new DateTimeImmutable();
     }
 
     /**

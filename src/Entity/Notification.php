@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
@@ -79,6 +80,16 @@ class Notification
      * })
      */
     private $trancheOffer;
+
+    /**
+     * Notification constructor.
+     *
+     * @throws \Exception
+     */
+    public function __construct()
+    {
+        $this->added = new DateTimeImmutable();
+    }
 
     /**
      * @return int

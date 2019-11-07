@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableTrait;
 
@@ -60,6 +61,16 @@ class LegalDocument
      * @ORM\Column(type="text", length=16777215)
      */
     private $differentialInstruction;
+
+    /**
+     * LegalDocument constructor.
+     *
+     * @throws \Exception
+     */
+    public function __construct()
+    {
+        $this->added = new DateTimeImmutable();
+    }
 
     /**
      * @return int

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
@@ -78,6 +79,16 @@ class UserAgent
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
+
+    /**
+     * UserAgent constructor.
+     *
+     * @throws \Exception
+     */
+    public function __construct()
+    {
+        $this->added = new DateTimeImmutable();
+    }
 
     /**
      * @return Clients

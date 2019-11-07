@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -128,6 +129,7 @@ class Companies
         $this->staff                 = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
         $this->name                  = $name;
+        $this->added                 = new DateTimeImmutable();
     }
 
     /**

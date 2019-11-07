@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -88,6 +89,8 @@ class ClientStatus implements StatusInterface
      * @param Clients     $clients
      * @param int         $status
      * @param string|null $content
+     *
+     * @throws \Exception
      */
     public function __construct(Clients $clients, int $status, string $content = null)
     {
@@ -99,6 +102,7 @@ class ClientStatus implements StatusInterface
         $this->status  = $status;
         $this->client  = $clients;
         $this->content = $content;
+        $this->added   = new DateTimeImmutable();
     }
 
     /**

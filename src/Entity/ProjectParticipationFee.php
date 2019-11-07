@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -72,11 +73,14 @@ class ProjectParticipationFee
     /**
      * @param ProjectParticipation $projectParticipation
      * @param Fee                  $fee
+     *
+     * @throws \Exception
      */
     public function __construct(ProjectParticipation $projectParticipation, Fee $fee)
     {
         $this->projectParticipation = $projectParticipation;
         $this->fee                  = $fee;
+        $this->added                = new DateTimeImmutable();
     }
 
     /**

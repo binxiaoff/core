@@ -120,6 +120,16 @@ class MailQueue
     private $id;
 
     /**
+     * MailQueue constructor.
+     *
+     * @throws \Exception
+     */
+    public function __construct()
+    {
+        $this->added = new DateTimeImmutable();
+    }
+
+    /**
      * @param MailTemplate $mailTemplate
      *
      * @return MailQueue

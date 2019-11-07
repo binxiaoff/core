@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
@@ -237,6 +238,7 @@ class Clients implements UserInterface, EquatableInterface
     {
         $this->statuses = new ArrayCollection();
         $this->setCurrentStatus(ClientStatus::STATUS_INVITED);
+        $this->added = new DateTimeImmutable();
     }
 
     /**

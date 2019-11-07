@@ -189,6 +189,7 @@ class Attachment
         $this->signatures = new ArrayCollection();
         $this->path       = $path;
         $this->addedBy    = $addedBy;
+        $this->added      = new DateTimeImmutable();
     }
 
     /**
