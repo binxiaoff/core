@@ -33,10 +33,10 @@ class CompanyStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
+     *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      * })
      */
-    private $idCompany;
+    private $company;
 
     /**
      * @var CompanyStatus
@@ -94,19 +94,19 @@ class CompanyStatusHistory
     /**
      * @return Companies
      */
-    public function getIdCompany()
+    public function getCompany()
     {
-        return $this->idCompany;
+        return $this->company;
     }
 
     /**
-     * @param Companies $idCompany
+     * @param Companies $company
      *
      * @return CompanyStatusHistory
      */
-    public function setIdCompany(Companies $idCompany)
+    public function setCompany(Companies $company)
     {
-        $this->idCompany = $idCompany;
+        $this->company = $company;
 
         return $this;
     }

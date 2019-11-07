@@ -237,7 +237,7 @@
                                 <dt>{{ arrangerLabel|trans }}</dt>
                                 <dd>
                                     {% if project.isEditable %}
-                                        <a href="#" id="arranger" data-type="select" data-value="{% if project.arranger %}{{ project.arranger.company.idCompany }}{% endif %}">
+                                        <a href="#" id="arranger" data-type="select" data-value="{% if project.arranger %}{{ project.arranger.company.id }}{% endif %}">
                                             {% if project.arranger %}{{ project.arranger.company.name }}{% endif %}
                                         </a>
                                     {% elseif project.arranger %}
@@ -251,7 +251,7 @@
                                 <dt>{% trans %} project-form.deputy-arranger-label {% endtrans %}</dt>
                                 <dd>
                                     {% if project.isEditable %}
-                                        <a href="#" id="deputy-arranger" data-type="select" data-value="{% if project.deputyArranger %}{{ project.deputyArranger.company.idCompany }}{% endif %}">
+                                        <a href="#" id="deputy-arranger" data-type="select" data-value="{% if project.deputyArranger %}{{ project.deputyArranger.company.id }}{% endif %}">
                                             {% if project.deputyArranger %}
                                                 {{ project.deputyArranger.company.name }}
                                             {% endif %}
@@ -267,7 +267,7 @@
                                 <dt>{% trans %} project-form.run-label {% endtrans %}</dt>
                                 <dd>
                                     {% if project.isEditable %}
-                                        <a href="#" id="run" data-type="select" data-value="{% if project.run %}{{ project.run.company.idCompany }}{% endif %}">
+                                        <a href="#" id="run" data-type="select" data-value="{% if project.run %}{{ project.run.company.id }}{% endif %}">
                                             {% if project.run %}
                                                 {{ project.run.company.name }}
                                             {% endif %}
@@ -285,7 +285,7 @@
                                 <dt>{% trans %} project-form.loan-officer-label {% endtrans %}</dt>
                                 <dd>
                                     {% if project.isEditable %}
-                                        <a href="#" id="loan-officer" data-type="select" data-value="{% if project.loanOfficer %}{{ project.loanOfficer.company.idCompany }}{% endif %}">
+                                        <a href="#" id="loan-officer" data-type="select" data-value="{% if project.loanOfficer %}{{ project.loanOfficer.company.id }}{% endif %}">
                                             {% if project.loanOfficer %}
                                                 {{ project.loanOfficer.company.name }}
                                             {% endif %}
@@ -301,7 +301,7 @@
                                 <dt>{% trans %} project-form.security-trustee-label {% endtrans %}</dt>
                                 <dd>
                                     {% if project.isEditable %}
-                                        <a href="#" id="security-trustee" data-type="select" data-value="{% if project.securityTrustee %}{{ project.securityTrustee.company.idCompany }}{% endif %}">
+                                        <a href="#" id="security-trustee" data-type="select" data-value="{% if project.securityTrustee %}{{ project.securityTrustee.company.id }}{% endif %}">
                                             {% if project.securityTrustee %}
                                                 {{ project.securityTrustee.company.name }}
                                             {% endif %}

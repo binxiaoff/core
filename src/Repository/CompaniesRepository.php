@@ -62,7 +62,7 @@ class CompaniesRepository extends ServiceEntityRepository
     public function createEligibleArrangersQB(?Companies $currentCompany, array $orderBy = []): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('c')
-            ->where('c.idCompany IN (:arrangersToSelect)')
+            ->where('c.id IN (:arrangersToSelect)')
             ->setParameter('arrangersToSelect', array_merge(Companies::COMPANY_ELIGIBLE_ARRANGER, [$currentCompany]))
             ;
 
@@ -79,7 +79,7 @@ class CompaniesRepository extends ServiceEntityRepository
     public function createEligibleRunAgentQB(array $orderBy = [])
     {
         $queryBuilder = $this->createQueryBuilder('c')
-            ->where('c.idCompany IN (:runsToSelect)')
+            ->where('c.id IN (:runsToSelect)')
             ->orWhere('c.parent IN (:runsParentToSelect)')
             ->setParameters(['runsToSelect' => Companies::COMPANY_ELIGIBLE_RUN, 'runsParentToSelect' => Companies::COMPANY_SUBSIDIARY_ELIGIBLE_RUN])
             ;
@@ -112,7 +112,7 @@ class CompaniesRepository extends ServiceEntityRepository
     public function findByName(string $name, ?int $maxResult = null): array
     {
         $queryBuilder = $this->createQueryBuilder('c')
-            ->select('c.name, c.siren, c.idCompany as id')
+            ->select('c.name, c.siren, c.id as id')
             ->where('c.name LIKE :name')
             ->setParameter('name', '%' . $name . '%')
             ->setMaxResults($maxResult)

@@ -42,7 +42,7 @@
                         <div class="col-lg-6 col-md-6">
                             <strong class="row">Arrangeur</strong>
                             <label class="row">
-                                <input type="checkbox" name="signatory[]" value="{{ project.arranger.company.idCompany }}"> {{ project.arranger.company.name }}
+                                <input type="checkbox" name="signatory[]" value="{{ project.arranger.company.id }}"> {{ project.arranger.company.name }}
                             </label>
                         </div>
                     {% endif %}
@@ -50,7 +50,7 @@
                         <div class="col-lg-6 col-md-6">
                             <strong class="row">RUN</strong>
                             <label class="row">
-                                <input type="checkbox" name="signatory[]" value="{{ project.run.company.idCompany }}"> {{ project.run.company.name }}
+                                <input type="checkbox" name="signatory[]" value="{{ project.run.company.id }}"> {{ project.run.company.name }}
                             </label>
                         </div>
                     {% endif %}
@@ -68,7 +68,7 @@
                     %}
                         <div class="col-lg-6 col-md-6">
                             <label>
-                                <input type="checkbox" name="signatory[]" value="{{ Participation.company.idCompany }}"> {{ Participation.company.name }}
+                                <input type="checkbox" name="signatory[]" value="{{ Participation.company.id }}"> {{ Participation.company.name }}
                             </label>
                         </div>
                     {% endif %}
