@@ -28,7 +28,7 @@ class CaRegionalBank
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Entity\Companies", cascade={"persist"})
-     * @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
+     * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      */
     private $company;
 

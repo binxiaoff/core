@@ -41,7 +41,7 @@ class Staff
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", inversedBy="staff")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
+     *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      * })
      */
     private $company;

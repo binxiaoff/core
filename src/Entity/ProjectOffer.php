@@ -43,7 +43,7 @@ class ProjectOffer
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_lender", referencedColumnName="id_company", nullable=false)
+     *     @ORM\JoinColumn(name="id_lender", referencedColumnName="id", nullable=false)
      * })
      */
     private $lender;

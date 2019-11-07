@@ -80,18 +80,18 @@ class Companies
     /**
      * @var int
      *
-     * @ORM\Column(name="id_company", type="integer")
+     * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $idCompany;
+    private $id;
 
     /**
      * @var Companies|null
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_parent_company", referencedColumnName="id_company")
+     *     @ORM\JoinColumn(name="id_parent_company", referencedColumnName="id")
      * })
      */
     private $parent;
@@ -138,7 +138,7 @@ class Companies
      */
     public function getId(): int
     {
-        return $this->getIdCompany();
+        return $this->id;
     }
 
     /**
@@ -202,16 +202,6 @@ class Companies
     public function getSiren(): ?string
     {
         return $this->siren;
-    }
-
-    /**
-     * Get idCompany.
-     *
-     * @return int
-     */
-    public function getIdCompany(): int
-    {
-        return $this->idCompany;
     }
 
     /**
