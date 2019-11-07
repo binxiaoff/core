@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Unilend\Entity\Interfaces\StatusInterface;
@@ -11,6 +12,15 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
+ * @ApiResource(
+ *     collectionOperations={
+ *         "get": {"security": "is_granted('ROLE_ADMIN')"},
+ *         "post": {"security_post_denormalize": "is_granted('edit', object.getProject())"}
+ *     },
+ *     itemOperations={
+ *         "get": {"security": "is_granted('view', object.getProject())"}
+ *     }
+ * )
  * @ORM\Table(
  *     name="project_status",
  *     indexes={
