@@ -6,6 +6,7 @@ namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="Unilend\Repository\MarketSegmentRepository")
@@ -30,13 +31,15 @@ class MarketSegment
 
     /**
      * @ORM\Column(type="string", length=30)
+     *
+     * @Groups({"projectParticipation:list"})
      */
     private $label;
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }

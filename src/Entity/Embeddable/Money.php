@@ -22,7 +22,7 @@ class Money
      * @Assert\Type("numeric")
      * @Assert\Positive
      *
-     * @Groups({"project:create", "project:list"})
+     * @Groups({"project:create", "project:list", "projectParticipation:list"})
      */
     private $amount;
 
@@ -36,7 +36,7 @@ class Money
      * @Assert\NotBlank
      * @Assert\Currency
      *
-     * @Groups({"project:create", "project:list"})
+     * @Groups({"project:create", "project:list", "projectParticipation:list"})
      */
     private $currency;
 
@@ -51,7 +51,9 @@ class Money
     }
 
     /**
-     * @return string|null
+     * the type hint is nullable because the child classes have this property nullable.
+     *
+     * @return string
      */
     public function getAmount(): ?string
     {
@@ -59,10 +61,25 @@ class Money
     }
 
     /**
-     * @return string|null
+     * the type hint is nullable because the child classes have this property nullable.
+     *
+     * @return string
      */
     public function getCurrency(): ?string
     {
         return $this->currency;
+    }
+
+    /**
+     * @param Money $money
+     *
+     * @return Money
+     */
+    public function add(Money $money): Money
+    {
+        return new Money(
+            bcadd($this->amount, $money->amount, 2),
+            $this->currency
+        );
     }
 }

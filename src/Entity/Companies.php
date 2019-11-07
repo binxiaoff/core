@@ -63,7 +63,7 @@ class Companies
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:create", "project:list"})
+     * @Groups({"project:create", "project:list", "projectParticipation:list"})
      */
     private $name;
 

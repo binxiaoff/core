@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Fee;
 use Unilend\Entity\Traits\TimestampableTrait;
@@ -55,13 +56,15 @@ class ProjectParticipationFee
      * @Gedmo\Versioned
      *
      * @Assert\Valid
+     *
+     * @Groups({"projectParticipation:list"})
      */
     private $fee;
 
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationFees")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="projectParticipationFee")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project_participation", nullable=false)
      * })

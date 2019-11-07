@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Interfaces\StatusInterface;
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
 use Unilend\Traits\ConstantsAwareTrait;
@@ -66,6 +67,8 @@ class ProjectStatus implements StatusInterface
      * @var int
      *
      * @ORM\Column(type="smallint")
+     *
+     * @Groups({"projectParticipation:list"})
      */
     private $status;
 
@@ -79,8 +82,6 @@ class ProjectStatus implements StatusInterface
     private $id;
 
     /**
-     * ProjectStatus constructor.
-     *
      * @param Project $project
      * @param int     $status
      * @param Clients $addedBy
@@ -120,6 +121,16 @@ class ProjectStatus implements StatusInterface
     public function getStatus(): int
     {
         return $this->status;
+    }
+
+    /**
+     * @return string
+     *
+     * @Groups({"projectParticipation:list"})
+     */
+    public function getHumanLabel(): string
+    {
+        return str_replace('status_', '', mb_strtolower(array_flip(static::getPossibleStatuses())[$this->status]));
     }
 
     /**
