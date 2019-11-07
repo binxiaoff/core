@@ -235,10 +235,12 @@ class Tranche
 
     /**
      * Tranche constructor.
+     *
+     * @param Money $money
      */
-    public function __construct()
+    public function __construct(Money $money)
     {
-        $this->money             = new Money();
+        $this->money             = $money;
         $this->rate              = new NullableLendingRate();
         $this->trancheFees       = new ArrayCollection();
         $this->trancheOffers     = new ArrayCollection();
@@ -299,18 +301,6 @@ class Tranche
     public function getMoney(): Money
     {
         return $this->money;
-    }
-
-    /**
-     * @param Money $money
-     *
-     * @return Tranche
-     */
-    public function setMoney(Money $money): Tranche
-    {
-        $this->money = $money;
-
-        return $this;
     }
 
     /**

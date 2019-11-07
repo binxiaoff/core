@@ -7,6 +7,7 @@ namespace Unilend\Test\Unit\Service\Notification;
 use DateTimeImmutable;
 use Exception;
 use Faker\Provider\Base;
+use Faker\Provider\Miscellaneous;
 use NumberFormatter;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -165,7 +166,7 @@ class NotificationDisplayManagerTest extends TestCase
         /** @var TrancheOffer|ObjectProphecy $trancheOffer */
         $trancheOffer = $this->prophesize(TrancheOffer::class);
         $trancheOffer->getId()->willReturn(Base::randomDigitNotNull());
-        $trancheOffer->getMoney()->willReturn(new Money());
+        $trancheOffer->getMoney()->willReturn(new Money((string) Base::randomDigitNotNull(), Miscellaneous::currencyCode()));
         $trancheOffer->getProjectOffer()->willReturn($projectOffer);
         $trancheOffer->getTranche()->willReturn($tranche->reveal());
 

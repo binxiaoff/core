@@ -96,15 +96,16 @@ class TrancheOffer
     /**
      * @param ProjectOffer $projectOffer
      * @param Tranche      $tranche
+     * @param Money        $money
      * @param string       $status
      */
-    public function __construct(ProjectOffer $projectOffer, Tranche $tranche, string $status = self::STATUS_PENDED)
+    public function __construct(ProjectOffer $projectOffer, Tranche $tranche, Money $money, string $status = self::STATUS_PENDED)
     {
         $this->projectOffer     = $projectOffer;
         $this->tranche          = $tranche;
+        $this->money            = $money;
         $this->status           = $status;
         $this->rate             = new LendingRate();
-        $this->money            = new Money();
         $this->trancheOfferFees = new ArrayCollection();
     }
 
@@ -202,18 +203,6 @@ class TrancheOffer
     public function getMoney(): Money
     {
         return $this->money;
-    }
-
-    /**
-     * @param Money $money
-     *
-     * @return TrancheOffer
-     */
-    public function setMoney(Money $money): TrancheOffer
-    {
-        $this->money = $money;
-
-        return $this;
     }
 
     /**
