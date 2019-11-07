@@ -8,7 +8,7 @@ use Exception;
 use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\{Clients, Embeddable\Permission, Project, ProjectComment, ProjectConfidentialityAcceptance, ProjectFee, ProjectStatus};
+use Unilend\Entity\{Clients, Embeddable\Permission, Project};
 use Unilend\Repository\ProjectParticipationRepository;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -57,7 +57,7 @@ class ProjectVoter extends Voter
      *
      * @throws Exception
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
+    protected function voteOnAttribute($attribute, $project, TokenInterface $token): bool
     {
         /** @var Clients $user */
         $user = $token->getUser();
@@ -68,17 +68,17 @@ class ProjectVoter extends Voter
 
         switch ($attribute) {
             case self::ATTRIBUTE_VIEW:
-                return $this->canView($subject, $user);
+                return $this->canView($project, $user);
             case self::ATTRIBUTE_EDIT:
-                return $this->canEdit($subject, $user);
+                return $this->canEdit($project, $user);
             case self::ATTRIBUTE_MANAGE_TRANCHE_OFFER:
-                return $this->canManageTrancheOffer($subject, $user);
+                return $this->canManageTrancheOffer($project, $user);
             case self::ATTRIBUTE_RATE:
-                return $this->canRate($subject, $user);
+                return $this->canRate($project, $user);
             case self::ATTRIBUTE_CREATE_TRANCHE_OFFER:
-                return $this->canCreateTrancheOffer($subject, $user);
+                return $this->canCreateTrancheOffer($project, $user);
             case self::ATTRIBUTE_COMMENT:
-                return $this->canComment($subject, $user);
+                return $this->canComment($project, $user);
         }
 
         throw new LogicException('This code should not be reached');
