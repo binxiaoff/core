@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * @ORM\Entity(repositoryClass="Unilend\Repository\AttachmentSignatureRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
 class AttachmentSignature

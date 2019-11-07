@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * @ORM\Entity(repositoryClass="Unilend\Repository\LegalDocumentRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
 class LegalDocument
