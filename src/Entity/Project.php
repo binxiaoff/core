@@ -1322,6 +1322,22 @@ class Project
     }
 
     /**
+     * @return int
+     */
+    public function getTranchesTotalMoney()
+    {
+        $tranches = $this->getTranches();
+        $sum      = 0;
+
+        foreach ($tranches as $tranche) {
+            $tranche = new Tranche();
+            $sum += (int) $tranche->getMoney()->getAmount();
+        }
+
+        return $sum;
+    }
+
+    /**
      * @param Money $globalFundingMoney
      *
      * @return Project
