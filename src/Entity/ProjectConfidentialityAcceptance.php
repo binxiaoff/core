@@ -12,10 +12,10 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  * @ApiResource(
  *     collectionOperations={
  *         "get": {"security": "is_granted('ROLE_ADMIN')"},
- *         "post": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())"}
+ *         "post": {"security_post_denormalize": "is_granted('edit', object.getProject())"}
  *     },
  *     itemOperations={
- *         "get": {"security": "is_granted('view', previous_object.getProject())"},
+ *         "get": {"security": "is_granted('view', object.getProject())"},
  *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())"}
  *     }
  * )
