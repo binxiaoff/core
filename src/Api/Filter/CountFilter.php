@@ -106,11 +106,11 @@ class CountFilter extends AbstractFilter
         if (
             false === is_array($values)
             || false === $this->isPropertyEnabled($property, $resourceClass)
-            || false === $this->isPropertyMapped($property, $resourceClass)
+            || false === $this->isPropertyMapped($property, $resourceClass, true)
+            || false === $this->isCountableField($property, $resourceClass)
         ) {
             return;
         }
-
         $alias = $queryBuilder->getRootAliases()[0];
         $field = $property;
 
@@ -130,13 +130,16 @@ class CountFilter extends AbstractFilter
     }
 
     /**
-     * @param int    $property
+     * @param string $property
      * @param string $resourceClass
      *
      * @return bool
      */
-    private function isCountableField(int $property, string $resourceClass): bool
+    private function isCountableField(string $property, string $resourceClass): bool
     {
-        return $this->getClassMetadata($resourceClass)->isCollectionValuedAssociation($property);
+        $propertyParts = $this->splitPropertyParts($property, $resourceClass);
+        $metadata      = $this->getNestedMetadata($resourceClass, $propertyParts['associations']);
+
+        return $metadata->isCollectionValuedAssociation($propertyParts['field']);
     }
 }

@@ -115,7 +115,8 @@ class ArrayFilter extends AbstractFilter
         if (
             false === is_array($values)
             || false === $this->isPropertyEnabled($property, $resourceClass)
-            || false === $this->isPropertyMapped($property, $resourceClass)
+            || false === $this->isPropertyMapped($property, $resourceClass, true)
+            || false === $this->isArrayField($property, $resourceClass)
         ) {
             return;
         }
