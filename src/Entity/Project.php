@@ -1301,6 +1301,18 @@ class Project
     }
 
     /**
+     * @param Money $globalFundingMoney
+     *
+     * @return Project
+     */
+    public function setGlobalFundingMoney(Money $globalFundingMoney): Project
+    {
+        $this->globalFundingMoney = $globalFundingMoney;
+
+        return $this;
+    }
+
+    /**
      * @return Money
      */
     public function getGlobalFundingMoney(): Money
