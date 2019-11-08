@@ -15,6 +15,7 @@ use RuntimeException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
+use Unilend\Entity\Embeddable\Money;
 use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Entity\Traits\TraceableStatusTrait;
 use Unilend\Service\User\RealUserFinder;
@@ -393,6 +394,16 @@ class Project
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\Tag", cascade={"persist"})
      */
     private $tags;
+
+    /**
+     * @var Money
+     *
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
+     *
+     * @Assert\NotBlank
+     * @Assert\Valid
+     */
+    private $globalFundingMoney;
 
     /**
      * @param Clients   $submitter
@@ -1287,6 +1298,14 @@ class Project
         }
 
         return $this->projectOffers->matching($criteria);
+    }
+
+    /**
+     * @return Money
+     */
+    public function getGlobalFundingMoney(): Money
+    {
+        return $this->globalFundingMoney;
     }
 
     /**

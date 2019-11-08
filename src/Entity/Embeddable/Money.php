@@ -41,6 +41,16 @@ class Money
     private $currency;
 
     /**
+     * @param int    $amount
+     * @param string $currency
+     */
+    public function __construct(string $amount, string $currency)
+    {
+        $this->amount   = $amount;
+        $this->currency = $currency;
+    }
+
+    /**
      * @return string|null
      */
     public function getAmount(): ?string
@@ -54,29 +64,5 @@ class Money
     public function getCurrency(): ?string
     {
         return $this->currency;
-    }
-
-    /**
-     * @param string $amount
-     *
-     * @return Money
-     */
-    public function setAmount(string $amount): Money
-    {
-        $this->amount = $amount;
-
-        return $this;
-    }
-
-    /**
-     * @param string $currency
-     *
-     * @return Money
-     */
-    public function setCurrency(string $currency): Money
-    {
-        $this->currency = $currency;
-
-        return $this;
     }
 }
