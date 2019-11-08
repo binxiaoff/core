@@ -1408,37 +1408,38 @@ class Project
      */
     public function getSyndicatedAmount()
     {
-        $participants   = $this->getLenderCompanies();
-        $tranchesOffers = $this->getProjectOffers([], $participants->toArray());
+        $tranchesOffers  = $this->getProjectOffers();
+        $moneyCollection = [];
 
-        return $this->getSum($tranchesOffers);
+        foreach ($tranchesOffers as $tranchesOffer) {
+            $moneyCollection[] = $tranchesOffer->getMoney();
+        }
+
+        return $this->sum($moneyCollection);
     }
 
     /**
-     * @param ArrayCollection $tranches
+     * @param Money[] $moneyCollection
      *
      * @throws Exception
      *
-     * @return float|int
+     * @return float
      */
-    private function getSum(ArrayCollection $tranches)
+    private function sum(array $moneyCollection): float
     {
-        $sum   = 0;
-        $money = $tranches->first()->getMoney->getCurrency();
+        $sum      = 0;
+        $currency = null;
 
-        foreach ($tranches as $tranche) {
-            if (
-                false === $tranche instanceof TrancheOffer
-                || false === $tranche instanceof Tranche
-            ) {
-                throw new Exception('This method only support Tranche and TrancheOffer methods.');
+        foreach ($moneyCollection as $money) {
+            if (null === $currency) {
+                $currency = $money->getCurrency();
             }
 
-            if ($tranche->getMoney->getCurrency() !== $money) {
-                throw new Exception('This method doesn\'t support multiple devises.');
+            if ($money->getCurrency() !== $currency) {
+                throw new Exception('This method doesn\'t support multiple currencies.');
             }
 
-            $sum = round(bcadd($sum, (int) $tranche->getMoney->getAmount(), 3), 2);
+            $sum = round(bcadd($sum, (int) $money->getAmount(), 3), 2);
         }
 
         return $sum;
