@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\TimestampableTrait;
@@ -117,12 +118,16 @@ class Companies
     private $emailDomain;
 
     /**
+     * @Groups({"project:list"})
+     *
      * @ORM\Column(type="string", length=4, nullable=true, unique=true)
      */
     private $shortCode;
 
     /**
      * @param string $name
+     *
+     * @throws Exception
      */
     public function __construct(string $name)
     {

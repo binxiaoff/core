@@ -1289,6 +1289,8 @@ class Project
     }
 
     /**
+     * @Groups({"project:list"})
+     *
      * @param array|null     $committeeStatus
      * @param Companies|null $lender
      *
