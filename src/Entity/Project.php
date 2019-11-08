@@ -1334,7 +1334,7 @@ class Project
     /**
      * @return array
      */
-    public function getTodoItems(): array
+    public function getTodos(): array
     {
         $projectComplete = true;
 
@@ -1352,10 +1352,10 @@ class Project
 
         return [
             ['name' => 'project', 'done' => $projectComplete],
-            ['name' => 'calendar', 'done' => null === ($this->getLenderConsultationClosingDate()) ? false : true],
-            ['name' => 'description', 'done' => null === ($this->getDescription()) ? false : true],
-            ['name' => 'invitations', 'done' => null === ($this->getProjectParticipations()) ? false : true],
-            ['name' => 'tranches', 'done' => null === ($this->getTranches()) ? false : true],
+            ['name' => 'calendar', 'done' => null !== ($this->getLenderConsultationClosingDate())],
+            ['name' => 'description', 'done' => null !== ($this->getDescription())],
+            ['name' => 'invitations', 'done' => false === empty($this->getProjectParticipations())],
+            ['name' => 'tranches', 'done' => false === empty($this->getTranches())],
         ];
     }
 
