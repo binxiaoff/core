@@ -41,7 +41,7 @@ class Money
     private $currency;
 
     /**
-     * @param int    $amount
+     * @param string $amount
      * @param string $currency
      */
     public function __construct(string $amount, string $currency)
