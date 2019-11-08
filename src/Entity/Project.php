@@ -1431,7 +1431,7 @@ class Project
      */
     private function sumMoney(array $moneyCollection): Money
     {
-        $sum      = '0';
+        $sum      = 0;
         $currency = $this->getGlobalFundingMoney()->getCurrency();
 
         foreach ($moneyCollection as $money) {
@@ -1439,10 +1439,10 @@ class Project
                 throw new Exception('This method doesn\'t support multiple currencies.');
             }
 
-            $sum = round(bcadd($sum, (string) $money->getAmount(), 3), 2);
+            $sum = round(bcadd((string) $sum, (string) $money->getAmount(), 3), 2);
         }
 
-        return new Money($sum, $currency);
+        return new Money((string) $sum, $currency);
     }
 
     /**
