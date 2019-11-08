@@ -417,8 +417,11 @@ class Project
     /**
      * @param Clients   $submitter
      * @param Companies $borrowerCompany
+     * @param Money     $globalFundingMoney
+     *
+     * @throws Exception
      */
-    public function __construct(Clients $submitter, Companies $borrowerCompany)
+    public function __construct(Clients $submitter, Companies $borrowerCompany, Money $globalFundingMoney)
     {
         $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipations      = new ArrayCollection();
@@ -439,7 +442,8 @@ class Project
         $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;
         $this->offerVisibility   = static::OFFER_VISIBILITY_PUBLIC;
 
-        $this->borrowerCompany = $borrowerCompany;
+        $this->borrowerCompany    = $borrowerCompany;
+        $this->globalFundingMoney = $globalFundingMoney;
 
         if (null === $this->hash) {
             try {
