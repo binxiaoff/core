@@ -1404,9 +1404,9 @@ class Project
     /**
      * @throws Exception
      *
-     * @return int
+     * @return Money
      */
-    public function getSyndicatedAmount()
+    public function getOffersMoney()
     {
         $tranchesOffers  = $this->getProjectOffers();
         $moneyCollection = [];
@@ -1415,7 +1415,7 @@ class Project
             $moneyCollection[] = $tranchesOffer->getMoney();
         }
 
-        return $this->sum($moneyCollection);
+        return $this->sumMoney($moneyCollection);
     }
 
     /**
@@ -1423,18 +1423,14 @@ class Project
      *
      * @throws Exception
      *
-     * @return float
+     * @return Money
      */
-    private function sum(array $moneyCollection): float
+    private function sumMoney(array $moneyCollection): Money
     {
         $sum      = 0;
-        $currency = null;
+        $currency = $this->getGlobalFundingMoney()->getCurrency();
 
         foreach ($moneyCollection as $money) {
-            if (null === $currency) {
-                $currency = $money->getCurrency();
-            }
-
             if ($money->getCurrency() !== $currency) {
                 throw new Exception('This method doesn\'t support multiple currencies.');
             }
@@ -1442,7 +1438,7 @@ class Project
             $sum = round(bcadd($sum, (int) $money->getAmount(), 3), 2);
         }
 
-        return $sum;
+        return new Money((string) $sum, $currency);
     }
 
     /**
