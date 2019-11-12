@@ -24,13 +24,7 @@ trait RoleableTrait
      */
     public function getRoles(): array
     {
-        $roles = $this->roles;
-
-        if (defined('self::DEFAULT_ROLE')) {
-            $roles[] = self::DEFAULT_ROLE;
-        }
-
-        return array_unique($roles);
+        return array_unique($this->roles);
     }
 
     /**
