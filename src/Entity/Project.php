@@ -243,7 +243,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:list"})
      */
     private $lenderConsultationClosingDate;
 
@@ -1329,6 +1329,41 @@ class Project
     public function getGlobalFundingMoney(): Money
     {
         return $this->globalFundingMoney;
+    }
+
+    /**
+     * @Groups({"project:list"})
+     *
+     * @return array
+     */
+    public function getTodoItems(): array
+    {
+        return [
+            ['name' => 'project', 'done' => true],
+            ['name' => 'date', 'done' => true],
+            ['name' => 'description', 'done' => false],
+            ['name' => 'participant', 'done' => false],
+        ];
+    }
+
+    /**
+     * @Groups({"project:list"})
+     *
+     * @return Money
+     */
+    public function getOfferAmount(): Money
+    {
+        return new Money('2000000', 'EUR');
+    }
+
+    /**
+     * @Groups({"project:list"})
+     *
+     * @return Money
+     */
+    public function getTrancheAmount(): Money
+    {
+        return new Money('4000000', 'EUR');
     }
 
     /**
