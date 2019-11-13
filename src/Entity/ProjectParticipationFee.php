@@ -29,7 +29,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectFee")
+ * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectParticipationFee")
  */
 class ProjectParticipationFee
 {

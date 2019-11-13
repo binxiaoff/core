@@ -9,7 +9,7 @@ use Gedmo\Loggable\Entity\MappedSuperclass\AbstractLogEntry;
 
 /**
  * @ORM\Table(
- *     name="zz_versioned_project_fee",
+ *     name="zz_versioned_project_participation_fee",
  *     indexes={
  *         @ORM\Index(columns={"logged_at"}),
  *         @ORM\Index(columns={"username"}),
@@ -18,6 +18,6 @@ use Gedmo\Loggable\Entity\MappedSuperclass\AbstractLogEntry;
  * )
  * @ORM\Entity(repositoryClass="Gedmo\Loggable\Entity\Repository\LogEntryRepository")
  */
-class VersionedProjectFee extends AbstractLogEntry
+class VersionedProjectParticipationFee extends AbstractLogEntry
 {
 }
