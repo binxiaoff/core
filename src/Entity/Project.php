@@ -1336,34 +1336,29 @@ class Project
      *
      * @return array
      */
-    public function getTodoItems(): array
+    public function getTodos(): array
     {
+        $projectComplete = true;
+
+        if (
+            null === $this->getTitle()
+            || null === $this->getBorrowerCompany()
+            || null === $this->getMarketSegment()
+            || null === $this->getSyndicationType()
+            || null === $this->getParticipationType()
+            || (true === $this->isSubParticipation()
+                && null === $this->getRiskType())
+        ) {
+            $projectComplete = false;
+        }
+
         return [
-            ['name' => 'project', 'done' => true],
-            ['name' => 'date', 'done' => true],
-            ['name' => 'description', 'done' => false],
-            ['name' => 'participant', 'done' => false],
+            ['name' => 'project', 'done' => $projectComplete],
+            ['name' => 'calendar', 'done' => null !== $this->getLenderConsultationClosingDate()],
+            ['name' => 'description', 'done' => null !== $this->getDescription()],
+            ['name' => 'invitations', 'done' => 0 < count($this->getProjectParticipations())],
+            ['name' => 'tranches', 'done' => 0 < count($this->getTranches())],
         ];
-    }
-
-    /**
-     * @Groups({"project:list"})
-     *
-     * @return Money
-     */
-    public function getOfferAmount(): Money
-    {
-        return new Money('2000000', 'EUR');
-    }
-
-    /**
-     * @Groups({"project:list"})
-     *
-     * @return Money
-     */
-    public function getTrancheAmount(): Money
-    {
-        return new Money('4000000', 'EUR');
     }
 
     /**
