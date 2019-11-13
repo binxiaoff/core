@@ -61,8 +61,6 @@ class Clients implements UserInterface, EquatableInterface
 
     public const PHONE_NUMBER_DEFAULT_REGION = 'FR';
 
-    private const DEFAULT_ROLE = self::ROLE_USER;
-
     /**
      * @var string
      *
@@ -238,7 +236,8 @@ class Clients implements UserInterface, EquatableInterface
     {
         $this->statuses = new ArrayCollection();
         $this->setCurrentStatus(ClientStatus::STATUS_INVITED);
-        $this->added = new DateTimeImmutable();
+        $this->added   = new DateTimeImmutable();
+        $this->roles[] = self::ROLE_USER;
     }
 
     /**
