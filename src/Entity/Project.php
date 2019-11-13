@@ -1332,6 +1332,8 @@ class Project
     }
 
     /**
+     * @Groups({"project:list"})
+     *
      * @return array
      */
     public function getTodos(): array
@@ -1352,10 +1354,10 @@ class Project
 
         return [
             ['name' => 'project', 'done' => $projectComplete],
-            ['name' => 'calendar', 'done' => null !== ($this->getLenderConsultationClosingDate())],
-            ['name' => 'description', 'done' => null !== ($this->getDescription())],
-            ['name' => 'invitations', 'done' => false === empty($this->getProjectParticipations())],
-            ['name' => 'tranches', 'done' => false === empty($this->getTranches())],
+            ['name' => 'calendar', 'done' => null !== $this->getLenderConsultationClosingDate()],
+            ['name' => 'description', 'done' => null !== $this->getDescription()],
+            ['name' => 'invitations', 'done' => 0 < count($this->getProjectParticipations())],
+            ['name' => 'tranches', 'done' => 0 < count($this->getTranches())],
         ];
     }
 
