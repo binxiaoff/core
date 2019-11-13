@@ -1384,12 +1384,16 @@ class Project
      */
     private function getParticipationsByRole(string $role): Collection
     {
+        $participations = new ArrayCollection();
+
         // Ugly foreach on the Participations (hopefully we don't have many Participations on a project), as the Criteria doesn't support the json syntax.
-        return $this->getProjectParticipations()->filter(
-            static function (ProjectParticipation $participation) use ($role) {
-                return $participation->hasRole($role);
+        foreach ($this->getProjectParticipations() as $projectParticipation) {
+            if ($projectParticipation->hasRole($role)) {
+                $participations->add($projectParticipation);
             }
-        );
+        }
+
+        return $participations;
     }
 
     /**
