@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Api\Extension\ProjectParticipaction;
+namespace Unilend\Extension\ProjectParticipaction;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\Clients;
-use Unilend\Entity\ProjectParticipation;
+use Unilend\Entity\{Clients, ProjectParticipation};
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
@@ -30,23 +29,19 @@ class ListExtension implements QueryCollectionExtensionInterface
      * @param string                      $resourceClass
      * @param string|null                 $operationName
      */
-    public function applyToCollection(
-        QueryBuilder $queryBuilder,
-        QueryNameGeneratorInterface $queryNameGenerator,
-        string $resourceClass,
-        string $operationName = null
-    ): void {
+    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
+    {
         if (ProjectParticipation::class !== $resourceClass) {
             return;
         }
         /** @var Clients $user */
         $user = $this->security->getUser();
 
+        $rootAlias = $queryBuilder->getRootAliases()[0];
+
         $queryBuilder
-            ->leftJoin('o.projectParticipationContacts', 'ppc')
-            ->where('o.company = :company')
-            ->orWhere('ppc.client = :client')
-            ->setParameter('company', $user->getCompany())
+            ->leftJoin("{$rootAlias}.projectParticipationContacts", 'ppc')
+            ->where('ppc.client = :client')
             ->setParameter('client', $user)
         ;
     }

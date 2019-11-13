@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
+use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -77,6 +78,10 @@ class Money
      */
     public function add(Money $money): Money
     {
+        if ($money->getCurrency() !== $this->getCurrency()) {
+            throw new InvalidArgumentException(sprintf('The currencies are different (%s and %s)', $this->getCurrency(), $money->getCurrency()));
+        }
+
         return new Money(
             bcadd($this->amount, $money->amount, 2),
             $this->currency

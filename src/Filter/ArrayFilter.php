@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Api\Filter;
+namespace Unilend\Filter;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
@@ -26,35 +26,7 @@ class ArrayFilter extends AbstractFilter
     private const QUERY_PARAMETER_PREFIX = 'array_filter_term_';
 
     /**
-     * Gets the description of this filter for the given resource.
-     *
-     * Returns an array with the filter parameter names as keys and array with the following data as values:
-     *   - property: the property where the filter is applied
-     *   - type: the type of the filter
-     *   - required: if this filter is required
-     *   - strategy: the used strategy
-     *   - is_collection (optional): is this filter is collection
-     *   - swagger (optional): additional parameters for the path operation,
-     *     e.g. 'swagger' => [
-     *       'description' => 'My Description',
-     *       'name' => 'My Name',
-     *       'type' => 'integer',
-     *     ]
-     *   - openapi (optional): additional parameters for the path operation in the version 3 spec,
-     *     e.g. 'openapi' => [
-     *       'description' => 'My Description',
-     *       'name' => 'My Name',
-     *       'schema' => [
-     *          'type' => 'integer',
-     *       ]
-     *     ]
-     * The description can contain additional data specific to a filter.
-     *
-     * @param string $resourceClass
-     *
-     * @return array
-     *
-     * @see \ApiPlatform\Core\Swagger\Serializer\DocumentationNormalizer::getFiltersParameters
+     * {@inheritdoc}
      */
     public function getDescription(string $resourceClass): array
     {

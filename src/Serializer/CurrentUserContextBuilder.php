@@ -54,7 +54,7 @@ class CurrentUserContextBuilder implements SerializerContextBuilderInterface
 
         if ($resourceClass && null !== $user) {
             $reflection = new ReflectionClass($resourceClass);
-            if ($constructor = $reflection->getConstructor()) {
+            if (($constructor = $reflection->getConstructor())) {
                 $parameters = $constructor->getParameters();
                 foreach ($parameters as $parameter) {
                     if (($type = $parameter->getType()) && (Clients::class === $type->getName())) {

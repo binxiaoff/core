@@ -10,6 +10,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
+use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Embeddable\{Money, NullableMoney, Permission};
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
@@ -22,8 +23,8 @@ use Unilend\Service\User\RealUserFinder;
  *         "post"
  *     }
  * )
- * @ApiFilter("Unilend\Api\Filter\ArrayFilter", properties={"roles"})
- * @ApiFilter("Unilend\Api\Filter\CountFilter", properties={"project.projectOffers"})
+ * @ApiFilter("Unilend\Filter\ArrayFilter", properties={"roles"})
+ * @ApiFilter("Unilend\Filter\CountFilter", properties={"project.projectOffers"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status"})
  *
@@ -138,11 +139,13 @@ class ProjectParticipation
      *
      * @Groups({"projectParticipation:list"})
      */
-    private $invitationAmount;
+    private $invitationMoney;
 
     /**
      * @param Clients $addedBy
      * @param Money   $invitationAmount
+     *
+     * @throws Exception
      */
     public function __construct(Clients $addedBy, Money $invitationAmount = null)
     {
@@ -150,7 +153,7 @@ class ProjectParticipation
         $this->permission                   = new Permission();
         $this->added                        = new DateTimeImmutable();
         $this->addedBy                      = $addedBy;
-        $this->invitationAmount             = $invitationAmount ?? new NullableMoney();
+        $this->invitationMoney              = $invitationAmount ?? new NullableMoney();
     }
 
     /**
@@ -348,16 +351,16 @@ class ProjectParticipation
     /**
      * @return Money
      */
-    public function getInvitationAmount(): Money
+    public function getInvitationMoney(): Money
     {
-        return $this->invitationAmount;
+        return $this->invitationMoney;
     }
 
     /**
-     * @param Money $invitationAmount
+     * @param Money $invitationMoney
      */
-    public function setInvitationAmount(Money $invitationAmount): void
+    public function setInvitationMoney(Money $invitationMoney): void
     {
-        $this->invitationAmount = $invitationAmount;
+        $this->invitationMoney = $invitationMoney;
     }
 }
