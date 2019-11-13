@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource, ApiSubresource};
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource, ApiSubresource};
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria, ExpressionBuilder};
 use Doctrine\ORM\Mapping as ORM;
@@ -16,15 +17,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\Embeddable\Money;
-use Unilend\Entity\Traits\TimestampableTrait;
-use Unilend\Entity\Traits\TraceableStatusTrait;
+use Unilend\Entity\Traits\{TimestampableTrait, TraceableStatusTrait};
 use Unilend\Service\User\RealUserFinder;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
  *     collectionOperations={
- *         "get",
+ *         "get": {"normalization_context": {"groups": {"project:list"}}},
  *         "post": {"denormalization_context": {"groups": {"project:create"}}}
  *     },
  *     itemOperations={
@@ -33,6 +33,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "patch": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"project:update"}}}
  *     }
  * )
+ *
+ * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  *
  * @ORM\Table(indexes={
  *     @ORM\Index(name="hash", columns={"hash"})
@@ -111,7 +113,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:list"})
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -125,6 +127,9 @@ class Project
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company_submitter", referencedColumnName="id", nullable=false)
      * })
+     *
+     * @Groups({"project:list"})
+     *
      * @Assert\NotBlank
      * @Assert\Valid
      */
@@ -151,7 +156,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:list"})
      */
     private $title;
 
@@ -238,7 +243,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:list"})
      */
     private $lenderConsultationClosingDate;
 
@@ -886,6 +891,8 @@ class Project
     }
 
     /**
+     * @Groups({"project:list"})
+     *
      * @throws Exception
      *
      * @return ProjectParticipation|null
@@ -936,6 +943,8 @@ class Project
     }
 
     /**
+     * @Groups({"project:list"})
+     *
      * @return ProjectParticipation[]|ArrayCollection
      */
     public function getParticipants(): iterable
@@ -1280,6 +1289,8 @@ class Project
     }
 
     /**
+     * @Groups({"project:list"})
+     *
      * @param array|null     $committeeStatus
      * @param Companies|null $lender
      *
@@ -1318,6 +1329,41 @@ class Project
     public function getGlobalFundingMoney(): Money
     {
         return $this->globalFundingMoney;
+    }
+
+    /**
+     * @Groups({"project:list"})
+     *
+     * @return array
+     */
+    public function getTodoItems(): array
+    {
+        return [
+            ['name' => 'project', 'done' => true],
+            ['name' => 'date', 'done' => true],
+            ['name' => 'description', 'done' => false],
+            ['name' => 'participant', 'done' => false],
+        ];
+    }
+
+    /**
+     * @Groups({"project:list"})
+     *
+     * @return Money
+     */
+    public function getOfferAmount(): Money
+    {
+        return new Money('2000000', 'EUR');
+    }
+
+    /**
+     * @Groups({"project:list"})
+     *
+     * @return Money
+     */
+    public function getTrancheAmount(): Money
+    {
+        return new Money('4000000', 'EUR');
     }
 
     /**

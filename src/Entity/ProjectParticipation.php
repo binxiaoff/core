@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Embeddable\Permission;
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
 use Unilend\Service\User\RealUserFinder;
@@ -74,6 +75,8 @@ class ProjectParticipation
     /**
      * @var Companies
      *
+     * @Groups({"project:list"})
+     *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", inversedBy="projectParticipations")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
@@ -89,7 +92,7 @@ class ProjectParticipation
     private $projectParticipationContacts;
 
     /**
-     * @var bool
+     * @var int
      *
      * @ORM\Column(type="integer", nullable=false, options={"default": 0})
      */
@@ -193,11 +196,13 @@ class ProjectParticipation
     }
 
     /**
+     * @Groups({"project:list"})
+     *
      * @return bool
      */
     public function hasOffer(): bool
     {
-        return 0 > count($this->project->getProjectOffers(null, $this->company));
+        return 0 < count($this->project->getProjectOffers(null, $this->company));
     }
 
     /**
@@ -205,10 +210,12 @@ class ProjectParticipation
      */
     public function hasValidatedOffer(): bool
     {
-        return 0 > count($this->project->getTrancheOffers([TrancheOffer::STATUS_ACCEPTED], $this->company));
+        return 0 < count($this->project->getTrancheOffers([TrancheOffer::STATUS_ACCEPTED], $this->company));
     }
 
     /**
+     * @Groups({"project:list"})
+     *
      * @return bool
      */
     public function isNotInterested(): bool

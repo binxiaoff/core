@@ -22,7 +22,7 @@ class Money
      * @Assert\Type("numeric")
      * @Assert\Positive
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:list"})
      */
     private $amount;
 
@@ -36,7 +36,7 @@ class Money
      * @Assert\NotBlank
      * @Assert\Currency
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:list"})
      */
     private $currency;
 

@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait, TraceableBlamableUpdatedTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -41,6 +42,8 @@ class ProjectOffer
     /**
      * @var Companies
      *
+     * @Groups({"project:list"})
+     *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_lender", referencedColumnName="id", nullable=false)
@@ -60,6 +63,8 @@ class ProjectOffer
 
     /**
      * @var string
+     *
+     * @Groups({"project:list"})
      *
      * @ORM\Column(length=30)
      *

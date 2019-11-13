@@ -33,31 +33,25 @@ class ProjectListExtension implements QueryCollectionExtensionInterface
     /**
      * {@inheritdoc}
      */
-    public function applyToCollection(
-        QueryBuilder $queryBuilder,
-        QueryNameGeneratorInterface $queryNameGenerator,
-        string $resourceClass,
-        string $operationName = null
-    ): void {
+    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
+    {
         if (Project::class !== $resourceClass) {
             return;
         }
 
         /** @var Clients $user */
-        $user = $this->security->getUser();
-
+        $user      = $this->security->getUser();
+        $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
-            ->innerJoin('o.currentStatus', 'cpsh')
-            ->where('o.submitterCompany = :company')
-            ->leftJoin('o.projectParticipations', 'pp')
-            ->orWhere('pp.company = :company AND cpsh.status IN (:activeStatus) AND o.marketSegment IN (:marketSegments)')
+            ->innerJoin($rootAlias . '.currentStatus', 'cpsh')
+            ->where($rootAlias . '.submitterCompany = :company')
+            ->leftJoin($rootAlias . '.projectParticipations', 'pp')
             ->leftJoin('pp.projectParticipationContacts', 'pc')
-            ->orWhere('pc.client = :client')
+            ->orWhere('cpsh.status IN (:activeStatus) AND pc.client = :client')
             ->setParameters([
-                'company'        => $user->getCompany(),
-                'activeStatus'   => ProjectStatus::DISPLAYABLE_STATUS,
-                'marketSegments' => $user->getStaff()->getMarketSegments(),
-                'client'         => $user,
+                'company'      => $user->getCompany(),
+                'activeStatus' => ProjectStatus::DISPLAYABLE_STATUS,
+                'client'       => $user,
             ])
         ;
     }
