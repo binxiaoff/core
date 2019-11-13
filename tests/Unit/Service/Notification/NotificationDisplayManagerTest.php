@@ -133,7 +133,7 @@ class NotificationDisplayManagerTest extends TestCase
      *
      * @return Notification|object
      */
-    private function createNotification(int $type, int $status = Notification::STATUS_READ): object
+    private function createNotification(int $type, int $status = Notification::STATUS_READ): Notification
     {
         /** @var Companies|ObjectProphecy $borrowerCompany */
         $borrowerCompany = $this->prophesize(Companies::class);

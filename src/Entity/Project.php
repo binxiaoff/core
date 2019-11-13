@@ -100,6 +100,8 @@ class Project
      * @ORM\Column(length=36)
      *
      * @ApiProperty(identifier=true)
+     *
+     * @Groups({"projectParticipation:list"})
      */
     private $hash;
 
@@ -113,7 +115,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list"})
+     * @Groups({"project:create", "project:update", "project:list", "projectParticipation:list"})
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -156,7 +158,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list"})
+     * @Groups({"project:create", "project:update", "project:list", "projectParticipation:list"})
      */
     private $title;
 
@@ -171,7 +173,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "projectParticipation:list"})
      */
     private $marketSegment;
 
@@ -217,7 +219,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "projectParticipation:list"})
      */
     private $replyDeadline;
 
@@ -230,7 +232,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "projectParticipation:list"})
      */
     private $expectedClosingDate;
 
@@ -243,7 +245,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list"})
+     * @Groups({"project:create", "project:update", "project:list", "projectParticipation:list"})
      */
     private $lenderConsultationClosingDate;
 
@@ -331,6 +333,8 @@ class Project
      *
      * @Assert\NotBlank
      * @Assert\Valid
+     *
+     * @Groups({"projectParticipation:list"})
      */
     private $currentStatus;
 
@@ -354,7 +358,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "projectParticipation:list"})
      */
     private $syndicationType;
 
@@ -368,7 +372,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "projectParticipation:list"})
      */
     private $participationType;
 
@@ -382,7 +386,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "projectParticipation:list"})
      */
     private $riskType;
 
@@ -796,7 +800,7 @@ class Project
         $projectParticipation = $this->getProjectParticipationByCompany($company);
 
         if (null === $projectParticipation) {
-            $projectParticipation = (new ProjectParticipation())
+            $projectParticipation = (new ProjectParticipation($realUserFinder()))
                 ->setCompany($company)
                 ->setProject($this)
                 ->setAddedByValue($realUserFinder)
@@ -896,6 +900,8 @@ class Project
      * @throws Exception
      *
      * @return ProjectParticipation|null
+     *
+     * @Groups({"projectParticipation:list"})
      */
     public function getArranger(): ?ProjectParticipation
     {
@@ -1359,6 +1365,40 @@ class Project
             ['name' => 'invitations', 'done' => 0 < count($this->getProjectParticipations())],
             ['name' => 'tranches', 'done' => 0 < count($this->getTranches())],
         ];
+    }
+
+    /**
+     * TODO Remove when done by another ticket.
+     *
+     * @return Money
+     *
+     * @Groups({"projectParticipation:list"})
+     */
+    public function getSyndicatedAmount(): Money
+    {
+        $trancheAmounts = $this->tranches->map(static function (Tranche $tranche) {
+            return $tranche->getMoney();
+        });
+
+        return array_reduce(
+            $trancheAmounts->toArray(),
+            static function (Money $carry, Money $item) {
+                return $carry->add($item);
+            },
+            new Money('0', 'EUR')
+        );
+    }
+
+    /**
+     * TODO Remove when total amount is done.
+     *
+     * @return Money
+     *
+     * @Groups({"projectParticipation:list"})
+     */
+    public function getTotalAmount(): Money
+    {
+        return new Money('20000', 'EUR');
     }
 
     /**

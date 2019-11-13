@@ -4,18 +4,29 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
+use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\Embeddable\Permission;
+use Unilend\Entity\Embeddable\{Money, NullableMoney, Permission};
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
 use Unilend\Service\User\RealUserFinder;
 
 /**
- * @ApiResource
+ * @ApiResource(
+ *     collectionOperations={
+ *         "get": {"normalization_context": {"groups": "projectParticipation:list"}},
+ *         "post"
+ *     }
+ * )
+ * @ApiFilter("Unilend\Filter\ArrayFilter", properties={"roles"})
+ * @ApiFilter("Unilend\Filter\CountFilter", properties={"project.projectOffers"})
+ * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status"})
+ * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status"})
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationRepository")
@@ -29,7 +40,6 @@ class ProjectParticipation
     use TimestampableTrait;
     use BlamableAddedTrait;
 
-    // Use COMPANY_ prefix to distinguish it from Symfony user's roles
     public const DUTY_PROJECT_PARTICIPATION_ARRANGER         = 'DUTY_PROJECT_PARTICIPATION_ARRANGER'; // The company who arranges a loan syndication.
     public const DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER  = 'DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER';
     public const DUTY_PROJECT_PARTICIPATION_RUN              = 'DUTY_PROJECT_PARTICIPATION_RUN'; // Responsable Unique de Notation, who gives a note on the borrower.
@@ -57,6 +67,8 @@ class ProjectParticipation
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     *
+     * @Groups({"projectParticipation:list"})
      */
     private $id;
 
@@ -67,6 +79,8 @@ class ProjectParticipation
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
+     *
+     * @Groups({"projectParticipation:list"})
      */
     private $project;
 
@@ -79,6 +93,8 @@ class ProjectParticipation
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      * })
+     *
+     * @Groups({"projectParticipation:list"})
      */
     private $company;
 
@@ -86,6 +102,8 @@ class ProjectParticipation
      * @var ProjectParticipationContact[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationContact", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @Groups({"projectParticipation:list"})
      */
     private $projectParticipationContacts;
 
@@ -93,6 +111,8 @@ class ProjectParticipation
      * @var int
      *
      * @ORM\Column(type="integer", nullable=false, options={"default": 0})
+     *
+     * @Groups({"projectParticipation:list"})
      */
     private $currentStatus = self::DEFAULT_STATUS;
 
@@ -104,21 +124,36 @@ class ProjectParticipation
     private $permission;
 
     /**
-     * @var ProjectParticipationFee[]|ArrayCollection
+     * @var ProjectParticipationFee
      *
-     * @ORM\OneToMany(targetEntity="ProjectParticipationFee", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="ProjectParticipationFee", inversedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @Groups({"projectParticipation:list"})
      */
-    private $projectParticipationFees;
+    private $projectParticipationFee;
 
     /**
-     * ProjectParticipation constructor.
+     * @var Money
+     *
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney", columnPrefix="invitation_")
+     *
+     * @Groups({"projectParticipation:list"})
      */
-    public function __construct()
+    private $invitationMoney;
+
+    /**
+     * @param Clients $addedBy
+     * @param Money   $invitationAmount
+     *
+     * @throws Exception
+     */
+    public function __construct(Clients $addedBy, Money $invitationAmount = null)
     {
         $this->projectParticipationContacts = new ArrayCollection();
-        $this->projectParticipationFees     = new ArrayCollection();
         $this->permission                   = new Permission();
         $this->added                        = new DateTimeImmutable();
+        $this->addedBy                      = $addedBy;
+        $this->invitationMoney              = $invitationAmount ?? new NullableMoney();
     }
 
     /**
@@ -306,34 +341,26 @@ class ProjectParticipation
     }
 
     /**
-     * @return ArrayCollection
+     * @return ProjectParticipationFee
      */
-    public function getProjectParticipationFees(): ArrayCollection
+    public function getProjectParticipationFee(): ?ProjectParticipationFee
     {
-        return $this->projectParticipationFees;
+        return $this->projectParticipationFee;
     }
 
     /**
-     * @param ProjectParticipationFee $fee
-     *
-     * @return ProjectParticipation
+     * @return Money
      */
-    public function addProjectParticipationFees(ProjectParticipationFee $fee): ProjectParticipation
+    public function getInvitationMoney(): Money
     {
-        $this->projectParticipationFees->add($fee);
-
-        return $this;
+        return $this->invitationMoney;
     }
 
     /**
-     * @param ProjectParticipationFee $fee
-     *
-     * @return ProjectParticipation
+     * @param Money $invitationMoney
      */
-    public function removeProjectParticipationFees(ProjectParticipationFee $fee): ProjectParticipation
+    public function setInvitationMoney(Money $invitationMoney): void
     {
-        $this->projectParticipationFees->removeElement($fee);
-
-        return $this;
+        $this->invitationMoney = $invitationMoney;
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -27,6 +28,8 @@ class Fee
      * @var string|null
      *
      * @ORM\Column(type="text", nullable=true)
+     *
+     * @Groups({"projectParticipation:list"})
      */
     private $comment;
 
@@ -38,6 +41,8 @@ class Fee
      * @Assert\Type("numeric")
      *
      * @Assert\NotBlank
+     *
+     * @Groups({"projectParticipation:list"})
      */
     private $rate;
 

@@ -2,17 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Api\Extension;
+namespace Unilend\Extension\Project;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\Clients;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectStatus;
+use Unilend\Entity\{Clients, Project, ProjectStatus};
 
-class ProjectListExtension implements QueryCollectionExtensionInterface
+class ListExtension implements QueryCollectionExtensionInterface
 {
     /**
      * @var Security
@@ -20,8 +18,6 @@ class ProjectListExtension implements QueryCollectionExtensionInterface
     private $security;
 
     /**
-     * ProjectListExtension constructor.
-     *
      * @param Security $security
      */
     public function __construct(
