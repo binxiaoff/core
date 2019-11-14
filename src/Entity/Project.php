@@ -1394,18 +1394,6 @@ class Project
     }
 
     /**
-     * TODO Remove when total amount is done.
-     *
-     * @return Money
-     *
-     * @Groups({"projectParticipation:list"})
-     */
-    public function getTotalAmount(): Money
-    {
-        return new Money('EUR', '20000');
-    }
-
-    /**
      * @throws Exception
      *
      * @return Money
