@@ -166,7 +166,7 @@ class NotificationDisplayManagerTest extends TestCase
         /** @var TrancheOffer|ObjectProphecy $trancheOffer */
         $trancheOffer = $this->prophesize(TrancheOffer::class);
         $trancheOffer->getId()->willReturn(Base::randomDigitNotNull());
-        $trancheOffer->getMoney()->willReturn(new Money((string) Base::randomDigitNotNull(), Miscellaneous::currencyCode()));
+        $trancheOffer->getMoney()->willReturn(new Money(Miscellaneous::currencyCode(), (string) Base::randomDigitNotNull()));
         $trancheOffer->getProjectOffer()->willReturn($projectOffer);
         $trancheOffer->getTranche()->willReturn($tranche->reveal());
 

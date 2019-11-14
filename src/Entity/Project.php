@@ -417,8 +417,11 @@ class Project
     /**
      * @param Clients   $submitter
      * @param Companies $borrowerCompany
+     * @param Money     $globalFundingMoney
+     *
+     * @throws Exception
      */
-    public function __construct(Clients $submitter, Companies $borrowerCompany)
+    public function __construct(Clients $submitter, Companies $borrowerCompany, Money $globalFundingMoney)
     {
         $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipations      = new ArrayCollection();
@@ -439,7 +442,8 @@ class Project
         $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;
         $this->offerVisibility   = static::OFFER_VISIBILITY_PUBLIC;
 
-        $this->borrowerCompany = $borrowerCompany;
+        $this->borrowerCompany    = $borrowerCompany;
+        $this->globalFundingMoney = $globalFundingMoney;
 
         if (null === $this->hash) {
             try {
@@ -1385,20 +1389,24 @@ class Project
             static function (Money $carry, Money $item) {
                 return $carry->add($item);
             },
-            new Money('0', 'EUR')
+            new Money('EUR')
         );
     }
 
     /**
-     * TODO Remove when total amount is done.
+     * @throws Exception
      *
      * @return Money
-     *
-     * @Groups({"projectParticipation:list"})
      */
-    public function getTotalAmount(): Money
+    public function getOffersMoney(): Money
     {
-        return new Money('20000', 'EUR');
+        $money = new Money($this->getGlobalFundingMoney()->getCurrency());
+
+        foreach ($this->getProjectOffers() as $projectOffer) {
+            $money->add($projectOffer->getTrancheOffersMoney());
+        }
+
+        return $money;
     }
 
     /**

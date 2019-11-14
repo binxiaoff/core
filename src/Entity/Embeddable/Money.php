@@ -42,13 +42,13 @@ class Money
     private $currency;
 
     /**
-     * @param string $amount
      * @param string $currency
+     * @param string $amount
      */
-    public function __construct(string $amount, string $currency)
+    public function __construct(string $currency, string $amount = '0')
     {
-        $this->amount   = $amount;
         $this->currency = $currency;
+        $this->amount   = $amount;
     }
 
     /**
@@ -83,8 +83,8 @@ class Money
         }
 
         return new Money(
-            bcadd($this->amount, $money->amount, 2),
-            $this->currency
+            $this->currency,
+            bcadd($this->amount, $money->amount, 2)
         );
     }
 }
