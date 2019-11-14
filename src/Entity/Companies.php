@@ -63,7 +63,7 @@ class Companies
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:create", "project:list", "projectParticipation:list"})
+     * @Groups({"project:create", "project:list", "project:view", "projectParticipation:list"})
      */
     private $name;
 
@@ -75,7 +75,7 @@ class Companies
      * @Assert\Length(9)
      * @Assert\Luhn
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:view"})
      */
     private $siren;
 
@@ -118,9 +118,9 @@ class Companies
     private $emailDomain;
 
     /**
-     * @Groups({"project:list"})
-     *
      * @ORM\Column(type="string", length=4, nullable=true, unique=true)
+     *
+     * @Groups({"project:list", "project:view"})
      */
     private $shortCode;
 

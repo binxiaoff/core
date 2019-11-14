@@ -47,19 +47,19 @@ class ProjectParticipation
     public const DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER     = 'DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER';
     public const DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE = 'DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE';
 
-    private const STATUS_NOT_CONSULTED = 0;
-    private const STATUS_CONSULTED     = 10;
-    private const STATUS_UNINTERESTED  = 20;
-
-    private const DEFAULT_STATUS = self::STATUS_NOT_CONSULTED;
-
-    private const DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER = [
+    public const DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER = [
         self::DUTY_PROJECT_PARTICIPATION_ARRANGER,
         self::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER,
         self::DUTY_PROJECT_PARTICIPATION_RUN,
         self::DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER,
         self::DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE,
     ];
+
+    private const STATUS_NOT_CONSULTED = 0;
+    private const STATUS_CONSULTED     = 10;
+    private const STATUS_UNINTERESTED  = 20;
+
+    private const DEFAULT_STATUS = self::STATUS_NOT_CONSULTED;
 
     /**
      * @var int
@@ -87,14 +87,12 @@ class ProjectParticipation
     /**
      * @var Companies
      *
-     * @Groups({"project:list"})
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", inversedBy="projectParticipations")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:list", "project:view", "projectParticipation:list"})
      */
     private $company;
 
@@ -137,7 +135,7 @@ class ProjectParticipation
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney", columnPrefix="invitation_")
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:view", "projectParticipation:list"})
      */
     private $invitationMoney;
 

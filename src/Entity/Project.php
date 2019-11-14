@@ -28,7 +28,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "post": {"denormalization_context": {"groups": {"project:create"}}}
  *     },
  *     itemOperations={
- *         "get": {"security": "is_granted('view', object)"},
+ *         "get": {"security": "is_granted('view', object)", "normalization_context": {"groups": {"project:view"}}},
  *         "put": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"project:update"}}},
  *         "patch": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"project:update"}}}
  *     }
@@ -101,7 +101,7 @@ class Project
      *
      * @ApiProperty(identifier=true)
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:view", "projectParticipation:list"})
      */
     private $hash;
 
@@ -115,7 +115,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:list", "project:view", "projectParticipation:list"})
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -158,7 +158,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:list", "project:view", "projectParticipation:list"})
      */
     private $title;
 
@@ -173,7 +173,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
      */
     private $marketSegment;
 
@@ -184,7 +184,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $description;
 
@@ -195,7 +195,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $confidential = false;
 
@@ -206,7 +206,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $confidentialityDisclaimer;
 
@@ -221,7 +221,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
      */
     private $replyDeadline;
 
@@ -236,7 +236,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
      */
     private $expectedClosingDate;
 
@@ -251,7 +251,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:list", "project:view", "projectParticipation:list"})
      */
     private $lenderConsultationClosingDate;
 
@@ -264,7 +264,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $internalRatingScore;
 
@@ -278,7 +278,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Choice(callback="getOfferVisibilities")
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $offerVisibility;
 
@@ -288,6 +288,8 @@ class Project
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Attachment", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      *
      * @ApiSubresource
+     *
+     * @Groups({"project:view"})
      */
     private $attachments;
 
@@ -303,6 +305,8 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectComment", mappedBy="project")
      * @ORM\OrderBy({"added": "DESC"})
+     *
+     * @Groups({"project:view"})
      */
     private $comments;
 
@@ -313,7 +317,7 @@ class Project
      *
      * @Assert\Valid
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:view"})
      */
     private $tranches;
 
@@ -321,6 +325,8 @@ class Project
      * @var ProjectConfidentialityAcceptance[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectConfidentialityAcceptance", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @Groups({"project:view"})
      */
     private $confidentialityAcceptances;
 
@@ -340,7 +346,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:view", "projectParticipation:list"})
      */
     private $currentStatus;
 
@@ -364,7 +370,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
      */
     private $syndicationType;
 
@@ -378,7 +384,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
      */
     private $participationType;
 
@@ -392,7 +398,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
      */
     private $riskType;
 
@@ -400,6 +406,8 @@ class Project
      * @var ArrayCollection|ProjectOffer
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectOffer", mappedBy="project", orphanRemoval=true, cascade={"persist"})
+     *
+     * @Groups({"project:view"})
      */
     private $projectOffers;
 
@@ -407,6 +415,8 @@ class Project
      * @var Collection|Tag[]
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\Tag", cascade={"persist"})
+     *
+     * @Groups({"project:view"})
      */
     private $tags;
 
@@ -418,7 +428,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:view", "projectParticipation:list"})
      */
     private $globalFundingMoney;
 
@@ -766,6 +776,8 @@ class Project
      * @param string         $role
      * @param RealUserFinder $realUserFinder
      *
+     * @throws Exception
+     *
      * @return ProjectParticipation
      */
     public function addProjectParticipation(Companies $company, string $role, RealUserFinder $realUserFinder): ProjectParticipation
@@ -814,6 +826,8 @@ class Project
      * @param Companies      $company
      * @param RealUserFinder $realUserFinder
      *
+     * @throws Exception
+     *
      * @return ProjectParticipation
      */
     public function setArranger(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
@@ -824,6 +838,8 @@ class Project
     /**
      * @param Companies      $company
      * @param RealUserFinder $realUserFinder
+     *
+     * @throws Exception
      *
      * @return ProjectParticipation
      */
@@ -836,6 +852,8 @@ class Project
      * @param Companies      $company
      * @param RealUserFinder $realUserFinder
      *
+     * @throws Exception
+     *
      * @return ProjectParticipation
      */
     public function setRun(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
@@ -846,6 +864,8 @@ class Project
     /**
      * @param Companies      $company
      * @param RealUserFinder $realUserFinder
+     *
+     * @throws Exception
      *
      * @return ProjectParticipation
      */
@@ -858,6 +878,8 @@ class Project
      * @param Companies      $company
      * @param RealUserFinder $realUserFinder
      *
+     * @throws Exception
+     *
      * @return ProjectParticipation
      */
     public function setSecurityTrustee(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
@@ -868,6 +890,8 @@ class Project
     /**
      * @param Companies      $company
      * @param RealUserFinder $realUserFinder
+     *
+     * @throws Exception
      *
      * @return ProjectParticipation
      */
@@ -931,7 +955,7 @@ class Project
     }
 
     /**
-     * @Groups({"project:list"})
+     * @Groups({"project:list", "project:view"})
      *
      * @return ProjectParticipation[]|ArrayCollection
      */
@@ -946,6 +970,24 @@ class Project
     public function getLenderCompanies(): iterable
     {
         return $this->getCompaniesByRole(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT);
+    }
+
+    /**
+     * @return array|ProjectParticipation
+     *
+     * @Groups({"project:view"})
+     */
+    public function getOrganizers(): array
+    {
+        $organizers = [];
+
+        foreach ($this->getProjectParticipations() as $participation) {
+            if ($participation->isOrganizer()) {
+                $organizers[] = $participation;
+            }
+        }
+
+        return $organizers;
     }
 
     /**
@@ -1402,6 +1444,43 @@ class Project
     }
 
     /**
+     * TODO Remove when done by another ticket.
+     *
+     * @return Money
+     *
+     * @Groups({"projectParticipation:list"})
+     */
+    public function getSyndicatedAmount(): Money
+    {
+        $trancheAmounts = $this->tranches->map(static function (Tranche $tranche) {
+            return $tranche->getMoney();
+        });
+
+        return array_reduce(
+            $trancheAmounts->toArray(),
+            static function (Money $carry, Money $item) {
+                return $carry->add($item);
+            },
+            new Money('EUR')
+        );
+    }
+
+    /**
+     * @return array|string[]
+     *
+     * @Groups({"project:view"})
+     */
+    public function getAvailableOrganiserRoles(): array
+    {
+        return array_filter(
+            ProjectParticipation::DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER,
+            static function (string $role) {
+                return Project::isUniqueRole($role) && ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT !== $role;
+            }
+        );
+    }
+
+    /**
      * @param string $role
      *
      * @return bool
@@ -1410,7 +1489,6 @@ class Project
     {
         return in_array($role, [
             ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER,
-            ProjectParticipation::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER,
             ProjectParticipation::DUTY_PROJECT_PARTICIPATION_RUN,
             ProjectParticipation::DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER,
             ProjectParticipation::DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE,
