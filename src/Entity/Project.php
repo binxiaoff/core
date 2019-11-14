@@ -1322,6 +1322,36 @@ class Project
     }
 
     /**
+     * @throws Exception
+     *
+     * @return Money
+     */
+    public function getOffersMoney(): Money
+    {
+        $money = new Money($this->getGlobalFundingMoney()->getCurrency());
+
+        foreach ($this->getProjectOffers() as $projectOffer) {
+            $money->add($projectOffer->getTrancheOffersMoney());
+        }
+
+        return $money;
+    }
+
+    /**
+     * @return Money
+     */
+    public function getTranchesTotalMoney(): Money
+    {
+        $money = new Money($this->getGlobalFundingMoney()->getCurrency());
+
+        foreach ($this->getTranches() as $tranche) {
+            $money->add($tranche->getMoney());
+        }
+
+        return $money;
+    }
+
+    /**
      * @param Money $globalFundingMoney
      *
      * @return Project
@@ -1369,44 +1399,6 @@ class Project
             ['name' => 'invitations', 'done' => 0 < count($this->getProjectParticipations())],
             ['name' => 'tranches', 'done' => 0 < count($this->getTranches())],
         ];
-    }
-
-    /**
-     * TODO Remove when done by another ticket.
-     *
-     * @return Money
-     *
-     * @Groups({"projectParticipation:list"})
-     */
-    public function getSyndicatedAmount(): Money
-    {
-        $trancheAmounts = $this->tranches->map(static function (Tranche $tranche) {
-            return $tranche->getMoney();
-        });
-
-        return array_reduce(
-            $trancheAmounts->toArray(),
-            static function (Money $carry, Money $item) {
-                return $carry->add($item);
-            },
-            new Money('EUR')
-        );
-    }
-
-    /**
-     * @throws Exception
-     *
-     * @return Money
-     */
-    public function getOffersMoney(): Money
-    {
-        $money = new Money($this->getGlobalFundingMoney()->getCurrency());
-
-        foreach ($this->getProjectOffers() as $projectOffer) {
-            $money->add($projectOffer->getTrancheOffersMoney());
-        }
-
-        return $money;
     }
 
     /**
