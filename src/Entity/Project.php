@@ -1389,7 +1389,7 @@ class Project
             static function (Money $carry, Money $item) {
                 return $carry->add($item);
             },
-            new Money('0', 'EUR')
+            new Money('EUR')
         );
     }
 
@@ -1402,7 +1402,7 @@ class Project
      */
     public function getTotalAmount(): Money
     {
-        return new Money('20000', 'EUR');
+        return new Money('EUR', '20000');
     }
 
     /**
@@ -1410,9 +1410,9 @@ class Project
      *
      * @return Money
      */
-    public function getOffersMoney()
+    public function getOffersMoney(): Money
     {
-        $money = new Money('0', $this->getGlobalFundingMoney()->getCurrency());
+        $money = new Money($this->getGlobalFundingMoney()->getCurrency());
 
         foreach ($this->getProjectOffers() as $projectOffer) {
             $money->add($projectOffer->getTrancheOffersMoney());

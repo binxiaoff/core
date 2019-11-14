@@ -259,9 +259,9 @@ class ProjectOffer
      *
      * @return Embeddable\Money
      */
-    public function getTrancheOffersMoney()
+    public function getTrancheOffersMoney(): Money
     {
-        $money = new Money('0', $this->getProject()->getGlobalFundingMoney()->getCurrency());
+        $money = new Money($this->getProject()->getGlobalFundingMoney()->getCurrency());
 
         foreach ($this->getTrancheOffers() as $trancheOffer) {
             $money->add($trancheOffer->getMoney());
