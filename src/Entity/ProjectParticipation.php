@@ -317,6 +317,8 @@ class ProjectParticipation
      * @param Clients        $client
      * @param RealUserFinder $realUserFinder
      *
+     * @throws Exception
+     *
      * @return ProjectParticipationContact
      */
     public function addProjectParticipationContact(Clients $client, RealUserFinder $realUserFinder): ProjectParticipationContact
