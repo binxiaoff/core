@@ -17,7 +17,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\Embeddable\Money;
-use Unilend\Entity\Traits\{TimestampableTrait, TraceableStatusTrait, SumMoneyTrait};
+use Unilend\Entity\Traits\{TimestampableTrait, TraceableStatusTrait};
 use Unilend\Service\User\RealUserFinder;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -50,7 +50,6 @@ class Project
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
-    use SumMoneyTrait;
     use TraceableStatusTrait {
         setCurrentStatus as private baseStatusSetter;
     }
@@ -1413,14 +1412,13 @@ class Project
      */
     public function getOffersMoney()
     {
-        $projectOffers   = $this->getProjectOffers();
-        $moneyCollection = [];
+        $money = new Money('0', $this->getGlobalFundingMoney()->getCurrency());
 
-        foreach ($projectOffers as $projectOffer) {
-            $moneyCollection[] = $projectOffer->getTrancheOffersMoney();
+        foreach ($this->getProjectOffers() as $projectOffer) {
+            $money->add($projectOffer->getTrancheOffersMoney());
         }
 
-        return $this->sumMoney($moneyCollection, $this->getGlobalFundingMoney()->getCurrency());
+        return $money;
     }
 
     /**
