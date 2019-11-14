@@ -17,7 +17,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\Embeddable\Money;
-use Unilend\Entity\Traits\{TimestampableTrait, TraceableStatusTrait};
+use Unilend\Entity\Traits\{TimestampableTrait, TraceableStatusTrait, SumMoneyTrait};
 use Unilend\Service\User\RealUserFinder;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -50,6 +50,7 @@ class Project
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
+    use SumMoneyTrait;
     use TraceableStatusTrait {
         setCurrentStatus as private baseStatusSetter;
     }
@@ -1412,37 +1413,14 @@ class Project
      */
     public function getOffersMoney()
     {
-        $tranchesOffers  = $this->getProjectOffers();
+        $projectOffers   = $this->getProjectOffers();
         $moneyCollection = [];
 
-        foreach ($tranchesOffers as $tranchesOffer) {
-            $moneyCollection[] = $tranchesOffer->getMoney();
+        foreach ($projectOffers as $projectOffer) {
+            $moneyCollection[] = $projectOffer->getTrancheOffersMoney();
         }
 
-        return $this->sumMoney($moneyCollection);
-    }
-
-    /**
-     * @param Money[] $moneyCollection
-     *
-     * @throws Exception
-     *
-     * @return Money
-     */
-    private function sumMoney(array $moneyCollection): Money
-    {
-        $sum      = 0;
-        $currency = $this->getGlobalFundingMoney()->getCurrency();
-
-        foreach ($moneyCollection as $money) {
-            if ($money->getCurrency() !== $currency) {
-                throw new Exception('This method doesn\'t support multiple currencies.');
-            }
-
-            $sum = round(bcadd((string) $sum, (string) $money->getAmount(), 3), 2);
-        }
-
-        return new Money((string) $sum, $currency);
+        return $this->sumMoney($moneyCollection, $this->getGlobalFundingMoney()->getCurrency());
     }
 
     /**

@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Unilend\Entity\Traits\{BlamableAddedTrait, SumMoneyTrait, TimestampableTrait, TraceableBlamableUpdatedTrait};
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait, TraceableBlamableUpdatedTrait};
 use Unilend\Traits\ConstantsAwareTrait;
@@ -25,6 +26,7 @@ class ProjectOffer
     use ConstantsAwareTrait;
     use BlamableAddedTrait;
     use TraceableBlamableUpdatedTrait;
+    use SumMoneyTrait;
 
     public const COMMITTEE_STATUS_PENDED   = 'pended';
     public const COMMITTEE_STATUS_ACCEPTED = 'accepted';
@@ -251,5 +253,23 @@ class ProjectOffer
     public function getAvailableCommitteeStatus(): array
     {
         return self::getConstants('COMMITTEE_STATUS_');
+    }
+
+    /**
+     * @throws \Exception
+     *
+     * @return Embeddable\Money
+     */
+    public function getTrancheOffersMoney()
+    {
+        $trancheOffers = $this->getTrancheOffers();
+
+        $moneyCollection = [];
+
+        foreach ($trancheOffers as $trancheOffer) {
+            $moneyCollection[] = $trancheOffer->getMoney();
+        }
+
+        return $this->sumMoney($moneyCollection, $this->getProject()->getGlobalFundingMoney()->getCurrency());
     }
 }
