@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Embeddable\Money;
@@ -99,19 +100,31 @@ class ProjectOffer
     private $trancheOffers;
 
     /**
-     * @param Companies $lender
-     * @param Project   $project
-     * @param string    $committeeStatus
+     * @param Companies  $lender
+     * @param Project    $project
+     * @param Clients    $addedBy
+     * @param Money|null $offerMoney
+     * @param string     $committeeStatus
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function __construct(Companies $lender, Project $project, string $committeeStatus = self::COMMITTEE_STATUS_PENDED)
-    {
+    public function __construct(
+        Companies $lender,
+        Project $project,
+        Clients $addedBy,
+        Money $offerMoney = null,
+        string $committeeStatus = self::COMMITTEE_STATUS_PENDED
+    ) {
         $this->lender          = $lender;
         $this->project         = $project;
         $this->committeeStatus = $committeeStatus;
         $this->trancheOffers   = new ArrayCollection();
         $this->added           = new DateTimeImmutable();
+        $this->addedBy         = $addedBy;
+
+        if ($offerMoney) {
+            $this->setOfferMoney($offerMoney);
+        }
     }
 
     /**
@@ -255,7 +268,7 @@ class ProjectOffer
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      *
      * @return Embeddable\Money
      */
@@ -264,9 +277,26 @@ class ProjectOffer
         $money = new Money($this->getProject()->getGlobalFundingMoney()->getCurrency());
 
         foreach ($this->getTrancheOffers() as $trancheOffer) {
-            $money->add($trancheOffer->getMoney());
+            $money = $money->add($trancheOffer->getMoney());
         }
 
         return $money;
+    }
+
+    /**
+     * @param Money $offerMoney
+     *
+     * @throws Exception
+     */
+    private function setOfferMoney(Money $offerMoney)
+    {
+        $trancheCount  = count($this->getProject()->getTranches());
+        $splittedMoney = $offerMoney->divide($trancheCount);
+
+        foreach ($this->getProject()->getTranches() as $tranche) {
+            $this->addTrancheOffer(
+                new TrancheOffer($this, $tranche, $splittedMoney, $this->addedBy)
+            );
+        }
     }
 }

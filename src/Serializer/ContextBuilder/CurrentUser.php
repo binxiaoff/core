@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Serializer;
+namespace Unilend\Serializer\ContextBuilder;
 
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use ReflectionClass;
@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Entity\Clients;
 
-class CurrentUserContextBuilder implements SerializerContextBuilderInterface
+class CurrentUser implements SerializerContextBuilderInterface
 {
     /**
      * @var SerializerContextBuilderInterface

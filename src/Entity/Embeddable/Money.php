@@ -23,7 +23,7 @@ class Money
      * @Assert\Type("numeric")
      * @Assert\Positive
      *
-     * @Groups({"project:create", "project:list", "projectParticipation:list"})
+     * @Groups({"project:create", "project:list", "project:view", "projectParticipation:list"})
      */
     private $amount;
 
@@ -37,7 +37,7 @@ class Money
      * @Assert\NotBlank
      * @Assert\Currency
      *
-     * @Groups({"project:create", "project:list", "projectParticipation:list"})
+     * @Groups({"project:create", "project:list", "project:view", "projectParticipation:list"})
      */
     private $currency;
 
@@ -85,6 +85,19 @@ class Money
         return new Money(
             $this->currency,
             bcadd($this->amount, $money->amount, 2)
+        );
+    }
+
+    /**
+     * @param int $diviser
+     *
+     * @return Money
+     */
+    public function divide(int $diviser)
+    {
+        return new Money(
+            $this->currency,
+            bcdiv($this->amount, (string) $diviser, 2)
         );
     }
 }

@@ -40,12 +40,12 @@ class ProjectParticipation
     use TimestampableTrait;
     use BlamableAddedTrait;
 
-    public const DUTY_PROJECT_PARTICIPATION_ARRANGER         = 'DUTY_PROJECT_PARTICIPATION_ARRANGER'; // The company who arranges a loan syndication.
-    public const DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER  = 'DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER';
-    public const DUTY_PROJECT_PARTICIPATION_RUN              = 'DUTY_PROJECT_PARTICIPATION_RUN'; // Responsable Unique de Notation, who gives a note on the borrower.
-    public const DUTY_PROJECT_PARTICIPATION_PARTICIPANT      = 'DUTY_PROJECT_PARTICIPATION_PARTICIPANT';
-    public const DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER     = 'DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER';
-    public const DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE = 'DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE';
+    public const DUTY_PROJECT_PARTICIPATION_ARRANGER         = 'arranger'; // The company who arranges a loan syndication.
+    public const DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER  = 'deputy_arranger';
+    public const DUTY_PROJECT_PARTICIPATION_RUN              = 'run'; // Responsable Unique de Notation, who gives a note on the borrower.
+    public const DUTY_PROJECT_PARTICIPATION_PARTICIPANT      = 'participant';
+    public const DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER     = 'loan_officer';
+    public const DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE = 'security_trustee';
 
     public const DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER = [
         self::DUTY_PROJECT_PARTICIPATION_ARRANGER,
@@ -140,18 +140,32 @@ class ProjectParticipation
     private $invitationMoney;
 
     /**
-     * @param Clients $addedBy
-     * @param Money   $invitationAmount
+     * @param Clients    $addedBy
+     * @param Companies  $company
+     * @param Project    $project
+     * @param Money      $invitationMoney
+     * @param Money|null $offerMoney
      *
      * @throws Exception
      */
-    public function __construct(Clients $addedBy, Money $invitationAmount = null)
-    {
+    public function __construct(
+        Clients $addedBy,
+        Companies $company,
+        Project $project,
+        Money $invitationMoney = null,
+        Money $offerMoney = null
+    ) {
         $this->projectParticipationContacts = new ArrayCollection();
         $this->permission                   = new Permission();
         $this->added                        = new DateTimeImmutable();
         $this->addedBy                      = $addedBy;
-        $this->invitationMoney              = $invitationAmount ?? new NullableMoney();
+        $this->invitationMoney              = $invitationMoney ?? new NullableMoney();
+        $this->company                      = $company;
+        $this->project                      = $project;
+
+        if ($offerMoney) {
+            $this->getProject()->addProjectOffer(new ProjectOffer($this->company, $this->project, $addedBy, $offerMoney));
+        }
     }
 
     /**
@@ -227,9 +241,9 @@ class ProjectParticipation
     }
 
     /**
-     * @Groups({"project:list"})
-     *
      * @return bool
+     *
+     * @Groups({"project:list"})
      */
     public function hasOffer(): bool
     {
@@ -242,6 +256,30 @@ class ProjectParticipation
     public function hasValidatedOffer(): bool
     {
         return 0 < count($this->project->getTrancheOffers([TrancheOffer::STATUS_ACCEPTED], $this->company));
+    }
+
+    /**
+     * @return ProjectOffer|null
+     */
+    public function getProjectOffer(): ?ProjectOffer
+    {
+        return $this->project->getProjectOffers(null, $this->company)->first() ?: null;
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return Money|null
+     *
+     *
+     * @Groups({"project:view", "projectParticipation:list"})
+     */
+    public function getOfferMoney(): ?Money
+    {
+        /** @var ProjectOffer $offer */
+        $offer = $this->getProjectOffer();
+
+        return $offer ? $offer->getTrancheOffersMoney() : null;
     }
 
     /**

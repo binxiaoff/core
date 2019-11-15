@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use DateTimeImmutable;
-use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Unilend\Entity\Embeddable\LendingRate;
 use Unilend\Entity\Embeddable\Money;
@@ -95,22 +96,31 @@ class TrancheOffer
     private $trancheOfferFees;
 
     /**
-     * @param ProjectOffer $projectOffer
-     * @param Tranche      $tranche
-     * @param Money        $money
-     * @param string       $status
+     * @param ProjectOffer     $projectOffer
+     * @param Tranche          $tranche
+     * @param Money            $money
+     * @param Clients          $addedby
+     * @param LendingRate|null $rate
+     * @param string           $status
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function __construct(ProjectOffer $projectOffer, Tranche $tranche, Money $money, string $status = self::STATUS_PENDED)
-    {
+    public function __construct(
+        ProjectOffer $projectOffer,
+        Tranche $tranche,
+        Money $money,
+        Clients $addedby,
+        LendingRate $rate = null,
+        string $status = self::STATUS_PENDED
+    ) {
         $this->projectOffer     = $projectOffer;
         $this->tranche          = $tranche;
         $this->money            = $money;
         $this->status           = $status;
-        $this->rate             = new LendingRate();
+        $this->rate             = $rate ?? clone $tranche->getRate();
         $this->trancheOfferFees = new ArrayCollection();
         $this->added            = new DateTimeImmutable();
+        $this->addedBy          = $addedby;
     }
 
     /**
@@ -242,7 +252,7 @@ class TrancheOffer
     /**
      * @return ArrayCollection|TrancheOfferFee[]
      */
-    public function getTrancheOfferFees(): ArrayCollection
+    public function getTrancheOfferFees(): Collection
     {
         return $this->trancheOfferFees;
     }

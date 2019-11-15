@@ -18,7 +18,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\Embeddable\Money;
 use Unilend\Entity\Traits\{TimestampableTrait, TraceableStatusTrait};
-use Unilend\Service\User\RealUserFinder;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -406,8 +405,6 @@ class Project
      * @var ArrayCollection|ProjectOffer
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectOffer", mappedBy="project", orphanRemoval=true, cascade={"persist"})
-     *
-     * @Groups({"project:view"})
      */
     private $projectOffers;
 
@@ -608,6 +605,8 @@ class Project
      * @param int     $status
      * @param Clients $clients
      *
+     * @throws Exception
+     *
      * @return Project
      */
     public function setCurrentStatus(int $status, Clients $clients): self
@@ -772,45 +771,6 @@ class Project
     }
 
     /**
-     * @param Companies      $company
-     * @param string         $role
-     * @param RealUserFinder $realUserFinder
-     *
-     * @throws Exception
-     *
-     * @return ProjectParticipation
-     */
-    public function addProjectParticipation(Companies $company, string $role, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        if (static::isUniqueRole($role)) {
-            /** @var ProjectParticipation $projectParticipationToDelete */
-            $projectParticipationToDelete = $this->getParticipationsByRole($role)->first();
-
-            if ($projectParticipationToDelete && $company !== $projectParticipationToDelete->getCompany()) {
-                $projectParticipationToDelete->removeRole($role);
-            }
-        }
-
-        $projectParticipation = $this->getProjectParticipationByCompany($company);
-
-        if (null === $projectParticipation) {
-            $projectParticipation = (new ProjectParticipation($realUserFinder()))
-                ->setCompany($company)
-                ->setProject($this)
-                ->setAddedByValue($realUserFinder)
-            ;
-        }
-
-        $projectParticipation->addRoles([$role]);
-
-        if (false === $this->projectParticipations->contains($projectParticipation)) {
-            $this->projectParticipations->add($projectParticipation);
-        }
-
-        return $projectParticipation;
-    }
-
-    /**
      * @param ProjectParticipation $projectParticipation
      *
      * @return Project
@@ -820,84 +780,6 @@ class Project
         $this->projectParticipations->removeElement($projectParticipation);
 
         return $this;
-    }
-
-    /**
-     * @param Companies      $company
-     * @param RealUserFinder $realUserFinder
-     *
-     * @throws Exception
-     *
-     * @return ProjectParticipation
-     */
-    public function setArranger(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER, $realUserFinder);
-    }
-
-    /**
-     * @param Companies      $company
-     * @param RealUserFinder $realUserFinder
-     *
-     * @throws Exception
-     *
-     * @return ProjectParticipation
-     */
-    public function setDeputyArranger(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER, $realUserFinder);
-    }
-
-    /**
-     * @param Companies      $company
-     * @param RealUserFinder $realUserFinder
-     *
-     * @throws Exception
-     *
-     * @return ProjectParticipation
-     */
-    public function setRun(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_RUN, $realUserFinder);
-    }
-
-    /**
-     * @param Companies      $company
-     * @param RealUserFinder $realUserFinder
-     *
-     * @throws Exception
-     *
-     * @return ProjectParticipation
-     */
-    public function setLoanOfficer(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER, $realUserFinder);
-    }
-
-    /**
-     * @param Companies      $company
-     * @param RealUserFinder $realUserFinder
-     *
-     * @throws Exception
-     *
-     * @return ProjectParticipation
-     */
-    public function setSecurityTrustee(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE, $realUserFinder);
-    }
-
-    /**
-     * @param Companies      $company
-     * @param RealUserFinder $realUserFinder
-     *
-     * @throws Exception
-     *
-     * @return ProjectParticipation
-     */
-    public function addParticipant(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT, $realUserFinder);
     }
 
     /**
@@ -917,11 +799,11 @@ class Project
     /**
      * @throws Exception
      *
-     * @return ProjectParticipation|null
+     * @return Collection|ProjectParticipation[]
      */
-    public function getDeputyArranger(): ?ProjectParticipation
+    public function getDeputyArranger(): Collection
     {
-        return $this->getUniqueRoleParticipation(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER);
+        return $this->getParticipationsByRole(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER);
     }
 
     /**
@@ -1293,7 +1175,7 @@ class Project
      *
      * @return Project
      */
-    public function addProjectOffers(ProjectOffer $projectOffer): Project
+    public function addProjectOffer(ProjectOffer $projectOffer): Project
     {
         $projectOffer->setProject($this);
 
@@ -1309,7 +1191,7 @@ class Project
      *
      * @return Project
      */
-    public function removeProjectOffers(ProjectOffer $projectOffer): Project
+    public function removeProjectOffer(ProjectOffer $projectOffer): Project
     {
         if ($this->projectOffers->contains($projectOffer)) {
             $this->projectOffers->removeElement($projectOffer);
@@ -1472,11 +1354,16 @@ class Project
      */
     public function getAvailableOrganiserRoles(): array
     {
-        return array_filter(
-            ProjectParticipation::DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER,
-            static function (string $role) {
-                return Project::isUniqueRole($role) && ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT !== $role;
-            }
+        return array_values(
+            array_filter(
+                ProjectParticipation::DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER,
+                function (string $role) {
+                    $roleUniqueness = static::isUniqueRole($role);
+
+                    return (($roleUniqueness && (0 === count($this->getParticipationsByRole($role)))) || false === $roleUniqueness)
+                    && ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT !== $role;
+                }
+            )
         );
     }
 

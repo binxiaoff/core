@@ -234,9 +234,9 @@ class Tranche
     private $trancheAttributes;
 
     /**
-     * Tranche constructor.
-     *
      * @param Money $money
+     *
+     * @throws \Exception
      */
     public function __construct(Money $money)
     {
