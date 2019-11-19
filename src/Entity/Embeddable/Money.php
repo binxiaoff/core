@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
-use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Exception\Money\DifferentCurrencyException;
 
 /**
  * @ORM\Embeddable
@@ -72,32 +72,76 @@ class Money
     }
 
     /**
-     * @param Money $money
+     * @param Money $addend
      *
      * @return Money
      */
-    public function add(Money $money): Money
+    public function add(Money $addend): Money
     {
-        if ($money->getCurrency() !== $this->getCurrency()) {
-            throw new InvalidArgumentException(sprintf('The currencies are different (%s and %s)', $this->getCurrency(), $money->getCurrency()));
+        if ($addend->getCurrency() !== $this->getCurrency()) {
+            throw new DifferentCurrencyException($this, $addend);
         }
 
         return new Money(
             $this->currency,
-            bcadd($this->amount, $money->amount, 2)
+            bcadd($this->amount, $addend->amount, 2)
         );
     }
 
     /**
-     * @param int $diviser
+     * @param mixed $divisor
      *
      * @return Money
      */
-    public function divide(int $diviser)
+    public function divide($divisor)
     {
+        if ($divisor instanceof Money) {
+            if ($divisor->getCurrency() !== $this->getCurrency()) {
+                throw new DifferentCurrencyException($this, $divisor);
+            }
+            $divisor = $divisor->getAmount();
+        }
+
         return new Money(
             $this->currency,
-            bcdiv($this->amount, (string) $diviser, 2)
+            bcdiv($this->amount, (string) $divisor, 2)
+        );
+    }
+
+    /**
+     * @param mixed $factor
+     *
+     * @return Money
+     */
+    public function multiply($factor)
+    {
+        if ($factor instanceof Money) {
+            if ($factor->getCurrency() !== $this->getCurrency()) {
+                throw new DifferentCurrencyException($this, $factor);
+            }
+            $factor = $factor->getAmount();
+        }
+
+        return new Money(
+            $this->currency,
+            bcdiv($this->amount, (string) $factor, 2)
+        );
+    }
+
+    /**
+     * @param Money $subtrahend
+     *
+     * @return Money
+     */
+    public function substract(Money $subtrahend): Money
+    {
+        if ($subtrahend->getCurrency() !== $this->getCurrency()) {
+            throw new DifferentCurrencyException($this, $subtrahend);
+        }
+
+        return new Money(
+            $this->currency,
+            bcadd($this->amount, $subtrahend->amount, 2)
         );
     }
 }

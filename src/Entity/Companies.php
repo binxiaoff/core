@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
@@ -15,6 +16,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
+ *     attributes={"pagination_enabled": false},
  *     collectionOperations={
  *         "get",
  *         "post",
@@ -25,6 +27,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *         }
  *     }
  * )
+ * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.hash", "projectParticipations.project"})
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks

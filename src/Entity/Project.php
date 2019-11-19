@@ -1233,7 +1233,7 @@ class Project
         $money = new Money($this->getGlobalFundingMoney()->getCurrency());
 
         foreach ($this->getProjectOffers() as $projectOffer) {
-            $money->add($projectOffer->getTrancheOffersMoney());
+            $money->add($projectOffer->getOfferMoney());
         }
 
         return $money;

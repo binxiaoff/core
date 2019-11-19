@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
@@ -15,6 +16,17 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait, TraceableBlam
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
+ * @ApiResource(
+ *     collectionOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *         "post": {
+ *         }
+ *     }
+ * )
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectOffer")
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_lender"})})
@@ -44,12 +56,12 @@ class ProjectOffer
     /**
      * @var Companies
      *
-     * @Groups({"project:list"})
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_lender", referencedColumnName="id", nullable=false)
      * })
+     *
+     * @Groups({"project:list"})
      */
     private $lender;
 
@@ -60,17 +72,19 @@ class ProjectOffer
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
+     *
+     * @Groups({"project:list"})
      */
     private $project;
 
     /**
      * @var string
      *
-     * @Groups({"project:list"})
-     *
      * @ORM\Column(length=30)
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:list", "project:view"})
      */
     private $committeeStatus;
 
@@ -80,6 +94,8 @@ class ProjectOffer
      * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:list", "project:view"})
      */
     private $expectedCommitteeDate;
 
@@ -89,6 +105,8 @@ class ProjectOffer
      * @ORM\Column(type="text", nullable=true)
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:view"})
      */
     private $comment;
 
@@ -271,8 +289,10 @@ class ProjectOffer
      * @throws Exception
      *
      * @return Embeddable\Money
+     *
+     * @Groups({"project:view"})
      */
-    public function getTrancheOffersMoney(): Money
+    public function getOfferMoney(): Money
     {
         $money = new Money($this->getProject()->getGlobalFundingMoney()->getCurrency());
 
@@ -290,13 +310,22 @@ class ProjectOffer
      */
     private function setOfferMoney(Money $offerMoney)
     {
-        $trancheCount  = count($this->getProject()->getTranches());
-        $splittedMoney = $offerMoney->divide($trancheCount);
+        $this->getTrancheOffers()->clear();
+
+        $syndicatedMoney = $this->getProject()->getSyndicatedAmount();
+        $remainderMoney  = clone $syndicatedMoney;
 
         foreach ($this->getProject()->getTranches() as $tranche) {
-            $this->addTrancheOffer(
-                new TrancheOffer($this, $tranche, $splittedMoney, $this->addedBy)
+            $split          = $offerMoney->multiply($syndicatedMoney->divide($tranche->getMoney()));
+            $remainderMoney = $remainderMoney->substract($split);
+
+            $this->trancheOffers->add(
+                new TrancheOffer($this, $tranche, $split, $this->addedBy)
             );
         }
+
+        /** @var TrancheOffer $lastTrancheOffer */
+        $lastTrancheOffer = $this->getTrancheOffers()->last();
+        $lastTrancheOffer->getMoney()->add($remainderMoney);
     }
 }

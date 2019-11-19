@@ -21,6 +21,8 @@ class Fee
      * @ORM\Column(type="string", length=50)
      *
      * @Assert\NotBlank
+     *
+     * @Groups({"project:view", "projectParticipation:list"})
      */
     private $type;
 
@@ -30,6 +32,8 @@ class Fee
      * @ORM\Column(type="text", nullable=true)
      *
      * @Groups({"projectParticipation:list"})
+     *
+     * @Groups({"project:view", "projectParticipation:list"})
      */
     private $comment;
 
@@ -42,7 +46,7 @@ class Fee
      *
      * @Assert\NotBlank
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:view", "projectParticipation:list"})
      */
     private $rate;
 
@@ -50,17 +54,20 @@ class Fee
      * @var bool
      *
      * @ORM\Column(type="boolean")
+     *
+     * @Groups({"project:view", "projectParticipation:list"})
      */
     private $recurring;
 
     /**
      * @param string $rate
      * @param string $type
+     * @param bool   $recurring
      */
-    public function __construct(string $rate, string $type)
+    public function __construct(string $rate, string $type, bool $recurring = false)
     {
         $this->rate      = $rate;
-        $this->recurring = false;
+        $this->recurring = $recurring;
         $this->type      = $type;
     }
 

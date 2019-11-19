@@ -18,11 +18,11 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiResource(
  *     collectionOperations={
  *         "get": {"security": "is_granted('ROLE_ADMIN')"},
- *         "post": {"security_post_denormalize": "is_granted('edit', object.getProject())"}
+ *         "post": {"security_post_denormalize": "is_granted('edit', object.getProjectParticipation().getProject())"}
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object.getProject())"},
- *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())"}
+ *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProjectParticipation().getProject())"}
  *     }
  * )
  *
@@ -57,19 +57,21 @@ class ProjectParticipationFee
      *
      * @Assert\Valid
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:view", "projectParticipation:list"})
      */
     private $fee;
 
     /**
      * @var Project
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="projectParticipationFee")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationFee")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project_participation", nullable=false)
      * })
      *
      * @Assert\Valid
+     *
+     * @Groups({"project:view", "projectParticipation:list"})
      */
     private $projectParticipation;
 
@@ -103,9 +105,9 @@ class ProjectParticipationFee
     }
 
     /**
-     * @return Project
+     * @return ProjectParticipation
      */
-    public function getProjectParticipation(): Project
+    public function getProjectParticipation(): ProjectParticipation
     {
         return $this->projectParticipation;
     }

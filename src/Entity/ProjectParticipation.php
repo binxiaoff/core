@@ -124,9 +124,9 @@ class ProjectParticipation
     /**
      * @var ProjectParticipationFee
      *
-     * @ORM\OneToOne(targetEntity="ProjectParticipationFee", inversedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="ProjectParticipationFee", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:view", "projectParticipation:list"})
      */
     private $projectParticipationFee;
 
@@ -143,8 +143,7 @@ class ProjectParticipation
      * @param Clients    $addedBy
      * @param Companies  $company
      * @param Project    $project
-     * @param Money      $invitationMoney
-     * @param Money|null $offerMoney
+     * @param Money|null $invitationMoney
      *
      * @throws Exception
      */
@@ -152,20 +151,15 @@ class ProjectParticipation
         Clients $addedBy,
         Companies $company,
         Project $project,
-        Money $invitationMoney = null,
-        Money $offerMoney = null
+        Money $invitationMoney = null
     ) {
         $this->projectParticipationContacts = new ArrayCollection();
         $this->permission                   = new Permission();
         $this->added                        = new DateTimeImmutable();
         $this->addedBy                      = $addedBy;
-        $this->invitationMoney              = $invitationMoney ?? new NullableMoney();
         $this->company                      = $company;
         $this->project                      = $project;
-
-        if ($offerMoney) {
-            $this->getProject()->addProjectOffer(new ProjectOffer($this->company, $this->project, $addedBy, $offerMoney));
-        }
+        $this->invitationMoney              = $invitationMoney ?? new NullableMoney();
     }
 
     /**
@@ -260,26 +254,12 @@ class ProjectParticipation
 
     /**
      * @return ProjectOffer|null
+     *
+     * @Groups({"project:view"})
      */
     public function getProjectOffer(): ?ProjectOffer
     {
-        return $this->project->getProjectOffers(null, $this->company)->first() ?: null;
-    }
-
-    /**
-     * @throws Exception
-     *
-     * @return Money|null
-     *
-     *
-     * @Groups({"project:view", "projectParticipation:list"})
-     */
-    public function getOfferMoney(): ?Money
-    {
-        /** @var ProjectOffer $offer */
-        $offer = $this->getProjectOffer();
-
-        return $offer ? $offer->getTrancheOffersMoney() : null;
+        return $this->project->getProjectOffers(null, $this->company)->last() ?: null;
     }
 
     /**
@@ -379,7 +359,7 @@ class ProjectParticipation
     }
 
     /**
-     * @return ProjectParticipationFee
+     * @return ProjectParticipationFee|null
      */
     public function getProjectParticipationFee(): ?ProjectParticipationFee
     {
@@ -392,13 +372,5 @@ class ProjectParticipation
     public function getInvitationMoney(): Money
     {
         return $this->invitationMoney;
-    }
-
-    /**
-     * @param Money $invitationMoney
-     */
-    public function setInvitationMoney(Money $invitationMoney): void
-    {
-        $this->invitationMoney = $invitationMoney;
     }
 }
