@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
 use Exception;
+use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Embeddable\{Money, NullableMoney, Permission};
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
@@ -20,7 +21,12 @@ use Unilend\Service\User\RealUserFinder;
  * @ApiResource(
  *     collectionOperations={
  *         "get": {"normalization_context": {"groups": "projectParticipation:list"}},
- *         "post"
+ *         "post": {"denormalization_context": {"groups": "projectParticipation:create"}}
+ *     },
+ *     itemOperations={
+ *         "get": {"normalization_context": {"groups": "projectParticipation:view"}},
+ *         "delete": {"security": "is_granted('edit', object.getProject())"},
+ *         "patch": {"security": "is_granted('edit', object.getProject())", "denormalization_context": {"groups": "projectParticipation:update"}}
  *     }
  * )
  * @ApiFilter("Unilend\Filter\ArrayFilter", properties={"roles"})
@@ -68,7 +74,7 @@ class ProjectParticipation
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"projectParticipation:list", "project:view"})
      */
     private $id;
 
@@ -80,7 +86,7 @@ class ProjectParticipation
      *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"projectParticipation:list", "projectParticipation:create", "projectParticipation:view"})
      */
     private $project;
 
@@ -92,7 +98,7 @@ class ProjectParticipation
      *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"project:list", "project:view", "projectParticipation:list"})
+     * @Groups({"project:list", "project:view", "projectParticipation:list", "projectParticipation:create", "projectParticipation:view"})
      */
     private $company;
 
@@ -101,7 +107,7 @@ class ProjectParticipation
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationContact", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"projectParticipation:list", "projectParticipation:view"})
      */
     private $projectParticipationContacts;
 
@@ -110,7 +116,7 @@ class ProjectParticipation
      *
      * @ORM\Column(type="integer", nullable=false, options={"default": 0})
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"projectParticipation:list", "projectParticipation:view"})
      */
     private $currentStatus = self::DEFAULT_STATUS;
 
@@ -126,16 +132,23 @@ class ProjectParticipation
      *
      * @ORM\OneToOne(targetEntity="ProjectParticipationFee", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"project:view", "projectParticipation:list"})
+     * @Groups({"project:view", "projectParticipation:list", "projectParticipation:create", "projectParticipation:view"})
      */
     private $projectParticipationFee;
+
+    /**
+     * @var ProjectParticipationOffer[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="ProjectParticipationOffer", mappedBy="projectParticipation")
+     */
+    private $projectParticipationOffers;
 
     /**
      * @var Money
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney", columnPrefix="invitation_")
      *
-     * @Groups({"project:view", "projectParticipation:list"})
+     * @Groups({"project:view", "projectParticipation:list", "projectParticipation:create", "projectParticipation:view", "projectParticipation:update"})
      */
     private $invitationMoney;
 
@@ -241,7 +254,7 @@ class ProjectParticipation
      */
     public function hasOffer(): bool
     {
-        return 0 < count($this->project->getProjectOffers(null, $this->company));
+        return 0 < count($this->projectParticipationOffers);
     }
 
     /**
@@ -249,17 +262,47 @@ class ProjectParticipation
      */
     public function hasValidatedOffer(): bool
     {
-        return 0 < count($this->project->getTrancheOffers([TrancheOffer::STATUS_ACCEPTED], $this->company));
+        return 0 < count(
+            $this->projectParticipationOffers->filter(
+                static function (ProjectParticipationOffer $participationOffer) {
+                    return $participationOffer->isAccepted();
+                }
+            )
+        );
     }
 
     /**
-     * @return ProjectOffer|null
+     * @return ArrayCollection|ProjectParticipationOffer[]
+     */
+    public function getProjectParticipationOffers()
+    {
+        return $this->projectParticipationOffers;
+    }
+
+    /**
+     * @return ProjectParticipationOffer|null
      *
      * @Groups({"project:view"})
      */
-    public function getProjectOffer(): ?ProjectOffer
+    public function getCurrentProjectParticipationOffer(): ?ProjectParticipationOffer
     {
-        return $this->project->getProjectOffers(null, $this->company)->last() ?: null;
+        return $this->projectParticipationOffers->last() ?: null;
+    }
+
+    /**
+     * @param ProjectParticipationOffer $projectOffer
+     *
+     * @return ProjectParticipation
+     */
+    public function setCurrentProjectParticipationOffer(ProjectParticipationOffer $projectOffer): ProjectParticipation
+    {
+        if ($this->getId() !== $projectOffer->getProjectParticipation()->getId()) {
+            throw new InvalidArgumentException('Invalid offer');
+        }
+
+        $this->projectParticipationOffers->add($projectOffer);
+
+        return $this;
     }
 
     /**
@@ -367,10 +410,36 @@ class ProjectParticipation
     }
 
     /**
-     * @return Money
+     * @return NullableMoney
      */
-    public function getInvitationMoney(): Money
+    public function getInvitationMoney(): NullableMoney
     {
         return $this->invitationMoney;
+    }
+
+    /**
+     * @param NullableMoney $nullableMoney
+     *
+     * @return NullableMoney
+     */
+    public function setInvitationMoney(NullableMoney $nullableMoney)
+    {
+        return $this->invitationMoney = $nullableMoney;
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return Money|null
+     */
+    public function getOfferMoney(): ?Money
+    {
+        if ($this->isOrganizer()) {
+            return $this->getInvitationMoney();
+        }
+
+        $projectOffer = $this->getCurrentProjectParticipationOffer();
+
+        return  $projectOffer ? $projectOffer->getOfferMoney() : null;
     }
 }

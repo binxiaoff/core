@@ -23,7 +23,7 @@ trait RoleableTrait
     /**
      * @return array
      *
-     * @Groups({"project:view"})
+     * @Groups({"project:view", "projectParticipation:create"})
      */
     public function getRoles(): array
     {

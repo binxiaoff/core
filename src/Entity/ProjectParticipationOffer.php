@@ -23,17 +23,24 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "read": false,
  *             "output": false,
  *         },
- *         "post": {
- *         }
+ *         "post"
+ *     },
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *         "patch": {"security": "is_granted('edit', object.getProjectParticipation().getProject())", "denormalization_context": {"groups": {"projectOffer:update"}}},
  *     }
  * )
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectOffer")
  *
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_lender"})})
+ * @ORM\Table
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class ProjectOffer
+class ProjectParticipationOffer
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
@@ -54,28 +61,16 @@ class ProjectOffer
     private $id;
 
     /**
-     * @var Companies
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_lender", referencedColumnName="id", nullable=false)
-     * })
-     *
-     * @Groups({"project:list"})
-     */
-    private $lender;
-
-    /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectOffers")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationOffers")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project", nullable=false)
+     *     @ORM\JoinColumn(name="id_project_participation", nullable=false)
      * })
      *
      * @Groups({"project:list"})
      */
-    private $project;
+    private $projectParticipation;
 
     /**
      * @var string
@@ -113,32 +108,29 @@ class ProjectOffer
     /**
      * @var TrancheOffer[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="TrancheOffer", mappedBy="projectOffer", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheOffer", mappedBy="projectParticipationOffer", cascade={"persist"}, orphanRemoval=true)
      */
     private $trancheOffers;
 
     /**
-     * @param Companies  $lender
-     * @param Project    $project
-     * @param Clients    $addedBy
-     * @param Money|null $offerMoney
-     * @param string     $committeeStatus
+     * @param ProjectParticipation $projectParticipation
+     * @param Clients              $addedBy
+     * @param Money|null           $offerMoney
+     * @param string               $committeeStatus
      *
      * @throws Exception
      */
     public function __construct(
-        Companies $lender,
-        Project $project,
+        ProjectParticipation $projectParticipation,
         Clients $addedBy,
         Money $offerMoney = null,
         string $committeeStatus = self::COMMITTEE_STATUS_PENDED
     ) {
-        $this->lender          = $lender;
-        $this->project         = $project;
-        $this->committeeStatus = $committeeStatus;
-        $this->trancheOffers   = new ArrayCollection();
-        $this->added           = new DateTimeImmutable();
-        $this->addedBy         = $addedBy;
+        $this->projectParticipation = $projectParticipation;
+        $this->committeeStatus      = $committeeStatus;
+        $this->trancheOffers        = new ArrayCollection();
+        $this->added                = new DateTimeImmutable();
+        $this->addedBy              = $addedBy;
 
         if ($offerMoney) {
             $this->setOfferMoney($offerMoney);
@@ -154,43 +146,11 @@ class ProjectOffer
     }
 
     /**
-     * @return Companies
+     * @return ProjectParticipation
      */
-    public function getLender(): Companies
+    public function getProjectParticipation(): ProjectParticipation
     {
-        return $this->lender;
-    }
-
-    /**
-     * @param Companies $lender
-     *
-     * @return ProjectOffer
-     */
-    public function setLender(Companies $lender): ProjectOffer
-    {
-        $this->lender = $lender;
-
-        return $this;
-    }
-
-    /**
-     * @return Project
-     */
-    public function getProject(): Project
-    {
-        return $this->project;
-    }
-
-    /**
-     * @param Project $project
-     *
-     * @return ProjectOffer
-     */
-    public function setProject(Project $project): ProjectOffer
-    {
-        $this->project = $project;
-
-        return $this;
+        return $this->projectParticipation;
     }
 
     /**
@@ -204,9 +164,9 @@ class ProjectOffer
     /**
      * @param string $committeeStatus
      *
-     * @return ProjectOffer
+     * @return ProjectParticipationOffer
      */
-    public function setCommitteeStatus(string $committeeStatus): ProjectOffer
+    public function setCommitteeStatus(string $committeeStatus): ProjectParticipationOffer
     {
         $this->committeeStatus = $committeeStatus;
 
@@ -224,9 +184,9 @@ class ProjectOffer
     /**
      * @param DateTimeImmutable $expectedCommitteeDate
      *
-     * @return ProjectOffer
+     * @return ProjectParticipationOffer
      */
-    public function setExpectedCommitteeDate(?DateTimeImmutable $expectedCommitteeDate): ProjectOffer
+    public function setExpectedCommitteeDate(?DateTimeImmutable $expectedCommitteeDate): ProjectParticipationOffer
     {
         $this->expectedCommitteeDate = $expectedCommitteeDate;
 
@@ -244,9 +204,9 @@ class ProjectOffer
     /**
      * @param string $comment
      *
-     * @return ProjectOffer
+     * @return ProjectParticipationOffer
      */
-    public function setComment(string $comment): ProjectOffer
+    public function setComment(string $comment): ProjectParticipationOffer
     {
         $this->comment = $comment;
 
@@ -264,11 +224,11 @@ class ProjectOffer
     /**
      * @param TrancheOffer $trancheOffer
      *
-     * @return ProjectOffer
+     * @return ProjectParticipationOffer
      */
-    public function addTrancheOffer(TrancheOffer $trancheOffer): ProjectOffer
+    public function addTrancheOffer(TrancheOffer $trancheOffer): ProjectParticipationOffer
     {
-        $trancheOffer->setProjectOffer($this);
+        $trancheOffer->setProjectParticipationOffer($this);
 
         if (false === $this->trancheOffers->contains($trancheOffer)) {
             $this->trancheOffers->add($trancheOffer);
@@ -294,13 +254,22 @@ class ProjectOffer
      */
     public function getOfferMoney(): Money
     {
-        $money = new Money($this->getProject()->getGlobalFundingMoney()->getCurrency());
+        $money = new Money($this->getProjectParticipation()->getProject()->getGlobalFundingMoney()->getCurrency());
 
         foreach ($this->getTrancheOffers() as $trancheOffer) {
             $money = $money->add($trancheOffer->getMoney());
         }
 
         return $money;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAccepted(): bool
+    {
+        // TODO replace afterwards
+        return true;
     }
 
     /**
@@ -312,10 +281,10 @@ class ProjectOffer
     {
         $this->getTrancheOffers()->clear();
 
-        $syndicatedMoney = $this->getProject()->getSyndicatedAmount();
+        $syndicatedMoney = $this->getProjectParticipation()->getProject()->getSyndicatedAmount();
         $remainderMoney  = clone $syndicatedMoney;
 
-        foreach ($this->getProject()->getTranches() as $tranche) {
+        foreach ($this->getProjectParticipation()->getProject()->getTranches() as $tranche) {
             $split          = $offerMoney->multiply($syndicatedMoney->divide($tranche->getMoney()));
             $remainderMoney = $remainderMoney->substract($split);
 

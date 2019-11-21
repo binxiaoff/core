@@ -21,9 +21,17 @@ class NullableMoney extends Money
      * @Assert\Type("numeric")
      * @Assert\Positive
      *
-     * @Groups({"project:create", "project:list", "project:view", "projectParticipation:list"})
+     * @Groups({
+     *     "project:create",
+     *     "project:list",
+     *     "project:view",
+     *     "projectParticipation:list",
+     *     "projectParticipation:create",
+     *     "projectParticipation:update",
+     *     "projectParticipation:view"
+     * })
      */
-    private $amount;
+    protected $amount;
 
     /**
      * 3 letter ISO 4217 code (Currency code).
@@ -34,21 +42,37 @@ class NullableMoney extends Money
      *
      * @Assert\Currency
      *
-     * @Groups({"project:create", "project:list", "project:view", "projectParticipation:list"})
+     * @Groups({
+     *     "project:create",
+     *     "project:list",
+     *     "project:view",
+     *     "projectParticipation:list",
+     *     "projectParticipation:create",
+     *     "projectParticipation:update",
+     *     "projectParticipation:view"
+     * })
      */
-    private $currency;
+    protected $currency;
 
     /**
-     * @param string|null $amount
      * @param string|null $currency
+     * @param string|null $amount
      */
-    public function __construct(?string $amount = null, ?string $currency = null)
+    public function __construct(?string $currency = null, ?string $amount = null)
     {
         $this->amount   = $amount;
         $this->currency = $currency;
 
         if ($amount && $currency) {
-            parent::__construct($amount, $currency);
+            parent::__construct($currency, $amount);
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValid(): bool
+    {
+        return $this->currency && $this->amount;
     }
 }

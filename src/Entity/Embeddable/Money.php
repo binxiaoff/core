@@ -23,9 +23,9 @@ class Money
      * @Assert\Type("numeric")
      * @Assert\Positive
      *
-     * @Groups({"project:create", "project:list", "project:view", "projectParticipation:list"})
+     * @Groups({"project:create", "project:list", "project:view", "projectParticipation:list", "projectParticipation:create"})
      */
-    private $amount;
+    protected $amount;
 
     /**
      * 3 letter ISO 4217 code (Currency code).
@@ -37,9 +37,9 @@ class Money
      * @Assert\NotBlank
      * @Assert\Currency
      *
-     * @Groups({"project:create", "project:list", "project:view", "projectParticipation:list"})
+     * @Groups({"project:create", "project:list", "project:view", "projectParticipation:list", "projectParticipation:create"})
      */
-    private $currency;
+    protected $currency;
 
     /**
      * @param string $currency

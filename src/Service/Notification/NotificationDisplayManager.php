@@ -121,7 +121,7 @@ class NotificationDisplayManager
                             '%projectUrl%'     => $this->router->generate('lender_project_details', ['hash' => $project->getHash()]),
                             '%projectTitle%'   => $project->getTitle(),
                             '%borrowerName%'   => $project->getBorrowerCompany()->getName(),
-                            '%offerMakerName%' => $trancheOffer->getProjectOffer()->getLender()->getName(),
+                            '%offerMakerName%' => $trancheOffer->getProjectParticipationOffer()->getProjectParticipation()->getCompany(),
                             '%offerAmount%'    => $this->currencyFormatterNoDecimal
                                 ->formatCurrency($trancheOffer->getMoney()->getAmount(), $trancheOffer->getMoney()->getCurrency()),
                         ]);

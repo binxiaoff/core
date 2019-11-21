@@ -78,6 +78,6 @@ class TrancheOfferVoter extends Voter
             return true;
         }
 
-        return null !== $trancheOffer->getProjectOffer()->getLender()->getStaff($user);
+        return null !== $trancheOffer->getProjectParticipationOffer()->getProjectParticipation()->getCompany()->getStaff($user);
     }
 }

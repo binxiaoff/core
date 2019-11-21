@@ -52,14 +52,14 @@ class TrancheOffer
     private $tranche;
 
     /**
-     * @var ProjectOffer
+     * @var ProjectParticipationOffer
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectOffer", inversedBy="trancheOffers")
+     * @ORM\ManyToOne(targetEntity="ProjectParticipationOffer", inversedBy="trancheOffers")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project_offer", nullable=false)
      * })
      */
-    private $projectOffer;
+    private $projectParticipationOffer;
 
     /**
      * @var string
@@ -96,31 +96,31 @@ class TrancheOffer
     private $trancheOfferFees;
 
     /**
-     * @param ProjectOffer     $projectOffer
-     * @param Tranche          $tranche
-     * @param Money            $money
-     * @param Clients          $addedby
-     * @param LendingRate|null $rate
-     * @param string           $status
+     * @param ProjectParticipationOffer $projectOffer
+     * @param Tranche                   $tranche
+     * @param Money                     $money
+     * @param Clients                   $addedby
+     * @param LendingRate|null          $rate
+     * @param string                    $status
      *
      * @throws Exception
      */
     public function __construct(
-        ProjectOffer $projectOffer,
+        ProjectParticipationOffer $projectOffer,
         Tranche $tranche,
         Money $money,
         Clients $addedby,
         LendingRate $rate = null,
         string $status = self::STATUS_PENDED
     ) {
-        $this->projectOffer     = $projectOffer;
-        $this->tranche          = $tranche;
-        $this->money            = $money;
-        $this->status           = $status;
-        $this->rate             = $rate ?? clone $tranche->getRate();
-        $this->trancheOfferFees = new ArrayCollection();
-        $this->added            = new DateTimeImmutable();
-        $this->addedBy          = $addedby;
+        $this->projectParticipationOffer = $projectOffer;
+        $this->tranche                   = $tranche;
+        $this->money                     = $money;
+        $this->status                    = $status;
+        $this->rate                      = $rate ?? clone $tranche->getRate();
+        $this->trancheOfferFees          = new ArrayCollection();
+        $this->added                     = new DateTimeImmutable();
+        $this->addedBy                   = $addedby;
     }
 
     /**
@@ -152,21 +152,21 @@ class TrancheOffer
     }
 
     /**
-     * @return ProjectOffer
+     * @return ProjectParticipationOffer
      */
-    public function getProjectOffer(): ProjectOffer
+    public function getProjectParticipationOffer(): ProjectParticipationOffer
     {
-        return $this->projectOffer;
+        return $this->projectParticipationOffer;
     }
 
     /**
-     * @param ProjectOffer $projectOffer
+     * @param ProjectParticipationOffer $projectOffer
      *
      * @return TrancheOffer
      */
-    public function setProjectOffer(ProjectOffer $projectOffer): TrancheOffer
+    public function setProjectParticipationOffer(ProjectParticipationOffer $projectOffer): TrancheOffer
     {
-        $this->projectOffer = $projectOffer;
+        $this->projectParticipationOffer = $projectOffer;
 
         return $this;
     }

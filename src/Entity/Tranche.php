@@ -503,12 +503,12 @@ class Tranche
     }
 
     /**
-     * @param array|null        $status
-     * @param ProjectOffer|null $projectOffer
+     * @param array|null                     $status
+     * @param ProjectParticipationOffer|null $projectOffer
      *
      * @return TrancheOffer[]|ArrayCollection
      */
-    public function getTrancheOffer(?array $status = null, ?ProjectOffer $projectOffer = null): iterable
+    public function getTrancheOffer(?array $status = null, ?ProjectParticipationOffer $projectOffer = null): iterable
     {
         $criteria = new Criteria();
 

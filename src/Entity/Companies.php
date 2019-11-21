@@ -88,6 +88,8 @@ class Companies
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     *
+     * @Groups({"project:view"})
      */
     private $id;
 

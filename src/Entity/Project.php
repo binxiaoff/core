@@ -402,13 +402,6 @@ class Project
     private $riskType;
 
     /**
-     * @var ArrayCollection|ProjectOffer
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectOffer", mappedBy="project", orphanRemoval=true, cascade={"persist"})
-     */
-    private $projectOffers;
-
-    /**
      * @var Collection|Tag[]
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\Tag", cascade={"persist"})
@@ -444,7 +437,6 @@ class Project
         $this->statuses                   = new ArrayCollection();
         $this->tranches                   = new ArrayCollection();
         $this->confidentialityAcceptances = new ArrayCollection();
-        $this->projectOffers              = new ArrayCollection();
         $this->tags                       = new ArrayCollection();
         $this->added                      = new DateTimeImmutable();
 
@@ -917,27 +909,6 @@ class Project
     }
 
     /**
-     * @param array|null     $status
-     * @param Companies|null $lender
-     *
-     * @return TrancheOffer[]|ArrayCollection
-     */
-    public function getTrancheOffers(?array $status = null, ?Companies $lender = null): ArrayCollection
-    {
-        $trancheOffers = [];
-        $projectOffer  = $this->getProjectOffers(null, $lender)->first();
-        if (false === $projectOffer) {
-            return new ArrayCollection();
-        }
-
-        foreach ($this->getTranches() as $tranche) {
-            array_push($trancheOffers, ...$tranche->getTrancheOffer($status, $projectOffer)->toArray());
-        }
-
-        return new ArrayCollection($trancheOffers);
-    }
-
-    /**
      * @return bool
      */
     public function isEditable(): bool
@@ -1224,22 +1195,6 @@ class Project
     }
 
     /**
-     * @throws Exception
-     *
-     * @return Money
-     */
-    public function getOffersMoney(): Money
-    {
-        $money = new Money($this->getGlobalFundingMoney()->getCurrency());
-
-        foreach ($this->getProjectOffers() as $projectOffer) {
-            $money->add($projectOffer->getOfferMoney());
-        }
-
-        return $money;
-    }
-
-    /**
      * @return Money
      *
      * @Groups({"projectParticipation:list"})
@@ -1345,6 +1300,22 @@ class Project
             },
             new Money('EUR')
         );
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return Money
+     */
+    public function getOffersMoney(): Money
+    {
+        $money = new Money($this->getGlobalFundingMoney()->getCurrency());
+
+        foreach ($this->getProjectParticipations() as $projectParticipation) {
+            $money = $projectParticipation->getOfferMoney() ? $money->add($projectParticipation->getOfferMoney()) : $money;
+        }
+
+        return $money;
     }
 
     /**
