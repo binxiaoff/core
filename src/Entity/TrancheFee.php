@@ -7,7 +7,10 @@ namespace Unilend\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Fee;
 use Unilend\Entity\Traits\TimestampableTrait;
@@ -48,6 +51,8 @@ class TrancheFee
      * @Gedmo\Versioned
      *
      * @Assert\Valid
+     *
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     private $fee;
 
@@ -60,6 +65,10 @@ class TrancheFee
      * })
      *
      * @Assert\Valid
+     *
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     *
+     * @MaxDepth(1)
      */
     private $tranche;
 
@@ -67,7 +76,7 @@ class TrancheFee
      * @param Tranche $tranche
      * @param Fee     $fee
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(Tranche $tranche, Fee $fee)
     {

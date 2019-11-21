@@ -14,6 +14,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Ramsey\Uuid\Uuid;
 use RuntimeException;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\Embeddable\Money;
@@ -118,6 +119,8 @@ class Project
      *
      * @Assert\NotBlank
      * @Assert\Valid
+     *
+     * @MaxDepth(1)
      */
     private $borrowerCompany;
 
@@ -324,8 +327,6 @@ class Project
      * @var ProjectConfidentialityAcceptance[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectConfidentialityAcceptance", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
-     *
-     * @Groups({"project:view"})
      */
     private $confidentialityAcceptances;
 
@@ -775,13 +776,13 @@ class Project
     }
 
     /**
-     * @Groups({"project:list"})
-     *
      * @throws Exception
      *
      * @return ProjectParticipation|null
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:list", "projectParticipation:list"})
+     *
+     * @MaxDepth(1)
      */
     public function getArranger(): ?ProjectParticipation
     {
@@ -832,6 +833,8 @@ class Project
      * @Groups({"project:list", "project:view"})
      *
      * @return ProjectParticipation[]|ArrayCollection
+     *
+     * @MaxDepth(2)
      */
     public function getParticipants(): iterable
     {
@@ -850,6 +853,8 @@ class Project
      * @return array|ProjectParticipation
      *
      * @Groups({"project:view"})
+     *
+     * @MaxDepth(2)
      */
     public function getOrganizers(): array
     {
@@ -1281,8 +1286,6 @@ class Project
     }
 
     /**
-     * TODO Remove when done by another ticket.
-     *
      * @return Money
      *
      * @Groups({"projectParticipation:list"})

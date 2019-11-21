@@ -13,6 +13,7 @@ use DomainException;
 use Exception;
 use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Unilend\Entity\Embeddable\{Money, NullableMoney, Permission};
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
 use Unilend\Service\User\RealUserFinder;
@@ -30,7 +31,7 @@ use Unilend\Service\User\RealUserFinder;
  *     }
  * )
  * @ApiFilter("Unilend\Filter\ArrayFilter", properties={"roles"})
- * @ApiFilter("Unilend\Filter\CountFilter", properties={"project.projectOffers"})
+ * @ApiFilter("Unilend\Filter\CountFilter", properties={"project.projectParticipations.projectParticipationOffers"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status"})
  *
@@ -87,6 +88,8 @@ class ProjectParticipation
      * })
      *
      * @Groups({"projectParticipation:list", "projectParticipation:create", "projectParticipation:view"})
+     *
+     * @MaxDepth(1)
      */
     private $project;
 
@@ -107,7 +110,7 @@ class ProjectParticipation
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationContact", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"projectParticipation:list", "projectParticipation:view"})
+     * @Groups({"projectParticipation:view"})
      */
     private $projectParticipationContacts;
 

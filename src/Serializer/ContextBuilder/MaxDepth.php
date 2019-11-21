@@ -8,7 +8,7 @@ use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
-class SkipNullValue implements SerializerContextBuilderInterface
+class MaxDepth implements SerializerContextBuilderInterface
 {
     /**
      * @var SerializerContextBuilderInterface
@@ -36,7 +36,6 @@ class SkipNullValue implements SerializerContextBuilderInterface
     {
         $context = $this->decorated->createFromRequest($request, $normalization, $extractedAttributes);
 
-        $context[AbstractObjectNormalizer::SKIP_NULL_VALUES] = false;
         $context[AbstractObjectNormalizer::ENABLE_MAX_DEPTH] = true;
 
         return $context;
