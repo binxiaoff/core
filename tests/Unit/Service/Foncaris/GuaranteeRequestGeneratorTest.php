@@ -221,7 +221,7 @@ class GuaranteeRequestGeneratorTest extends TestCase
         $project = $this->prophesize(Project::class);
         $project->getId()->willReturn(1);
         $project->getBorrowerCompany()->willReturn($borrowerCompany);
-        $project->getTranches()->willReturn([new Tranche(new Money(Miscellaneous::currencyCode(), (string) Base::randomDigitNotNull()))]);
+        $project->getTranches()->willReturn([new Tranche($project->reveal(), new Money(Miscellaneous::currencyCode(), (string) Base::randomDigitNotNull()))]);
         $project->getSubmitterCompany()->willReturn($borrowerCompany);
         $project->getSubmitterClient()->willReturn(new Clients());
         $project = $project->reveal();
