@@ -6,6 +6,7 @@ namespace Unilend\Test\Unit\Service\Foncaris;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Faker\Provider\Base;
 use Faker\Provider\Miscellaneous;
 use League\Flysystem\FileExistsException;
@@ -207,6 +208,8 @@ class GuaranteeRequestGeneratorTest extends TestCase
     }
 
     /**
+     * @throws Exception
+     *
      * @return FoncarisRequest
      */
     protected function createFoncarisRequest(): FoncarisRequest
