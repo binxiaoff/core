@@ -176,6 +176,7 @@ class ProjectParticipation
         $this->company                      = $company;
         $this->project                      = $project;
         $this->invitationMoney              = $invitationMoney ?? new NullableMoney();
+        $this->projectParticipationOffers   = new ArrayCollection();
     }
 
     /**
@@ -413,11 +414,11 @@ class ProjectParticipation
     }
 
     /**
-     * @return NullableMoney
+     * @return NullableMoney|null
      */
-    public function getInvitationMoney(): NullableMoney
+    public function getInvitationMoney(): ?NullableMoney
     {
-        return $this->invitationMoney;
+        return $this->invitationMoney->isValid() ? $this->invitationMoney : null;
     }
 
     /**
@@ -437,10 +438,6 @@ class ProjectParticipation
      */
     public function getOfferMoney(): ?Money
     {
-        if ($this->isOrganizer()) {
-            return $this->getInvitationMoney();
-        }
-
         $projectOffer = $this->getCurrentProjectParticipationOffer();
 
         return  $projectOffer ? $projectOffer->getOfferMoney() : null;

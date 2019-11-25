@@ -69,7 +69,7 @@ class ProjectStatus implements StatusInterface
      *
      * @ORM\Column(type="smallint")
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"projectParticipation:list", "project:view"})
      */
     private $status;
 

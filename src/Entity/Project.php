@@ -460,6 +460,10 @@ class Project
                 $this->hash = md5(uniqid('', false));
             }
         }
+
+        $arranger = new ProjectParticipation($submitter, $submitter->getCompany(), $this);
+        $arranger->addRoles([ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER]);
+        $this->projectParticipations->add($arranger);
     }
 
     /**
