@@ -28,21 +28,20 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "post": {"denormalization_context": {"groups": {"project:create"}}}
  *     },
  *     itemOperations={
- *         "get": {"security": "is_granted('view', object)", "normalization_context": {"groups": {"project:view"}}},
- *         "put": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"project:update"}}},
- *         "patch": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"project:update"}}}
- *     }
- * )
+ *         "get": {"security": "is_granted('view', object)", "normalization_context": {"groups": {"project:view", "tranche_project:view"}}},
+ *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)", "denormalization_context": {"groups": {"project:update"}}},
+ *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)", "denormalization_context": {"groups": {"project:update"}}}
+ *     )
  *
- * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
+ *     @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  *
- * @ORM\Table(indexes={
- *     @ORM\Index(name="hash", columns={"hash"})
- * })
- * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectRepository")
- * @ORM\HasLifecycleCallbacks
+ *     @ORM\Table(indexes={
+ *         @ORM\Index(name="hash", columns={"hash"})
+ *     })
+ *     @ORM\Entity(repositoryClass="Unilend\Repository\ProjectRepository")
+ *     @ORM\HasLifecycleCallbacks
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProject")
+ *     @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProject")
  *
  * @method ProjectStatus getCurrentStatus
  */
@@ -1160,7 +1159,7 @@ class Project
         $money = new Money($this->getGlobalFundingMoney()->getCurrency());
 
         foreach ($this->getTranches() as $tranche) {
-            $money->add($tranche->getMoney());
+            $money = $money->add($tranche->getMoney());
         }
 
         return $money;

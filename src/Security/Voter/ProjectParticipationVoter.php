@@ -13,6 +13,8 @@ use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 class ProjectParticipationVoter extends Voter
 {
     public const ATTRIBUTE_REFUSE = 'refuse';
+    public const ATTRIBUTE_BID    = 'bid';
+
     /**
      * @var ProjectParticipationManager
      */
@@ -38,7 +40,7 @@ class ProjectParticipationVoter extends Voter
      */
     protected function supports($attribute, $subject): bool
     {
-        return $attribute === static::ATTRIBUTE_REFUSE && $subject instanceof ProjectParticipation;
+        return in_array($attribute, [static::ATTRIBUTE_REFUSE, static::ATTRIBUTE_BID], true) && $subject instanceof ProjectParticipation;
     }
 
     /**
@@ -59,6 +61,13 @@ class ProjectParticipationVoter extends Voter
             return false;
         }
 
+        switch ($attribute) {
+            case static::ATTRIBUTE_REFUSE:
+                return $this->canRefuse($subject);
+            case static::ATTRIBUTE_BID:
+                return $this->canBid($subject);
+        }
+
         return $this->canRefuse($subject);
     }
 
@@ -70,5 +79,15 @@ class ProjectParticipationVoter extends Voter
     private function canRefuse(ProjectParticipation $participation): bool
     {
         return false === $participation->isOrganizer();
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     *
+     * @return bool
+     */
+    private function canBid(ProjectParticipation $projectParticipation)
+    {
+        return $projectParticipation->isArranger() || $projectParticipation->isParticipant();
     }
 }

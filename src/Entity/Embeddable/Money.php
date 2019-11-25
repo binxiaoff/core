@@ -93,18 +93,15 @@ class Money
      *
      * @return Money
      */
-    public function divide($divisor)
+    public function divide(Money $divisor)
     {
-        if ($divisor instanceof Money) {
-            if ($divisor->getCurrency() !== $this->getCurrency()) {
-                throw new DifferentCurrencyException($this, $divisor);
-            }
-            $divisor = $divisor->getAmount();
+        if ($divisor->getCurrency() !== $this->getCurrency()) {
+            throw new DifferentCurrencyException($this, $divisor);
         }
 
         return new Money(
             $this->currency,
-            bcdiv($this->amount, (string) $divisor, 2)
+            $this->round(bcdiv($this->amount, (string) $divisor->getAmount(), 4))
         );
     }
 
@@ -115,16 +112,13 @@ class Money
      */
     public function multiply($factor)
     {
-        if ($factor instanceof Money) {
-            if ($factor->getCurrency() !== $this->getCurrency()) {
-                throw new DifferentCurrencyException($this, $factor);
-            }
-            $factor = $factor->getAmount();
+        if ($factor->getCurrency() !== $this->getCurrency()) {
+            throw new DifferentCurrencyException($this, $factor);
         }
 
         return new Money(
             $this->currency,
-            bcdiv($this->amount, (string) $factor, 2)
+            $this->round(bcmul($this->amount, $factor->getAmount(), 4))
         );
     }
 
@@ -141,7 +135,17 @@ class Money
 
         return new Money(
             $this->currency,
-            bcadd($this->amount, $subtrahend->amount, 2)
+            bcsub($this->amount, $subtrahend->amount, 2)
         );
+    }
+
+    /**
+     * @param string $number
+     *
+     * @return string
+     */
+    private function round(string $number): string
+    {
+        return (string) round((float) $number, 2);
     }
 }

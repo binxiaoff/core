@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
@@ -19,7 +18,6 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *     attributes={"pagination_enabled": false},
  *     collectionOperations={
  *         "get",
- *         "post",
  *         "autocomplete": {
  *             "method": "get",
  *             "path": "/companies/autocomplete/{term}",

@@ -170,17 +170,17 @@ class LendingRate
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getFloorType(): string
+    public function getFloorType(): ?string
     {
         return $this->floorType;
     }
 
     /**
-     * @param string $floorType
+     * @param string|null $floorType
      */
-    public function setFloorType(string $floorType): void
+    public function setFloorType(?string $floorType): void
     {
         $this->floorType = $floorType;
     }

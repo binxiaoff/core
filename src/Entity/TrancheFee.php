@@ -17,7 +17,10 @@ use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * @ApiResource
+ * @ApiResource(
+ *     itemOperations={
+ *         "get": {"security": "is_granted('view', object.getTranche().getProject())"}
+ *     }
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks

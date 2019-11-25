@@ -37,7 +37,6 @@ class SkipNullValue implements SerializerContextBuilderInterface
         $context = $this->decorated->createFromRequest($request, $normalization, $extractedAttributes);
 
         $context[AbstractObjectNormalizer::SKIP_NULL_VALUES] = false;
-        $context[AbstractObjectNormalizer::ENABLE_MAX_DEPTH] = true;
 
         return $context;
     }

@@ -23,7 +23,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "read": false,
  *             "output": false,
  *         },
- *         "post"
+ *         "post": {"security_post_denormalize": "is_granted('bid', this.getProjectParticipation())"}
  *     },
  *     itemOperations={
  *         "get": {
@@ -281,7 +281,7 @@ class ProjectParticipationOffer
     {
         $this->getTrancheOffers()->clear();
 
-        $syndicatedMoney = $this->getProjectParticipation()->getProject()->getSyndicatedAmount();
+        $syndicatedMoney = $this->getProjectParticipation()->getProject()->getTranchesTotalMoney();
         $remainderMoney  = clone $syndicatedMoney;
 
         foreach ($this->getProjectParticipation()->getProject()->getTranches() as $tranche) {
