@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity
@@ -24,6 +25,8 @@ class Tag
      * @var string
      *
      * @ORM\Column
+     *
+     * @Groups({"project:view", "project:update"})
      */
     private $label;
 

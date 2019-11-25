@@ -407,7 +407,7 @@ class Project
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\Tag", cascade={"persist"})
      *
-     * @Groups({"project:view"})
+     * @Groups({"project:view", "project:update"})
      */
     private $tags;
 
@@ -419,7 +419,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"project:view", "projectParticipation:list"})
+     * @Groups({"project:view", "project:update", "projectParticipation:list"})
      */
     private $globalFundingMoney;
 
@@ -1144,59 +1144,6 @@ class Project
         $this->tags->removeElement($tag);
 
         return $this;
-    }
-
-    /**
-     * @param ProjectOffer $projectOffer
-     *
-     * @return Project
-     */
-    public function addProjectOffer(ProjectOffer $projectOffer): Project
-    {
-        $projectOffer->setProject($this);
-
-        if (false === $this->projectOffers->contains($projectOffer)) {
-            $this->projectOffers->add($projectOffer);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param ProjectOffer $projectOffer
-     *
-     * @return Project
-     */
-    public function removeProjectOffer(ProjectOffer $projectOffer): Project
-    {
-        if ($this->projectOffers->contains($projectOffer)) {
-            $this->projectOffers->removeElement($projectOffer);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"project:list"})
-     *
-     * @param array|null     $committeeStatus
-     * @param Companies|null $lender
-     *
-     * @return ArrayCollection|ProjectOffer[]
-     */
-    public function getProjectOffers(?array $committeeStatus = null, ?Companies $lender = null): ArrayCollection
-    {
-        $criteria = new Criteria();
-
-        if (null !== $committeeStatus) {
-            $criteria->andWhere(Criteria::expr()->in('committeeStatus', $committeeStatus));
-        }
-
-        if (null !== $lender) {
-            $criteria->andWhere(Criteria::expr()->eq('lender', $lender));
-        }
-
-        return $this->projectOffers->matching($criteria);
     }
 
     /**
