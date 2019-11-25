@@ -211,6 +211,8 @@ class Project
     private $confidentialityDisclaimer;
 
     /**
+     * Date limite de réponse de la contrepartie (borrowerCompany).
+     *
      * @var DateTimeImmutable
      *
      * @ORM\Column(type="date_immutable", nullable=true)
@@ -224,6 +226,8 @@ class Project
     private $replyDeadline;
 
     /**
+     * Date de la fin de la syndication.
+     *
      * @var DateTimeImmutable
      *
      * @ORM\Column(type="date_immutable", nullable=true)
@@ -237,6 +241,8 @@ class Project
     private $expectedClosingDate;
 
     /**
+     * Date de fin de collection des offres participant.
+     *
      * @var DateTimeImmutable
      *
      * @ORM\Column(type="date_immutable", nullable=true)
@@ -411,6 +417,8 @@ class Project
      *
      * @Assert\NotBlank
      * @Assert\Valid
+     *
+     * @Groups({"projectParticipation:list"})
      */
     private $globalFundingMoney;
 
@@ -1339,6 +1347,8 @@ class Project
 
     /**
      * @return Money
+     *
+     * @Groups({"projectParticipation:list"})
      */
     public function getTranchesTotalMoney(): Money
     {
