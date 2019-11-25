@@ -19,10 +19,10 @@ use Unilend\Traits\ConstantsAwareTrait;
 /**
  * @ApiResource(
  *     collectionOperations={
- * "post": {"denormalization_context": {"groups": "tranche:create"}},
+ *         "post": {"denormalization_context": {"groups": "tranche:create"}},
  *     },
  *     itemOperations={
- * "get",
+ *         "get",
  *         "put": {"denormalization_context": {"groups": "tranche:update"}}
  *     }
  * )
@@ -139,14 +139,9 @@ class Tranche
      *
      * @var int
      *
-     * @ORM\Column(type="smallint")
-     *
-     * @Assert\GreaterThanOrEqual(1)
-     * @Assert\NotBlank
+     * @ORM\Column(type="smallint", nullable=true)
      *
      * @Gedmo\Versioned
-     *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     private $capitalPeriodicity;
 
@@ -155,14 +150,9 @@ class Tranche
      *
      * @var int
      *
-     * @ORM\Column(type="smallint")
-     *
-     * @Assert\GreaterThanOrEqual(1)
-     * @Assert\NotBlank
+     * @ORM\Column(type="smallint", nullable=true)
      *
      * @Gedmo\Versioned
-     *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     private $interestPeriodicity;
 

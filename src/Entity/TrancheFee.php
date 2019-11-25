@@ -73,16 +73,14 @@ class TrancheFee
     private $tranche;
 
     /**
-     * @param Tranche $tranche
-     * @param Fee     $fee
+     * @param Fee $fee
      *
      * @throws Exception
      */
-    public function __construct(Tranche $tranche, Fee $fee)
+    public function __construct(Fee $fee)
     {
-        $this->fee     = $fee;
-        $this->tranche = $tranche;
-        $this->added   = new DateTimeImmutable();
+        $this->fee   = $fee;
+        $this->added = new DateTimeImmutable();
     }
 
     /**
