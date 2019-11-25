@@ -419,7 +419,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"project:view", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:view", "project:update", "projectParticipation:list"})
      */
     private $globalFundingMoney;
 
