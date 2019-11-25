@@ -36,12 +36,14 @@ class ListExtension implements QueryCollectionExtensionInterface
         }
         /** @var Clients $user */
         $user = $this->security->getUser();
+        if (!$user instanceof Clients) {
+            return;
+        }
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
-
         $queryBuilder
             ->leftJoin("{$rootAlias}.projectParticipationContacts", 'ppc')
-            ->where('ppc.client = :client')
+            ->andWhere('ppc.client = :client')
             ->setParameter('client', $user)
         ;
     }

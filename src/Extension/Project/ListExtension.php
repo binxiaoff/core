@@ -36,14 +36,17 @@ class ListExtension implements QueryCollectionExtensionInterface
         }
 
         /** @var Clients $user */
-        $user      = $this->security->getUser();
+        $user = $this->security->getUser();
+        if (!$user instanceof Clients) {
+            return;
+        }
+
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
             ->innerJoin($rootAlias . '.currentStatus', 'cpsh')
-            ->where($rootAlias . '.submitterCompany = :company')
             ->leftJoin($rootAlias . '.projectParticipations', 'pp')
             ->leftJoin('pp.projectParticipationContacts', 'pc')
-            ->orWhere('cpsh.status IN (:activeStatus) AND pc.client = :client')
+            ->andWhere($rootAlias . '.submitterClient = :client or ' . $rootAlias . '.submitterCompany = :company or cpsh.status IN (:activeStatus) AND pc.client = :client')
             ->setParameters([
                 'company'      => $user->getCompany(),
                 'activeStatus' => ProjectStatus::DISPLAYABLE_STATUS,
