@@ -21,6 +21,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object.getTranche().getProject())"}
  *     }
+ * )
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks

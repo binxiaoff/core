@@ -440,4 +440,18 @@ class ProjectParticipation
 
         return  $projectOffer ? $projectOffer->getOfferMoney() : null;
     }
+
+    /**
+     * @return bool
+     */
+    public function isBiddable(): bool
+    {
+        foreach ([static::DUTY_PROJECT_PARTICIPATION_ARRANGER, static::DUTY_PROJECT_PARTICIPATION_PARTICIPANT] as $role) {
+            if (in_array($role, $this->roles, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

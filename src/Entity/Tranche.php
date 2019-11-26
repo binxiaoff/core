@@ -25,12 +25,13 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "get": {"security": "is_granted('view', object.getProject())"},
  *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())", "denormalization_context": {"groups": {"tranche:update", "project:view"}}},
  *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())", "denormalization_context": {"groups": {"tranche:update", "project:view"}}}
- *     )
+ *     }
+ * )
  *
- *     @ORM\Entity(repositoryClass="Unilend\Repository\TrancheRepository")
- *     @ORM\HasLifecycleCallbacks
+ * @ORM\Entity(repositoryClass="Unilend\Repository\TrancheRepository")
+ * @ORM\HasLifecycleCallbacks
  *
- *     @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedTranche")
+ * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedTranche")
  *
  * Short explanations about loan facilities can be found at https://www.translegal.com/lesson/3263
  */

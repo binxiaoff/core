@@ -99,7 +99,7 @@ class TrancheOffer
      * @param ProjectParticipationOffer $projectOffer
      * @param Tranche                   $tranche
      * @param Money                     $money
-     * @param Clients                   $addedby
+     * @param Clients                   $addedBy
      * @param LendingRate|null          $rate
      * @param string                    $status
      *
@@ -109,7 +109,7 @@ class TrancheOffer
         ProjectParticipationOffer $projectOffer,
         Tranche $tranche,
         Money $money,
-        Clients $addedby,
+        Clients $addedBy,
         LendingRate $rate = null,
         string $status = self::STATUS_PENDED
     ) {
@@ -120,7 +120,7 @@ class TrancheOffer
         $this->rate                      = $rate ?? clone $tranche->getRate();
         $this->trancheOfferFees          = new ArrayCollection();
         $this->added                     = new DateTimeImmutable();
-        $this->addedBy                   = $addedby;
+        $this->addedBy                   = $addedBy;
     }
 
     /**

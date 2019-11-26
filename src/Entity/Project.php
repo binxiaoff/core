@@ -31,17 +31,18 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "get": {"security": "is_granted('view', object)", "normalization_context": {"groups": {"project:view", "tranche_project:view"}}},
  *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)", "denormalization_context": {"groups": {"project:update"}}},
  *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)", "denormalization_context": {"groups": {"project:update"}}}
- *     )
+ *     }
+ * )
  *
- *     @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
+ * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  *
- *     @ORM\Table(indexes={
- *         @ORM\Index(name="hash", columns={"hash"})
- *     })
- *     @ORM\Entity(repositoryClass="Unilend\Repository\ProjectRepository")
- *     @ORM\HasLifecycleCallbacks
+ * @ORM\Table(indexes={
+ *     @ORM\Index(name="hash", columns={"hash"})
+ * })
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectRepository")
+ * @ORM\HasLifecycleCallbacks
  *
- *     @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProject")
+ * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProject")
  *
  * @method ProjectStatus getCurrentStatus
  */
@@ -297,7 +298,7 @@ class Project
     /**
      * @var ProjectParticipation[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
      */
     private $projectParticipations;
 
@@ -1152,7 +1153,7 @@ class Project
     /**
      * @return Money
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:list", "projectParticipation:list"})
      */
     public function getTranchesTotalMoney(): Money
     {
@@ -1259,6 +1260,8 @@ class Project
      * @throws Exception
      *
      * @return Money
+     *
+     * @Groups({"project:list"})
      */
     public function getOffersMoney(): Money
     {
