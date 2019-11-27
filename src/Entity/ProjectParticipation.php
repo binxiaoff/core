@@ -10,7 +10,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
 use Exception;
-use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Unilend\Entity\Embeddable\{Money, NullableMoney, Permission};
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
@@ -20,12 +19,16 @@ use Unilend\Service\User\RealUserFinder;
  * @ApiResource(
  *     collectionOperations={
  *         "get": {"normalization_context": {"groups": "projectParticipation:list"}},
- *         "post": {"denormalization_context": {"groups": "projectParticipation:create"}}
+ *         "post": {"denormalization_context": {"groups": "projectParticipation:create"}, "normalization_context": {"groups": "projectParticipation:view"}}
  *     },
  *     itemOperations={
  *         "get": {"normalization_context": {"groups": "projectParticipation:view"}},
  *         "delete": {"security": "is_granted('edit', object.getProject())"},
- *         "patch": {"security": "is_granted('edit', object.getProject())", "denormalization_context": {"groups": "projectParticipation:update"}}
+ *         "patch": {
+ *             "security": "is_granted('edit', object.getProject())",
+ *             "normalization_context": {"groups": "projectParticipation:view"},
+ *             "denormalization_context": {"groups": "projectParticipation:update"}
+ *         }
  *     }
  * )
  * @ApiFilter("Unilend\Filter\ArrayFilter", properties={"roles"})
@@ -282,32 +285,6 @@ class ProjectParticipation
     }
 
     /**
-     * @return ProjectParticipationOffer|null
-     *
-     * @Groups({"project:view"})
-     */
-    public function getCurrentProjectParticipationOffer(): ?ProjectParticipationOffer
-    {
-        return $this->projectParticipationOffers->last() ?: null;
-    }
-
-    /**
-     * @param ProjectParticipationOffer $projectOffer
-     *
-     * @return ProjectParticipation
-     */
-    public function setCurrentProjectParticipationOffer(ProjectParticipationOffer $projectOffer): ProjectParticipation
-    {
-        if ($this->getId() !== $projectOffer->getProjectParticipation()->getId()) {
-            throw new InvalidArgumentException('Invalid offer');
-        }
-
-        $this->projectParticipationOffers->add($projectOffer);
-
-        return $this;
-    }
-
-    /**
      * @Groups({"project:list"})
      *
      * @return bool
@@ -436,9 +413,13 @@ class ProjectParticipation
      */
     public function getOfferMoney(): ?Money
     {
-        $projectOffer = $this->getCurrentProjectParticipationOffer();
+        $money = new Money($this->getProject()->getGlobalFundingMoney()->getCurrency());
 
-        return  $projectOffer ? $projectOffer->getOfferMoney() : null;
+        foreach ($this->getProjectParticipationOffers() as $projectParticipationOffer) {
+            $money = $money->add($projectParticipationOffer->getOfferMoney());
+        }
+
+        return $money;
     }
 
     /**
