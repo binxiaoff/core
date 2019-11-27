@@ -58,7 +58,7 @@ class Companies
     private $status;
 
     /**
-     * TODO Remove project:update group when autocomplete is done
+     * TODO Remove project:update group when autocomplete is done.
      *
      * @var string
      *
