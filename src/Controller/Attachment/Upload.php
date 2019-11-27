@@ -52,7 +52,6 @@ class Upload
         }
 
         $type = $request->request->get('type');
-        $type = $type ? $this->converter->getItemFromIri($type) : null;
 
         $company = $request->request->get('company');
         $company = $company ? $this->converter->getItemFromIri($company) : null;

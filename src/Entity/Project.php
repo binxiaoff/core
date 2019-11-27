@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource, ApiSubresource};
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\{NumericFilter, SearchFilter};
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria, ExpressionBuilder};
+use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -35,6 +35,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
+ * @ApiFilter(SearchFilter::class, properties={"attachments.type"})
  *
  * @ORM\Table(indexes={
  *     @ORM\Index(name="hash", columns={"hash"})
@@ -292,6 +293,13 @@ class Project
     private $projectAttachments;
 
     /**
+     * @var Attachment[]|ArrayCollection
+     *
+     * @ApiSubresource
+     */
+    private $attachments;
+
+    /**
      * @var ProjectParticipation[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
@@ -431,6 +439,7 @@ class Project
      */
     public function __construct(Clients $submitter, Companies $borrowerCompany, Money $globalFundingMoney)
     {
+        $this->attachments                = new ArrayCollection();
         $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipations      = new ArrayCollection();
         $this->comments                   = new ArrayCollection();
@@ -737,36 +746,6 @@ class Project
     public static function getOfferVisibilities(): iterable
     {
         return self::getConstants('OFFER_VISIBILITY_');
-    }
-
-    /**
-     * @return Attachment[]
-     */
-    public function getProjectAttachments(): iterable
-    {
-        return $this->projectAttachments;
-    }
-
-    /**
-     * @param AttachmentType $type
-     *
-     * @return ArrayCollection|Collection
-     */
-    public function getAttachmentByAttachmentType(AttachmentType $type): Collection
-    {
-        return $this->projectAttachments->matching(
-            (new Criteria())->where((new ExpressionBuilder())->eq('type', $type))
-        );
-    }
-
-    /**
-     * @param ProjectAttachmentType $projectType
-     *
-     * @return ArrayCollection|Collection
-     */
-    public function getAttachmentByProjectAttachmentType(ProjectAttachmentType $projectType)
-    {
-        return $this->getAttachmentByAttachmentType($projectType->getAttachmentType());
     }
 
     /**
@@ -1409,6 +1388,22 @@ class Project
             ['name' => 'invitations', 'done' => 0 < count($this->getProjectParticipations())],
             ['name' => 'tranches', 'done' => 0 < count($this->getTranches())],
         ];
+    }
+
+    /**
+     * @return ArrayCollection|Attachment[]
+     */
+    public function getAttachments()
+    {
+        return $this->attachments;
+    }
+
+    /**
+     * @param ArrayCollection|Attachment[] $attachments
+     */
+    public function setAttachments($attachments): void
+    {
+        $this->attachments = $attachments;
     }
 
     /**

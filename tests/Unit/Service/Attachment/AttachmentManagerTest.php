@@ -6,6 +6,7 @@ namespace Unilend\Test\Unit\Service\Attachment;
 
 use DateTimeInterface;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Exception;
 use Faker\Provider\Base;
 use League\Flysystem\{FileExistsException, FileNotFoundException, FilesystemInterface};
 use PHPUnit\Framework\TestCase;
@@ -14,7 +15,7 @@ use Prophecy\Prophecy\{ObjectProphecy, ProphecySubjectInterface};
 use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies};
+use Unilend\Entity\{Attachment, Clients, Companies};
 use Unilend\Repository\AttachmentRepository;
 use Unilend\Service\Attachment\AttachmentManager;
 use Unilend\Service\FileSystem\FileUploadManager;
@@ -50,9 +51,9 @@ class AttachmentManagerTest extends TestCase
      *
      * @dataProvider uploadDataProvider
      *
-     * @param AttachmentType|null $type
-     * @param Companies|null      $companyOwner
-     * @param string|null         $description
+     * @param string         $type
+     * @param Companies|null $companyOwner
+     * @param string|null    $description
      *
      * @throws FileExistsException
      * @throws ORMException
@@ -60,7 +61,7 @@ class AttachmentManagerTest extends TestCase
      * @throws ReflectionException
      */
     public function testUpload(
-        ?AttachmentType $type = null,
+        string $type,
         ?Companies $companyOwner = null,
         ?string $description = null
     ): void {
@@ -102,16 +103,17 @@ class AttachmentManagerTest extends TestCase
     }
 
     /**
+     * @throws Exception
+     *
      * @return array
      */
     public function uploadDataProvider(): array
     {
         return [
-            'no optionnal parameter'   => [],
-            'type'                     => [new AttachmentType()],
-            'companyOwner'             => [null, new Companies('test')],
-            'description'              => [null, null, Base::randomLetter()],
-            'all optionnal parameters' => [new AttachmentType(), new Companies('test'), Base::randomLetter()],
+            'type'                     => [Base::randomLetter()],
+            'companyOwner'             => [Base::randomLetter(), new Companies('test')],
+            'description'              => [Base::randomLetter(), null, Base::randomLetter()],
+            'all optionnal parameters' => [Base::randomLetter(), new Companies('test'), Base::randomLetter()],
         ];
     }
 
@@ -120,10 +122,11 @@ class AttachmentManagerTest extends TestCase
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws Exception
      */
     public function testLogDownload(): void
     {
-        $attachment = new Attachment('test', new Clients());
+        $attachment = new Attachment('test', 'someType', new Clients());
 
         $attachmentManager = $this->createTestObject();
 
@@ -140,7 +143,7 @@ class AttachmentManagerTest extends TestCase
      */
     public function testRead(): void
     {
-        $attachment = new Attachment('test', new Clients());
+        $attachment = new Attachment('test', 'someType', new Clients());
 
         $attachmentManager = $this->createTestObject();
         $attachmentManager->read($attachment);

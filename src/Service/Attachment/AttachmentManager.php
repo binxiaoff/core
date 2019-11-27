@@ -7,12 +7,13 @@ namespace Unilend\Service\Attachment;
 use DateTimeImmutable;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Exception;
 use InvalidArgumentException;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\FilesystemInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, ProjectAttachment};
+use Unilend\Entity\{Attachment, Clients, Companies};
 use Unilend\Repository\AttachmentRepository;
 use Unilend\Service\FileSystem\FileUploadManager;
 
@@ -41,12 +42,13 @@ class AttachmentManager
     }
 
     /**
-     * @param UploadedFile        $uploadedFile
-     * @param Clients             $uploader
-     * @param AttachmentType|null $type
-     * @param Companies|null      $companyOwner
-     * @param string|null         $description
+     * @param UploadedFile   $uploadedFile
+     * @param Clients        $uploader
+     * @param string         $type
+     * @param Companies|null $companyOwner
+     * @param string|null    $description
      *
+     * @throws Exception
      * @throws FileExistsException
      *
      * @return Attachment
@@ -54,7 +56,7 @@ class AttachmentManager
     public function upload(
         UploadedFile $uploadedFile,
         Clients $uploader,
-        ?AttachmentType $type = null,
+        string $type,
         ?Companies $companyOwner = null,
         ?string $description = null
     ): Attachment {
@@ -62,11 +64,10 @@ class AttachmentManager
             ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader))
         ;
 
-        $attachment = new Attachment($relativeUploadedPath, $uploader);
+        $attachment = new Attachment($relativeUploadedPath, $type, $uploader);
 
         $attachment
             ->setOriginalName($uploadedFile->getClientOriginalName())
-            ->setType($type)
             ->setCompanyOwner($companyOwner)
             ->setDescription($description)
         ;
