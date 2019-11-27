@@ -58,13 +58,15 @@ class Companies
     private $status;
 
     /**
+     * TODO Remove project:update group when autocomplete is done
+     *
      * @var string
      *
      * @ORM\Column(name="name", type="text", length=16777215)
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:create", "project:list", "project:view", "projectParticipation:list", "projectParticipation:view"})
+     * @Groups({"project:create", "project:list", "project:update", "project:view", "projectParticipation:list", "projectParticipation:view"})
      */
     private $name;
 
