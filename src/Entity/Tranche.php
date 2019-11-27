@@ -22,6 +22,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "post": {"security_post_denormalize": "is_granted('edit', object.getProject())", "denormalization_context": {"groups": {"tranche:create"}}}
  *     },
  *     itemOperations={
+ *         "delete": {"security": "is_granted('edit', object.getProject())"},
  *         "get": {"security": "is_granted('view', object.getProject())"},
  *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())", "denormalization_context": {"groups": {"tranche:update", "project:view"}}},
  *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())", "denormalization_context": {"groups": {"tranche:update", "project:view"}}}
