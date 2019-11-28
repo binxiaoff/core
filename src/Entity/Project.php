@@ -35,7 +35,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
- * @ApiFilter(SearchFilter::class, properties={"attachments.type"})
  *
  * @ORM\Table(indexes={
  *     @ORM\Index(name="hash", columns={"hash"})
@@ -284,16 +283,9 @@ class Project
     private $offerVisibility;
 
     /**
-     * @var ProjectAttachment[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="project")
-     *
-     * @ApiSubresource
-     */
-    private $projectAttachments;
-
-    /**
      * @var Attachment[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\Attachment", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      *
      * @ApiSubresource
      */
@@ -440,7 +432,6 @@ class Project
     public function __construct(Clients $submitter, Companies $borrowerCompany, Money $globalFundingMoney)
     {
         $this->attachments                = new ArrayCollection();
-        $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipations      = new ArrayCollection();
         $this->comments                   = new ArrayCollection();
         $this->statuses                   = new ArrayCollection();

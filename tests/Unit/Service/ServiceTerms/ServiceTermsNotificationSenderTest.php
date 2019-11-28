@@ -7,17 +7,14 @@ namespace Unilend\Test\Unit\Service\ServiceTerms;
 use Faker\Provider\{Base, Lorem};
 use League\Flysystem\FilesystemInterface;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
-use Prophecy\Argument\ArgumentsWildcard;
-use Prophecy\Call\Call;
+use Prophecy\{Argument, Argument\ArgumentsWildcard, Call\Call};
 use ReflectionClassConstant;
 use Swift_Attachment;
 use Swift_Mailer;
 use Swift_Message;
 use Unilend\Entity\{AcceptationsLegalDocs, Clients};
-use Unilend\Service\ServiceTerms\{ServiceTermsGenerator, ServiceTermsNotificationSender};
-use Unilend\SwiftMailer\TemplateMessage;
-use Unilend\SwiftMailer\TemplateMessageProvider;
+use Unilend\Service\{FileSystem\FileSystemHelper, ServiceTerms\ServiceTermsGenerator, ServiceTerms\ServiceTermsNotificationSender};
+use Unilend\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
 /**
  * @coversDefaultClass \Unilend\Service\ServiceTerms\ServiceTermsNotificationSender
@@ -30,6 +27,8 @@ class ServiceTermsNotificationSenderTest extends TestCase
     private $messageProvider;
     /** @var ServiceTermsGenerator */
     private $serviceTermsGenerator;
+    /** @var FileSystemHelper */
+    private $fileSystemHelper;
     /** @var Swift_Mailer */
     private $mailer;
 
@@ -41,6 +40,7 @@ class ServiceTermsNotificationSenderTest extends TestCase
         parent::setUp();
         $this->messageProvider       = $this->prophesize(TemplateMessageProvider::class);
         $this->serviceTermsGenerator = $this->prophesize(ServiceTermsGenerator::class);
+        $this->fileSystemHelper      = $this->prophesize(FileSystemHelper::class);
         $this->mailer                = $this->prophesize(Swift_Mailer::class);
     }
 
@@ -66,7 +66,7 @@ class ServiceTermsNotificationSenderTest extends TestCase
         $fileContent = Lorem::sentence();
         $filesystem->read(Argument::exact($filepath))->willReturn($fileContent);
 
-        $this->serviceTermsGenerator->getFileSystem()->willReturn($filesystem->reveal());
+        $this->fileSystemHelper->getFileSystemForClass(Argument::exact($acceptationsLegalDoc))->willReturn($filesystem->reveal());
         $this->serviceTermsGenerator->getFilePath(Argument::exact($acceptationsLegalDoc))->willReturn($filepath);
         $this->serviceTermsGenerator->generate(Argument::exact($acceptationsLegalDoc));
 
@@ -119,6 +119,7 @@ class ServiceTermsNotificationSenderTest extends TestCase
         return new ServiceTermsNotificationSender(
             $this->messageProvider->reveal(),
             $this->serviceTermsGenerator->reveal(),
+            $this->fileSystemHelper->reveal(),
             $this->mailer->reveal()
         );
     }

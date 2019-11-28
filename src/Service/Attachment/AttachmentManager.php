@@ -13,7 +13,7 @@ use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\FilesystemInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, Clients, Companies};
+use Unilend\Entity\{Attachment, Clients, Project};
 use Unilend\Repository\AttachmentRepository;
 use Unilend\Service\FileSystem\FileUploadManager;
 
@@ -42,11 +42,11 @@ class AttachmentManager
     }
 
     /**
-     * @param UploadedFile   $uploadedFile
-     * @param Clients        $uploader
-     * @param string         $type
-     * @param Companies|null $companyOwner
-     * @param string|null    $description
+     * @param UploadedFile $uploadedFile
+     * @param Clients      $uploader
+     * @param string       $type
+     * @param Project      $project
+     * @param string|null  $description
      *
      * @throws Exception
      * @throws FileExistsException
@@ -57,7 +57,7 @@ class AttachmentManager
         UploadedFile $uploadedFile,
         Clients $uploader,
         string $type,
-        ?Companies $companyOwner = null,
+        Project $project,
         ?string $description = null
     ): Attachment {
         $relativeUploadedPath = $this->fileUploadManager
@@ -68,7 +68,7 @@ class AttachmentManager
 
         $attachment
             ->setOriginalName($uploadedFile->getClientOriginalName())
-            ->setCompanyOwner($companyOwner)
+            ->setProject($project)
             ->setDescription($description)
         ;
 
@@ -84,15 +84,7 @@ class AttachmentManager
      */
     public function read(Attachment $attachment)
     {
-        return $this->getFileSystem()->read($attachment->getPath());
-    }
-
-    /**
-     * @return FilesystemInterface
-     */
-    public function getFileSystem(): FilesystemInterface
-    {
-        return $this->userAttachmentFilesystem;
+        return $this->userAttachmentFilesystem->read($attachment->getPath());
     }
 
     /**

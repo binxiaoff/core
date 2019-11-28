@@ -11,8 +11,8 @@ use Monolog\Logger;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\{Attachment, Clients, Project, ProjectAttachment, ProjectParticipationContact, ProjectStatus};
-use Unilend\Repository\{AttachmentSignatureRepository, ProjectAttachmentRepository, ProjectParticipationContactRepository, ProjectRepository};
+use Unilend\Entity\{Attachment, Clients, Project, ProjectParticipationContact, ProjectStatus};
+use Unilend\Repository\{AttachmentSignatureRepository, ProjectParticipationContactRepository};
 use Unilend\Traits\ConstantsAwareTrait;
 
 class AttachmentVoter extends Voter
@@ -23,37 +23,29 @@ class AttachmentVoter extends Voter
 
     /** @var AuthorizationCheckerInterface */
     private $authorizationChecker;
+
     /** @var AttachmentSignatureRepository */
     private $attachmentSignatureRepository;
-    /** @var ProjectAttachmentRepository */
-    private $projectAttachmentRepository;
-    /**
-     * @var ProjectParticipationContactRepository
-     */
+
+    /** @var ProjectParticipationContactRepository */
     private $participationContactRepository;
-    /**
-     * @var Logger
-     */
+
+    /** @var Logger */
     private $logger;
-    /** @var ProjectRepository */
-    private $projectRepository;
 
     /**
      * @param AuthorizationCheckerInterface         $authorizationChecker
      * @param AttachmentSignatureRepository         $attachmentSignatureRepository
      * @param ProjectParticipationContactRepository $participationContactRepository
-     * @param ProjectRepository                     $projectRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         AttachmentSignatureRepository $attachmentSignatureRepository,
-        ProjectParticipationContactRepository $participationContactRepository,
-        ProjectRepository $projectRepository
+        ProjectParticipationContactRepository $participationContactRepository
     ) {
         $this->attachmentSignatureRepository  = $attachmentSignatureRepository;
         $this->participationContactRepository = $participationContactRepository;
         $this->authorizationChecker           = $authorizationChecker;
-        $this->projectRepository              = $projectRepository;
     }
 
     /**
@@ -98,7 +90,8 @@ class AttachmentVoter extends Voter
      */
     private function canDownload(Attachment $attachment, Clients $user): bool
     {
-        if ($attachment->getCompanyOwner() === $user->getCompany()) {
+        $project = $attachment->getProject();
+        if ($project->getBorrowerCompany() === $user->getCompany()) {
             return true;
         }
 
@@ -111,29 +104,23 @@ class AttachmentVoter extends Voter
             return true;
         }
 
-        $projects = $this->projectRepository->findByAttachment($attachment);
-        /** @var ProjectAttachment $projectAttachment */
-        foreach ($projects as $project) {
-            if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
-                return true;
-            }
-
-            switch ($project->getCurrentStatus()->getStatus()) {
-                case ProjectStatus::STATUS_PUBLISHED:
-                case ProjectStatus::STATUS_INTERESTS_COLLECTED:
-                    return null !== $this->getActiveParticipantParticipation($project, $user);
-                case ProjectStatus::STATUS_OFFERS_COLLECTED:
-                case ProjectStatus::STATUS_CONTRACTS_SIGNED:
-                case ProjectStatus::STATUS_REPAID:
-                    return
-                        null !== ($contact = $this->getActiveParticipantParticipation($project, $user))
-                            && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeOfferCollected($attachment, $project));
-                default:
-                    throw new LogicException('This code should not be reached');
-            }
+        if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
+            return true;
         }
 
-        return false;
+        switch ($project->getCurrentStatus()->getStatus()) {
+            case ProjectStatus::STATUS_PUBLISHED:
+            case ProjectStatus::STATUS_INTERESTS_COLLECTED:
+                return null !== $this->getActiveParticipantParticipation($project, $user);
+            case ProjectStatus::STATUS_OFFERS_COLLECTED:
+            case ProjectStatus::STATUS_CONTRACTS_SIGNED:
+            case ProjectStatus::STATUS_REPAID:
+                return
+                    null !== ($contact = $this->getActiveParticipantParticipation($project, $user))
+                        && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeOfferCollected($project, $attachment));
+            default:
+                throw new LogicException('This code should not be reached');
+        }
     }
 
     /**

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Unilend\Test\Unit\Service\FileSystem;
 
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Faker\Provider\{Base, File};
 use League\Flysystem\{FileNotFoundException, FilesystemInterface};
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\{HeaderUtils, ResponseHeaderBag, StreamedResponse};
 use Unilend\Service\FileSystem\FileSystemHelper;
 use URLify;
@@ -26,6 +28,10 @@ class FileSystemHelperTest extends TestCase
     private $srcPath;
     /** @var bool|resource */
     private $testFileResource;
+    /** @var ContainerInterface */
+    private $container;
+    /** @var ManagerRegistry */
+    private $managerRegistry;
 
     /**
      * {@inheritdoc}
@@ -35,6 +41,8 @@ class FileSystemHelperTest extends TestCase
         $this->srcPath          = sys_get_temp_dir() . DIRECTORY_SEPARATOR . Base::lexify('?????');
         $this->destPath         = Base::lexify('/????/???');
         $this->testFileResource = $this->buildTestFile();
+        $this->container        = $this->prophesize(ContainerInterface::class);
+        $this->managerRegistry  = $this->prophesize(ManagerRegistry::class);
     }
 
     /**
@@ -50,7 +58,7 @@ class FileSystemHelperTest extends TestCase
         }));
         $streamWriter->willReturn(true);
 
-        (new FileSystemHelper())->writeTempFileToFileSystem($this->srcPath, $fileSystem->reveal(), $this->destPath);
+        $this->createTestObject()->writeTempFileToFileSystem($this->srcPath, $fileSystem->reveal(), $this->destPath);
 
         $streamWriter->shouldHaveBeenCalled();
         static::assertFileNotExists($this->srcPath);
@@ -64,7 +72,7 @@ class FileSystemHelperTest extends TestCase
         $nonexistentSrcFile = Base::lexify('/????/???');
         $fileSystem         = $this->prophesize(FilesystemInterface::class);
 
-        (new FileSystemHelper())->writeTempFileToFileSystem($nonexistentSrcFile, $fileSystem->reveal(), $this->destPath);
+        $this->createTestObject()->writeTempFileToFileSystem($nonexistentSrcFile, $fileSystem->reveal(), $this->destPath);
 
         $fileSystem->writeStream(Argument::any(), Argument::any())->shouldNotHaveBeenCalled();
     }
@@ -79,7 +87,7 @@ class FileSystemHelperTest extends TestCase
         $fileSystem = $this->prophesize(FilesystemInterface::class);
         $fileSystem->writeStream(Argument::any(), Argument::any())->willReturn(false);
 
-        (new FileSystemHelper())->writeTempFileToFileSystem($this->srcPath, $fileSystem->reveal(), $this->destPath);
+        $this->createTestObject()->writeTempFileToFileSystem($this->srcPath, $fileSystem->reveal(), $this->destPath);
     }
 
     /**
@@ -98,7 +106,7 @@ class FileSystemHelperTest extends TestCase
         $filesystem->readStream(Argument::exact($this->srcPath))->willReturn($this->testFileResource);
         $filesystem->getMimetype(Argument::exact($this->srcPath))->willReturn($mimeType);
 
-        $response = (new FileSystemHelper())->download($filesystem->reveal(), $this->srcPath, $fileName);
+        $response = $this->createTestObject()->download($filesystem->reveal(), $this->srcPath, $fileName);
 
         static::assertInstanceOf(StreamedResponse::class, $response);
         static::assertSame(
@@ -127,5 +135,16 @@ class FileSystemHelperTest extends TestCase
     private function buildTestFile()
     {
         return fopen($this->srcPath, 'w+b');
+    }
+
+    /**
+     * @return FileSystemHelper
+     */
+    private function createTestObject(): FileSystemHelper
+    {
+        return new FileSystemHelper(
+            $this->container->reveal(),
+            $this->managerRegistry->reveal()
+        );
     }
 }

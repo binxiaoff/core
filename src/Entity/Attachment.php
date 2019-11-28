@@ -17,13 +17,21 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
+ *     attributes={"pagination_client_enabled": true},
  *     normalizationContext={"groups": "attachment:read"},
- *     denormalizationContext={"attachment:read"},
+ *     denormalizationContext={"groups": "attachment:write"},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *         },
+ *         "delete": {"security": "is_granted('edit', object.getProject())"},
+ *         "download": {
+ *             "security": "is_granted('download', object)",
+ *             "method": "GET",
+ *             "controller": "Unilend\Controller\Attachment\Download",
+ *             "path": "/attachments/{id}/download"
  *         }
  *     },
  *     collectionOperations={
@@ -49,15 +57,9 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     },
  *                     {
  *                         "in": "formData",
- *                         "name": "company",
+ *                         "name": "project",
  *                         "type": "string",
- *                         "description": "The companyOwner as an IRI"
- *                     },
- *                     {
- *                         "in": "formData",
- *                         "name": "description",
- *                         "type": "string",
- *                         "description": "The description"
+ *                         "description": "The project as an IRI"
  *                     },
  *                     {
  *                         "in": "formData",
@@ -131,21 +133,21 @@ class Attachment
      *
      * @Assert\Choice(callback="getAttachmentTypes")
      *
-     * @Groups({"attachment:read"})
+     * @Groups({"attachment:read", "attachment:write"})
      */
     private $type;
 
     /**
-     * @var Companies
+     * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="attachments")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_company_owner", referencedColumnName="id")
+     *     @ORM\JoinColumn(name="id_project", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"attachment:read"})
+     * @Groups({"attachment:read", "attachment:write"})
      */
-    private $companyOwner;
+    private $project;
 
     /**
      * @var string
@@ -309,21 +311,21 @@ class Attachment
     }
 
     /**
-     * @return Companies|null
+     * @return Project
      */
-    public function getCompanyOwner(): ?Companies
+    public function getProject(): Project
     {
-        return $this->companyOwner;
+        return $this->project;
     }
 
     /**
-     * @param Companies|null $companyOwner
+     * @param Project|null $project
      *
      * @return Attachment
      */
-    public function setCompanyOwner(?Companies $companyOwner): Attachment
+    public function setProject(?Project $project): Attachment
     {
-        $this->companyOwner = $companyOwner;
+        $this->project = $project;
 
         return $this;
     }
