@@ -19,7 +19,6 @@ services:
 
     Unilend\Listener\Doctrine\Entity\ProjectParticipationInvitedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\ProjectParticipation, method: addContacts}
             - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\ProjectParticipation, method: dispatchParticipantInvitedEvent }
 
     Unilend\Listener\Doctrine\Entity\ClientPlainPasswordSubmittedListener:

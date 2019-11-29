@@ -13,7 +13,6 @@ use Exception;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Unilend\Entity\Embeddable\{Money, NullableMoney, Permission};
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
-use Unilend\Service\User\RealUserFinder;
 
 /**
  * @ApiResource(
@@ -364,23 +363,6 @@ class ProjectParticipation
     public function getProjectParticipationContacts(): iterable
     {
         return $this->projectParticipationContacts;
-    }
-
-    /**
-     * @param Clients        $client
-     * @param RealUserFinder $realUserFinder
-     *
-     * @throws Exception
-     *
-     * @return ProjectParticipationContact
-     */
-    public function addProjectParticipationContact(Clients $client, RealUserFinder $realUserFinder): ProjectParticipationContact
-    {
-        $projectParticipationContact = (new ProjectParticipationContact($this, $client, $realUserFinder()));
-
-        $this->projectParticipationContacts->add($projectParticipationContact);
-
-        return $projectParticipationContact;
     }
 
     /**
