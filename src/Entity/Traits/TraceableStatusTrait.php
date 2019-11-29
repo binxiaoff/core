@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Unilend\Entity\Traits;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Interfaces\StatusInterface;
 
 trait TraceableStatusTrait
 {
     /**
      * @var StatusInterface
+     *
+     * @Groups({"projectParticipation:list", "project:view"})
      */
     private $currentStatus;
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -19,6 +20,8 @@ class NullableLendingRate extends LendingRate
      * @var string
      *
      * @ORM\Column(length=20, nullable=true)
+     *
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     protected $indexType;
 
@@ -30,8 +33,26 @@ class NullableLendingRate extends LendingRate
      * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
      *
      * @Assert\Range(min="0", max="0.9999")
+     *
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     protected $margin;
+
+    /**
+     * @param string|null $indexType
+     * @param string|null $margin
+     * @param string|null $floor
+     * @param string|null $floorType
+     */
+    public function __construct(?string $indexType = null, ?string $margin = null, string $floor = null, string $floorType = null)
+    {
+        $this->indexType = $indexType;
+        $this->margin    = $margin;
+
+        if ($indexType && $margin) {
+            parent::__construct($indexType, $margin, $floor, $floorType);
+        }
+    }
 
     /**
      * @param string|null $indexType

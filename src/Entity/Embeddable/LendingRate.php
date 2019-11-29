@@ -30,14 +30,17 @@ class LendingRate
 
     public const MARGIN_SCALE = 2;
 
+    public const FLOOR_TYPE_INDEX      = 'index';
+    public const FLOOR_TYPE_INDEX_RATE = 'index+rate';
     /**
      * @var string
      *
      * @ORM\Column(length=20)
      *
-     * @Assert\NotBlank(groups={"non-nullable"})
+     * @Assert\NotBlank
+     * @Assert\Choice(callback="getIndexes")
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:view"})
      */
     protected $indexType;
 
@@ -48,10 +51,12 @@ class LendingRate
      *
      * @ORM\Column(type="decimal", precision=4, scale=4)
      *
-     * @Assert\NotBlank(groups={"non-nullable"})
+     * @Assert\NotBlank
+     * @Assert\Type("numeric")
+     * @Assert\PositiveOrZero
      * @Assert\Range(min="0", max="0.9999")
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     protected $margin;
 
@@ -62,11 +67,39 @@ class LendingRate
      *
      * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
      *
+     * @Assert\Type("numeric")
      * @Assert\Range(max="-0.9999", max="0.9999")
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     protected $floor;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(length=20, nullable=true)
+     *
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     */
+    protected $floorType;
+
+    /**
+     * @param string      $indexType
+     * @param string      $margin
+     * @param string|null $floor
+     * @param string|null $floorType
+     */
+    public function __construct(
+        string $indexType,
+        string $margin,
+        string $floor = null,
+        string $floorType = null
+    ) {
+        $this->indexType = $indexType;
+        $this->margin    = $margin;
+        $this->floor     = $floor;
+        $this->floorType = $floorType;
+    }
 
     /**
      * @return string|null
@@ -134,5 +167,21 @@ class LendingRate
     public static function getIndexes(): array
     {
         return self::getConstants('INDEX_');
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getFloorType(): ?string
+    {
+        return $this->floorType;
+    }
+
+    /**
+     * @param string|null $floorType
+     */
+    public function setFloorType(?string $floorType): void
+    {
+        $this->floorType = $floorType;
     }
 }

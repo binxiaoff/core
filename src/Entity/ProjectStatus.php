@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Interfaces\StatusInterface;
@@ -68,7 +69,7 @@ class ProjectStatus implements StatusInterface
      *
      * @ORM\Column(type="smallint")
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"projectParticipation:list", "project:view"})
      */
     private $status;
 
@@ -85,6 +86,8 @@ class ProjectStatus implements StatusInterface
      * @param Project $project
      * @param int     $status
      * @param Clients $addedBy
+     *
+     * @throws Exception
      */
     public function __construct(Project $project, int $status, Clients $addedBy)
     {

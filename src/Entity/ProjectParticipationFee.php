@@ -18,11 +18,21 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiResource(
  *     collectionOperations={
  *         "get": {"security": "is_granted('ROLE_ADMIN')"},
- *         "post": {"security_post_denormalize": "is_granted('edit', object.getProject())"}
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('edit', object.getProjectParticipation().getProject())",
+ *             "denormalization_context": {"groups": {"projectParticipationFee:create"}}
+ *         }
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object.getProject())"},
- *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())"}
+ *         "patch": {
+ *             "security_post_denormalize": "is_granted('edit', previous_object.getProjectParticipation().getProject())",
+ *             "denormalization_context": {"groups": {"projectParticipationFee:update"}}
+ *         },
+ *         "put": {
+ *             "security_post_denormalize": "is_granted('edit', previous_object.getProjectParticipation().getProject())",
+ *             "denormalization_context": {"groups": {"projectParticipationFee:update"}}
+ *         }
  *     }
  * )
  *
@@ -45,6 +55,8 @@ class ProjectParticipationFee
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      * @ORM\Column(type="integer")
+     *
+     * @Groups({"project:view"})
      */
     private $id;
 
@@ -57,19 +69,21 @@ class ProjectParticipationFee
      *
      * @Assert\Valid
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:view", "projectParticipation:list", "projectParticipationFee:create", "projectParticipationFee:update"})
      */
     private $fee;
 
     /**
      * @var Project
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="projectParticipationFee")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationFee")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project_participation", nullable=false)
      * })
      *
      * @Assert\Valid
+     *
+     * @Groups({"project:view", "projectParticipation:list", "projectParticipationFee:create", "projectParticipationFee:update"})
      */
     private $projectParticipation;
 
@@ -103,9 +117,9 @@ class ProjectParticipationFee
     }
 
     /**
-     * @return Project
+     * @return ProjectParticipation
      */
-    public function getProjectParticipation(): Project
+    public function getProjectParticipation(): ProjectParticipation
     {
         return $this->projectParticipation;
     }
@@ -126,5 +140,17 @@ class ProjectParticipationFee
     public function getFeeType(): string
     {
         return $this->fee->getType();
+    }
+
+    /**
+     * @param Fee $fee
+     *
+     * @return ProjectParticipationFee
+     */
+    public function setFee(Fee $fee): ProjectParticipationFee
+    {
+        $this->fee = $fee;
+
+        return $this;
     }
 }

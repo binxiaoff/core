@@ -50,6 +50,7 @@ class ProjectParticipationRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('pp')
             ->innerJoin(Staff::class, 's', Join::WITH, 'pp.company = s.company')
+            ->innerJoin('pp.project', 'p')
             ->where('pp.project = :project')
             ->andWhere('pp.company = :company')
             ->andWhere('p.marketSegment MEMBER OF s.marketSegments')

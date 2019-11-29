@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
@@ -15,9 +15,9 @@ use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
+ *     attributes={"pagination_enabled": false},
  *     collectionOperations={
  *         "get",
- *         "post",
  *         "autocomplete": {
  *             "method": "get",
  *             "path": "/companies/autocomplete/{term}",
@@ -25,6 +25,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *         }
  *     }
  * )
+ * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.hash", "projectParticipations.project"})
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
@@ -57,13 +58,15 @@ class Companies
     private $status;
 
     /**
+     * TODO Remove project:update group when autocomplete is done.
+     *
      * @var string
      *
      * @ORM\Column(name="name", type="text", length=16777215)
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:create", "project:list", "projectParticipation:list"})
+     * @Groups({"project:create", "project:list", "project:update", "project:view", "projectParticipation:list", "projectParticipation:view"})
      */
     private $name;
 
@@ -75,7 +78,7 @@ class Companies
      * @Assert\Length(9)
      * @Assert\Luhn
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:view"})
      */
     private $siren;
 
@@ -85,6 +88,8 @@ class Companies
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     *
+     * @Groups({"project:view", "projectParticipation:view"})
      */
     private $id;
 
@@ -118,9 +123,9 @@ class Companies
     private $emailDomain;
 
     /**
-     * @Groups({"project:list"})
-     *
      * @ORM\Column(type="string", length=4, nullable=true, unique=true)
+     *
+     * @Groups({"project:list", "project:view", "projectParticipation:view"})
      */
     private $shortCode;
 

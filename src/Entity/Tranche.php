@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -16,7 +17,17 @@ use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * @ApiResource
+ * @ApiResource(
+ *     collectionOperations={
+ *         "post": {"security_post_denormalize": "is_granted('edit', object.getProject())", "denormalization_context": {"groups": {"tranche:create"}}}
+ *     },
+ *     itemOperations={
+ *         "delete": {"security": "is_granted('edit', object.getProject())"},
+ *         "get": {"security": "is_granted('view', object.getProject())"},
+ *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())", "denormalization_context": {"groups": {"tranche:update", "project:view"}}},
+ *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())", "denormalization_context": {"groups": {"tranche:update", "project:view"}}}
+ *     }
+ * )
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\TrancheRepository")
  * @ORM\HasLifecycleCallbacks
@@ -51,6 +62,8 @@ class Tranche
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     *
+     * @Groups({"project:view"})
      */
     private $id;
 
@@ -61,6 +74,8 @@ class Tranche
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
+     *
+     * @Groups({"tranche:create", "tranche:update"})
      */
     private $project;
 
@@ -73,7 +88,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     private $name;
 
@@ -87,7 +102,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     private $loanType;
 
@@ -101,7 +116,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     private $repaymentType;
 
@@ -117,7 +132,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     private $duration;
 
@@ -126,14 +141,9 @@ class Tranche
      *
      * @var int
      *
-     * @ORM\Column(type="smallint")
-     *
-     * @Assert\GreaterThanOrEqual(1)
-     * @Assert\NotBlank
+     * @ORM\Column(type="smallint", nullable=true)
      *
      * @Gedmo\Versioned
-     *
-     * @Groups({"project:create"})
      */
     private $capitalPeriodicity;
 
@@ -142,14 +152,9 @@ class Tranche
      *
      * @var int
      *
-     * @ORM\Column(type="smallint")
-     *
-     * @Assert\GreaterThanOrEqual(1)
-     * @Assert\NotBlank
+     * @ORM\Column(type="smallint", nullable=true)
      *
      * @Gedmo\Versioned
-     *
-     * @Groups({"project:create"})
      */
     private $interestPeriodicity;
 
@@ -163,7 +168,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     private $money;
 
@@ -177,7 +182,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     private $rate;
 
@@ -190,7 +195,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     private $expectedReleasingDate;
 
@@ -203,7 +208,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     private $expectedStartingDate;
 
@@ -212,7 +217,7 @@ class Tranche
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheFee", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     private $trancheFees;
 
@@ -229,16 +234,17 @@ class Tranche
      *
      * @ORM\OneToMany(targetEntity="TrancheAttribute", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:view"})
      */
     private $trancheAttributes;
 
     /**
-     * Tranche constructor.
+     * @param Project $project
+     * @param Money   $money
      *
-     * @param Money $money
+     * @throws Exception
      */
-    public function __construct(Money $money)
+    public function __construct(Project $project, Money $money)
     {
         $this->money             = $money;
         $this->rate              = new NullableLendingRate();
@@ -246,6 +252,7 @@ class Tranche
         $this->trancheOffers     = new ArrayCollection();
         $this->trancheAttributes = new ArrayCollection();
         $this->added             = new DateTimeImmutable();
+        $this->project           = $project;
     }
 
     /**
@@ -503,12 +510,12 @@ class Tranche
     }
 
     /**
-     * @param array|null        $status
-     * @param ProjectOffer|null $projectOffer
+     * @param array|null                     $status
+     * @param ProjectParticipationOffer|null $projectOffer
      *
      * @return TrancheOffer[]|ArrayCollection
      */
-    public function getTrancheOffer(?array $status = null, ?ProjectOffer $projectOffer = null): iterable
+    public function getTrancheOffer(?array $status = null, ?ProjectParticipationOffer $projectOffer = null): iterable
     {
         $criteria = new Criteria();
 

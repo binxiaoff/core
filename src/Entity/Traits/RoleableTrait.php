@@ -6,6 +6,7 @@ namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Traits\ConstantsAwareTrait;
 
 trait RoleableTrait
@@ -21,6 +22,8 @@ trait RoleableTrait
 
     /**
      * @return array
+     *
+     * @Groups({"project:view", "projectParticipation:create", "projectParticipation:view"})
      */
     public function getRoles(): array
     {

@@ -15,7 +15,7 @@ use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{Clients, Companies, Embeddable\Money, Notification, Project, ProjectOffer, Tranche, TrancheOffer};
+use Unilend\Entity\{Clients, Companies, Embeddable\Money, Notification, Project, ProjectParticipation, ProjectParticipationOffer, Tranche, TrancheOffer};
 use Unilend\Repository\NotificationRepository;
 use Unilend\Service\Notification\NotificationDisplayManager;
 
@@ -158,21 +158,24 @@ class NotificationDisplayManagerTest extends TestCase
         $project->getBorrowerCompany()->willReturn($borrowerCompany->reveal());
         $project->getSubmitterCompany()->willReturn($submitterCompany->reveal());
 
+        $projectParticipation = $this->prophesize(ProjectParticipation::class);
+        $projectParticipation->getCompany()->willReturn($lenderCompany->reveal());
+
+        /** @var Clients|ObjectProphecy $clients */
+        $clients = $this->prophesize(Clients::class);
+        $clients->getIdClient()->willReturn(Base::randomDigitNotNull());
+
         $tranche = $this->prophesize(Tranche::class);
         $tranche->getProject()->willReturn($project);
 
-        $projectOffer = new ProjectOffer($lenderCompany->reveal(), $project->reveal());
+        $projectParticipation = new ProjectParticipationOffer($projectParticipation->reveal(), $clients->reveal());
 
         /** @var TrancheOffer|ObjectProphecy $trancheOffer */
         $trancheOffer = $this->prophesize(TrancheOffer::class);
         $trancheOffer->getId()->willReturn(Base::randomDigitNotNull());
         $trancheOffer->getMoney()->willReturn(new Money(Miscellaneous::currencyCode(), (string) Base::randomDigitNotNull()));
-        $trancheOffer->getProjectOffer()->willReturn($projectOffer);
+        $trancheOffer->getProjectParticipationOffer()->willReturn($projectParticipation);
         $trancheOffer->getTranche()->willReturn($tranche->reveal());
-
-        /** @var Clients|ObjectProphecy $clients */
-        $clients = $this->prophesize(Clients::class);
-        $clients->getIdClient()->willReturn(Base::randomDigitNotNull());
 
         /** @var Notification|ObjectProphecy $notification */
         $notification = $this->prophesize(Notification::class);

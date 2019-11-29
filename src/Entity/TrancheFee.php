@@ -7,14 +7,21 @@ namespace Unilend\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Fee;
 use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * @ApiResource
+ * @ApiResource(
+ *     itemOperations={
+ *         "get": {"security": "is_granted('view', object.getTranche().getProject())"}
+ *     }
+ * )
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
@@ -48,6 +55,8 @@ class TrancheFee
      * @Gedmo\Versioned
      *
      * @Assert\Valid
+     *
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
      */
     private $fee;
 
@@ -60,20 +69,22 @@ class TrancheFee
      * })
      *
      * @Assert\Valid
+     *
+     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     *
+     * @MaxDepth(1)
      */
     private $tranche;
 
     /**
-     * @param Tranche $tranche
-     * @param Fee     $fee
+     * @param Fee $fee
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function __construct(Tranche $tranche, Fee $fee)
+    public function __construct(Fee $fee)
     {
-        $this->fee     = $fee;
-        $this->tranche = $tranche;
-        $this->added   = new DateTimeImmutable();
+        $this->fee   = $fee;
+        $this->added = new DateTimeImmutable();
     }
 
     /**

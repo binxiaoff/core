@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource, ApiSubresource};
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\{NumericFilter, SearchFilter};
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
@@ -13,12 +13,11 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Ramsey\Uuid\Uuid;
 use RuntimeException;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\Embeddable\Money;
 use Unilend\Entity\Traits\{TimestampableTrait, TraceableStatusTrait};
-use Unilend\Service\User\RealUserFinder;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -28,9 +27,9 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "post": {"denormalization_context": {"groups": {"project:create"}}}
  *     },
  *     itemOperations={
- *         "get": {"security": "is_granted('view', object)"},
- *         "put": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"project:update"}}},
- *         "patch": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"project:update"}}}
+ *         "get": {"security": "is_granted('view', object)", "normalization_context": {"groups": {"project:view", "tranche_project:view"}}},
+ *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)", "denormalization_context": {"groups": {"project:update"}}},
+ *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)", "denormalization_context": {"groups": {"project:update"}}}
  *     }
  * )
  *
@@ -101,7 +100,7 @@ class Project
      *
      * @ApiProperty(identifier=true)
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:view", "projectParticipation:list"})
      */
     private $hash;
 
@@ -115,10 +114,12 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:list", "project:view", "projectParticipation:list"})
      *
      * @Assert\NotBlank
      * @Assert\Valid
+     *
+     * @MaxDepth(1)
      */
     private $borrowerCompany;
 
@@ -158,7 +159,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:list", "project:view", "projectParticipation:list"})
      */
     private $title;
 
@@ -173,7 +174,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
      */
     private $marketSegment;
 
@@ -184,7 +185,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $description;
 
@@ -195,7 +196,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $confidential = false;
 
@@ -206,7 +207,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $confidentialityDisclaimer;
 
@@ -221,7 +222,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
      */
     private $replyDeadline;
 
@@ -236,7 +237,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
      */
     private $expectedClosingDate;
 
@@ -251,7 +252,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:list", "project:view", "projectParticipation:list"})
      */
     private $lenderConsultationClosingDate;
 
@@ -264,7 +265,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $internalRatingScore;
 
@@ -278,7 +279,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Choice(callback="getOfferVisibilities")
      *
-     * @Groups({"project:create", "project:update"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $offerVisibility;
 
@@ -288,13 +289,15 @@ class Project
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Attachment", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      *
      * @ApiSubresource
+     *
+     * @Groups({"project:view"})
      */
     private $attachments;
 
     /**
      * @var ProjectParticipation[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
      */
     private $projectParticipations;
 
@@ -303,6 +306,8 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectComment", mappedBy="project")
      * @ORM\OrderBy({"added": "DESC"})
+     *
+     * @Groups({"project:view"})
      */
     private $comments;
 
@@ -313,7 +318,7 @@ class Project
      *
      * @Assert\Valid
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:view"})
      */
     private $tranches;
 
@@ -340,7 +345,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:view", "projectParticipation:list"})
      */
     private $currentStatus;
 
@@ -364,7 +369,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
      */
     private $syndicationType;
 
@@ -378,7 +383,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
      */
     private $participationType;
 
@@ -392,21 +397,16 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
      */
     private $riskType;
-
-    /**
-     * @var ArrayCollection|ProjectOffer
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectOffer", mappedBy="project", orphanRemoval=true, cascade={"persist"})
-     */
-    private $projectOffers;
 
     /**
      * @var Collection|Tag[]
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\Tag", cascade={"persist"})
+     *
+     * @Groups({"project:view", "project:update"})
      */
     private $tags;
 
@@ -418,7 +418,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:create", "project:view", "project:update", "projectParticipation:list"})
      */
     private $globalFundingMoney;
 
@@ -437,7 +437,6 @@ class Project
         $this->statuses                   = new ArrayCollection();
         $this->tranches                   = new ArrayCollection();
         $this->confidentialityAcceptances = new ArrayCollection();
-        $this->projectOffers              = new ArrayCollection();
         $this->tags                       = new ArrayCollection();
         $this->added                      = new DateTimeImmutable();
 
@@ -460,6 +459,8 @@ class Project
                 $this->hash = md5(uniqid('', false));
             }
         }
+
+        $this->projectParticipations->add(new ProjectParticipation($submitter->getCompany(), $this, $submitter, [ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER]));
     }
 
     /**
@@ -597,6 +598,8 @@ class Project
     /**
      * @param int     $status
      * @param Clients $clients
+     *
+     * @throws Exception
      *
      * @return Project
      */
@@ -762,43 +765,6 @@ class Project
     }
 
     /**
-     * @param Companies      $company
-     * @param string         $role
-     * @param RealUserFinder $realUserFinder
-     *
-     * @return ProjectParticipation
-     */
-    public function addProjectParticipation(Companies $company, string $role, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        if (static::isUniqueRole($role)) {
-            /** @var ProjectParticipation $projectParticipationToDelete */
-            $projectParticipationToDelete = $this->getParticipationsByRole($role)->first();
-
-            if ($projectParticipationToDelete && $company !== $projectParticipationToDelete->getCompany()) {
-                $projectParticipationToDelete->removeRole($role);
-            }
-        }
-
-        $projectParticipation = $this->getProjectParticipationByCompany($company);
-
-        if (null === $projectParticipation) {
-            $projectParticipation = (new ProjectParticipation($realUserFinder()))
-                ->setCompany($company)
-                ->setProject($this)
-                ->setAddedByValue($realUserFinder)
-            ;
-        }
-
-        $projectParticipation->addRoles([$role]);
-
-        if (false === $this->projectParticipations->contains($projectParticipation)) {
-            $this->projectParticipations->add($projectParticipation);
-        }
-
-        return $projectParticipation;
-    }
-
-    /**
      * @param ProjectParticipation $projectParticipation
      *
      * @return Project
@@ -811,79 +777,13 @@ class Project
     }
 
     /**
-     * @param Companies      $company
-     * @param RealUserFinder $realUserFinder
-     *
-     * @return ProjectParticipation
-     */
-    public function setArranger(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER, $realUserFinder);
-    }
-
-    /**
-     * @param Companies      $company
-     * @param RealUserFinder $realUserFinder
-     *
-     * @return ProjectParticipation
-     */
-    public function setDeputyArranger(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER, $realUserFinder);
-    }
-
-    /**
-     * @param Companies      $company
-     * @param RealUserFinder $realUserFinder
-     *
-     * @return ProjectParticipation
-     */
-    public function setRun(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_RUN, $realUserFinder);
-    }
-
-    /**
-     * @param Companies      $company
-     * @param RealUserFinder $realUserFinder
-     *
-     * @return ProjectParticipation
-     */
-    public function setLoanOfficer(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER, $realUserFinder);
-    }
-
-    /**
-     * @param Companies      $company
-     * @param RealUserFinder $realUserFinder
-     *
-     * @return ProjectParticipation
-     */
-    public function setSecurityTrustee(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE, $realUserFinder);
-    }
-
-    /**
-     * @param Companies      $company
-     * @param RealUserFinder $realUserFinder
-     *
-     * @return ProjectParticipation
-     */
-    public function addParticipant(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
-    {
-        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT, $realUserFinder);
-    }
-
-    /**
-     * @Groups({"project:list"})
-     *
      * @throws Exception
      *
      * @return ProjectParticipation|null
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:list", "projectParticipation:list"})
+     *
+     * @MaxDepth(1)
      */
     public function getArranger(): ?ProjectParticipation
     {
@@ -893,11 +793,11 @@ class Project
     /**
      * @throws Exception
      *
-     * @return ProjectParticipation|null
+     * @return Collection|ProjectParticipation[]
      */
-    public function getDeputyArranger(): ?ProjectParticipation
+    public function getDeputyArranger(): Collection
     {
-        return $this->getUniqueRoleParticipation(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER);
+        return $this->getParticipationsByRole(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER);
     }
 
     /**
@@ -931,9 +831,11 @@ class Project
     }
 
     /**
-     * @Groups({"project:list"})
+     * @Groups({"project:list", "project:view"})
      *
      * @return ProjectParticipation[]|ArrayCollection
+     *
+     * @MaxDepth(2)
      */
     public function getParticipants(): iterable
     {
@@ -946,6 +848,26 @@ class Project
     public function getLenderCompanies(): iterable
     {
         return $this->getCompaniesByRole(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT);
+    }
+
+    /**
+     * @return array|ProjectParticipation
+     *
+     * @Groups({"project:view"})
+     *
+     * @MaxDepth(2)
+     */
+    public function getOrganizers(): array
+    {
+        $organizers = [];
+
+        foreach ($this->getProjectParticipations() as $participation) {
+            if ($participation->isOrganizer()) {
+                $organizers[] = $participation;
+            }
+        }
+
+        return $organizers;
     }
 
     /**
@@ -990,27 +912,6 @@ class Project
         $this->tranches->removeElement($tranche);
 
         return $this;
-    }
-
-    /**
-     * @param array|null     $status
-     * @param Companies|null $lender
-     *
-     * @return TrancheOffer[]|ArrayCollection
-     */
-    public function getTrancheOffers(?array $status = null, ?Companies $lender = null): ArrayCollection
-    {
-        $trancheOffers = [];
-        $projectOffer  = $this->getProjectOffers(null, $lender)->first();
-        if (false === $projectOffer) {
-            return new ArrayCollection();
-        }
-
-        foreach ($this->getTranches() as $tranche) {
-            array_push($trancheOffers, ...$tranche->getTrancheOffer($status, $projectOffer)->toArray());
-        }
-
-        return new ArrayCollection($trancheOffers);
     }
 
     /**
@@ -1247,85 +1148,16 @@ class Project
     }
 
     /**
-     * @param ProjectOffer $projectOffer
-     *
-     * @return Project
-     */
-    public function addProjectOffers(ProjectOffer $projectOffer): Project
-    {
-        $projectOffer->setProject($this);
-
-        if (false === $this->projectOffers->contains($projectOffer)) {
-            $this->projectOffers->add($projectOffer);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param ProjectOffer $projectOffer
-     *
-     * @return Project
-     */
-    public function removeProjectOffers(ProjectOffer $projectOffer): Project
-    {
-        if ($this->projectOffers->contains($projectOffer)) {
-            $this->projectOffers->removeElement($projectOffer);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"project:list"})
-     *
-     * @param array|null     $committeeStatus
-     * @param Companies|null $lender
-     *
-     * @return ArrayCollection|ProjectOffer[]
-     */
-    public function getProjectOffers(?array $committeeStatus = null, ?Companies $lender = null): ArrayCollection
-    {
-        $criteria = new Criteria();
-
-        if (null !== $committeeStatus) {
-            $criteria->andWhere(Criteria::expr()->in('committeeStatus', $committeeStatus));
-        }
-
-        if (null !== $lender) {
-            $criteria->andWhere(Criteria::expr()->eq('lender', $lender));
-        }
-
-        return $this->projectOffers->matching($criteria);
-    }
-
-    /**
-     * @throws Exception
-     *
-     * @return Money
-     */
-    public function getOffersMoney(): Money
-    {
-        $money = new Money($this->getGlobalFundingMoney()->getCurrency());
-
-        foreach ($this->getProjectOffers() as $projectOffer) {
-            $money->add($projectOffer->getTrancheOffersMoney());
-        }
-
-        return $money;
-    }
-
-    /**
      * @return Money
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:list", "projectParticipation:list"})
      */
     public function getTranchesTotalMoney(): Money
     {
         $money = new Money($this->getGlobalFundingMoney()->getCurrency());
 
         foreach ($this->getTranches() as $tranche) {
-            $money->add($tranche->getMoney());
+            $money = $money->add($tranche->getMoney());
         }
 
         return $money;
@@ -1402,6 +1234,64 @@ class Project
     }
 
     /**
+     * @return Money
+     *
+     * @Groups({"projectParticipation:list"})
+     */
+    public function getSyndicatedAmount(): Money
+    {
+        $trancheAmounts = $this->tranches->map(static function (Tranche $tranche) {
+            return $tranche->getMoney();
+        });
+
+        return array_reduce(
+            $trancheAmounts->toArray(),
+            static function (Money $carry, Money $item) {
+                return $carry->add($item);
+            },
+            new Money('EUR')
+        );
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return Money
+     *
+     * @Groups({"project:list"})
+     */
+    public function getOffersMoney(): Money
+    {
+        $money = new Money($this->getGlobalFundingMoney()->getCurrency());
+
+        foreach ($this->getProjectParticipations() as $projectParticipation) {
+            $money = $projectParticipation->getOfferMoney() ? $money->add($projectParticipation->getOfferMoney()) : $money;
+        }
+
+        return $money;
+    }
+
+    /**
+     * @return array|string[]
+     *
+     * @Groups({"project:view"})
+     */
+    public function getAvailableOrganiserRoles(): array
+    {
+        return array_values(
+            array_filter(
+                ProjectParticipation::DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER,
+                function (string $role) {
+                    $roleUniqueness = static::isUniqueRole($role);
+
+                    return (($roleUniqueness && (0 === count($this->getParticipationsByRole($role)))) || false === $roleUniqueness)
+                    && ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT !== $role;
+                }
+            )
+        );
+    }
+
+    /**
      * @param string $role
      *
      * @return bool
@@ -1410,7 +1300,6 @@ class Project
     {
         return in_array($role, [
             ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER,
-            ProjectParticipation::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER,
             ProjectParticipation::DUTY_PROJECT_PARTICIPATION_RUN,
             ProjectParticipation::DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER,
             ProjectParticipation::DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE,
