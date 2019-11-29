@@ -7,12 +7,13 @@ namespace Unilend\Service\Attachment;
 use DateTimeImmutable;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Exception;
 use InvalidArgumentException;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\FilesystemInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, ProjectAttachment};
+use Unilend\Entity\{Attachment, Clients, Project};
 use Unilend\Repository\AttachmentRepository;
 use Unilend\Service\FileSystem\FileUploadManager;
 
@@ -41,12 +42,13 @@ class AttachmentManager
     }
 
     /**
-     * @param UploadedFile        $uploadedFile
-     * @param Clients             $uploader
-     * @param AttachmentType|null $type
-     * @param Companies|null      $companyOwner
-     * @param string|null         $description
+     * @param UploadedFile $uploadedFile
+     * @param Clients      $uploader
+     * @param string       $type
+     * @param Project      $project
+     * @param string|null  $description
      *
+     * @throws Exception
      * @throws FileExistsException
      *
      * @return Attachment
@@ -54,20 +56,19 @@ class AttachmentManager
     public function upload(
         UploadedFile $uploadedFile,
         Clients $uploader,
-        ?AttachmentType $type = null,
-        ?Companies $companyOwner = null,
+        string $type,
+        Project $project,
         ?string $description = null
     ): Attachment {
         $relativeUploadedPath = $this->fileUploadManager
             ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader))
         ;
 
-        $attachment = new Attachment($relativeUploadedPath, $uploader);
+        $attachment = new Attachment($relativeUploadedPath, $type, $uploader, $project);
 
         $attachment
             ->setOriginalName($uploadedFile->getClientOriginalName())
-            ->setType($type)
-            ->setCompanyOwner($companyOwner)
+            ->setProject($project)
             ->setDescription($description)
         ;
 
@@ -83,15 +84,7 @@ class AttachmentManager
      */
     public function read(Attachment $attachment)
     {
-        return $this->getFileSystem()->read($attachment->getPath());
-    }
-
-    /**
-     * @return FilesystemInterface
-     */
-    public function getFileSystem(): FilesystemInterface
-    {
-        return $this->userAttachmentFilesystem;
+        return $this->userAttachmentFilesystem->read($attachment->getPath());
     }
 
     /**

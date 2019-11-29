@@ -182,18 +182,6 @@ class ServiceTermsGeneratorTest extends TestCase
     }
 
     /**
-     * @covers ::getFilesystem
-     */
-    public function testGetFilesystem(): void
-    {
-        $serviceTermsGenerator = $this->createTestObject();
-
-        $filesystem = $serviceTermsGenerator->getFileSystem();
-
-        static::assertSame($this->generatedDocumentFilesystem->reveal(), $filesystem);
-    }
-
-    /**
      * @param string $testedPath
      *
      * @return bool

@@ -11,17 +11,27 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, TimestampableTrait, TraceableBlamableUpdatedTrait};
+use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableTrait, TraceableBlamableUpdatedTrait};
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
+ *     attributes={"pagination_client_enabled": true},
  *     normalizationContext={"groups": "attachment:read"},
- *     denormalizationContext={"attachment:read"},
+ *     denormalizationContext={"groups": "attachment:write"},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *         },
+ *         "delete": {"security": "is_granted('edit', object.getProject())"},
+ *         "download": {
+ *             "security": "is_granted('download', object)",
+ *             "method": "GET",
+ *             "controller": "Unilend\Controller\Attachment\Download",
+ *             "path": "/attachments/{id}/download"
  *         }
  *     },
  *     collectionOperations={
@@ -29,7 +39,6 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, Timestampa
  *             "method": "POST",
  *             "controller": "Unilend\Controller\Attachment\Upload",
  *             "deserialize": false,
- *             "input": false,
  *             "swagger_context": {
  *                 "consumes": {"multipart/form-data"},
  *                 "parameters": {
@@ -44,19 +53,13 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, Timestampa
  *                         "in": "formData",
  *                         "name": "type",
  *                         "type": "string",
- *                         "description": "The attachmentType as an IRI"
+ *                         "description": "The attachment type"
  *                     },
  *                     {
  *                         "in": "formData",
- *                         "name": "company",
+ *                         "name": "project",
  *                         "type": "string",
- *                         "description": "The companyOwner as an IRI"
- *                     },
- *                     {
- *                         "in": "formData",
- *                         "name": "description",
- *                         "type": "string",
- *                         "description": "The description"
+ *                         "description": "The project as an IRI"
  *                     },
  *                     {
  *                         "in": "formData",
@@ -78,10 +81,19 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, Timestampa
  */
 class Attachment
 {
+    use PublicizeIdentityTrait;
+    use ConstantsAwareTrait;
     use TimestampableTrait;
     use BlamableAddedTrait;
     use BlamableArchivedTrait;
     use TraceableBlamableUpdatedTrait;
+
+    private const TYPE_GENERAL                            = 'general';
+    private const TYPE_ACCOUNTING_FINANCIAL               = 'accounting_financial';
+    private const TYPE_LEGAL                              = 'legal';
+    private const TYPE_KYC                                = 'kyc';
+    private const TYPE_PROJECT_DESCRIPTION                = 'project_description';
+    private const TYPE_PROJECT_CONFIDENTIALITY_DISCLAIMER = 'project_confidentiality_disclaimer';
 
     /**
      * @var string
@@ -115,41 +127,27 @@ class Attachment
     private $downloaded;
 
     /**
-     * @var int
+     * @var string
      *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\Column(length=60)
      *
-     * @Groups({"attachment:read"})
-     */
-    private $id;
-
-    /**
-     * @todo Make not nullable when type are defined
+     * @Assert\Choice(callback="getAttachmentTypes")
      *
-     * @var AttachmentType
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\AttachmentType")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_type", nullable=true)
-     * })
-     *
-     * @Groups({"attachment:read"})
+     * @Groups({"attachment:read", "attachment:write"})
      */
     private $type;
 
     /**
-     * @var Companies
+     * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="attachments")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_company_owner", referencedColumnName="id")
+     *     @ORM\JoinColumn(name="id_project", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"attachment:read"})
+     * @Groups({"attachment:read", "attachment:write"})
      */
-    private $companyOwner;
+    private $project;
 
     /**
      * @var string
@@ -182,14 +180,20 @@ class Attachment
      * Attachment constructor.
      *
      * @param string  $path
+     * @param string  $type
      * @param Clients $addedBy
+     * @param Project $project
+     *
+     * @throws Exception
      */
-    public function __construct(string $path, Clients $addedBy)
+    public function __construct(string $path, string $type, Clients $addedBy, Project $project)
     {
         $this->signatures = new ArrayCollection();
         $this->path       = $path;
+        $this->type       = $type;
         $this->addedBy    = $addedBy;
         $this->added      = new DateTimeImmutable();
+        $this->project    = $project;
     }
 
     /**
@@ -249,19 +253,11 @@ class Attachment
     }
 
     /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    /**
-     * @param AttachmentType $type
+     * @param string $type
      *
      * @return Attachment
      */
-    public function setType(?AttachmentType $type): Attachment
+    public function setType(string $type): Attachment
     {
         $this->type = $type;
 
@@ -269,9 +265,9 @@ class Attachment
     }
 
     /**
-     * @return AttachmentType|null
+     * @return string
      */
-    public function getType(): ?AttachmentType
+    public function getType(): string
     {
         return $this->type;
     }
@@ -317,21 +313,21 @@ class Attachment
     }
 
     /**
-     * @return Companies|null
+     * @return Project
      */
-    public function getCompanyOwner(): ?Companies
+    public function getProject(): Project
     {
-        return $this->companyOwner;
+        return $this->project;
     }
 
     /**
-     * @param Companies|null $companyOwner
+     * @param Project $project
      *
      * @return Attachment
      */
-    public function setCompanyOwner(?Companies $companyOwner): Attachment
+    public function setProject(Project $project): Attachment
     {
-        $this->companyOwner = $companyOwner;
+        $this->project = $project;
 
         return $this;
     }
@@ -362,5 +358,13 @@ class Attachment
     public function getDownloaded(): ?DateTimeImmutable
     {
         return $this->downloaded;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAttachmentTypes(): array
+    {
+        return self::getConstants('TYPE_');
     }
 }

@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\Attachment;
+use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\Attachment\AttachmentManager;
 
 class Upload
@@ -52,17 +53,19 @@ class Upload
         }
 
         $type = $request->request->get('type');
-        $type = $type ? $this->converter->getItemFromIri($type) : null;
 
-        $company = $request->request->get('company');
-        $company = $company ? $this->converter->getItemFromIri($company) : null;
+        $project = $request->request->get('project');
+        $project = $project ? $this->converter->getItemFromIri($project) : null;
+
+        if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
+            throw new AccessDeniedHttpException('You cannot upload file for the project');
+        }
 
         return $this->attachmentManager->upload(
             $request->files->get('file'),
             $user,
             $type,
-            $company,
-            $request->request->get('description')
+            $project
         );
     }
 }

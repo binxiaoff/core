@@ -11,6 +11,7 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use Unilend\Entity\AcceptationsLegalDocs;
+use Unilend\Service\FileSystem\FileSystemHelper;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ServiceTermsNotificationSender
@@ -23,20 +24,25 @@ class ServiceTermsNotificationSender
     private $serviceTermsGenerator;
     /** @var Swift_Mailer */
     private $mailer;
+    /** @var FileSystemHelper */
+    private $fileSystemHelper;
 
     /**
      * @param TemplateMessageProvider $messageProvider
      * @param ServiceTermsGenerator   $serviceTermsGenerator
+     * @param FileSystemHelper        $fileSystemHelper
      * @param Swift_Mailer            $mailer
      */
     public function __construct(
         TemplateMessageProvider $messageProvider,
         ServiceTermsGenerator $serviceTermsGenerator,
+        FileSystemHelper $fileSystemHelper,
         Swift_Mailer $mailer
     ) {
         $this->messageProvider       = $messageProvider;
         $this->serviceTermsGenerator = $serviceTermsGenerator;
         $this->mailer                = $mailer;
+        $this->fileSystemHelper      = $fileSystemHelper;
     }
 
     /**
@@ -63,7 +69,7 @@ class ServiceTermsNotificationSender
             'firstName' => $recipient->getFirstName(),
         ]);
 
-        $pdf = $this->serviceTermsGenerator->getFileSystem()->read(
+        $pdf = $this->fileSystemHelper->getFileSystemForClass($acceptationsLegalDoc)->read(
             $this->serviceTermsGenerator->getFilePath($acceptationsLegalDoc)
         );
         $attachment = new Swift_Attachment(

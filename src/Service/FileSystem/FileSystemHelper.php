@@ -4,13 +4,29 @@ declare(strict_types=1);
 
 namespace Unilend\Service\FileSystem;
 
+use Doctrine\ORM\Proxy\Proxy;
+use Exception;
 use League\Flysystem\{FileExistsException, FileNotFoundException, FilesystemInterface};
+use LogicException;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\{ResponseHeaderBag, StreamedResponse};
+use Unilend\Entity\{AcceptationsLegalDocs, Attachment};
 use URLify;
 
 class FileSystemHelper
 {
+    /** @var ContainerInterface */
+    private $container;
+
+    /**
+     * @param ContainerInterface $container
+     */
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+    }
+
     /**
      * @param string              $temporaryFilePath
      * @param FilesystemInterface $filesystem
@@ -54,5 +70,39 @@ class FileSystemHelper
         $response->headers->set('Content-Type', $filesystem->getMimetype($filePath) ?: 'application/octet-stream');
 
         return $response;
+    }
+
+    /**
+     * @param string|object $class
+     *
+     * @throws Exception
+     *
+     * @return object|null
+     */
+    public function getFileSystemForClass($class)
+    {
+        if (is_object($class)) {
+            $class = $class instanceof Proxy ? get_parent_class($class) : get_class($class);
+        }
+        switch ($class) {
+            case Attachment::class:
+                return $this->getService('League\Flysystem\UserAttachmentFilesystem');
+            case AcceptationsLegalDocs::class:
+                return $this->getService('League\Flysystem\GeneratedDocumentFilesystem');
+            default:
+                throw new LogicException('This code should not be reached');
+        }
+    }
+
+    /**
+     * @param string $name
+     *
+     * @throws Exception
+     *
+     * @return object|null
+     */
+    private function getService(string $name)
+    {
+        return $this->container->get($name);
     }
 }

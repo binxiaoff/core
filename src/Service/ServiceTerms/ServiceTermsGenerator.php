@@ -62,14 +62,6 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
     }
 
     /**
-     * @return FilesystemInterface
-     */
-    public function getFileSystem(): FilesystemInterface
-    {
-        return $this->generatedDocumentFilesystem;
-    }
-
-    /**
      * @param AcceptationsLegalDocs|FileStorageInterface $acceptedLegalDoc
      *
      * @throws Exception

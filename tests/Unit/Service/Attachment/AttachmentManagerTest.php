@@ -6,18 +6,18 @@ namespace Unilend\Test\Unit\Service\Attachment;
 
 use DateTimeInterface;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Faker\Provider\Base;
+use Exception;
+use Faker\Provider\{Base, Miscellaneous};
 use League\Flysystem\{FileExistsException, FileNotFoundException, FilesystemInterface};
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Prophecy\Prophecy\{ObjectProphecy, ProphecySubjectInterface};
+use Prophecy\Prophecy\{ObjectProphecy};
 use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies};
+use Unilend\Entity\{Attachment, Clients, Companies, Embeddable\Money, Project};
 use Unilend\Repository\AttachmentRepository;
-use Unilend\Service\Attachment\AttachmentManager;
-use Unilend\Service\FileSystem\FileUploadManager;
+use Unilend\Service\{Attachment\AttachmentManager, FileSystem\FileUploadManager};
 
 /**
  * @coversDefaultClass \Unilend\Service\Attachment\AttachmentManager
@@ -50,9 +50,9 @@ class AttachmentManagerTest extends TestCase
      *
      * @dataProvider uploadDataProvider
      *
-     * @param AttachmentType|null $type
-     * @param Companies|null      $companyOwner
-     * @param string|null         $description
+     * @param string       $type
+     * @param Project|null $project
+     * @param string|null  $description
      *
      * @throws FileExistsException
      * @throws ORMException
@@ -60,8 +60,8 @@ class AttachmentManagerTest extends TestCase
      * @throws ReflectionException
      */
     public function testUpload(
-        ?AttachmentType $type = null,
-        ?Companies $companyOwner = null,
+        string $type,
+        Project $project = null,
         ?string $description = null
     ): void {
         $this->fileUploadManager->uploadFile(Argument::type(UploadedFile::class), Argument::cetera())->will(
@@ -90,28 +90,30 @@ class AttachmentManagerTest extends TestCase
             $uploadedFile,
             $uploader,
             $type,
-            $companyOwner,
+            $project,
             $description
         );
 
         static::assertSame($uploader, $createdAttachment->getAddedBy());
         static::assertStringContainsString((string) $uploader->getIdClient(), $createdAttachment->getPath());
         static::assertSame($type, $createdAttachment->getType());
-        static::assertSame($companyOwner, $createdAttachment->getCompanyOwner());
+        static::assertSame($project, $createdAttachment->getProject());
         static::assertSame($description, $createdAttachment->getDescription());
     }
 
     /**
+     * @throws Exception
+     *
      * @return array
      */
     public function uploadDataProvider(): array
     {
+        $project = new Project(new Clients(), new Companies('test'), new Money(Miscellaneous::currencyCode()));
+
         return [
-            'no optionnal parameter'   => [],
-            'type'                     => [new AttachmentType()],
-            'companyOwner'             => [null, new Companies('test')],
-            'description'              => [null, null, Base::randomLetter()],
-            'all optionnal parameters' => [new AttachmentType(), new Companies('test'), Base::randomLetter()],
+            'type and project'        => [Base::randomLetter(), $project],
+            'description'             => [Base::randomLetter(), $project, Base::randomLetter()],
+            'all optional parameters' => [Base::randomLetter(), $project, Base::randomLetter()],
         ];
     }
 
@@ -120,10 +122,16 @@ class AttachmentManagerTest extends TestCase
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws Exception
      */
     public function testLogDownload(): void
     {
-        $attachment = new Attachment('test', new Clients());
+        $attachment = new Attachment(
+            'test',
+            'someType',
+            new Clients(),
+            new Project(new Clients(), new Companies(Base::lexify('????')), new Money(Miscellaneous::currencyCode()))
+        );
 
         $attachmentManager = $this->createTestObject();
 
@@ -137,28 +145,21 @@ class AttachmentManagerTest extends TestCase
      * @covers ::read
      *
      * @throws FileNotFoundException
+     * @throws Exception
      */
     public function testRead(): void
     {
-        $attachment = new Attachment('test', new Clients());
+        $attachment = new Attachment(
+            'test',
+            'someType',
+            new Clients(),
+            new Project(new Clients(), new Companies(Base::lexify('????')), new Money(Miscellaneous::currencyCode()))
+        );
 
         $attachmentManager = $this->createTestObject();
         $attachmentManager->read($attachment);
 
         $this->userAttachmentFilesystem->read(Argument::exact($attachment->getPath()))->shouldHaveBeenCalled();
-    }
-
-    /**
-     * @covers ::getFilesystem
-     */
-    public function testGetFilesystem(): void
-    {
-        $attachmentManager = $this->createTestObject();
-        /** @var ProphecySubjectInterface $fileSystem */
-        $fileSystem = $attachmentManager->getFileSystem();
-
-        // the call to getProphecy is necessary as $filesystem is a test double
-        static::assertSame($this->userAttachmentFilesystem, $fileSystem->getProphecy());
     }
 
     /**
