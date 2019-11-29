@@ -108,7 +108,7 @@ class AttachmentManagerTest extends TestCase
      */
     public function uploadDataProvider(): array
     {
-        $project = new Project(new Clients(), new Companies('test'), new Money(Miscellaneous::currencyCode()));
+        $project = $this->createProject();
 
         return [
             'type and project'        => [Base::randomLetter(), $project],
@@ -126,12 +126,7 @@ class AttachmentManagerTest extends TestCase
      */
     public function testLogDownload(): void
     {
-        $attachment = new Attachment(
-            'test',
-            'someType',
-            new Clients(),
-            new Project(new Clients(), new Companies(Base::lexify('????')), new Money(Miscellaneous::currencyCode()))
-        );
+        $attachment = $this->createAttachment();
 
         $attachmentManager = $this->createTestObject();
 
@@ -149,17 +144,40 @@ class AttachmentManagerTest extends TestCase
      */
     public function testRead(): void
     {
-        $attachment = new Attachment(
-            'test',
-            'someType',
-            new Clients(),
-            new Project(new Clients(), new Companies(Base::lexify('????')), new Money(Miscellaneous::currencyCode()))
-        );
+        $attachment = $this->createAttachment();
 
         $attachmentManager = $this->createTestObject();
         $attachmentManager->read($attachment);
 
         $this->userAttachmentFilesystem->read(Argument::exact($attachment->getPath()))->shouldHaveBeenCalled();
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return Attachment
+     */
+    protected function createAttachment(): Attachment
+    {
+        return new Attachment(
+            'test',
+            'someType',
+            new Clients(),
+            $this->createProject()
+        );
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return Project
+     */
+    protected function createProject(): Project
+    {
+        $client = $this->prophesize(Clients::class);
+        $client->getCompany()->willReturn(new Companies(Base::lexify('????')));
+
+        return new Project($client->reveal(), new Companies(Base::lexify('????')), new Money(Miscellaneous::currencyCode()));
     }
 
     /**
