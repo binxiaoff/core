@@ -31,8 +31,6 @@ final class Version20191127092752 extends AbstractMigration
         $this->addSql('ALTER TABLE attachment ADD type VARCHAR(60) NOT NULL, DROP id_type');
         $this->addSql('ALTER TABLE attachment ADD public_id VARCHAR(36) NOT NULL AFTER id');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_795FD9BBB5B48B91 ON attachment (public_id)');
-
-        $this->addSql("INSERT INTO attachment_type (label, downloadable) VALUES ('general', 1), ('accounting_financial', 1), ('legal', 1), ('kyc', 1)");
     }
 
     public function down(Schema $schema): void
