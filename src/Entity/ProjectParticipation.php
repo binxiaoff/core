@@ -147,6 +147,8 @@ class ProjectParticipation
      * @var ProjectParticipationOffer[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="ProjectParticipationOffer", mappedBy="projectParticipation")
+     *
+     * @Groups({"project:list"})
      */
     private $projectParticipationOffers;
 
