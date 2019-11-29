@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource, ApiSubresource};
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\{NumericFilter, SearchFilter};
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
@@ -13,8 +13,7 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Ramsey\Uuid\Uuid;
 use RuntimeException;
-use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\Embeddable\Money;
@@ -461,9 +460,7 @@ class Project
             }
         }
 
-        $arranger = new ProjectParticipation($submitter, $submitter->getCompany(), $this);
-        $arranger->addRoles([ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER]);
-        $this->projectParticipations->add($arranger);
+        $this->projectParticipations->add(new ProjectParticipation($submitter->getCompany(), $this, $submitter, [ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER]));
     }
 
     /**

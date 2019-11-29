@@ -6,6 +6,7 @@ namespace Unilend\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
 
 /**
@@ -50,11 +51,21 @@ class ProjectParticipationContact
     /**
      * ProjectParticipationContact constructor.
      *
-     * @throws \Exception
+     * @param ProjectParticipation $projectParticipation
+     * @param Clients              $clients
+     * @param Clients|null         $addedBy
+     *
+     * @throws Exception
      */
-    public function __construct()
-    {
-        $this->added = new DateTimeImmutable();
+    public function __construct(
+        ProjectParticipation $projectParticipation,
+        Clients $clients,
+        Clients $addedBy
+    ) {
+        $this->projectParticipation = $projectParticipation;
+        $this->client               = $clients;
+        $this->addedBy              = $addedBy;
+        $this->added                = new DateTimeImmutable();
     }
 
     /**

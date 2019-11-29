@@ -22,7 +22,7 @@ use Unilend\Service\User\RealUserFinder;
  *         "post": {
  *             "denormalization_context": {"groups": "projectParticipation:create"},
  *             "normalization_context": {"groups": "projectParticipation:view"},
- *             "security": "is_granted('edit', object.getProject())"
+ *             "security_post_denormalize": "is_granted('edit', object.getProject())"
  *         }
  *     },
  *     itemOperations={
@@ -161,27 +161,38 @@ class ProjectParticipation
     private $invitationMoney;
 
     /**
-     * @param Clients    $addedBy
      * @param Companies  $company
      * @param Project    $project
+     * @param Clients    $addedBy
+     * @param array      $roles
      * @param Money|null $invitationMoney
      *
      * @throws Exception
      */
     public function __construct(
-        Clients $addedBy,
         Companies $company,
         Project $project,
+        Clients $addedBy,
+        array $roles = [self::DUTY_PROJECT_PARTICIPATION_PARTICIPANT],
         Money $invitationMoney = null
     ) {
-        $this->projectParticipationContacts = new ArrayCollection();
-        $this->permission                   = new Permission();
-        $this->added                        = new DateTimeImmutable();
-        $this->addedBy                      = $addedBy;
-        $this->company                      = $company;
-        $this->project                      = $project;
-        $this->invitationMoney              = $invitationMoney ?? new NullableMoney();
-        $this->projectParticipationOffers   = new ArrayCollection();
+        $this->roles                      = $roles;
+        $this->permission                 = new Permission();
+        $this->added                      = new DateTimeImmutable();
+        $this->addedBy                    = $addedBy;
+        $this->company                    = $company;
+        $this->project                    = $project;
+        $this->invitationMoney            = $invitationMoney ?? new NullableMoney();
+        $this->projectParticipationOffers = new ArrayCollection();
+
+        $this->projectParticipationContacts = $company->getStaff()
+            ->filter(function (Staff $staff) use ($project) {
+                return $this->isOrganizer() || (null === $project->getMarketSegment() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
+            })
+            ->map(function (Staff $staff) use ($addedBy) {
+                return new ProjectParticipationContact($this, $staff->getClient(), $addedBy);
+            })
+        ;
     }
 
     /**
@@ -365,11 +376,7 @@ class ProjectParticipation
      */
     public function addProjectParticipationContact(Clients $client, RealUserFinder $realUserFinder): ProjectParticipationContact
     {
-        $projectParticipationContact = (new ProjectParticipationContact())
-            ->setAddedByValue($realUserFinder)
-            ->setProjectParticipation($this)
-            ->setClient($client)
-        ;
+        $projectParticipationContact = (new ProjectParticipationContact($this, $client, $realUserFinder()));
 
         $this->projectParticipationContacts->add($projectParticipationContact);
 
