@@ -107,10 +107,10 @@ class ProjectParticipationVoter extends Voter
             return $contact->getClient() === $connectedUser;
         };
 
-        if ($arranger && (1 === count($arranger->getCompany()->getStaff($connectedUser)) || $arranger->getProjectParticipationContacts()->exists($closure))) {
+        if (($arranger && $arranger->getCompany() === $connectedUser->getCompany()) || $arranger->getProjectParticipationContacts()->exists($closure)) {
             return true;
         }
 
-        return 1 === count($projectParticipation->getCompany()->getStaff($connectedUser)) || 1 === $projectParticipation->getProjectParticipationContacts()->exists($closure);
+        return $projectParticipation->getCompany() === $connectedUser->getCompany() || 1 === $projectParticipation->getProjectParticipationContacts()->exists($closure);
     }
 }
