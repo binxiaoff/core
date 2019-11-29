@@ -19,7 +19,11 @@ use Unilend\Service\User\RealUserFinder;
  * @ApiResource(
  *     collectionOperations={
  *         "get": {"normalization_context": {"groups": "projectParticipation:list"}},
- *         "post": {"denormalization_context": {"groups": "projectParticipation:create"}, "normalization_context": {"groups": "projectParticipation:view"}}
+ *         "post": {
+ *             "denormalization_context": {"groups": "projectParticipation:create"},
+ *             "normalization_context": {"groups": "projectParticipation:view"},
+ *             "security": "is_granted('edit', object.getProject())"
+ *         }
  *     },
  *     itemOperations={
  *         "get": {"normalization_context": {"groups": "projectParticipation:view"}},
