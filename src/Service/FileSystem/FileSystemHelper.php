@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Service\FileSystem;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Proxy\Proxy;
 use Exception;
 use League\Flysystem\{FileExistsException, FileNotFoundException, FilesystemInterface};
@@ -17,19 +16,15 @@ use URLify;
 
 class FileSystemHelper
 {
-    /** @var ManagerRegistry */
-    private $registry;
     /** @var ContainerInterface */
     private $container;
 
     /**
      * @param ContainerInterface $container
-     * @param ManagerRegistry    $registry
      */
-    public function __construct(ContainerInterface $container, ManagerRegistry $registry)
+    public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
-        $this->registry  = $registry;
     }
 
     /**

@@ -143,8 +143,7 @@ class FileSystemHelperTest extends TestCase
     private function createTestObject(): FileSystemHelper
     {
         return new FileSystemHelper(
-            $this->container->reveal(),
-            $this->managerRegistry->reveal()
+            $this->container->reveal()
         );
     }
 }
