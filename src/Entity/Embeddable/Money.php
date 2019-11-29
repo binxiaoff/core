@@ -91,17 +91,27 @@ class Money
     /**
      * @param mixed $divisor
      *
-     * @return Money
+     * @return float
      */
-    public function divide(Money $divisor)
+    public function ratio(Money $divisor): float
     {
         if ($divisor->getCurrency() !== $this->getCurrency()) {
             throw new DifferentCurrencyException($this, $divisor);
         }
 
+        return (float) bcdiv($this->amount, (string) $divisor->getAmount(), 4);
+    }
+
+    /**
+     * @param float $divisor
+     *
+     * @return Money
+     */
+    public function divide(float $divisor): Money
+    {
         return new Money(
-            $this->currency,
-            $this->round(bcdiv($this->amount, (string) $divisor->getAmount(), 4))
+            $this->getCurrency(),
+            $this->round(bcdiv($this->amount, $divisor, 4))
         );
     }
 
@@ -110,15 +120,11 @@ class Money
      *
      * @return Money
      */
-    public function multiply($factor)
+    public function multiply(float $factor): Money
     {
-        if ($factor->getCurrency() !== $this->getCurrency()) {
-            throw new DifferentCurrencyException($this, $factor);
-        }
-
         return new Money(
             $this->currency,
-            $this->round(bcmul($this->amount, $factor->getAmount(), 4))
+            $this->round(bcmul($this->amount, $factor, 4))
         );
     }
 

@@ -62,7 +62,7 @@ class ProjectParticipationOffer
     private $id;
 
     /**
-     * @var Project
+     * @var ProjectParticipation
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationOffers")
      * @ORM\JoinColumns({
@@ -288,7 +288,7 @@ class ProjectParticipationOffer
         $remainderMoney  = clone $syndicatedMoney;
 
         foreach ($this->getProjectParticipation()->getProject()->getTranches() as $tranche) {
-            $split          = $offerMoney->multiply($syndicatedMoney->divide($tranche->getMoney()));
+            $split          = $offerMoney->multiply($syndicatedMoney->ratio($tranche->getMoney()));
             $remainderMoney = $remainderMoney->substract($split);
 
             $this->trancheOffers->add(
