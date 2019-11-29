@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Service\FileSystem;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\Proxy\Proxy;
 use Exception;
 use League\Flysystem\{FileExistsException, FileNotFoundException, FilesystemInterface};
 use LogicException;
@@ -86,11 +87,7 @@ class FileSystemHelper
     public function getFileSystemForClass($class)
     {
         if (is_object($class)) {
-            $entityManager = $this->registry->getManagerForClass(get_class($class));
-            if (null === $entityManager) {
-                throw new LogicException('This code should not be reached');
-            }
-            $class = $entityManager->getMetadataFactory()->getMetadataFor(get_class($class))->getName();
+            $class = $class instanceof Proxy ? get_parent_class($class) : get_class($class);
         }
         switch ($class) {
             case Attachment::class:

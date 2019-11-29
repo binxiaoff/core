@@ -1391,10 +1391,14 @@ class Project
 
     /**
      * @param ArrayCollection|Attachment[] $attachments
+     *
+     * @return Project
      */
-    public function setAttachments($attachments): void
+    public function setAttachments($attachments): Project
     {
         $this->attachments = $attachments;
+
+        return $this;
     }
 
     /**

@@ -64,7 +64,7 @@ class AttachmentManager
             ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader))
         ;
 
-        $attachment = new Attachment($relativeUploadedPath, $type, $uploader);
+        $attachment = new Attachment($relativeUploadedPath, $type, $uploader, $project);
 
         $attachment
             ->setOriginalName($uploadedFile->getClientOriginalName())

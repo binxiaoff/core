@@ -126,7 +126,12 @@ class AttachmentManagerTest extends TestCase
      */
     public function testLogDownload(): void
     {
-        $attachment = new Attachment('test', 'someType', new Clients());
+        $attachment = new Attachment(
+            'test',
+            'someType',
+            new Clients(),
+            new Project(new Clients(), new Companies(Base::lexify('????')), new Money(Miscellaneous::currencyCode()))
+        );
 
         $attachmentManager = $this->createTestObject();
 
@@ -140,10 +145,16 @@ class AttachmentManagerTest extends TestCase
      * @covers ::read
      *
      * @throws FileNotFoundException
+     * @throws Exception
      */
     public function testRead(): void
     {
-        $attachment = new Attachment('test', 'someType', new Clients());
+        $attachment = new Attachment(
+            'test',
+            'someType',
+            new Clients(),
+            new Project(new Clients(), new Companies(Base::lexify('????')), new Money(Miscellaneous::currencyCode()))
+        );
 
         $attachmentManager = $this->createTestObject();
         $attachmentManager->read($attachment);

@@ -182,16 +182,18 @@ class Attachment
      * @param string  $path
      * @param string  $type
      * @param Clients $addedBy
+     * @param Project $project
      *
      * @throws Exception
      */
-    public function __construct(string $path, string $type, Clients $addedBy)
+    public function __construct(string $path, string $type, Clients $addedBy, Project $project)
     {
         $this->signatures = new ArrayCollection();
         $this->path       = $path;
         $this->type       = $type;
         $this->addedBy    = $addedBy;
         $this->added      = new DateTimeImmutable();
+        $this->project    = $project;
     }
 
     /**
@@ -319,11 +321,11 @@ class Attachment
     }
 
     /**
-     * @param Project|null $project
+     * @param Project $project
      *
      * @return Attachment
      */
-    public function setProject(?Project $project): Attachment
+    public function setProject(Project $project): Attachment
     {
         $this->project = $project;
 
