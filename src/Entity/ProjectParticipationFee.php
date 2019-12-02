@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -69,7 +70,14 @@ class ProjectParticipationFee
      *
      * @Assert\Valid
      *
-     * @Groups({"project:view", "projectParticipation:list", "projectParticipationFee:create", "projectParticipationFee:update"})
+     * @Groups({
+     *     "project:view",
+     *     "projectParticipation:create",
+     *     "projectParticipation:view",
+     *     "projectParticipation:list",
+     *     "projectParticipationFee:create",
+     *     "projectParticipationFee:update"
+     * })
      */
     private $fee;
 
@@ -91,7 +99,7 @@ class ProjectParticipationFee
      * @param ProjectParticipation $projectParticipation
      * @param Fee                  $fee
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(ProjectParticipation $projectParticipation, Fee $fee)
     {
