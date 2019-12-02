@@ -100,7 +100,7 @@ class Project
      *
      * @ApiProperty(identifier=true)
      *
-     * @Groups({"project:view", "projectParticipation:list"})
+     * @Groups({"project:list", "project:view", "projectParticipation:list"})
      */
     private $hash;
 

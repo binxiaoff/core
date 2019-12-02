@@ -22,7 +22,15 @@ class Fee
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:view", "projectParticipation:list", "tranche:create", "tranche:update", "projectParticipationFee:create", "projectParticipationFee:update"})
+     * @Groups({
+     *     "project:view",
+     *     "projectParticipation:create",
+     *     "projectParticipation:list",
+     *     "tranche:create",
+     *     "tranche:update",
+     *     "projectParticipationFee:create",
+     *     "projectParticipationFee:update"
+     * })
      */
     private $type;
 
@@ -31,9 +39,15 @@ class Fee
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"projectParticipation:list"})
-     *
-     * @Groups({"project:view", "projectParticipation:list", "tranche:create", "tranche:update", "projectParticipationFee:create", "projectParticipationFee:update"})
+     * @Groups({
+     *     "project:view",
+     *     "projectParticipation:create",
+     *     "projectParticipation:list",
+     *     "tranche:create",
+     *     "tranche:update",
+     *     "projectParticipationFee:create",
+     *     "projectParticipationFee:update"
+     * })
      */
     private $comment;
 
@@ -46,7 +60,15 @@ class Fee
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:view", "projectParticipation:list", "tranche:create", "tranche:update", "projectParticipationFee:create", "projectParticipationFee:update"})
+     * @Groups({
+     *     "project:view",
+     *     "projectParticipation:create",
+     *     "projectParticipation:list",
+     *     "tranche:create",
+     *     "tranche:update",
+     *     "projectParticipationFee:create",
+     *     "projectParticipationFee:update"
+     * })
      */
     private $rate;
 
@@ -55,7 +77,15 @@ class Fee
      *
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"project:view", "projectParticipation:list", "tranche:create", "tranche:update", "projectParticipationFee:create", "projectParticipationFee:update"})
+     * @Groups({
+     *     "project:view",
+     *     "projectParticipation:create",
+     *     "projectParticipation:list",
+     *     "tranche:create",
+     *     "tranche:update",
+     *     "projectParticipationFee:create",
+     *     "projectParticipationFee:update"
+     * })
      */
     private $recurring;
 
