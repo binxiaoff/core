@@ -30,6 +30,7 @@ security:
                 entry_point: lexik_jwt_authentication.jwt_token_authenticator
 
     access_control:
+        - { path: '^/legal_documents', allow_if: "is_authenticated() or is_anonymous()" }
         - { path: '^/docs', allow_if: "is_authenticated() or is_anonymous()" }
         - { path: '^/token/refresh', allow_if: "is_authenticated() or is_anonymous()" }
         - { path: '^/.+', allow_if: 'is_authenticated()' }
