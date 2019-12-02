@@ -56,7 +56,7 @@ class TrancheFee
      *
      * @Assert\Valid
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update", "tranche:view"})
      */
     private $fee;
 
@@ -69,8 +69,6 @@ class TrancheFee
      * })
      *
      * @Assert\Valid
-     *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
      *
      * @MaxDepth(1)
      */

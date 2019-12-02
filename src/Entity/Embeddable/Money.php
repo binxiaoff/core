@@ -23,7 +23,17 @@ class Money
      * @Assert\Type("numeric")
      * @Assert\Positive
      *
-     * @Groups({"project:create", "project:list", "project:update", "project:view", "tranche:create", "tranche:update", "projectParticipation:list", "projectParticipation:create"})
+     * @Groups({
+     *     "project:create",
+     *     "project:list",
+     *     "project:view",
+     *     "project:update",
+     *     "tranche:view",
+     *     "tranche:create",
+     *     "tranche:update",
+     *     "projectParticipation:list",
+     *     "projectParticipation:create"
+     * })
      */
     protected $amount;
 
@@ -37,7 +47,17 @@ class Money
      * @Assert\NotBlank
      * @Assert\Currency
      *
-     * @Groups({"project:create", "project:list", "project:view", "project:update", "tranche:create", "tranche:update", "projectParticipation:list", "projectParticipation:create"})
+     * @Groups({
+     *     "project:create",
+     *     "project:list",
+     *     "project:view",
+     *     "project:update",
+     *     "tranche:view",
+     *     "tranche:create",
+     *     "tranche:update",
+     *     "projectParticipation:list",
+     *     "projectParticipation:create"
+     * })
      */
     protected $currency;
 

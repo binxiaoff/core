@@ -40,7 +40,7 @@ class LendingRate
      * @Assert\NotBlank
      * @Assert\Choice(callback="getIndexes")
      *
-     * @Groups({"project:view"})
+     * @Groups({"project:view", "tranche:view"})
      */
     protected $indexType;
 
@@ -56,7 +56,7 @@ class LendingRate
      * @Assert\PositiveOrZero
      * @Assert\Range(min="0", max="0.9999")
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update"})
      */
     protected $margin;
 
@@ -70,7 +70,7 @@ class LendingRate
      * @Assert\Type("numeric")
      * @Assert\Range(max="-0.9999", max="0.9999")
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update"})
      */
     protected $floor;
 
@@ -79,7 +79,7 @@ class LendingRate
      *
      * @ORM\Column(length=20, nullable=true)
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update"})
      */
     protected $floorType;
 
