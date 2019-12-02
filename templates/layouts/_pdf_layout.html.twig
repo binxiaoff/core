@@ -3,7 +3,7 @@
 <head>
     {% block cssFiles %}
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">
-        <link rel="stylesheet" href="{{ absolute_url(asset('css/screen.css', 'gulp')) }}"/>
+        <link rel="stylesheet" href="{{ absolute_url(asset('css/screen.css')) }}"/>
         <style>
             /* Adjust common styles */
             .pdf-layout .logo {
@@ -107,7 +107,7 @@
 <div id="top" class="site">
     {% block header %}
         <div class="logo">
-            <img src="{{ absolute_url(asset('images/logo/logo-and-type-avec-baseline-245x52@2x.png', 'gulp')) }}" width="245" height="52">
+            <img src="{{ absolute_url(asset('images/logo/logo-and-type-avec-baseline-245x52@2x.png')) }}" width="245" height="52">
         </div><!-- /.header -->
     {% endblock %}
     <div class="page-content">
