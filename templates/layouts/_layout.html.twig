@@ -8,21 +8,21 @@
             {% include 'partials/fonts_inline.html.twig' %}
             <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">
 
-            <link rel="stylesheet" href="{{ asset('css/screen.css', 'gulp') }}" />
+            <link rel="stylesheet" href="{{ asset('css/screen.css') }}" />
             <!--[if lte IE 10]>
-            <link rel="stylesheet" href="{{ asset('css/ie.css', 'gulp') }}" />
+            <link rel="stylesheet" href="{{ asset('css/ie.css') }}" />
             <[endif]-->
             {# Cookie consent #}
             <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css" />
             {# End of cookie consent #}
         {% endblock %}
 
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicons/apple-touch-icon.png', 'gulp') }}">
-        <link rel="icon" type="image/png" href="{{ asset('favicons/favicon-32x32.png', 'gulp') }}" sizes="32x32">
-        <link rel="icon" type="image/png" href="{{ asset('favicons/favicon-16x16.png', 'gulp') }}" sizes="16x16">
-        <link rel="manifest" href="{{ asset('favicons/manifest.json', 'gulp') }}">
-        <link rel="shortcut icon" href="{{ asset('favicons/favicon.ico', 'gulp') }}">
-        <meta name="msapplication-config" content="{{ asset('favicons/browserconfig.xml', 'gulp') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicons/apple-touch-icon.png') }}">
+        <link rel="icon" type="image/png" href="{{ asset('favicons/favicon-32x32.png') }}" sizes="32x32">
+        <link rel="icon" type="image/png" href="{{ asset('favicons/favicon-16x16.png') }}" sizes="16x16">
+        <link rel="manifest" href="{{ asset('favicons/manifest.json') }}">
+        <link rel="shortcut icon" href="{{ asset('favicons/favicon.ico') }}">
+        <meta name="msapplication-config" content="{{ asset('favicons/browserconfig.xml') }}">
         <meta name="theme-color" content="#ffffff">
 
         {% block pageHeadScripts %}{% endblock %}
@@ -111,8 +111,8 @@
                 var onExpireRecaptchaCallback = function () {}
             </script>
 
-            <script type="text/javascript" src="{{ asset('js/dependencies.js', 'gulp') }}"></script>
-            <script type="text/javascript" src="{{ asset('js/main.js', 'gulp') }}"></script>
+            <script type="text/javascript" src="{{ asset('js/dependencies.js') }}"></script>
+            <script type="text/javascript" src="{{ asset('js/main.js') }}"></script>
 
             {% include 'layouts/_cookie_consent.html.twig' %}
             {% include 'layouts/_fos_js_routing.html.twig' %}
