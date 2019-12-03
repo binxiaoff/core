@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Clients;
 use Unilend\Service\User\RealUserFinder;
 
@@ -18,9 +18,9 @@ trait BlamableAddedTrait
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumn(name="added_by", referencedColumnName="id_client", nullable=false)
      *
-     * @Assert\NotBlank
-     *
      * @Groups({"attachment:read"})
+     *
+     * @Gedmo\Blameable(on="create")
      */
     private $addedBy;
 

@@ -28,7 +28,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)", "normalization_context": {"groups": {"project:view", "tranche_project:view"}}},
- *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)", "denormalization_context": {"groups": {"project:update"}}},
  *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)", "denormalization_context": {"groups": {"project:update"}}}
  *     }
  * )
@@ -345,7 +344,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"project:view", "projectParticipation:list"})
+     * @Groups({"project:view", "projectParticipation:list", "project:update"})
      */
     private $currentStatus;
 
@@ -440,7 +439,7 @@ class Project
         $this->tags                       = new ArrayCollection();
         $this->added                      = new DateTimeImmutable();
 
-        $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $submitter);
+        $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_REQUESTED));
 
         $this->submitterClient  = $submitter;
         $this->submitterCompany = $submitter->getCompany();
@@ -596,16 +595,13 @@ class Project
     }
 
     /**
-     * @param int     $status
-     * @param Clients $clients
-     *
-     * @throws Exception
+     * @param ProjectStatus $projectStatus
      *
      * @return Project
      */
-    public function setCurrentStatus(int $status, Clients $clients): self
+    public function setCurrentStatus(ProjectStatus $projectStatus): self
     {
-        $projectStatus = new ProjectStatus($this, $status, $clients);
+        $projectStatus->setProject($this);
 
         return $this->baseStatusSetter($projectStatus);
     }
