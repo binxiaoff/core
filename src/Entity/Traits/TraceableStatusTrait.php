@@ -65,7 +65,7 @@ trait TraceableStatusTrait
      *
      * @return self
      */
-    private function setCurrentStatus(StatusInterface $status): self
+    public function setCurrentStatus(StatusInterface $status): self
     {
         if (null === $this->currentStatus || $this->currentStatus->getStatus() !== $status->getStatus()) {
             $this->currentStatus = $status;
