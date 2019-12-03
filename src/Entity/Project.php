@@ -23,7 +23,7 @@ use Unilend\Traits\ConstantsAwareTrait;
 /**
  * @ApiResource(
  *     collectionOperations={
- *         "get": {"normalization_context": {"groups": {"project:list"}}},
+ *         "get": {"normalization_context": {"groups": {"project:list", "marketSegment:read"}}},
  *         "post": {"denormalization_context": {"groups": {"project:create"}}}
  *     },
  *     itemOperations={
@@ -174,7 +174,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
+     * @Groups({"project:list", "project:create", "project:update", "project:view", "projectParticipation:list"})
      */
     private $marketSegment;
 

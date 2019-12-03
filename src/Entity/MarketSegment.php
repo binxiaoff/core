@@ -12,6 +12,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * @ORM\Entity(repositoryClass="Unilend\Repository\MarketSegmentRepository")
  *
  * @ApiResource(
+ *     normalizationContext={"groups": {"marketSegment:read"}},
  *     collectionOperations={
  *         "get"
  *     },
@@ -32,7 +33,7 @@ class MarketSegment
     /**
      * @ORM\Column(type="string", length=30)
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"projectParticipation:list", "marketSegment:read"})
      */
     private $label;
 
