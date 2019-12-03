@@ -4,28 +4,27 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
+use Unilend\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
+ * @ApiResource(
+ *     itemOperations={"get"}
+ * )
+ *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
 class LegalDocument
 {
+    use PublicizeIdentityTrait;
     use TimestampableTrait;
 
     public const TYPE_SERVICE_TERMS = 1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     * @ORM\Column(type="integer")
-     */
-    private $id;
 
     /**
      * @var int
@@ -65,31 +64,11 @@ class LegalDocument
     /**
      * LegalDocument constructor.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct()
     {
         $this->added = new DateTimeImmutable();
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    /**
-     * @param int $id
-     *
-     * @return LegalDocument
-     */
-    public function setId(int $id): LegalDocument
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     /**

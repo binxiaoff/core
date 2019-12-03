@@ -24,6 +24,7 @@ class Fee
      *
      * @Groups({
      *     "project:view",
+     *     "projectParticipation:create",
      *     "projectParticipation:list",
      *     "tranche:view",
      *     "tranche:create",
@@ -39,10 +40,9 @@ class Fee
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"projectParticipation:list"})
-     *
      * @Groups({
      *     "project:view",
+     *     "projectParticipation:create",
      *     "projectParticipation:list",
      *     "tranche:view",
      *     "tranche:create",
@@ -64,6 +64,7 @@ class Fee
      *
      * @Groups({
      *     "project:view",
+     *     "projectParticipation:create",
      *     "projectParticipation:list",
      *     "tranche:view",
      *     "tranche:create",
@@ -81,6 +82,7 @@ class Fee
      *
      * @Groups({
      *     "project:view",
+     *     "projectParticipation:create",
      *     "projectParticipation:list",
      *     "tranche:view",
      *     "tranche:create",

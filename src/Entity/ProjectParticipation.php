@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use DomainException;
 use Exception;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
-use Unilend\Entity\Embeddable\{Money, NullableMoney, Permission};
+use Unilend\Entity\Embeddable\{Fee, Money, NullableMoney, Permission};
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
 
 /**
@@ -429,5 +429,42 @@ class ProjectParticipation
         }
 
         return false;
+    }
+
+    /**
+     * @return Fee
+     *
+     * @Groups({"project:view"})
+     */
+    public function getFee(): ?Fee
+    {
+        return $this->getProjectParticipationFee() ? $this->getProjectParticipationFee()->getFee() : null;
+    }
+
+    /**
+     * @param Fee $fee
+     *
+     * @throws Exception
+     *
+     * @return mixed
+     *
+     *
+     * @Groups({"projectParticipation:create"})
+     */
+    public function setFee(Fee $fee): ProjectParticipation
+    {
+        return $this->setProjectParticipationFee(new ProjectParticipationFee($this, $fee));
+    }
+
+    /**
+     * @param ProjectParticipationFee $param
+     *
+     * @return $this
+     */
+    public function setProjectParticipationFee(ProjectParticipationFee $param): ProjectParticipation
+    {
+        $this->projectParticipationFee = $param;
+
+        return $this;
     }
 }
