@@ -446,7 +446,7 @@ class Project
 
         $this->syndicationType   = static::PROJECT_SYNDICATION_TYPE_PRIMARY;
         $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;
-        $this->offerVisibility   = static::OFFER_VISIBILITY_PUBLIC;
+        $this->offerVisibility   = static::OFFER_VISIBILITY_PRIVATE;
 
         $this->borrowerCompany    = $borrowerCompany;
         $this->globalFundingMoney = $globalFundingMoney;
