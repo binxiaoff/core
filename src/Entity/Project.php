@@ -1200,12 +1200,13 @@ class Project
             $projectComplete = false;
         }
 
+        // @todo really quick and dirty translation
         return [
-            ['name' => 'project', 'done' => $projectComplete],
-            ['name' => 'calendar', 'done' => null !== $this->getLenderConsultationClosingDate()],
-            ['name' => 'description', 'done' => null !== $this->getDescription()],
-            ['name' => 'invitations', 'done' => 0 < count($this->getProjectParticipations())],
-            ['name' => 'tranches', 'done' => 0 < count($this->getTranches())],
+            ['name' => /*'project'*/'Synthèse', 'done' => $projectComplete],
+            ['name' => /*'calendar'*/'Calendrier', 'done' => null !== $this->getLenderConsultationClosingDate()],
+            ['name' => /*'description'*/'Description', 'done' => null !== $this->getDescription()],
+            ['name' => /*'tranches'*/'Tranches', 'done' => 0 < count($this->getTranches())],
+            ['name' => /*'invitations'*/'Participants', 'done' => 0 < count($this->getProjectParticipations())],
         ];
     }
 
