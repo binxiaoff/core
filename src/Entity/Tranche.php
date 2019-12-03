@@ -19,10 +19,14 @@ use Unilend\Traits\ConstantsAwareTrait;
 /**
  * @ApiResource(
  *     collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('edit', object.getProject())", "denormalization_context": {"groups": {"tranche:create"}}}
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('edit', object.getProject())",
+ *             "denormalization_context": {"groups": {"tranche:create"}},
+ *             "normalization_context": {"groups": {"tranche:view"}}
+ *         }
  *     },
  *     itemOperations={
- *         "delete": {"security": "is_granted('edit', object.getProject())"},
+ *         "delete": {"security": "is_granted('edit', object.getProject())", "normalization_context": {"groups": {"tranche:view"}}},
  *         "get": {"security": "is_granted('view', object.getProject())"},
  *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())", "denormalization_context": {"groups": {"tranche:update", "project:view"}}},
  *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())", "denormalization_context": {"groups": {"tranche:update", "project:view"}}}
@@ -63,7 +67,7 @@ class Tranche
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      *
-     * @Groups({"project:view"})
+     * @Groups({"project:view", "tranche:view"})
      */
     private $id;
 
@@ -75,7 +79,7 @@ class Tranche
      *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
      *
-     * @Groups({"tranche:create", "tranche:update"})
+     * @Groups({"tranche:create", "tranche:update", "tranche:view"})
      */
     private $project;
 
@@ -88,7 +92,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
      */
     private $name;
 
@@ -102,7 +106,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
      */
     private $loanType;
 
@@ -116,7 +120,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
      */
     private $repaymentType;
 
@@ -132,7 +136,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
      */
     private $duration;
 
@@ -168,7 +172,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
      */
     private $money;
 
@@ -182,7 +186,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update"})
      */
     private $rate;
 
@@ -195,7 +199,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
      */
     private $expectedReleasingDate;
 
@@ -208,7 +212,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
      */
     private $expectedStartingDate;
 
@@ -217,7 +221,7 @@ class Tranche
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheFee", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
      */
     private $trancheFees;
 
