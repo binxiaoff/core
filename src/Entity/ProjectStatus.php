@@ -136,9 +136,13 @@ class ProjectStatus implements StatusInterface
 
     /**
      * @param Project $project
+     *
+     * @return ProjectStatus
      */
-    public function setProject(Project $project)
+    public function setProject(Project $project): ProjectStatus
     {
         $this->project = $project;
+
+        return $this;
     }
 }
