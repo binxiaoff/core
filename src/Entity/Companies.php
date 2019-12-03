@@ -125,7 +125,7 @@ class Companies
     /**
      * @ORM\Column(type="string", length=4, nullable=true, unique=true)
      *
-     * @Groups({"project:list", "project:view", "projectParticipation:view"})
+     * @Groups({"project:list", "project:view", "projectParticipation:view", "projectParticipation:list"})
      */
     private $shortCode;
 

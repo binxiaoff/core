@@ -271,7 +271,7 @@ class ProjectParticipation
     /**
      * @return bool
      *
-     * @Groups({"project:list"})
+     * @Groups({"project:list", "projectParticipation:list"})
      */
     public function hasOffer(): bool
     {
@@ -280,6 +280,8 @@ class ProjectParticipation
 
     /**
      * @return bool
+     *
+     * @Groups({"projectParticipation:list"})
      */
     public function hasValidatedOffer(): bool
     {
@@ -301,7 +303,7 @@ class ProjectParticipation
     }
 
     /**
-     * @Groups({"project:list"})
+     * @Groups({"project:list", "projectParticipation:list"})
      *
      * @return bool
      */
@@ -312,6 +314,8 @@ class ProjectParticipation
 
     /**
      * @return bool
+     *
+     * @Groups({"projectParticipation:list"})
      */
     public function isConsulted(): bool
     {
@@ -447,7 +451,6 @@ class ProjectParticipation
      * @throws Exception
      *
      * @return mixed
-     *
      *
      * @Groups({"projectParticipation:create"})
      */
