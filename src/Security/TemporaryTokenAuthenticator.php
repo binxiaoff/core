@@ -17,7 +17,6 @@ use Unilend\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
 {
-    private const SUPPORTED_PATH_PATTERN = '/^\/temporary_tokens\/([a-z0-9]{32})\//';
     /** @var TemporaryTokenRepository */
     private $temporaryTokenRepository;
     /** @var EventDispatcherInterface */
