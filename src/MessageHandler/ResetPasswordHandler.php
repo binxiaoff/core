@@ -85,6 +85,7 @@ class ResetPasswordHandler implements MessageHandlerInterface
             'cancelPasswordLink' => implode(DIRECTORY_SEPARATOR, [rtrim($this->frontUrl, DIRECTORY_SEPARATOR), 'password', 'change', $token->getToken(), 'cancel']),
             'requesterData'      => $requestData,
         ]);
+        $message->setTo($clients->getEmail());
 
         $this->mailer->send($message);
     }
