@@ -66,6 +66,10 @@ class ResetPasswordHandler implements MessageHandlerInterface
             return;
         }
 
+        if (false === $clients->isGrantedLogin()) {
+            return;
+        }
+
         $token = TemporaryToken::generateShortToken($clients);
 
         $this->manager->persist($token);
