@@ -88,12 +88,13 @@ class Attachment
     use BlamableArchivedTrait;
     use TraceableBlamableUpdatedTrait;
 
-    private const TYPE_GENERAL                            = 'general';
-    private const TYPE_ACCOUNTING_FINANCIAL               = 'accounting_financial';
-    private const TYPE_LEGAL                              = 'legal';
-    private const TYPE_KYC                                = 'kyc';
-    private const TYPE_PROJECT_DESCRIPTION                = 'project_description';
-    private const TYPE_PROJECT_CONFIDENTIALITY_DISCLAIMER = 'project_confidentiality_disclaimer';
+    public const TYPE_PROJECT_CONFIDENTIALITY_DISCLAIMER = 'project_confidentiality_disclaimer';
+
+    private const TYPE_GENERAL              = 'general';
+    private const TYPE_ACCOUNTING_FINANCIAL = 'accounting_financial';
+    private const TYPE_LEGAL                = 'legal';
+    private const TYPE_KYC                  = 'kyc';
+    private const TYPE_PROJECT_DESCRIPTION  = 'project_description';
 
     /**
      * @var string
