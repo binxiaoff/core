@@ -82,11 +82,10 @@ class ProjectParticipationContact
         Clients $clients,
         Clients $addedBy
     ) {
-        $this->projectParticipation    = $projectParticipation;
-        $this->client                  = $clients;
-        $this->addedBy                 = $addedBy;
-        $this->added                   = new DateTimeImmutable();
-        $this->confidentialityAccepted = false;
+        $this->projectParticipation = $projectParticipation;
+        $this->client               = $clients;
+        $this->addedBy              = $addedBy;
+        $this->added                = new DateTimeImmutable();
     }
 
     /**
