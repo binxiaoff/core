@@ -28,6 +28,12 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)", "normalization_context": {"groups": {"project:view", "tranche_project:view"}}},
+ *         "project_confidentiality": {
+ *             "method": "GET",
+ *             "security": "is_granted('view_confidentiality_doc', object)",
+ *             "normalization_context": {"groups": {"project:confidentiality:view", "attachment:read"}},
+ *             "path": "/projects/{id}/confidentiality"
+ *         },
  *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)", "denormalization_context": {"groups": {"project:update"}}}
  *     }
  * )
@@ -206,7 +212,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view"})
+     * @Groups({"project:create", "project:update", "project:view", "project:confidentiality:view"})
      */
     private $confidentialityDisclaimer;
 
@@ -322,13 +328,6 @@ class Project
     private $tranches;
 
     /**
-     * @var ProjectConfidentialityAcceptance[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectConfidentialityAcceptance", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
-     */
-    private $confidentialityAcceptances;
-
-    /**
      * @var string
      *
      * @ORM\Column(type="string", unique=true, nullable=true, length=320)
@@ -430,14 +429,13 @@ class Project
      */
     public function __construct(Clients $submitter, Companies $borrowerCompany, Money $globalFundingMoney)
     {
-        $this->attachments                = new ArrayCollection();
-        $this->projectParticipations      = new ArrayCollection();
-        $this->comments                   = new ArrayCollection();
-        $this->statuses                   = new ArrayCollection();
-        $this->tranches                   = new ArrayCollection();
-        $this->confidentialityAcceptances = new ArrayCollection();
-        $this->tags                       = new ArrayCollection();
-        $this->added                      = new DateTimeImmutable();
+        $this->attachments           = new ArrayCollection();
+        $this->projectParticipations = new ArrayCollection();
+        $this->comments              = new ArrayCollection();
+        $this->statuses              = new ArrayCollection();
+        $this->tranches              = new ArrayCollection();
+        $this->tags                  = new ArrayCollection();
+        $this->added                 = new DateTimeImmutable();
 
         $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_REQUESTED));
 
@@ -592,6 +590,20 @@ class Project
         $this->confidentialityDisclaimer = $confidentialityDisclaimer;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"project:confidentiality:view"})
+     *
+     * @return Attachment|null
+     */
+    public function getConfidentialityDisclaimerDocument(): ?Attachment
+    {
+        return $this->attachments->filter(
+            static function (Attachment $attachment) {
+                return Attachment::TYPE_PROJECT_CONFIDENTIALITY_DISCLAIMER === $attachment->getType();
+            }
+        )->first() ?: null;
     }
 
     /**
@@ -930,23 +942,6 @@ class Project
     public function isOnline(): bool
     {
         return ProjectStatus::STATUS_PUBLISHED === $this->getCurrentStatus()->getStatus();
-    }
-
-    /**
-     * @param Clients $user
-     *
-     * @return bool
-     */
-    public function checkUserConfidentiality(Clients $user): bool
-    {
-        $criteria = new Criteria();
-        $criteria->where(Criteria::expr()->eq('client', $user));
-
-        return
-            false                  === $this->isConfidential()
-            || $user->getCompany() === $this->getSubmitterCompany()
-            || false               === $this->confidentialityAcceptances->matching($criteria)->isEmpty()
-        ;
     }
 
     /**

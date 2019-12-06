@@ -77,18 +77,11 @@ class ProjectParticipationRepository extends ServiceEntityRepository
     public function findByProjectAndClient(Project $project, Clients $clients): ?ProjectParticipation
     {
         return
-            // Check if there is a project participation contact
             $this->createQueryBuilder('pp')
                 ->innerJoin('pp.projectParticipationContacts', 'ppc')
                 ->where('pp.project = :project')
                 ->andWhere('ppc.client = :client')
                 ->setParameters(['project' => $project, 'client' => $clients])
-                ->getQuery()
-                ->getOneOrNullResult() ?? // Check if is a project participation with the user company
-            $this->createQueryBuilder('pp')
-                ->where('pp.project = :project')
-                ->andWhere('pp.company = :company')
-                ->setParameters(['project' => $project, 'company' => $clients->getCompany()])
                 ->getQuery()
                 ->getOneOrNullResult()
         ;

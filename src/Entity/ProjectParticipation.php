@@ -17,7 +17,7 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait
 /**
  * @ApiResource(
  *     collectionOperations={
- *         "get": {"normalization_context": {"groups": "projectParticipation:list"}},
+ *         "get": {"normalization_context": {"groups": {"projectParticipation:list", "projectParticipationContact:read"}}},
  *         "post": {
  *             "denormalization_context": {"groups": "projectParticipation:create"},
  *             "normalization_context": {"groups": "projectParticipation:view"},
@@ -25,7 +25,7 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait
  *         }
  *     },
  *     itemOperations={
- *         "get": {"normalization_context": {"groups": "projectParticipation:view"}},
+ *         "get": {"normalization_context": {"groups": {"projectParticipation:view"}}},
  *         "delete": {"security": "is_granted('edit', object.getProject())"},
  *         "patch": {
  *             "security": "is_granted('edit', object.getProject())",
@@ -38,6 +38,7 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait
  * @ApiFilter("Unilend\Filter\CountFilter", properties={"project.projectParticipations.projectParticipationOffers"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status"})
+ * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"project.hash": "exact"})
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationRepository")
@@ -114,7 +115,7 @@ class ProjectParticipation
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationContact", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"projectParticipation:view"})
+     * @Groups({"projectParticipation:view", "projectParticipation:list"})
      */
     private $projectParticipationContacts;
 
@@ -250,6 +251,14 @@ class ProjectParticipation
     public function isArranger(): bool
     {
         return in_array(self::DUTY_PROJECT_PARTICIPATION_ARRANGER, $this->getRoles(), true);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRun(): bool
+    {
+        return in_array(self::DUTY_PROJECT_PARTICIPATION_RUN, $this->getRoles(), true);
     }
 
     /**
