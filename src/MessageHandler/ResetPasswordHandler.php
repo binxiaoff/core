@@ -11,7 +11,7 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use Unilend\Entity\Messenger\ResetPassword;
+use Unilend\Entity\Request\ResetPassword;
 use Unilend\Entity\TemporaryToken;
 use Unilend\Repository\ClientsRepository;
 use Unilend\SwiftMailer\TemplateMessageProvider;
