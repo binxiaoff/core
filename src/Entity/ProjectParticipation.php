@@ -79,7 +79,7 @@ class ProjectParticipation
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      *
-     * @Groups({"projectParticipation:list", "project:view"})
+     * @Groups({"projectParticipation:list", "projectParticipation:view", "project:view"})
      */
     private $id;
 
