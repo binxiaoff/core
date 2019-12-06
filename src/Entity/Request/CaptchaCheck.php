@@ -2,21 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity\Messenger;
+namespace Unilend\Entity\Request;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 
 /**
  * @ApiResource(
- *     messenger=true,
  *     collectionOperations={
- *         "post": {"status": 202}
+ *         "post": {
+ *             "controller": "Unilend\Controller\Captcha\Check",
+ *         }
  *     },
  *     itemOperations={},
  *     output=false
  * )
  */
-class ResetPassword
+class CaptchaCheck
 {
-    public $email;
+    public $captchaValue;
 }
