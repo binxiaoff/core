@@ -4,12 +4,21 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
 
 /**
+ * @ApiResource(
+ *     denormalizationContext={"groups": {"projectParticipationContact:write"}},
+ *     itemOperations={
+ *         "get": {"security": "object.getClient() == user"},
+ *         "patch": {"security_post_denormalize": "previous_object.getClient() == user"}
+ *     }
+ * )
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "id_project_participation"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
@@ -45,8 +54,19 @@ class ProjectParticipationContact
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
+     *
+     * @Groups({"projectParticipationContact:read"})
      */
     private $client;
+
+    /**
+     * @var DateTimeImmutable|null
+     *
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"projectParticipationContact:read", "projectParticipationContact:write"})
+     */
+    private $confidentialityAccepted;
 
     /**
      * ProjectParticipationContact constructor.
@@ -112,6 +132,26 @@ class ProjectParticipationContact
     public function setClient(Clients $client): ProjectParticipationContact
     {
         $this->client = $client;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getConfidentialityAccepted(): ?DateTimeImmutable
+    {
+        return $this->confidentialityAccepted;
+    }
+
+    /**
+     * @param DateTimeImmutable|null $confidentialityAccepted
+     *
+     * @return ProjectParticipationContact
+     */
+    public function setConfidentialityAccepted(?DateTimeImmutable $confidentialityAccepted): ProjectParticipationContact
+    {
+        $this->confidentialityAccepted = $confidentialityAccepted;
 
         return $this;
     }
