@@ -140,7 +140,7 @@ class ProjectParticipation
      *
      * @ORM\OneToOne(targetEntity="ProjectParticipationFee", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"project:view", "projectParticipation:list", "projectParticipation:create", "projectParticipation:view"})
+     * @Groups({"project:view", "projectParticipation:list", "projectParticipation:create", "projectParticipation:view", "projectParticipation:update"})
      */
     private $projectParticipationFee;
 
@@ -447,7 +447,7 @@ class ProjectParticipation
     /**
      * @return Fee
      *
-     * @Groups({"project:view"})
+     * @Groups({"project:view", "projectParticipation:view"})
      */
     public function getFee(): ?Fee
     {
@@ -461,11 +461,22 @@ class ProjectParticipation
      *
      * @return mixed
      *
-     * @Groups({"projectParticipation:create"})
+     * @Groups({"projectParticipation:create", "projectParticipation:update"})
      */
     public function setFee(Fee $fee): ProjectParticipation
     {
-        return $this->setProjectParticipationFee(new ProjectParticipationFee($this, $fee));
+        $projectParticipationFee = $this->getProjectParticipationFee();
+
+        if (!$projectParticipationFee) {
+            $projectParticipationFee = new ProjectParticipationFee($this, $fee);
+        }
+
+        $projectParticipationFee->getFee()->setRate($fee->getRate());
+        $projectParticipationFee->getFee()->setType($fee->getType());
+        $projectParticipationFee->getFee()->setComment($fee->getComment());
+        $projectParticipationFee->getFee()->setRecurring($fee->isRecurring());
+
+        return $this->setProjectParticipationFee($projectParticipationFee);
     }
 
     /**

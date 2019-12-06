@@ -75,6 +75,7 @@ class ProjectParticipationFee
      *     "projectParticipation:create",
      *     "projectParticipation:view",
      *     "projectParticipation:list",
+     *     "projectParticipation:update",
      *     "projectParticipationFee:create",
      *     "projectParticipationFee:update"
      * })
