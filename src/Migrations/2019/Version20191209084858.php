@@ -10,6 +10,9 @@ use Doctrine\Migrations\AbstractMigration;
 
 final class Version20191209084858 extends AbstractMigration
 {
+    /**
+     * @return string
+     */
     public function getDescription(): string
     {
         return 'Add possibility to set fee to 100%';

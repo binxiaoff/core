@@ -65,6 +65,20 @@ class Fee
      * @Assert\Type("numeric")
      *
      * @Assert\NotBlank
+     *
+     *
+     * @Groups({
+     *     "project:view",
+     *     "projectParticipation:create",
+     *     "projectParticipation:list",
+     *     "projectParticipation:view",
+     *     "projectParticipation:update",
+     *     "tranche:view",
+     *     "tranche:create",
+     *     "tranche:update",
+     *     "projectParticipationFee:create",
+     *     "projectParticipationFee:update"
+     * })
      */
     private $rate;
 
@@ -95,53 +109,27 @@ class Fee
      */
     public function __construct(string $rate, string $type, bool $recurring = false)
     {
-        $this->setRate($rate);
+        $this->rate      = $rate;
         $this->recurring = $recurring;
         $this->type      = $type;
     }
 
     /**
      * @return string
-     *
-     * @Groups({
-     *     "project:view",
-     *     "projectParticipation:create",
-     *     "projectParticipation:list",
-     *     "projectParticipation:view",
-     *     "projectParticipation:update",
-     *     "tranche:view",
-     *     "tranche:create",
-     *     "tranche:update",
-     *     "projectParticipationFee:create",
-     *     "projectParticipationFee:update"
-     * })
      */
     public function getRate(): string
     {
-        return bcmul($this->rate, '100', 2);
+        return $this->rate;
     }
 
     /**
      * @param string $rate
      *
      * @return self
-     *
-     * @Groups({
-     *     "project:view",
-     *     "projectParticipation:create",
-     *     "projectParticipation:list",
-     *     "projectParticipation:view",
-     *     "projectParticipation:update",
-     *     "tranche:view",
-     *     "tranche:create",
-     *     "tranche:update",
-     *     "projectParticipationFee:create",
-     *     "projectParticipationFee:update"
-     * })
      */
     public function setRate(string $rate): self
     {
-        $this->rate = bcdiv($rate, '100', 4);
+        $this->rate = $rate;
 
         return $this;
     }
