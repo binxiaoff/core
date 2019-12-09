@@ -8,7 +8,6 @@ use Cravler\MaxMindGeoIpBundle\Service\GeoIpService;
 use Exception;
 use GeoIp2\Model\City;
 use Psr\Log\LoggerInterface;
-use Unilend\Entity\ClientSuccessfulLogin;
 
 class IpGeoLocManager
 {
@@ -36,29 +35,11 @@ class IpGeoLocManager
     }
 
     /**
-     * @param ClientSuccessfulLogin $clientLoginHistory
-     * @param string                $ip
-     *
-     * @return ClientSuccessfulLogin
-     */
-    public function setClientLoginLocation(ClientSuccessfulLogin $clientLoginHistory, string $ip): ClientSuccessfulLogin
-    {
-        $geoIp = $this->getGeoIpRecord($ip);
-
-        if (null !== $geoIp) {
-            $clientLoginHistory->setCountryIsoCode($geoIp->country->isoCode);
-            $clientLoginHistory->setCity($geoIp->city->name);
-        }
-
-        return $clientLoginHistory;
-    }
-
-    /**
      * @param string $ip
      *
      * @return City|null
      */
-    private function getGeoIpRecord(string $ip): ?City
+    public function getGeoIpRecord(string $ip): ?City
     {
         try {
             return $this->geoIpService->getRecord($ip, self::DATABASE_TYPE, [$this->defaultLocal]);

@@ -8,6 +8,7 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use Unilend\Message\ProjectParticipationContact\ProjectParticipationContactCreated;
 use Unilend\Repository\ProjectParticipationContactRepository;
 use Unilend\Service\MailerManager;
 
@@ -31,13 +32,13 @@ class ProjectParticipationContactCreatedHandler implements MessageHandlerInterfa
     }
 
     /**
-     * @param \Unilend\Message\ProjectParticipationContact\ProjectParticipationContactCreated $clientCreated
+     * @param ProjectParticipationContactCreated $clientCreated
      *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function __invoke(ProjectParticipationContactCreatedHandler $clientCreated)
+    public function __invoke(ProjectParticipationContactCreated $clientCreated)
     {
         $projectParticipationContact = $this->projectParticipationContactRepository->find($clientCreated->getProjectParticipationContactId());
 

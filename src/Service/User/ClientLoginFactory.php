@@ -56,7 +56,12 @@ class ClientLoginFactory
             ;
 
             if ($ip) {
-                $this->ipGeoLocManager->setClientLoginLocation($entry, $ip);
+                $geoIp = $this->ipGeoLocManager->getGeoIpRecord($ip);
+
+                if (null !== $geoIp) {
+                    $entry->setCountryIsoCode($geoIp->country->isoCode);
+                    $entry->setCity($geoIp->city->name);
+                }
             }
         }
 

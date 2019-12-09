@@ -52,12 +52,12 @@ class ProjectParticipation
     use TimestampableTrait;
     use BlamableAddedTrait;
 
-    public const DUTY_PROJECT_PARTICIPATION_ARRANGER         = 'arranger'; // The company who arranges a loan syndication.
-    public const DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER  = 'deputy_arranger';
-    public const DUTY_PROJECT_PARTICIPATION_RUN              = 'run'; // Responsable Unique de Notation, who gives a note on the borrower.
+    public const DUTY_PROJECT_PARTICIPATION_ARRANGER         = 'Arrangeur'; // The company who arranges a loan syndication.
+    public const DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER  = 'Co-arrangeur';
+    public const DUTY_PROJECT_PARTICIPATION_RUN              = 'RUN'; // Responsable Unique de Notation, who gives a note on the borrower.
     public const DUTY_PROJECT_PARTICIPATION_PARTICIPANT      = 'participant';
-    public const DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER     = 'loan_officer';
-    public const DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE = 'security_trustee';
+    public const DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER     = 'Agent du crédit';
+    public const DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE = 'Agent des sûretés';
 
     public const DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER = [
         self::DUTY_PROJECT_PARTICIPATION_ARRANGER,
@@ -80,7 +80,7 @@ class ProjectParticipation
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      *
-     * @Groups({"projectParticipation:list", "project:view"})
+     * @Groups({"projectParticipation:list", "projectParticipation:view", "project:view"})
      */
     private $id;
 
@@ -140,7 +140,7 @@ class ProjectParticipation
      *
      * @ORM\OneToOne(targetEntity="ProjectParticipationFee", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"project:view", "projectParticipation:list", "projectParticipation:create", "projectParticipation:view"})
+     * @Groups({"project:view", "projectParticipation:list", "projectParticipation:create", "projectParticipation:view", "projectParticipation:update"})
      */
     private $projectParticipationFee;
 
@@ -447,7 +447,7 @@ class ProjectParticipation
     /**
      * @return Fee
      *
-     * @Groups({"project:view"})
+     * @Groups({"project:view", "projectParticipation:view"})
      */
     public function getFee(): ?Fee
     {
@@ -461,11 +461,22 @@ class ProjectParticipation
      *
      * @return mixed
      *
-     * @Groups({"projectParticipation:create"})
+     * @Groups({"projectParticipation:create", "projectParticipation:update"})
      */
     public function setFee(Fee $fee): ProjectParticipation
     {
-        return $this->setProjectParticipationFee(new ProjectParticipationFee($this, $fee));
+        $projectParticipationFee = $this->getProjectParticipationFee();
+
+        if (!$projectParticipationFee) {
+            $projectParticipationFee = new ProjectParticipationFee($this, $fee);
+        }
+
+        $projectParticipationFee->getFee()->setRate($fee->getRate());
+        $projectParticipationFee->getFee()->setType($fee->getType());
+        $projectParticipationFee->getFee()->setComment($fee->getComment());
+        $projectParticipationFee->getFee()->setRecurring($fee->isRecurring());
+
+        return $this->setProjectParticipationFee($projectParticipationFee);
     }
 
     /**

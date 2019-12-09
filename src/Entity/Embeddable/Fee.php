@@ -26,6 +26,8 @@ class Fee
      *     "project:view",
      *     "projectParticipation:create",
      *     "projectParticipation:list",
+     *     "projectParticipation:view",
+     *     "projectParticipation:update",
      *     "tranche:view",
      *     "tranche:create",
      *     "tranche:update",
@@ -44,6 +46,8 @@ class Fee
      *     "project:view",
      *     "projectParticipation:create",
      *     "projectParticipation:list",
+     *     "projectParticipation:view",
+     *     "projectParticipation:update",
      *     "tranche:view",
      *     "tranche:create",
      *     "tranche:update",
@@ -56,16 +60,19 @@ class Fee
     /**
      * @var string
      *
-     * @ORM\Column(type="decimal", precision=4, scale=4)
+     * @ORM\Column(type="decimal", precision=5, scale=4)
      *
      * @Assert\Type("numeric")
      *
      * @Assert\NotBlank
      *
+     *
      * @Groups({
      *     "project:view",
      *     "projectParticipation:create",
      *     "projectParticipation:list",
+     *     "projectParticipation:view",
+     *     "projectParticipation:update",
      *     "tranche:view",
      *     "tranche:create",
      *     "tranche:update",
@@ -84,6 +91,8 @@ class Fee
      *     "project:view",
      *     "projectParticipation:create",
      *     "projectParticipation:list",
+     *     "projectParticipation:view",
+     *     "projectParticipation:update",
      *     "tranche:view",
      *     "tranche:create",
      *     "tranche:update",
@@ -106,7 +115,7 @@ class Fee
     }
 
     /**
-     * @return string|null
+     * @return string
      */
     public function getRate(): string
     {
