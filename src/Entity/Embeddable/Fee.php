@@ -60,24 +60,11 @@ class Fee
     /**
      * @var string
      *
-     * @ORM\Column(type="decimal", precision=4, scale=4)
+     * @ORM\Column(type="decimal", precision=5, scale=4)
      *
      * @Assert\Type("numeric")
      *
      * @Assert\NotBlank
-     *
-     * @Groups({
-     *     "project:view",
-     *     "projectParticipation:create",
-     *     "projectParticipation:list",
-     *     "projectParticipation:view",
-     *     "projectParticipation:update",
-     *     "tranche:view",
-     *     "tranche:create",
-     *     "tranche:update",
-     *     "projectParticipationFee:create",
-     *     "projectParticipationFee:update"
-     * })
      */
     private $rate;
 
@@ -108,27 +95,53 @@ class Fee
      */
     public function __construct(string $rate, string $type, bool $recurring = false)
     {
-        $this->rate      = $rate;
+        $this->setRate($rate);
         $this->recurring = $recurring;
         $this->type      = $type;
     }
 
     /**
-     * @return string|null
+     * @return string
+     *
+     * @Groups({
+     *     "project:view",
+     *     "projectParticipation:create",
+     *     "projectParticipation:list",
+     *     "projectParticipation:view",
+     *     "projectParticipation:update",
+     *     "tranche:view",
+     *     "tranche:create",
+     *     "tranche:update",
+     *     "projectParticipationFee:create",
+     *     "projectParticipationFee:update"
+     * })
      */
     public function getRate(): string
     {
-        return $this->rate;
+        return bcmul($this->rate, '100', 2);
     }
 
     /**
      * @param string $rate
      *
      * @return self
+     *
+     * @Groups({
+     *     "project:view",
+     *     "projectParticipation:create",
+     *     "projectParticipation:list",
+     *     "projectParticipation:view",
+     *     "projectParticipation:update",
+     *     "tranche:view",
+     *     "tranche:create",
+     *     "tranche:update",
+     *     "projectParticipationFee:create",
+     *     "projectParticipationFee:update"
+     * })
      */
     public function setRate(string $rate): self
     {
-        $this->rate = $rate;
+        $this->rate = bcdiv($rate, '100', 4);
 
         return $this;
     }
