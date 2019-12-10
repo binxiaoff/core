@@ -21,7 +21,7 @@ class NullableLendingRate extends LendingRate
      *
      * @ORM\Column(length=20, nullable=true)
      *
-     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "nullableLendingRate:read", "nullableLendingRate:write"})
      */
     protected $indexType;
 
@@ -34,7 +34,7 @@ class NullableLendingRate extends LendingRate
      *
      * @Assert\Range(min="0", max="0.9999")
      *
-     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "nullableLendingRate:read", "nullableLendingRate:write"})
      */
     protected $margin;
 

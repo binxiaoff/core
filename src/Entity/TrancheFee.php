@@ -10,7 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Fee;
 use Unilend\Entity\Traits\TimestampableTrait;
@@ -33,10 +32,10 @@ class TrancheFee
     use TimestampableTrait;
     use ConstantsAwareTrait;
 
-    public const TYPE_NON_UTILISATION = 'non_utilisation';
-    public const TYPE_COMMITMENT      = 'commitment';
-    public const TYPE_UTILISATION     = 'utilisation';
-    public const TYPE_FIRST_DRAWDOWN  = 'first_drawdown';
+    private const TYPE_NON_UTILISATION = 'non_utilisation';
+    private const TYPE_COMMITMENT      = 'commitment';
+    private const TYPE_UTILISATION     = 'utilisation';
+    private const TYPE_FIRST_DRAWDOWN  = 'first_drawdown';
 
     /**
      * @var int
@@ -56,7 +55,7 @@ class TrancheFee
      *
      * @Assert\Valid
      *
-     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update", "tranche:view"})
+     * @Groups({"project:view", "trancheFee:read", "trancheFee:write"})
      */
     private $fee;
 
@@ -69,8 +68,6 @@ class TrancheFee
      * })
      *
      * @Assert\Valid
-     *
-     * @MaxDepth(1)
      */
     private $tranche;
 

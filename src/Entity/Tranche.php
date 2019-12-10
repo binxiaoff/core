@@ -18,18 +18,18 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
+ *     normalizationContext={"groups": {"tranche:read", "trancheFee:read", "fee:read", "nullableLendingRate:read", "lendingRate:read", "money:read"}},
+ *     denormalizationContext={"groups": {"tranche:write", "trancheFee:write", "fee:write", "nullableLendingRate:write", "lendingRate:write", "money:write"}},
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('edit', object.getProject())",
- *             "denormalization_context": {"groups": {"tranche:create"}},
- *             "normalization_context": {"groups": {"tranche:view"}}
+ *             "denormalization_context": {"groups": {"tranche:create", "tranche:write", "trancheFee:write", "fee:write", "nullableLendingRate:write", "money:write"}}
  *         }
  *     },
  *     itemOperations={
- *         "delete": {"security": "is_granted('edit', object.getProject())", "normalization_context": {"groups": {"tranche:view"}}},
+ *         "delete": {"security": "is_granted('edit', object.getProject())"},
  *         "get": {"security": "is_granted('view', object.getProject())"},
- *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())", "denormalization_context": {"groups": {"tranche:update", "project:view"}}},
- *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())", "denormalization_context": {"groups": {"tranche:update", "project:view"}}}
+ *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())"}
  *     }
  * )
  *
@@ -67,7 +67,7 @@ class Tranche
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      *
-     * @Groups({"project:view", "tranche:view"})
+     * @Groups({"project:view", "tranche:read"})
      */
     private $id;
 
@@ -79,7 +79,7 @@ class Tranche
      *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
      *
-     * @Groups({"tranche:create", "tranche:update", "tranche:view"})
+     * @Groups({"tranche:create", "tranche:read"})
      */
     private $project;
 
@@ -92,7 +92,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
+     * @Groups({"project:view", "tranche:write", "tranche:read"})
      */
     private $name;
 
@@ -106,7 +106,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
+     * @Groups({"project:view", "tranche:write", "tranche:read"})
      */
     private $loanType;
 
@@ -120,7 +120,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
+     * @Groups({"project:view", "tranche:write", "tranche:read"})
      */
     private $repaymentType;
 
@@ -136,7 +136,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
+     * @Groups({"project:view", "tranche:write", "tranche:read"})
      */
     private $duration;
 
@@ -172,7 +172,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
+     * @Groups({"project:view", "tranche:read", "tranche:write"})
      */
     private $money;
 
@@ -186,7 +186,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "tranche:read", "tranche:write"})
      */
     private $rate;
 
@@ -198,8 +198,6 @@ class Tranche
      * @Assert\Date
      *
      * @Gedmo\Versioned
-     *
-     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
      */
     private $expectedReleasingDate;
 
@@ -211,8 +209,6 @@ class Tranche
      * @Assert\Date
      *
      * @Gedmo\Versioned
-     *
-     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
      */
     private $expectedStartingDate;
 
@@ -221,7 +217,7 @@ class Tranche
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheFee", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
+     * @Groups({"project:view", "tranche:write", "tranche:read"})
      */
     private $trancheFees;
 
@@ -237,8 +233,6 @@ class Tranche
      * @var TrancheAttribute[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="TrancheAttribute", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
-     *
-     * @Groups({"project:view"})
      */
     private $trancheAttributes;
 
@@ -313,6 +307,18 @@ class Tranche
     public function getMoney(): Money
     {
         return $this->money;
+    }
+
+    /**
+     * @param Money $money
+     *
+     * @return Tranche
+     */
+    public function setMoney(Money $money): Tranche
+    {
+        $this->money = $money;
+
+        return $this;
     }
 
     /**

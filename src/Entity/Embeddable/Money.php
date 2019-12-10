@@ -28,9 +28,8 @@ class Money
      *     "project:list",
      *     "project:view",
      *     "project:update",
-     *     "tranche:view",
-     *     "tranche:create",
-     *     "tranche:update",
+     *     "money:read",
+     *     "money:write",
      *     "projectParticipation:list",
      *     "projectParticipation:create"
      * })
@@ -52,9 +51,8 @@ class Money
      *     "project:list",
      *     "project:view",
      *     "project:update",
-     *     "tranche:view",
-     *     "tranche:create",
-     *     "tranche:update",
+     *     "money:read",
+     *     "money:write",
      *     "projectParticipation:list",
      *     "projectParticipation:create"
      * })
