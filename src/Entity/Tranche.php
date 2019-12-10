@@ -243,6 +243,15 @@ class Tranche
     private $trancheAttributes;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(type="text", nullable=true)
+     *
+     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
+     */
+    private $comment;
+
+    /**
      * @param Project $project
      * @param Money   $money
      *
@@ -619,6 +628,26 @@ class Tranche
     public function removeTrancheAttribute(TrancheAttribute $trancheAttribute): Tranche
     {
         $this->trancheAttributes->removeElement($trancheAttribute);
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    /**
+     * @param string $comment
+     *
+     * @return Tranche
+     */
+    public function setComment(string $comment): Tranche
+    {
+        $this->comment = $comment;
 
         return $this;
     }
