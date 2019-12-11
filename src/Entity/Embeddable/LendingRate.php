@@ -30,6 +30,7 @@ class LendingRate
 
     public const MARGIN_SCALE = 2;
 
+    public const FLOOR_TYPE_NONE       = 'none';
     public const FLOOR_TYPE_INDEX      = 'index';
     public const FLOOR_TYPE_INDEX_RATE = 'index+rate';
     /**
@@ -92,7 +93,7 @@ class LendingRate
     public function __construct(
         string $indexType,
         string $margin,
-        string $floor = null,
+        string $floor = 'none',
         string $floorType = null
     ) {
         $this->indexType = $indexType;
