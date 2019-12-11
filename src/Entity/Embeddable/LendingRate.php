@@ -93,7 +93,7 @@ class LendingRate
     public function __construct(
         string $indexType,
         string $margin,
-        string $floor = self::FLOOR_TYPE_NONE,
+        string $floor = null,
         string $floorType = null
     ) {
         $this->indexType = $indexType;
