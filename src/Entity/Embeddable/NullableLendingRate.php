@@ -39,17 +39,27 @@ class NullableLendingRate extends LendingRate
     protected $margin;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(length=20, nullable=true)
+     *
+     * @Groups({"project:view", "nullableLendingRate:read", "nullableLendingRate:write"})
+     */
+    protected $floorType;
+
+    /**
      * @param string|null $indexType
      * @param string|null $margin
      * @param string|null $floor
      * @param string|null $floorType
      */
-    public function __construct(?string $indexType = null, ?string $margin = null, string $floor = null, string $floorType = null)
+    public function __construct(?string $indexType = null, ?string $margin = null, ?string $floor = null, ?string $floorType = null)
     {
         $this->indexType = $indexType;
         $this->margin    = $margin;
+        $this->floorType = $floorType;
 
-        if ($indexType && $margin) {
+        if ($indexType && $margin && $floorType) {
             parent::__construct($indexType, $margin, $floor, $floorType);
         }
     }

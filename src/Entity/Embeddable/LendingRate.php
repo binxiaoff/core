@@ -78,7 +78,7 @@ class LendingRate
     /**
      * @var string
      *
-     * @ORM\Column(length=20, nullable=true)
+     * @ORM\Column(length=20, nullable=false)
      *
      * @Groups({"project:view", "lendingRate:read", "lendingRate:write"})
      */
@@ -94,7 +94,7 @@ class LendingRate
         string $indexType,
         string $margin,
         string $floor = null,
-        string $floorType = null
+        string $floorType = self::FLOOR_TYPE_NONE
     ) {
         $this->indexType = $indexType;
         $this->margin    = $margin;

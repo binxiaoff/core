@@ -23,7 +23,9 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('edit', object.getProject())",
- *             "denormalization_context": {"groups": {"tranche:create", "tranche:write", "trancheFee:write", "fee:write", "nullableLendingRate:write", "money:write"}}
+ *             "denormalization_context": {
+ *                 "groups": {"tranche:create", "tranche:write", "trancheFee:write", "fee:write", "nullableLendingRate:write", "lendingRate:write", "money:write"}
+ *             }
  *         }
  *     },
  *     itemOperations={
