@@ -28,9 +28,8 @@ class Fee
      *     "projectParticipation:list",
      *     "projectParticipation:view",
      *     "projectParticipation:update",
-     *     "tranche:view",
-     *     "tranche:create",
-     *     "tranche:update",
+     *     "fee:read",
+     *     "fee:write",
      *     "projectParticipationFee:create",
      *     "projectParticipationFee:update"
      * })
@@ -48,9 +47,8 @@ class Fee
      *     "projectParticipation:list",
      *     "projectParticipation:view",
      *     "projectParticipation:update",
-     *     "tranche:view",
-     *     "tranche:create",
-     *     "tranche:update",
+     *     "fee:read",
+     *     "fee:write",
      *     "projectParticipationFee:create",
      *     "projectParticipationFee:update"
      * })
@@ -66,16 +64,14 @@ class Fee
      *
      * @Assert\NotBlank
      *
-     *
      * @Groups({
      *     "project:view",
      *     "projectParticipation:create",
      *     "projectParticipation:list",
      *     "projectParticipation:view",
      *     "projectParticipation:update",
-     *     "tranche:view",
-     *     "tranche:create",
-     *     "tranche:update",
+     *     "fee:read",
+     *     "fee:write",
      *     "projectParticipationFee:create",
      *     "projectParticipationFee:update"
      * })
@@ -93,9 +89,8 @@ class Fee
      *     "projectParticipation:list",
      *     "projectParticipation:view",
      *     "projectParticipation:update",
-     *     "tranche:view",
-     *     "tranche:create",
-     *     "tranche:update",
+     *     "fee:read",
+     *     "fee:write",
      *     "projectParticipationFee:create",
      *     "projectParticipationFee:update"
      * })

@@ -30,6 +30,7 @@ class LendingRate
 
     public const MARGIN_SCALE = 2;
 
+    public const FLOOR_TYPE_NONE       = 'none';
     public const FLOOR_TYPE_INDEX      = 'index';
     public const FLOOR_TYPE_INDEX_RATE = 'index+rate';
     /**
@@ -40,7 +41,7 @@ class LendingRate
      * @Assert\NotBlank
      * @Assert\Choice(callback="getIndexes")
      *
-     * @Groups({"project:view", "tranche:view"})
+     * @Groups({"project:view", "lendingRate:read", "lendingRate:write"})
      */
     protected $indexType;
 
@@ -56,7 +57,7 @@ class LendingRate
      * @Assert\PositiveOrZero
      * @Assert\Range(min="0", max="0.9999")
      *
-     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "lendingRate:read", "lendingRate:write"})
      */
     protected $margin;
 
@@ -70,16 +71,16 @@ class LendingRate
      * @Assert\Type("numeric")
      * @Assert\Range(max="-0.9999", max="0.9999")
      *
-     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "lendingRate:read", "lendingRate:write"})
      */
     protected $floor;
 
     /**
      * @var string
      *
-     * @ORM\Column(length=20, nullable=true)
+     * @ORM\Column(length=20, nullable=false)
      *
-     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "lendingRate:read", "lendingRate:write"})
      */
     protected $floorType;
 
@@ -93,7 +94,7 @@ class LendingRate
         string $indexType,
         string $margin,
         string $floor = null,
-        string $floorType = null
+        string $floorType = self::FLOOR_TYPE_NONE
     ) {
         $this->indexType = $indexType;
         $this->margin    = $margin;

@@ -22,11 +22,6 @@ class NullableMoney extends Money
      * @Assert\Positive
      *
      * @Groups({
-     *     "project:create",
-     *     "project:list",
-     *     "project:view",
-     *     "tranche:create",
-     *     "tranche:update",
      *     "projectParticipation:list",
      *     "projectParticipation:create",
      *     "projectParticipation:update",
@@ -45,11 +40,6 @@ class NullableMoney extends Money
      * @Assert\Currency
      *
      * @Groups({
-     *     "project:create",
-     *     "project:list",
-     *     "project:view",
-     *     "tranche:create",
-     *     "tranche:update",
      *     "projectParticipation:list",
      *     "projectParticipation:create",
      *     "projectParticipation:update",

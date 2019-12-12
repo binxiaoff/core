@@ -21,7 +21,7 @@ class NullableLendingRate extends LendingRate
      *
      * @ORM\Column(length=20, nullable=true)
      *
-     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "nullableLendingRate:read", "nullableLendingRate:write"})
      */
     protected $indexType;
 
@@ -34,9 +34,18 @@ class NullableLendingRate extends LendingRate
      *
      * @Assert\Range(min="0", max="0.9999")
      *
-     * @Groups({"project:view", "tranche:view", "tranche:create", "tranche:update"})
+     * @Groups({"project:view", "nullableLendingRate:read", "nullableLendingRate:write"})
      */
     protected $margin;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(length=20, nullable=true)
+     *
+     * @Groups({"project:view", "nullableLendingRate:read", "nullableLendingRate:write"})
+     */
+    protected $floorType;
 
     /**
      * @param string|null $indexType
@@ -44,12 +53,13 @@ class NullableLendingRate extends LendingRate
      * @param string|null $floor
      * @param string|null $floorType
      */
-    public function __construct(?string $indexType = null, ?string $margin = null, string $floor = null, string $floorType = null)
+    public function __construct(?string $indexType = null, ?string $margin = null, ?string $floor = null, ?string $floorType = null)
     {
         $this->indexType = $indexType;
         $this->margin    = $margin;
+        $this->floorType = $floorType;
 
-        if ($indexType && $margin) {
+        if ($indexType && $margin && $floorType) {
             parent::__construct($indexType, $margin, $floor, $floorType);
         }
     }
