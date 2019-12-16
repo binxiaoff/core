@@ -1214,6 +1214,20 @@ class Project
     }
 
     /**
+     * @return Attachment|null
+     *
+     * @Groups({"project:view"})
+     */
+    public function getDescriptionDocument(): ?Attachment
+    {
+        return $this->attachments->filter(
+            static function (Attachment $attachment) {
+                return Attachment::TYPE_PROJECT_DESCRIPTION === $attachment->getType();
+            }
+        )->first() ?: null;
+    }
+
+    /**
      * @param ArrayCollection|Attachment[] $attachments
      *
      * @return Project
