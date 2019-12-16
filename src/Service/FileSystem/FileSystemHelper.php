@@ -65,7 +65,10 @@ class FileSystemHelper
             stream_copy_to_stream($filesystem->readStream($filePath), fopen('php://output', 'w+b'));
         });
 
-        $contentDisposition = $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, URLify::downcode($fileName ?? pathinfo($filePath, PATHINFO_FILENAME)));
+        $fileName         = URLify::downcode($fileName ?? pathinfo($filePath, PATHINFO_FILENAME));
+        $fileNameFallback = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $fileName);
+
+        $contentDisposition = $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $fileName, $fileNameFallback);
         $response->headers->set('Content-Disposition', $contentDisposition);
         $response->headers->set('Content-Type', $filesystem->getMimetype($filePath) ?: 'application/octet-stream');
 
