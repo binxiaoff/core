@@ -27,7 +27,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "post": {"denormalization_context": {"groups": {"project:create"}}}
  *     },
  *     itemOperations={
- *         "get": {"security": "is_granted('view', object)", "normalization_context": {"groups": {"project:view", "tranche_project:view"}}},
+ *         "get": {"security": "is_granted('view', object)", "normalization_context": {"groups": {"project:view", "tranche_project:view", "attachment:read"}}},
  *         "project_confidentiality": {
  *             "method": "GET",
  *             "security": "is_granted('view_confidentiality_doc', object)",
@@ -593,9 +593,9 @@ class Project
     }
 
     /**
-     * @Groups({"project:confidentiality:view"})
-     *
      * @return Attachment|null
+     *
+     * @Groups({"project:confidentiality:view", "project:view"})
      */
     public function getConfidentialityDisclaimerDocument(): ?Attachment
     {
