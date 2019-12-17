@@ -6,6 +6,7 @@ namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource, ApiSubresource};
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
@@ -18,6 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\Embeddable\Money;
 use Unilend\Entity\Traits\{TimestampableTrait, TraceableStatusTrait};
+use Unilend\Filter\ArrayFilter;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -39,6 +41,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
+ * @ApiFilter(SearchFilter::class, properties={"projectParticipations.company.id"})
+ * @ApiFilter(ArrayFilter::class, properties={"projectParticipations.roles"})
  *
  * @ORM\Table(indexes={
  *     @ORM\Index(name="hash", columns={"hash"})
@@ -789,7 +793,7 @@ class Project
      *
      * @return ProjectParticipation|null
      *
-     * @Groups({"project:list", "projectParticipation:list"})
+     * @Groups({"project:view", "project:list", "projectParticipation:list"})
      *
      * @MaxDepth(1)
      */
