@@ -48,6 +48,7 @@ class Tranche
     use ConstantsAwareTrait;
 
     public const LOAN_TYPE_TERM_LOAN            = 'term_loan';
+    public const LOAN_TYPE_SHORT_TERM           = 'short_term';
     public const LOAN_TYPE_REVOLVING_CREDIT     = 'revolving_credit';
     public const LOAN_TYPE_STAND_BY             = 'stand_by';
     public const LOAN_TYPE_SIGNATURE_COMMITMENT = 'signature_commitment';
