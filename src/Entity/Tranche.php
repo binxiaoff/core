@@ -243,7 +243,7 @@ class Tranche
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"project:view", "tranche:create", "tranche:update", "tranche:view"})
+     * @Groups({"project:view", "tranche:write", "tranche:read"})
      */
     private $comment;
 
