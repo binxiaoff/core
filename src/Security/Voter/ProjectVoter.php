@@ -209,7 +209,7 @@ class ProjectVoter extends Voter
      *
      * @return ProjectParticipationContact
      */
-    private function getProjectParticipationContact(Project $project, Clients $user): ProjectParticipationContact
+    private function getProjectParticipationContact(Project $project, Clients $user): ?ProjectParticipationContact
     {
         return $this->projectParticipationContactRepository->findByProjectAndClient($project, $user);
     }

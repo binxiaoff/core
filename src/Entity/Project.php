@@ -793,7 +793,7 @@ class Project
      *
      * @return ProjectParticipation|null
      *
-     * @Groups({"project:list", "projectParticipation:list"})
+     * @Groups({"project:view", "project:list", "projectParticipation:list"})
      *
      * @MaxDepth(1)
      */
