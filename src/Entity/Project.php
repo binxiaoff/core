@@ -593,9 +593,9 @@ class Project
     }
 
     /**
-     * @Groups({"project:confidentiality:view"})
-     *
      * @return Attachment|null
+     *
+     * @Groups({"project:confidentiality:view", "project:view"})
      */
     public function getConfidentialityDisclaimerDocument(): ?Attachment
     {
@@ -1211,6 +1211,20 @@ class Project
     public function getAttachments()
     {
         return $this->attachments;
+    }
+
+    /**
+     * @return Attachment|null
+     *
+     * @Groups({"project:view"})
+     */
+    public function getDescriptionDocument(): ?Attachment
+    {
+        return $this->attachments->filter(
+            static function (Attachment $attachment) {
+                return Attachment::TYPE_PROJECT_DESCRIPTION === $attachment->getType();
+            }
+        )->first() ?: null;
     }
 
     /**

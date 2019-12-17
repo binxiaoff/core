@@ -89,12 +89,12 @@ class Attachment
     use TraceableBlamableUpdatedTrait;
 
     public const TYPE_PROJECT_CONFIDENTIALITY_DISCLAIMER = 'project_confidentiality_disclaimer';
+    public const TYPE_PROJECT_DESCRIPTION                = 'project_description';
 
     private const TYPE_GENERAL              = 'general';
     private const TYPE_ACCOUNTING_FINANCIAL = 'accounting_financial';
     private const TYPE_LEGAL                = 'legal';
     private const TYPE_KYC                  = 'kyc';
-    private const TYPE_PROJECT_DESCRIPTION  = 'project_description';
 
     /**
      * @var string
@@ -146,7 +146,7 @@ class Attachment
      *     @ORM\JoinColumn(name="id_project", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"attachment:read", "attachment:write"})
+     * @Groups({"attachment:write"})
      */
     private $project;
 
