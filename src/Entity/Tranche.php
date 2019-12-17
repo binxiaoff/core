@@ -645,7 +645,7 @@ class Tranche
      *
      * @return Tranche
      */
-    public function setComment(string $comment): Tranche
+    public function setComment(?string $comment): Tranche
     {
         $this->comment = $comment;
 
