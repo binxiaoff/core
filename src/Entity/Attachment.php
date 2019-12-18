@@ -178,6 +178,17 @@ class Attachment
     private $signatures;
 
     /**
+     * The size of the file in bytes.
+     *
+     * @var int
+     *
+     * @ORM\Column(type="integer", nullable=true)
+     *
+     * @Groups({"attachment:read"})
+     */
+    private $size;
+
+    /**
      * Attachment constructor.
      *
      * @param string  $path
@@ -367,5 +378,25 @@ class Attachment
     public function getAttachmentTypes(): array
     {
         return self::getConstants('TYPE_');
+    }
+
+    /**
+     * @return int
+     */
+    public function getSize(): ?int
+    {
+        return $this->size;
+    }
+
+    /**
+     * @param int $size
+     *
+     * @return Attachment
+     */
+    public function setSize(?int $size): Attachment
+    {
+        $this->size = $size;
+
+        return $this;
     }
 }
