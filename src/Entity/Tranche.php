@@ -650,7 +650,7 @@ class Tranche
     }
 
     /**
-     * @param string $comment
+     * @param string|null $comment
      *
      * @return Tranche
      */

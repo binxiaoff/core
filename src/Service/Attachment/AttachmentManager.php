@@ -70,6 +70,7 @@ class AttachmentManager
             ->setOriginalName($uploadedFile->getClientOriginalName())
             ->setProject($project)
             ->setDescription($description)
+            ->setSize($this->userAttachmentFilesystem->getSize($relativeUploadedPath))
         ;
 
         return $attachment;
