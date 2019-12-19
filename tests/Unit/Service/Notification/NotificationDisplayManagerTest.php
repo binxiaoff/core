@@ -7,6 +7,7 @@ namespace Unilend\Test\Unit\Service\Notification;
 use DateTimeImmutable;
 use Exception;
 use Faker\Provider\Base;
+use Faker\Provider\Internet;
 use Faker\Provider\Miscellaneous;
 use NumberFormatter;
 use PHPUnit\Framework\TestCase;
@@ -74,7 +75,7 @@ class NotificationDisplayManagerTest extends TestCase
 
         $notificationDisplayManager = $this->createTestObject();
 
-        $resultingNotifications = $notificationDisplayManager->getLastClientNotifications(new Clients());
+        $resultingNotifications = $notificationDisplayManager->getLastClientNotifications(new Clients('test@' . Internet::safeEmailDomain()));
 
         static::assertCount(count($testedNotifications), $resultingNotifications);
 

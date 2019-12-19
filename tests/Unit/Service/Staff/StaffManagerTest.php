@@ -49,9 +49,9 @@ class StaffManagerTest extends TestCase
      */
     public function testGetStaffByEmail(): void
     {
-        $email         = Internet::safeEmailDomain();
+        $email         = 'test@' . Internet::safeEmailDomain();
         $company       = new Companies('CALS', '850890666');
-        $client        = new Clients();
+        $client        = new Clients($email);
         $expectedStaff = new Staff();
 
         $companyGetter = $this->companyManager->getCompanyByEmail(Argument::exact($email))->willReturn($company);
@@ -91,9 +91,9 @@ class StaffManagerTest extends TestCase
     {
         $this->expectException(StaffNotFoundException::class);
 
-        $email   = Internet::safeEmailDomain();
+        $email   = 'test@' . Internet::safeEmailDomain();
         $company = new Companies('CALS', '850890666');
-        $client  = new Clients();
+        $client  = new Clients($email);
         $company->setName(Base::lexify('?????????'));
 
         $this->companyManager->getCompanyByEmail(Argument::exact($email))->willReturn($company);
@@ -115,7 +115,7 @@ class StaffManagerTest extends TestCase
      */
     public function testAddStaffFromEmail(?Clients $client): void
     {
-        $email   = Internet::safeEmailDomain();
+        $email   = 'test@' . Internet::safeEmailDomain();
         $company = new Companies('CALS', '850890666');
 
         if ($client) {
@@ -144,12 +144,14 @@ class StaffManagerTest extends TestCase
 
     /**
      * @return array
+     *
+     * @throws Exception
      */
     public function clientProvider(): array
     {
         return [
             [null],
-            [new Clients()],
+            [new Clients('test@' . Internet::safeEmailDomain())],
         ];
     }
 

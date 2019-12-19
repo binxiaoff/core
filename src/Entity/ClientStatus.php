@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
@@ -14,16 +13,6 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * @ApiResource(
- *     collectionOperations={
- *         "get"
- *     },
- *     itemOperations={
- *         "get": {"security": "is_granted('view', object)"}
- *     },
- *     normalizationContext={"groups": {"client_status:read"}}
- * )
- *
  * @ORM\Table(
  *     name="client_status",
  *     indexes={
@@ -50,8 +39,6 @@ class ClientStatus implements StatusInterface
 
     /**
      * @var Clients
-     *
-     * @Groups({"client_status:read"})
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="statuses")
      * @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)

@@ -23,6 +23,9 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *             "path": "/companies/autocomplete/{term}",
  *             "controller": "Unilend\Controller\Companies\Autocomplete"
  *         }
+ *     },
+ *     itemOperations={
+ *         "get": {"normalization_context": {"groups": {"company:read", "staff:read", "profile:read", "client_status:read"}}}
  *     }
  * )
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.hash", "projectParticipations.project"})
@@ -66,7 +69,7 @@ class Companies
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:create", "project:list", "project:update", "project:view", "company:read"})
+     * @Groups({"project:create", "project:list", "project:update", "project:view", "company:read", "company:read"})
      */
     private $name;
 
@@ -89,7 +92,7 @@ class Companies
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      *
-     * @Groups({"project:view", "company:read"})
+     * @Groups({"project:view", "company:read", "company:read"})
      */
     private $id;
 
@@ -107,6 +110,8 @@ class Companies
      * @var Staff[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Staff", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @Groups({"company:read"})
      */
     private $staff;
 

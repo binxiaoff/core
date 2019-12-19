@@ -8,6 +8,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Faker\Provider\Base;
+use Faker\Provider\Internet;
 use Faker\Provider\Miscellaneous;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FilesystemInterface;
@@ -226,7 +227,7 @@ class GuaranteeRequestGeneratorTest extends TestCase
         $project->getBorrowerCompany()->willReturn($borrowerCompany);
         $project->getTranches()->willReturn([new Tranche($project->reveal(), new Money(Miscellaneous::currencyCode(), (string) Base::randomDigitNotNull()))]);
         $project->getSubmitterCompany()->willReturn($borrowerCompany);
-        $project->getSubmitterClient()->willReturn(new Clients());
+        $project->getSubmitterClient()->willReturn(new Clients('test@' . Internet::safeEmailDomain()));
         $project = $project->reveal();
 
         $foncarisRequest = new FoncarisRequest();

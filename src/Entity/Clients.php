@@ -81,7 +81,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
      * @ORM\Column(name="title", type="string", nullable=true)
      */
@@ -90,11 +90,10 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
      * @ORM\Column(name="last_name", type="string", length=191, nullable=true)
      *
-     * @Assert\NotBlank
      * @Assert\Length(min=2)
      * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false)
      */
@@ -103,7 +102,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
      * @ORM\Column(name="first_name", type="string", length=191, nullable=true)
      *
@@ -122,7 +121,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var PhoneNumber
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
      * @ORM\Column(name="phone", type="phone_number", nullable=true)
      *
@@ -133,7 +132,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var PhoneNumber
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
      * @ORM\Column(name="mobile", type="phone_number", nullable=true)
      *
@@ -144,7 +143,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
      * @ORM\Column(name="email", type="string", length=191, nullable=true, unique=true)
      *
@@ -174,7 +173,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
      * @ORM\Column(type="string", length=255, nullable=true)
      */
@@ -214,7 +213,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var ClientStatus
      *
-     * @Groups({"client:read"})
+     * @Groups({"client:read", "profile:read"})
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientStatus")
      * @ORM\JoinColumn(name="id_current_status", unique=true)
@@ -232,13 +231,19 @@ class Clients implements UserInterface, EquatableInterface
 
     /**
      * Clients constructor.
+     *
+     * @param string $email
+     *
+     * @throws Exception
      */
-    public function __construct()
+    public function __construct(string $email)
     {
         $this->statuses = new ArrayCollection();
         $this->setCurrentStatus(ClientStatus::STATUS_INVITED);
+
         $this->added   = new DateTimeImmutable();
         $this->roles[] = self::ROLE_USER;
+        $this->email   = $email;
     }
 
     /**

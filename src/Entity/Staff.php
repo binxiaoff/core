@@ -8,10 +8,13 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
 
 /**
- * @ApiResource
+ * @ApiResource(
+ *     normalizationContext={"groups": {"staff:read", "profile:read", "client_status:read"}}
+ * )
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
@@ -24,9 +27,11 @@ class Staff
     /** @deprecated Just for backward compatibility. Later, we will define a new role list for staff.*/
     public const ROLE_COMPANY_OWNER = 'ROLE_COMPANY_OWNER';
 
-    public const DUTY_STAFF_OPERATOR = 'DUTY_STAFF_OPERATOR';
-    public const DUTY_STAFF_MANAGER  = 'DUTY_STAFF_MANAGER';
-    public const DUTY_STAFF_ADMIN    = 'DUTY_STAFF_ADMIN';
+    public const DUTY_STAFF_OPERATOR    = 'DUTY_STAFF_OPERATOR';
+    public const DUTY_STAFF_MANAGER     = 'DUTY_STAFF_MANAGER';
+    public const DUTY_STAFF_ADMIN       = 'DUTY_STAFF_ADMIN';
+    public const DUTY_STAFF_FACTURATION = 'DUTY_STAFF_FACTURATION';
+    public const DUTY_STAFF_SIGNATOR    = 'DUTY_STAFF_SIGNATOR';
 
     /**
      * @var int
@@ -54,6 +59,8 @@ class Staff
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
+     *
+     * @Groups({"staff:read"})
      */
     private $client;
 
@@ -61,6 +68,8 @@ class Staff
      * @var Collection|MarketSegment[]
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\MarketSegment")
+     *
+     * @Groups({"staff:read"})
      */
     private $marketSegments;
 
