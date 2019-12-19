@@ -11,7 +11,7 @@ use Symfony\Component\Validator\Constraint;
  */
 class Password extends Constraint
 {
-    public const MIN_PASSWORD_LENGTH = 6;
+    public const MIN_PASSWORD_LENGTH = 8;
 
     public $message = 'reset.password.wrong';
 }
