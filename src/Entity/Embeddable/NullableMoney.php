@@ -21,12 +21,7 @@ class NullableMoney extends Money
      * @Assert\Type("numeric")
      * @Assert\Positive
      *
-     * @Groups({
-     *     "projectParticipation:list",
-     *     "projectParticipation:create",
-     *     "projectParticipation:update",
-     *     "projectParticipation:view"
-     * })
+     * @Groups({"nullableMoney:read", "nullableMoney:write"})
      */
     protected $amount;
 
@@ -39,12 +34,7 @@ class NullableMoney extends Money
      *
      * @Assert\Currency
      *
-     * @Groups({
-     *     "projectParticipation:list",
-     *     "projectParticipation:create",
-     *     "projectParticipation:update",
-     *     "projectParticipation:view"
-     * })
+     * @Groups({"nullableMoney:read", "nullableMoney:write"})
      */
     protected $currency;
 

@@ -22,17 +22,7 @@ class Fee
      *
      * @Assert\NotBlank
      *
-     * @Groups({
-     *     "project:view",
-     *     "projectParticipation:create",
-     *     "projectParticipation:list",
-     *     "projectParticipation:view",
-     *     "projectParticipation:update",
-     *     "fee:read",
-     *     "fee:write",
-     *     "projectParticipationFee:create",
-     *     "projectParticipationFee:update"
-     * })
+     * @Groups({"project:view", "fee:read", "fee:write"})
      */
     private $type;
 
@@ -41,17 +31,7 @@ class Fee
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({
-     *     "project:view",
-     *     "projectParticipation:create",
-     *     "projectParticipation:list",
-     *     "projectParticipation:view",
-     *     "projectParticipation:update",
-     *     "fee:read",
-     *     "fee:write",
-     *     "projectParticipationFee:create",
-     *     "projectParticipationFee:update"
-     * })
+     * @Groups({"project:view", "fee:read", "fee:write"})
      */
     private $comment;
 
@@ -64,17 +44,7 @@ class Fee
      *
      * @Assert\NotBlank
      *
-     * @Groups({
-     *     "project:view",
-     *     "projectParticipation:create",
-     *     "projectParticipation:list",
-     *     "projectParticipation:view",
-     *     "projectParticipation:update",
-     *     "fee:read",
-     *     "fee:write",
-     *     "projectParticipationFee:create",
-     *     "projectParticipationFee:update"
-     * })
+     * @Groups({"project:view", "fee:read", "fee:write"})
      */
     private $rate;
 
@@ -82,18 +52,6 @@ class Fee
      * @var bool
      *
      * @ORM\Column(type="boolean")
-     *
-     * @Groups({
-     *     "project:view",
-     *     "projectParticipation:create",
-     *     "projectParticipation:list",
-     *     "projectParticipation:view",
-     *     "projectParticipation:update",
-     *     "fee:read",
-     *     "fee:write",
-     *     "projectParticipationFee:create",
-     *     "projectParticipationFee:update"
-     * })
      */
     private $recurring;
 

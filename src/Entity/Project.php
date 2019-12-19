@@ -25,11 +25,14 @@ use Unilend\Traits\ConstantsAwareTrait;
 /**
  * @ApiResource(
  *     collectionOperations={
- *         "get": {"normalization_context": {"groups": {"project:list", "marketSegment:read"}}},
+ *         "get": {"normalization_context": {"groups": {"project:list", "marketSegment:read", "projectParticipation:read"}}},
  *         "post": {"denormalization_context": {"groups": {"project:create"}}}
  *     },
  *     itemOperations={
- *         "get": {"security": "is_granted('view', object)", "normalization_context": {"groups": {"project:view", "tranche_project:view", "attachment:read"}}},
+ *         "get": {
+ *             "security": "is_granted('view', object)",
+ *             "normalization_context": {"groups": {"project:view", "tranche_project:view", "attachment:read", "projectParticipation:read"}}
+ *         },
  *         "project_confidentiality": {
  *             "method": "GET",
  *             "security": "is_granted('view_confidentiality_doc', object)",

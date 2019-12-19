@@ -18,13 +18,18 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
+ *     normalizationContext={"groups": {"projectParticipationOffer:read", "money:read"}},
+ *     denormalizationContext={"groups": {"projectParticipationOffer:write", "money:write"}},
  *     collectionOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
  *         },
- *         "post": {"security_post_denormalize": "is_granted('bid', object.getProjectParticipation())"}
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('bid', object.getProjectParticipation())",
+ *             "denormalization_context": {"groups": {"projectParticipationOffer:create", "projectParticipationOffer:write", "money:write"}}
+ *         }
  *     },
  *     itemOperations={
  *         "get": {
@@ -32,7 +37,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "read": false,
  *             "output": false,
  *         },
- *         "patch": {"security": "is_granted('edit', object.getProjectParticipation().getProject())", "denormalization_context": {"groups": {"projectOffer:update"}}},
+ *         "patch": {"security": "is_granted('edit', object.getProjectParticipation().getProject())"},
  *     }
  * )
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectOffer")
@@ -71,7 +76,7 @@ class ProjectParticipationOffer
      *
      * @Assert\Expression("this.getProjectParticipation().isBiddable() == true")
      *
-     * @Groups({"project:list"})
+     * @Groups({"project:list", "projectParticipationOffer:create"})
      */
     private $projectParticipation;
 
@@ -82,7 +87,7 @@ class ProjectParticipationOffer
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:list", "project:view"})
+     * @Groups({"project:list", "project:view", "projectParticipationOffer:read", "projectParticipationOffer:write"})
      */
     private $committeeStatus;
 
@@ -93,7 +98,7 @@ class ProjectParticipationOffer
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:list", "project:view"})
+     * @Groups({"project:list", "project:view", "projectParticipationOffer:read", "projectParticipationOffer:write"})
      */
     private $expectedCommitteeDate;
 
@@ -104,7 +109,7 @@ class ProjectParticipationOffer
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view"})
+     * @Groups({"project:view", "projectParticipationOffer:read", "projectParticipationOffer:write"})
      */
     private $comment;
 
@@ -112,6 +117,8 @@ class ProjectParticipationOffer
      * @var TrancheOffer[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheOffer", mappedBy="projectParticipationOffer", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @Groups({"projectParticipationOffer:read"})
      */
     private $trancheOffers;
 
@@ -225,6 +232,20 @@ class ProjectParticipationOffer
     }
 
     /**
+     * @param Tranche $tranche
+     *
+     * @return TrancheOffer|null
+     */
+    public function getTrancheOffer(Tranche $tranche): ?TrancheOffer
+    {
+        return $this->trancheOffers->filter(
+            static function (TrancheOffer $trancheOffer) use ($tranche) {
+                return $tranche === $trancheOffer->getTranche();
+            }
+        )->first() ?: null;
+    }
+
+    /**
      * @param TrancheOffer $trancheOffer
      *
      * @return ProjectParticipationOffer
@@ -279,25 +300,35 @@ class ProjectParticipationOffer
      * @param Money $offerMoney
      *
      * @throws Exception
+     *
+     * @return ProjectParticipationOffer
+     *
+     * @Groups({"projectParticipationOffer:write"})
      */
-    private function setOfferMoney(Money $offerMoney)
+    public function setOfferMoney(Money $offerMoney): ProjectParticipationOffer
     {
-        $this->getTrancheOffers()->clear();
-
-        $syndicatedMoney = $this->getProjectParticipation()->getProject()->getTranchesTotalMoney();
-        $remainderMoney  = clone $syndicatedMoney;
+        $totalMoney     = $this->getProjectParticipation()->getProject()->getTranchesTotalMoney();
+        $remainderMoney = clone $offerMoney;
 
         foreach ($this->getProjectParticipation()->getProject()->getTranches() as $tranche) {
-            $split          = $offerMoney->multiply($syndicatedMoney->ratio($tranche->getMoney()));
+            $ratio          = $tranche->getMoney()->ratio($totalMoney);
+            $split          = $offerMoney->multiply($ratio);
             $remainderMoney = $remainderMoney->substract($split);
 
-            $this->trancheOffers->add(
-                new TrancheOffer($this, $tranche, $split, $this->addedBy)
-            );
+            $trancheOffer = $this->getTrancheOffer($tranche);
+            if ($trancheOffer) {
+                $trancheOffer->setMoney($split);
+            } else {
+                $this->trancheOffers->add(
+                    new TrancheOffer($this, $tranche, $split, $this->addedBy)
+                );
+            }
         }
 
         /** @var TrancheOffer $lastTrancheOffer */
         $lastTrancheOffer = $this->getTrancheOffers()->last();
-        $lastTrancheOffer->getMoney()->add($remainderMoney);
+        $lastTrancheOffer->setMoney($lastTrancheOffer->getMoney()->add($remainderMoney));
+
+        return $this;
     }
 }

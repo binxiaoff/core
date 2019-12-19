@@ -17,23 +17,16 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
+ *     normalizationContext={"groups": {"projectParticipationFee:read", "fee:read"}},
+ *     denormalizationContext={"groups": {"ProjectParticipationFee:write", "fee:write"}},
  *     collectionOperations={
  *         "get": {"security": "is_granted('ROLE_ADMIN')"},
- *         "post": {
- *             "security_post_denormalize": "is_granted('edit', object.getProjectParticipation().getProject())",
- *             "denormalization_context": {"groups": {"projectParticipationFee:create"}}
- *         }
+ *         "post": {"security_post_denormalize": "is_granted('edit', object.getProjectParticipation().getProject())"}
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object.getProject())"},
- *         "patch": {
- *             "security_post_denormalize": "is_granted('edit', previous_object.getProjectParticipation().getProject())",
- *             "denormalization_context": {"groups": {"projectParticipationFee:update"}}
- *         },
- *         "put": {
- *             "security_post_denormalize": "is_granted('edit', previous_object.getProjectParticipation().getProject())",
- *             "denormalization_context": {"groups": {"projectParticipationFee:update"}}
- *         }
+ *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object.getProjectParticipation().getProject())"},
+ *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProjectParticipation().getProject())"}
  *     }
  * )
  *
@@ -47,8 +40,7 @@ class ProjectParticipationFee
     use TimestampableTrait;
     use ConstantsAwareTrait;
 
-    public const TYPE_PARTICIPATION  = 'participation';
-    public const TYPE_ADMINISTRATIVE = 'administrative';
+    public const TYPE_PARTICIPATION = 'participation';
 
     /**
      * @var int
@@ -72,12 +64,8 @@ class ProjectParticipationFee
      *
      * @Groups({
      *     "project:view",
-     *     "projectParticipation:create",
-     *     "projectParticipation:view",
-     *     "projectParticipation:list",
-     *     "projectParticipation:update",
-     *     "projectParticipationFee:create",
-     *     "projectParticipationFee:update"
+     *     "projectParticipationFee:read",
+     *     "projectParticipationFee:write"
      * })
      */
     private $fee;
