@@ -17,7 +17,7 @@ use Unilend\Traits\ConstantsAwareTrait;
 /**
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedTrancheOffer")
  *
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_tranche", "id_project_offer"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_tranche", "id_project_participation_offer"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -56,7 +56,7 @@ class TrancheOffer
      *
      * @ORM\ManyToOne(targetEntity="ProjectParticipationOffer", inversedBy="trancheOffers")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project_offer", nullable=false)
+     *     @ORM\JoinColumn(name="id_project_participation_offer", nullable=false)
      * })
      */
     private $projectParticipationOffer;
@@ -217,6 +217,18 @@ class TrancheOffer
     public function getMoney(): Money
     {
         return $this->money;
+    }
+
+    /**
+     * @param Money $money
+     *
+     * @return TrancheOffer
+     */
+    public function setMoney(Money $money): TrancheOffer
+    {
+        $this->money = $money;
+
+        return $this;
     }
 
     /**

@@ -29,9 +29,7 @@ class Money
      *     "project:view",
      *     "project:update",
      *     "money:read",
-     *     "money:write",
-     *     "projectParticipation:list",
-     *     "projectParticipation:create"
+     *     "money:write"
      * })
      */
     protected $amount;
@@ -52,9 +50,7 @@ class Money
      *     "project:view",
      *     "project:update",
      *     "money:read",
-     *     "money:write",
-     *     "projectParticipation:list",
-     *     "projectParticipation:create"
+     *     "money:write"
      * })
      */
     protected $currency;
@@ -129,7 +125,7 @@ class Money
     {
         return new Money(
             $this->getCurrency(),
-            $this->round(bcdiv($this->amount, $divisor, 4))
+            $this->round(bcdiv($this->amount, (string) $divisor, 4))
         );
     }
 
@@ -142,7 +138,7 @@ class Money
     {
         return new Money(
             $this->currency,
-            $this->round(bcmul($this->amount, $factor, 4))
+            $this->round(bcmul($this->amount, (string) $factor, 4))
         );
     }
 

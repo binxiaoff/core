@@ -66,7 +66,7 @@ class Companies
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:create", "project:list", "project:update", "project:view", "projectParticipation:list", "projectParticipation:view"})
+     * @Groups({"project:create", "project:list", "project:update", "project:view", "company:read"})
      */
     private $name;
 
@@ -89,7 +89,7 @@ class Companies
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      *
-     * @Groups({"project:view", "projectParticipation:view"})
+     * @Groups({"project:view", "company:read"})
      */
     private $id;
 
@@ -125,7 +125,7 @@ class Companies
     /**
      * @ORM\Column(type="string", length=4, nullable=true, unique=true)
      *
-     * @Groups({"project:list", "project:view", "projectParticipation:view", "projectParticipation:list"})
+     * @Groups({"project:list", "project:view", "company:read"})
      */
     private $shortCode;
 

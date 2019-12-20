@@ -17,13 +17,15 @@ trait RoleableTrait
      * @var array
      *
      * @ORM\Column(type="json")
+     *
+     * @Groups({"role:read", "role:write"})
      */
     private $roles = [];
 
     /**
      * @return array
      *
-     * @Groups({"project:view", "projectParticipation:create", "projectParticipation:view"})
+     * @Groups({"project:view"})
      */
     public function getRoles(): array
     {
