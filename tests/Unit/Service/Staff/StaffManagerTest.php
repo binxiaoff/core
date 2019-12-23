@@ -50,9 +50,9 @@ class StaffManagerTest extends TestCase
     public function testGetStaffByEmail(): void
     {
         $email         = 'test@' . Internet::safeEmailDomain();
-        $company       = new Companies('CALS', '850890666');
+        $company       = new Companies('CALS');
         $client        = new Clients($email);
-        $expectedStaff = new Staff();
+        $expectedStaff = new Staff($company, $client);
 
         $companyGetter = $this->companyManager->getCompanyByEmail(Argument::exact($email))->willReturn($company);
         $clientGetter  = $this->clientsRepository->findOneBy(Argument::exact(['email' => $email]))->willReturn($client);
@@ -76,7 +76,7 @@ class StaffManagerTest extends TestCase
         $this->expectException(ClientNotFoundException::class);
 
         $email = Internet::safeEmailDomain();
-        $this->companyManager->getCompanyByEmail(Argument::exact($email))->willReturn(new Companies('CALS', '850890666'));
+        $this->companyManager->getCompanyByEmail(Argument::exact($email))->willReturn(new Companies('CALS'));
         $this->clientsRepository->findOneBy(Argument::exact(['email' => $email]))->willReturn(null);
 
         $this->createTestObject()->getStaffByEmail($email);
@@ -92,7 +92,7 @@ class StaffManagerTest extends TestCase
         $this->expectException(StaffNotFoundException::class);
 
         $email   = 'test@' . Internet::safeEmailDomain();
-        $company = new Companies('CALS', '850890666');
+        $company = new Companies('CALS');
         $client  = new Clients($email);
         $company->setName(Base::lexify('?????????'));
 
@@ -116,7 +116,7 @@ class StaffManagerTest extends TestCase
     public function testAddStaffFromEmail(?Clients $client): void
     {
         $email   = 'test@' . Internet::safeEmailDomain();
-        $company = new Companies('CALS', '850890666');
+        $company = new Companies('CALS');
 
         if ($client) {
             $client->setEmail($email);
@@ -143,9 +143,9 @@ class StaffManagerTest extends TestCase
     }
 
     /**
-     * @return array
-     *
      * @throws Exception
+     *
+     * @return array
      */
     public function clientProvider(): array
     {
