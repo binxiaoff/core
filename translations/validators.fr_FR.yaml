@@ -1,3 +1,18 @@
 project.tranche.count: Il faut au minimum une tranche dans un projet.
 account_initialization.cgu.true: Vous devez accepter les CGU.
 reset.password.wrong: Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et au moins 8 caractères.
+Staff:
+    client:
+        staffable: L'utilisateur n'est pas ajoutable à votre entité
+        unique: L'utilisateur est déja ajouté à une entité
+        empty: L'utilisateur est requis
+    company:
+        empty: L'entité est requise
+
+Roleable:
+    roles:
+        choice: Il y a des valeurs qui ne sont pas des roles
+
+Clients:
+    email:
+        unique: L'utilisateur est déjà présent dans notre base de données

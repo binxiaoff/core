@@ -8,16 +8,33 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"staff:read", "profile:read", "client_status:read"}}
+ *     normalizationContext={"groups": {"staff:read", "profile:read", "client_status:read", "role:read"}},
+ *     itemOperations={
+ * "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *         "delete": {"security": "is_granted('delete', object)"},
+ *         "patch": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"staff:update", "role:write"}}}
+ *     },
+ *     collectionOperations={
+ *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"staff:create", "role:write", "client:write"}}}
+ *     }
  * )
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity(fields={"client"}, message="Staff.client.unique")
  */
 class Staff
 {
@@ -49,18 +66,24 @@ class Staff
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      * })
+     *
+     * @Assert\NotBlank(message="Staff.company.empty")
      */
     private $company;
 
     /**
      * @var Clients
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\Clients", inversedBy="staff")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\Clients", inversedBy="staff", cascade={"persist"})
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      *
-     * @Groups({"staff:read"})
+     * @Assert\NotBlank(message="Staff.client.empty")
+     * @Assert\Expression(expression="this.getCompany().isStaffable(value)", message="Staff.client.staffable")
+     * @Assert\Valid
+     *
+     * @Groups({"staff:read", "staff:create"})
      */
     private $client;
 
@@ -69,17 +92,26 @@ class Staff
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\MarketSegment")
      *
-     * @Groups({"staff:read"})
+     * @Groups({"staff:read", "staff:update", "staff:create"})
      */
     private $marketSegments;
 
     /**
      * Staff constructor.
+     *
+     * @param Companies             $company
+     * @param Clients               $client
+     * @param array|string[]|string $roles
+     *
+     * @throws Exception
      */
-    public function __construct()
+    public function __construct(Companies $company, Clients $client, $roles = [])
     {
         $this->marketSegments = new ArrayCollection();
         $this->added          = new DateTimeImmutable();
+        $this->company        = $company;
+        $this->client         = $client;
+        $this->roles          = (array) $roles;
     }
 
     /**

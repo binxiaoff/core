@@ -7,6 +7,7 @@ namespace Unilend\Entity\Traits;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Traits\ConstantsAwareTrait;
 
 trait RoleableTrait
@@ -19,6 +20,9 @@ trait RoleableTrait
      * @ORM\Column(type="json")
      *
      * @Groups({"role:read", "role:write"})
+     *
+     * @Assert\Choice(callback="getAvailableRoles", multiple=true, multipleMessage="Roleable.roles.choice")
+     * @Assert\Count(min="1", minMessage="Roleable.roles.min")
      */
     private $roles = [];
 
@@ -75,6 +79,18 @@ trait RoleableTrait
     }
 
     /**
+     * @return array
+     */
+    public function getAvailableRoles(): array
+    {
+        if ($this instanceof UserInterface) {
+            return self::getConstants('ROLE_');
+        }
+
+        return self::getConstants('DUTY_');
+    }
+
+    /**
      * @param string $role
      *
      * @return self
@@ -88,18 +104,6 @@ trait RoleableTrait
         }
 
         return $this;
-    }
-
-    /**
-     * @return array
-     */
-    private function getAvailableRoles(): array
-    {
-        if ($this instanceof UserInterface) {
-            return self::getConstants('ROLE_');
-        }
-
-        return self::getConstants('DUTY_');
     }
 
     /**

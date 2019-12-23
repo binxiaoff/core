@@ -13,6 +13,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use libphonenumber\PhoneNumber;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use Ramsey\Uuid\{Exception\UnsatisfiedDependencyException, Uuid};
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
@@ -47,6 +48,8 @@ use URLify;
  * })
  * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity({"email"}, message="Clients.email.unique")
  */
 class Clients implements UserInterface, EquatableInterface
 {
@@ -145,7 +148,7 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @Groups({"client:read", "client:write", "profile:read"})
      *
-     * @ORM\Column(name="email", type="string", length=191, nullable=true, unique=true)
+     * @ORM\Column(name="email", type="string", length=191, nullable=false, unique=true)
      *
      * @Assert\NotBlank
      * @Assert\Email
@@ -425,7 +428,7 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @return Clients
      */
-    public function setEmail(?string $email): Clients
+    public function setEmail(string $email): Clients
     {
         $this->email = $email;
 
@@ -433,9 +436,9 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getEmail(): ?string
+    public function getEmail(): string
     {
         return $this->email;
     }

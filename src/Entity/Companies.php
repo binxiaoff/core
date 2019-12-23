@@ -25,7 +25,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *         }
  *     },
  *     itemOperations={
- *         "get": {"normalization_context": {"groups": {"company:read", "staff:read", "profile:read", "client_status:read"}}}
+ *         "get": {"normalization_context": {"groups": {"company:read", "staff:read", "profile:read", "client_status:read", "role:read"}}}
  *     }
  * )
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.hash", "projectParticipations.project"})
@@ -299,7 +299,7 @@ class Companies
         if ($staff->count()) {
             $theStaff = $staff->first();
         } else {
-            $theStaff = (new Staff())->setClient($client)->setCompany($this);
+            $theStaff = (new Staff($this, $client));
         }
 
         $theStaff->addRoles([$role]);
@@ -318,6 +318,18 @@ class Companies
         $this->staff->removeElement($staff);
 
         return $this;
+    }
+
+    /**
+     * Used in the staff Expression constraint.
+     *
+     * @param Clients $client
+     *
+     * @return bool
+     */
+    public function isStaffable(Clients $client): bool
+    {
+        return !$this->emailDomain || (mb_substr($client->getEmail(), -mb_strlen($this->emailDomain)) === $this->emailDomain);
     }
 
     /**

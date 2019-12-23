@@ -62,21 +62,26 @@ class JWTCreatedSubscriber implements EventSubscriberInterface
         }
 
         if ($user instanceof Clients) {
-            $company                   = $user->getStaff()->getCompany();
-            $payload['@id']            = $this->iriConverter->getIriFromItem($user);
-            $payload['hash']           = $user->getHash();
-            $payload['firstName']      = $user->getFirstName();
-            $payload['lastName']       = $user->getLastName();
-            $payload['marketSegments'] = $user->getStaff()->getMarketSegments()->map(function (MarketSegment $marketSegment) {
-                $normalized = $this->serializer->normalize($marketSegment);
-                $normalized['@id'] = $this->iriConverter->getIriFromItem($marketSegment); // TODO See if there is a way to normalize with iri automaticlly
+            $payload['@id']       = $this->iriConverter->getIriFromItem($user);
+            $payload['hash']      = $user->getHash();
+            $payload['firstName'] = $user->getFirstName();
+            $payload['lastName']  = $user->getLastName();
 
-                return $normalized;
-            })->toArray();
-            $payload['roles'] = $user->getStaff()->getRoles();
-            //todo: put the exact fields
-            $payload['company']        = $this->serializer->normalize($company);
-            $payload['company']['@id'] = $this->iriConverter->getIriFromItem($company);
+            $staff = $user->getStaff();
+
+            if ($staff) {
+                $payload['marketSegments'] = $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
+                    $normalized = $this->serializer->normalize($marketSegment);
+                    $normalized['@id'] = $this->iriConverter->getIriFromItem($marketSegment); // TODO See if there is a way to normalize with iri automaticlly
+
+                    return $normalized;
+                })->toArray();
+                $payload['roles'] = $staff->getRoles();
+                //todo: put the exact fields
+                $company                   = $staff->getCompany();
+                $payload['company']        = $this->serializer->normalize($company);
+                $payload['company']['@id'] = $this->iriConverter->getIriFromItem($company);
+            }
             $event->setData($payload);
         }
     }
