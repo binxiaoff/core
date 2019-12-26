@@ -139,6 +139,7 @@ class MailerManager
      */
     public function sendProjectCommentAdded(ProjectComment $comment, array $recipients): int
     {
+        return 0; // TODO redo the mails
         $sent     = 0;
         $project  = $comment->getProject();
         $keywords = [
@@ -208,7 +209,7 @@ class MailerManager
      */
     public function sendTrancheOfferAcceptedRejected(TrancheOffer $trancheOffer): int
     {
-        // @todo change when all roles are defined
+        return 0; // TODO redo the mails
         $recipient = $trancheOffer->getAddedBy();
 
         if (empty($recipient->getEmail())) {
@@ -239,6 +240,7 @@ class MailerManager
      */
     public function sendProjectFundingEnd(Project $project): int
     {
+        return 0; // TODO redo the mails
         $keywords = [
             'firstName'   => '',
             'projectUrl'  => $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),

@@ -26,8 +26,6 @@ class ProjectParticipationInvitedListener
      */
     public function dispatchParticipantInvitedEvent(ProjectParticipation $projectParticipation): void
     {
-        if ($projectParticipation->isParticipant()) {
-            $this->messageBus->dispatch(new ProjectParticipantInvited($projectParticipation));
-        }
+        $this->messageBus->dispatch(new ProjectParticipantInvited($projectParticipation));
     }
 }

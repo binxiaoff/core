@@ -51,6 +51,7 @@ class NotificationDisplayManager
      */
     public function getLastClientNotifications(Clients $client, ?int $limit = 20, ?int $offset = null): array
     {
+        return 0; // TODO redo the mails
         $formattedNotifications = [];
         $notifications          = $this->notificationRepository->findBy(['client' => $client], ['added' => 'DESC'], $limit, $offset);
 

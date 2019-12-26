@@ -40,9 +40,9 @@ trait RoleableTrait
      *
      * @return self
      */
-    public function setRoles(array $roles): self
+    public function setRoles($roles): self
     {
-        $this->roles = $this->filterRoles($roles);
+        $this->roles = $this->filterRoles((array) $roles);
 
         return $this;
     }

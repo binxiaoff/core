@@ -16,15 +16,15 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectOrganizer:read", "role:read"}},
- *     denormalizationContext={"groups": {"projectOrganizer:write"}},
+ *     normalizationContext={"groups": {"projectOrganizer:read", "role:read", "company:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
  *         },
- *         "delete": {"security": "is_granted('edit', object.getProject())"}
+ *         "delete": {"security": "is_granted('edit', object.getProject())"},
+ *         "patch": {"security": "is_granted('edit', object.getProject())", "groups": {"projectOrganizer:write", "role:write"}}
  *     },
  *     collectionOperations={
  *         "post": {
@@ -40,7 +40,7 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait
  *     }
  * )
  *
- * @UniqueEntity(fields={})
+ * @UniqueEntity(fields={"project", "company"})
  */
 class ProjectOrganizer
 {
@@ -60,6 +60,8 @@ class ProjectOrganizer
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
+     *
+     * @Groups({"projectOrganizer:read"})
      */
     private $id;
 
@@ -106,10 +108,11 @@ class ProjectOrganizer
     {
         $this->project    = $project;
         $this->company    = $company;
-        $this->roles      = (array) $roles;
-        $this->added      = new DateTimeImmutable();
         $this->addedBy    = $client;
+        $this->added      = new DateTimeImmutable();
         $this->permission = new Permission();
+
+        $this->setRoles((array) $roles);
     }
 
     /**

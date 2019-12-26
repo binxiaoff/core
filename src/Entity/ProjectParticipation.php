@@ -11,8 +11,10 @@ use Doctrine\ORM\Mapping as ORM;
 use DomainException;
 use Exception;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
-use Unilend\Entity\Embeddable\{Fee, Money, NullableMoney, Permission};
-use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
+use Unilend\Entity\Embeddable\{Fee, Money, NullableMoney};
+use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait};
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
@@ -74,6 +76,8 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationRepository")
  * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity({"project", "company"})
  */
 class ProjectParticipation
 {
@@ -108,6 +112,8 @@ class ProjectParticipation
      * @Groups({"projectParticipation:read", "projectParticipation:create"})
      *
      * @MaxDepth(1)
+     *
+     * @Assert\NotBlank
      */
     private $project;
 
@@ -120,6 +126,8 @@ class ProjectParticipation
      * })
      *
      * @Groups({"projectParticipation:read", "projectParticipation:create"})
+     *
+     * @Assert\NotBlank
      */
     private $company;
 
@@ -138,6 +146,8 @@ class ProjectParticipation
      * @ORM\Column(type="integer", nullable=false, options={"default": 0})
      *
      * @Groups({"projectParticipation:read"})
+     *
+     * @Assert\NotBlank
      */
     private $currentStatus = self::DEFAULT_STATUS;
 
