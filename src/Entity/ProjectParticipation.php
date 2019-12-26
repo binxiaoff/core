@@ -10,11 +10,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
 use Exception;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\{Fee, Money, NullableMoney};
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait};
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
@@ -23,6 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         "projectParticipationContact:read",
  *         "projectParticipationFee:read",
  *         "projectParticipationOffer:read",
+ *         "projectOrganizer:read",
  *         "company:read",
  *         "role:read",
  *         "fee:read",
@@ -43,6 +44,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "projectParticipationContact:read",
  *             "projectParticipationFee:read",
  *             "projectParticipationOffer:read",
+ *             "projectOrganizer:read",
  *             "company:read",
  *             "role:read",
  *             "fee:read",

@@ -133,7 +133,6 @@ class ClientNotifier
      */
     public function notifyInvitedToProject(Clients $inviter, Clients $invitee, Project $project): int
     {
-
         return 0; // TODO redo the mails
         if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
             $projectUrl  = $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL);
