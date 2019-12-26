@@ -147,6 +147,8 @@ class Attachment
      * })
      *
      * @Groups({"attachment:write"})
+     *
+     * @Assert\NotBlank
      */
     private $project;
 
