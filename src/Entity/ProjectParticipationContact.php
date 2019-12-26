@@ -41,9 +41,7 @@ class ProjectParticipationContact
      * @var ProjectParticipation
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationContacts")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project_participation", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
      */
     private $projectParticipation;
 

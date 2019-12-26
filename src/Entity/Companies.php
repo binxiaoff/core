@@ -118,6 +118,8 @@ class Companies
     private $staff;
 
     /**
+     * TODO Is it really necessary ?
+     *
      * @var ProjectParticipation[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="company", cascade={"persist"}, orphanRemoval=true)

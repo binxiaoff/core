@@ -314,6 +314,13 @@ class Project
     private $projectParticipations;
 
     /**
+     * @var ProjectOrganizer[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectOrganizer", mappedBy="project")
+     */
+    private $organizers;
+
+    /**
      * @var ProjectComment[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectComment", mappedBy="project")
@@ -442,6 +449,7 @@ class Project
         $this->statuses              = new ArrayCollection();
         $this->tranches              = new ArrayCollection();
         $this->tags                  = new ArrayCollection();
+        $this->organizers            = new ArrayCollection();
         $this->added                 = new DateTimeImmutable();
 
         $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_REQUESTED));
@@ -464,7 +472,8 @@ class Project
             }
         }
 
-        $this->projectParticipations->add(new ProjectParticipation($submitter->getCompany(), $this, $submitter, [ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER]));
+        $arranger = new ProjectOrganizer($submitter->getCompany(), $this, $submitter, [ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER]);
+        $this->organizers->add($arranger);
     }
 
     /**
@@ -802,7 +811,7 @@ class Project
      */
     public function getArranger(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipation(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER);
+        return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER);
     }
 
     /**
@@ -812,7 +821,7 @@ class Project
      */
     public function getDeputyArranger(): Collection
     {
-        return $this->getParticipationsByRole(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER);
+        return $this->getOrganizersByRole(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_DEPUTY_ARRANGER);
     }
 
     /**
@@ -822,7 +831,7 @@ class Project
      */
     public function getRun(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipation(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_RUN);
+        return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_RUN);
     }
 
     /**
@@ -832,7 +841,7 @@ class Project
      */
     public function getLoanOfficer(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipation(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER);
+        return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_LOAN_OFFICER);
     }
 
     /**
@@ -842,7 +851,7 @@ class Project
      */
     public function getSecurityTrustee(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipation(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE);
+        return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_SECURITY_TRUSTEE);
     }
 
     /**
@@ -854,35 +863,19 @@ class Project
      */
     public function getParticipants(): iterable
     {
-        return $this->getParticipationsByRole(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT);
+        return $this->getProjectParticipations();
     }
 
     /**
-     * @return Companies[]|ArrayCollection
-     */
-    public function getLenderCompanies(): iterable
-    {
-        return $this->getCompaniesByRole(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT);
-    }
-
-    /**
-     * @return array|ProjectParticipation
+     * @return ArrayCollection|ProjectOrganizer[]
      *
      * @Groups({"project:view"})
      *
      * @MaxDepth(2)
      */
-    public function getOrganizers(): array
+    public function getOrganizers(): ArrayCollection
     {
-        $organizers = [];
-
-        foreach ($this->getProjectParticipations() as $participation) {
-            if ($participation->isOrganizer()) {
-                $organizers[] = $participation;
-            }
-        }
-
-        return $organizers;
+        return $this->organizers;
     }
 
     /**
@@ -1293,12 +1286,11 @@ class Project
     {
         return array_values(
             array_filter(
-                ProjectParticipation::DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER,
+                ProjectOrganizer::getAvailableRoles(),
                 function (string $role) {
-                    $roleUniqueness = static::isUniqueRole($role);
+                    $isUnique = ProjectOrganizer::isUniqueRole($role);
 
-                    return (($roleUniqueness && (0 === count($this->getParticipationsByRole($role)))) || false === $roleUniqueness)
-                    && ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT !== $role;
+                    return ($isUnique && (0 === count($this->getOrganizersByRole($role)))) || false === $isUnique;
                 }
             )
         );
@@ -1307,49 +1299,20 @@ class Project
     /**
      * @param string $role
      *
-     * @return bool
-     */
-    private static function isUniqueRole(string $role): bool
-    {
-        return in_array($role, [
-            ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER,
-            ProjectParticipation::DUTY_PROJECT_PARTICIPATION_RUN,
-            ProjectParticipation::DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER,
-            ProjectParticipation::DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE,
-        ], true);
-    }
-
-    /**
-     * @param string $role
-     *
      * @return ProjectParticipation[]|Collection
      */
-    private function getParticipationsByRole(string $role): Collection
+    private function getOrganizersByRole(string $role): Collection
     {
-        $participations = new ArrayCollection();
+        $organizers = new ArrayCollection();
 
-        // Ugly foreach on the Participations (hopefully we don't have many Participations on a project), as the Criteria doesn't support the json syntax.
-        foreach ($this->getProjectParticipations() as $projectParticipation) {
-            if ($projectParticipation->hasRole($role)) {
-                $participations->add($projectParticipation);
+        // Ugly foreach on the Organizer (hopefully we don't have many organisers on a project), as the Criteria doesn't support the json syntax.
+        foreach ($this->getOrganizers() as $organizer) {
+            if ($organizer->hasRole($role)) {
+                $organizers->add($organizer);
             }
         }
 
-        return $participations;
-    }
-
-    /**
-     * @param string $role
-     *
-     * @return ProjectParticipation[]|ArrayCollection
-     */
-    private function getCompaniesByRole(string $role): iterable
-    {
-        return $this->getParticipationsByRole($role)->map(
-            static function (ProjectParticipation $participation) {
-                return $participation->getCompany();
-            }
-        );
+        return $organizers;
     }
 
     /**
@@ -1359,12 +1322,12 @@ class Project
      *
      * @return ProjectParticipation|null
      */
-    private function getUniqueRoleParticipation(string $role): ?ProjectParticipation
+    private function getUniqueOrganizer(string $role): ?ProjectParticipation
     {
-        if (false === static::isUniqueRole($role)) {
+        if (false === ProjectOrganizer::isUniqueRole($role)) {
             throw new RuntimeException(sprintf('Role "%s" is not unique. Cannot get project Participation corresponding to the role.', $role));
         }
 
-        return $this->getParticipationsByRole($role)->first() ?: null;
+        return $this->getOrganizersByRole($role)->first() ?: null;
     }
 }

@@ -41,25 +41,4 @@ class ClientProjectRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
-
-    /**
-     * @param Clients $user
-     *
-     * @return array
-     */
-    public function getArrangerRunProjects(Clients $user): array
-    {
-        return $this
-            ->createQueryBuilder('p')
-            ->distinct()
-            ->innerJoin('p.projectParticipations', 'pp')
-            ->where('pp.company = :userCompany')
-            ->andWhere('JSON_CONTAINS(pp.roles, :roleArranger) = 1 OR JSON_CONTAINS(pp.roles, :roleRun) = 1')
-            ->setParameter('userCompany', $user->getCompany())
-            ->setParameter('roleArranger', json_encode([ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER]))
-            ->setParameter('roleRun', json_encode([ProjectParticipation::DUTY_PROJECT_PARTICIPATION_RUN]))
-            ->getQuery()
-            ->getResult()
-        ;
-    }
 }

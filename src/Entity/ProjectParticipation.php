@@ -77,26 +77,8 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait
  */
 class ProjectParticipation
 {
-    use RoleableTrait {
-        removeRole as private baseRemoveRole;
-    }
     use TimestampableTrait;
     use BlamableAddedTrait;
-
-    public const DUTY_PROJECT_PARTICIPATION_ARRANGER         = 'Arrangeur'; // The company who arranges a loan syndication.
-    public const DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER  = 'Co-arrangeur';
-    public const DUTY_PROJECT_PARTICIPATION_RUN              = 'RUN'; // Responsable Unique de Notation, who gives a note on the borrower.
-    public const DUTY_PROJECT_PARTICIPATION_PARTICIPANT      = 'participant';
-    public const DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER     = 'Agent du crédit';
-    public const DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE = 'Agent des sûretés';
-
-    public const DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER = [
-        self::DUTY_PROJECT_PARTICIPATION_ARRANGER,
-        self::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER,
-        self::DUTY_PROJECT_PARTICIPATION_RUN,
-        self::DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER,
-        self::DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE,
-    ];
 
     private const STATUS_NOT_CONSULTED = 0;
     private const STATUS_CONSULTED     = 10;
@@ -160,13 +142,6 @@ class ProjectParticipation
     private $currentStatus = self::DEFAULT_STATUS;
 
     /**
-     * @var Permission
-     *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Permission", columnPrefix=false)
-     */
-    private $permission;
-
-    /**
      * @var ProjectParticipationFee
      *
      * @ORM\OneToOne(targetEntity="ProjectParticipationFee", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
@@ -204,7 +179,6 @@ class ProjectParticipation
      * @param Companies          $company
      * @param Project            $project
      * @param Clients            $addedBy
-     * @param array              $roles
      * @param NullableMoney|null $invitationMoney
      *
      * @throws Exception
@@ -213,11 +187,8 @@ class ProjectParticipation
         Companies $company,
         Project $project,
         Clients $addedBy,
-        array $roles = [self::DUTY_PROJECT_PARTICIPATION_PARTICIPANT],
         NullableMoney $invitationMoney = null
     ) {
-        $this->roles                      = $roles;
-        $this->permission                 = new Permission();
         $this->added                      = new DateTimeImmutable();
         $this->addedBy                    = $addedBy;
         $this->company                    = $company;
@@ -226,8 +197,8 @@ class ProjectParticipation
         $this->projectParticipationOffers = new ArrayCollection();
 
         $this->projectParticipationContacts = $company->getStaff()
-            ->filter(function (Staff $staff) use ($project) {
-                return $this->isOrganizer() || (null === $project->getMarketSegment() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
+            ->filter(static function (Staff $staff) use ($project) {
+                return null === $project->getMarketSegment() || $staff->getMarketSegments()->contains($project->getMarketSegment());
             })
             ->map(function (Staff $staff) use ($addedBy) {
                 return new ProjectParticipationContact($this, $staff->getClient(), $addedBy);
@@ -269,50 +240,6 @@ class ProjectParticipation
     public function getCompany(): Companies
     {
         return $this->company;
-    }
-
-    /**
-     * @param Companies $company
-     *
-     * @return ProjectParticipation
-     */
-    public function setCompany(Companies $company): ProjectParticipation
-    {
-        $this->company = $company;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isArranger(): bool
-    {
-        return in_array(self::DUTY_PROJECT_PARTICIPATION_ARRANGER, $this->getRoles(), true);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isRun(): bool
-    {
-        return in_array(self::DUTY_PROJECT_PARTICIPATION_RUN, $this->getRoles(), true);
-    }
-
-    /**
-     * @param string $role
-     *
-     * @return $this
-     */
-    public function removeRole(string $role): ProjectParticipation
-    {
-        $this->baseRemoveRole($role);
-
-        if (0 === count($this->roles)) {
-            $this->getProject()->removeProjectParticipation($this);
-        }
-
-        return $this;
     }
 
     /**
@@ -395,35 +322,11 @@ class ProjectParticipation
     }
 
     /**
-     * @return bool
-     */
-    public function isOrganizer(): bool
-    {
-        return 0 < count(array_intersect($this->getRoles(), self::DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER));
-    }
-
-    /**
-     * @return bool
-     */
-    public function isParticipant(): bool
-    {
-        return false === $this->isOrganizer();
-    }
-
-    /**
      * @return ProjectParticipationContact[]|ArrayCollection
      */
     public function getProjectParticipationContacts(): iterable
     {
         return $this->projectParticipationContacts;
-    }
-
-    /**
-     * @return Permission
-     */
-    public function getPermission(): Permission
-    {
-        return $this->permission;
     }
 
     /**
@@ -468,20 +371,6 @@ class ProjectParticipation
         }
 
         return $money;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isBiddable(): bool
-    {
-        foreach ([static::DUTY_PROJECT_PARTICIPATION_ARRANGER, static::DUTY_PROJECT_PARTICIPATION_PARTICIPANT] as $role) {
-            if (in_array($role, $this->roles, true)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Traits\ConstantsAwareTrait;
@@ -22,7 +21,7 @@ trait RoleableTrait
      * @Groups({"role:read", "role:write"})
      *
      * @Assert\Choice(callback="getAvailableRoles", multiple=true, multipleMessage="Roleable.roles.choice")
-     * @Assert\Count(min="1", minMessage="Roleable.roles.min")
+     * @Assert\Count(min="1", minMessage="Roleable.roles.count")
      */
     private $roles = [];
 
@@ -81,12 +80,8 @@ trait RoleableTrait
     /**
      * @return array
      */
-    public function getAvailableRoles(): array
+    public static function getAvailableRoles(): array
     {
-        if ($this instanceof UserInterface) {
-            return self::getConstants('ROLE_');
-        }
-
         return self::getConstants('DUTY_');
     }
 
@@ -113,9 +108,10 @@ trait RoleableTrait
      */
     private function filterRoles(array $roles): array
     {
-        $availableRoles = $this->getAvailableRoles();
+        // TODO if its white list an array_intersect might be more suitable
+        $availableRoles = static::getAvailableRoles();
         foreach ($roles as $index => $role) {
-            if (false === in_array($role, $availableRoles, true)) {
+            if (false === \in_array($role, $availableRoles, true)) {
                 unset($roles[$index]);
             }
         }

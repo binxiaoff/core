@@ -11,7 +11,8 @@ Staff:
 
 Roleable:
     roles:
-        choice: Rôle inconnu
+        choice: "Un ou plusieurs des rôles donnés sont incorrects"
+        count: "Un role est requis"
 
 Clients:
     email:
