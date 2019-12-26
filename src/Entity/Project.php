@@ -803,13 +803,13 @@ class Project
     /**
      * @throws Exception
      *
-     * @return ProjectParticipation|null
+     * @return ProjectOrganizer|null
      *
      * @Groups({"project:view", "project:list", "projectParticipation:list"})
      *
      * @MaxDepth(1)
      */
-    public function getArranger(): ?ProjectParticipation
+    public function getArranger(): ?ProjectOrganizer
     {
         return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER);
     }
@@ -817,7 +817,7 @@ class Project
     /**
      * @throws Exception
      *
-     * @return Collection|ProjectParticipation[]
+     * @return Collection|ProjectOrganizer[]
      */
     public function getDeputyArranger(): Collection
     {
@@ -827,9 +827,9 @@ class Project
     /**
      * @throws Exception
      *
-     * @return ProjectParticipation|null
+     * @return ProjectOrganizer|null
      */
-    public function getRun(): ?ProjectParticipation
+    public function getRun(): ?ProjectOrganizer
     {
         return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_RUN);
     }
@@ -837,9 +837,9 @@ class Project
     /**
      * @throws Exception
      *
-     * @return ProjectParticipation|null
+     * @return ProjectOrganizer|null
      */
-    public function getLoanOfficer(): ?ProjectParticipation
+    public function getLoanOfficer(): ?ProjectOrganizer
     {
         return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_LOAN_OFFICER);
     }
@@ -847,9 +847,9 @@ class Project
     /**
      * @throws Exception
      *
-     * @return ProjectParticipation|null
+     * @return ProjectOrganizer|null
      */
-    public function getSecurityTrustee(): ?ProjectParticipation
+    public function getSecurityTrustee(): ?ProjectOrganizer
     {
         return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_SECURITY_TRUSTEE);
     }
@@ -867,13 +867,13 @@ class Project
     }
 
     /**
-     * @return ArrayCollection|ProjectOrganizer[]
+     * @return Collection|ProjectOrganizer[]
      *
      * @Groups({"project:view"})
      *
      * @MaxDepth(2)
      */
-    public function getOrganizers(): ArrayCollection
+    public function getOrganizers(): Collection
     {
         return $this->organizers;
     }
@@ -1322,7 +1322,7 @@ class Project
      *
      * @return ProjectParticipation|null
      */
-    private function getUniqueOrganizer(string $role): ?ProjectParticipation
+    private function getUniqueOrganizer(string $role): ?ProjectOrganizer
     {
         if (false === ProjectOrganizer::isUniqueRole($role)) {
             throw new RuntimeException(sprintf('Role "%s" is not unique. Cannot get project Participation corresponding to the role.', $role));
