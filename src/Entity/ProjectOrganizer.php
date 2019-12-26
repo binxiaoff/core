@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Embeddable\{Fee, Money, NullableMoney, Permission};
+use Unilend\Entity\Embeddable\Permission;
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
- *     normalizationContext={groups: {"projectOrganizer:read", "role:read"}},
- *     denormalizationContext={groups: {"projectOrganizer:write"}},
+ *     normalizationContext={"groups": {"projectOrganizer:read", "role:read"}},
+ *     denormalizationContext={"groups": {"projectOrganizer:write"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
