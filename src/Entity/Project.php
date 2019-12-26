@@ -44,8 +44,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
- * @ApiFilter(SearchFilter::class, properties={"projectParticipations.company.id"})
- * @ApiFilter(ArrayFilter::class, properties={"projectParticipations.roles"})
+ * @ApiFilter(SearchFilter::class, properties={"organizers.company.id"})
+ * @ApiFilter(ArrayFilter::class, properties={"organizers.roles"})
  *
  * @ORM\Table(indexes={
  *     @ORM\Index(name="hash", columns={"hash"})
