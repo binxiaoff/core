@@ -94,7 +94,6 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @ORM\Column(name="last_name", type="string", length=191, nullable=true)
      *
-     * @Assert\NotBlank
      * @Assert\Length(min=2)
      * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false)
      */

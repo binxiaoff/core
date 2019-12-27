@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Unilend\MessageHandler\Client;
 
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use Unilend\Message\Client\ClientCreated;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Service\MailerManager;
@@ -36,6 +39,10 @@ class ClientCreatedHandler implements MessageHandlerInterface
 
     /**
      * @param ClientCreated $clientCreated
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     public function __invoke(ClientCreated $clientCreated)
     {
