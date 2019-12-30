@@ -53,11 +53,7 @@ class CurrentUser implements SerializerContextBuilderInterface
 
         $user = $this->security->getUser();
 
-        if (!$user instanceof Clients) {
-            return $context;
-        }
-
-        if ($resourceClass && null !== $user) {
+        if ($resourceClass && $user instanceof Clients) {
             $reflection  = new ReflectionClass($resourceClass);
             $constructor = $reflection->getConstructor();
             if ($constructor) {

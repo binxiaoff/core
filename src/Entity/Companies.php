@@ -92,7 +92,7 @@ class Companies
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      *
-     * @Groups({"project:view", "company:read", "company:read"})
+     * @Groups({"project:view", "company:read"})
      */
     private $id;
 

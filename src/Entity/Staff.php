@@ -18,7 +18,7 @@ use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
  * @ApiResource(
  *     normalizationContext={"groups": {"staff:read", "profile:read", "client_status:read", "role:read"}},
  *     itemOperations={
- * "get": {
+ *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
@@ -44,11 +44,11 @@ class Staff
     /** @deprecated Just for backward compatibility. Later, we will define a new role list for staff.*/
     public const ROLE_COMPANY_OWNER = 'ROLE_COMPANY_OWNER';
 
-    public const DUTY_STAFF_OPERATOR    = 'DUTY_STAFF_OPERATOR';
-    public const DUTY_STAFF_MANAGER     = 'DUTY_STAFF_MANAGER';
-    public const DUTY_STAFF_ADMIN       = 'DUTY_STAFF_ADMIN';
-    public const DUTY_STAFF_FACTURATION = 'DUTY_STAFF_FACTURATION';
-    public const DUTY_STAFF_SIGNATOR    = 'DUTY_STAFF_SIGNATOR';
+    public const DUTY_STAFF_OPERATOR   = 'DUTY_STAFF_OPERATOR';
+    public const DUTY_STAFF_MANAGER    = 'DUTY_STAFF_MANAGER';
+    public const DUTY_STAFF_ADMIN      = 'DUTY_STAFF_ADMIN';
+    public const DUTY_STAFF_ACCOUNTANT = 'DUTY_STAFF_ACCOUNTANT';
+    public const DUTY_STAFF_SIGNATORY  = 'DUTY_STAFF_SIGNATORY';
 
     /**
      * @var int
