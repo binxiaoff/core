@@ -8,7 +8,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Unilend\Entity\Clients;
 use Unilend\Message\Client\ClientCreated as Message;
 
-class ClientCreated
+class ClientCreatedListener
 {
     /** @var MessageBusInterface */
     private $messageBus;
