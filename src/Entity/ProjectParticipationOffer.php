@@ -232,20 +232,6 @@ class ProjectParticipationOffer
     }
 
     /**
-     * @param Tranche $tranche
-     *
-     * @return TrancheOffer|null
-     */
-    public function getTrancheOffer(Tranche $tranche): ?TrancheOffer
-    {
-        return $this->trancheOffers->filter(
-            static function (TrancheOffer $trancheOffer) use ($tranche) {
-                return $tranche === $trancheOffer->getTranche();
-            }
-        )->first() ?: null;
-    }
-
-    /**
      * @param TrancheOffer $trancheOffer
      *
      * @return ProjectParticipationOffer
@@ -316,13 +302,12 @@ class ProjectParticipationOffer
             $remainderMoney = $remainderMoney->substract($split);
 
             $trancheOffer = $this->getTrancheOffer($tranche);
-            if ($trancheOffer) {
-                $trancheOffer->setMoney($split);
-            } else {
-                $this->trancheOffers->add(
+
+            $trancheOffer instanceof TrancheOffer ?
+                $trancheOffer->setMoney($split)
+                : $this->trancheOffers->add(
                     new TrancheOffer($this, $tranche, $split, $this->addedBy)
                 );
-            }
         }
 
         /** @var TrancheOffer $lastTrancheOffer */
@@ -330,5 +315,19 @@ class ProjectParticipationOffer
         $lastTrancheOffer->setMoney($lastTrancheOffer->getMoney()->add($remainderMoney));
 
         return $this;
+    }
+
+    /**
+     * @param Tranche $tranche
+     *
+     * @return TrancheOffer|null
+     */
+    private function getTrancheOffer(Tranche $tranche): ?TrancheOffer
+    {
+        return $this->trancheOffers->filter(
+            static function (TrancheOffer $trancheOffer) use ($tranche) {
+                return $tranche === $trancheOffer->getTranche();
+            }
+        )->first() ?: null;
     }
 }
