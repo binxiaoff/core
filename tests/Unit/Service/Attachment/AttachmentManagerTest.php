@@ -7,7 +7,7 @@ namespace Unilend\Test\Unit\Service\Attachment;
 use DateTimeInterface;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
-use Faker\Provider\{Base, Miscellaneous};
+use Faker\Provider\{Base, Internet, Miscellaneous};
 use League\Flysystem\{FileExistsException, FileNotFoundException, FilesystemInterface};
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -58,6 +58,7 @@ class AttachmentManagerTest extends TestCase
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws ReflectionException
+     * @throws Exception
      */
     public function testUpload(
         string $type,
@@ -74,11 +75,11 @@ class AttachmentManagerTest extends TestCase
 
         $idClientsReflectionProperty = new ReflectionProperty(Clients::class, 'idClient');
         $idClientsReflectionProperty->setAccessible(true);
-        $owner   = new Clients();
+        $owner   = new Clients('test@' . Internet::safeEmailDomain());
         $ownerId = Base::randomDigitNotNull();
         $idClientsReflectionProperty->setValue($owner, $ownerId);
 
-        $uploader   = new Clients();
+        $uploader   = new Clients('test@' . Internet::safeEmailDomain());
         $uploaderId = Base::randomDigitNotNull() + 1;
         $idClientsReflectionProperty->setValue($uploader, $uploaderId);
 
@@ -162,7 +163,7 @@ class AttachmentManagerTest extends TestCase
         return new Attachment(
             'test',
             'someType',
-            new Clients(),
+            new Clients('test@' . Internet::safeEmailDomain()),
             $this->createProject()
         );
     }

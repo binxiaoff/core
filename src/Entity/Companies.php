@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
@@ -23,6 +23,9 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *             "path": "/companies/autocomplete/{term}",
  *             "controller": "Unilend\Controller\Companies\Autocomplete"
  *         }
+ *     },
+ *     itemOperations={
+ *         "get": {"normalization_context": {"groups": {"company:read", "staff:read", "profile:read", "client_status:read", "role:read"}}}
  *     }
  * )
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.hash", "projectParticipations.project"})
@@ -66,7 +69,7 @@ class Companies
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:create", "project:list", "project:update", "project:view", "company:read"})
+     * @Groups({"project:create", "project:list", "project:update", "project:view", "company:read", "company:read"})
      */
     private $name;
 
@@ -107,6 +110,10 @@ class Companies
      * @var Staff[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Staff", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @Groups({"company:read"})
+     *
+     * @ApiSubresource
      */
     private $staff;
 
@@ -294,7 +301,7 @@ class Companies
         if ($staff->count()) {
             $theStaff = $staff->first();
         } else {
-            $theStaff = (new Staff())->setClient($client)->setCompany($this);
+            $theStaff = (new Staff($this, $client));
         }
 
         $theStaff->addRoles([$role]);
@@ -313,6 +320,18 @@ class Companies
         $this->staff->removeElement($staff);
 
         return $this;
+    }
+
+    /**
+     * Used in the staff Expression constraint.
+     *
+     * @param Clients $client
+     *
+     * @return bool
+     */
+    public function isStaffable(Clients $client): bool
+    {
+        return !$this->emailDomain || (mb_substr($client->getEmail(), -mb_strlen($this->emailDomain)) === $this->emailDomain);
     }
 
     /**

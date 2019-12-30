@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Test\Unit\Service\ServiceTerms;
 
+use Exception;
 use Faker\Provider\Base;
+use Faker\Provider\Internet;
 use PHPUnit\Framework\TestCase;
 use Prophecy\{Argument, Prophecy\MethodProphecy, Prophecy\ObjectProphecy};
 use ReflectionClass;
@@ -66,10 +68,12 @@ class ServiceTermsManagerTest extends TestCase
 
     /**
      * @covers ::acceptCurrentVersion
+     *
+     * @throws Exception
      */
     public function testAcceptCurrentVersion(): void
     {
-        $client        = new Clients();
+        $client        = new Clients('test@' . Internet::safeEmailDomain());
         $acceptationId = Base::randomNumber(3);
         $this->acceptationLegalDocsRepository->save(Argument::any())->will(function ($args) use ($acceptationId) {
             $acceptation = $args[0];
@@ -103,10 +107,12 @@ class ServiceTermsManagerTest extends TestCase
 
     /**
      * @covers ::checkCurrentVersionAccepted
+     *
+     * @throws Exception
      */
     public function testCheckCurrentVersionAcceptedAccepted(): void
     {
-        $client = new Clients();
+        $client = new Clients('test@' . Internet::safeEmailDomain());
         $this->initTokenStorage($client);
 
         $this->session
@@ -126,10 +132,12 @@ class ServiceTermsManagerTest extends TestCase
 
     /**
      * @covers ::checkCurrentVersionAccepted
+     *
+     * @throws Exception
      */
     public function testCheckCurrentVersionAcceptedNotCheckedNotAccepted(): void
     {
-        $client = new Clients();
+        $client = new Clients('test@' . Internet::safeEmailDomain());
         $this->initTokenStorage($client);
 
         $this->session

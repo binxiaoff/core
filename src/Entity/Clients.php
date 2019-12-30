@@ -13,6 +13,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use libphonenumber\PhoneNumber;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use Ramsey\Uuid\{Exception\UnsatisfiedDependencyException, Uuid};
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
@@ -47,6 +48,8 @@ use URLify;
  * })
  * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity({"email"}, message="Clients.email.unique")
  */
 class Clients implements UserInterface, EquatableInterface
 {
@@ -81,7 +84,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
      * @ORM\Column(name="title", type="string", nullable=true)
      */
@@ -90,11 +93,10 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
      * @ORM\Column(name="last_name", type="string", length=191, nullable=true)
      *
-     * @Assert\NotBlank
      * @Assert\Length(min=2)
      * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false)
      */
@@ -103,7 +105,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
      * @ORM\Column(name="first_name", type="string", length=191, nullable=true)
      *
@@ -122,7 +124,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var PhoneNumber
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
      * @ORM\Column(name="phone", type="phone_number", nullable=true)
      *
@@ -133,7 +135,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var PhoneNumber
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
      * @ORM\Column(name="mobile", type="phone_number", nullable=true)
      *
@@ -144,9 +146,9 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
-     * @ORM\Column(name="email", type="string", length=191, nullable=true, unique=true)
+     * @ORM\Column(name="email", type="string", length=191, nullable=false, unique=true)
      *
      * @Assert\NotBlank
      * @Assert\Email
@@ -174,7 +176,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"client:read", "client:write", "profile:read"})
      *
      * @ORM\Column(type="string", length=255, nullable=true)
      */
@@ -214,7 +216,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var ClientStatus
      *
-     * @Groups({"client:read"})
+     * @Groups({"client:read", "profile:read"})
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientStatus")
      * @ORM\JoinColumn(name="id_current_status", unique=true)
@@ -232,13 +234,19 @@ class Clients implements UserInterface, EquatableInterface
 
     /**
      * Clients constructor.
+     *
+     * @param string $email
+     *
+     * @throws Exception
      */
-    public function __construct()
+    public function __construct(string $email)
     {
         $this->statuses = new ArrayCollection();
         $this->setCurrentStatus(ClientStatus::STATUS_INVITED);
+
         $this->added   = new DateTimeImmutable();
         $this->roles[] = self::ROLE_USER;
+        $this->email   = $email;
     }
 
     /**
@@ -420,7 +428,7 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @return Clients
      */
-    public function setEmail(?string $email): Clients
+    public function setEmail(string $email): Clients
     {
         $this->email = $email;
 
@@ -428,9 +436,9 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getEmail(): ?string
+    public function getEmail(): string
     {
         return $this->email;
     }

@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Entity\Clients;
+use Unilend\Entity\Companies;
 
 class CurrentUser implements SerializerContextBuilderInterface
 {
@@ -52,7 +53,7 @@ class CurrentUser implements SerializerContextBuilderInterface
 
         $user = $this->security->getUser();
 
-        if ($resourceClass && null !== $user) {
+        if ($resourceClass && $user instanceof Clients) {
             $reflection  = new ReflectionClass($resourceClass);
             $constructor = $reflection->getConstructor();
             if ($constructor) {
@@ -60,6 +61,10 @@ class CurrentUser implements SerializerContextBuilderInterface
                 foreach ($parameters as $parameter) {
                     if (($type = $parameter->getType()) && (Clients::class === $type->getName())) {
                         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user;
+                    }
+
+                    if (($type = $parameter->getType()) && (Companies::class === $type->getName()) && ($staff = $user->getStaff())) {
+                        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $staff->getCompany();
                     }
                 }
             }

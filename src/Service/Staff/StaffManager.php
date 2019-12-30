@@ -6,6 +6,7 @@ namespace Unilend\Service\Staff;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Exception;
 use Unilend\Entity\{ClientStatus, Clients, Staff};
 use Unilend\Exception\Client\ClientNotFoundException;
 use Unilend\Exception\Staff\StaffNotFoundException;
@@ -67,8 +68,9 @@ class StaffManager
     /**
      * @param string $email
      *
-     * @throws ORMException
      * @throws OptimisticLockException
+     * @throws ORMException
+     * @throws Exception
      *
      * @return Staff
      */
@@ -79,7 +81,7 @@ class StaffManager
         $client = $this->clientsRepository->findOneBy(['email' => $email]);
 
         if (null === $client) {
-            $client = new Clients();
+            $client = new Clients($email);
             $client
                 ->setCurrentStatus(ClientStatus::STATUS_INVITED)
                 ->setEmail($email)

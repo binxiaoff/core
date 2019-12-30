@@ -1,3 +1,18 @@
-project.tranche.count: Il faut au minimum une tranche dans un projet.
+project.tranche.count: Un dossier doit comporter au moins une tranche.
 account_initialization.cgu.true: Vous devez accepter les CGU.
 reset.password.wrong: Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et au moins 8 caractères.
+Staff:
+    client:
+        staffable: Vous ne pouvez pas ajouter d'utilisateur extérieur à votre entité
+        unique: Cet utilisateur dispose déjà d'un compte KLS
+        empty: L'utilisateur est requis
+    company:
+        empty: L'entité est requise
+
+Roleable:
+    roles:
+        choice: Rôle inconnu
+
+Clients:
+    email:
+        unique: Cet utilisateur dispose déjà d'un compte KLS
