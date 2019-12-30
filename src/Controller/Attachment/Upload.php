@@ -58,9 +58,13 @@ class Upload
 
         $type = $request->request->get('type');
 
-        $project = $request->request->get('project');
-        $project = $project ? $this->converter->getItemFromIri($project, [AbstractNormalizer::GROUPS => ['project:read']]) : null;
+        if (null === $type) {
+            throw new \InvalidArgumentException('You should define a type for the uploaded file.');
+        }
+
+        $projectIri = $request->request->get('project');
         /** @var Project $project */
+        $project = $projectIri ? $this->converter->getItemFromIri($projectIri, [AbstractNormalizer::GROUPS => ['project:read']]) : null;
 
         if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
             throw new AccessDeniedHttpException('You cannot upload file for the project');
