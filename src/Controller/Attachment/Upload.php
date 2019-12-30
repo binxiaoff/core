@@ -9,7 +9,10 @@ use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Entity\Attachment;
+use Unilend\Entity\Clients;
+use Unilend\Entity\Project;
 use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\Attachment\AttachmentManager;
 
@@ -43,6 +46,7 @@ class Upload
      */
     public function __invoke(Request $request): Attachment
     {
+        /** @var Clients $user */
         $user = $this->security->getUser();
 
         if ($userIri = $request->request->get('user')) {
@@ -54,8 +58,13 @@ class Upload
 
         $type = $request->request->get('type');
 
-        $project = $request->request->get('project');
-        $project = $project ? $this->converter->getItemFromIri($project) : null;
+        if (null === $type) {
+            throw new \InvalidArgumentException('You should define a type for the uploaded file.');
+        }
+
+        $projectIri = $request->request->get('project');
+        /** @var Project $project */
+        $project = $projectIri ? $this->converter->getItemFromIri($projectIri, [AbstractNormalizer::GROUPS => ['project:read']]) : null;
 
         if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
             throw new AccessDeniedHttpException('You cannot upload file for the project');
