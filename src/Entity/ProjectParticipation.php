@@ -122,7 +122,7 @@ class ProjectParticipation
     /**
      * @var Companies
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", inversedBy="projectParticipations")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      * })
@@ -362,7 +362,7 @@ class ProjectParticipation
      *
      * @return NullableMoney
      */
-    public function setInvitationMoney(NullableMoney $nullableMoney)
+    public function setInvitationMoney(NullableMoney $nullableMoney): NullableMoney
     {
         return $this->invitationMoney = $nullableMoney;
     }

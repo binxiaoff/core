@@ -108,14 +108,6 @@ trait RoleableTrait
      */
     private function filterRoles(array $roles): array
     {
-        // TODO if its white list an array_intersect might be more suitable
-        $availableRoles = static::getAvailableRoles();
-        foreach ($roles as $index => $role) {
-            if (false === \in_array($role, $availableRoles, true)) {
-                unset($roles[$index]);
-            }
-        }
-
-        return $roles;
+        return array_unique(array_values(array_intersect($roles, static::getAvailableRoles())));
     }
 }

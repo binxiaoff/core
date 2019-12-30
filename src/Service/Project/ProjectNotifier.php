@@ -6,7 +6,6 @@ namespace Unilend\Service\Project;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
-use Swift_RfcComplianceException;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectStatus;
 use Unilend\Service\ProjectParticipation\ProjectParticipationNotifier;
@@ -29,7 +28,6 @@ class ProjectNotifier
      *
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws Swift_RfcComplianceException
      * @throws Exception
      *
      * @return int

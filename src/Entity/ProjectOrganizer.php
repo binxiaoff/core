@@ -152,7 +152,7 @@ class ProjectOrganizer
      *
      * @return ProjectOrganizer
      */
-    public function setPermission(Permission $permission)
+    public function setPermission(Permission $permission): ProjectOrganizer
     {
         $this->permission = $permission;
 
@@ -172,5 +172,21 @@ class ProjectOrganizer
             static::DUTY_PROJECT_ORGANIZER_LOAN_OFFICER,
             static::DUTY_PROJECT_ORGANIZER_SECURITY_TRUSTEE,
         ], true);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isArranger(): bool
+    {
+        return $this->hasRole(self::DUTY_PROJECT_ORGANIZER_ARRANGER);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRun(): bool
+    {
+        return $this->hasRole(self::DUTY_PROJECT_ORGANIZER_RUN);
     }
 }

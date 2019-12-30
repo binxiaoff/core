@@ -1299,7 +1299,7 @@ class Project
     /**
      * @param string $role
      *
-     * @return ProjectParticipation[]|Collection
+     * @return ProjectOrganizer[]|Collection
      */
     private function getOrganizersByRole(string $role): Collection
     {

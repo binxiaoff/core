@@ -352,21 +352,6 @@ class Companies
     }
 
     /**
-     * @param Project $project
-     *
-     * @return bool
-     */
-    public function isArranger(Project $project): bool
-    {
-        $projectParticipation = $this->getProjectParticipations($project)->first();
-        if ($projectParticipation instanceof ProjectParticipation) {
-            return $projectParticipation->isArranger();
-        }
-
-        return false;
-    }
-
-    /**
      * @return string|null
      */
     public function getEmailDomain(): ?string

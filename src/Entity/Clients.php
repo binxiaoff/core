@@ -653,7 +653,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @return array|string[]
      */
-    public static function getAvailableRoles()
+    public static function getAvailableRoles(): array
     {
         return self::getConstants('ROLE_');
     }
