@@ -31,7 +31,7 @@ class ClientVoter extends Voter
     /**
      * {@inheritdoc}
      */
-    protected function supports($attribute, $subject)
+    protected function supports($attribute, $subject): bool
     {
         $attributes = self::getConstants('ATTRIBUTE_');
 
@@ -60,7 +60,7 @@ class ClientVoter extends Voter
 
         switch ($attribute) {
             case self::ATTRIBUTE_VIEW:
-                return $this->canView();
+                return $this->canView($subject, $user);
             case self::ATTRIBUTE_EDIT:
                 return $this->canEdit($subject, $user);
         }
@@ -69,11 +69,14 @@ class ClientVoter extends Voter
     }
 
     /**
+     * @param Clients $subject
+     * @param Clients $user
+     *
      * @return bool
      */
-    private function canView(): bool
+    private function canView(Clients $subject, Clients $user): bool
     {
-        return $this->authorizationChecker->isGranted('ROLE_USER');
+        return $this->authorizationChecker->isGranted('ROLE_ADMIN') || $subject->getIdClient() === $user->getIdClient();
     }
 
     /**

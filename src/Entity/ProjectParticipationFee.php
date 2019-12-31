@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
@@ -16,20 +15,6 @@ use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * @ApiResource(
- *     normalizationContext={"groups": {"projectParticipationFee:read", "fee:read"}},
- *     denormalizationContext={"groups": {"ProjectParticipationFee:write", "fee:write"}},
- *     collectionOperations={
- *         "get": {"security": "is_granted('ROLE_ADMIN')"},
- *         "post": {"security_post_denormalize": "is_granted('edit', object.getProjectParticipation().getProject())"}
- *     },
- *     itemOperations={
- *         "get": {"security": "is_granted('view', object.getProject())"},
- *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object.getProjectParticipation().getProject())"},
- *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProjectParticipation().getProject())"}
- *     }
- * )
- *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *
