@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\{Clients, Embeddable\Permission, Project, ProjectParticipationContact};
-use Unilend\Repository\ProjectParticipationContactRepository;
+use Unilend\Entity\{Clients, Embeddable\Permission, Project, ProjectOrganizer};
+use Unilend\Repository\ProjectOrganizerRepository;
+use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 use Unilend\Traits\ConstantsAwareTrait;
 
 class ProjectVoter extends Voter
@@ -25,15 +25,19 @@ class ProjectVoter extends Voter
     public const ATTRIBUTE_CREATE_TRANCHE_OFFER     = 'create_tranche_offer';
     public const ATTRIBUTE_COMMENT                  = 'comment';
 
-    /** @var ProjectParticipationContactRepository */
-    private $projectParticipationContactRepository;
+    /** @var ProjectOrganizerRepository */
+    private $projectOrganizerRepository;
+    /** @var ProjectParticipationManager */
+    private $projectParticipationManager;
 
     /**
-     * @param ProjectParticipationContactRepository $projectParticipationContactRepository
+     * @param ProjectParticipationManager $projectParticipationManager
+     * @param ProjectOrganizerRepository  $projectOrganizerRepository
      */
-    public function __construct(ProjectParticipationContactRepository $projectParticipationContactRepository)
+    public function __construct(ProjectParticipationManager $projectParticipationManager, ProjectOrganizerRepository $projectOrganizerRepository)
     {
-        $this->projectParticipationContactRepository = $projectParticipationContactRepository;
+        $this->projectParticipationManager = $projectParticipationManager;
+        $this->projectOrganizerRepository  = $projectOrganizerRepository;
     }
 
     /**
@@ -102,9 +106,8 @@ class ProjectVoter extends Voter
             return true;
         }
 
-        $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndClient($project, $user);
-
-        return  $projectParticipationContact && (false === $project->isConfidential() || null !== $projectParticipationContact->getConfidentialityAccepted());
+        return $this->projectParticipationManager->isParticipant($user, $project)
+            && (false === $project->isConfidential() || null !== $this->projectParticipationManager->isConfidentialityAccepted($user, $project));
     }
 
     /**
@@ -121,7 +124,7 @@ class ProjectVoter extends Voter
             return true;
         }
 
-        return null !== $this->projectParticipationContactRepository->findByProjectAndClient($project, $user);
+        return $this->projectParticipationManager->isParticipant($user, $project);
     }
 
     /**
@@ -138,9 +141,9 @@ class ProjectVoter extends Voter
             return true;
         }
 
-        $participationContact = $this->getProjectParticipationContact($project, $user);
+        $projectOrganizer = $this->getProjectOrganizer($project, $user);
 
-        return $participationContact && $participationContact->getProjectParticipation()->getPermission()->has(Permission::PERMISSION_EDIT);
+        return $projectOrganizer && $projectOrganizer->getPermission()->has(Permission::PERMISSION_EDIT);
     }
 
     /**
@@ -153,9 +156,9 @@ class ProjectVoter extends Voter
      */
     private function canManageTrancheOffer(Project $project, Clients $user): bool
     {
-        $participationContact = $this->getProjectParticipationContact($project, $user);
+        $projectOrganizer = $this->getProjectOrganizer($project, $user);
 
-        return $participationContact && $participationContact->getProjectParticipation()->isArranger();
+        return $projectOrganizer && $projectOrganizer->isArranger();
     }
 
     /**
@@ -168,9 +171,9 @@ class ProjectVoter extends Voter
      */
     private function canRate(Project $project, Clients $user): bool
     {
-        $participationContact = $this->getProjectParticipationContact($project, $user);
+        $projectOrganizer = $this->getProjectOrganizer($project, $user);
 
-        return $participationContact && $participationContact->getProjectParticipation()->isRun();
+        return $projectOrganizer && $projectOrganizer->isRun();
     }
 
     /**
@@ -183,9 +186,7 @@ class ProjectVoter extends Voter
      */
     private function canCreateTrancheOffer(Project $project, Clients $user): bool
     {
-        $participationContact = $this->getProjectParticipationContact($project, $user);
-
-        return $participationContact && $participationContact->getProjectParticipation()->isParticipant();
+        return $this->projectParticipationManager->isParticipant($user, $project);
     }
 
     /**
@@ -205,12 +206,10 @@ class ProjectVoter extends Voter
      * @param Project $project
      * @param Clients $user
      *
-     * @throws NonUniqueResultException
-     *
-     * @return ProjectParticipationContact
+     * @return ProjectOrganizer|null
      */
-    private function getProjectParticipationContact(Project $project, Clients $user): ?ProjectParticipationContact
+    private function getProjectOrganizer(Project $project, Clients $user): ?ProjectOrganizer
     {
-        return $this->projectParticipationContactRepository->findByProjectAndClient($project, $user);
+        return $this->projectOrganizerRepository->findOneBy(['project' => $project, 'company' => $user->getCompany()]);
     }
 }

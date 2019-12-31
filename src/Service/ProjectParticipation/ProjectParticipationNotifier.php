@@ -7,7 +7,6 @@ namespace Unilend\Service\ProjectParticipation;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{ProjectParticipation, ProjectStatus};
-use Unilend\Repository\ClientsRepository;
 use Unilend\Service\Client\ClientNotifier;
 
 class ProjectParticipationNotifier
@@ -16,19 +15,15 @@ class ProjectParticipationNotifier
     private $clientNotifier;
     /** @var ProjectParticipationManager */
     private $projectParticipationManager;
-    /** @var ClientsRepository */
-    private $clientRepository;
 
     /**
      * @param ProjectParticipationManager $projectParticipationManager
      * @param ClientNotifier              $clientNotifier
-     * @param ClientsRepository           $clientRepository
      */
-    public function __construct(ProjectParticipationManager $projectParticipationManager, ClientNotifier $clientNotifier, ClientsRepository $clientRepository)
+    public function __construct(ProjectParticipationManager $projectParticipationManager, ClientNotifier $clientNotifier)
     {
         $this->projectParticipationManager = $projectParticipationManager;
         $this->clientNotifier              = $clientNotifier;
-        $this->clientRepository            = $clientRepository;
     }
 
     /**

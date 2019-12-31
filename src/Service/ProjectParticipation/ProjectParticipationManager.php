@@ -5,43 +5,21 @@ declare(strict_types=1);
 namespace Unilend\Service\ProjectParticipation;
 
 use Doctrine\ORM\NonUniqueResultException;
-use Symfony\Component\Messenger\MessageBusInterface;
+use RuntimeException;
 use Unilend\Entity\{Clients, Project, ProjectParticipation};
-use Unilend\Repository\{ClientsRepository, ProjectParticipationContactRepository, ProjectParticipationRepository};
-use Unilend\Service\User\RealUserFinder;
+use Unilend\Repository\ProjectParticipationContactRepository;
 
 class ProjectParticipationManager
 {
-    /** @var ClientsRepository */
-    private $clientRepository;
-    /** @var ProjectParticipationRepository */
-    private $projectParticipationRepository;
     /** @var ProjectParticipationContactRepository */
     private $projectParticipationContactRepository;
-    /** @var RealUserFinder */
-    private $realUserFinder;
-    /** @var MessageBusInterface */
-    private $messageBus;
 
     /**
-     * @param ClientsRepository                     $clientRepository
-     * @param ProjectParticipationRepository        $projectParticipationRepository
      * @param ProjectParticipationContactRepository $projectParticipationContactRepository
-     * @param RealUserFinder                        $realUserFinder
-     * @param MessageBusInterface                   $messageBus
      */
-    public function __construct(
-        ClientsRepository $clientRepository,
-        ProjectParticipationRepository $projectParticipationRepository,
-        ProjectParticipationContactRepository $projectParticipationContactRepository,
-        RealUserFinder $realUserFinder,
-        MessageBusInterface $messageBus
-    ) {
-        $this->clientRepository                      = $clientRepository;
-        $this->projectParticipationRepository        = $projectParticipationRepository;
+    public function __construct(ProjectParticipationContactRepository $projectParticipationContactRepository)
+    {
         $this->projectParticipationContactRepository = $projectParticipationContactRepository;
-        $this->realUserFinder                        = $realUserFinder;
-        $this->messageBus                            = $messageBus;
     }
 
     /**
@@ -52,9 +30,28 @@ class ProjectParticipationManager
      *
      * @return bool
      */
-    public function isConcernedClient(Clients $client, Project $project): bool
+    public function isParticipant(Clients $client, Project $project): bool
     {
-        return $this->isDefaultConcernedClients($client, $project) || $this->isSpecifiedClientAddedByUser($client, $project);
+        return null !== $this->projectParticipationContactRepository->findByProjectAndClient($project, $client);
+    }
+
+    /**
+     * @param Clients $client
+     * @param Project $project
+     *
+     * @throws NonUniqueResultException
+     *
+     * @return bool
+     */
+    public function isConfidentialityAccepted(Clients $client, Project $project): bool
+    {
+        $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndClient($project, $client);
+
+        if (null === $projectParticipationContact) {
+            throw new RuntimeException(sprintf('The client %s is not a participant of project %s', $client->getHash(), $project->getHash()));
+        }
+
+        return null !== $projectParticipationContact->getConfidentialityAccepted();
     }
 
     /**
@@ -71,31 +68,5 @@ class ProjectParticipationManager
         }
 
         return $projectParticipation->getAddedBy();
-    }
-
-    /**
-     * @param Clients $client
-     * @param Project $project
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return bool
-     */
-    private function isDefaultConcernedClients(Clients $client, Project $project): bool
-    {
-        return null !== $this->projectParticipationRepository->findByStaff($project, $client->getStaff());
-    }
-
-    /**
-     * @param Clients $client
-     * @param Project $project
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return bool
-     */
-    private function isSpecifiedClientAddedByUser(Clients $client, Project $project): bool
-    {
-        return null !== $this->projectParticipationContactRepository->findByProjectAndClient($project, $client);
     }
 }

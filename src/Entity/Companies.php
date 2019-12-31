@@ -118,6 +118,8 @@ class Companies
     private $staff;
 
     /**
+     * TODO Is it really necessary ?
+     *
      * @var ProjectParticipation[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
@@ -347,21 +349,6 @@ class Companies
         }
 
         return $this->projectParticipations->matching($criteria);
-    }
-
-    /**
-     * @param Project $project
-     *
-     * @return bool
-     */
-    public function isArranger(Project $project): bool
-    {
-        $projectParticipation = $this->getProjectParticipations($project)->first();
-        if ($projectParticipation instanceof ProjectParticipation) {
-            return $projectParticipation->isArranger();
-        }
-
-        return false;
     }
 
     /**

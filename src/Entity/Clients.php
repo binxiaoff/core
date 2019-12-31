@@ -639,6 +639,8 @@ class Clients implements UserInterface, EquatableInterface
      * @param int         $status
      * @param string|null $content
      *
+     * @throws Exception
+     *
      * @return Clients
      */
     public function setCurrentStatus(int $status, ?string $content = null): self
@@ -646,6 +648,14 @@ class Clients implements UserInterface, EquatableInterface
         $clientStatus = new ClientStatus($this, $status, $content);
 
         return $this->baseStatusSetter($clientStatus);
+    }
+
+    /**
+     * @return array|string[]
+     */
+    public static function getAvailableRoles(): array
+    {
+        return self::getConstants('ROLE_');
     }
 
     /**

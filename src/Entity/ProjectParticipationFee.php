@@ -74,9 +74,7 @@ class ProjectParticipationFee
      * @var Project
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationFee")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project_participation", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
      *
      * @Assert\Valid
      *
