@@ -60,33 +60,10 @@ class ClientVoter extends Voter
 
         switch ($attribute) {
             case self::ATTRIBUTE_VIEW:
-                return $this->canView($subject, $user);
             case self::ATTRIBUTE_EDIT:
-                return $this->canEdit($subject, $user);
+                return $this->authorizationChecker->isGranted('ROLE_ADMIN') || $subject->getIdClient() === $user->getIdClient();
         }
 
         throw new LogicException('This code should not be reached');
-    }
-
-    /**
-     * @param Clients $subject
-     * @param Clients $user
-     *
-     * @return bool
-     */
-    private function canView(Clients $subject, Clients $user): bool
-    {
-        return $this->authorizationChecker->isGranted('ROLE_ADMIN') || $subject->getIdClient() === $user->getIdClient();
-    }
-
-    /**
-     * @param Clients $subject
-     * @param Clients $user
-     *
-     * @return bool
-     */
-    private function canEdit(Clients $subject, Clients $user): bool
-    {
-        return $this->authorizationChecker->isGranted('ROLE_ADMIN') || $subject->getIdClient() === $user->getIdClient();
     }
 }
