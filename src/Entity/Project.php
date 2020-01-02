@@ -310,6 +310,10 @@ class Project
      * @var ProjectParticipation[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
+     *
+     * @Groups({"project:list", "project:view"})
+     *
+     * @MaxDepth(2)
      */
     private $projectParticipations;
 
@@ -852,18 +856,6 @@ class Project
     public function getSecurityTrustee(): ?ProjectOrganizer
     {
         return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_SECURITY_TRUSTEE);
-    }
-
-    /**
-     * @Groups({"project:list", "project:view"})
-     *
-     * @return ProjectParticipation[]|ArrayCollection
-     *
-     * @MaxDepth(2)
-     */
-    public function getParticipants(): iterable
-    {
-        return $this->getProjectParticipations();
     }
 
     /**
