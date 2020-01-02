@@ -11,14 +11,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Money;
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait, TraceableBlamableUpdatedTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectParticipationOffer:read", "money:read"}},
+ *     normalizationContext={"groups": {"projectParticipationOffer:read", "money:read", "trancheOffer:read", "lendingRate:read"}},
  *     denormalizationContext={"groups": {"projectParticipationOffer:write", "money:write"}},
  *     collectionOperations={
  *         "get": {
@@ -73,8 +72,6 @@ class ProjectParticipationOffer
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project_participation", nullable=false)
      * })
-     *
-     * @Assert\Expression("this.getProjectParticipation().isBiddable() == true")
      *
      * @Groups({"project:list", "projectParticipationOffer:create"})
      */

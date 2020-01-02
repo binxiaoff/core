@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Embeddable\LendingRate;
 use Unilend\Entity\Embeddable\Money;
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait, TraceableBlamableUpdatedTrait};
@@ -67,6 +68,8 @@ class TrancheOffer
      * @ORM\Column(length=30)
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"trancheOffer:read"})
      */
     private $status;
 
@@ -76,6 +79,8 @@ class TrancheOffer
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\LendingRate")
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"trancheOffer:read"})
      */
     private $rate;
 
@@ -85,6 +90,8 @@ class TrancheOffer
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"trancheOffer:read"})
      */
     private $money;
 

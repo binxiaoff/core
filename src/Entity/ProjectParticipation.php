@@ -27,7 +27,10 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait};
  *         "company:read",
  *         "role:read",
  *         "fee:read",
- *         "nullableMoney:read"
+ *         "nullableMoney:read",
+ *         "trancheOffer:read",
+ *         "money:read",
+ *         "lendingRate:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
