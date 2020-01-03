@@ -26,7 +26,8 @@ use URLify;
  * @ApiResource(
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
- *         "put": {"security": "is_granted('edit', object)"}
+ *         "put": {"security": "is_granted('edit', object)"},
+ *         "patch": {"security": "is_granted('edit', object)"}
  *     },
  *     normalizationContext={"groups": {"client:read"}},
  *     denormalizationContext={"groups": {"client:write"}}
