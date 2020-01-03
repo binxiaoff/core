@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1a9f4018a5c59e6ff5d9754ae1cb5092",
+    "content-hash": "f781829a35b66e4f68d926d0a26ea2f5",
     "packages": [
         {
             "name": "api-platform/api-pack",
@@ -2270,12 +2270,12 @@
             "version": "v0.7.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/gesdinet/JWTRefreshTokenBundle.git",
+                "url": "https://github.com/markitosgv/JWTRefreshTokenBundle.git",
                 "reference": "ad475378b278719bebe4062c50b6135c5bcdd4e7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gesdinet/JWTRefreshTokenBundle/zipball/ad475378b278719bebe4062c50b6135c5bcdd4e7",
+                "url": "https://api.github.com/repos/markitosgv/JWTRefreshTokenBundle/zipball/ad475378b278719bebe4062c50b6135c5bcdd4e7",
                 "reference": "ad475378b278719bebe4062c50b6135c5bcdd4e7",
                 "shasum": ""
             },
@@ -2494,44 +2494,46 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "6.3.3",
+            "version": "6.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "407b0cb880ace85c9b63c5f9551db498cb2d50ba"
+                "reference": "dbc2bc3a293ed6b1ae08a3651e2bfd213d19b6a5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/407b0cb880ace85c9b63c5f9551db498cb2d50ba",
-                "reference": "407b0cb880ace85c9b63c5f9551db498cb2d50ba",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/dbc2bc3a293ed6b1ae08a3651e2bfd213d19b6a5",
+                "reference": "dbc2bc3a293ed6b1ae08a3651e2bfd213d19b6a5",
                 "shasum": ""
             },
             "require": {
+                "ext-json": "*",
                 "guzzlehttp/promises": "^1.0",
-                "guzzlehttp/psr7": "^1.4",
+                "guzzlehttp/psr7": "^1.6.1",
                 "php": ">=5.5"
             },
             "require-dev": {
                 "ext-curl": "*",
                 "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.4 || ^7.0",
-                "psr/log": "^1.0"
+                "psr/log": "^1.1"
             },
             "suggest": {
+                "ext-intl": "Required for Internationalized Domain Name (IDN) support",
                 "psr/log": "Required for using the Log middleware"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "6.3-dev"
+                    "dev-master": "6.5-dev"
                 }
             },
             "autoload": {
-                "files": [
-                    "src/functions_include.php"
-                ],
                 "psr-4": {
                     "GuzzleHttp\\": "src/"
-                }
+                },
+                "files": [
+                    "src/functions_include.php"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -2555,7 +2557,7 @@
                 "rest",
                 "web service"
             ],
-            "time": "2018-04-22T15:46:56+00:00"
+            "time": "2019-12-07T18:20:45+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -4006,6 +4008,58 @@
             ],
             "description": "Symfony bundle integration of nexylan/slack library",
             "time": "2019-08-12T14:29:54+00:00"
+        },
+        {
+            "name": "notfloran/mjml-bundle",
+            "version": "v3.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/notFloran/mjml-bundle.git",
+                "reference": "ea97bb3c018c8d8a5eb95e7ce8ca6f703d01bdb6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/notFloran/mjml-bundle/zipball/ea97bb3c018c8d8a5eb95e7ce8ca6f703d01bdb6",
+                "reference": "ea97bb3c018c8d8a5eb95e7ce8ca6f703d01bdb6",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1.0",
+                "symfony/dependency-injection": "^3.4 || ^4.0 || ^5.0",
+                "symfony/process": "^3.4 || ^4.0 || ^5.0",
+                "symfony/twig-bundle": "^3.4 || ^4.0 || ^5.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^2.16",
+                "matthiasnoback/symfony-config-test": "^4.1",
+                "phpstan/phpstan": "^0.12.0",
+                "phpunit/phpunit": "^7.0"
+            },
+            "suggest": {
+                "swiftmailer/swiftmailer": "Plugin to integrate MJML in SwiftMailer"
+            },
+            "type": "symfony-bundle",
+            "autoload": {
+                "psr-4": {
+                    "NotFloran\\MjmlBundle\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Floran Brutel",
+                    "email": "me@floran.fr"
+                }
+            ],
+            "description": "Symfony bundle for MJML",
+            "keywords": [
+                "email",
+                "mjml"
+            ],
+            "time": "2019-12-08T09:26:49+00:00"
         },
         {
             "name": "ocramius/package-versions",
@@ -7974,16 +8028,16 @@
         },
         {
             "name": "symfony/process",
-            "version": "v4.3.4",
+            "version": "v4.3.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "e89969c00d762349f078db1128506f7f3dcc0d4a"
+                "reference": "207dab1f17d34ad71ea72e9741ab8049a9d8251b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/e89969c00d762349f078db1128506f7f3dcc0d4a",
-                "reference": "e89969c00d762349f078db1128506f7f3dcc0d4a",
+                "url": "https://api.github.com/repos/symfony/process/zipball/207dab1f17d34ad71ea72e9741ab8049a9d8251b",
+                "reference": "207dab1f17d34ad71ea72e9741ab8049a9d8251b",
                 "shasum": ""
             },
             "require": {
@@ -8019,7 +8073,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
-            "time": "2019-08-26T08:26:39+00:00"
+            "time": "2019-11-28T10:05:26+00:00"
         },
         {
             "name": "symfony/property-access",
@@ -13041,6 +13095,8 @@
         "ext-ctype": "*",
         "ext-curl": "*",
         "ext-hash": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
         "ext-openssl": "*",
         "ext-pdo": "*",
         "ext-soap": "*",
