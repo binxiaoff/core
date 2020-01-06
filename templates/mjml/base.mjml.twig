@@ -1,0 +1,24 @@
+<mjml>
+  <mj-head>
+      <mj-style inline="inline">
+      .blue-text { color: blue; }
+    </mj-style>
+    <mj-style>
+      .red-text { color: red; text-decoration: underline; }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section class="blue-text">
+        {% block header %}
+        {% endblock %}
+    </mj-section>
+    <mj-section class="red-text">
+        {% block body %}
+        {% endblock %}
+    </mj-section>
+    <mj-section>
+        {% block footer %}
+        {% endblock %}
+    </mj-section>
+  </mj-body>
+</mjml> 
