@@ -142,7 +142,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "profile:read"})
+     * @Groups({"client:read", "profile:read"})
      *
      * @ORM\Column(name="email", type="string", length=191, nullable=false, unique=true)
      *
@@ -185,8 +185,6 @@ class Clients implements UserInterface, EquatableInterface
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      *
-     * @Groups({"client:read"})
-     *
      * @ApiProperty(identifier=false)
      */
     private $idClient;
@@ -194,16 +192,12 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var Staff|null
      *
-     * @Groups({"client:read"})
-     *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\Staff", mappedBy="client")
      */
     private $staff;
 
     /**
      * @var array
-     *
-     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(type="json")
      */
@@ -221,8 +215,6 @@ class Clients implements UserInterface, EquatableInterface
 
     /**
      * @var ArrayCollection|ClientStatus
-     *
-     * @Groups({"client:read"})
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ClientStatus", mappedBy="client", orphanRemoval=true, cascade={"persist"})
      */
