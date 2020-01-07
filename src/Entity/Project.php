@@ -320,7 +320,7 @@ class Project
     /**
      * @var ProjectOrganizer[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectOrganizer", mappedBy="project")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectOrganizer", mappedBy="project", cascade={"persist"})
      */
     private $organizers;
 
