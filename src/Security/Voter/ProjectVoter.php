@@ -107,7 +107,7 @@ class ProjectVoter extends Voter
         }
 
         return $this->projectParticipationManager->isParticipant($user, $project)
-            && (false === $project->isConfidential() || null !== $this->projectParticipationManager->isConfidentialityAccepted($user, $project));
+            && (false === $project->isConfidential() || $this->projectParticipationManager->isConfidentialityAccepted($user, $project));
     }
 
     /**
