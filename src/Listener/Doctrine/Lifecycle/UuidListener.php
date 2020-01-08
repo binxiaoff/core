@@ -15,9 +15,8 @@ class UuidListener
     public function prePersist(LifecycleEventArgs $args): void
     {
         $entity = $args->getEntity();
-        if (false === in_array(PublicizeIdentityTrait::class, class_uses($entity), true)) {
-            return;
+        if (\in_array(PublicizeIdentityTrait::class, class_uses($entity), true)) {
+            $entity->setPublicId();
         }
-        $entity->setPublicId();
     }
 }

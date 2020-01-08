@@ -18,7 +18,7 @@ use Unilend\Traits\ConstantsAwareTrait;
 /**
  * @ApiResource(
  *     attributes={"pagination_client_enabled": true},
- *     normalizationContext={"groups": "attachment:read"},
+ *     normalizationContext={"groups": {"attachment:read", "blameable:read"}},
  *     denormalizationContext={"groups": "attachment:write"},
  *     itemOperations={
  *         "get": {

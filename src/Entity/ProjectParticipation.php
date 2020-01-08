@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
 use Exception;
@@ -125,7 +126,7 @@ class ProjectParticipation
     /**
      * @var Companies
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", inversedBy="projectParticipations")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      * })
@@ -189,6 +190,16 @@ class ProjectParticipation
      * @Groups({"projectParticipation:read", "projectParticipation:write"})
      */
     private $invitationMoney;
+
+    /**
+     * @var Collection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectMessage", mappedBy="participation")
+     * @ORM\OrderBy({"added": "ASC"})
+     *
+     * @ApiSubresource
+     */
+    private $messages;
 
     /**
      * @param Companies          $company
@@ -465,5 +476,13 @@ class ProjectParticipation
     public function getOfferExpectedCommitteeDate(): ?DateTimeImmutable
     {
         return $this->projectParticipationOffers->first() ? $this->projectParticipationOffers->first()->getExpectedCommitteeDate() : null;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getMessages(): Collection
+    {
+        return $this->messages;
     }
 }
