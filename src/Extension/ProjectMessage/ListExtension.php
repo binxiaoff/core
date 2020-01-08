@@ -10,6 +10,7 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\Clients;
+use Unilend\Entity\ProjectMessage;
 use Unilend\Entity\ProjectOrganizer;
 
 class ListExtension implements QueryCollectionExtensionInterface
@@ -33,6 +34,9 @@ class ListExtension implements QueryCollectionExtensionInterface
      */
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null)
     {
+        if (ProjectMessage::class !== $resourceClass) {
+            return;
+        }
         /** @var Clients $user */
         $user = $this->security->getUser();
         if (!$user instanceof Clients) {
