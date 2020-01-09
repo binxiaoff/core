@@ -17,7 +17,7 @@ trait TimestampableTrait
      *
      * @ORM\Column(name="updated", type="datetime_immutable", nullable=true)
      *
-     * @Groups({"timestampable:updated:read", "timestampable:read"})
+     * @Groups({"timestampable:read"})
      */
     protected $updated;
 

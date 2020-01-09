@@ -15,10 +15,10 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, Timestamp
 /**
  * @ApiResource(
  *     attributes={"order": {"added"}},
- *     normalizationContext={"groups": {"message:view", "blameable:read", "profile:read", "timestampable:read"}},
+ *     normalizationContext={"groups": {"message:read", "blameable:read", "profile:read", "timestampable:read"}},
+ *     denormalizationContext={"groups": {"message:write"}},
  *     collectionOperations={
- *         "get",
- *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"message:create"}}}
+ *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"message:create", "message:write"}}}
  *     },
  *     itemOperations={
  *         "get": {
@@ -26,7 +26,7 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, Timestamp
  *             "read": false,
  *             "output": false,
  *         },
- *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)", "denormalization_context": {"groups": {"message:update"}}},
+ *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"},
  *         "delete": {"security": "is_granted('delete', object)"},
  *     }
  * )
@@ -47,7 +47,7 @@ class ProjectMessage
      * @var ProjectParticipation
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="messages")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, name="id_participation")
      *
      * @Groups({"message:create"})
      */
@@ -58,7 +58,7 @@ class ProjectMessage
      *
      * @ORM\Column(type="text")
      *
-     * @Groups({"message:view", "message:create", "message:update"})
+     * @Groups({"message:read", "message:write"})
      */
     private $content;
 
@@ -102,34 +102,6 @@ class ProjectMessage
         $this->content = $content;
 
         return $this;
-    }
-
-    /**
-     * @return DateTimeImmutable|null
-     */
-    public function getUpdated(): ?DateTimeImmutable
-    {
-        return $this->updated;
-    }
-
-    /**
-     * @param DateTimeImmutable $updated
-     *
-     * @return ProjectMessage
-     */
-    public function setUpdated(DateTimeImmutable $updated): ProjectMessage
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
     }
 
     /**

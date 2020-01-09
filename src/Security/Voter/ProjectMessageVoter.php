@@ -21,29 +21,17 @@ class ProjectMessageVoter extends Voter
     public const ATTRIBUTE_CREATE = 'create';
 
     /**
-     * Determines if the attribute and subject are supported by this voter.
-     *
-     * @param string $attribute An attribute
-     * @param mixed  $subject   The subject to secure, e.g. an object the user wants to access or any other PHP type
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     protected function supports($attribute, $subject): bool
     {
-        return $subject instanceof ProjectMessage && false === \in_array($attribute, self::getConstants('ATTRIBUTE_'), true);
+        return $subject instanceof ProjectMessage && \in_array($attribute, self::getConstants('ATTRIBUTE_'), true);
     }
 
     /**
-     * Perform a single access check operation on a given attribute, subject and token.
-     * It is safe to assume that $attribute and $subject already passed the "supports()" method check.
-     *
-     * @param string         $attribute
-     * @param mixed          $subject
-     * @param TokenInterface $token
+     * {@inheritdoc}
      *
      * @throws Exception
-     *
-     * @return bool
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
@@ -77,11 +65,11 @@ class ProjectMessageVoter extends Voter
     protected function canCreate(ProjectMessage $subject, Clients $user): bool
     {
         /** @var ProjectMessage $subject */
-        $arranger    = $subject->getParticipation()->getProject()->getArranger();
-        $arranger    = $arranger ? $arranger->getCompany() : null;
-        $participant = $subject->getParticipation()->getCompany();
+        $arranger           = $subject->getParticipation()->getProject()->getArranger();
+        $arrangerCompany    = $arranger ? $arranger->getCompany() : null;
+        $participantCompany = $subject->getParticipation()->getCompany();
 
-        return $user->getCompany() === $arranger || $user->getCompany() === $participant;
+        return $user->getCompany() === $arrangerCompany || $user->getCompany() === $participantCompany;
     }
 
     /**
@@ -92,7 +80,7 @@ class ProjectMessageVoter extends Voter
      */
     protected function canEdit(ProjectMessage $subject, Clients $user): bool
     {
-        return $user->getCompany() === $subject->getAddedBy()->getCompany();
+        return $user === $subject->getAddedBy();
     }
 
     /**
@@ -103,6 +91,6 @@ class ProjectMessageVoter extends Voter
      */
     protected function canDelete(ProjectMessage $subject, Clients $user): bool
     {
-        return $user->getCompany() === $subject->getAddedBy()->getCompany();
+        return $user === $subject->getAddedBy();
     }
 }

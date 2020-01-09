@@ -32,7 +32,7 @@ class ListExtension implements QueryCollectionExtensionInterface
      * @param string                      $resourceClass
      * @param string|null                 $operationName
      */
-    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null)
+    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
     {
         if (ProjectMessage::class !== $resourceClass) {
             return;

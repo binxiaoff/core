@@ -15,7 +15,7 @@ trait TimestampableAddedOnlyTrait
      *
      * @ORM\Column(name="added", type="datetime_immutable")
      *
-     * @Groups({"timestampable:added:read", "timestampable:read"})
+     * @Groups({"timestampable:read"})
      */
     protected $added;
 

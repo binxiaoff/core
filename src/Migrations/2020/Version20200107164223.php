@@ -32,6 +32,11 @@ final class Version20200107164223 extends AbstractMigration
         $this->addSql('ALTER TABLE project_message ADD CONSTRAINT FK_20A33C1A699B6BAF FOREIGN KEY (added_by) REFERENCES clients (id_client)');
         $this->addSql('ALTER TABLE project_message ADD public_id VARCHAR(36) NOT NULL');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_20A33C1AB5B48B91 ON project_message (public_id)');
+        $this->addSql('ALTER TABLE project_message DROP FOREIGN KEY FK_20A33C1A6ACE3B73');
+        $this->addSql('DROP INDEX IDX_20A33C1A6ACE3B73 ON project_message');
+        $this->addSql('ALTER TABLE project_message CHANGE participation_id id_participation INT NOT NULL');
+        $this->addSql('ALTER TABLE project_message ADD CONSTRAINT FK_20A33C1A157D332A FOREIGN KEY (id_participation) REFERENCES project_participation (id)');
+        $this->addSql('CREATE INDEX IDX_20A33C1A157D332A ON project_message (id_participation)');
     }
 
     /**
