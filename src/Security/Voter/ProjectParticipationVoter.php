@@ -54,17 +54,7 @@ class ProjectParticipationVoter extends Voter
      */
     protected function supports($attribute, $subject): bool
     {
-        $attributes = self::getConstants('ATTRIBUTE_');
-
-        if (false === in_array($attribute, $attributes, true)) {
-            return false;
-        }
-
-        if (false === $subject instanceof ProjectParticipation) {
-            return false;
-        }
-
-        return true;
+        return $subject instanceof ProjectParticipation && in_array($attribute, self::getConstants('ATTRIBUTE_'), true);
     }
 
     /**

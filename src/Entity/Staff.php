@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
@@ -28,13 +27,9 @@ use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
  *         "patch": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"staff:update", "role:write"}}}
  *     },
  *     collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"staff:create", "role:write", "client:write"}}},
- *         "get"
+ *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"staff:create", "role:write", "client:write"}}}
  *     }
  * )
- *
- * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"marketSegments.id"})
- * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"company.publicId": "exact"})
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
