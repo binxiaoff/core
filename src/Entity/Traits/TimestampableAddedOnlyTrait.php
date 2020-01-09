@@ -6,6 +6,7 @@ namespace Unilend\Entity\Traits;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 trait TimestampableAddedOnlyTrait
 {
@@ -13,6 +14,8 @@ trait TimestampableAddedOnlyTrait
      * @var DateTimeImmutable
      *
      * @ORM\Column(name="added", type="datetime_immutable")
+     *
+     * @Groups({"timestampable:read"})
      */
     protected $added;
 

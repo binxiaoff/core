@@ -132,7 +132,7 @@ class ProjectOrganizer
     }
 
     /**
-     * @return mixed
+     * @return Companies
      */
     public function getCompany()
     {

@@ -18,7 +18,7 @@ trait BlamableAddedTrait
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumn(name="added_by", referencedColumnName="id_client", nullable=false)
      *
-     * @Groups({"attachment:read"})
+     * @Groups({"blameable:read"})
      *
      * @Gedmo\Blameable(on="create")
      */

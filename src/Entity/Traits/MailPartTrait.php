@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\Entity\Traits;
 
-use Gedmo\Mapping\Annotation as Gedmo;
 use DateTimeImmutable;
+use Exception;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Serializer\Annotation\Groups; // Necessary @see https://github.com/doctrine/annotations/issues/81
 use Twig\Source;
 
 /**
@@ -19,6 +21,8 @@ trait MailPartTrait
      * @var string
      *
      * @ORM\Column(name="name", type="string", length=191)
+     *
+     * @Groups({"mailPart:read"})
      */
     private $name;
 
@@ -26,6 +30,8 @@ trait MailPartTrait
      * @var string
      *
      * @ORM\Column(name="locale", type="string", length=5)
+     *
+     * @Groups({"mailPart:read"})
      */
     private $locale;
 
@@ -33,6 +39,8 @@ trait MailPartTrait
      * @var string
      *
      * @ORM\Column(name="content", type="text", nullable=true)
+     *
+     * @Groups({"mailPart:read"})
      */
     private $content;
 
@@ -40,12 +48,16 @@ trait MailPartTrait
      * @var bool
      *
      * @ORM\Column(name="archived", type="datetime", nullable=true)
+     *
+     * @Groups({"mailPart:read"})
      */
     private $archived;
 
     /**
      * @param string $type
      * @param string $locale
+     *
+     * @throws Exception
      */
     public function __construct(
         string $type,

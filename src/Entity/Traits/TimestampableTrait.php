@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity\Traits;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 trait TimestampableTrait
 {
@@ -13,6 +16,8 @@ trait TimestampableTrait
      * @var DateTimeImmutable|null
      *
      * @ORM\Column(name="updated", type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"timestampable:read"})
      */
     protected $updated;
 
