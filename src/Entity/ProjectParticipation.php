@@ -15,7 +15,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\{Fee, Money, NullableMoney};
-use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait};
+use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
@@ -26,7 +26,6 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait};
  *         "projectParticipationOffer:read",
  *         "projectOrganizer:read",
  *         "company:read",
- *         "role:read",
  *         "fee:read",
  *         "nullableMoney:read",
  *         "trancheOffer:read",
@@ -35,9 +34,6 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait};
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
- *         "projectParticipationFee:write",
- *         "projectParticipationOffer:read",
- *         "role:write",
  *         "fee:write",
  *         "nullableMoney:write"
  *     }},
@@ -58,9 +54,7 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait};
  *             "denormalization_context": {"groups": {
  *                 "projectParticipation:create",
  *                 "projectParticipation:write",
- *                 "projectParticipationFee:write",
- *                 "projectParticipationOffer:read",
- *                 "role:write",
+ *                 "projectParticipationContact:write",
  *                 "fee:write",
  *                 "nullableMoney:write"
  *             }},
@@ -68,9 +62,9 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait};
  *         }
  *     },
  *     itemOperations={
- *         "get",
- *         "delete": {"security": "is_granted('edit', object.getProject())"},
- *         "patch": {"security": "is_granted('edit', object.getProject())"}
+ *         "get": {"security": "is_granted('view', object)"},
+ *         "delete": {"security_post_denormalize": "is_granted('edit', previous_object))"},
+ *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)"}
  *     }
  * )
  * @ApiFilter("Unilend\Filter\ArrayFilter", properties={"roles"})
@@ -89,23 +83,13 @@ class ProjectParticipation
 {
     use TimestampableTrait;
     use BlamableAddedTrait;
+    use PublicizeIdentityTrait;
 
     private const STATUS_NOT_CONSULTED = 0;
     private const STATUS_CONSULTED     = 10;
     private const STATUS_UNINTERESTED  = 20;
 
     private const DEFAULT_STATUS = self::STATUS_NOT_CONSULTED;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     *
-     * @Groups({"projectParticipation:read"})
-     */
-    private $id;
 
     /**
      * @var Project
@@ -230,14 +214,6 @@ class ProjectParticipation
                 return new ProjectParticipationContact($this, $staff->getClient(), $addedBy);
             })
         ;
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
     }
 
     /**

@@ -31,7 +31,15 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     itemOperations={
  *         "get": {
  *             "security": "is_granted('view', object)",
- *             "normalization_context": {"groups": {"project:view", "tranche_project:view", "attachment:read", "projectParticipation:read", "projectOrganizer:read"}}
+ *             "normalization_context": {"groups": {
+ *                 "project:view",
+ *                 "tranche_project:view",
+ *                 "attachment:read",
+ *                 "projectParticipation:read",
+ *                 "projectParticipationContact:read",
+ *                 "projectOrganizer:read",
+ *                 "role:read"
+ *             }}
  *         },
  *         "project_confidentiality": {
  *             "method": "GET",
