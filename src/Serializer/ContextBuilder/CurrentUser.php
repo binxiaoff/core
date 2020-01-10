@@ -59,6 +59,7 @@ class CurrentUser implements SerializerContextBuilderInterface
             if ($constructor) {
                 $parameters = $constructor->getParameters();
                 foreach ($parameters as $parameter) {
+                    // TODO See if we need a convention about the constructor parameter name (problem with validation)
                     if (($type = $parameter->getType()) && (Clients::class === $type->getName())) {
                         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user;
                     }

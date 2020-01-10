@@ -24,10 +24,10 @@ use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
  *             "output": false,
  *         },
  *         "delete": {"security": "is_granted('delete', object)"},
- *         "patch": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"staff:update", "role:write"}}}
+ *         "patch": {"security_post_denormalize": "is_granted('edit', object)", "denormalization_context": {"groups": {"staff:update", "role:write"}}}
  *     },
  *     collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"staff:create", "role:write", "client:write"}}}
+ *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"staff:create", "role:write", "client:create"}}}
  *     }
  * )
  *
@@ -165,7 +165,7 @@ class Staff
     /**
      * @return Collection|MarketSegment[]
      */
-    public function getMarketSegments()
+    public function getMarketSegments(): Collection
     {
         return $this->marketSegments;
     }
@@ -210,5 +210,21 @@ class Staff
         $this->marketSegments = $marketSegments;
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(static::DUTY_STAFF_ADMIN);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isManager(): bool
+    {
+        return $this->hasRole(static::DUTY_STAFF_MANAGER);
     }
 }
