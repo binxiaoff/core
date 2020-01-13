@@ -1199,9 +1199,9 @@ class Project
         return [
             ['name' => /*'project'*/'Synthèse', 'done' => $projectComplete],
             ['name' => /*'calendar'*/'Calendrier', 'done' => null !== $this->getLenderConsultationClosingDate()],
+            ['name' => /*'invitations'*/'Participants', 'done' => 0 < count($this->getProjectParticipations())],
             ['name' => /*'description'*/'Description', 'done' => null !== $this->getDescription()],
             ['name' => /*'tranches'*/'Tranches', 'done' => 0 < count($this->getTranches())],
-            ['name' => /*'invitations'*/'Participants', 'done' => 0 < count($this->getProjectParticipations())],
         ];
     }
 
