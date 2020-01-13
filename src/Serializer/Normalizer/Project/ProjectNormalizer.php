@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Serializer\Normalizer\ProjectParticipation;
+namespace Unilend\Serializer\Normalizer\Project;
 
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{ContextAwareNormalizerInterface, NormalizerAwareInterface, NormalizerAwareTrait};
-use Unilend\Entity\{Clients, Project, ProjectParticipation};
+use Unilend\Entity\{Clients, Project};
 
-class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
-    private const ALREADY_CALLED = 'PROJECT_PARTICIPATION_ATTRIBUTE_NORMALIZER_ALREADY_CALLED';
+    private const ALREADY_CALLED = 'PROJECT_ATTRIBUTE_NORMALIZER_ALREADY_CALLED';
 
     /** @var Security */
     private $security;
@@ -34,7 +34,7 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
             return false;
         }
 
-        return $data instanceof ProjectParticipation;
+        return $data instanceof Project;
     }
 
     /**
@@ -50,30 +50,19 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
     }
 
     /**
-     * @param ProjectParticipation $participation
+     * @param Project $project
      *
      * @return array
      */
-    private function getAdditionalNormalizerGroups(ProjectParticipation $participation): array
+    private function getAdditionalNormalizerGroups(Project $project): array
     {
         $client = $this->security->getUser();
         if (!$client instanceof Clients) {
             return [];
         }
 
-        $project = $participation->getProject();
-
-        if (
-            $this->security->isGranted('ROLE_ADMIN')
-            || $participation->getCompany() === $client->getCompany()
-            || ($project->getArranger()
-                && $project->getArranger()->getCompany() === $client->getCompany())
-        ) {
-            return [ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_PUBLIC_READ];
-        }
-
-        if (Project::OFFER_VISIBILITY_PUBLIC === $project->getOfferVisibility()) {
-            return [ProjectParticipation::SERIALIZER_GROUP_PUBLIC_READ];
+        if ($this->security->isGranted('ROLE_ADMIN') || ($project->getArranger() && $project->getArranger()->getCompany() === $client->getCompany())) {
+            return [Project::SERIALIZER_GROUP_ADMIN_READ];
         }
 
         return [];

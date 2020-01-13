@@ -88,8 +88,8 @@ class ProjectParticipation
     use PublicizeIdentityTrait;
     use ConstantsAwareTrait;
 
-    public const SERIALIZER_GROUP_ADMIN_READ  = 'projectParticipation:admin:read'; // Additional groupe that is available for admin (admin user or arranger)
-    public const SERIALIZER_GROUP_PUBLIC_READ = 'projectParticipation:public:read'; // Additional groupe that is available for public visibility project
+    public const SERIALIZER_GROUP_ADMIN_READ  = 'projectParticipation:admin:read'; // Additional group that is available for admin (admin user or arranger)
+    public const SERIALIZER_GROUP_PUBLIC_READ = 'projectParticipation:public:read'; // Additional group that is available for public visibility project
 
     private const STATUS_NOT_CONSULTED = 0;
     private const STATUS_CONSULTED     = 10;

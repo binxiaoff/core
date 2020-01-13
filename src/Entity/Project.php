@@ -102,6 +102,8 @@ class Project
     public const PROJECT_RISK_TYPE_RISK     = 'risk';
     public const PROJECT_RISK_TYPE_TREASURY = 'risk_treasury';
 
+    public const SERIALIZER_GROUP_ADMIN_READ = 'project:admin:read'; // Additional group that is available for admin (admin user or arranger)
+
     /**
      * @var int
      *
@@ -320,6 +322,8 @@ class Project
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
      *
      * @MaxDepth(2)
+     *
+     * @Groups({"project:admin:read"})
      *
      * @ApiSubresource
      */
@@ -813,8 +817,6 @@ class Project
     }
 
     /**
-     * @throws Exception
-     *
      * @return ProjectOrganizer|null
      *
      * @Groups({"project:view", "project:list", "projectParticipation:list"})
@@ -1317,8 +1319,6 @@ class Project
 
     /**
      * @param string $role
-     *
-     * @throws Exception
      *
      * @return ProjectParticipation|null
      */
