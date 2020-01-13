@@ -69,7 +69,7 @@ class ProjectParticipationVoter extends Voter
             return false;
         }
 
-        if ($this->authorizationChecker->isGranted('ROLE_ADMIN')) {
+        if ($this->authorizationChecker->isGranted(Clients::ROLE_ADMIN)) {
             return true;
         }
 

@@ -319,9 +319,9 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
      *
-     * @Groups({"project:list", "project:view"})
-     *
      * @MaxDepth(2)
+     *
+     * @ApiSubresource
      */
     private $projectParticipations;
 

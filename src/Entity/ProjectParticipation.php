@@ -69,7 +69,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "patch": {"security": "is_granted('edit', object)"}
  *     }
  * )
- * @ApiFilter("Unilend\Filter\ArrayFilter", properties={"roles"})
+ *
  * @ApiFilter("Unilend\Filter\CountFilter", properties={"projectParticipationOffers"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status"})
@@ -87,6 +87,9 @@ class ProjectParticipation
     use BlamableAddedTrait;
     use PublicizeIdentityTrait;
     use ConstantsAwareTrait;
+
+    public const SERIALIZER_GROUP_ADMIN_READ  = 'projectParticipation:admin:read'; // Additional groupe that is available for admin (admin user or arranger)
+    public const SERIALIZER_GROUP_PUBLIC_READ = 'projectParticipation:public:read'; // Additional groupe that is available for public visibility project
 
     private const STATUS_NOT_CONSULTED = 0;
     private const STATUS_CONSULTED     = 10;
@@ -129,7 +132,7 @@ class ProjectParticipation
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationContact", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"projectParticipation:read"})
+     * @Groups({"projectParticipation:admin:read"})
      */
     private $projectParticipationContacts;
 
@@ -138,7 +141,7 @@ class ProjectParticipation
      *
      * @ORM\Column(type="integer", nullable=false, options={"default": 0})
      *
-     * @Groups({"projectParticipation:read", "projectParticipation:write"})
+     * @Groups({"projectParticipation:admin:read", "projectParticipation:write"})
      *
      * @Assert\Choice(callback="getStatuses")
      * @Assert\NotBlank
@@ -157,7 +160,7 @@ class ProjectParticipation
      *
      * @ORM\OneToMany(targetEntity="ProjectParticipationOffer", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"projectParticipation:read"})
+     * @Groups({"projectParticipation:public:read"})
      */
     private $projectParticipationOffers;
 
@@ -166,7 +169,7 @@ class ProjectParticipation
      *
      * @var Fee|null
      *
-     * @Groups({"projectParticipation:read", "projectParticipation:write"})
+     * @Groups({"projectParticipation:admin:read", "projectParticipation:write"})
      */
     private $fee;
 
@@ -175,7 +178,7 @@ class ProjectParticipation
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney", columnPrefix="invitation_")
      *
-     * @Groups({"projectParticipation:read", "projectParticipation:write"})
+     * @Groups({"projectParticipation:admin:read", "projectParticipation:write"})
      */
     private $invitationMoney;
 
@@ -251,7 +254,7 @@ class ProjectParticipation
     /**
      * @return bool
      *
-     * @Groups({"projectParticipation:read"})
+     * @Groups({"projectParticipation:offer:read"})
      */
     public function hasOffer(): bool
     {
@@ -261,7 +264,7 @@ class ProjectParticipation
     /**
      * @return bool
      *
-     * @Groups({"projectParticipation:read"})
+     * @Groups({"projectParticipation:public:read"})
      */
     public function hasValidatedOffer(): bool
     {
@@ -283,7 +286,7 @@ class ProjectParticipation
     }
 
     /**
-     * @Groups({"projectParticipation:read"})
+     * @Groups({"projectParticipation:admin:read"})
      *
      * @return bool
      */
@@ -295,7 +298,7 @@ class ProjectParticipation
     /**
      * @return bool
      *
-     * @Groups({"projectParticipation:read"})
+     * @Groups({"projectParticipation:admin:status"})
      */
     public function isConsulted(): bool
     {
@@ -366,7 +369,7 @@ class ProjectParticipation
      *
      * @return Money
      *
-     * @Groups({"projectParticipation:read"})
+     * @Groups({"projectParticipation:public:read"})
      */
     public function getOfferMoney(): Money
     {
@@ -431,7 +434,7 @@ class ProjectParticipation
     /**
      * @return string|null
      *
-     * @Groups({"projectParticipation:read"})
+     * @Groups({"projectParticipation:admin:read"})
      */
     public function getOfferComment(): ?string
     {
@@ -441,7 +444,7 @@ class ProjectParticipation
     /**
      * @return string|null
      *
-     * @Groups({"projectParticipation:read"})
+     * @Groups({"projectParticipation:admin:read"})
      */
     public function getOfferCommitteeStatus(): ?string
     {
@@ -451,7 +454,7 @@ class ProjectParticipation
     /**
      * @return DateTimeImmutable|null
      *
-     * @Groups({"projectParticipation:read"})
+     * @Groups({"projectParticipation:admin:read"})
      */
     public function getOfferExpectedCommitteeDate(): ?DateTimeImmutable
     {

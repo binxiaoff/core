@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Serializer\ContextBuilder;
+namespace Unilend\Serializer\ContextBuilder\Client;
 
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use ReflectionClass;

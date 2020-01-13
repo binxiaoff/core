@@ -7,6 +7,7 @@ namespace Unilend\Security\Voter;
 use Command;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\{AuthorizationCheckerInterface, Voter\Voter};
+use Unilend\Entity\Clients;
 use Unilend\Traits\ConstantsAwareTrait;
 
 class BackOfficeZoneVoter extends Voter
@@ -50,6 +51,6 @@ class BackOfficeZoneVoter extends Voter
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
         // As there is no specification that has been defined, we authorise the admin use with all accesses.
-        return $this->authorizationChecker->isGranted('ROLE_ADMIN');
+        return $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN);
     }
 }

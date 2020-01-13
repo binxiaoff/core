@@ -73,6 +73,6 @@ class ClientStatusVoter extends Voter
      */
     private function canView(ClientStatus $clientStatus, Clients $user): bool
     {
-        return $this->authorizationChecker->isGranted('ROLE_ADMIN') || $user === $clientStatus->getClient();
+        return $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || $user === $clientStatus->getClient();
     }
 }
