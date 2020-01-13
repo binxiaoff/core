@@ -23,12 +23,12 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait
  *             "read": false,
  *             "output": false,
  *         },
- *         "delete": {"security": "is_granted('edit', object.getProject())"},
- *         "patch": {"security": "is_granted('edit', object.getProject())", "groups": {"projectOrganizer:write", "role:write"}}
+ *         "delete": {"security": "is_granted('delete', object)"},
+ *         "patch": {"security": "is_granted('edit', object)", "groups": {"projectOrganizer:write", "role:write"}}
  *     },
  *     collectionOperations={
  *         "post": {
- *             "security_post_denormalize": "is_granted('edit', object.getProject())",
+ *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {"groups": {"projectOrganizer:create", "role:write"}}
  *         },
  *     }
