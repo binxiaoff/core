@@ -9,39 +9,40 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
+use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 
 /**
  * @ApiResource(
  *     denormalizationContext={"groups": {"projectParticipationContact:write"}},
  *     itemOperations={
  *         "get": {"security": "object.getClient() == user"},
- *         "patch": {"security_post_denormalize": "previous_object.getClient() == user"}
+ *         "patch": {"security_post_denormalize": "previous_object.getClient() == user"},
+ *         "delete": {"security_post_denormalize": "is_granted('edit', object.getProjectParticipation())"},
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('edit', object.getProjectParticipation())",
+ *             "denormalization_context": {"groups": {"projectParticipationContact:create", "projectParticipationContact:write"}}
+ *         }
  *     }
  * )
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "id_project_participation"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationContactRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectParticipationContact
 {
     use TimestampableAddedOnlyTrait;
     use BlamableAddedTrait;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    private $id;
+    use PublicizeIdentityTrait;
 
     /**
      * @var ProjectParticipation
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationContacts")
      * @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
+     *
+     * @Groups({"projectParticipationContact:create"})
      */
     private $projectParticipation;
 
@@ -53,7 +54,7 @@ class ProjectParticipationContact
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      *
-     * @Groups({"projectParticipationContact:read"})
+     * @Groups({"projectParticipationContact:read", "projectParticipationContact:create"})
      */
     private $client;
 
@@ -84,14 +85,6 @@ class ProjectParticipationContact
         $this->client               = $clients;
         $this->addedBy              = $addedBy;
         $this->added                = new DateTimeImmutable();
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
     }
 
     /**

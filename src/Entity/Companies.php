@@ -11,11 +11,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
  *     attributes={"pagination_enabled": false},
+ *     normalizationContext={"groups": {"company:read", "staff:read", "profile:read", "client_status:read", "role:read"}},
  *     collectionOperations={
  *         "get",
  *         "autocomplete": {
@@ -25,7 +27,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *         }
  *     },
  *     itemOperations={
- *         "get": {"normalization_context": {"groups": {"company:read", "staff:read", "profile:read", "client_status:read", "role:read"}}}
+ *         "get"
  *     }
  * )
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.hash", "projectParticipations.project"})
@@ -36,6 +38,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
 class Companies
 {
     use TimestampableTrait;
+    use PublicizeIdentityTrait;
 
     public const INVALID_SIREN_EMPTY = '000000000';
 
@@ -69,7 +72,7 @@ class Companies
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:create", "project:list", "project:update", "project:view", "company:read", "company:read"})
+     * @Groups({"project:create", "project:list", "project:update", "project:view", "company:read"})
      */
     private $name;
 
@@ -86,23 +89,14 @@ class Companies
     private $siren;
 
     /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     *
-     * @Groups({"project:view", "company:read"})
-     */
-    private $id;
-
-    /**
      * @var Companies|null
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_parent_company", referencedColumnName="id")
      * })
+     *
+     * @Groups({"company:read"})
      */
     private $parent;
 
@@ -157,14 +151,6 @@ class Companies
     public function __toString(): string
     {
         return $this->getName();
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
     }
 
     /**
@@ -293,6 +279,8 @@ class Companies
     /**
      * @param Clients $client
      * @param string  $role
+     *
+     * @throws Exception
      *
      * @return Staff
      */
