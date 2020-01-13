@@ -63,7 +63,7 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, Timestamp
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
- *         "delete": {"security_post_denormalize": "is_granted('edit', previous_object))"},
+ *         "delete": {"security_post_denormalize": "is_granted('edit', previous_object)"},
  *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)"}
  *     }
  * )
