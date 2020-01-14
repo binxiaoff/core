@@ -69,11 +69,11 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
             || ($project->getArranger()
                 && $project->getArranger()->getCompany() === $client->getCompany())
         ) {
-            return [ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_PUBLIC_READ];
+            return [ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ];
         }
 
         if (Project::OFFER_VISIBILITY_PUBLIC === $project->getOfferVisibility()) {
-            return [ProjectParticipation::SERIALIZER_GROUP_PUBLIC_READ];
+            return [ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ];
         }
 
         return [];

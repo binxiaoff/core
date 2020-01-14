@@ -88,8 +88,8 @@ class ProjectParticipation
     use PublicizeIdentityTrait;
     use ConstantsAwareTrait;
 
-    public const SERIALIZER_GROUP_ADMIN_READ  = 'projectParticipation:admin:read'; // Additional group that is available for admin (admin user or arranger)
-    public const SERIALIZER_GROUP_PUBLIC_READ = 'projectParticipation:public:read'; // Additional group that is available for public visibility project
+    public const SERIALIZER_GROUP_ADMIN_READ     = 'projectParticipation:admin:read'; // Additional group that is available for admin (admin user or arranger)
+    public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipation:sensitive:read'; // Additional group that is available for public visibility project
 
     private const STATUS_NOT_CONSULTED = 0;
     private const STATUS_CONSULTED     = 10;
@@ -160,7 +160,7 @@ class ProjectParticipation
      *
      * @ORM\OneToMany(targetEntity="ProjectParticipationOffer", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"projectParticipation:public:read"})
+     * @Groups({"projectParticipation:sensitive:read"})
      */
     private $projectParticipationOffers;
 
@@ -264,7 +264,7 @@ class ProjectParticipation
     /**
      * @return bool
      *
-     * @Groups({"projectParticipation:public:read"})
+     * @Groups({"projectParticipation:sensitive:read"})
      */
     public function hasValidatedOffer(): bool
     {
@@ -369,7 +369,7 @@ class ProjectParticipation
      *
      * @return Money
      *
-     * @Groups({"projectParticipation:public:read"})
+     * @Groups({"projectParticipation:sensitive:read"})
      */
     public function getOfferMoney(): Money
     {
