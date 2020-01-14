@@ -141,6 +141,7 @@ class ProjectParticipation
      * @Groups({"projectParticipation:read", "projectParticipation:write"})
      *
      * @Assert\Choice(callback="getStatuses")
+     * @Assert\NotBlank
      */
     private $currentStatus = self::DEFAULT_STATUS;
 
