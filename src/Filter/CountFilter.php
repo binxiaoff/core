@@ -6,6 +6,7 @@ namespace Unilend\Filter;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\QueryBuilder;
 
 class CountFilter extends AbstractFilter
@@ -104,7 +105,7 @@ class CountFilter extends AbstractFilter
         string $operationName = null
     ): void {
         if (
-            false === is_array($values)
+            false === \is_array($values)
             || false === $this->isPropertyEnabled($property, $resourceClass)
             || false === $this->isPropertyMapped($property, $resourceClass, true)
             || false === $this->isCountableField($property, $resourceClass)
@@ -119,11 +120,11 @@ class CountFilter extends AbstractFilter
         }
 
         foreach ($values as $operator => $value) {
-            if (in_array($operator, [self::PARAMETER_MAX, self::PARAMETER_MIN, self::PARAMETER_EXACT], true)) {
+            if (\in_array($operator, [self::PARAMETER_MAX, self::PARAMETER_MIN, self::PARAMETER_EXACT], true)) {
                 $comparaison   = self::COMPARAISON_OPERATOR[$operator];
                 $parameterName = $queryNameGenerator->generateParameterName($property);
                 $queryBuilder->andWhere("SIZE({$alias}.{$field}) {$comparaison} :{$parameterName}")
-                    ->setParameter($parameterName, $value)
+                    ->setParameter($parameterName, $value, Type::INTEGER)
                  ;
             }
         }

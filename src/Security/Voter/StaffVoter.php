@@ -59,30 +59,10 @@ class StaffVoter extends Voter
             return false;
         }
 
-        return $this->voteAdmin($attribute, $subject, $submitterStaff) || $this->voteManager($attribute, $subject, $submitterStaff);
-    }
+        if ($submitterStaff->isAdmin()) {
+            return true;
+        }
 
-    /**
-     * @param string $attribute
-     * @param Staff  $subject
-     * @param Staff  $submitterStaff
-     *
-     * @return bool
-     */
-    private function voteAdmin(string $attribute, Staff $subject, Staff $submitterStaff): bool
-    {
-        return $submitterStaff->isAdmin();
-    }
-
-    /**
-     * @param string $attribute
-     * @param Staff  $subject
-     * @param Staff  $submitterStaff
-     *
-     * @return bool
-     */
-    private function voteManager(string $attribute, Staff $subject, Staff $submitterStaff): bool
-    {
         if ($subject->isAdmin() || false === $submitterStaff->isManager()) {
             return false;
         }
