@@ -50,7 +50,7 @@ class Upload
         $user = $this->security->getUser();
 
         if ($userIri = $request->request->get('user')) {
-            if (false === $this->security->isGranted('ROLE_ADMIN')) {
+            if (false === $this->security->isGranted(Clients::ROLE_ADMIN)) {
                 throw new AccessDeniedHttpException();
             }
             $user = $this->converter->getItemFromIri($userIri);

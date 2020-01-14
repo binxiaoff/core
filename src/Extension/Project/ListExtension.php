@@ -31,7 +31,7 @@ class ListExtension implements QueryCollectionExtensionInterface
      */
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
     {
-        if (Project::class !== $resourceClass) {
+        if (Project::class !== $resourceClass || $this->security->isGranted(Clients::ROLE_ADMIN)) {
             return;
         }
 
