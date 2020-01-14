@@ -16,6 +16,7 @@ use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\{Fee, Money, NullableMoney};
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
@@ -64,7 +65,8 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, Timestamp
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
  *         "delete": {"security_post_denormalize": "is_granted('edit', previous_object)"},
- *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)"}
+ *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)"},
+ *         "patch": {"security": "is_granted('edit', object)"}
  *     }
  * )
  * @ApiFilter("Unilend\Filter\ArrayFilter", properties={"roles"})
@@ -84,6 +86,7 @@ class ProjectParticipation
     use TimestampableTrait;
     use BlamableAddedTrait;
     use PublicizeIdentityTrait;
+    use ConstantsAwareTrait;
 
     private const STATUS_NOT_CONSULTED = 0;
     private const STATUS_CONSULTED     = 10;
@@ -135,9 +138,9 @@ class ProjectParticipation
      *
      * @ORM\Column(type="integer", nullable=false, options={"default": 0})
      *
-     * @Groups({"projectParticipation:read"})
+     * @Groups({"projectParticipation:read", "projectParticipation:write"})
      *
-     * @Assert\NotBlank
+     * @Assert\Choice(callback="getStatuses")
      */
     private $currentStatus = self::DEFAULT_STATUS;
 
@@ -460,5 +463,21 @@ class ProjectParticipation
     public function getMessages(): Collection
     {
         return $this->messages;
+    }
+
+    /**
+     * @param int $currentStatus
+     */
+    public function setCurrentStatus(int $currentStatus): void
+    {
+        $this->currentStatus = $currentStatus;
+    }
+
+    /**
+     * @return array
+     */
+    public function getStatuses()
+    {
+        return self::getConstants('STATUS_');
     }
 }
