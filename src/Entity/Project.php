@@ -38,7 +38,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "projectParticipation:read",
  *                 "projectParticipationContact:read",
  *                 "projectOrganizer:read",
- *                 "role:read"
+ *                 "role:read",
+ *                 "timestampable:read"
  *             }}
  *         },
  *         "project_confidentiality": {
