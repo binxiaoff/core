@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
+use Doctrine\ORM\PersistentCollection;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Unilend\Entity\Clients;
+use Unilend\Entity\MarketSegment;
 use Unilend\Entity\Staff;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -29,7 +31,7 @@ class StaffVoter extends Voter
      */
     protected function supports($attribute, $subject)
     {
-        return $subject instanceof Staff && in_array($attribute, static::getConstants('ATTRIBUTE_'), true);
+        return $subject instanceof Staff && \in_array($attribute, static::getConstants('ATTRIBUTE_'), true);
     }
 
     /**
@@ -53,8 +55,92 @@ class StaffVoter extends Voter
 
         $submitterStaff = $user->getStaff();
 
-        return $submitterStaff
-            && $subject->getCompany() === $submitterStaff->getCompany()
-            && array_sum(array_map([$submitterStaff, 'hasRole'], [Staff::DUTY_STAFF_ADMIN, Staff::DUTY_STAFF_MANAGER]));
+        if (null === $submitterStaff || $subject->getCompany() !== $submitterStaff->getCompany()) {
+            return false;
+        }
+
+        if ($submitterStaff->isAdmin()) {
+            return true;
+        }
+
+        if ($subject->isAdmin() || false === $submitterStaff->isManager()) {
+            return false;
+        }
+
+        switch ($attribute) {
+            case static::ATTRIBUTE_VIEW:
+                return true;
+            case static::ATTRIBUTE_CREATE:
+                return $this->canManagerCreate($subject, $submitterStaff);
+            case static::ATTRIBUTE_EDIT:
+                return $this->canManagerEdit($subject, $submitterStaff);
+            case static::ATTRIBUTE_DELETE:
+                return $this->canManagerDelete($subject, $submitterStaff);
+        }
+
+        throw new \LogicException('This code should not be reached');
+    }
+
+    /**
+     * @param Staff $subject
+     * @param Staff $submitterStaff
+     *
+     * @return bool
+     */
+    private function canManagerCreate(Staff $subject, Staff $submitterStaff)
+    {
+        // A manager cannot create a user with markets other than is own
+        return $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
+            return $submitterStaff->getMarketSegments()->contains($marketSegment);
+        });
+    }
+
+    /**
+     * @param Staff $subject
+     * @param Staff $submitterStaff
+     *
+     * @return bool
+     */
+    private function canManagerDelete(Staff $subject, Staff $submitterStaff)
+    {
+        // A manager cannot delete a user with markets other than is own
+        return $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
+            return $submitterStaff->getMarketSegments()->contains($marketSegment);
+        });
+    }
+
+    /**
+     * @param Staff $subject
+     * @param Staff $submitterStaff
+     *
+     * @return bool
+     */
+    private function canManagerEdit(Staff $subject, Staff $submitterStaff)
+    {
+        /** @var PersistentCollection $subjectMarketSegments */
+        $subjectMarketSegments = $subject->getMarketSegments();
+
+        // TODO see if there is better way to get this
+        if (false === $subjectMarketSegments instanceof PersistentCollection) {
+            return false;
+        }
+
+        $previous = $subject->getMarketSegments()->getSnapshot();
+
+        // A manager cannot add markets segment than is own
+        foreach ($subjectMarketSegments as $marketSegment) {
+            if (false === ($submitterStaff->getMarketSegments()->contains($marketSegment) || \in_array($marketSegment, $previous, true))) {
+                return false;
+            }
+        }
+
+        // A manager cannot delete a market segment other than is own
+        foreach ($previous as $marketSegment) {
+            if (false === ($subjectMarketSegments->contains($marketSegment) || $submitterStaff->getMarketSegments()->contains($marketSegment))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

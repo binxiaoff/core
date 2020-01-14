@@ -142,7 +142,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "profile:read"})
+     * @Groups({"client:read", "profile:read", "client:create"})
      *
      * @ORM\Column(name="email", type="string", length=191, nullable=false, unique=true)
      *
