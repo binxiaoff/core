@@ -68,9 +68,10 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, Timestamp
  *     }
  * )
  * @ApiFilter("Unilend\Filter\ArrayFilter", properties={"roles"})
- * @ApiFilter("Unilend\Filter\CountFilter", properties={"project.projectParticipations.projectParticipationOffers"})
+ * @ApiFilter("Unilend\Filter\CountFilter", properties={"projectParticipationOffers"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status"})
+ * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"projectParticipationContacts.client.username": "exact"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"project.hash": "exact"})
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
