@@ -70,10 +70,10 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     }
  * )
  * @ApiFilter("Unilend\Filter\ArrayFilter", properties={"roles"})
- * @ApiFilter("Unilend\Filter\CountFilter", properties={"project.projectParticipations.projectParticipationOffers"})
+ * @ApiFilter("Unilend\Filter\CountFilter", properties={"projectParticipationOffers"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status"})
- * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"project.hash": "exact"})
+ * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"project.hash": "exact", "projectParticipationContacts.client.email": "exact"})
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationRepository")
