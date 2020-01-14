@@ -52,7 +52,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
- * @ApiFilter(SearchFilter::class, properties={"organizers.company.id"})
+ * @ApiFilter(SearchFilter::class, properties={"organizers.company.publicId"})
  * @ApiFilter(ArrayFilter::class, properties={"organizers.roles"})
  *
  * @ORM\Table(indexes={

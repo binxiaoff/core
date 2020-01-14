@@ -254,7 +254,7 @@ class ProjectParticipation
     /**
      * @return bool
      *
-     * @Groups({"projectParticipation:offer:read"})
+     * @Groups({"projectParticipation:sensitive:read"})
      */
     public function hasOffer(): bool
     {
