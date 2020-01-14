@@ -9,7 +9,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\{Clients, Project, ProjectParticipation, ProjectParticipationContact};
+use Unilend\Entity\{Clients, Project, ProjectParticipation};
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
@@ -38,7 +38,7 @@ class ListExtension implements QueryCollectionExtensionInterface
      */
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
     {
-        if (ProjectParticipation::class !== $resourceClass || $this->security->isGranted(Clients::ROLE_ADMIN)) {
+        if (ProjectParticipation::class !== $resourceClass) {
             return;
         }
         /** @var Clients $user */
@@ -48,20 +48,19 @@ class ListExtension implements QueryCollectionExtensionInterface
         }
 
         $expressionBuilder = $this->entityManager->getExpressionBuilder();
-        $subQuery          = $this->entityManager->createQueryBuilder()
-            ->select('IDENTITY(s_ppc.client)')
-            ->from(ProjectParticipation::class, 's_pp')
-            ->leftJoin('s_pp.projectParticipationContacts', 's_ppc')
-            ->where('s_pp.project = p.id')
-            ->getDQL()
+        $subQueryBuilder   = $this->entityManager->createQueryBuilder();
+        $subQueryBuilder->select('sub_project')
+            ->from(Project::class, 'sub_project')
+            ->innerJoin('sub_project.projectParticipations', 'sub_participation')
+            ->innerJoin('sub_participation.projectParticipationContacts', 'sub_contact')
+            ->where('sub_contact.client = :client')
         ;
-
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
-            ->leftJoin("{$rootAlias}.projectParticipationContacts", 'ppc')
-            ->leftJoin("{$rootAlias}.project", 'p')
-            ->andWhere('(p.offerVisibility = :private and ppc.client = :client) OR p.offerVisibility in (:nonPrivate)')
-            ->andWhere($expressionBuilder->in(':client', $subQuery))
+            ->innerJoin("{$rootAlias}.projectParticipationContacts", 'ppc')
+            ->innerJoin("{$rootAlias}.project", 'p')
+            ->andWhere('(p.offerVisibility = :private AND ppc.client = :client) OR p.offerVisibility in (:nonPrivate)')
+            ->andWhere($expressionBuilder->in('p.id', $subQueryBuilder->getDQL()))
             ->setParameter('client', $user)
             ->setParameter('private', Project::OFFER_VISIBILITY_PRIVATE)
             ->setParameter('nonPrivate', [Project::OFFER_VISIBILITY_PARTICIPANT, Project::OFFER_VISIBILITY_PUBLIC])
