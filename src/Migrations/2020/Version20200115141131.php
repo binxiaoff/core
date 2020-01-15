@@ -27,6 +27,8 @@ final class Version20200115141131 extends ContainerAwareMigration
         foreach ($translations as $key => $translation) {
             $this->addSql("DELETE FROM WHERE locale = 'fr_FR' AND section = 'fee-type' AND name = 'tranche_fee_type_{$key}'");
         }
+
+        $this->addSql("DELETE FROM tranche_fee WHERE fee_type IN ('utilisation', 'first_drawdown')");
     }
 
     public function down(Schema $schema): void
