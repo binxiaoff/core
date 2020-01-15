@@ -17,7 +17,7 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectParticipationOffer:read", "money:read", "trancheOffer:read", "lendingRate:read"}},
+ *     normalizationContext={"groups": {"projectParticipationOffer:read", "money:read", "trancheOffer:read", "lendingRate:read", "blameable:read"}},
  *     denormalizationContext={"groups": {"projectParticipationOffer:write", "money:write"}},
  *     collectionOperations={
  *         "get": {
