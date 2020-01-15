@@ -34,8 +34,6 @@ class TrancheFee
 
     private const TYPE_NON_UTILISATION = 'non_utilisation';
     private const TYPE_COMMITMENT      = 'commitment';
-    private const TYPE_UTILISATION     = 'utilisation';
-    private const TYPE_FIRST_DRAWDOWN  = 'first_drawdown';
 
     /**
      * @var int
