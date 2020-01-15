@@ -42,7 +42,7 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
      */
     public function normalize($object, $format = null, array $context = [])
     {
-        $context['groups'] = array_merge($context['groups'], $this->getAdditionalNormalizerGroups($object));
+        $context['groups'] = array_merge($context['groups'] ?? [], $this->getAdditionalNormalizerGroups($object));
 
         $context[self::ALREADY_CALLED] = true;
 
