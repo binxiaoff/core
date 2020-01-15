@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Test\Unit\Service\Attachment;
 
-use DateTimeInterface;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Faker\Provider\{Base, Internet, Miscellaneous};
@@ -116,25 +115,6 @@ class AttachmentManagerTest extends TestCase
             'description'             => [Base::randomLetter(), $project, Base::randomLetter()],
             'all optional parameters' => [Base::randomLetter(), $project, Base::randomLetter()],
         ];
-    }
-
-    /**
-     * @covers ::logDownload
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws Exception
-     */
-    public function testLogDownload(): void
-    {
-        $attachment = $this->createAttachment();
-
-        $attachmentManager = $this->createTestObject();
-
-        $attachmentManager->logDownload($attachment);
-
-        static::assertInstanceOf(DateTimeInterface::class, $attachment->getDownloaded());
-        $this->attachmentRepository->save(Argument::exact($attachment))->shouldHaveBeenCalled();
     }
 
     /**

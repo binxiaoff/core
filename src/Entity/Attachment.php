@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -117,17 +118,6 @@ class Attachment
     private $archived;
 
     /**
-     * @var DateTimeImmutable
-     *
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     *
-     * @Gedmo\Versioned
-     *
-     * @Groups({"attachment:read"})
-     */
-    private $downloaded;
-
-    /**
      * @var string
      *
      * @ORM\Column(length=60)
@@ -191,6 +181,13 @@ class Attachment
     private $size;
 
     /**
+     * @var Collection|Download[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\Download", fetch="EXTRA_LAZY", mappedBy="attachment")
+     */
+    private $downloads;
+
+    /**
      * Attachment constructor.
      *
      * @param string  $path
@@ -203,6 +200,7 @@ class Attachment
     public function __construct(string $path, string $type, Clients $addedBy, Project $project)
     {
         $this->signatures = new ArrayCollection();
+        $this->downloads  = new ArrayCollection();
         $this->path       = $path;
         $this->type       = $type;
         $this->addedBy    = $addedBy;
@@ -352,26 +350,6 @@ class Attachment
     public function getSignatures(): iterable
     {
         return $this->signatures;
-    }
-
-    /**
-     * @param DateTimeImmutable $downloaded
-     *
-     * @return Attachment
-     */
-    public function setDownloaded(DateTimeImmutable $downloaded): Attachment
-    {
-        $this->downloaded = $downloaded;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeImmutable
-     */
-    public function getDownloaded(): ?DateTimeImmutable
-    {
-        return $this->downloaded;
     }
 
     /**
