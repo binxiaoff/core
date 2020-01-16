@@ -141,8 +141,6 @@ class ProjectParticipation
      *
      * @ORM\Column(type="integer", nullable=false, options={"default": 0})
      *
-     * @Groups({"projectParticipation:admin:read", "projectParticipation:write"})
-     *
      * @Assert\Choice(callback="getStatuses")
      * @Assert\NotBlank
      */
@@ -298,7 +296,7 @@ class ProjectParticipation
     /**
      * @return bool
      *
-     * @Groups({"projectParticipation:admin:status"})
+     * @Groups({"projectParticipation:admin:read"})
      */
     public function isConsulted(): bool
     {
@@ -306,6 +304,8 @@ class ProjectParticipation
     }
 
     /**
+     * @Groups({"projectParticipation:write"})
+     *
      * @return ProjectParticipation
      */
     public function setUninterested(): ProjectParticipation
@@ -320,6 +320,8 @@ class ProjectParticipation
     }
 
     /**
+     * @Groups({"projectParticipation:write"})
+     *
      * @return ProjectParticipation
      */
     public function setConsulted(): ProjectParticipation
