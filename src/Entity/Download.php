@@ -37,7 +37,7 @@ class Download
      * @var Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
-     * @ORM\JoinColumn(referencedColumnName="id_client", name="id_clients", nullable=false)
+     * @ORM\JoinColumn(referencedColumnName="id_client", name="id_client", nullable=false)
      */
     private $client;
 
