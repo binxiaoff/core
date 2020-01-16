@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Attachment;
 
-use DateTimeImmutable;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Exception;
 use InvalidArgumentException;
 use League\Flysystem\FileExistsException;
@@ -86,18 +83,6 @@ class AttachmentManager
     public function read(Attachment $attachment)
     {
         return $this->userAttachmentFilesystem->read($attachment->getPath());
-    }
-
-    /**
-     * @param Attachment $attachment
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function logDownload(Attachment $attachment): void
-    {
-        $attachment->setDownloaded(new DateTimeImmutable());
-        $this->attachmentRepository->save($attachment);
     }
 
     /**

@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -117,17 +118,6 @@ class Attachment
     private $archived;
 
     /**
-     * @var DateTimeImmutable
-     *
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     *
-     * @Gedmo\Versioned
-     *
-     * @Groups({"attachment:read"})
-     */
-    private $downloaded;
-
-    /**
      * @var string
      *
      * @ORM\Column(length=60)
@@ -191,6 +181,13 @@ class Attachment
     private $size;
 
     /**
+     * @var Collection|AttachmentDownload[]
+     *
+     * @ORM\OneToMany(targetEntity="AttachmentDownload", fetch="EXTRA_LAZY", mappedBy="attachment", cascade={"persist", "remove"})
+     */
+    private $attachmentDownloads;
+
+    /**
      * Attachment constructor.
      *
      * @param string  $path
@@ -202,12 +199,13 @@ class Attachment
      */
     public function __construct(string $path, string $type, Clients $addedBy, Project $project)
     {
-        $this->signatures = new ArrayCollection();
-        $this->path       = $path;
-        $this->type       = $type;
-        $this->addedBy    = $addedBy;
-        $this->added      = new DateTimeImmutable();
-        $this->project    = $project;
+        $this->signatures          = new ArrayCollection();
+        $this->attachmentDownloads = new ArrayCollection();
+        $this->path                = $path;
+        $this->type                = $type;
+        $this->addedBy             = $addedBy;
+        $this->added               = new DateTimeImmutable();
+        $this->project             = $project;
     }
 
     /**
@@ -355,26 +353,6 @@ class Attachment
     }
 
     /**
-     * @param DateTimeImmutable $downloaded
-     *
-     * @return Attachment
-     */
-    public function setDownloaded(DateTimeImmutable $downloaded): Attachment
-    {
-        $this->downloaded = $downloaded;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeImmutable
-     */
-    public function getDownloaded(): ?DateTimeImmutable
-    {
-        return $this->downloaded;
-    }
-
-    /**
      * @return array
      */
     public function getAttachmentTypes(): array
@@ -400,5 +378,13 @@ class Attachment
         $this->size = $size;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|AttachmentDownload[]
+     */
+    public function getAttachmentDownloads()
+    {
+        return $this->attachmentDownloads;
     }
 }
