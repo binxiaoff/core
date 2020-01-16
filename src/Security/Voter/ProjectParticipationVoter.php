@@ -22,8 +22,9 @@ class ProjectParticipationVoter extends Voter
 {
     use ConstantsAwareTrait;
 
-    public const ATTRIBUTE_VIEW = 'view';
-    public const ATTRIBUTE_EDIT = 'edit';
+    public const ATTRIBUTE_VIEW   = 'view';
+    public const ATTRIBUTE_EDIT   = 'edit';
+    public const ATTRIBUTE_CREATE = 'create';
 
     /** @var AuthorizationCheckerInterface */
     private $authorizationChecker;
@@ -82,17 +83,13 @@ class ProjectParticipationVoter extends Voter
 
         $projectOrganizer = $this->getProjectOrganizer($subject->getProject(), $user);
 
-        if (
-            $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN)
-            || (
-                $projectOrganizer
-                && $projectOrganizer->isArranger()
-            )
-        ) {
+        if ($this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || ($projectOrganizer && $projectOrganizer->isArranger())) {
             return true;
         }
 
         switch ($attribute) {
+            case static::ATTRIBUTE_CREATE:
+                return $this->canCreate($subject);
             case self::ATTRIBUTE_VIEW:
                 return $this->canView($subject, $user);
             case self::ATTRIBUTE_EDIT:
@@ -156,5 +153,20 @@ class ProjectParticipationVoter extends Voter
     private function getParticipationContact(ProjectParticipation $projectParticipation, Clients $user): ?ProjectParticipationContact
     {
         return $this->projectParticipationContactRepository->findOneBy(['projectParticipation' => $projectParticipation, 'client' => $user]);
+    }
+
+    /**
+     * @see https://lafabriquebyca.atlassian.net/browse/CALS-759
+     *
+     * @param ProjectParticipation $subject
+     *
+     * @return bool
+     */
+    private function canCreate(ProjectParticipation $subject): bool
+    {
+        $company   = $subject->getCompany();
+        $blacklist = array_map('strtolower', ProjectParticipation::BLACKLISTED_COMPANIES);
+
+        return false === \in_array(mb_strtolower($company->getName()), $blacklist, true) && $this->authorizationChecker->isGranted('edit', $subject->getProject());
     }
 }

@@ -59,7 +59,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "fee:write",
  *                 "nullableMoney:write"
  *             }},
- *             "security_post_denormalize": "is_granted('edit', object.getProject())"
+ *             "security_post_denormalize": "is_granted('create', object)"
  *         }
  *     },
  *     itemOperations={
@@ -90,6 +90,11 @@ class ProjectParticipation
 
     public const SERIALIZER_GROUP_ADMIN_READ     = 'projectParticipation:admin:read'; // Additional group that is available for admin (admin user or arranger)
     public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipation:sensitive:read'; // Additional group that is available for public visibility project
+
+    public const BLACKLISTED_COMPANIES = [
+        'CA-CIB',
+        'Unifergie',
+    ];
 
     private const STATUS_NOT_CONSULTED = 0;
     private const STATUS_CONSULTED     = 10;
