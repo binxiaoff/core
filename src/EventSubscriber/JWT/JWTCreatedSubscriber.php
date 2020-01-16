@@ -79,7 +79,7 @@ class JWTCreatedSubscriber implements EventSubscriberInterface
                 $payload['roles'] = $staff->getRoles();
                 //todo: put the exact fields
                 $company                   = $staff->getCompany();
-                $payload['company']        = $this->serializer->normalize($company);
+                $payload['company']        = $this->serializer->normalize($company, 'array', ['groups' => 'company:jwt:read']);
                 $payload['company']['@id'] = $this->iriConverter->getIriFromItem($company);
             }
             $event->setData($payload);

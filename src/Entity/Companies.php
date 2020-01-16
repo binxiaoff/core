@@ -72,7 +72,7 @@ class Companies
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:create", "project:list", "project:update", "project:view", "company:read"})
+     * @Groups({"project:create", "project:list", "project:update", "project:view", "company:read", "company:jwt:read"})
      */
     private $name;
 
@@ -122,13 +122,15 @@ class Companies
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
+     *
+     * @Groups({"company:read", "company:jwt:read"})
      */
     private $emailDomain;
 
     /**
      * @ORM\Column(type="string", length=4, nullable=true, unique=true)
      *
-     * @Groups({"project:list", "project:view", "company:read"})
+     * @Groups({"project:list", "project:view", "company:read", "company:jwt:read"})
      */
     private $shortCode;
 
