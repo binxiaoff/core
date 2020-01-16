@@ -10,7 +10,7 @@ use League\Flysystem\FileNotFoundException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\Attachment;
-use Unilend\Entity\Download as Entity;
+use Unilend\Entity\AttachmentDownload;
 use Unilend\Service\FileSystem\FileSystemHelper;
 
 class Download
@@ -47,7 +47,7 @@ class Download
      */
     public function __invoke(Attachment $data): StreamedResponse
     {
-        $this->entityManager->persist(new Entity($data, $this->security->getUser()));
+        $this->entityManager->persist(new AttachmentDownload($data, $this->security->getUser()));
         $this->entityManager->flush();
 
         return $this->fileSystemHelper->download($this->fileSystemHelper->getFileSystemForClass($data), $data->getPath(), $data->getOriginalName());

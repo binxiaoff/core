@@ -12,7 +12,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 /**
  * @ORM\Entity
  */
-class Download
+class AttachmentDownload
 {
     use TimestampableAddedOnlyTrait;
 
@@ -28,7 +28,7 @@ class Download
     /**
      * @var Attachment
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Attachment", inversedBy="downloads")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Attachment", inversedBy="attachmentDownloads")
      * @ORM\JoinColumn(name="id_attachment", nullable=false)
      */
     private $attachment;

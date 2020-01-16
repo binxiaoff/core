@@ -181,11 +181,11 @@ class Attachment
     private $size;
 
     /**
-     * @var Collection|Download[]
+     * @var Collection|AttachmentDownload[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Download", fetch="EXTRA_LAZY", mappedBy="attachment")
+     * @ORM\OneToMany(targetEntity="AttachmentDownload", fetch="EXTRA_LAZY", mappedBy="attachment", cascade={"persist", "remove"})
      */
-    private $downloads;
+    private $attachmentDownloads;
 
     /**
      * Attachment constructor.
@@ -199,13 +199,13 @@ class Attachment
      */
     public function __construct(string $path, string $type, Clients $addedBy, Project $project)
     {
-        $this->signatures = new ArrayCollection();
-        $this->downloads  = new ArrayCollection();
-        $this->path       = $path;
-        $this->type       = $type;
-        $this->addedBy    = $addedBy;
-        $this->added      = new DateTimeImmutable();
-        $this->project    = $project;
+        $this->signatures          = new ArrayCollection();
+        $this->attachmentDownloads = new ArrayCollection();
+        $this->path                = $path;
+        $this->type                = $type;
+        $this->addedBy             = $addedBy;
+        $this->added               = new DateTimeImmutable();
+        $this->project             = $project;
     }
 
     /**
@@ -378,5 +378,13 @@ class Attachment
         $this->size = $size;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|AttachmentDownload[]
+     */
+    public function getAttachmentDownloads()
+    {
+        return $this->attachmentDownloads;
     }
 }
