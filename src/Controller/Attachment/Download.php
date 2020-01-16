@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\Attachment;
 
-use Doctrine\Common\Persistence\ObjectManager;
 use Exception;
 use League\Flysystem\FileNotFoundException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\Attachment;
-use Unilend\Entity\AttachmentDownload;
+use Unilend\Entity\{Attachment, AttachmentDownload};
 use Unilend\Repository\AttachmentDownloadRepository;
 use Unilend\Service\FileSystem\FileSystemHelper;
 
@@ -18,8 +16,6 @@ class Download
 {
     /** @var FileSystemHelper */
     private $fileSystemHelper;
-    /** @var ObjectManager */
-    private $entityManager;
     /** @var Security */
     private $security;
     /** @var AttachmentDownloadRepository */
