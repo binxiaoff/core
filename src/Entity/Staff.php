@@ -95,7 +95,7 @@ class Staff
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\MarketSegment")
      *
-     * @Groups({Staff::SERIALIZATION_STAFF_ADMIN_READ_GROUP, "staff:update", "staff:create"})
+     * @Groups({Staff::SERIALIZER_GROUP_ADMIN_READ, "staff:update", "staff:create"})
      */
     private $marketSegments;
 
