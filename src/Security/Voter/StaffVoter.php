@@ -7,9 +7,7 @@ namespace Unilend\Security\Voter;
 use Doctrine\ORM\PersistentCollection;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\Clients;
-use Unilend\Entity\MarketSegment;
-use Unilend\Entity\Staff;
+use Unilend\Entity\{Clients, MarketSegment, Staff};
 use Unilend\Traits\ConstantsAwareTrait;
 
 class StaffVoter extends Voter
@@ -22,29 +20,17 @@ class StaffVoter extends Voter
     public const ATTRIBUTE_CREATE = 'create';
 
     /**
-     * Determines if the attribute and subject are supported by this voter.
-     *
-     * @param string $attribute An attribute
-     * @param mixed  $subject   The subject to secure, e.g. an object the user wants to access or any other PHP type
-     *
-     * @return bool True if the attribute and subject are supported, false otherwise
+     * {@inheritdoc}
      */
-    protected function supports($attribute, $subject)
+    protected function supports($attribute, $subject): bool
     {
         return $subject instanceof Staff && \in_array($attribute, static::getConstants('ATTRIBUTE_'), true);
     }
 
     /**
-     * Perform a single access check operation on a given attribute, subject and token.
-     * It is safe to assume that $attribute and $subject already passed the "supports()" method check.
-     *
-     * @param string         $attribute
-     * @param Staff          $subject
-     * @param TokenInterface $token
-     *
-     * @return bool
+     * {@inheritdoc}
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
+    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
         /** @var Clients $user */
         $user = $token->getUser();
@@ -55,15 +41,15 @@ class StaffVoter extends Voter
 
         $submitterStaff = $user->getStaff();
 
-        if (null === $submitterStaff || $subject->getCompany() !== $submitterStaff->getCompany()) {
+        if (null === $submitterStaff) {
             return false;
         }
 
-        if ($submitterStaff->isAdmin()) {
+        if ($submitterStaff->isAdmin() && $subject->getCompany() === $submitterStaff->getCompany()) {
             return true;
         }
 
-        if ($subject->isAdmin() || false === $submitterStaff->isManager()) {
+        if ($subject->isAdmin()) {
             return false;
         }
 
@@ -71,11 +57,11 @@ class StaffVoter extends Voter
             case static::ATTRIBUTE_VIEW:
                 return true;
             case static::ATTRIBUTE_CREATE:
-                return $this->canManagerCreate($subject, $submitterStaff);
+                return $this->canCreate($subject, $submitterStaff);
             case static::ATTRIBUTE_EDIT:
-                return $this->canManagerEdit($subject, $submitterStaff);
+                return $this->canEdit($subject, $submitterStaff);
             case static::ATTRIBUTE_DELETE:
-                return $this->canManagerDelete($subject, $submitterStaff);
+                return $this->canDelete($subject, $submitterStaff);
         }
 
         throw new \LogicException('This code should not be reached');
@@ -87,12 +73,13 @@ class StaffVoter extends Voter
      *
      * @return bool
      */
-    private function canManagerCreate(Staff $subject, Staff $submitterStaff)
+    private function canCreate(Staff $subject, Staff $submitterStaff): bool
     {
         // A manager cannot create a user with markets other than is own
-        return $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
-            return $submitterStaff->getMarketSegments()->contains($marketSegment);
-        });
+        return 0 === $subject->getMarketSegments()->count()
+            || $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
+                return $submitterStaff->getMarketSegments()->contains($marketSegment);
+            });
     }
 
     /**
@@ -101,8 +88,12 @@ class StaffVoter extends Voter
      *
      * @return bool
      */
-    private function canManagerDelete(Staff $subject, Staff $submitterStaff)
+    private function canDelete(Staff $subject, Staff $submitterStaff): bool
     {
+        if (false === $submitterStaff->isManager() || $subject->getCompany() !== $submitterStaff->getCompany()) {
+            return false;
+        }
+
         // A manager cannot delete a user with markets other than is own
         return $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
             return $submitterStaff->getMarketSegments()->contains($marketSegment);
@@ -115,8 +106,12 @@ class StaffVoter extends Voter
      *
      * @return bool
      */
-    private function canManagerEdit(Staff $subject, Staff $submitterStaff)
+    private function canEdit(Staff $subject, Staff $submitterStaff): bool
     {
+        if (false === $submitterStaff->isManager() || $subject->getCompany() !== $submitterStaff->getCompany()) {
+            return false;
+        }
+
         /** @var PersistentCollection $subjectMarketSegments */
         $subjectMarketSegments = $subject->getMarketSegments();
 
