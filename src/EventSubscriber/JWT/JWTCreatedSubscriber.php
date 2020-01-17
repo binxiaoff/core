@@ -71,10 +71,7 @@ class JWTCreatedSubscriber implements EventSubscriberInterface
 
             if ($staff) {
                 $payload['marketSegments'] = $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
-                    $normalized = $this->serializer->normalize($marketSegment);
-                    $normalized['@id'] = $this->iriConverter->getIriFromItem($marketSegment); // TODO See if there is a way to normalize with iri automaticlly
-
-                    return $normalized;
+                    return  $this->iriConverter->getIriFromItem($marketSegment);
                 })->toArray();
                 $payload['roles'] = $staff->getRoles();
                 //todo: put the exact fields
