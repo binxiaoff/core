@@ -26,7 +26,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "output": false,
  *         },
  *         "post": {
- *             "security_post_denormalize": "is_granted('bid', object.getProjectParticipation())",
+ *             "security_post_denormalize": "is_granted('edit', object.getProjectParticipation())",
  *             "denormalization_context": {"groups": {"projectParticipationOffer:create", "projectParticipationOffer:write", "money:write"}}
  *         }
  *     },
@@ -36,7 +36,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "read": false,
  *             "output": false,
  *         },
- *         "patch": {"security": "is_granted('edit', object.getProjectParticipation().getProject())"},
+ *         "patch": {"security": "is_granted('edit', object.getProjectParticipation())"},
  *     }
  * )
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectOffer")
