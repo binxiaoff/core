@@ -16,7 +16,7 @@ use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"staff:read", "profile:read", "client_status:read", "role:read"}},
+ *     normalizationContext={"groups": {"staff:read", "profile:read", "client_status:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -49,6 +49,8 @@ class Staff
     public const DUTY_STAFF_ADMIN      = 'DUTY_STAFF_ADMIN';
     public const DUTY_STAFF_ACCOUNTANT = 'DUTY_STAFF_ACCOUNTANT';
     public const DUTY_STAFF_SIGNATORY  = 'DUTY_STAFF_SIGNATORY';
+
+    public const SERIALIZER_GROUP_ADMIN_READ = 'staff:admin:read';
 
     /**
      * @var int
@@ -93,7 +95,7 @@ class Staff
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\MarketSegment")
      *
-     * @Groups({"staff:read", "staff:update", "staff:create"})
+     * @Groups({Staff::SERIALIZATION_STAFF_ADMIN_READ_GROUP, "staff:update", "staff:create"})
      */
     private $marketSegments;
 
