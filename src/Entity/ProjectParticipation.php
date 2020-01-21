@@ -327,11 +327,13 @@ class ProjectParticipation
     /**
      * @Groups({"projectParticipation:write"})
      *
+     * @param bool $consulted The setter needs a parameter to work with API Platform
+     *
      * @return ProjectParticipation
      */
-    public function setConsulted(): ProjectParticipation
+    public function setConsulted(bool $consulted): ProjectParticipation
     {
-        $this->currentStatus = ($this->currentStatus === static::STATUS_NOT_CONSULTED) ?
+        $this->currentStatus = $consulted && ($this->currentStatus === static::STATUS_NOT_CONSULTED) ?
             static::STATUS_CONSULTED : $this->currentStatus;
 
         return $this;
