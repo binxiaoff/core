@@ -75,7 +75,7 @@ class StaffVoter extends Voter
      */
     private function canCreate(Staff $subject, Staff $submitterStaff): bool
     {
-        // A manager cannot create a user with markets other than is own
+        // A manager cannot create a staff with markets other than is own. But we can create a staff without market segment (used for invitation via email)
         return 0 === $subject->getMarketSegments()->count()
             || $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
                 return $submitterStaff->getMarketSegments()->contains($marketSegment);
