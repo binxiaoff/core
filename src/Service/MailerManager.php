@@ -8,7 +8,6 @@ use Doctrine\ORM\{EntityManagerInterface};
 use NumberFormatter;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{AttachmentSignature, Clients, Project, ProjectComment, ProjectParticipationContact, Staff, Tranche, TrancheOffer};
 use Unilend\Repository\StaffRepository;
@@ -24,38 +23,30 @@ class MailerManager
     private $entityManager;
     /** @var RouterInterface */
     private $router;
-    /** @var TranslatorInterface */
-    private $translator;
     /** @var NumberFormatter */
     private $percentageFormatter;
     /** @var NumberFormatter */
     private $numberFormatter;
     /** @var StaffRepository */
     private $staffRepository;
-    /** @var FrontRouter */
-    private $frontRouter;
 
     /**
      * @param TemplateMessageProvider $messageProvider
      * @param Swift_Mailer            $mailer
      * @param EntityManagerInterface  $entityManager
      * @param RouterInterface         $router
-     * @param TranslatorInterface     $translator
      * @param NumberFormatter         $numberFormatter
      * @param NumberFormatter         $percentageFormatter
      * @param StaffRepository         $staffRepository
-     * @param FrontRouter             $frontRouter
      */
     public function __construct(
         TemplateMessageProvider $messageProvider,
         Swift_Mailer $mailer,
         EntityManagerInterface $entityManager,
         RouterInterface $router,
-        TranslatorInterface $translator,
         NumberFormatter $numberFormatter,
         NumberFormatter $percentageFormatter,
-        StaffRepository $staffRepository,
-        FrontRouter $frontRouter
+        StaffRepository $staffRepository
     ) {
         $this->messageProvider     = $messageProvider;
         $this->mailer              = $mailer;
@@ -63,68 +54,7 @@ class MailerManager
         $this->percentageFormatter = $percentageFormatter;
         $this->numberFormatter     = $numberFormatter;
         $this->router              = $router;
-        $this->translator          = $translator;
         $this->staffRepository     = $staffRepository;
-        $this->frontRouter         = $frontRouter;
-    }
-
-    /**
-     * @param Clients $client
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     *
-     * @return int
-     */
-    public function sendAccountCreated(Clients $client): int
-    {
-        $keywords = [
-            'firstName' => $client->getFirstName(),
-        ];
-
-        $message = $this->messageProvider->newMessage('account-created', $keywords);
-        $message->setTo($client->getEmail());
-
-        return $this->mailer->send($message);
-    }
-
-    /**
-     * @param Clients $client
-     * @param array   $changeSet
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     *
-     * @return int
-     */
-    public function sendIdentityUpdated(Clients $client, array $changeSet): int
-    {
-        $changeSet = array_map(function ($field) {
-            return $this->translator->trans('mail-identity-updated.' . $field);
-        }, $changeSet);
-        if (count($changeSet) > 1) {
-            $content      = $this->translator->trans('mail-identity-updated.content-message-plural');
-            $changeFields = '<ul><li>';
-            $changeFields .= implode('</li><li>', $changeSet);
-            $changeFields .= '</li></ul>';
-        } else {
-            $content      = $this->translator->trans('mail-identity-updated.content-message-singular');
-            $changeFields = $changeSet[0];
-        }
-
-        $keywords = [
-            'firstName'    => $client->getFirstName(),
-            'content'      => $content,
-            'profileUrl'   => $this->frontRouter->generate('profil'),
-            'changeFields' => $changeFields,
-        ];
-
-        $message = $this->messageProvider->newMessage('identity-updated', $keywords);
-        $message->setTo($client->getEmail());
-
-        return $this->mailer->send($message);
     }
 
     /**

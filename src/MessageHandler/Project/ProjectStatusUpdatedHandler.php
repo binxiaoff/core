@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Unilend\MessageHandler\Project;
 
-use Exception;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Unilend\Message\Project\ProjectPublished;
+use Unilend\Entity\ProjectStatus;
+use Unilend\Message\Project\ProjectStatusUpdated;
 use Unilend\Repository\ProjectRepository;
 use Unilend\Service\Project\ProjectNotifier;
 
-class ProjectPublishedHandler implements MessageHandlerInterface
+class ProjectStatusUpdatedHandler implements MessageHandlerInterface
 {
     /** @var ProjectRepository */
     private $projectRepository;
@@ -28,14 +30,19 @@ class ProjectPublishedHandler implements MessageHandlerInterface
     }
 
     /**
-     * @param ProjectPublished $projectRequested
+     * @param ProjectStatusUpdated $projectStatusUpdated
      *
-     * @throws Exception
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function __invoke(ProjectPublished $projectRequested)
+    public function __invoke(ProjectStatusUpdated $projectStatusUpdated)
     {
-        $project = $this->projectRepository->find($projectRequested->getProjectId());
-        if ($project) {
+        $project = $this->projectRepository->find($projectStatusUpdated->getProjectId());
+        if (
+            $project
+            && ProjectStatus::STATUS_PUBLISHED > $projectStatusUpdated->getOldStatus()
+            && ProjectStatus::STATUS_PUBLISHED <= $projectStatusUpdated->getNewStatus()
+        ) {
             $this->projectNotifier->notifyProjectPublished($project);
         }
     }

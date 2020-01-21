@@ -8,9 +8,11 @@ use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{ClientStatus, Clients, Project, ProjectStatus};
 use Unilend\Repository\TemporaryTokenRepository;
+use Unilend\Service\FrontRouter;
 use Unilend\Service\NotificationManager;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
@@ -26,6 +28,10 @@ class ClientNotifier
     private $mailer;
     /** @var NotificationManager */
     private $notificationManager;
+    /** @var TranslatorInterface */
+    private $translator;
+    /** @var FrontRouter */
+    private $frontRouter;
 
     /**
      * @param TemporaryTokenRepository $temporaryTokenRepository
@@ -33,19 +39,25 @@ class ClientNotifier
      * @param TemplateMessageProvider  $messageProvider
      * @param Swift_Mailer             $mailer
      * @param NotificationManager      $notificationManager
+     * @param TranslatorInterface      $translator
+     * @param FrontRouter              $frontRouter
      */
     public function __construct(
         TemporaryTokenRepository $temporaryTokenRepository,
         RouterInterface $router,
         TemplateMessageProvider $messageProvider,
         Swift_Mailer $mailer,
-        NotificationManager $notificationManager
+        NotificationManager $notificationManager,
+        TranslatorInterface $translator,
+        FrontRouter $frontRouter
     ) {
         $this->temporaryTokenRepository = $temporaryTokenRepository;
         $this->router                   = $router;
         $this->messageProvider          = $messageProvider;
         $this->mailer                   = $mailer;
         $this->notificationManager      = $notificationManager;
+        $this->translator               = $translator;
+        $this->frontRouter              = $frontRouter;
     }
 
     /**
@@ -151,5 +163,60 @@ class ClientNotifier
         }
 
         return 0;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     *
+     * @return int
+     */
+    public function sendAccountCreated(Clients $client): int
+    {
+        $message = $this->messageProvider->newMessage('account-created', ['firstName' => $client->getFirstName()]);
+        $message->setTo($client->getEmail());
+
+        return $this->mailer->send($message);
+    }
+
+    /**
+     * @param Clients $client
+     * @param array   $changeSet
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     *
+     * @return int
+     */
+    public function sendIdentityUpdated(Clients $client, array $changeSet): int
+    {
+        $changeSet = array_map(function ($field) {
+            return $this->translator->trans('mail-identity-updated.' . $field);
+        }, $changeSet);
+        if (count($changeSet) > 1) {
+            $content      = $this->translator->trans('mail-identity-updated.content-message-plural');
+            $changeFields = '<ul><li>';
+            $changeFields .= implode('</li><li>', $changeSet);
+            $changeFields .= '</li></ul>';
+        } else {
+            $content      = $this->translator->trans('mail-identity-updated.content-message-singular');
+            $changeFields = $changeSet[0];
+        }
+
+        $keywords = [
+            'firstName'    => $client->getFirstName(),
+            'content'      => $content,
+            'profileUrl'   => $this->frontRouter->generate('profil'),
+            'changeFields' => $changeFields,
+        ];
+
+        $message = $this->messageProvider->newMessage('identity-updated', $keywords);
+        $message->setTo($client->getEmail());
+
+        return $this->mailer->send($message);
     }
 }

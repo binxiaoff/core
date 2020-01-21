@@ -8,23 +8,23 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Message\Client\ClientUpdated;
 use Unilend\Repository\ClientsRepository;
-use Unilend\Service\MailerManager;
+use Unilend\Service\Client\ClientNotifier;
 
 class ClientUpdatedHandler implements MessageHandlerInterface
 {
     /** @var ClientsRepository */
     private $clientsRepository;
-    /** @var MailerManager */
-    private $mailerManager;
+    /** @var ClientNotifier */
+    private $clientNotifier;
 
     /**
      * @param ClientsRepository $clientsRepository
-     * @param MailerManager     $mailerManager
+     * @param ClientNotifier    $clientNotifier
      */
-    public function __construct(ClientsRepository $clientsRepository, MailerManager $mailerManager)
+    public function __construct(ClientsRepository $clientsRepository, ClientNotifier $clientNotifier)
     {
         $this->clientsRepository = $clientsRepository;
-        $this->mailerManager     = $mailerManager;
+        $this->clientNotifier    = $clientNotifier;
     }
 
     /**
@@ -40,7 +40,7 @@ class ClientUpdatedHandler implements MessageHandlerInterface
         $changeSet = $clientUpdated->getChangeSet();
 
         if ($client && $changeSet) {
-            $this->mailerManager->sendIdentityUpdated($client, array_keys($changeSet));
+            $this->clientNotifier->sendIdentityUpdated($client, array_keys($changeSet));
         }
     }
 }
