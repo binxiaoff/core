@@ -257,7 +257,7 @@ class ProjectParticipationOffer
      *
      * @return Embeddable\Money
      *
-     * @Groups({"project:view"})
+     * @Groups({"project:view", "projectParticipationOffer:read"})
      */
     public function getOfferMoney(): Money
     {
