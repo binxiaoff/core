@@ -123,7 +123,7 @@ class Companies
     /**
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
      *
-     * @Groups({"company:read", "company:jwt:read"})
+     * @Groups({"company:read", "company:jwt:read", "project:view"})
      */
     private $emailDomain;
 
@@ -312,18 +312,6 @@ class Companies
         $this->staff->removeElement($staff);
 
         return $this;
-    }
-
-    /**
-     * Used in the staff Expression constraint.
-     *
-     * @param Clients $client
-     *
-     * @return bool
-     */
-    public function isStaffable(Clients $client): bool
-    {
-        return !$this->emailDomain || (mb_substr($client->getEmail(), -mb_strlen($this->emailDomain)) === $this->emailDomain);
     }
 
     /**

@@ -68,6 +68,8 @@ class Staff
      * })
      *
      * @Assert\NotBlank(message="Staff.company.empty")
+     *
+     * @Groups({"staff:create"})
      */
     private $company;
 
@@ -80,7 +82,6 @@ class Staff
      * })
      *
      * @Assert\NotBlank(message="Staff.client.empty")
-     * @Assert\Expression(expression="this.getCompany().isStaffable(value)", message="Staff.client.staffable")
      * @Assert\Valid
      *
      * @Groups({"staff:read", "staff:create"})
