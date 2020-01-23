@@ -101,7 +101,7 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
 
         // TODO We might be able to add the condition int the voter
         return (
-            $connectedStaff && $connectedStaff->isAdmin() && $connectedStaff->getCompany() === $company
+            $connectedStaff && $connectedStaff->getCompany() === $company
         ) || $this->security->isGranted(Clients::ROLE_ADMIN);
     }
 }
