@@ -66,7 +66,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "get": {"security": "is_granted('view', object)"},
  *         "delete": {"security_post_denormalize": "is_granted('edit', previous_object)"},
  *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)"},
- *         "patch": {"security": "is_granted('edit', object)"}
+ *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"}
  *     }
  * )
  *
@@ -186,7 +186,7 @@ class ProjectParticipation
     private $invitationMoney;
 
     /**
-     * @var Collection
+     * @var Collection|ProjectMessage[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectMessage", mappedBy="participation")
      * @ORM\OrderBy({"added": "ASC"})

@@ -14,7 +14,7 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, Timestamp
 
 /**
  * @ApiResource(
- *     attributes={"order": {"added"}},
+ *     attributes={"order": {"added", "id"}, "pagination_enabled": false},
  *     normalizationContext={"groups": {"message:read", "blameable:read", "profile:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"message:write"}},
  *     collectionOperations={
