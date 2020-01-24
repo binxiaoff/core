@@ -9,7 +9,6 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use DomainException;
 use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
@@ -148,6 +147,7 @@ class ProjectParticipation
      *
      * @Assert\Choice(callback="getStatuses")
      * @Assert\NotBlank
+     * @Assert\Expression("this.hasOffer() === false or this.isNotInterested() === false")
      */
     private $currentStatus = self::DEFAULT_STATUS;
 
@@ -295,7 +295,7 @@ class ProjectParticipation
      */
     public function isNotInterested(): bool
     {
-        return $this->currentStatus === static::STATUS_UNINTERESTED && !$this->hasOffer();
+        return $this->currentStatus === static::STATUS_UNINTERESTED;
     }
 
     /**
@@ -311,15 +311,13 @@ class ProjectParticipation
     /**
      * @Groups({"projectParticipation:write"})
      *
+     * @param bool $uninterested
+     *
      * @return ProjectParticipation
      */
-    public function setUninterested(): ProjectParticipation
+    public function setUninterested(bool $uninterested): ProjectParticipation
     {
-        if ($this->hasOffer()) {
-            throw new DomainException('It is impossible to refuse after making an offer');
-        }
-
-        $this->currentStatus = static::STATUS_UNINTERESTED;
+        $this->currentStatus = $uninterested ? static::STATUS_UNINTERESTED : $this->currentStatus;
 
         return $this;
     }

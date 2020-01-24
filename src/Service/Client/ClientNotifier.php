@@ -105,10 +105,13 @@ class ClientNotifier
             $keywords = [
                 'inviterName'    => $inviter->getLastName() . ' ' . $inviter->getFirstName(),
                 'project'        => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
-                'initAccountUrl' => $this->router->generate('project_invitation', [
+                'initAccountUrl' => '' /*
+
+                // TODO Fix because otherwise the participant can"t be created
+                $this->router->generate('project_invitation', [
                     'securityToken' => $token->getToken(),
                     'hash'          => $project->getHash(),
-                ], RouterInterface::ABSOLUTE_URL),
+                ], RouterInterface::ABSOLUTE_URL)*/,
             ];
 
             $message = $this->messageProvider->newMessage('invite-guest', $keywords);
