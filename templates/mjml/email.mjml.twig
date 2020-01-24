@@ -2,16 +2,60 @@
 
 {% block header %}
 	<mj-column>
-    	<mj-text font-size="40px" color="#F45E43" font-family="helvetica">HEADER</mj-text>
+		<mj-image align="left" width="60px" src="https://app.kls-platform.com/static/2f5166d6b98db02cc445e518bfd9b7a7/6d08f/KLS_color-negative.png" />
+	</mj-column>
+	<mj-column>
+		<mj-text align="right"
+				 color="#ffffff"
+				 font-size="10px"
+				 font-family="Arial" line-height="50px">
+			FINANCER MIEUX, FINANCER ENSEMBLE
+		</mj-text>
 	</mj-column>
 {% endblock %}
 {% block body %}
-	<mj-column>
-    	<mj-text font-size="20px" color="#F45E43" font-family="helvetica">Body</mj-text>
+	<mj-column width="560px" background-color="#F5F4F7" padding="0 40px 30px">
+		<mj-section>
+			<mj-column>
+				<mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ image }}" />
+				<mj-text color="#3F2865"
+						 font-size="22px"
+						 font-weight="700"
+				>Bonjour {{ firstName }},</mj-text>
+				<mj-text color="#3F2865"
+						 font-size="14px"
+						 font-weight="100"
+						 text-align="justify"
+						 line-height="1.5"
+				>
+					{{ firstText }}</mj-text>
+				<mj-button background-color="#F9B13B"
+						   border-radius="99px"
+						   font-weight="500"
+						   inner-padding="7px 30px"
+						   href="{{ buttonLink }}"
+				>{{ buttonText }}</mj-button>
+				<mj-text color="#3F2865"
+						 font-size="14px"
+						 font-weight="100"
+						 text-align="justify"
+						 line-height="1.5"
+				>{{ secondText }}</mj-text>
+			</mj-column>
+		</mj-section>
 	</mj-column>
 {% endblock %}
 {% block footer %}
 	<mj-column>
-    	<mj-text font-size="10px" color="#F45E43" font-family="helvetica">FOOTER</mj-text>
+		<mj-text font-weight="100"
+				 font-size="11px"
+				 line-height="1.5"
+				 align="center"
+				 padding-top="40px"
+				 color="#3F2865">
+			Copyright © 2020 KLS, tous droits réservés.<br/>
+			Où nous trouver : 50 rue la Boétie, 75008 Paris, France<br/>
+			<a href="/" style="color:#3F2865;font-size:11px;">Gérer vos préférences</a> | <a href="/" style="color:#3F2865;font-size:11px;">Vous désabonner</a>
+		</mj-text>
 	</mj-column>
 {% endblock %}

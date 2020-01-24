@@ -1,18 +1,15 @@
 <mjml>
   <mj-head>
-      <mj-style inline="inline">
-      .blue-text { color: blue; }
-    </mj-style>
     <mj-style>
-      .red-text { color: red; text-decoration: underline; }
+      a { color: #3F2865; font-weight: 600; text-decoration: none; }
     </mj-style>
   </mj-head>
   <mj-body>
-    <mj-section class="blue-text">
+    <mj-section background-color="#3F2865" padding="0">
         {% block header %}
         {% endblock %}
     </mj-section>
-    <mj-section class="red-text">
+    <mj-section padding="0">
         {% block body %}
         {% endblock %}
     </mj-section>
