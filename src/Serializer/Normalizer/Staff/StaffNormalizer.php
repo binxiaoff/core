@@ -54,7 +54,7 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
     {
         $context['groups'] = array_merge(
             $context['groups'] ?? [],
-            $this->canAdministrate($object->getCompany()) ? [Staff::SERIALIZER_GROUP_ADMIN_READ, 'role:read'] : []
+            $this->canAdminNormalize($object->getCompany()) ? [Staff::SERIALIZER_GROUP_ADMIN_READ, 'role:read'] : []
         );
 
         $context[self::NORMALIZER_ALREADY_CALLED] = true;
@@ -69,7 +69,7 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
     {
         $company = $this->iriConverter->getItemFromIri($data['company'] ?? '');
 
-        $context['groups'] = array_merge($context['groups'] ?? [], $this->canAdministrate($company) ? [Staff::SERIALIZER_GROUP_ADMIN_CREATE] : []);
+        $context['groups'] = array_merge($context['groups'] ?? [], $this->canAdminDenormalize($company) ? [Staff::SERIALIZER_GROUP_ADMIN_CREATE] : []);
 
         $context[self::DENORMALIZER_ALREADY_CALLED] = true;
 
@@ -89,19 +89,41 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
      *
      * @return bool
      */
-    private function canAdministrate(Companies $company): bool
+    private function canAdminNormalize(Companies $company): bool
+    {
+        $connectedStaff = $this->getConnectedStaff();
+
+        // TODO We might be able to add the condition into the voter
+        // @see https://lafabriquebyca.atlassian.net/browse/CALS-832
+        return ($connectedStaff && $connectedStaff->getCompany() === $company) || $this->security->isGranted(Clients::ROLE_ADMIN);
+    }
+
+    /**
+     * @param Staff $subject
+     *
+     * @return bool
+     */
+    private function canAdminDenormalize(Staff $subject): bool
+    {
+        $connectedStaff = $this->getConnectedStaff();
+
+        // TODO We might be able to add the condition into the voter
+        // @see https://lafabriquebyca.atlassian.net/browse/CALS-832
+        return ($connectedStaff && $this->canAdminNormalize($subject->getCompany()) && ($connectedStaff->isAdmin() || $connectedStaff->isManager()))
+            || $this->security->isGranted(Clients::ROLE_ADMIN);
+    }
+
+    /**
+     * @return Staff|null
+     */
+    private function getConnectedStaff(): ?Staff
     {
         $client = $this->security->getUser();
 
         if (!$client instanceof Clients) {
-            return false;
+            return null;
         }
 
-        $connectedStaff = $client->getStaff();
-
-        // TODO We might be able to add the condition int the voter
-        return (
-            $connectedStaff && $connectedStaff->getCompany() === $company
-        ) || $this->security->isGranted(Clients::ROLE_ADMIN);
+        return $client->getStaff();
     }
 }

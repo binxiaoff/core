@@ -87,7 +87,7 @@ class Staff
      * @Assert\NotBlank(message="Staff.client.empty")
      * @Assert\Valid
      *
-     * @Groups({"staff:read", Staff::SERIALIZER_GROUP_ADMIN_CREATE})
+     * @Groups({"staff:read", "staff:create"})
      */
     private $client;
 
