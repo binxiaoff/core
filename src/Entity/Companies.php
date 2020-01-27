@@ -105,8 +105,6 @@ class Companies
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Staff", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"company:read"})
-     *
      * @ApiSubresource
      */
     private $staff;

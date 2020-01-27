@@ -15,9 +15,7 @@ class ListExtension implements QueryCollectionExtensionInterface
 {
     /** @var Security */
     private $security;
-    /**
-     * @var EntityManagerInterface
-     */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /**

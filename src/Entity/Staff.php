@@ -16,7 +16,7 @@ use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"staff:read", "profile:read", "client_status:read", "role:read"}},
+ *     normalizationContext={"groups": {"staff:read", "profile:read", "client_status:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -27,7 +27,7 @@ use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
  *         "patch": {"security_post_denormalize": "is_granted('edit', object)", "denormalization_context": {"groups": {"staff:update", "role:write"}}}
  *     },
  *     collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"staff:create", "role:write", "client:create"}}}
+ *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"role:write", "client:create"}}}
  *     }
  * )
  *
@@ -49,6 +49,9 @@ class Staff
     public const DUTY_STAFF_ADMIN      = 'DUTY_STAFF_ADMIN';
     public const DUTY_STAFF_ACCOUNTANT = 'DUTY_STAFF_ACCOUNTANT';
     public const DUTY_STAFF_SIGNATORY  = 'DUTY_STAFF_SIGNATORY';
+
+    public const SERIALIZER_GROUP_ADMIN_READ   = 'staff:admin:read';
+    public const SERIALIZER_GROUP_ADMIN_CREATE = 'staff:admin:create';
 
     /**
      * @var int
@@ -93,7 +96,7 @@ class Staff
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\MarketSegment")
      *
-     * @Groups({"staff:read", "staff:update", "staff:create"})
+     * @Groups({Staff::SERIALIZER_GROUP_ADMIN_READ, "staff:update", Staff::SERIALIZER_GROUP_ADMIN_CREATE})
      */
     private $marketSegments;
 
