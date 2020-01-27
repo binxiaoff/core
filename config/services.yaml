@@ -22,7 +22,6 @@ services:
             $defaultLocale: '%locale%'
             $temporaryDirectory: '%directory.temporary%'
             $templateMessageFQCN: 'Unilend\SwiftMailer\TemplateMessage'
-            $frontUrl: '%router.request_context.scheme%://%env(HOST_APP_URL)%'
             $adminUrl: '%router.request_context.scheme%://%env(HOST_ADMIN_URL)%'
             $numberFormatter: '@number_formatter'
             $currencyFormatter: '@currency_formatter'
@@ -157,3 +156,13 @@ services:
     Unilend\Serializer\ContextBuilder\CircularReferenceHandler:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
+
+    # TODO This service declaration is needed since the serviceRouteLoader call the container directly (in 5.0 it seems to handled correctly)
+    Unilend\Service\FrontRouting\FrontRoutesLoader:
+        public: true
+        arguments:
+            $frontUrl: '%router.request_context.scheme%://%env(HOST_APP_URL)%'
+
+    Unilend\Service\FrontRouting\FrontRouterDecorator:
+        decorates: router
+
