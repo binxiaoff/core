@@ -1,3 +1,0 @@
-front:
-  resource: Unilend\Service\FrontRouting\FrontRoutesLoader
-  type: service

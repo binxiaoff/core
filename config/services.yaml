@@ -158,11 +158,7 @@ services:
         autoconfigure: false
 
     # TODO This service declaration is needed since the serviceRouteLoader call the container directly (in 5.0 it seems to handled correctly)
-    Unilend\Service\FrontRouting\FrontRoutesLoader:
-        public: true
+    Unilend\Service\Routing\FrontRouteLoader:
         arguments:
-            $frontUrl: '%router.request_context.scheme%://%env(HOST_APP_URL)%'
-
-    Unilend\Service\FrontRouting\FrontRouterDecorator:
-        decorates: router
-
+            $host: '%env(HOST_APP_URL)%'
+        tags: [routing.loader]
