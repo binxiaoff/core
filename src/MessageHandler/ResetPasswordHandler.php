@@ -8,6 +8,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Exception;
 use Swift_Mailer;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Routing\RouterInterface;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -22,30 +23,30 @@ class ResetPasswordHandler implements MessageHandlerInterface
     private $clientsRepository;
     /** @var TemplateMessageProvider */
     private $messageProvider;
-    /** @var string */
-    private $frontUrl;
     /** @var Swift_Mailer */
     private $mailer;
     /** @var ObjectManager */
     private $manager;
+    /** @var RouterInterface */
+    private $router;
 
     /**
      * @param ClientsRepository       $clientsRepository
      * @param TemplateMessageProvider $messageProvider
      * @param Swift_Mailer            $mailer
      * @param ObjectManager           $manager
-     * @param string                  $frontUrl
+     * @param RouterInterface         $router
      */
     public function __construct(
         ClientsRepository $clientsRepository,
         TemplateMessageProvider $messageProvider,
         Swift_Mailer $mailer,
         ObjectManager $manager,
-        string $frontUrl
+        RouterInterface $router
     ) {
         $this->clientsRepository = $clientsRepository;
         $this->messageProvider   = $messageProvider;
-        $this->frontUrl          = $frontUrl;
+        $this->router            = $router;
         $this->mailer            = $mailer;
         $this->manager           = $manager;
     }
@@ -81,8 +82,8 @@ class ResetPasswordHandler implements MessageHandlerInterface
         $message = $this->messageProvider->newMessage('forgotten-password', [
             'firstName'          => $clients->getFirstName(),
             'email'              => $clients->getEmail(),
-            'passwordLink'       => implode(DIRECTORY_SEPARATOR, [rtrim($this->frontUrl, DIRECTORY_SEPARATOR), 'password', 'change', $token->getToken()]),
-            'cancelPasswordLink' => implode(DIRECTORY_SEPARATOR, [rtrim($this->frontUrl, DIRECTORY_SEPARATOR), 'password', 'change', $token->getToken(), 'cancel']),
+            'passwordLink'       => $this->router->generate('front_password_change', ['token' => $token->getToken()], RouterInterface::ABSOLUTE_URL),
+            'cancelPasswordLink' => '', // Doesn't exist for now
             'requesterData'      => $requestData,
         ]);
         $message->setTo($clients->getEmail());
