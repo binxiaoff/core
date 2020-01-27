@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace Unilend\MessageHandler\Client;
 
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
+use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Message\Client\ClientCreated;
 use Unilend\Repository\ClientsRepository;
-use Unilend\Service\MailerManager;
-use Unilend\Service\NotificationManager;
+use Unilend\Service\{Client\ClientNotifier, NotificationManager};
 
 class ClientCreatedHandler implements MessageHandlerInterface
 {
@@ -19,22 +16,19 @@ class ClientCreatedHandler implements MessageHandlerInterface
     private $clientsRepository;
     /** @var NotificationManager */
     private $notificationManager;
-    /** @var MailerManager */
-    private $mailerManager;
+    /** @var ClientNotifier */
+    private $clientNotifier;
 
     /**
      * @param ClientsRepository   $clientsRepository
      * @param NotificationManager $notificationManager
-     * @param MailerManager       $mailerManager
+     * @param ClientNotifier      $clientNotifier
      */
-    public function __construct(
-        ClientsRepository $clientsRepository,
-        NotificationManager $notificationManager,
-        MailerManager $mailerManager
-    ) {
+    public function __construct(ClientsRepository $clientsRepository, NotificationManager $notificationManager, ClientNotifier $clientNotifier)
+    {
         $this->clientsRepository   = $clientsRepository;
         $this->notificationManager = $notificationManager;
-        $this->mailerManager       = $mailerManager;
+        $this->clientNotifier      = $clientNotifier;
     }
 
     /**
@@ -49,7 +43,7 @@ class ClientCreatedHandler implements MessageHandlerInterface
         $client = $this->clientsRepository->find($clientCreated->getClientId());
 
         if ($client) {
-            $this->mailerManager->sendAccountCreated($client);
+            $this->clientNotifier->sendAccountCreated($client);
             $this->notificationManager->createAccountCreated($client);
         }
     }

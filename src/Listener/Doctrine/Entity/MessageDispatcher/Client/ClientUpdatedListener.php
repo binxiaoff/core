@@ -2,16 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Entity;
+namespace Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use libphonenumber\PhoneNumber;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Unilend\Entity\Clients;
+use Unilend\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
 use Unilend\Message\Client\ClientUpdated;
 
-class ClientProfilChangedListener
+class ClientUpdatedListener
 {
+    use MessageDispatcherTrait;
+
     private const MONITORED_FIELDS = [
         'lastName',
         'firstName',
@@ -20,22 +22,12 @@ class ClientProfilChangedListener
         'email',
         'jobFunction',
     ];
-    /** @var MessageBusInterface */
-    private $messageBus;
-
-    /**
-     * @param MessageBusInterface $messageBus
-     */
-    public function __construct(MessageBusInterface $messageBus)
-    {
-        $this->messageBus = $messageBus;
-    }
 
     /**
      * @param Clients            $client
      * @param PreUpdateEventArgs $args
      */
-    public function notifyChangedFields(Clients $client, PreUpdateEventArgs $args): void
+    public function preUpdate(Clients $client, PreUpdateEventArgs $args): void
     {
         $changeSet = $args->getEntityChangeSet();
 
