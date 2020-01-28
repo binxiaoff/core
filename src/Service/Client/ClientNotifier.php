@@ -12,7 +12,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{ClientStatus, Clients, Project, ProjectStatus};
 use Unilend\Repository\TemporaryTokenRepository;
-use Unilend\Service\FrontRouter;
 use Unilend\Service\NotificationManager;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
@@ -30,8 +29,6 @@ class ClientNotifier
     private $notificationManager;
     /** @var TranslatorInterface */
     private $translator;
-    /** @var FrontRouter */
-    private $frontRouter;
 
     /**
      * @param TemporaryTokenRepository $temporaryTokenRepository
@@ -40,7 +37,6 @@ class ClientNotifier
      * @param Swift_Mailer             $mailer
      * @param NotificationManager      $notificationManager
      * @param TranslatorInterface      $translator
-     * @param FrontRouter              $frontRouter
      */
     public function __construct(
         TemporaryTokenRepository $temporaryTokenRepository,
@@ -48,8 +44,7 @@ class ClientNotifier
         TemplateMessageProvider $messageProvider,
         Swift_Mailer $mailer,
         NotificationManager $notificationManager,
-        TranslatorInterface $translator,
-        FrontRouter $frontRouter
+        TranslatorInterface $translator
     ) {
         $this->temporaryTokenRepository = $temporaryTokenRepository;
         $this->router                   = $router;
@@ -57,7 +52,6 @@ class ClientNotifier
         $this->mailer                   = $mailer;
         $this->notificationManager      = $notificationManager;
         $this->translator               = $translator;
-        $this->frontRouter              = $frontRouter;
     }
 
     /**
@@ -213,7 +207,7 @@ class ClientNotifier
         $keywords = [
             'firstName'    => $client->getFirstName(),
             'content'      => $content,
-            'profileUrl'   => $this->frontRouter->generate('profil'),
+            'profileUrl'   => $this->router->generate('front_home'),
             'changeFields' => $changeFields,
         ];
 

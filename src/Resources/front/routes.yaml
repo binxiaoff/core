@@ -1,0 +1,36 @@
+index:
+  path: /
+login:
+  path: /login
+privacy:                               
+  path: /politique-de-confidentialite
+legal_notice:                          
+  path: /mentions-legales
+tos:                                   
+  path: /cgu
+404:
+  path: /404
+403:
+  path: /403
+password_change:                       
+  path: /password/change/{token}
+password_request:                      
+  path: /password/request
+participation_index:                   
+  path: /participation
+participation_project_view:            
+  path: /participation/project/{hash}
+participation_project_confidentiality: 
+  path: /participation/project/{hash}/confidentiality
+habilitation:                          
+  path: /habilitations
+arrangement_kanban:                    
+  path: /arrangement
+arrangement_project_view:              
+  path: /arrangement/project/{hash}
+arrangement_project_publish:           
+  path: /arrangement/project/{hash}/publication
+arrangement_project_syndicate:         
+  path: /arrangement/project/{hash}/syndication
+arrangement_project_create:            
+  path: /arrangement/project                       

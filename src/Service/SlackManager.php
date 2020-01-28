@@ -4,54 +4,32 @@ declare(strict_types=1);
 
 namespace Unilend\Service;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Http\Client\Exception;
 use Nexy\Slack\Client;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Asset\Packages;
 
 class SlackManager
 {
     /** @var Client */
     private $apiClient;
-    /** @var EntityManagerInterface */
-    private $entityManager;
-    /** @var string */
-    private $iconUrl;
-    /** @var string */
-    private $frontUrl;
-    /** @var string */
-    private $backUrl;
     /** @var string */
     private $environment;
     /** @var LoggerInterface */
     private $logger;
 
     /**
-     * @param Client                 $apiClient
-     * @param EntityManagerInterface $entityManager
-     * @param Packages               $assetsPackages
-     * @param string                 $frontUrl
-     * @param string                 $adminUrl
-     * @param string                 $environment
-     * @param LoggerInterface        $logger
+     * @param Client          $apiClient
+     * @param string          $environment
+     * @param LoggerInterface $logger
      */
     public function __construct(
         Client $apiClient,
-        EntityManagerInterface $entityManager,
-        Packages $assetsPackages,
-        string $frontUrl,
-        string $adminUrl,
         string $environment,
         LoggerInterface $logger
     ) {
-        $this->apiClient     = $apiClient;
-        $this->entityManager = $entityManager;
-        $this->iconUrl       = $assetsPackages->getUrl('/assets/images/slack/unilend.png');
-        $this->frontUrl      = $frontUrl;
-        $this->backUrl       = $adminUrl;
-        $this->environment   = $environment;
-        $this->logger        = $logger;
+        $this->apiClient   = $apiClient;
+        $this->environment = $environment;
+        $this->logger      = $logger;
     }
 
     /**
