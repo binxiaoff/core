@@ -20,3 +20,7 @@ front:
     methods: ['GET']
     schemes: ['https']
     name_prefix: 'front_'
+
+health_check:
+    path: /pulse
+    controller: Unilend\Controller\HealthCheck
