@@ -99,7 +99,7 @@ class ClientNotifier
     public function notifyNewClientInvited(Clients $inviter, Clients $invitee, Project $project): int
     {
         if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
-            $token = $this->temporaryTokenRepository->findOneBy(['client' => $invitee]);
+            $token = $invitee->getLastTemporaryToken();
 
             if ($token && $token->isValid()) {
                 $token->extendLong();
@@ -119,11 +119,6 @@ class ClientNotifier
                     'hash'          => $project->getHash(),
                 ], RouterInterface::ABSOLUTE_URL)*/,
             ];
-
-            $message = $this->messageProvider->newMessage('invite-guest', $keywords);
-            $message->setTo($invitee->getEmail());
-
-            return $this->mailer->send($message);
         }
 
         return 0;
@@ -142,7 +137,6 @@ class ClientNotifier
      */
     public function notifyInvitedToProject(Clients $inviter, Clients $invitee, Project $project): int
     {
-        return 0; // TODO redo the mails
         if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
             $projectUrl  = $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL);
             $projectName = $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle();
@@ -153,10 +147,6 @@ class ClientNotifier
                 'projectUrl'  => $projectUrl,
                 'projectName' => $projectName,
             ];
-            $message = $this->messageProvider->newMessage('project-publication', $keywords);
-            $message->setTo($invitee->getEmail());
-
-            return $this->mailer->send($message);
         }
 
         return 0;
@@ -173,10 +163,7 @@ class ClientNotifier
      */
     public function sendAccountCreated(Clients $client): int
     {
-        $message = $this->messageProvider->newMessage('account-created', ['firstName' => $client->getFirstName()]);
-        $message->setTo($client->getEmail());
-
-        return $this->mailer->send($message);
+        return 1;
     }
 
     /**
@@ -211,9 +198,6 @@ class ClientNotifier
             'changeFields' => $changeFields,
         ];
 
-        $message = $this->messageProvider->newMessage('identity-updated', $keywords);
-        $message->setTo($client->getEmail());
-
-        return $this->mailer->send($message);
+        return 0;
     }
 }

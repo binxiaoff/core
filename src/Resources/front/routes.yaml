@@ -1,4 +1,4 @@
-index:
+home:
   path: /
 login:
   path: /login
@@ -6,6 +6,8 @@ privacy:
   path: /politique-de-confidentialite
 legal_notice:                          
   path: /mentions-legales
+inscription_finalisation:
+  path: /finalisation-inscription/{temporaryTokenHash}/{clientHash}
 tos:                                   
   path: /cgu
 404:
@@ -13,24 +15,26 @@ tos:
 403:
   path: /403
 password_change:                       
-  path: /password/change/{token}
+  path: /password/change/{temporaryTokenHash}
 password_request:                      
   path: /password/request
 participation_index:                   
   path: /participation
 participation_project_view:            
-  path: /participation/project/{hash}
+  path: /participation/project/{projectHash}
 participation_project_confidentiality: 
-  path: /participation/project/{hash}/confidentiality
+  path: /participation/project/{projectHash}/confidentiality
 habilitation:                          
   path: /habilitations
 arrangement_kanban:                    
   path: /arrangement
 arrangement_project_view:              
-  path: /arrangement/project/{hash}
+  path: /arrangement/project/{projectHash}
 arrangement_project_publish:           
-  path: /arrangement/project/{hash}/publication
+  path: /arrangement/project/{projectHash}/publication
 arrangement_project_syndicate:         
-  path: /arrangement/project/{hash}/syndication
+  path: /arrangement/project/{projectHash}/syndication
 arrangement_project_create:            
-  path: /arrangement/project                       
+  path: /arrangement/project
+image:
+  path: /images/{imageFileName}

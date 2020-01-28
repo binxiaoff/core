@@ -214,27 +214,42 @@ class Clients implements UserInterface, EquatableInterface
     private $currentStatus;
 
     /**
-     * @var ArrayCollection|ClientStatus
+     * @var ArrayCollection|ClientStatus[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ClientStatus", mappedBy="client", orphanRemoval=true, cascade={"persist"})
      */
     private $statuses;
 
     /**
+     * @var ArrayCollection|TemporaryToken[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\TemporaryToken", mappedBy="client", cascade={"persist", "remove"}, fetch="EXTRA_LAZY")
+     */
+    private $temporaryTokens;
+
+    /**
      * Clients constructor.
      *
      * @param string $email
+     * @param string $plainPassword
      *
      * @throws Exception
      */
-    public function __construct(string $email)
+    public function __construct(string $email, string $plainPassword = null)
     {
         $this->statuses = new ArrayCollection();
         $this->setCurrentStatus(ClientStatus::STATUS_INVITED);
 
-        $this->added   = new DateTimeImmutable();
-        $this->roles[] = self::ROLE_USER;
-        $this->email   = $email;
+        $this->added           = new DateTimeImmutable();
+        $this->roles[]         = self::ROLE_USER;
+        $this->email           = $email;
+        $this->temporaryTokens = new ArrayCollection();
+
+        if ($this->plainPassword) {
+            $this->plainPassword = $plainPassword;
+        } else {
+            $this->temporaryTokens->add(TemporaryToken::generateShortToken($this));
+        }
     }
 
     /**
@@ -496,7 +511,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @return int
      */
-    public function getIdClient(): int
+    public function getIdClient(): ?int
     {
         return $this->idClient;
     }
@@ -644,6 +659,14 @@ class Clients implements UserInterface, EquatableInterface
     public static function getAvailableRoles(): array
     {
         return self::getConstants('ROLE_');
+    }
+
+    /**
+     * @return TemporaryToken
+     */
+    public function getLastTemporaryToken(): ?TemporaryToken
+    {
+        return $this->temporaryTokens->last();
     }
 
     /**

@@ -1,5 +1,5 @@
 swiftmailer:
-    default_mailer: fast
+    default_mailer: normal
     mailers:
         normal:
             transport: 'smtp'

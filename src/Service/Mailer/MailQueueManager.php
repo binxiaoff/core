@@ -41,6 +41,8 @@ class MailQueueManager
      *
      * @param TemplateMessage $message
      *
+     * @throws Exception
+     *
      * @return bool
      */
     public function queue(TemplateMessage $message): bool
@@ -59,8 +61,7 @@ class MailQueueManager
         }
 
         $clientRepository = $this->entityManager->getRepository(Clients::class);
-        $replyTo          = $message->getReplyTo();
-
+        $replyTo          = $message->getReplyTo(); // TODO May return an array
         foreach ($message->getTo() as $email => $name) {
             $recipient = $email;
 
@@ -80,7 +81,7 @@ class MailQueueManager
                 ->setMailTemplate($mailTemplate)
                 ->setSerializedVariables(json_encode($message->getVariables(), JSON_THROW_ON_ERROR, 512))
                 ->setAttachments(json_encode($attachments, JSON_THROW_ON_ERROR, 512))
-                ->setReplyTo($replyTo)
+                ->setReplyTo('noreply@kls-platform.com')
                 ->setStatus(MailQueue::STATUS_PENDING)
                 ->setToSendAt($message->getToSendAt())
                 ->setRecipient($recipient)
@@ -155,9 +156,7 @@ class MailQueueManager
      */
     public function getMailsToSend($limit): array
     {
-        return $this->entityManager->getRepository(MailQueue::class)
-            ->getPendingMails($limit)
-        ;
+        return $this->entityManager->getRepository(MailQueue::class)->getPendingMails($limit);
     }
 
     /**
