@@ -13,6 +13,7 @@ parameters:
     directory.protected: '%directory.shared%protected/'
     directory.shared_public: '%directory.public%shared/'
     front.host: '%env(HOST_APP_URL)%'
+
 services:
     _defaults:
         autowire: true
