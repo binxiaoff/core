@@ -16,4 +16,7 @@ gesdinet_jwt_refresh_token:
 
 front:
     resource: 'front/routes.yaml'
-    type: front
+    host: '%front.host%'
+    methods: ['GET']
+    schemes: ['https']
+    name_prefix: 'front_'

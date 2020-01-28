@@ -12,7 +12,7 @@ parameters:
     directory.temporary: '%directory.shared%tmp/'
     directory.protected: '%directory.shared%protected/'
     directory.shared_public: '%directory.public%shared/'
-
+    front.host: '%env(HOST_APP_URL)%'
 services:
     _defaults:
         autowire: true
@@ -157,8 +157,3 @@ services:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    # TODO This service declaration is needed since the serviceRouteLoader call the container directly (in 5.0 it seems to handled correctly)
-    Unilend\Service\Routing\FrontRouteLoader:
-        arguments:
-            $host: '%env(HOST_APP_URL)%'
-        tags: [routing.loader]

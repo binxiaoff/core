@@ -1,36 +1,36 @@
-front_index:
+index:
   path: /
-front_login:
+login:
   path: /login
-front_privacy:                               
+privacy:                               
   path: /politique-de-confidentialite
-front_legal_notice:                          
+legal_notice:                          
   path: /mentions-legales
-front_tos:                                   
+tos:                                   
   path: /cgu
-front_404:
+404:
   path: /404
-front_403:
+403:
   path: /403
-front_password_change:                       
+password_change:                       
   path: /password/change/{token}
-front_password_request:                      
+password_request:                      
   path: /password/request
-front_participation_index:                   
+participation_index:                   
   path: /participation
-front_participation_project_view:            
+participation_project_view:            
   path: /participation/project/{hash}
-front_participation_project_confidentiality: 
+participation_project_confidentiality: 
   path: /participation/project/{hash}/confidentiality
-front_habilitation:                          
+habilitation:                          
   path: /habilitations
-front_arrangement_kanban:                    
+arrangement_kanban:                    
   path: /arrangement
-front_arrangement_project_view:              
+arrangement_project_view:              
   path: /arrangement/project/{hash}
-front_arrangement_project_publish:           
+arrangement_project_publish:           
   path: /arrangement/project/{hash}/publication
-front_arrangement_project_syndicate:         
+arrangement_project_syndicate:         
   path: /arrangement/project/{hash}/syndication
-front_arrangement_project_create:            
+arrangement_project_create:            
   path: /arrangement/project                       
