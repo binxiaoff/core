@@ -38,3 +38,5 @@ arrangement_project_create:
   path: /arrangement/project
 image:
   path: /images/{imageFileName}
+  requirements:
+    imageFileName: .+

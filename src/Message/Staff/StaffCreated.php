@@ -9,21 +9,21 @@ use Unilend\Entity\Staff;
 class StaffCreated
 {
     /** @var Staff */
-    private $staff;
+    private $staffId;
 
     /**
      * @param Staff $staff
      */
     public function __construct(Staff $staff)
     {
-        $this->staff = $staff;
+        $this->staffId = $staff->getId();
     }
 
     /**
-     * @return Staff
+     * @return int
      */
-    public function getStaff(): Staff
+    public function getStaffId(): int
     {
-        return $this->staff;
+        return $this->staffId;
     }
 }

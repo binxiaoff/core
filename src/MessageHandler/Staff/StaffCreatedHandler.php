@@ -4,47 +4,29 @@ declare(strict_types=1);
 
 namespace Unilend\MessageHandler\Staff;
 
-use Swift_Mailer;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
-use Twig\Environment;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
-use Unilend\Entity\MarketSegment;
+use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Message\Staff\StaffCreated;
-use Unilend\Service\Mailer\MailQueueManager;
-use Unilend\Service\MailerManager;
-use Unilend\SwiftMailer\TemplateMessageProvider;
+use Unilend\Repository\StaffRepository;
+use Unilend\Service\Staff\StaffNotifier;
 
 class StaffCreatedHandler implements MessageHandlerInterface
 {
-    /** @var MailerManager */
-    private $mailerManager;
-    /** @var Environment */
-    private $twig;
-    /** @var TranslatorInterface */
-    private $translator;
-    /** @var MailQueueManager */
-    private $mailQueue;
-    /** @var Swift_Mailer */
-    private $mailer;
-    /** @var TemplateMessageProvider */
-    private $templateMessageProvider;
+    /** @var StaffRepository */
+    private $repository;
+    /** @var StaffNotifier */
+    private $notifier;
 
     /**
-     * @param TranslatorInterface     $translator
-     * @param TemplateMessageProvider $templateMessageProvider
-     * @param Swift_Mailer            $mailer
+     * @param StaffRepository $repository
+     * @param StaffNotifier   $notifier
      */
     public function __construct(
-        TranslatorInterface $translator,
-        TemplateMessageProvider $templateMessageProvider,
-        Swift_Mailer $mailer
+        StaffRepository $repository,
+        StaffNotifier $notifier
     ) {
-        $this->translator              = $translator;
-        $this->mailer                  = $mailer;
-        $this->templateMessageProvider = $templateMessageProvider;
+        $this->repository = $repository;
+        $this->notifier   = $notifier;
     }
 
     /**
@@ -56,32 +38,10 @@ class StaffCreatedHandler implements MessageHandlerInterface
      */
     public function __invoke(StaffCreated $staffCreated)
     {
-        $staff = $staffCreated->getStaff();
+        $staff = $this->repository->find($staffCreated->getStaffId());
 
-        $client = $staff->getClient();
-
-        $token = $client->getLastTemporaryToken();
-
-        if ($token) {
-            $message = $this->templateMessageProvider->newMessage('staff-client-initialisation', [
-                'client' => [
-                    'hash'      => $client->getHash(),
-                    'firstName' => $client->getFirstName(),
-                ],
-                'temporaryToken' => [
-                    'token' => $token->getToken(),
-                ],
-                'staff' => [
-                    'role'           => $this->translator->trans('staff-roles.' . $staff->getRoles()[0]),
-                    'marketSegments' => $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
-                        return $this->translator->trans('market-segment.' . $marketSegment->getLabel());
-                    })->toArray(),
-                ],
-            ])
-                ->setTo($client->getEmail())
-            ;
-
-            $this->mailer->send($message);
+        if ($staff) {
+            $this->notifier->sendClientInitialisation($staff);
         }
     }
 }

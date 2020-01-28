@@ -25,7 +25,7 @@ final class Version20200128132108 extends AbstractMigration
         $this->addSql(
             <<<'SQL'
 UPDATE mail_header SET content = '
-  <mj-column><mj-image align="left" width="60px" src="{{ url("front_image", {imageFileName: "KLS.png"}) }}"/></mj-column>
+  <mj-column><mj-image align="left" width="60px" src="{{ url("front_image", {imageFileName: "emails/logo.png"}) }}"/></mj-column>
   <mj-column>
       <mj-text align="right" color="#ffffff" font-size="10px" font-family="Arial" line-height="50px">
           FINANCER MIEUX, FINANCER ENSEMBLE
@@ -41,8 +41,6 @@ UPDATE mail_footer SET content = '
       <mj-text font-weight="100" font-size="11px" line-height="1.5" align="center" padding-top="40px" color="#3F2865">
           Copyright © 2020 KLS, tous droits réservés.<br/>
           Où nous trouver : 50 rue la Boétie, 75008 Paris, France<br/>
-          <a href="{{ url("front_home") }}" style="color:#3F2865;font-size:11px;">Gérer vos préférences</a> | <a href="{{ url("front_home") }}" style="color:#3F2865;font-size:11px;">Vous
-              désabonner</a>
       </mj-text>
   </mj-column>
 ' WHERE name = 'footer'
@@ -60,7 +58,7 @@ SQL
         <mj-body>
             <mj-section background-color="#3F2865" padding="0">
                 {% block header %}
-                    <mj-column><mj-image align="left" width="60px" src="{{ url("front_image", {imageFileName: "KLS.png"}) }}"/></mj-column>
+                    <mj-column><mj-image align="left" width="60px" src="{{ url("front_image", {imageFileName: "emails/logo.png"}) }}"/></mj-column>
                     <mj-column>
                         <mj-text align="right" color="#ffffff" font-size="10px" font-family="Arial" line-height="50px">
                             FINANCER MIEUX, FINANCER ENSEMBLE
@@ -79,8 +77,6 @@ SQL
                         <mj-text font-weight="100" font-size="11px" line-height="1.5" align="center" padding-top="40px" color="#3F2865">
                             Copyright © 2020 KLS, tous droits réservés.<br/>
                             Où nous trouver : 50 rue la Boétie, 75008 Paris, France<br/>
-                            <a href="{{ url("front_home") }}" style="color:#3F2865;font-size:11px;">Gérer vos préférences</a>
-                          | <a href="{{ url("front_home") }}" style="color:#3F2865;font-size:11px;">Vous désabonner</a>
                         </mj-text>
                     </mj-column>
                 {% endblock %}

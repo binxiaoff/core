@@ -30,10 +30,11 @@ final class Version20200128141211 extends AbstractMigration
         'fr_FR',
         '
          {% set inscriptionFinalisationUrl = url("front_inscription_finalisation", {temporaryTokenHash: temporaryToken.token, clientHash: client.hash }) %}
-         <mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ url("front_image", {imageFileName: "KLS.png"}) }}"/>
-         <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour {{ client.firstName }},</mj-text>
-         <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify"
-                  line-height="1.5">Votre compte, en tant que {{ staff.role }} sur le(s) marché(s) {{ staff.marketSegments|join(", ") }} sur la plateforme KLS, a été créé.</mj-text>
+         <mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ url("front_image", {imageFileName: "emails/fireworks.png"}) }}"/>
+         <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour,</mj-text>
+         <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
+            Votre compte, {{ staff.roles ? "en tant que " ~ staff.roles|join(", ") }} {{ staff.marketSegments ? "sur le(s) marché(s) " ~ staff.marketSegments|join(", ") }} sur la plateforme KLS, a été créé.
+         </mj-text>
          <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
              Nous vous invitons à aller compléter votre profil directement sur <a href="{{ inscriptionFinalisationUrl }}">{{ "kls-platform.com" }}</a>.
          </mj-text>
@@ -59,6 +60,7 @@ SQL
 
     public function down(Schema $schema): void
     {
-        $this->addSql("DELETE FROM mail_template WHERE id = 'staff-client-initialisation'");
+        $this->addSql("DELETE FROM mail_queue WHERE id_mail_template = (SELECT id FROM mail_template WHERE name = 'staff-client-initialisation' LIMIT 1)");
+        $this->addSql("DELETE FROM mail_template WHERE name = 'staff-client-initialisation'");
     }
 }
