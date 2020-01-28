@@ -27,7 +27,7 @@ use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
  *         "patch": {"security_post_denormalize": "is_granted('edit', object)", "denormalization_context": {"groups": {"staff:update", "role:write"}}}
  *     },
  *     collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"role:write", "client:create"}}}
+ *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"staff:create", "role:write", "client:create"}}}
  *     }
  * )
  *

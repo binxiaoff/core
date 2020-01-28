@@ -99,17 +99,17 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
     }
 
     /**
-     * @param Staff $subject
+     * @param Companies $company
      *
      * @return bool
      */
-    private function canAdminDenormalize(Staff $subject): bool
+    private function canAdminDenormalize(Companies $company): bool
     {
         $connectedStaff = $this->getConnectedStaff();
 
         // TODO We might be able to add the condition into the voter
         // @see https://lafabriquebyca.atlassian.net/browse/CALS-832
-        return ($connectedStaff && $this->canAdminNormalize($subject->getCompany()) && ($connectedStaff->isAdmin() || $connectedStaff->isManager()))
+        return ($connectedStaff && $this->canAdminNormalize($company) && ($connectedStaff->isAdmin() || $connectedStaff->isManager()))
             || $this->security->isGranted(Clients::ROLE_ADMIN);
     }
 
