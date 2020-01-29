@@ -54,16 +54,6 @@ class Companies
     public const TRANSLATION_CREATION_IN_PROGRESS = 'creation-in-progress';
 
     /**
-     * @var CompanyStatus
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\CompanyStatus")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_status", referencedColumnName="id")
-     * })
-     */
-    private $status;
-
-    /**
      * TODO Remove project:update group when autocomplete is done.
      *
      * @var string
@@ -238,26 +228,6 @@ class Companies
     public function getParent(): ?Companies
     {
         return $this->parent;
-    }
-
-    /**
-     * @return CompanyStatus|null
-     */
-    public function getStatus(): ?CompanyStatus
-    {
-        return $this->status;
-    }
-
-    /**
-     * @param CompanyStatus $status
-     *
-     * @return Companies
-     */
-    public function setStatus(CompanyStatus $status): Companies
-    {
-        $this->status = $status;
-
-        return $this;
     }
 
     /**
