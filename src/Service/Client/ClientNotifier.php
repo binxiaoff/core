@@ -11,7 +11,7 @@ use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{ClientStatus, Clients, Project, ProjectStatus, Request\ResetPassword, TemporaryToken};
+use Unilend\Entity\{ClientStatus, Clients, Project, ProjectStatus, TemporaryToken};
 use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\Service\NotificationManager;
 use Unilend\SwiftMailer\TemplateMessageProvider;
