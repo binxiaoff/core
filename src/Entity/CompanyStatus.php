@@ -4,62 +4,98 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
+use InvalidArgumentException;
+use Unilend\Entity\Interfaces\StatusInterface;
+use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * CompanyStatus.
- *
  * @ORM\Table(name="company_status")
  * @ORM\Entity
  */
-class CompanyStatus
+class CompanyStatus implements StatusInterface
 {
-    public const STATUS_IN_BONIS               = 'in_bonis';
-    public const STATUS_PRECAUTIONARY_PROCESS  = 'precautionary_process';
-    public const STATUS_RECEIVERSHIP           = 'receivership';
-    public const STATUS_COMPULSORY_LIQUIDATION = 'compulsory_liquidation';
+    use ConstantsAwareTrait;
+    use TimestampableAddedOnlyTrait;
+
+    public const STATUS_REFUSED  = -10;
+    public const STATUS_PROSPECT = 0;
+    public const STATUS_SIGNED   = 10;
+
+    /**
+     * @var Companies
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", inversedBy="statuses")
+     * @ORM\JoinColumn(name="id_company", nullable=false)
+     */
+    private $company;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="id", type="smallint")
+     * @ORM\Column(type="smallint")
+     */
+    private $status;
+
+    /**
+     * @var int
+     *
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\Column(type="integer")
      */
     private $id;
 
     /**
-     * @var string
+     * @param Companies $company
+     * @param int       $status
      *
-     * @ORM\Column(name="label", type="string", length=191, unique=true)
+     * @throws Exception
      */
-    private $label;
+    public function __construct(Companies $company, int $status)
+    {
+        if (!\in_array($status, static::getPossibleStatuses(), true)) {
+            throw new InvalidArgumentException(
+                sprintf('%s is not a possible status for %s', $status, __CLASS__)
+            );
+        }
+        $this->status  = $status;
+        $this->company = $company;
+        $this->added   = new DateTimeImmutable();
+    }
+
+    /**
+     * @return Companies
+     */
+    public function getCompany(): Companies
+    {
+        return $this->company;
+    }
 
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getLabel()
+    public function getStatus(): int
     {
-        return $this->label;
+        return $this->status;
     }
 
     /**
-     * @param string $label
-     *
-     * @return CompanyStatus
+     * @return array
      */
-    public function setLabel($label)
+    public static function getPossibleStatuses(): array
     {
-        $this->label = $label;
-
-        return $this;
+        return static::getConstants('STATUS_');
     }
 }

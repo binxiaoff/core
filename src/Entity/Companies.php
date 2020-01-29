@@ -11,8 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait, TraceableStatusTrait};
 
 /**
  * @ApiResource(
@@ -34,11 +33,16 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
+ *
+ * @method CompanyStatus|null getCurrentStatus()
  */
 class Companies
 {
     use TimestampableTrait;
     use PublicizeIdentityTrait;
+    use TraceableStatusTrait {
+        setCurrentStatus as baseStatusSetter;
+    }
 
     public const INVALID_SIREN_EMPTY = '000000000';
 
@@ -52,16 +56,6 @@ class Companies
     public const COMPANY_SUBSIDIARY_ELIGIBLE_RUN = [self::COMPANY_ID_CASA];
 
     public const TRANSLATION_CREATION_IN_PROGRESS = 'creation-in-progress';
-
-    /**
-     * @var CompanyStatus
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\CompanyStatus")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_status", referencedColumnName="id")
-     * })
-     */
-    private $status;
 
     /**
      * TODO Remove project:update group when autocomplete is done.
@@ -110,7 +104,7 @@ class Companies
     private $staff;
 
     /**
-     * TODO Is it really necessary ?
+     * TODO Is it really necessary ? (I am talking about the reverse association).
      *
      * @var ProjectParticipation[]
      *
@@ -133,15 +127,32 @@ class Companies
     private $shortCode;
 
     /**
+     * @var CompanyStatus
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\CompanyStatus")
+     * @ORM\JoinColumn(name="id_current_status", unique=true, nullable=true)
+     */
+    private $currentStatus;
+
+    /**
+     * @var ArrayCollection|CompanyStatus[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyStatus", mappedBy="company")
+     * @ORM\OrderBy({"added": "ASC"})
+     */
+    private $statuses;
+
+    /**
      * @param string $name
      *
      * @throws Exception
      */
     public function __construct(string $name)
     {
+        $this->name                  = $name;
         $this->staff                 = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
-        $this->name                  = $name;
+        $this->statuses              = new ArrayCollection();
         $this->added                 = new DateTimeImmutable();
     }
 
@@ -238,26 +249,6 @@ class Companies
     public function getParent(): ?Companies
     {
         return $this->parent;
-    }
-
-    /**
-     * @return CompanyStatus|null
-     */
-    public function getStatus(): ?CompanyStatus
-    {
-        return $this->status;
-    }
-
-    /**
-     * @param CompanyStatus $status
-     *
-     * @return Companies
-     */
-    public function setStatus(CompanyStatus $status): Companies
-    {
-        $this->status = $status;
-
-        return $this;
     }
 
     /**
@@ -365,5 +356,50 @@ class Companies
         $this->shortCode = $shortCode;
 
         return $this;
+    }
+
+    /**
+     * @param int $status
+     *
+     * @throws Exception
+     *
+     * @return Companies
+     */
+    public function setCurrentStatus(int $status): self
+    {
+        return $this->baseStatusSetter(new CompanyStatus($this, $status));
+    }
+
+    /**
+     * @return bool
+     */
+    public function isProspect(): bool
+    {
+        /** @var CompanyStatus $currentStatus */
+        $currentStatus = $this->getCurrentStatus();
+
+        return $currentStatus && CompanyStatus::STATUS_PROSPECT === $currentStatus->getStatus();
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasSigned(): bool
+    {
+        /** @var CompanyStatus $currentStatus */
+        $currentStatus = $this->getCurrentStatus();
+
+        return $currentStatus && CompanyStatus::STATUS_SIGNED === $currentStatus->getStatus();
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasRefused(): bool
+    {
+        /** @var CompanyStatus $currentStatus */
+        $currentStatus = $this->getCurrentStatus();
+
+        return $currentStatus && CompanyStatus::STATUS_REFUSED === $currentStatus->getStatus();
     }
 }
