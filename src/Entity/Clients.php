@@ -221,45 +221,30 @@ class Clients implements UserInterface, EquatableInterface
     private $statuses;
 
     /**
-     * @var ArrayCollection|TemporaryToken[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\TemporaryToken", mappedBy="client", cascade={"persist", "remove"}, fetch="EXTRA_LAZY")
-     */
-    private $temporaryTokens;
-
-    /**
      * Clients constructor.
      *
      * @param string $email
-     * @param string $plainPassword
      *
      * @throws Exception
      */
-    public function __construct(string $email, string $plainPassword = null)
+    public function __construct(string $email)
     {
         $this->statuses = new ArrayCollection();
         $this->setCurrentStatus(ClientStatus::STATUS_INVITED);
 
-        $this->added           = new DateTimeImmutable();
-        $this->roles[]         = self::ROLE_USER;
-        $this->email           = $email;
-        $this->temporaryTokens = new ArrayCollection();
-
-        if ($this->plainPassword) {
-            $this->plainPassword = $plainPassword;
-        } else {
-            $this->temporaryTokens->add(TemporaryToken::generateShortToken($this));
-        }
+        $this->added   = new DateTimeImmutable();
+        $this->roles[] = self::ROLE_USER;
+        $this->email   = $email;
     }
 
     /**
      * For comparaison (ex. array_unique).
      *
-     * @return string|null
+     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return (string) $this->getEmail();
+        return $this->getEmail();
     }
 
     /**
@@ -659,14 +644,6 @@ class Clients implements UserInterface, EquatableInterface
     public static function getAvailableRoles(): array
     {
         return self::getConstants('ROLE_');
-    }
-
-    /**
-     * @return TemporaryToken
-     */
-    public function getLastTemporaryToken(): ?TemporaryToken
-    {
-        return $this->temporaryTokens->last();
     }
 
     /**

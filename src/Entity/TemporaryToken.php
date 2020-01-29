@@ -27,6 +27,10 @@ class TemporaryToken
 {
     use TimestampableTrait;
 
+    public const SHORT  = 'short';
+    public const MEDIUM = 'medium';
+    public const LONG   = 'long';
+
     private const LIFETIME_SHORT  = '1 hour';
     private const LIFETIME_MEDIUM = '1 day';
     private const LIFETIME_LONG   = '1 week';
@@ -119,6 +123,18 @@ class TemporaryToken
     public static function generateShortToken(Clients $client): TemporaryToken
     {
         return new TemporaryToken($client, static::LIFETIME_SHORT);
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @throws Exception
+     *
+     * @return TemporaryToken
+     */
+    public static function generateMediumToken(Clients $client): TemporaryToken
+    {
+        return new TemporaryToken($client, static::LIFETIME_MEDIUM);
     }
 
     /**

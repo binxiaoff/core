@@ -6,19 +6,17 @@ namespace Unilend\Service\Client;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
+use LogicException;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{ClientStatus, Clients, Project, ProjectStatus};
-use Unilend\Repository\TemporaryTokenRepository;
+use Unilend\Entity\{ClientStatus, Clients, Project, ProjectStatus, TemporaryToken};
 use Unilend\Service\NotificationManager;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ClientNotifier
 {
-    /** @var TemporaryTokenRepository */
-    private $temporaryTokenRepository;
     /** @var RouterInterface */
     private $router;
     /** @var TemplateMessageProvider */
@@ -31,27 +29,24 @@ class ClientNotifier
     private $translator;
 
     /**
-     * @param TemporaryTokenRepository $temporaryTokenRepository
-     * @param RouterInterface          $router
-     * @param TemplateMessageProvider  $messageProvider
-     * @param Swift_Mailer             $mailer
-     * @param NotificationManager      $notificationManager
-     * @param TranslatorInterface      $translator
+     * @param RouterInterface         $router
+     * @param TemplateMessageProvider $messageProvider
+     * @param Swift_Mailer            $mailer
+     * @param NotificationManager     $notificationManager
+     * @param TranslatorInterface     $translator
      */
     public function __construct(
-        TemporaryTokenRepository $temporaryTokenRepository,
         RouterInterface $router,
         TemplateMessageProvider $messageProvider,
         Swift_Mailer $mailer,
         NotificationManager $notificationManager,
         TranslatorInterface $translator
     ) {
-        $this->temporaryTokenRepository = $temporaryTokenRepository;
-        $this->router                   = $router;
-        $this->messageProvider          = $messageProvider;
-        $this->mailer                   = $mailer;
-        $this->notificationManager      = $notificationManager;
-        $this->translator               = $translator;
+        $this->router              = $router;
+        $this->messageProvider     = $messageProvider;
+        $this->mailer              = $mailer;
+        $this->notificationManager = $notificationManager;
+        $this->translator          = $translator;
     }
 
     /**
@@ -59,11 +54,11 @@ class ClientNotifier
      * @param Clients $invitee
      * @param Project $project
      *
-     * @throws LoaderError
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws LoaderError
      *
      * @return int
      */
@@ -98,29 +93,6 @@ class ClientNotifier
      */
     public function notifyNewClientInvited(Clients $inviter, Clients $invitee, Project $project): int
     {
-        if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
-            $token = $invitee->getLastTemporaryToken();
-
-            if ($token && $token->isValid()) {
-                $token->extendLong();
-                $this->temporaryTokenRepository->save($token);
-            } else {
-                $token = $this->temporaryTokenRepository->generateLongTemporaryToken($invitee);
-            }
-
-            $keywords = [
-                'inviterName'    => $inviter->getLastName() . ' ' . $inviter->getFirstName(),
-                'project'        => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
-                'initAccountUrl' => '' /*
-
-                // TODO Fix because otherwise the participant can"t be created
-                $this->router->generate('project_invitation', [
-                    'securityToken' => $token->getToken(),
-                    'hash'          => $project->getHash(),
-                ], RouterInterface::ABSOLUTE_URL)*/,
-            ];
-        }
-
         return 0;
     }
 
@@ -128,10 +100,6 @@ class ClientNotifier
      * @param Clients $inviter
      * @param Clients $invitee
      * @param Project $project
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
      *
      * @return int
      */
@@ -155,9 +123,9 @@ class ClientNotifier
     /**
      * @param Clients $client
      *
-     * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws LoaderError
      *
      * @return int
      */
@@ -170,16 +138,15 @@ class ClientNotifier
      * @param Clients $client
      * @param array   $changeSet
      *
-     * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws LoaderError
      *
      * @return int
      */
     public function sendIdentityUpdated(Clients $client, array $changeSet): int
     {
         return 0;
-
         $changeSet = array_map(function ($field) {
             return $this->translator->trans('mail-identity-updated.' . $field);
         }, $changeSet);
@@ -201,5 +168,33 @@ class ClientNotifier
         ];
 
         return 0;
+    }
+
+    /**
+     * @param TemporaryToken $temporaryToken
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws Exception
+     */
+    public function notifyPasswordRequest(TemporaryToken $temporaryToken)
+    {
+        $client = $temporaryToken->getClient();
+
+        if (false === $temporaryToken->isValid()) {
+            throw new LogicException('The token should be valid at this point');
+        }
+
+        $message = $this->messageProvider->newMessage('client-password-request', [
+            'client' => [
+                'firstName' => $client->getFirstName(),
+            ],
+            'temporaryToken' => [
+                'token' => $temporaryToken->getToken(),
+            ],
+        ])->setTo($client->getEmail());
+
+        $this->mailer->send($message);
     }
 }

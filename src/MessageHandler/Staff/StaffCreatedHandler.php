@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Unilend\MessageHandler\Staff;
 
+use Exception;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
+use Unilend\Entity\TemporaryToken;
 use Unilend\Message\Staff\StaffCreated;
-use Unilend\Repository\StaffRepository;
+use Unilend\Repository\{StaffRepository, TemporaryTokenRepository};
 use Unilend\Service\Staff\StaffNotifier;
 
 class StaffCreatedHandler implements MessageHandlerInterface
@@ -16,15 +18,19 @@ class StaffCreatedHandler implements MessageHandlerInterface
     private $repository;
     /** @var StaffNotifier */
     private $notifier;
+    /** @var TemporaryTokenRepository */
+    private $temporaryTokenRepository;
 
     /**
-     * @param StaffRepository $repository
-     * @param StaffNotifier   $notifier
+     * @param StaffRepository          $staffRepository
+     * @param StaffNotifier            $notifier
+     * @param TemporaryTokenRepository $temporaryTokenRepository
      */
-    public function __construct(StaffRepository $repository, StaffNotifier $notifier)
+    public function __construct(StaffRepository $staffRepository, StaffNotifier $notifier, TemporaryTokenRepository $temporaryTokenRepository)
     {
-        $this->repository = $repository;
-        $this->notifier   = $notifier;
+        $this->repository               = $staffRepository;
+        $this->notifier                 = $notifier;
+        $this->temporaryTokenRepository = $temporaryTokenRepository;
     }
 
     /**
@@ -33,13 +39,19 @@ class StaffCreatedHandler implements MessageHandlerInterface
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws Exception
      */
     public function __invoke(StaffCreated $staffCreated)
     {
         $staff = $this->repository->find($staffCreated->getStaffId());
 
         if ($staff) {
-            $this->notifier->notifyClientInitialisation($staff);
+            $client = $staff->getClient();
+            if ($client->isInvited()) {
+                $temporaryToken = TemporaryToken::generateMediumToken($client);
+                $this->temporaryTokenRepository->save($temporaryToken);
+                $this->notifier->notifyClientInitialisation($staff, $temporaryToken);
+            }
         }
     }
 }
