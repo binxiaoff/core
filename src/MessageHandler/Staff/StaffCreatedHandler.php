@@ -7,7 +7,6 @@ namespace Unilend\MessageHandler\Staff;
 use Exception;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\ClientStatus;
 use Unilend\Entity\TemporaryToken;
 use Unilend\Message\Staff\StaffCreated;
 use Unilend\Repository\StaffRepository;
@@ -52,7 +51,7 @@ class StaffCreatedHandler implements MessageHandlerInterface
 
         if ($staff) {
             $client = $staff->getClient();
-            if (ClientStatus::STATUS_INVITED === $client->getCurrentStatus()->getStatus()) {
+            if ($client->isInvited()) {
                 $temporaryToken = TemporaryToken::generateMediumToken($client);
                 $this->temporaryTokenRepository->save($temporaryToken);
                 $this->notifier->notifyClientInitialisation($staff, $temporaryToken);
