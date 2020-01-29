@@ -194,7 +194,7 @@ class ClientNotifier
         $keywords = [
             'firstName'    => $client->getFirstName(),
             'content'      => $content,
-            'profileUrl'   => $this->router->generate('front_home'),
+            'profileUrl'   => $this->router->generate('front_index'),
             'changeFields' => $changeFields,
         ];
 
