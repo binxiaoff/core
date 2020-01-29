@@ -13,13 +13,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * @ORM\Table(
- *     name="company_status",
- *     indexes={
- *         @ORM\Index(columns={"id_company"}, name="idx_company_status_id_client"),
- *         @ORM\Index(columns={"status"}, name="idx_company_status_status")
- *     }
- * )
+ * @ORM\Table(name="company_status")
  * @ORM\Entity
  */
 class CompanyStatus implements StatusInterface
