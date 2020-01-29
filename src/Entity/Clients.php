@@ -221,35 +221,20 @@ class Clients implements UserInterface, EquatableInterface
     private $statuses;
 
     /**
-     * @var ArrayCollection|TemporaryToken[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\TemporaryToken", mappedBy="client", cascade={"persist", "remove"}, fetch="EXTRA_LAZY")
-     */
-    private $temporaryTokens;
-
-    /**
      * Clients constructor.
      *
      * @param string $email
-     * @param string $plainPassword
      *
      * @throws Exception
      */
-    public function __construct(string $email, string $plainPassword = null)
+    public function __construct(string $email)
     {
         $this->statuses = new ArrayCollection();
         $this->setCurrentStatus(ClientStatus::STATUS_INVITED);
 
-        $this->added           = new DateTimeImmutable();
-        $this->roles[]         = self::ROLE_USER;
-        $this->email           = $email;
-        $this->temporaryTokens = new ArrayCollection();
-
-        if ($this->plainPassword) {
-            $this->plainPassword = $plainPassword;
-        } else {
-            $this->addTemporaryToken(TemporaryToken::SHORT);
-        }
+        $this->added   = new DateTimeImmutable();
+        $this->roles[] = self::ROLE_USER;
+        $this->email   = $email;
     }
 
     /**
@@ -659,42 +644,6 @@ class Clients implements UserInterface, EquatableInterface
     public static function getAvailableRoles(): array
     {
         return self::getConstants('ROLE_');
-    }
-
-    /**
-     * @return TemporaryToken
-     */
-    public function getLastTemporaryToken(): ?TemporaryToken
-    {
-        return $this->temporaryTokens->last();
-    }
-
-    /**
-     * @param string $length
-     *
-     * @throws Exception
-     *
-     * @return Clients
-     */
-    public function addTemporaryToken($length = TemporaryToken::MEDIUM): Clients
-    {
-        switch ($length) {
-            case TemporaryToken::SHORT:
-                $temporaryToken = TemporaryToken::generateShortToken($this);
-
-                break;
-            case TemporaryToken::LONG:
-                $temporaryToken = TemporaryToken::generateLongToken($this);
-
-                break;
-            case TemporaryToken::MEDIUM:
-            default:
-                $temporaryToken = TemporaryToken::generateMediumToken($this);
-        }
-
-        $this->temporaryTokens->add($temporaryToken);
-
-        return $this;
     }
 
     /**

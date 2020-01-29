@@ -11,7 +11,7 @@ use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{ClientStatus, Clients, Project, ProjectStatus, Request\ResetPassword};
+use Unilend\Entity\{ClientStatus, Clients, Project, ProjectStatus, Request\ResetPassword, TemporaryToken};
 use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\Service\NotificationManager;
 use Unilend\SwiftMailer\TemplateMessageProvider;
@@ -99,29 +99,6 @@ class ClientNotifier
      */
     public function notifyNewClientInvited(Clients $inviter, Clients $invitee, Project $project): int
     {
-        if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
-            $token = $invitee->getLastTemporaryToken();
-
-            if ($token && $token->isValid()) {
-                $token->extendLong();
-                $this->temporaryTokenRepository->save($token);
-            } else {
-                $token = $this->temporaryTokenRepository->generateLongTemporaryToken($invitee);
-            }
-
-            $keywords = [
-                'inviterName'    => $inviter->getLastName() . ' ' . $inviter->getFirstName(),
-                'project'        => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
-                'initAccountUrl' => '' /*
-
-                // TODO Fix because otherwise the participant can"t be created
-                $this->router->generate('project_invitation', [
-                    'securityToken' => $token->getToken(),
-                    'hash'          => $project->getHash(),
-                ], RouterInterface::ABSOLUTE_URL)*/,
-            ];
-        }
-
         return 0;
     }
 
@@ -129,10 +106,6 @@ class ClientNotifier
      * @param Clients $inviter
      * @param Clients $invitee
      * @param Project $project
-     *
-     * @throws RuntimeError
-     * @throws SyntaxError
-     * @throws LoaderError
      *
      * @return int
      */
@@ -180,7 +153,6 @@ class ClientNotifier
     public function sendIdentityUpdated(Clients $client, array $changeSet): int
     {
         return 0;
-
         $changeSet = array_map(function ($field) {
             return $this->translator->trans('mail-identity-updated.' . $field);
         }, $changeSet);
@@ -205,17 +177,15 @@ class ClientNotifier
     }
 
     /**
-     * @param Clients $clients
-     * @param array   $requestData
+     * @param TemporaryToken $temporaryToken
      *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
-     * @throws Exception
      */
-    public function notifyPasswordRequest(Clients $clients, array $requestData = [])
+    public function notifyPasswordRequest(TemporaryToken $temporaryToken)
     {
-        $temporaryToken = $clients->getLastTemporaryToken();
+        $client = $temporaryToken->getClient();
 
         if (null === $temporaryToken || false === $temporaryToken->isValid()) {
             throw new LogicException('The token should be valid at this point');
@@ -223,13 +193,12 @@ class ClientNotifier
 
         $message = $this->messageProvider->newMessage('client-password-request', [
             'client' => [
-                'firstName' => $clients->getFirstName(),
+                'firstName' => $client->getFirstName(),
             ],
             'temporaryToken' => [
                 'token' => $temporaryToken->getToken(),
             ],
-            'requesterData' => $requestData,
-        ])->setTo($clients->getEmail());
+        ])->setTo($client->getEmail());
 
         $this->mailer->send($message);
     }

@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Staff;
 
-use Exception;
 use LogicException;
 use Swift_Mailer;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{MarketSegment, Staff};
+use Unilend\Entity\{MarketSegment, Staff, TemporaryToken};
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class StaffNotifier
@@ -34,21 +33,23 @@ class StaffNotifier
     }
 
     /**
-     * @param Staff $staff
+     * @param Staff          $staff
+     * @param TemporaryToken $temporaryToken
      *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
-     * @throws Exception
      */
-    public function notifyClientInitialisation(Staff $staff): void
+    public function notifyClientInitialisation(Staff $staff, TemporaryToken $temporaryToken): void
     {
         $client = $staff->getClient();
 
-        $temporaryToken = $client->getLastTemporaryToken();
-
         if (null === $temporaryToken || false === $temporaryToken->isValid()) {
             throw new LogicException('The token should be valid at this point');
+        }
+
+        if ($staff->getClient() !== $temporaryToken->getClient()) {
+            throw new LogicException('The staff and the temporaryToken should refer to the same client');
         }
 
         $message = $this->templateMessageProvider->newMessage('staff-client-initialisation', [
