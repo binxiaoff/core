@@ -176,12 +176,13 @@ class ClientNotifier
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws Exception
      */
     public function notifyPasswordRequest(TemporaryToken $temporaryToken)
     {
         $client = $temporaryToken->getClient();
 
-        if (null === $temporaryToken || false === $temporaryToken->isValid()) {
+        if (false === $temporaryToken->isValid()) {
             throw new LogicException('The token should be valid at this point');
         }
 

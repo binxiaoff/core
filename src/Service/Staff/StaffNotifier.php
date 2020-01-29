@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Staff;
 
+use Exception;
 use LogicException;
 use Swift_Mailer;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -39,12 +40,13 @@ class StaffNotifier
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws Exception
      */
     public function notifyClientInitialisation(Staff $staff, TemporaryToken $temporaryToken): void
     {
         $client = $staff->getClient();
 
-        if (null === $temporaryToken || false === $temporaryToken->isValid()) {
+        if (false === $temporaryToken->isValid()) {
             throw new LogicException('The token should be valid at this point');
         }
 
