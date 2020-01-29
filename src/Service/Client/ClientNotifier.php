@@ -6,11 +6,12 @@ namespace Unilend\Service\Client;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
+use LogicException;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{ClientStatus, Clients, Project, ProjectStatus};
+use Unilend\Entity\{ClientStatus, Clients, Project, ProjectStatus, Request\ResetPassword};
 use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\Service\NotificationManager;
 use Unilend\SwiftMailer\TemplateMessageProvider;
@@ -59,11 +60,11 @@ class ClientNotifier
      * @param Clients $invitee
      * @param Project $project
      *
-     * @throws LoaderError
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws LoaderError
      *
      * @return int
      */
@@ -129,9 +130,9 @@ class ClientNotifier
      * @param Clients $invitee
      * @param Project $project
      *
-     * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws LoaderError
      *
      * @return int
      */
@@ -155,9 +156,9 @@ class ClientNotifier
     /**
      * @param Clients $client
      *
-     * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws LoaderError
      *
      * @return int
      */
@@ -170,9 +171,9 @@ class ClientNotifier
      * @param Clients $client
      * @param array   $changeSet
      *
-     * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws LoaderError
      *
      * @return int
      */
@@ -201,5 +202,35 @@ class ClientNotifier
         ];
 
         return 0;
+    }
+
+    /**
+     * @param Clients $clients
+     * @param array   $requestData
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws Exception
+     */
+    public function notifyPasswordRequest(Clients $clients, array $requestData = [])
+    {
+        $temporaryToken = $clients->getLastTemporaryToken();
+
+        if (null === $temporaryToken || false === $temporaryToken->isValid()) {
+            throw new LogicException('The token should be valid at this point');
+        }
+
+        $message = $this->messageProvider->newMessage('client-password-request', [
+            'client' => [
+                'firstName' => $clients->getFirstName(),
+            ],
+            'temporaryToken' => [
+                'token' => $temporaryToken->getToken(),
+            ],
+            'requesterData' => $requestData,
+        ])->setTo($clients->getEmail());
+
+        $this->mailer->send($message);
     }
 }

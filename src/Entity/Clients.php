@@ -248,18 +248,18 @@ class Clients implements UserInterface, EquatableInterface
         if ($this->plainPassword) {
             $this->plainPassword = $plainPassword;
         } else {
-            $this->temporaryTokens->add(TemporaryToken::generateShortToken($this));
+            $this->addTemporaryToken(TemporaryToken::SHORT);
         }
     }
 
     /**
      * For comparaison (ex. array_unique).
      *
-     * @return string|null
+     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return (string) $this->getEmail();
+        return $this->getEmail();
     }
 
     /**
@@ -667,6 +667,34 @@ class Clients implements UserInterface, EquatableInterface
     public function getLastTemporaryToken(): ?TemporaryToken
     {
         return $this->temporaryTokens->last();
+    }
+
+    /**
+     * @param string $length
+     *
+     * @throws Exception
+     *
+     * @return Clients
+     */
+    public function addTemporaryToken($length = TemporaryToken::MEDIUM): Clients
+    {
+        switch ($length) {
+            case TemporaryToken::SHORT:
+                $temporaryToken = TemporaryToken::generateShortToken($this);
+
+                break;
+            case TemporaryToken::LONG:
+                $temporaryToken = TemporaryToken::generateLongToken($this);
+
+                break;
+            case TemporaryToken::MEDIUM:
+            default:
+                $temporaryToken = TemporaryToken::generateMediumToken($this);
+        }
+
+        $this->temporaryTokens->add($temporaryToken);
+
+        return $this;
     }
 
     /**

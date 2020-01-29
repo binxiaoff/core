@@ -6,46 +6,33 @@ namespace Unilend\MessageHandler;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use Exception;
-use Swift_Mailer;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\Request\ResetPassword;
-use Unilend\Entity\TemporaryToken;
 use Unilend\Repository\ClientsRepository;
-use Unilend\SwiftMailer\TemplateMessageProvider;
+use Unilend\Service\Client\ClientNotifier;
 
 class ResetPasswordHandler implements MessageHandlerInterface
 {
     /** @var ClientsRepository */
     private $clientsRepository;
-    /** @var TemplateMessageProvider */
-    private $messageProvider;
-    /** @var Swift_Mailer */
-    private $mailer;
     /** @var ObjectManager */
     private $manager;
-    /** @var RouterInterface */
-    private $router;
+    /** @var ClientNotifier */
+    private $notifier;
 
     /**
-     * @param ClientsRepository       $clientsRepository
-     * @param TemplateMessageProvider $messageProvider
-     * @param Swift_Mailer            $mailer
-     * @param ObjectManager           $manager
-     * @param RouterInterface         $router
+     * @param ClientsRepository $clientsRepository
+     * @param ClientNotifier    $notifier
+     * @param ObjectManager     $manager
      */
     public function __construct(
         ClientsRepository $clientsRepository,
-        TemplateMessageProvider $messageProvider,
-        Swift_Mailer $mailer,
-        ObjectManager $manager,
-        RouterInterface $router
+        ClientNotifier $notifier,
+        ObjectManager $manager
     ) {
         $this->clientsRepository = $clientsRepository;
-        $this->messageProvider   = $messageProvider;
-        $this->router            = $router;
-        $this->mailer            = $mailer;
         $this->manager           = $manager;
+        $this->notifier          = $notifier;
     }
 
     /**
@@ -65,12 +52,12 @@ class ResetPasswordHandler implements MessageHandlerInterface
             return;
         }
 
-        $token = TemporaryToken::generateShortToken($clients);
-
-        $this->manager->persist($token);
+        $this->manager->persist($clients->addTemporaryToken());
         $this->manager->flush();
 
         $requestData = get_object_vars($resetPasswordRequest);
         unset($requestData['email']);
+
+        $this->notifier->notifyPasswordRequest($clients, $requestData);
     }
 }
