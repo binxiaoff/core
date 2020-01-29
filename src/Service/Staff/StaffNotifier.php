@@ -38,7 +38,7 @@ class StaffNotifier
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function sendClientInitialisation(Staff $staff)
+    public function notifyClientInitialisation(Staff $staff): void
     {
         $client = $staff->getClient();
 

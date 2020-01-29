@@ -57,14 +57,7 @@ SQL
         </mj-head>
         <mj-body>
             <mj-section background-color="#3F2865" padding="0">
-                {% block header %}
-                    <mj-column><mj-image align="left" width="60px" src="{{ url("front_image", {imageFileName: "emails/logo.png"}) }}"/></mj-column>
-                    <mj-column>
-                        <mj-text align="right" color="#ffffff" font-size="10px" font-family="Arial" line-height="50px">
-                            FINANCER MIEUX, FINANCER ENSEMBLE
-                        </mj-text>
-                    </mj-column>
-                {% endblock %}
+                {% block header %}{% endblock %}
             </mj-section>
             <mj-section padding="0">
                 <mj-column width="560px" background-color="#F5F4F7" padding="0 40px 30px">
@@ -72,14 +65,7 @@ SQL
                 </mj-column>
             </mj-section>
             <mj-section>
-                {% block footer %}
-                    <mj-column>
-                        <mj-text font-weight="100" font-size="11px" line-height="1.5" align="center" padding-top="40px" color="#3F2865">
-                            Copyright © 2020 KLS, tous droits réservés.<br/>
-                            Où nous trouver : 50 rue la Boétie, 75008 Paris, France<br/>
-                        </mj-text>
-                    </mj-column>
-                {% endblock %}
+                {% block footer %}{% endblock %}
             </mj-section>
         </mj-body>
     </mjml>

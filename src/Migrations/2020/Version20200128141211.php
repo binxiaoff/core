@@ -51,7 +51,7 @@ final class Version20200128141211 extends AbstractMigration
 ',
         'KLS - Initialisation de votre compte',
         'KLS',
-        'noreply@kls-platform.com',
+        'support@kls-platform.com',
         NOW()
     )
 SQL

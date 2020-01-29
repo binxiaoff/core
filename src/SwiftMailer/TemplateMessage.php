@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\SwiftMailer;
 
-use DateTime;
+use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 
 class TemplateMessage extends \Swift_Message
@@ -13,21 +15,21 @@ class TemplateMessage extends \Swift_Message
     private $queueId;
     /** @var array */
     private $variables;
-    /** @var DateTime */
+    /** @var DateTimeImmutable */
     private $toSendAt;
     /** @var LoggerInterface */
     private $logger;
 
     /**
-     * @param string|null   $templateId
-     * @param array|null    $variables
-     * @param DateTime|null $toSendAt
-     * @param string|null   $subject
-     * @param string|null   $body
-     * @param string|null   $contentType
-     * @param string|null   $charset
+     * @param string|null            $templateId
+     * @param array|null             $variables
+     * @param DateTimeImmutable|null $toSendAt
+     * @param string|null            $subject
+     * @param string|null            $body
+     * @param string|null            $contentType
+     * @param string|null            $charset
      */
-    public function __construct($templateId, $variables = null, $toSendAt = null, $subject = null, $body = null, $contentType = null, $charset = null)
+    public function __construct($templateId, array $variables = null, DateTimeImmutable $toSendAt = null, $subject = null, $body = null, $contentType = null, $charset = null)
     {
         parent::__construct($subject, $body, $contentType, $charset);
 
@@ -71,7 +73,7 @@ class TemplateMessage extends \Swift_Message
      *
      * @return $this
      */
-    public function setVariables($variables)
+    public function setVariables(array $variables)
     {
         $this->variables = $variables;
 
@@ -79,7 +81,7 @@ class TemplateMessage extends \Swift_Message
     }
 
     /**
-     * @param DateTime|null $toSendAt
+     * @param DateTimeImmutable|null $toSendAt
      *
      * @return $this
      */
@@ -145,7 +147,7 @@ class TemplateMessage extends \Swift_Message
     }
 
     /**
-     * @return Datetime|null
+     * @return DateTimeImmutable|null
      */
     public function getToSendAt()
     {

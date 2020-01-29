@@ -21,10 +21,8 @@ class StaffCreatedHandler implements MessageHandlerInterface
      * @param StaffRepository $repository
      * @param StaffNotifier   $notifier
      */
-    public function __construct(
-        StaffRepository $repository,
-        StaffNotifier $notifier
-    ) {
+    public function __construct(StaffRepository $repository, StaffNotifier $notifier)
+    {
         $this->repository = $repository;
         $this->notifier   = $notifier;
     }
@@ -41,7 +39,7 @@ class StaffCreatedHandler implements MessageHandlerInterface
         $staff = $this->repository->find($staffCreated->getStaffId());
 
         if ($staff) {
-            $this->notifier->sendClientInitialisation($staff);
+            $this->notifier->notifyClientInitialisation($staff);
         }
     }
 }

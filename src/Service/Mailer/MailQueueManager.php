@@ -81,7 +81,7 @@ class MailQueueManager
                 ->setMailTemplate($mailTemplate)
                 ->setSerializedVariables(json_encode($message->getVariables(), JSON_THROW_ON_ERROR, 512))
                 ->setAttachments(json_encode($attachments, JSON_THROW_ON_ERROR, 512))
-                ->setReplyTo('noreply@kls-platform.com')
+                ->setReplyTo('support@kls-platform.com')
                 ->setStatus(MailQueue::STATUS_PENDING)
                 ->setToSendAt($message->getToSendAt())
                 ->setRecipient($recipient)
