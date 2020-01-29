@@ -9,30 +9,25 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Message\ProjectParticipationContact\ProjectParticipationContactCreated;
 use Unilend\Repository\ProjectParticipationContactRepository;
-use Unilend\Service\{Client\ClientNotifier, MailerManager};
+use Unilend\Service\{Client\ClientNotifier, MailerManager, ProjectParticipationContact\ProjectParticipationContactNotifier, ProjectParticipation\ProjectParticipationNotifier};
 
 class ProjectParticipationContactCreatedHandler implements MessageHandlerInterface
 {
-    /** @var MailerManager */
-    private $mailerManager;
     /** @var ProjectParticipationContactRepository */
     private $projectParticipationContactRepository;
-    /** @var ClientNotifier */
-    private $clientNotifier;
+    /** @var ProjectParticipationNotifier */
+    private $projectParticipationContactNotifier;
 
     /**
-     * @param MailerManager                         $mailerManager
-     * @param ClientNotifier                        $clientNotifier
      * @param ProjectParticipationContactRepository $projectParticipationContactRepository
+     * @param ProjectParticipationContactNotifier   $projectParticipationContactNotifier
      */
     public function __construct(
-        MailerManager $mailerManager,
-        ClientNotifier $clientNotifier,
-        ProjectParticipationContactRepository $projectParticipationContactRepository
+        ProjectParticipationContactRepository $projectParticipationContactRepository,
+        ProjectParticipationContactNotifier $projectParticipationContactNotifier
     ) {
-        $this->mailerManager                         = $mailerManager;
         $this->projectParticipationContactRepository = $projectParticipationContactRepository;
-        $this->clientNotifier                        = $clientNotifier;
+        $this->projectParticipationContactNotifier   = $projectParticipationContactNotifier;
     }
 
     /**
@@ -41,20 +36,13 @@ class ProjectParticipationContactCreatedHandler implements MessageHandlerInterfa
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
     public function __invoke(ProjectParticipationContactCreated $clientCreated)
     {
         $projectParticipationContact = $this->projectParticipationContactRepository->find($clientCreated->getProjectParticipationContactId());
 
         if ($projectParticipationContact) {
-            $this->mailerManager->sendRequestToAssignRights($projectParticipationContact);
-            $this->clientNotifier->notifyInvited(
-                $projectParticipationContact->getAddedBy(),
-                $projectParticipationContact->getClient(),
-                $projectParticipationContact->getProjectParticipation()->getProject()
-            );
+            $this->projectParticipationContactNotifier->sendInvitation($projectParticipationContact);
         }
     }
 }
