@@ -178,6 +178,8 @@ class ClientNotifier
      */
     public function sendIdentityUpdated(Clients $client, array $changeSet): int
     {
+        return 0;
+
         $changeSet = array_map(function ($field) {
             return $this->translator->trans('mail-identity-updated.' . $field);
         }, $changeSet);
