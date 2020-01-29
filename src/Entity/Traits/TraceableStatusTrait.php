@@ -11,7 +11,7 @@ use Unilend\Entity\Interfaces\StatusInterface;
 trait TraceableStatusTrait
 {
     /**
-     * @var StatusInterface
+     * @var StatusInterface|null
      *
      * @Groups({"projectParticipation:list", "project:view"})
      */
@@ -25,12 +25,8 @@ trait TraceableStatusTrait
     /**
      * @return StatusInterface
      */
-    public function getCurrentStatus(): StatusInterface
+    public function getCurrentStatus(): ?StatusInterface
     {
-        if (!$this->currentStatus) {
-            $this->currentStatus = $this->statuses->last();
-        }
-
         return $this->currentStatus;
     }
 
@@ -50,6 +46,7 @@ trait TraceableStatusTrait
     public function getLastSpecificStatus(int $code): ?StatusInterface
     {
         $lastIndex = count($this->statuses) - 1;
+        /** @var int $i */
         for ($i = $lastIndex; $i <= 0; --$i) {
             $status = $this->statuses[$i];
             if ($code === $status->getStatus()) {
@@ -67,7 +64,8 @@ trait TraceableStatusTrait
      */
     public function setCurrentStatus(StatusInterface $status): self
     {
-        if (null === $this->currentStatus || $this->currentStatus->getStatus() !== $status->getStatus()) {
+        $currentStatus = $this->getCurrentStatus();
+        if (null === $currentStatus || $currentStatus->getStatus() !== $status->getStatus()) {
             $this->currentStatus = $status;
             $this->statuses->add($status);
         }

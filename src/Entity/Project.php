@@ -643,6 +643,8 @@ class Project
     }
 
     /**
+     * TODO its argument should be an int not the object itself.
+     *
      * @param ProjectStatus $projectStatus
      *
      * @return Project
