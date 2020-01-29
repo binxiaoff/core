@@ -12,14 +12,11 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{ClientStatus, Clients, Project, ProjectStatus, TemporaryToken};
-use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\Service\NotificationManager;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ClientNotifier
 {
-    /** @var TemporaryTokenRepository */
-    private $temporaryTokenRepository;
     /** @var RouterInterface */
     private $router;
     /** @var TemplateMessageProvider */
@@ -32,27 +29,24 @@ class ClientNotifier
     private $translator;
 
     /**
-     * @param TemporaryTokenRepository $temporaryTokenRepository
-     * @param RouterInterface          $router
-     * @param TemplateMessageProvider  $messageProvider
-     * @param Swift_Mailer             $mailer
-     * @param NotificationManager      $notificationManager
-     * @param TranslatorInterface      $translator
+     * @param RouterInterface         $router
+     * @param TemplateMessageProvider $messageProvider
+     * @param Swift_Mailer            $mailer
+     * @param NotificationManager     $notificationManager
+     * @param TranslatorInterface     $translator
      */
     public function __construct(
-        TemporaryTokenRepository $temporaryTokenRepository,
         RouterInterface $router,
         TemplateMessageProvider $messageProvider,
         Swift_Mailer $mailer,
         NotificationManager $notificationManager,
         TranslatorInterface $translator
     ) {
-        $this->temporaryTokenRepository = $temporaryTokenRepository;
-        $this->router                   = $router;
-        $this->messageProvider          = $messageProvider;
-        $this->mailer                   = $mailer;
-        $this->notificationManager      = $notificationManager;
-        $this->translator               = $translator;
+        $this->router              = $router;
+        $this->messageProvider     = $messageProvider;
+        $this->mailer              = $mailer;
+        $this->notificationManager = $notificationManager;
+        $this->translator          = $translator;
     }
 
     /**
