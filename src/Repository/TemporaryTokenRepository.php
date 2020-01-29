@@ -82,15 +82,17 @@ class TemporaryTokenRepository extends ServiceEntityRepository
      */
     public function expireTemporaryTokens(Clients $client): void
     {
-        $this->createQueryBuilder('t')
-            ->update(TemporaryToken::class, 't')
-            ->set('t.expires', ':now')
-            ->where('t.client = :client')
-            ->andWhere('t.expires > :now')
-            ->setParameter('client', $client)
-            ->setParameter('now', new DateTimeImmutable())
-            ->getQuery()
-            ->execute()
-        ;
+        if ($client->getIdClient()) {
+            $this->createQueryBuilder('t')
+                ->update(TemporaryToken::class, 't')
+                ->set('t.expires', ':now')
+                ->where('t.client = :client')
+                ->andWhere('t.expires > :now')
+                ->setParameter('client', $client)
+                ->setParameter('now', new DateTimeImmutable())
+                ->getQuery()
+                ->execute()
+            ;
+        }
     }
 }

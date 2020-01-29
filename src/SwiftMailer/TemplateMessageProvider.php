@@ -113,7 +113,7 @@ class TemplateMessageProvider
             ->setFrom($mailTemplate->getSenderEmail(), $senderName)
             ->setReplyTo($mailTemplate->getSenderEmail(), $senderName)
             ->setSubject($subject)
-            ->setBody($body, 'text/html')
+            ->setBody($body, 'text/mjml')
         ;
 
         if ($this->logger instanceof LoggerInterface) {

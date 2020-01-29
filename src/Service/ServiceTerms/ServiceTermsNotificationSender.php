@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Service\ServiceTerms;
 
 use League\Flysystem\FileNotFoundException;
-use Swift_Attachment;
 use Swift_Mailer;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -65,21 +64,6 @@ class ServiceTermsNotificationSender
 
         $this->serviceTermsGenerator->generate($acceptationsLegalDoc);
 
-        $message = $this->messageProvider->newMessage(self::MAIL_TYPE_SERVICE_TERMS_ACCEPTED, [
-            'firstName' => $recipient->getFirstName(),
-        ]);
-
-        $pdf = $this->fileSystemHelper->getFileSystemForClass($acceptationsLegalDoc)->read(
-            $this->serviceTermsGenerator->getFilePath($acceptationsLegalDoc)
-        );
-        $attachment = new Swift_Attachment(
-            $pdf,
-            'conditions-générales.pdf',
-            'application/pdf'
-        );
-        $message->setTo($recipient->getEmail());
-        $message->attach($attachment);
-
-        return $this->mailer->send($message);
+        return 0;
     }
 }

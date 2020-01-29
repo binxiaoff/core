@@ -9,9 +9,6 @@ use Exception;
 use Swift_Mailer;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Symfony\Component\Routing\RouterInterface;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
 use Unilend\Entity\Request\ResetPassword;
 use Unilend\Entity\TemporaryToken;
 use Unilend\Repository\ClientsRepository;
@@ -54,9 +51,6 @@ class ResetPasswordHandler implements MessageHandlerInterface
     /**
      * @param ResetPassword $resetPasswordRequest
      *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
      * @throws Exception
      */
     public function __invoke(ResetPassword $resetPasswordRequest): void
@@ -78,16 +72,5 @@ class ResetPasswordHandler implements MessageHandlerInterface
 
         $requestData = get_object_vars($resetPasswordRequest);
         unset($requestData['email']);
-
-        $message = $this->messageProvider->newMessage('forgotten-password', [
-            'firstName'          => $clients->getFirstName(),
-            'email'              => $clients->getEmail(),
-            'passwordLink'       => $this->router->generate('front_password_change', ['token' => $token->getToken()], RouterInterface::ABSOLUTE_URL),
-            'cancelPasswordLink' => '', // Doesn't exist for now
-            'requesterData'      => $requestData,
-        ]);
-        $message->setTo($clients->getEmail());
-
-        $this->mailer->send($message);
     }
 }

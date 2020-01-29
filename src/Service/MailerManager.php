@@ -81,10 +81,8 @@ class MailerManager
         foreach ($recipients as $recipient) {
             if (false === empty($recipient->getEmail())) {
                 $keywords['firstName'] = $recipient->getFirstName();
-                $message               = $this->messageProvider->newMessage('project-comment-added', $keywords);
-                $message->setTo($recipient->getEmail());
 
-                $sent += $this->mailer->send($message);
+                return 1;
             }
         }
 
@@ -118,10 +116,8 @@ class MailerManager
         foreach ($recipients as $recipient) {
             if (false === empty($recipient->getEmail())) {
                 $keywords['firstName'] = $recipient->getFirstName();
-                $message               = $this->messageProvider->newMessage('tranche-offer-submitted', $keywords);
-                $message->setTo($recipient->getEmail());
 
-                $sent += $this->mailer->send($message);
+                return 1;
             }
         }
 
@@ -148,15 +144,8 @@ class MailerManager
 
         $project  = $trancheOffer->getTranche()->getProject();
         $mailType = TrancheOffer::STATUS_ACCEPTED === $trancheOffer->getStatus() ? 'tranche-offer-accepted' : 'tranche-offer-rejected';
-        $message  = $this->messageProvider->newMessage($mailType, [
-            'firstName'   => $recipient->getFirstName(),
-            'projectUrl'  => $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
-            'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
-        ]);
 
-        $message->setTo($recipient->getEmail());
-
-        return $this->mailer->send($message);
+        return 1;
     }
 
     /**
@@ -191,10 +180,7 @@ class MailerManager
             if (false === empty($recipient->getEmail())) {
                 $keywords['firstName'] = $recipient->getFirstName();
 
-                $message = $this->messageProvider->newMessage('project-funding-end', $keywords);
-                $message->setTo($recipient->getEmail());
-
-                $sent += $this->mailer->send($message);
+                ++$sent;
             }
         }
 
@@ -219,10 +205,7 @@ class MailerManager
             'signatureUrl' => $this->router->generate('signature_sign', ['attachment' => $signature->getAttachment()->getId()], RouterInterface::ABSOLUTE_URL),
         ];
 
-        $message = $this->messageProvider->newMessage('document-signature', $keywords);
-        $message->setTo($signature->getSignatory()->getEmail());
-
-        return $this->mailer->send($message);
+        return 1;
     }
 
     /**
@@ -255,11 +238,6 @@ class MailerManager
             if (in_array(Staff::DUTY_STAFF_ADMIN, $companyStaff->getRoles())) {
                 $recipient             = $companyStaff->getClient();
                 $keywords['firstName'] = $recipient->getFirstName();
-
-                $message = $this->messageProvider->newMessage('request-rights-new-staff', $keywords);
-                $message->setTo($recipient->getEmail());
-
-                $sent += $this->mailer->send($message);
             }
         }
 

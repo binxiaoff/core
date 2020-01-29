@@ -82,7 +82,7 @@ class TemporaryToken
     /**
      * @var Clients
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="temporaryTokens")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
@@ -130,7 +130,7 @@ class TemporaryToken
      */
     public static function generateLongToken(Clients $client): TemporaryToken
     {
-        return new TemporaryToken($client, static::LIFETIME_SHORT);
+        return new TemporaryToken($client, static::LIFETIME_LONG);
     }
 
     /**

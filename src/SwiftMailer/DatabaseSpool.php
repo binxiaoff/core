@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\SwiftMailer;
 
-use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\{EntityManagerInterface, OptimisticLockException};
+use Exception;
 use Mailjet\Response;
 use Psr\Log\LoggerInterface;
 use Swift_ConfigurableSpool;
@@ -68,6 +69,8 @@ class DatabaseSpool extends Swift_ConfigurableSpool
      *
      * @param Swift_Mime_SimpleMessage $message The message to store
      *
+     * @throws Exception
+     *
      * @return bool
      */
     public function queueMessage(Swift_Mime_SimpleMessage $message): bool
@@ -84,6 +87,7 @@ class DatabaseSpool extends Swift_ConfigurableSpool
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws Exception
      *
      * @return int The number of sent emails
      */
@@ -127,7 +131,7 @@ class DatabaseSpool extends Swift_ConfigurableSpool
                     if ($response) {
                         ++$count;
                         $email->setStatus(MailQueue::STATUS_SENT);
-                        $email->setSentAt(new DateTime());
+                        $email->setSentAt(new DateTimeImmutable());
                     } else {
                         $email->setStatus(MailQueue::STATUS_ERROR);
                     }
@@ -143,7 +147,7 @@ class DatabaseSpool extends Swift_ConfigurableSpool
                         $count += count($batch);
                         foreach ($batch as $email) {
                             $email->setStatus(MailQueue::STATUS_SENT);
-                            $email->setSentAt(new DateTime());
+                            $email->setSentAt(new DateTimeImmutable());
                             $email->setIdMessageMailjet($transport->getMessageId($email, $response));
                         }
                     } else {
