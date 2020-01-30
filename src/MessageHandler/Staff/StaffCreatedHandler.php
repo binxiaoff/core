@@ -47,7 +47,7 @@ class StaffCreatedHandler implements MessageHandlerInterface
 
         if ($staff) {
             $client = $staff->getClient();
-            if ($client->isInvited()) {
+            if ($client->isInvited() && $client->isGrantedLogin()) {
                 $temporaryToken = TemporaryToken::generateMediumToken($client);
                 $this->temporaryTokenRepository->save($temporaryToken);
                 $this->notifier->notifyClientInitialisation($staff, $temporaryToken);

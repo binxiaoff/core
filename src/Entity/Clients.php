@@ -552,7 +552,7 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function isGrantedLogin(): bool
     {
-        return $this->isInStatus(ClientStatus::GRANTED_LOGIN);
+        return $this->isInStatus(ClientStatus::GRANTED_LOGIN) && (null === $this->getCompany() || $this->getCompany()->hasSigned());
     }
 
     /**
