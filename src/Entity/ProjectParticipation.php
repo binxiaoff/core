@@ -218,7 +218,7 @@ class ProjectParticipation
 
         $this->projectParticipationContacts = $company->getStaff()
             ->filter(static function (Staff $staff) use ($project) {
-                return null === $project->getMarketSegment() || $staff->getMarketSegments()->contains($project->getMarketSegment());
+                return $staff->isManager() && $staff->getMarketSegments()->contains($project->getMarketSegment());
             })
             ->map(function (Staff $staff) use ($addedBy) {
                 return new ProjectParticipationContact($this, $staff->getClient(), $addedBy);

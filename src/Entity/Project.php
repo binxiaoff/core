@@ -657,9 +657,9 @@ class Project
     }
 
     /**
-     * @return MarketSegment|null
+     * @return MarketSegment
      */
-    public function getMarketSegment(): ?MarketSegment
+    public function getMarketSegment(): MarketSegment
     {
         return $this->marketSegment;
     }
