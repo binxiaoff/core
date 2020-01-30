@@ -92,6 +92,9 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
             throw new InvalidTemporaryTokenException('Temporary token is not valid.');
         }
 
+        $temporaryToken->setAccessed();
+        $this->temporaryTokenRepository->save($temporaryToken);
+
         return true;
     }
 
