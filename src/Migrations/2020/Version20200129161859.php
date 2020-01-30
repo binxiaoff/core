@@ -100,7 +100,7 @@ final class Version20200129161859 extends AbstractMigration
          <mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ url("front_image", {imageFileName: "emails/plant.png"}) }}"/>
          <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour{{ client.firstName ? " " ~ client.firstName }},</mj-text>
          <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
-         {{ arranger.name }} vous invite à marquer votre intérêt sur la participation de votre Établissement au financement du dossier {{ project.name }}.
+         {{ arranger.name }} vous invite participer au financement sur la participation de votre Établissement au financement du dossier {{ project.name }}.
          </mj-text>
          <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
          Votre compte n’étant pas encore créé sur la plateforme d’aide à la syndication, KLS.

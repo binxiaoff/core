@@ -1,51 +1,51 @@
 services:
-  _defaults:
-    autowire: true
-    autoconfigure: true
+    _defaults:
+        autowire: true
+        autoconfigure: true
 
-  Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientUpdatedListener:
-    tags:
-      - name: doctrine.orm.entity_listener
-        event: preUpdate
-        entity: Unilend\Entity\Clients
+    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientUpdatedListener:
+        tags:
+            -   name: doctrine.orm.entity_listener
+                event: preUpdate
+                entity: Unilend\Entity\Clients
 
-  Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientCreatedListener:
-    tags:
-      - name: doctrine.orm.entity_listener
-        event: postPersist
-        entity: Unilend\Entity\Clients
+    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientCreatedListener:
+        tags:
+            -   name: doctrine.orm.entity_listener
+                event: postPersist
+                entity: Unilend\Entity\Clients
 
-  Unilend\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationContact\ProjectParticipationContactCreatedListener:
-    tags:
-      - name: doctrine.orm.entity_listener
-        event: postPersist
-        entity: Unilend\Entity\ProjectParticipationContact
+    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectUpdatedListener:
+        tags:
+            -   name: doctrine.orm.entity_listener
+                event: preUpdate
+                entity: Unilend\Entity\Project
 
-  Unilend\Listener\Doctrine\Entity\MessageDispatcher\ProjectStatus\ProjectStatusCreatedListener:
-    tags:
-      - name: doctrine.orm.entity_listener
-        event: postPersist
-        entity: Unilend\Entity\ProjectStatus
+    Unilend\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationContact\ProjectParticipationContactCreatedListener:
+        tags:
+            -   name: doctrine.orm.entity_listener
+                event: postPersist
+                entity: Unilend\Entity\ProjectParticipationContact
 
-  Unilend\Listener\Doctrine\Entity\MessageDispatcher\Staff\StaffCreatedListener:
-    tags:
-      - name: doctrine.orm.entity_listener
-        event: postPersist
-        entity: Unilend\Entity\Staff
+    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Staff\StaffCreatedListener:
+        tags:
+            -   name: doctrine.orm.entity_listener
+                event: postPersist
+                entity: Unilend\Entity\Staff
 
-  Unilend\Listener\Doctrine\Entity\TemporaryTokenCreatedListener:
-    tags:
-      - name: doctrine.orm.entity_listener
-        event: prePersist
-        entity: Unilend\Entity\TemporaryToken
-        method: expireOldTemporaryToken
+    Unilend\Listener\Doctrine\Entity\TemporaryTokenCreatedListener:
+        tags:
+            -   name: doctrine.orm.entity_listener
+                event: prePersist
+                entity: Unilend\Entity\TemporaryToken
+                method: expireOldTemporaryToken
 
-  Unilend\Listener\Doctrine\Entity\ClientPlainPasswordSubmittedListener:
-    tags:
-      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\Clients, method: encodePlainPassword }
-      - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\Clients, method: encodePlainPassword }
+    Unilend\Listener\Doctrine\Entity\ClientPlainPasswordSubmittedListener:
+        tags:
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\Clients, method: encodePlainPassword }
+            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\Clients, method: encodePlainPassword }
 
-  Unilend\Listener\Doctrine\Lifecycle\UuidListener:
-    tags:
-      - { name: doctrine.event_listener, event: prePersist }
+    Unilend\Listener\Doctrine\Lifecycle\UuidListener:
+        tags:
+            - { name: doctrine.event_listener, event: prePersist }
 

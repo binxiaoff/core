@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\MessageHandler\ProjectParticipationContact;
 
-use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Message\ProjectParticipationContact\ProjectParticipationContactCreated;
 use Unilend\Repository\ProjectParticipationContactRepository;
-use Unilend\Service\{Client\ClientNotifier, MailerManager, ProjectParticipationContact\ProjectParticipationContactNotifier, ProjectParticipation\ProjectParticipationNotifier};
+use Unilend\Service\{ProjectParticipationContact\ProjectParticipationContactNotifier, ProjectParticipation\ProjectParticipationNotifier};
 
 class ProjectParticipationContactCreatedHandler implements MessageHandlerInterface
 {

@@ -10,6 +10,7 @@ use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use Unilend\Entity\Clients;
 use Unilend\Entity\Companies;
+use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipationContact;
 use Unilend\Entity\ProjectStatus;
 use Unilend\SwiftMailer\TemplateMessageProvider;
@@ -38,15 +39,20 @@ class ProjectParticipationContactNotifier
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function sendInvitation(ProjectParticipationContact $contact)
+    public function sendInvitation(ProjectParticipationContact $contact): void
     {
-        $templateId           = false;
         $projectParticipation = $contact->getProjectParticipation();
         $company              = $projectParticipation->getCompany();
         $client               = $contact->getClient();
         $project              = $projectParticipation->getProject();
 
+        $templateId = $this->getTemplateId($project, $company, $client);
+
         $arranger = $project->getArranger();
+
+        if (null === $arranger) {
+            throw new \LogicException('The arranger should not be null');
+        }
 
         $context = [
             'client' => [
@@ -60,18 +66,7 @@ class ProjectParticipationContactNotifier
                 'name' => $project->getTitle(),
                 'hash' => $project->getHash(),
             ],
-            'temporaryToken' => [
-                'token' => 'afzd',
-            ],
         ];
-
-        if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
-            $templateId = 'publication' . $this->getVariation($company, $client);
-        }
-
-        if (ProjectStatus::STATUS_INTERESTS_COLLECTED === $project->getCurrentStatus()->getStatus()) {
-            $templateId = 'syndication' . $this->getVariation($company, $client);
-        }
 
         if ($templateId) {
             $message = $this->templateMessageProvider->newMessage($templateId, $context)
@@ -83,21 +78,36 @@ class ProjectParticipationContactNotifier
     }
 
     /**
+     * @param Project   $project
      * @param Companies $company
      * @param Clients   $client
      *
-     * @return string
+     * @return string|null
      */
-    private function getVariation(Companies $company, Clients $client): string
+    private function getTemplateId(Project $project, Companies $company, Clients $client): ?string
     {
-        if ($company->isProspect()) {
-            return '-prospect-company';
+        $templateId = null;
+
+        if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
+            if ($company->isProspect()) {
+                $templateId = 'publication-prospect-company';
+            }
+
+            if ($company->hasSigned()) {
+                $templateId = $client->isInvited() ? 'publication-uninitialized-user' : 'publication';
+            }
         }
 
-        if ($company->hasSigned() && $client->isInvited()) {
-            return '-uninitialized-user';
+        if (ProjectStatus::STATUS_INTERESTS_COLLECTED === $project->getCurrentStatus()->getStatus()) {
+            if ($company->isProspect()) {
+                $templateId = 'syndication-prospect-company';
+            }
+
+            if ($company->hasSigned()) {
+                $templateId = $client->isInvited() ? 'syndication-uninitialized-user' : 'syndication';
+            }
         }
 
-        return '';
+        return $templateId;
     }
 }

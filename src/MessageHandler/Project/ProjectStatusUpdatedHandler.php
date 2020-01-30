@@ -4,46 +4,49 @@ declare(strict_types=1);
 
 namespace Unilend\MessageHandler\Project;
 
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use Unilend\Entity\ProjectStatus;
 use Unilend\Message\Project\ProjectStatusUpdated;
 use Unilend\Repository\ProjectRepository;
-use Unilend\Service\Project\ProjectNotifier;
+use Unilend\Service\ProjectParticipationContact\ProjectParticipationContactNotifier;
 
 class ProjectStatusUpdatedHandler implements MessageHandlerInterface
 {
     /** @var ProjectRepository */
     private $projectRepository;
-    /** @var ProjectNotifier */
-    private $projectNotifier;
+    /** @var ProjectParticipationContactNotifier */
+    private $projectParticipationContactNotifier;
 
     /**
-     * @param ProjectRepository $projectRepository
-     * @param ProjectNotifier   $projectNotifier
+     * @param ProjectRepository                   $projectRepository
+     * @param ProjectParticipationContactNotifier $projectParticipationContactNotifier
      */
-    public function __construct(ProjectRepository $projectRepository, ProjectNotifier $projectNotifier)
+    public function __construct(ProjectRepository $projectRepository, ProjectParticipationContactNotifier $projectParticipationContactNotifier)
     {
-        $this->projectRepository = $projectRepository;
-        $this->projectNotifier   = $projectNotifier;
+        $this->projectRepository                   = $projectRepository;
+        $this->projectParticipationContactNotifier = $projectParticipationContactNotifier;
     }
 
     /**
      * @param ProjectStatusUpdated $projectStatusUpdated
      *
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     public function __invoke(ProjectStatusUpdated $projectStatusUpdated)
     {
         $project = $this->projectRepository->find($projectStatusUpdated->getProjectId());
-        if (
-            $project
-            && ProjectStatus::STATUS_PUBLISHED > $projectStatusUpdated->getOldStatus()
-            && ProjectStatus::STATUS_PUBLISHED <= $projectStatusUpdated->getNewStatus()
-        ) {
-            $this->projectNotifier->notifyProjectPublished($project);
+
+        if ($project && \in_array($projectStatusUpdated->getNewStatus(), [ProjectStatus::STATUS_PUBLISHED, ProjectStatus::STATUS_INTERESTS_COLLECTED], true)) {
+            foreach ($project->getProjectParticipations() as $projectParticipation) {
+                foreach ($projectParticipation->getProjectParticipationContacts() as $contact) {
+                    $this->projectParticipationContactNotifier->sendInvitation($contact);
+                }
+            }
         }
     }
 }
