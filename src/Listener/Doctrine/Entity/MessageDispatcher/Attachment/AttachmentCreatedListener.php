@@ -6,9 +6,9 @@ namespace Unilend\Listener\Doctrine\Entity\MessageDispatcher\Attachment;
 
 use Unilend\Entity\Attachment;
 use Unilend\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
-use Unilend\Message\Attachment\AttachmentUploaded;
+use Unilend\Message\Attachment\AttachmentCreated;
 
-class AttachmentUploadedListener
+class AttachmentCreatedListener
 {
     use MessageDispatcherTrait;
 
@@ -17,6 +17,6 @@ class AttachmentUploadedListener
      */
     public function postPersist(Attachment $attachment): void
     {
-        $this->messageBus->dispatch(new AttachmentUploaded($attachment));
+        $this->messageBus->dispatch(new AttachmentCreated($attachment));
     }
 }

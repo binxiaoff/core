@@ -6,7 +6,7 @@ namespace Unilend\Message\Attachment;
 
 use Unilend\Entity\Attachment;
 
-class AttachmentUploaded
+class AttachmentCreated
 {
     /** @var int */
     private $attachmentId;
