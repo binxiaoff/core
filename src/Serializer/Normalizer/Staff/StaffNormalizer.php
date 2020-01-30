@@ -67,9 +67,13 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
      */
     public function denormalize($data, $type, $format = null, array $context = [])
     {
-        $company = $this->iriConverter->getItemFromIri($data['company'] ?? '');
+        // In patch is only allowed for manager and coordinator so we don't need to check
+        if ('post' === ($context['collection_operation_name'] ?? '') && isset($data['company'])) {
+            /** @var Companies $company */
+            $company = $this->iriConverter->getItemFromIri($data['company']);
 
-        $context['groups'] = array_merge($context['groups'] ?? [], $this->canAdminDenormalize($company) ? [Staff::SERIALIZER_GROUP_ADMIN_CREATE] : []);
+            $context['groups'] = array_merge($context['groups'] ?? [], $this->canAdminDenormalize($company) ? [Staff::SERIALIZER_GROUP_ADMIN_CREATE] : []);
+        }
 
         $context[self::DENORMALIZER_ALREADY_CALLED] = true;
 
