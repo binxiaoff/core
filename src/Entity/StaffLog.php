@@ -57,10 +57,8 @@ class StaffLog
      *
      * @throws Exception
      */
-    public function __construct(
-        Staff $staff,
-        Clients $addedBy
-    ) {
+    public function __construct(Staff $staff, Clients $addedBy)
+    {
         $this->staffId = $staff->getId();
         $this->added   = new DateTimeImmutable();
         $this->addedBy = $addedBy;
