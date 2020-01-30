@@ -137,7 +137,7 @@ class Companies
     /**
      * @var ArrayCollection|CompanyStatus[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyStatus", mappedBy="company")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyStatus", mappedBy="company", cascade={"persist"})
      * @ORM\OrderBy({"added": "ASC"})
      */
     private $statuses;
