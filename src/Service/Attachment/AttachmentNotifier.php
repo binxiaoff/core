@@ -54,8 +54,7 @@ class AttachmentNotifier
                         'hash'     => $project->getHash(),
                     ],
                 ])->setTo($contact->getClient()->getEmail());
-                $this->mailer->send($message);
-                ++$sent;
+                $sent += $this->mailer->send($message);
             }
         }
 
