@@ -10,10 +10,10 @@ use Unilend\Entity\{CompanyStatus, TemporaryToken};
 use Unilend\Repository\{CompaniesRepository, TemporaryTokenRepository};
 use Unilend\Service\Staff\StaffNotifier;
 
-class NotifyAccountInitialisationCommand extends Command
+class SignCompanyCommand extends Command
 {
     /** @var string */
-    protected static $defaultName = 'kls:user:initialisation:notify';
+    protected static $defaultName = 'kls:company:sign';
     /** @var CompaniesRepository */
     private $companiesRepository;
     /** @var StaffNotifier */
