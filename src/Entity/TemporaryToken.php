@@ -208,7 +208,7 @@ class TemporaryToken
      */
     public function setAccessed(): TemporaryToken
     {
-        $this->accessed = new DateTimeImmutable();
+        $this->accessed = $this->accessed ?: new DateTimeImmutable();
 
         return $this;
     }
