@@ -561,9 +561,9 @@ class Project
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -1326,7 +1326,7 @@ class Project
     /**
      * @param string $role
      *
-     * @return ProjectParticipation|null
+     * @return ProjectOrganizer|null
      */
     private function getUniqueOrganizer(string $role): ?ProjectOrganizer
     {

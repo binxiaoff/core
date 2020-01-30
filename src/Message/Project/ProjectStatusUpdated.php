@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Message\Project;
 
 use Unilend\Entity\Project;
+use Unilend\Entity\ProjectStatus;
 
 class ProjectStatusUpdated
 {
@@ -16,15 +17,15 @@ class ProjectStatusUpdated
     private $newStatus;
 
     /**
-     * @param Project $project
-     * @param int     $oldStatus
-     * @param int     $newStatus
+     * @param Project       $project
+     * @param ProjectStatus $oldStatus
+     * @param ProjectStatus $newStatus
      */
-    public function __construct(Project $project, int $oldStatus, int $newStatus)
+    public function __construct(Project $project, ProjectStatus $oldStatus, ProjectStatus $newStatus)
     {
         $this->projectId = $project->getId();
-        $this->oldStatus = $oldStatus;
-        $this->newStatus = $newStatus;
+        $this->oldStatus = $oldStatus->getStatus();
+        $this->newStatus = $newStatus->getStatus();
     }
 
     /**

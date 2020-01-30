@@ -86,7 +86,7 @@ class TemporaryToken
     /**
      * @var Clients
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="temporaryTokens")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
