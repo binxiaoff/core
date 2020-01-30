@@ -41,7 +41,7 @@ class SignCompanyCommand extends Command
     protected function configure(): void
     {
         $this->setDescription('This command change the status to "contract signed" for the given companies, then, notify their staff to initialise their accounts.');
-        $this->addArgument('companies', InputArgument::IS_ARRAY, 'Which companies do you want to notify?');
+        $this->addArgument('companies', InputArgument::IS_ARRAY, 'Which companies do you want to sign ?');
     }
 
     /**
