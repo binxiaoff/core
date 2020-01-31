@@ -6,7 +6,7 @@ namespace Unilend\Service\Attachment;
 
 use Swift_Mailer;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\Attachment;
+use Unilend\Entity\{Attachment, ProjectStatus};
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class AttachmentNotifier
@@ -39,8 +39,12 @@ class AttachmentNotifier
      */
     public function notifyUploaded(Attachment $attachment): int
     {
-        $project = $attachment->getProject();
         $sent    = 0;
+        $project = $attachment->getProject();
+
+        if (ProjectStatus::STATUS_PUBLISHED > $project->getCurrentStatus()->getStatus()) {
+            return $sent;
+        }
 
         foreach ($project->getProjectParticipations() as $participation) {
             foreach ($participation->getProjectParticipationContacts() as $contact) {
