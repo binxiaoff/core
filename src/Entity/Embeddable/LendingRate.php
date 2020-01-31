@@ -78,7 +78,7 @@ class LendingRate
     /**
      * @var string
      *
-     * @ORM\Column(length=20, nullable=false)
+     * @ORM\Column(length=20, nullable=true)
      *
      * @Groups({"project:view", "lendingRate:read", "lendingRate:write"})
      */
