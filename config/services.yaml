@@ -159,4 +159,4 @@ services:
         autoconfigure: false
 
     NotFloran\MjmlBundle\SwiftMailer\MjmlPlugin:
-        tags: [swiftmailer.default.plugin, swiftmailer.fast.plugin, swiftmailer.normal.plugin]
+        tags: [swiftmailer.default.plugin]

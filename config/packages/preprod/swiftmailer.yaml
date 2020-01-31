@@ -1,9 +1,0 @@
-swiftmailer:
-    default_mailer: fast
-    mailers:
-        normal:
-            transport: 'smtp'
-            url: '%env(MAILER_URL)%'
-        fast:
-            transport: 'smtp'
-            url: '%env(MAILER_URL)%'
