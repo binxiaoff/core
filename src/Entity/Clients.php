@@ -556,16 +556,20 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
+     * @todo: remove the group and rename the method to isInitializationNeeded after the release 1.0.0
+     *
      * @Groups({"client:read"})
      *
      * @return bool
      */
     public function isInvited(): bool
     {
-        return $this->isInStatus([ClientStatus::STATUS_INVITED]);
+        return $this->isInStatus([ClientStatus::STATUS_INVITED]) || false === $this->isProfileCompleted();
     }
 
     /**
+     * @todo: remove the method after the release 1.0.0
+     *
      * @Groups({"client:read"})
      *
      * @return bool
