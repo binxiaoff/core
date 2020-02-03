@@ -12,14 +12,14 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20200203130542 extends AbstractMigration
 {
-    public function getDescription() : string
+    public function getDescription(): string
     {
         return 'CALS-845 Update change password url';
     }
 
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
-        $sql = <<<SQL
+        $sql = <<<'SQL'
         UPDATE mail_template SET content = '
             <mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ url("front_image", {imageFileName: "emails/reload.png"}) }}"/>
             <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour {{ client.firstName }},</mj-text>
@@ -42,9 +42,9 @@ SQL;
         $this->addSql($sql);
     }
 
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
-        $sql = <<<SQL
+        $sql = <<<'SQL'
         UPDATE mail_template SET content = '
             <mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ url("front_image", {imageFileName: "emails/reload.png"}) }}"/>
             <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour {{ client.firstName }},</mj-text>
