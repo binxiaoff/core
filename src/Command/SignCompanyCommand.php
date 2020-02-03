@@ -66,7 +66,7 @@ class SignCompanyCommand extends Command
                 $client = $staff->getClient();
 
                 if ($client->isInvited() && $client->isGrantedLogin()) {
-                    $temporaryToken = TemporaryToken::generateMediumToken($client);
+                    $temporaryToken = TemporaryToken::generateUltraLongToken($client);
                     $this->temporaryTokenRepository->save($temporaryToken);
                     $this->staffNotifier->notifyClientInitialisation($staff, $temporaryToken);
                 }

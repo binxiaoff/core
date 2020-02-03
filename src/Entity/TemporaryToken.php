@@ -31,9 +31,10 @@ class TemporaryToken
     public const MEDIUM = 'medium';
     public const LONG   = 'long';
 
-    private const LIFETIME_SHORT  = '1 hour';
-    private const LIFETIME_MEDIUM = '1 day';
-    private const LIFETIME_LONG   = '1 week';
+    private const LIFETIME_SHORT      = '1 hour';
+    private const LIFETIME_MEDIUM     = '1 day';
+    private const LIFETIME_LONG       = '1 week';
+    private const LIFETIME_ULTRA_LONG = '1 month';
 
     /**
      * @var DateTimeImmutable|null
@@ -147,6 +148,18 @@ class TemporaryToken
     public static function generateLongToken(Clients $client): TemporaryToken
     {
         return new TemporaryToken($client, static::LIFETIME_LONG);
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @throws Exception
+     *
+     * @return TemporaryToken
+     */
+    public static function generateUltraLongToken(Clients $client): TemporaryToken
+    {
+        return new TemporaryToken($client, static::LIFETIME_ULTRA_LONG);
     }
 
     /**
