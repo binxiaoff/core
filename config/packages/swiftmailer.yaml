@@ -17,12 +17,16 @@ services:
             $settings:
                 version: 'v3.1'
 
-    mailjet: '@Unilend\SwiftMailer\MailjetTransport'
-    swiftmailer.mailer.transport.mailjet: '@mailjet'
+    mailjet:
+        alias: 'Unilend\SwiftMailer\MailjetTransport'
+        public: true
+
+    swiftmailer.mailer.transport.mailjet:
+        alias: 'Unilend\SwiftMailer\MailjetTransport'
+        public: true
 
     Unilend\SwiftMailer\MailjetTransport:
         shared: false
-        public: true
 
     Swift_Events_EventDispatcher:
         class: Swift_Events_SimpleEventDispatcher
