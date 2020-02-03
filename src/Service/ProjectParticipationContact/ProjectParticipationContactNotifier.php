@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Service\ProjectParticipationContact;
 
+use Exception;
 use Swift_Mailer;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
-use Unilend\Entity\Clients;
-use Unilend\Entity\Companies;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectParticipationContact;
-use Unilend\Entity\ProjectStatus;
+use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
+use Unilend\Entity\{Clients, Companies, Project, ProjectParticipationContact, ProjectStatus, TemporaryToken};
+use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ProjectParticipationContactNotifier
@@ -21,15 +17,19 @@ class ProjectParticipationContactNotifier
     private $mailer;
     /** @var TemplateMessageProvider */
     private $templateMessageProvider;
+    /** @var TemporaryTokenRepository */
+    private $temporaryTokenRepository;
 
     /**
-     * @param TemplateMessageProvider $templateMessageProvider
-     * @param Swift_Mailer            $mailer
+     * @param TemplateMessageProvider  $templateMessageProvider
+     * @param Swift_Mailer             $mailer
+     * @param TemporaryTokenRepository $temporaryTokenRepository
      */
-    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer)
+    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer, TemporaryTokenRepository $temporaryTokenRepository)
     {
-        $this->mailer                  = $mailer;
-        $this->templateMessageProvider = $templateMessageProvider;
+        $this->mailer                   = $mailer;
+        $this->templateMessageProvider  = $templateMessageProvider;
+        $this->temporaryTokenRepository = $temporaryTokenRepository;
     }
 
     /**
@@ -38,6 +38,7 @@ class ProjectParticipationContactNotifier
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws Exception
      */
     public function sendInvitation(ProjectParticipationContact $contact): void
     {
@@ -54,6 +55,12 @@ class ProjectParticipationContactNotifier
             throw new \LogicException('The arranger should not be null');
         }
 
+        $temporaryToken = null;
+        if ($client->isInvited()) {
+            $temporaryToken = TemporaryToken::generateMediumToken($client);
+            $this->temporaryTokenRepository->save($temporaryToken);
+        }
+
         $context = [
             'client' => [
                 'firstName' => $client->getFirstName(),
@@ -65,6 +72,9 @@ class ProjectParticipationContactNotifier
             'project' => [
                 'name' => $project->getTitle(),
                 'hash' => $project->getHash(),
+            ],
+            'temporaryToken' => [
+                'token' => $temporaryToken ? $temporaryToken->getToken() : '',
             ],
         ];
 
