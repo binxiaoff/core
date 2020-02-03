@@ -22,6 +22,7 @@ services:
 
     Unilend\SwiftMailer\MailjetTransport:
         shared: false
+        public: true
 
     Swift_Events_EventDispatcher:
         class: Swift_Events_SimpleEventDispatcher

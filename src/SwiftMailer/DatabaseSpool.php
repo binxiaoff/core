@@ -152,7 +152,7 @@ class DatabaseSpool extends Swift_ConfigurableSpool
                         }
                     } else {
                         $errorEmails  = [];
-                        $reasonPhrase = json_encode($response->getReasonPhrase());
+                        $reasonPhrase = json_encode($response->getReasonPhrase(), JSON_THROW_ON_ERROR, 512);
 
                         foreach ($batch as $email) {
                             $email->setStatus(MailQueue::STATUS_ERROR);
