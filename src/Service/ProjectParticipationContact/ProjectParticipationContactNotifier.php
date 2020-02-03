@@ -45,9 +45,13 @@ class ProjectParticipationContactNotifier
     {
         $projectParticipation = $contact->getProjectParticipation();
         $company              = $projectParticipation->getCompany();
-        $client               = $contact->getClient();
         $project              = $projectParticipation->getProject();
 
+        if ($project->getArranger()->getCompany() === $company) {
+            return;
+        }
+
+        $client     = $contact->getClient();
         $templateId = $this->getTemplateId($project, $company, $client);
 
         $arranger = $project->getArranger();

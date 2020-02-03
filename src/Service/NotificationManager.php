@@ -46,14 +46,6 @@ class NotificationManager
     }
 
     /**
-     * @param Clients $client
-     */
-    public function createAccountCreated(Clients $client): void
-    {
-        $this->createNotification(Notification::TYPE_ACCOUNT_CREATED, [$client]);
-    }
-
-    /**
      * @param Project $project
      * @param Clients $client
      *

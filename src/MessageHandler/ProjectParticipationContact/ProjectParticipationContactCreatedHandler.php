@@ -8,13 +8,13 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Message\ProjectParticipationContact\ProjectParticipationContactCreated;
 use Unilend\Repository\ProjectParticipationContactRepository;
-use Unilend\Service\{ProjectParticipationContact\ProjectParticipationContactNotifier, ProjectParticipation\ProjectParticipationNotifier};
+use Unilend\Service\{ProjectParticipationContact\ProjectParticipationContactNotifier};
 
 class ProjectParticipationContactCreatedHandler implements MessageHandlerInterface
 {
     /** @var ProjectParticipationContactRepository */
     private $projectParticipationContactRepository;
-    /** @var ProjectParticipationNotifier */
+    /** @var ProjectParticipationContactNotifier */
     private $projectParticipationContactNotifier;
 
     /**
@@ -40,7 +40,11 @@ class ProjectParticipationContactCreatedHandler implements MessageHandlerInterfa
     {
         $projectParticipationContact = $this->projectParticipationContactRepository->find($clientCreated->getProjectParticipationContactId());
 
-        if ($projectParticipationContact) {
+        if (
+            $projectParticipationContact
+            && $projectParticipationContact->getProjectParticipation()->getProject()->getArranger()->getCompany()
+                !== $projectParticipationContact->getProjectParticipation()->getCompany()
+        ) {
             $this->projectParticipationContactNotifier->sendInvitation($projectParticipationContact);
         }
     }
