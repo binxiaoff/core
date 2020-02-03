@@ -189,6 +189,7 @@ class ClientNotifier
         $message = $this->messageProvider->newMessage('client-password-request', [
             'client' => [
                 'firstName' => $client->getFirstName(),
+                'hash' => $client->getHash()
             ],
             'temporaryToken' => [
                 'token' => $temporaryToken->getToken(),
