@@ -15,7 +15,7 @@ use Unilend\Service\Staff\StaffNotifier;
 class StaffCreatedHandler implements MessageHandlerInterface
 {
     /** @var StaffRepository */
-    private $repository;
+    private $staffRepository;
     /** @var StaffNotifier */
     private $notifier;
     /** @var TemporaryTokenRepository */
@@ -28,7 +28,7 @@ class StaffCreatedHandler implements MessageHandlerInterface
      */
     public function __construct(StaffRepository $staffRepository, StaffNotifier $notifier, TemporaryTokenRepository $temporaryTokenRepository)
     {
-        $this->repository               = $staffRepository;
+        $this->staffRepository          = $staffRepository;
         $this->notifier                 = $notifier;
         $this->temporaryTokenRepository = $temporaryTokenRepository;
     }
@@ -43,9 +43,10 @@ class StaffCreatedHandler implements MessageHandlerInterface
      */
     public function __invoke(StaffCreated $staffCreated)
     {
-        $staff = $this->repository->find($staffCreated->getStaffId());
-
+        $staff = $this->staffRepository->find($staffCreated->getStaffId());
         if ($staff) {
+            // Refresh the staff, so that the $client->getStaff() doesn't return null
+            $this->staffRepository->refresh($staff);
             $client = $staff->getClient();
             if ($client->isInvited() && $client->isGrantedLogin()) {
                 $temporaryToken = TemporaryToken::generateMediumToken($client);
