@@ -14,7 +14,7 @@ use Prophecy\Prophecy\{ObjectProphecy};
 use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, Clients, Companies, Embeddable\Money, Project};
+use Unilend\Entity\{Attachment, Clients, Companies, Embeddable\Money, MarketSegment, Project};
 use Unilend\Repository\AttachmentRepository;
 use Unilend\Service\{Attachment\AttachmentManager, FileSystem\FileUploadManager};
 
@@ -158,7 +158,7 @@ class AttachmentManagerTest extends TestCase
         $client = $this->prophesize(Clients::class);
         $client->getCompany()->willReturn(new Companies(Base::lexify('????')));
 
-        return new Project($client->reveal(), new Companies(Base::lexify('????')), new Money(Miscellaneous::currencyCode()));
+        return new Project($client->reveal(), new Companies(Base::lexify('????')), new Money(Miscellaneous::currencyCode()), new MarketSegment());
     }
 
     /**

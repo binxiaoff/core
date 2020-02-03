@@ -456,13 +456,14 @@ class Project
     private $globalFundingMoney;
 
     /**
-     * @param Clients   $submitter
-     * @param Companies $borrowerCompany
-     * @param Money     $globalFundingMoney
+     * @param Clients       $submitter
+     * @param Companies     $borrowerCompany
+     * @param Money         $globalFundingMoney
+     * @param MarketSegment $marketSegment
      *
      * @throws Exception
      */
-    public function __construct(Clients $submitter, Companies $borrowerCompany, Money $globalFundingMoney)
+    public function __construct(Clients $submitter, Companies $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
     {
         $this->attachments           = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
@@ -472,11 +473,11 @@ class Project
         $this->tags                  = new ArrayCollection();
         $this->organizers            = new ArrayCollection();
         $this->added                 = new DateTimeImmutable();
+        $this->marketSegment         = $marketSegment;
+        $this->submitterClient       = $submitter;
+        $this->submitterCompany      = $submitter->getCompany();
 
         $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_REQUESTED));
-
-        $this->submitterClient  = $submitter;
-        $this->submitterCompany = $submitter->getCompany();
 
         $this->syndicationType   = static::PROJECT_SYNDICATION_TYPE_PRIMARY;
         $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;
@@ -493,8 +494,11 @@ class Project
             }
         }
 
-        $arranger = new ProjectOrganizer($submitter->getCompany(), $this, $submitter, [ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER]);
+        $arranger = new ProjectOrganizer($this->submitterCompany, $this, $submitter, [ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER]);
         $this->organizers->add($arranger);
+
+        $participant = new ProjectParticipation($this->submitterCompany, $this, $submitter);
+        $this->projectParticipations->add($participant);
     }
 
     /**
