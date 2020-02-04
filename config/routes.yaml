@@ -24,3 +24,6 @@ front:
 health_check:
     path: /pulse
     controller: Unilend\Controller\HealthCheck
+
+home:
+    path: /
