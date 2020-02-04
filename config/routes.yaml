@@ -24,3 +24,7 @@ front:
 health_check:
     path: /pulse
     controller: Unilend\Controller\HealthCheck
+
+# Route created to return a 404 for pulse check
+home:
+    path: /
