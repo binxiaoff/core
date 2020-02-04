@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Unilend\Service\ProjectParticipationContact;
 
+use Doctrine\Common\Persistence\ObjectManager;
 use Exception;
+use LogicException;
 use Swift_Mailer;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{Clients, Companies, Project, ProjectParticipationContact, ProjectStatus, TemporaryToken};
-use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ProjectParticipationContactNotifier
@@ -17,19 +18,19 @@ class ProjectParticipationContactNotifier
     private $mailer;
     /** @var TemplateMessageProvider */
     private $templateMessageProvider;
-    /** @var TemporaryTokenRepository */
-    private $temporaryTokenRepository;
+    /** @var ObjectManager */
+    private $objectManager;
 
     /**
-     * @param TemplateMessageProvider  $templateMessageProvider
-     * @param Swift_Mailer             $mailer
-     * @param TemporaryTokenRepository $temporaryTokenRepository
+     * @param TemplateMessageProvider $templateMessageProvider
+     * @param Swift_Mailer            $mailer
+     * @param ObjectManager           $objectManager
      */
-    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer, TemporaryTokenRepository $temporaryTokenRepository)
+    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer, ObjectManager $objectManager)
     {
-        $this->mailer                   = $mailer;
-        $this->templateMessageProvider  = $templateMessageProvider;
-        $this->temporaryTokenRepository = $temporaryTokenRepository;
+        $this->mailer                  = $mailer;
+        $this->templateMessageProvider = $templateMessageProvider;
+        $this->objectManager           = $objectManager;
     }
 
     /**
@@ -52,13 +53,13 @@ class ProjectParticipationContactNotifier
         $arranger = $project->getArranger();
 
         if (null === $arranger) {
-            throw new \LogicException('The arranger should not be null');
+            throw new LogicException('The arranger should not be null');
         }
 
         $temporaryToken = null;
         if ($client->isInvited()) {
             $temporaryToken = TemporaryToken::generateMediumToken($client);
-            $this->temporaryTokenRepository->save($temporaryToken);
+            $this->objectManager->persist($temporaryToken);
         }
 
         $context = [
