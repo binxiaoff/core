@@ -152,7 +152,7 @@ class DatabaseSpool extends Swift_ConfigurableSpool
                         }
                     } else {
                         $errorEmails  = [];
-                        $reasonPhrase = json_encode($response->getReasonPhrase(), JSON_THROW_ON_ERROR, 512);
+                        $reasonPhrase = json_encode($response->getReasonPhrase(), JSON_THROW_ON_ERROR);
 
                         foreach ($batch as $email) {
                             $email->setStatus(MailQueue::STATUS_ERROR);
@@ -163,7 +163,7 @@ class DatabaseSpool extends Swift_ConfigurableSpool
 
                         $errorMessage = sprintf('An error occurred while sending emails via Mailjet: %s', $reasonPhrase);
                         if ($response->getBody() && isset($response->getBody()['Messages'])) {
-                            $errorMessage .= sprintf(' Response was %s', json_encode($response->getBody()['Messages'], JSON_THROW_ON_ERROR, 512));
+                            $errorMessage .= sprintf(' Response was %s', json_encode($response->getBody()['Messages'], JSON_THROW_ON_ERROR));
                         }
 
                         $this->logger->warning($errorMessage, [
