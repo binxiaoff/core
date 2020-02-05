@@ -388,7 +388,7 @@ class Project
      * @Assert\Count(min="1")
      * @Assert\Valid
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      */
     private $statuses;
 
