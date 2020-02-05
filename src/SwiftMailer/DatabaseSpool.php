@@ -161,17 +161,16 @@ class DatabaseSpool extends Swift_ConfigurableSpool
                             $errorEmails[] = $email->getId();
                         }
 
+                        $errorMessage = sprintf('An error occurred while sending emails via Mailjet: %s', $reasonPhrase);
                         if ($response->getBody() && isset($response->getBody()['Messages'])) {
-                            $serializedMessage = json_encode($response->getBody()['Messages'], JSON_THROW_ON_ERROR, 512);
-                            $this->logger->warning(
-                                'An error occurred while sending emails via Mailjet: ' . $reasonPhrase . '. Response was ' . $serializedMessage,
-                                [
-                                    'emails'   => $errorEmails,
-                                    'class'    => __CLASS__,
-                                    'function' => __FUNCTION__,
-                                ]
-                            );
+                            $errorMessage .= sprintf(' Response was %s', json_encode($response->getBody()['Messages'], JSON_THROW_ON_ERROR, 512));
                         }
+
+                        $this->logger->warning($errorMessage, [
+                            'emails'   => $errorEmails,
+                            'class'    => __CLASS__,
+                            'function' => __FUNCTION__,
+                        ]);
                     }
                 }
             }
