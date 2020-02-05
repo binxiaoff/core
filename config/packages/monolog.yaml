@@ -1,5 +1,5 @@
 monolog:
-    channels: [console, wsclient]
+    channels: [console]
     handlers:
         error:
             type: fingers_crossed
@@ -40,7 +40,7 @@ monolog:
             type: filter
             handler: site_handler
             max_level: warning
-            channels: ['!console', '!translation', '!wsclient']
+            channels: ['!console', '!translation']
         site_handler:
             type: stream
             level: warning
