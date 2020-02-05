@@ -1,9 +1,7 @@
-swiftmailer:
-    transport: 'smtp'
-    url: '%env(MAILER_URL)%'
-    #spool:
-    #    type: service
-    #    id: 'Unilend\SwiftMailer\DatabaseSpool'
+#swiftmailer:
+#    spool:
+#        type: service
+#        id: 'Unilend\SwiftMailer\DatabaseSpool'
 
 services:
     _defaults:
@@ -19,11 +17,9 @@ services:
 
     mailjet:
         alias: 'Unilend\SwiftMailer\MailjetTransport'
-        public: true
 
     swiftmailer.mailer.transport.mailjet:
         alias: 'Unilend\SwiftMailer\MailjetTransport'
-        public: true
 
     Unilend\SwiftMailer\MailjetTransport:
         shared: false
