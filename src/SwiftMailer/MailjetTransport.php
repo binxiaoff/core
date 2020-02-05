@@ -98,9 +98,6 @@ class MailjetTransport implements Swift_Transport
 
         $this->spool[] = $body;
 
-        // CALS-171 Do not use spool for the moment
-        $this->stop();
-
         return 1;
     }
 
