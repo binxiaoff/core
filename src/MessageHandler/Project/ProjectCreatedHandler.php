@@ -8,14 +8,11 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Unilend\Message\Project\ProjectCreated;
 use Unilend\Repository\ProjectRepository;
 use Unilend\Service\Project\ProjectNotifier;
-use Unilend\Service\SlackManager;
 
 class ProjectCreatedHandler implements MessageHandlerInterface
 {
     /** @var ProjectRepository */
     private $projectRepository;
-    /** @var SlackManager */
-    private $slack;
     /** @var ProjectNotifier */
     private $projectNotifier;
 
@@ -23,10 +20,8 @@ class ProjectCreatedHandler implements MessageHandlerInterface
      * @param ProjectRepository $projectRepository
      * @param ProjectNotifier   $projectNotifier
      */
-    public function __construct(
-        ProjectRepository $projectRepository,
-        ProjectNotifier $projectNotifier
-    ) {
+    public function __construct(ProjectRepository $projectRepository, ProjectNotifier $projectNotifier)
+    {
         $this->projectRepository = $projectRepository;
         $this->projectNotifier   = $projectNotifier;
     }

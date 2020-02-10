@@ -1,0 +1,3 @@
+monolog:
+    slack_support:
+        channel: '#cals-support'

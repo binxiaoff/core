@@ -8,8 +8,7 @@ use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectStatus;
+use Unilend\Entity\{Project, ProjectStatus};
 use Unilend\Service\ProjectParticipation\ProjectParticipationNotifier;
 
 class ProjectNotifier
@@ -17,18 +16,16 @@ class ProjectNotifier
     /** @var ProjectParticipationNotifier */
     private $projectParticipationNotifier;
     /** @var LoggerInterface */
-    private $logger;
+    private $supportLogger;
 
     /**
      * @param ProjectParticipationNotifier $projectParticipationNotifier
-     * @param LoggerInterface              $logger
+     * @param LoggerInterface              $supportLogger
      */
-    public function __construct(
-        ProjectParticipationNotifier $projectParticipationNotifier,
-        LoggerInterface $logger
-    ) {
+    public function __construct(ProjectParticipationNotifier $projectParticipationNotifier, LoggerInterface $supportLogger)
+    {
         $this->projectParticipationNotifier = $projectParticipationNotifier;
-        $this->logger                       = $logger;
+        $this->supportLogger                = $supportLogger;
     }
 
     /**
@@ -60,7 +57,7 @@ class ProjectNotifier
     {
         $title = $project->getTitle();
 
-        $this->logger->log(LogLevel::INFO, "Le projet {$title} viens d'être créé", [
+        $this->supportLogger->log(LogLevel::INFO, "Le projet {$title} viens d'être créé", [
             'utilisateur' => $project->getSubmitterClient()->getEmail(),
             'entité'      => $project->getSubmitterCompany()->getName(),
         ]);

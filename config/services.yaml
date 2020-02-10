@@ -160,4 +160,4 @@ services:
 
     Unilend\Service\Project\ProjectNotifier:
         arguments:
-            $logger: '@monolog.logger.support'
+            $supportLogger: '@monolog.logger.support'
