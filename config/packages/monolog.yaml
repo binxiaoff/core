@@ -1,5 +1,14 @@
+services:
+    unilend_monolog_support_formatter:
+        class: Monolog\Formatter\LineFormatter
+        autowire: true
+        autoconfigure: true
+        arguments:
+            $format: "%%message%%"
+            $ignoreEmptyContextAndExtra: true
+
 monolog:
-    channels: [console]
+    channels: [console, support]
     handlers:
         error:
             type: fingers_crossed
@@ -9,18 +18,11 @@ monolog:
         error_handler:
             type: group
             members: [error_file]
-#            members: [file_error, slack_error]
         error_file:
             type: stream
             level: info
             path: "%kernel.logs_dir%/error.%kernel.environment%.log"
-#        slack_error:
-#            type: slack
-#            level: error
-#            token: xoxb-54621264262-6EXEn7g59rpWe7vDxzHht5z5
-#            channel: '#it-releases'
-#            bot_name: 'Symfony Bot'
-
+            channels: ['!support']
         console_filter:
             type: filter
             handler: console_handler
@@ -35,13 +37,22 @@ monolog:
             level: info
         console_console:
             type: console
-
         site_filter:
             type: filter
             handler: site_handler
             max_level: warning
-            channels: ['!console', '!translation']
+            channels: ['!console', '!translation', '!support']
         site_handler:
             type: stream
             level: warning
             path: "%kernel.logs_dir%/site.%kernel.environment%.log"
+        slack_support:
+            type: slackwebhook
+            webhook_url: "%env(string:SLACK_WEBHOOK_URL)%"
+            level: info
+            channels: ['support']
+            channel: '#%env(string:SLACK_CHANNEL_SUPPORT)%'
+            bot_name: 'API'
+            use_short_attachment: false
+            include_extra: true
+            formatter: 'unilend_monolog_support_formatter'

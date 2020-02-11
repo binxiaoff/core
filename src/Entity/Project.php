@@ -538,17 +538,17 @@ class Project
     }
 
     /**
-     * @return Companies|null
+     * @return Companies
      */
-    public function getSubmitterCompany(): ?Companies
+    public function getSubmitterCompany(): Companies
     {
         return $this->submitterCompany;
     }
 
     /**
-     * @return Clients|null
+     * @return Clients
      */
-    public function getSubmitterClient(): ?Clients
+    public function getSubmitterClient(): Clients
     {
         return $this->submitterClient;
     }
