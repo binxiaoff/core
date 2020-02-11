@@ -6,8 +6,7 @@ namespace Unilend\Service\Project;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
+use Psr\Log\{LogLevel, LoggerInterface};
 use Unilend\Entity\{Project, ProjectStatus};
 use Unilend\Service\ProjectParticipation\ProjectParticipationNotifier;
 
@@ -57,7 +56,7 @@ class ProjectNotifier
     {
         $title = $project->getTitle();
 
-        $this->supportLogger->log(LogLevel::INFO, "Le projet {$title} viens d'être créé", [
+        $this->supportLogger->log(LogLevel::INFO, "Le dossier {$title} vient d'être créé", [
             'utilisateur' => $project->getSubmitterClient()->getEmail(),
             'entité'      => $project->getSubmitterCompany()->getName(),
         ]);

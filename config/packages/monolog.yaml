@@ -48,10 +48,10 @@ monolog:
             path: "%kernel.logs_dir%/site.%kernel.environment%.log"
         slack_support:
             type: slackwebhook
-            webhook_url: https://hooks.slack.com/services/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
+            webhook_url: "%env(string:SLACK_WEBHOOK_URL)%"
             level: info
             channels: ['support']
-            channel: '#kls-test'
+            channel: '#%env(string:SLACK_CHANNEL_SUPPORT)%'
             bot_name: 'API'
             use_short_attachment: false
             include_extra: true
