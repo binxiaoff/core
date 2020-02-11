@@ -708,7 +708,7 @@
             "config/packages/framework.yaml",
             "config/packages/test/framework.yaml",
             "config/services.yaml",
-            "public/default/index.php",
+            "public/index.php",
             "src/Controller/.gitignore",
             "src/Kernel.php"
         ]

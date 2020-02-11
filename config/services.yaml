@@ -7,7 +7,7 @@ parameters:
     dbal_driver_class: Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
     locale: fr_FR
     router.request_context.scheme: https
-    directory.public: /data/sites/unilend/public/default/
+    directory.public: /data/sites/unilend/public
     directory.shared: /data/medias/nfs/
     directory.temporary: '%directory.shared%tmp/'
     directory.protected: '%directory.shared%protected/'
@@ -161,3 +161,5 @@ services:
     Unilend\Service\Project\ProjectNotifier:
         arguments:
             $supportLogger: '@monolog.logger.support'
+
+    Sonata\CacheBundle\Adapter\SymfonyCache: '@sonata.cache.symfony'

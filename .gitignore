@@ -1,27 +1,28 @@
-# Mac
+###> Mac
 .DS_Store
 
 /protected
-/public/default/shared
 
-# PHPStorm
+###> PHPStorm ###
 .idea/
+###< PHPStorm ###
 
-# VS Code
+###> VS Code ###
 .vscode
+###< VS Code ###
 
-#npm & gulp
-.sass-cache
+###> npm ###
 /node_modules
 npm-debug.log
-/public/default/assets/
-/assets/css
+###< npm ###
 
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
 /.env.*.local
-/public/default/bundles/
+/public/bundles/
+/public/assets/
+/public/shared
 /vendor/
 ###< symfony/framework-bundle ###
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f781829a35b66e4f68d926d0a26ea2f5",
+    "content-hash": "e9dbb4adf3837b6138db5a6dd2dbda33",
     "packages": [
         {
             "name": "api-platform/api-pack",
@@ -9945,6 +9945,7 @@
                 "code",
                 "zf"
             ],
+            "abandoned": "laminas/laminas-code",
             "time": "2019-08-31T14:14:34+00:00"
         },
         {
@@ -9999,6 +10000,7 @@
                 "events",
                 "zf2"
             ],
+            "abandoned": "laminas/laminas-eventmanager",
             "time": "2018-04-25T15:33:34+00:00"
         }
     ],
