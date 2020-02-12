@@ -45,15 +45,19 @@ class ProjectParticipationContactNotifier
     {
         $projectParticipation = $contact->getProjectParticipation();
         $company              = $projectParticipation->getCompany();
-        $client               = $contact->getClient();
         $project              = $projectParticipation->getProject();
 
+        $client     = $contact->getClient();
         $templateId = $this->getTemplateId($project, $company, $client);
 
         $arranger = $project->getArranger();
 
         if (null === $arranger) {
             throw new LogicException('The arranger should not be null');
+        }
+
+        if ($arranger->getCompany() === $company) {
+            return;
         }
 
         $temporaryToken = null;
