@@ -80,7 +80,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "profile:read"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="title", type="string", nullable=true)
      */
@@ -89,7 +89,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "profile:read"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="last_name", type="string", length=191, nullable=true)
      *
@@ -101,7 +101,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "profile:read"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="first_name", type="string", length=191, nullable=true)
      *
@@ -120,7 +120,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var PhoneNumber
      *
-     * @Groups({"client:read", "client:write", "profile:read"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="phone", type="phone_number", nullable=true)
      *
@@ -131,7 +131,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var PhoneNumber
      *
-     * @Groups({"client:read", "client:write", "profile:read"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="mobile", type="phone_number", nullable=true)
      *
@@ -142,7 +142,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "profile:read", "client:create"})
+     * @Groups({"client:read", "client:create"})
      *
      * @ORM\Column(name="email", type="string", length=191, nullable=false, unique=true)
      *
@@ -172,7 +172,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "profile:read"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(type="string", length=255, nullable=true)
      */
@@ -206,7 +206,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var ClientStatus
      *
-     * @Groups({"client:read", "profile:read"})
+     * @Groups({"client:read"})
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientStatus")
      * @ORM\JoinColumn(name="id_current_status", unique=true)
@@ -556,27 +556,11 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @todo: remove the group and rename the method to isInitializationNeeded after the release 1.0.0
-     *
-     * @Groups({"client:read"})
-     *
      * @return bool
      */
-    public function isInvited(): bool
+    public function isInitializationNeeded(): bool
     {
         return $this->isInStatus([ClientStatus::STATUS_INVITED]) || false === $this->isProfileCompleted();
-    }
-
-    /**
-     * @todo: remove the method after the release 1.0.0
-     *
-     * @Groups({"client:read"})
-     *
-     * @return bool
-     */
-    public function isCreated(): bool
-    {
-        return $this->isInStatus([ClientStatus::STATUS_CREATED]);
     }
 
     /**
