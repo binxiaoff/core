@@ -158,9 +158,9 @@ class ServiceTermsGeneratorTest extends TestCase
 
         [$mainDirectory, $subdirectory, $filename] = explode(DIRECTORY_SEPARATOR, $returnedFilePath);
         static::assertStringContainsString($path, $mainDirectory);
-        static::assertSame((string) $acceptationLegalDoc->getClient()->getIdClient(), $subdirectory);
+        static::assertSame((string) $acceptationLegalDoc->getClient()->getId(), $subdirectory);
         static::assertStringStartsWith($filePrefix, $filename);
-        static::assertStringContainsString($acceptationLegalDoc->getClient()->getHash(), $filename);
+        static::assertStringContainsString($acceptationLegalDoc->getClient()->getPublicId(), $filename);
         static::assertStringContainsString((string) $acceptationLegalDoc->getLegalDoc()->getId(), $filename);
     }
 

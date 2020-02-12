@@ -37,7 +37,7 @@ class AttachmentDownload
      * @var Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
-     * @ORM\JoinColumn(referencedColumnName="id_client", name="id_client", nullable=false)
+     * @ORM\JoinColumn(referencedColumnName="id", name="id_client", nullable=false)
      */
     private $client;
 

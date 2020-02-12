@@ -71,7 +71,7 @@ class NotificationManager
         $trancheOfferMaker = $trancheOffer->getAddedBy();
         $recipients        = $this->getProjectRecipients($trancheOffer->getTranche()->getProject());
 
-        unset($recipients[$trancheOfferMaker->getIdClient()]);
+        unset($recipients[$trancheOfferMaker->getId()]);
 
         $this->createNotification(Notification::TYPE_TRANCHE_OFFER_SUBMITTED_SUBMITTER, [$trancheOfferMaker], null, $trancheOffer);
         $this->createNotification(Notification::TYPE_TRANCHE_OFFER_SUBMITTED_PARTICIPANTS, $recipients, null, $trancheOffer);
@@ -88,7 +88,7 @@ class NotificationManager
     {
         $recipients = $this->getProjectRecipients($comment->getProject());
 
-        unset($recipients[$comment->getClient()->getIdClient()]);
+        unset($recipients[$comment->getClient()->getId()]);
 
         foreach ($recipients as $recipient) {
             $notification = $this->notificationRepository->findOneBy([
@@ -125,7 +125,7 @@ class NotificationManager
                 if ($projectParticipation->getClient()) {
                     $recipients[$projectParticipation->getClient()->getIdClient()] = $projectParticipation->getClient();
                 }
-                $recipients[$projectParticipation->getCompany()->getIdClientOwner()->getIdClient()] = $projectParticipation->getCompany()->getIdClientOwner();
+                $recipients[$projectParticipation->getCompany()->getIdClientOwner()->getId()] = $projectParticipation->getCompany()->getIdClientOwner();
             }
 
             return $recipients;
@@ -135,7 +135,7 @@ class NotificationManager
             switch ($type) {
                 case self::RECIPIENT_TYPE_ARRANGER:
                     if ($arranger = $project->getArranger()) {
-                        $recipients[$arranger->getCompany()->getIdClientOwner()->getIdClient()] = $arranger->getCompany()->getIdClientOwner();
+                        $recipients[$arranger->getCompany()->getIdClientOwner()->getId()] = $arranger->getCompany()->getIdClientOwner();
                     }
 
                     if ($deputyArranger = $project->getDeputyArranger()) {
@@ -152,23 +152,23 @@ class NotificationManager
                     break;
                 case self::RECIPIENT_TYPE_RUN:
                     if ($run = $project->getRun()) {
-                        $recipients[$run->getCompany()->getIdClientOwner()->getIdClient()] = $run->getCompany()->getIdClientOwner();
+                        $recipients[$run->getCompany()->getIdClientOwner()->getId()] = $run->getCompany()->getIdClientOwner();
                     }
 
                     break;
                 case self::RECIPIENT_TYPE_SUBMITTER:
                     if ($submitter = $project->getSubmitterClient()) {
-                        $recipients[$submitter->getIdClient()] = $submitter;
+                        $recipients[$submitter->getId()] = $submitter;
                     }
 
                     break;
                 case self::RECIPIENT_TYPE_AGENCY:
                     if ($loanOfficer = $project->getLoanOfficer()) {
-                        $recipients[$loanOfficer->getCompany()->getIdClientOwner()->getIdClient()] = $loanOfficer->getCompany()->getIdClientOwner();
+                        $recipients[$loanOfficer->getCompany()->getIdClientOwner()->getId()] = $loanOfficer->getCompany()->getIdClientOwner();
                     }
 
                     if ($securityTrustee = $project->getSecurityTrustee()) {
-                        $recipients[$securityTrustee->getCompany()->getIdClientOwner()->getIdClient()] = $securityTrustee->getCompany()->getIdClientOwner();
+                        $recipients[$securityTrustee->getCompany()->getIdClientOwner()->getId()] = $securityTrustee->getCompany()->getIdClientOwner();
                     }
 
                     break;

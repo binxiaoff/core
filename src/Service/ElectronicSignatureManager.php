@@ -160,7 +160,7 @@ class ElectronicSignatureManager
                 ->setDocumentId(1)
                 ->setPageNumber(1)
                 ->setTabLabel('SignHereTab')
-                ->setRecipientId($signerClient->getIdClient())
+                ->setRecipientId($signerClient->getId())
                 ->setXPosition($signatureOffsetX)
                 ->setYPosition($signatureOffsetY)
             ;
@@ -172,8 +172,8 @@ class ElectronicSignatureManager
             $signer
                 ->setName($signerClient->getFirstName() . ' ' . $signerClient->getLastName())
                 ->setEmail($signerClient->getEmail())
-                ->setRecipientId($signerClient->getIdClient())
-                ->setClientUserId($signerClient->getIdClient()) // if set, email is not sent by DocuSign
+                ->setRecipientId($signerClient->getId())
+                ->setClientUserId($signerClient->getId()) // if set, email is not sent by DocuSign
                 ->setEmailNotification($recipientNotification)
                 ->setTabs($signatureTab)
                 ->setRoutingOrder(1)

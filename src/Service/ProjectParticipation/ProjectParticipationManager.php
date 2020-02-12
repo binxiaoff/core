@@ -48,7 +48,7 @@ class ProjectParticipationManager
         $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndClient($project, $client);
 
         if (null === $projectParticipationContact) {
-            throw new RuntimeException(sprintf('The client %s is not a participant of project %s', $client->getHash(), $project->getHash()));
+            throw new RuntimeException(sprintf('The client %s is not a participant of project %s', $client->getPublicId(), $project->getHash()));
         }
 
         return null !== $projectParticipationContact->getConfidentialityAccepted();

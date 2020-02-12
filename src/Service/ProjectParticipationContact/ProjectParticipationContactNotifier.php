@@ -69,7 +69,7 @@ class ProjectParticipationContactNotifier
         $context = [
             'client' => [
                 'firstName' => $client->getFirstName(),
-                'hash'      => $client->getHash(),
+                'hash'      => $client->getPublicId(),
             ],
             'arranger' => [
                 'name' => $arranger->getCompany()->getName(),

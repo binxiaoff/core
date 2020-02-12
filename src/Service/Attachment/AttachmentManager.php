@@ -94,10 +94,10 @@ class AttachmentManager
      */
     private function getClientDirectory(Clients $client): string
     {
-        if (empty($client->getIdClient())) {
+        if (empty($client->getId())) {
             throw new InvalidArgumentException('Cannot find the upload destination. The client id is empty.');
         }
 
-        return (string) $client->getIdClient();
+        return (string) $client->getId();
     }
 }

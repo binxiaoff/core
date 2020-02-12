@@ -56,7 +56,7 @@ class Notification
      *
      * @ORM\ManyToOne(targetEntity="Clients")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
      * })
      */
     private $client;

@@ -164,7 +164,7 @@ class NotificationDisplayManagerTest extends TestCase
 
         /** @var Clients|ObjectProphecy $clients */
         $clients = $this->prophesize(Clients::class);
-        $clients->getIdClient()->willReturn(Base::randomDigitNotNull());
+        $clients->getId()->willReturn(Base::randomDigitNotNull());
 
         $tranche = $this->prophesize(Tranche::class);
         $tranche->getProject()->willReturn($project);
