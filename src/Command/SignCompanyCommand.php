@@ -65,7 +65,7 @@ class SignCompanyCommand extends Command
             foreach ($company->getStaff() as $staff) {
                 $client = $staff->getClient();
 
-                if ($client->isInvited() && $client->isGrantedLogin()) {
+                if ($client->isInitializationNeeded() && $client->isGrantedLogin()) {
                     $temporaryToken = TemporaryToken::generateUltraLongToken($client);
                     $this->temporaryTokenRepository->save($temporaryToken);
                     $this->staffNotifier->notifyClientInitialisation($staff, $temporaryToken);

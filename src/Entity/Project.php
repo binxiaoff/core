@@ -40,7 +40,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "projectParticipationContact:read",
  *                 "projectOrganizer:read",
  *                 "role:read",
- *                 "profile:read",
+ *                 "client:read",
  *                 "timestampable:read"
  *             }}
  *         },

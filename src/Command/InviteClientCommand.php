@@ -59,7 +59,7 @@ class InviteClientCommand extends Command
                 continue;
             }
             $staff = $client->getStaff();
-            if ($staff && $client->isInvited() && $client->isGrantedLogin()) {
+            if ($staff && $client->isInitializationNeeded() && $client->isGrantedLogin()) {
                 $temporaryToken = TemporaryToken::generateUltraLongToken($client);
                 $this->temporaryTokenRepository->save($temporaryToken);
                 $this->staffNotifier->notifyClientInitialisation($staff, $temporaryToken);

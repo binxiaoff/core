@@ -57,7 +57,7 @@ class ProjectParticipationContactNotifier
         }
 
         $temporaryToken = null;
-        if ($client->isInvited()) {
+        if ($client->isInitializationNeeded()) {
             $temporaryToken = TemporaryToken::generateMediumToken($client);
             $this->temporaryTokenRepository->persist($temporaryToken);
         }
@@ -105,7 +105,7 @@ class ProjectParticipationContactNotifier
             }
 
             if ($company->hasSigned()) {
-                $templateId = $client->isInvited() ? 'publication-uninitialized-user' : 'publication';
+                $templateId = $client->isInitializationNeeded() ? 'publication-uninitialized-user' : 'publication';
             }
         }
 
@@ -115,7 +115,7 @@ class ProjectParticipationContactNotifier
             }
 
             if ($company->hasSigned()) {
-                $templateId = $client->isInvited() ? 'syndication-uninitialized-user' : 'syndication';
+                $templateId = $client->isInitializationNeeded() ? 'syndication-uninitialized-user' : 'syndication';
             }
         }
 
