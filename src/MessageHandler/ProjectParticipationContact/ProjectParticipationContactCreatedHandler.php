@@ -39,11 +39,12 @@ class ProjectParticipationContactCreatedHandler implements MessageHandlerInterfa
     public function __invoke(ProjectParticipationContactCreated $clientCreated)
     {
         $projectParticipationContact = $this->projectParticipationContactRepository->find($clientCreated->getProjectParticipationContactId());
+        $arranger                    = $projectParticipationContact->getProjectParticipation()->getProject()->getArranger();
 
         if (
             $projectParticipationContact
-            && $projectParticipationContact->getProjectParticipation()->getProject()->getArranger()->getCompany()
-                !== $projectParticipationContact->getProjectParticipation()->getCompany()
+            && $arranger
+            && $arranger->getCompany() !== $projectParticipationContact->getProjectParticipation()->getCompany()
         ) {
             $this->projectParticipationContactNotifier->sendInvitation($projectParticipationContact);
         }
