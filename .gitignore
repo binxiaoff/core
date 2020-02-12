@@ -1,5 +1,6 @@
-###> Mac
+###> Mac ###
 .DS_Store
+###< Mac ###
 
 /protected
 
@@ -21,8 +22,6 @@ npm-debug.log
 /.env.local.php
 /.env.*.local
 /public/bundles/
-/public/assets/
-/public/shared
 /vendor/
 ###< symfony/framework-bundle ###
 
