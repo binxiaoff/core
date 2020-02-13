@@ -462,9 +462,9 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return Companies|null
+     * @return Company|null
      */
-    public function getCompany(): ?Companies
+    public function getCompany(): ?Company
     {
         $company = null;
 

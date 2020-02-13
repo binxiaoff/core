@@ -235,7 +235,7 @@ class Tranche
     /**
      * @var TrancheAttribute[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="TrancheAttribute", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheAttribute", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
      */
     private $trancheAttributes;
 

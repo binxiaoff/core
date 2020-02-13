@@ -5,32 +5,32 @@ declare(strict_types=1);
 namespace Unilend\Service\Company;
 
 use DomainException;
-use Unilend\Entity\Companies;
-use Unilend\Repository\CompaniesRepository;
+use Unilend\Entity\Company;
+use Unilend\Repository\CompanyRepository;
 
 class CompanyManager
 {
-    /** @var CompaniesRepository */
-    private $companiesRepository;
+    /** @var CompanyRepository */
+    private $companyRepository;
 
     /**
-     * @param CompaniesRepository $companiesRepository
+     * @param CompanyRepository $companyRepository
      */
-    public function __construct(CompaniesRepository $companiesRepository)
+    public function __construct(CompanyRepository $companyRepository)
     {
-        $this->companiesRepository = $companiesRepository;
+        $this->companyRepository = $companyRepository;
     }
 
     /**
      * @param string $email
      *
-     * @return Companies
+     * @return Company
      */
-    public function getCompanyByEmail(string $email): Companies
+    public function getCompanyByEmail(string $email): Company
     {
         $guestEmailDomain = explode('@', mb_strtolower($email))[1];
 
-        $company = $this->companiesRepository->findOneBy(['emailDomain' => $guestEmailDomain]);
+        $company = $this->companyRepository->findOneBy(['emailDomain' => $guestEmailDomain]);
 
         if (null === $company) {
             throw new DomainException(sprintf('The email %s is not one of our partners.', $email));

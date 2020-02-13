@@ -9,7 +9,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\{Expr\Join};
 use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use PDO;
-use Unilend\Entity\{ClientStatus, Clients, Companies, ProjectParticipation, Staff};
+use Unilend\Entity\{ClientStatus, Clients, Company, ProjectParticipation, Staff};
 
 /**
  * @method Clients|null find($id, $lockMode = null, $lockVersion = null)
@@ -54,7 +54,7 @@ class ClientsRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('c');
         $qb->select('co')
-            ->innerJoin(Companies::class, 'co', Join::WITH, 'c.idClient = co.idClientOwner')
+            ->innerJoin(Company::class, 'co', Join::WITH, 'c.idClient = co.idClientOwner')
             ->where('c.idClient = :idClient')
             ->setParameter('idClient', $idClient)
         ;
@@ -85,12 +85,12 @@ class ClientsRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Companies $company
-     * @param array     $roles
+     * @param Company $company
+     * @param array   $roles
      *
      * @return Clients[]
      */
-    public function findByStaffRoles(Companies $company, array $roles): iterable
+    public function findByStaffRoles(Company $company, array $roles): iterable
     {
         $queryBuilder = $this->createQueryBuilder('c')
             ->innerJoin(Staff::class, 's', Join::WITH, 'c.idClient = s.client')

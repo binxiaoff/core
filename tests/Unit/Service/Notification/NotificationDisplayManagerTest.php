@@ -16,7 +16,7 @@ use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{Clients, Companies, Embeddable\Money, Notification, Project, ProjectParticipation, ProjectParticipationOffer, Tranche, TrancheOffer};
+use Unilend\Entity\{Clients, Company, Embeddable\Money, Notification, Project, ProjectParticipation, ProjectParticipationOffer, Tranche, TrancheOffer};
 use Unilend\Repository\NotificationRepository;
 use Unilend\Service\Notification\NotificationDisplayManager;
 
@@ -136,18 +136,18 @@ class NotificationDisplayManagerTest extends TestCase
      */
     private function createNotification(int $type, int $status = Notification::STATUS_READ): Notification
     {
-        /** @var Companies|ObjectProphecy $borrowerCompany */
-        $borrowerCompany = $this->prophesize(Companies::class);
+        /** @var Company|ObjectProphecy $borrowerCompany */
+        $borrowerCompany = $this->prophesize(Company::class);
         $borrowerCompany->getId()->willReturn(Base::randomDigitNotNull());
         $borrowerCompany->getName()->willReturn(Base::lexify('???????'));
 
-        /** @var Companies|ObjectProphecy $submitterCompany */
-        $submitterCompany = $this->prophesize(Companies::class);
+        /** @var Company|ObjectProphecy $submitterCompany */
+        $submitterCompany = $this->prophesize(Company::class);
         $submitterCompany->getId()->willReturn(Base::randomDigitNotNull());
         $submitterCompany->getName()->willReturn(Base::lexify('???????'));
 
-        /** @var Companies|ObjectProphecy $lenderCompany */
-        $lenderCompany = $this->prophesize(Companies::class);
+        /** @var Company|ObjectProphecy $lenderCompany */
+        $lenderCompany = $this->prophesize(Company::class);
         $lenderCompany->getId()->willReturn(Base::randomDigitNotNull());
         $lenderCompany->getName()->willReturn(Base::lexify('???????'));
 

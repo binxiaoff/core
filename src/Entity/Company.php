@@ -22,7 +22,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait, Traceable
  *         "autocomplete": {
  *             "method": "get",
  *             "path": "/companies/autocomplete/{term}",
- *             "controller": "Unilend\Controller\Companies\Autocomplete"
+ *             "controller": "Unilend\Controller\Company\Autocomplete"
  *         }
  *     },
  *     itemOperations={
@@ -31,12 +31,12 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait, Traceable
  * )
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.hash", "projectParticipations.project"})
  *
- * @ORM\Entity(repositoryClass="Unilend\Repository\CompaniesRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\CompanyRepository")
  * @ORM\HasLifecycleCallbacks
  *
  * @method CompanyStatus|null getCurrentStatus()
  */
-class Companies
+class Company
 {
     use TimestampableTrait;
     use PublicizeIdentityTrait;
@@ -83,9 +83,9 @@ class Companies
     private $siren;
 
     /**
-     * @var Companies|null
+     * @var Company|null
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_parent_company", referencedColumnName="id")
      * })
@@ -187,9 +187,9 @@ class Companies
      *
      * @param string $name
      *
-     * @return Companies
+     * @return Company
      */
-    public function setName($name): Companies
+    public function setName($name): Company
     {
         $this->name = $name;
 
@@ -210,9 +210,9 @@ class Companies
     /**
      * @param string $siren
      *
-     * @return Companies
+     * @return Company
      */
-    public function setSiren(?string $siren): Companies
+    public function setSiren(?string $siren): Company
     {
         $this->siren = $siren;
 
@@ -230,11 +230,11 @@ class Companies
     /**
      * Set idParentCompany.
      *
-     * @param Companies $parent
+     * @param Company $parent
      *
-     * @return Companies
+     * @return Company
      */
-    public function setParent(?Companies $parent = null): Companies
+    public function setParent(?Company $parent = null): Company
     {
         $this->parent = $parent;
 
@@ -244,9 +244,9 @@ class Companies
     /**
      * Get idParentCompany.
      *
-     * @return Companies|null
+     * @return Company|null
      */
-    public function getParent(): ?Companies
+    public function getParent(): ?Company
     {
         return $this->parent;
     }
@@ -294,9 +294,9 @@ class Companies
     /**
      * @param Staff $staff
      *
-     * @return Companies
+     * @return Company
      */
-    public function removeStaff(Staff $staff): Companies
+    public function removeStaff(Staff $staff): Company
     {
         $this->staff->removeElement($staff);
 
@@ -329,9 +329,9 @@ class Companies
     /**
      * @param string|null $emailDomain
      *
-     * @return Companies
+     * @return Company
      */
-    public function setEmailDomain(?string $emailDomain): Companies
+    public function setEmailDomain(?string $emailDomain): Company
     {
         $this->emailDomain = $emailDomain;
 
@@ -349,9 +349,9 @@ class Companies
     /**
      * @param string $shortCode
      *
-     * @return Companies
+     * @return Company
      */
-    public function setShortCode(string $shortCode): Companies
+    public function setShortCode(string $shortCode): Company
     {
         $this->shortCode = $shortCode;
 
@@ -361,9 +361,9 @@ class Companies
     /**
      * @param int $status
      *
-     * @throws Exception
+     *@throws Exception
      *
-     * @return Companies
+     * @return Company
      */
     public function setCurrentStatus(int $status): self
     {

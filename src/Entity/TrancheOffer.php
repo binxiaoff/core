@@ -55,7 +55,7 @@ class TrancheOffer
     /**
      * @var ProjectParticipationOffer
      *
-     * @ORM\ManyToOne(targetEntity="ProjectParticipationOffer", inversedBy="trancheOffers")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipationOffer", inversedBy="trancheOffers")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project_participation_offer", nullable=false)
      * })
@@ -98,7 +98,7 @@ class TrancheOffer
     /**
      * @var TrancheOfferFee[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="TrancheOfferFee", mappedBy="trancheOffer", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheOfferFee", mappedBy="trancheOffer", cascade={"persist"}, orphanRemoval=true)
      */
     private $trancheOfferFees;
 

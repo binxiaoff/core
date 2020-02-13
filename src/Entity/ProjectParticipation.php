@@ -118,9 +118,9 @@ class ProjectParticipation
     private $project;
 
     /**
-     * @var Companies
+     * @var Company
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", inversedBy="projectParticipations")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company", inversedBy="projectParticipations")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      * })
@@ -154,14 +154,14 @@ class ProjectParticipation
     /**
      * @var ProjectParticipationFee
      *
-     * @ORM\OneToOne(targetEntity="ProjectParticipationFee", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipationFee", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      */
     private $projectParticipationFee;
 
     /**
      * @var ProjectParticipationOffer[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="ProjectParticipationOffer", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationOffer", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
      * @Groups({"projectParticipation:sensitive:read"})
      */
@@ -196,7 +196,7 @@ class ProjectParticipation
     private $messages;
 
     /**
-     * @param Companies          $company
+     * @param Company            $company
      * @param Project            $project
      * @param Clients            $addedBy
      * @param NullableMoney|null $invitationMoney
@@ -204,7 +204,7 @@ class ProjectParticipation
      * @throws Exception
      */
     public function __construct(
-        Companies $company,
+        Company $company,
         Project $project,
         Clients $addedBy,
         NullableMoney $invitationMoney = null
@@ -247,9 +247,9 @@ class ProjectParticipation
     }
 
     /**
-     * @return Companies
+     * @return Company
      */
-    public function getCompany(): Companies
+    public function getCompany(): Company
     {
         return $this->company;
     }

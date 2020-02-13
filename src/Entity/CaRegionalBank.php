@@ -27,7 +27,7 @@ class CaRegionalBank
     private $id;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\Companies", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\Company", cascade={"persist"})
      * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      */
     private $company;
@@ -46,9 +46,9 @@ class CaRegionalBank
     }
 
     /**
-     * @return Companies|null
+     * @return Company|null
      */
-    public function getCompany(): ?Companies
+    public function getCompany(): ?Company
     {
         return $this->company;
     }

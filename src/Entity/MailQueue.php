@@ -31,7 +31,7 @@ class MailQueue
     /**
      * @var MailTemplate
      *
-     * @ORM\ManyToOne(targetEntity="MailTemplate")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MailTemplate")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_mail_template", referencedColumnName="id", nullable=false)
      * })
