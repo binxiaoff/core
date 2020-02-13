@@ -72,7 +72,7 @@ class AttachmentManagerTest extends TestCase
         $this->attachmentRepository->save(Argument::type(Attachment::class));
         $attachmentManager = $this->createTestObject();
 
-        $idClientsReflectionProperty = new ReflectionProperty(Clients::class, 'idClient');
+        $idClientsReflectionProperty = new ReflectionProperty(Clients::class, 'id');
         $idClientsReflectionProperty->setAccessible(true);
         $owner   = new Clients('test@' . Internet::safeEmailDomain());
         $ownerId = Base::randomDigitNotNull();

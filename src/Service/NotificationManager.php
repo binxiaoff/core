@@ -123,7 +123,7 @@ class NotificationManager
         if (null === $types) {
             foreach ($project->getProjectParticipations() as $projectParticipation) {
                 if ($projectParticipation->getClient()) {
-                    $recipients[$projectParticipation->getClient()->getIdClient()] = $projectParticipation->getClient();
+                    $recipients[$projectParticipation->getClient()->getId()] = $projectParticipation->getClient();
                 }
                 $recipients[$projectParticipation->getCompany()->getIdClientOwner()->getId()] = $projectParticipation->getCompany()->getIdClientOwner();
             }
@@ -139,14 +139,14 @@ class NotificationManager
                     }
 
                     if ($deputyArranger = $project->getDeputyArranger()) {
-                        $recipients[$deputyArranger->getCompany()->getIdClientOwner()->getIdClient()] = $deputyArranger->getCompany()->getIdClientOwner();
+                        $recipients[$deputyArranger->getCompany()->getIdClientOwner()->getId()] = $deputyArranger->getCompany()->getIdClientOwner();
                     }
 
                     break;
                 case self::RECIPIENT_TYPE_LENDERS:
                     $lenders = $project->getParticipants();
                     foreach ($lenders as $lender) {
-                        $recipients[$lender->getCompany()->getIdClientOwner()->getIdClient()] = $lender->getCompany()->getIdClientOwner();
+                        $recipients[$lender->getCompany()->getIdClientOwner()->getId()] = $lender->getCompany()->getIdClientOwner();
                     }
 
                     break;

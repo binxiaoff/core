@@ -213,7 +213,7 @@ class ServiceTermsGeneratorTest extends TestCase
     protected function createAcceptationLegalDoc(): AcceptationsLegalDocs
     {
         $clients = $this->prophesize(Clients::class);
-        $clients->getIdClient()->willReturn(Base::randomDigitNotNull());
+        $clients->getId()->willReturn(Base::randomDigitNotNull());
         $clients->getHash()->willReturn(hash('sha256', $this->getRandomText()));
 
         $legalDocument = $this->prophesize(LegalDocument::class);
