@@ -456,14 +456,14 @@ class Project
     private $globalFundingMoney;
 
     /**
-     * @param Clients       $submitter
+     * @param Clients       $addedBy
      * @param Companies     $borrowerCompany
      * @param Money         $globalFundingMoney
      * @param MarketSegment $marketSegment
      *
      * @throws Exception
      */
-    public function __construct(Clients $submitter, Companies $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
+    public function __construct(Clients $addedBy, Companies $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
     {
         $this->attachments           = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
@@ -474,8 +474,8 @@ class Project
         $this->organizers            = new ArrayCollection();
         $this->added                 = new DateTimeImmutable();
         $this->marketSegment         = $marketSegment;
-        $this->submitterClient       = $submitter;
-        $this->submitterCompany      = $submitter->getCompany();
+        $this->submitterClient       = $addedBy;
+        $this->submitterCompany      = $addedBy->getCompany();
 
         $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_REQUESTED));
 
@@ -494,10 +494,10 @@ class Project
             }
         }
 
-        $arranger = new ProjectOrganizer($this->submitterCompany, $this, $submitter, [ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER]);
+        $arranger = new ProjectOrganizer($this->submitterCompany, $this, $addedBy, [ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER]);
         $this->organizers->add($arranger);
 
-        $participant = new ProjectParticipation($this->submitterCompany, $this, $submitter);
+        $participant = new ProjectParticipation($this->submitterCompany, $this, $addedBy);
         $this->projectParticipations->add($participant);
     }
 
