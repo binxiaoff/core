@@ -1,7 +1,6 @@
 <?php
 
 $finder = PhpCsFixer\Finder::create()
-    ->in('apps')->exclude(['admin/views/'])
     ->in(['bin', 'public', 'src', 'tests'])
 ;
 
