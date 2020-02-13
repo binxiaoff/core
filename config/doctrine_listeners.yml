@@ -15,12 +15,6 @@ services:
           event: postPersist
           entity: Unilend\Entity\Attachment
 
-    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientCreatedListener:
-        tags:
-            -   name: doctrine.orm.entity_listener
-                event: postPersist
-                entity: Unilend\Entity\Clients
-
     Unilend\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectCreatedListener:
         tags:
             -   name: doctrine.orm.entity_listener
