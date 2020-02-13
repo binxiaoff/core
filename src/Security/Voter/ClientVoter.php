@@ -61,7 +61,7 @@ class ClientVoter extends Voter
         switch ($attribute) {
             case self::ATTRIBUTE_VIEW:
             case self::ATTRIBUTE_EDIT:
-                return $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || $subject->getIdClient() === $user->getIdClient();
+                return $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || $subject->getId() === $user->getId();
         }
 
         throw new LogicException('This code should not be reached');

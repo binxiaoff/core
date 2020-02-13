@@ -72,7 +72,7 @@ class AttachmentManagerTest extends TestCase
         $this->attachmentRepository->save(Argument::type(Attachment::class));
         $attachmentManager = $this->createTestObject();
 
-        $idClientsReflectionProperty = new ReflectionProperty(Clients::class, 'idClient');
+        $idClientsReflectionProperty = new ReflectionProperty(Clients::class, 'id');
         $idClientsReflectionProperty->setAccessible(true);
         $owner   = new Clients('test@' . Internet::safeEmailDomain());
         $ownerId = Base::randomDigitNotNull();
@@ -95,7 +95,7 @@ class AttachmentManagerTest extends TestCase
         );
 
         static::assertSame($uploader, $createdAttachment->getAddedBy());
-        static::assertStringContainsString((string) $uploader->getIdClient(), $createdAttachment->getPath());
+        static::assertStringContainsString((string) $uploader->getId(), $createdAttachment->getPath());
         static::assertSame($type, $createdAttachment->getType());
         static::assertSame($project, $createdAttachment->getProject());
         static::assertSame($description, $createdAttachment->getDescription());

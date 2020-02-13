@@ -49,7 +49,7 @@ class ClientsRepository extends ServiceEntityRepository
     public function getCompany($idClient)
     {
         if ($idClient instanceof Clients) {
-            $idClient = $idClient->getIdClient();
+            $idClient = $idClient->getId();
         }
 
         $qb = $this->createQueryBuilder('c');

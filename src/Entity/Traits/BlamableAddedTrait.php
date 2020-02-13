@@ -16,7 +16,7 @@ trait BlamableAddedTrait
      * @var Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
-     * @ORM\JoinColumn(name="added_by", referencedColumnName="id_client", nullable=false)
+     * @ORM\JoinColumn(name="added_by", referencedColumnName="id", nullable=false)
      *
      * @Groups({"blameable:read"})
      *

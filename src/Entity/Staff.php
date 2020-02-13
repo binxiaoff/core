@@ -81,7 +81,7 @@ class Staff
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\Clients", inversedBy="staff", cascade={"persist"})
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
      * })
      *
      * @Assert\NotBlank(message="Staff.client.empty")

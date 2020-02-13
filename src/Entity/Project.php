@@ -170,7 +170,7 @@ class Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client_submitter",  referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_client_submitter",  referencedColumnName="id", nullable=false)
      * })
      * @Assert\NotBlank
      * @Assert\Valid
