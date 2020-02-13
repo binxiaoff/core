@@ -145,6 +145,6 @@ final class Version20200212145951 extends AbstractMigration
         $this->addSql('ALTER TABLE clients CHANGE public_id hash VARCHAR(191) NOT NULL COLLATE utf8mb4_unicode_ci');
 
         $this->addSql('DROP INDEX UNIQ_C82E74B5B48B91 ON clients');
-        $this->addSql('ALTER TABLE clients CHANGE public_id public_id VARCHAR(191) NOT NULL COLLATE utf8mb4_unicode_ci');
+        $this->addSql('ALTER TABLE clients CHANGE hash hash VARCHAR(191) NOT NULL COLLATE utf8mb4_unicode_ci');
     }
 }
