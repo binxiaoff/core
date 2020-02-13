@@ -1,6 +1,0 @@
-framework:
-    assets:
-        base_urls: "%router.request_context.scheme%://%env(HOST_APP_URL)%"
-        packages:
-            user_upload:
-                base_path: /shared/upload

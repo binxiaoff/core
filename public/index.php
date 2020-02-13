@@ -1,15 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 use Symfony\Component\Debug\Debug;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\core\Dispatcher;
 use Unilend\Kernel;
 
-require dirname(__DIR__) . '/../config/bootstrap.php';
-require dirname(__DIR__) . '/../apps/core/controller.class.php';
-require dirname(__DIR__) . '/../apps/core/command.class.php';
-
-header('X-Server: ' . exec('hostname'));
+require dirname(__DIR__) . '/config/bootstrap.php';
 
 setlocale(LC_TIME, 'fr_FR.utf8');
 
@@ -30,7 +27,5 @@ if ($trustedHosts = $_SERVER['TRUSTED_HOSTS'] ?? $_ENV['TRUSTED_HOSTS'] ?? false
 $kernel   = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
 $request  = Request::createFromGlobals();
 $response = $kernel->handle($request);
-
-$oDispatcher = new Dispatcher($kernel, $request);
-
+$response->send();
 $kernel->terminate($request, $response);
