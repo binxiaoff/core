@@ -214,7 +214,7 @@ class ServiceTermsGeneratorTest extends TestCase
     {
         $clients = $this->prophesize(Clients::class);
         $clients->getId()->willReturn(Base::randomDigitNotNull());
-        $clients->getHash()->willReturn(hash('sha256', $this->getRandomText()));
+        $clients->getPublicId()->willReturn(hash('sha256', $this->getRandomText()));
 
         $legalDocument = $this->prophesize(LegalDocument::class);
         $legalDocument->getId()->willReturn(Base::randomDigitNotNull());
