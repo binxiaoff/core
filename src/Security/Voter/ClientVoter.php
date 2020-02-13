@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use LogicException;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Authorization\{AuthorizationCheckerInterface, Voter\Voter};
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\Clients;
-use Unilend\Traits\ConstantsAwareTrait;
 
-class ClientVoter extends Voter
+class ClientVoter extends AbstractVoter
 {
-    use ConstantsAwareTrait;
-
     public const ATTRIBUTE_VIEW = 'view';
     public const ATTRIBUTE_EDIT = 'edit';
 
@@ -29,41 +24,32 @@ class ClientVoter extends Voter
     }
 
     /**
-     * {@inheritdoc}
+     * @param Clients $subject
+     * @param Clients $user
+     *
+     * @return bool
      */
-    protected function supports($attribute, $subject): bool
+    public function canView(Clients $subject, Clients $user)
     {
-        $attributes = self::getConstants('ATTRIBUTE_');
+        return $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || $subject->getId() === $user->getId();
+    }
 
-        if (false === in_array($attribute, $attributes, true)) {
-            return false;
-        }
-
-        if (false === $subject instanceof Clients) {
-            return false;
-        }
-
-        return true;
+    /**
+     * @param Clients $subject
+     * @param Clients $user
+     *
+     * @return bool
+     */
+    public function canEdit(Clients $subject, Clients $user)
+    {
+        return $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || $subject->getId() === $user->getId();
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
+    protected function supports($attribute, $subject): bool
     {
-        /** @var Clients $user */
-        $user = $token->getUser();
-
-        if (false === $user instanceof Clients) {
-            return false;
-        }
-
-        switch ($attribute) {
-            case self::ATTRIBUTE_VIEW:
-            case self::ATTRIBUTE_EDIT:
-                return $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || $subject->getId() === $user->getId();
-        }
-
-        throw new LogicException('This code should not be reached');
+        return $subject instanceof Clients && parent::supports($attribute, $subject);
     }
 }

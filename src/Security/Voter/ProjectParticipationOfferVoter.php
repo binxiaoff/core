@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Authorization\{AuthorizationCheckerInterface, Voter\Voter};
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, Project, ProjectOrganizer, ProjectParticipation, ProjectParticipationContact, ProjectParticipationOffer};
 use Unilend\Repository\{ProjectOrganizerRepository, ProjectParticipationContactRepository};
 use Unilend\Traits\ConstantsAwareTrait;
 
-class ProjectParticipationOfferVoter extends Voter
+class ProjectParticipationOfferVoter extends AbstractVoter
 {
     use ConstantsAwareTrait;
 
@@ -45,7 +44,7 @@ class ProjectParticipationOfferVoter extends Voter
      */
     protected function supports($attribute, $subject): bool
     {
-        return $subject instanceof ProjectParticipationOffer && in_array($attribute, self::getConstants('ATTRIBUTE_'), true);
+        return $subject instanceof ProjectParticipationOffer && parent::supports($attribute, $subject);
     }
 
     /**
@@ -55,27 +54,18 @@ class ProjectParticipationOfferVoter extends Voter
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
-        /** @var Clients $user */
-        $user = $token->getUser();
+        $user = $this->getUser($token);
 
-        if (false === $user instanceof Clients) {
+        if (null === $user) {
             return false;
         }
 
         $projectParticipation = $subject->getProjectParticipation();
         $projectOrganizer     = $this->getProjectOrganizer($projectParticipation->getProject(), $user);
 
-        if ($this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || ($projectOrganizer && $projectOrganizer->isArranger())) {
-            return true;
-        }
-
-        switch ($attribute) {
-            case self::ATTRIBUTE_CREATE:
-            case self::ATTRIBUTE_EDIT:
-                return null !== $this->getParticipationContact($projectParticipation, $user);
-        }
-
-        throw new LogicException('This code should not be reached');
+        return $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN)
+            || ($projectOrganizer && $projectOrganizer->isArranger())
+            || null !== $this->getParticipationContact($projectParticipation, $user);
     }
 
     /**

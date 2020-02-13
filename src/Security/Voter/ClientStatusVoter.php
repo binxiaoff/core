@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use LogicException;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Authorization\{AuthorizationCheckerInterface, Voter\Voter};
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{ClientStatus, Clients};
 use Unilend\Traits\ConstantsAwareTrait;
 
-class ClientStatusVoter extends Voter
+class ClientStatusVoter extends AbstractVoter
 {
     use ConstantsAwareTrait;
 
@@ -30,39 +28,9 @@ class ClientStatusVoter extends Voter
     /**
      * {@inheritdoc}
      */
-    protected function supports($attribute, $subject)
+    protected function supports($attribute, $subject): bool
     {
-        $attributes = self::getConstants('ATTRIBUTE_');
-
-        if (false === in_array($attribute, $attributes, true)) {
-            return false;
-        }
-
-        if (false === $subject instanceof ClientStatus) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function voteOnAttribute($attribute, $clientStatus, TokenInterface $token): bool
-    {
-        /** @var Clients $user */
-        $user = $token->getUser();
-
-        if (false === $user instanceof Clients) {
-            return false;
-        }
-
-        switch ($attribute) {
-            case self::ATTRIBUTE_VIEW:
-                return $this->canView($clientStatus, $user);
-        }
-
-        throw new LogicException('This code should not be reached');
+        return parent::supports($attribute, $subject) && $subject instanceof ClientStatus;
     }
 
     /**

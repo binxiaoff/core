@@ -4,17 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use LogicException;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Unilend\Entity\{Clients, TrancheOffer};
-use Unilend\Traits\ConstantsAwareTrait;
 
-class TrancheOfferVoter extends Voter
+class TrancheOfferVoter extends AbstractVoter
 {
-    use ConstantsAwareTrait;
-
     public const ATTRIBUTE_MANAGE = 'manage';
 
     /** @var AuthorizationCheckerInterface */
@@ -31,39 +25,9 @@ class TrancheOfferVoter extends Voter
     /**
      * {@inheritdoc}
      */
-    protected function supports($attribute, $subject)
+    protected function supports($attribute, $subject): bool
     {
-        $attributes = self::getConstants('ATTRIBUTE_');
-
-        if (false === in_array($attribute, $attributes, true)) {
-            return false;
-        }
-
-        if (false === $subject instanceof TrancheOffer) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function voteOnAttribute($attribute, $trancheOffer, TokenInterface $token): bool
-    {
-        /** @var Clients $user */
-        $user = $token->getUser();
-
-        if (false === $user instanceof Clients) {
-            return false;
-        }
-
-        switch ($attribute) {
-            case self::ATTRIBUTE_MANAGE:
-                return $this->canManage($trancheOffer, $user);
-        }
-
-        throw new LogicException('This code should not be reached');
+        return $subject instanceof TrancheOffer && parent::supports($attribute, $subject);
     }
 
     /**

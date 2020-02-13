@@ -6,11 +6,10 @@ namespace Unilend\Security\Voter;
 
 use Doctrine\ORM\PersistentCollection;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Unilend\Entity\{Clients, MarketSegment, Staff};
 use Unilend\Traits\ConstantsAwareTrait;
 
-class StaffVoter extends Voter
+class StaffVoter extends AbstractVoter
 {
     use ConstantsAwareTrait;
 
@@ -24,7 +23,7 @@ class StaffVoter extends Voter
      */
     protected function supports($attribute, $subject): bool
     {
-        return $subject instanceof Staff && \in_array($attribute, static::getConstants('ATTRIBUTE_'), true);
+        return $subject instanceof Staff && parent::supports($attribute, $subject);
     }
 
     /**
@@ -33,9 +32,9 @@ class StaffVoter extends Voter
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
         /** @var Clients $user */
-        $user = $token->getUser();
+        $user = $this->getUser($token);
 
-        if (false === $user instanceof Clients) {
+        if (null === $user) {
             return false;
         }
 
@@ -53,18 +52,7 @@ class StaffVoter extends Voter
             return false;
         }
 
-        switch ($attribute) {
-            case static::ATTRIBUTE_VIEW:
-                return true;
-            case static::ATTRIBUTE_CREATE:
-                return $this->canCreate($subject, $submitterStaff);
-            case static::ATTRIBUTE_EDIT:
-                return $this->canEdit($subject, $submitterStaff);
-            case static::ATTRIBUTE_DELETE:
-                return $this->canDelete($subject, $submitterStaff);
-        }
-
-        throw new \LogicException('This code should not be reached');
+        return parent::voteOnAttribute($attribute, $subject, $token);
     }
 
     /**
@@ -75,8 +63,6 @@ class StaffVoter extends Voter
      */
     private function canCreate(Staff $subject, Staff $submitterStaff): bool
     {
-        $canAdministrate = $submitterStaff->isManager() || $submitterStaff->isAdmin();
-
         // A manager cannot create a staff with markets other than is own. But we can create a staff without market segment (used for invitation via email)
         return 0 === $subject->getMarketSegments()->count()
             || $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {

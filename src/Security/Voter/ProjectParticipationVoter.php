@@ -7,13 +7,13 @@ namespace Unilend\Security\Voter;
 use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Authorization\{AuthorizationCheckerInterface, Voter\Voter};
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, Project, ProjectOrganizer, ProjectParticipation, ProjectParticipationContact, ProjectStatus};
 use Unilend\Repository\{ProjectOrganizerRepository, ProjectParticipationContactRepository};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 use Unilend\Traits\ConstantsAwareTrait;
 
-class ProjectParticipationVoter extends Voter
+class ProjectParticipationVoter extends AbstractVoter
 {
     use ConstantsAwareTrait;
 
@@ -59,43 +59,26 @@ class ProjectParticipationVoter extends Voter
      */
     protected function supports($attribute, $subject): bool
     {
-        return $subject instanceof ProjectParticipation && in_array($attribute, self::getConstants('ATTRIBUTE_'), true);
+        return $subject instanceof ProjectParticipation && parent::supports($subject, $subject);
     }
 
     /**
      * {@inheritdoc}
-     *
-     * @throws NonUniqueResultException
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
-        /** @var Clients $user */
-        $user = $token->getUser();
+        $user = $this->getUser($token);
 
-        if (false === $user instanceof Clients) {
+        // TODO It might be interessing to put this condition in ProjectVoter
+        if (null !== $user || $subject->getProject()->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_INTERESTS_COLLECTED) {
             return false;
         }
 
         $projectOrganizer = $this->getProjectOrganizer($subject->getProject(), $user);
 
-        if ($subject->getProject()->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_INTERESTS_COLLECTED) {
-            return false;
-        }
-
-        if ($this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || ($projectOrganizer && $projectOrganizer->isArranger())) {
-            return true;
-        }
-
-        switch ($attribute) {
-            case self::ATTRIBUTE_CREATE:
-                return $this->canCreate($subject);
-            case self::ATTRIBUTE_VIEW:
-                return $this->canView($subject, $user);
-            case self::ATTRIBUTE_EDIT:
-                return $this->canEdit($subject, $user);
-        }
-
-        throw new LogicException('This code should not be reached');
+        return $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN)
+            || ($projectOrganizer && $projectOrganizer->isArranger())
+            || parent::voteOnAttribute($attribute, $subject, $token);
     }
 
     /**

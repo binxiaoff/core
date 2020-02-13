@@ -49,7 +49,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         },
  *         "project_confidentiality": {
  *             "method": "GET",
- *             "security": "is_granted('view_confidentiality_doc', object)",
+ *             "security": "is_granted('view_confidentiality_document', object)",
  *             "normalization_context": {"groups": {"project:confidentiality:view", "attachment:read"}},
  *             "path": "/projects/{id}/confidentiality"
  *         },
