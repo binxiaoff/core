@@ -56,4 +56,6 @@
             <property name="spacing" value="1"/>
         </properties>
     </rule>
+    
+    <rule ref="vendor/pheromone/phpcs-security-audit/Security/ruleset.xml"/>
 </ruleset>
