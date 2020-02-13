@@ -99,16 +99,16 @@ class ProjectOrganizer
     /**
      * @param Companies             $company
      * @param Project               $project
-     * @param Clients               $client
+     * @param Clients               $addedBy
      * @param array|string[]|string $roles
      *
      * @throws Exception
      */
-    public function __construct(Companies $company, Project $project, Clients $client, $roles = [])
+    public function __construct(Companies $company, Project $project, Clients $addedBy, $roles = [])
     {
         $this->project    = $project;
         $this->company    = $company;
-        $this->addedBy    = $client;
+        $this->addedBy    = $addedBy;
         $this->added      = new DateTimeImmutable();
         $this->permission = new Permission();
 
