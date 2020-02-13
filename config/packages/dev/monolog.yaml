@@ -4,3 +4,10 @@ monolog:
             type: stream
             level: info
             path: "%kernel.logs_dir%/site.%kernel.environment%.log"
+
+        # Disable support channel in dev
+        null_support:
+            type: 'null'
+            level: debug
+            priority: 50
+            channels: ['support']

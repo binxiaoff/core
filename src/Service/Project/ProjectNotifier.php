@@ -6,21 +6,25 @@ namespace Unilend\Service\Project;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectStatus;
+use Psr\Log\{LogLevel, LoggerInterface};
+use Unilend\Entity\{Project, ProjectStatus};
 use Unilend\Service\ProjectParticipation\ProjectParticipationNotifier;
 
 class ProjectNotifier
 {
     /** @var ProjectParticipationNotifier */
     private $projectParticipationNotifier;
+    /** @var LoggerInterface */
+    private $supportLogger;
 
     /**
      * @param ProjectParticipationNotifier $projectParticipationNotifier
+     * @param LoggerInterface              $supportLogger
      */
-    public function __construct(ProjectParticipationNotifier $projectParticipationNotifier)
+    public function __construct(ProjectParticipationNotifier $projectParticipationNotifier, LoggerInterface $supportLogger)
     {
         $this->projectParticipationNotifier = $projectParticipationNotifier;
+        $this->supportLogger                = $supportLogger;
     }
 
     /**
@@ -43,5 +47,18 @@ class ProjectNotifier
         }
 
         return $sent;
+    }
+
+    /**
+     * @param Project $project
+     */
+    public function notifyProjectCreated(Project $project)
+    {
+        $title = $project->getTitle();
+
+        $this->supportLogger->log(LogLevel::INFO, "Le dossier {$title} vient d'être créé", [
+            'utilisateur' => $project->getSubmitterClient()->getEmail(),
+            'entité'      => $project->getSubmitterCompany()->getName(),
+        ]);
     }
 }

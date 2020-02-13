@@ -1,2 +1,11 @@
+## 1.1.0 (13/02/2020)
+[Release note](https://lafabriquebyca.atlassian.net/browse/CALS/fixforversion/10001)
+
+## 1.0.2 (05/02/2020)
+[Release note](https://lafabriquebyca.atlassian.net/browse/CALS/fixforversion/10004)
+
+## 1.0.1 (04/02/2020)
+[Release note](https://lafabriquebyca.atlassian.net/browse/CALS/fixforversion/10002)
+
 ## 1.0.0 (03/02/2020)
-[Release note](https://www.notion.so/lafabrique/Release-1-0-0-80ab4de5d03842a2b1cff15be153cff0)
+[Release note](https://lafabriquebyca.atlassian.net/browse/CALS/fixforversion/10000)

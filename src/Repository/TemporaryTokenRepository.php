@@ -35,8 +35,18 @@ class TemporaryTokenRepository extends ServiceEntityRepository
      */
     public function save(TemporaryToken $temporaryToken): void
     {
-        $this->getEntityManager()->persist($temporaryToken);
+        $this->persist($temporaryToken);
         $this->getEntityManager()->flush();
+    }
+
+    /**
+     * @param TemporaryToken $temporaryToken
+     *
+     * @throws ORMException
+     */
+    public function persist(TemporaryToken $temporaryToken): void
+    {
+        $this->getEntityManager()->persist($temporaryToken);
     }
 
     /**

@@ -15,7 +15,7 @@ tos:
 403:
   path: /403
 password_change:                       
-  path: /password/change/{temporaryTokenHash}
+  path: /password/change/{temporaryTokenHash}/{clientHash}
 password_request:                      
   path: /password/request
 participation_index:                   

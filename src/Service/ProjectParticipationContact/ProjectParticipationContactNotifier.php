@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Service\ProjectParticipationContact;
 
 use Exception;
+use LogicException;
 use Swift_Mailer;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{Clients, Companies, Project, ProjectParticipationContact, ProjectStatus, TemporaryToken};
@@ -52,13 +53,13 @@ class ProjectParticipationContactNotifier
         $arranger = $project->getArranger();
 
         if (null === $arranger) {
-            throw new \LogicException('The arranger should not be null');
+            throw new LogicException('The arranger should not be null');
         }
 
         $temporaryToken = null;
         if ($client->isInvited()) {
             $temporaryToken = TemporaryToken::generateMediumToken($client);
-            $this->temporaryTokenRepository->save($temporaryToken);
+            $this->temporaryTokenRepository->persist($temporaryToken);
         }
 
         $context = [
