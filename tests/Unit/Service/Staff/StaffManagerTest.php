@@ -27,7 +27,7 @@ class StaffManagerTest extends TestCase
     /** @var ClientsRepository|ObjectProphecy */
     private $clientsRepository;
     /** @var CompanyRepository|ObjectProphecy */
-    private $companiesRepository;
+    private $companyRepository;
     /** @var StaffRepository|ObjectProphecy */
     private $staffRepository;
 
@@ -36,10 +36,10 @@ class StaffManagerTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->companyManager      = $this->prophesize(CompanyManager::class);
-        $this->clientsRepository   = $this->prophesize(ClientsRepository::class);
-        $this->companiesRepository = $this->prophesize(CompanyRepository::class);
-        $this->staffRepository     = $this->prophesize(StaffRepository::class);
+        $this->companyManager    = $this->prophesize(CompanyManager::class);
+        $this->clientsRepository = $this->prophesize(ClientsRepository::class);
+        $this->companyRepository = $this->prophesize(CompanyRepository::class);
+        $this->staffRepository   = $this->prophesize(StaffRepository::class);
     }
 
     /**
@@ -135,7 +135,7 @@ class StaffManagerTest extends TestCase
             $clientSaver->shouldHaveBeenCalled();
         }
 
-        $this->companiesRepository->save(Argument::exact($company))->shouldHaveBeenCalled();
+        $this->companyRepository->save(Argument::exact($company))->shouldHaveBeenCalled();
 
         static::assertSame($company, $staff->getCompany());
         static::assertSame($email, $staff->getClient()->getEmail());
@@ -178,7 +178,7 @@ class StaffManagerTest extends TestCase
         return new StaffManager(
             $this->companyManager->reveal(),
             $this->clientsRepository->reveal(),
-            $this->companiesRepository->reveal(),
+            $this->companyRepository->reveal(),
             $this->staffRepository->reveal()
         );
     }
