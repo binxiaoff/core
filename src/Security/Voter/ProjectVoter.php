@@ -8,12 +8,9 @@ use Exception;
 use Unilend\Entity\{Clients, Embeddable\Permission, Project, ProjectOrganizer};
 use Unilend\Repository\ProjectOrganizerRepository;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
-use Unilend\Traits\ConstantsAwareTrait;
 
 class ProjectVoter extends AbstractVoter
 {
-    use ConstantsAwareTrait;
-
     public const ATTRIBUTE_VIEW                          = 'view';
     public const ATTRIBUTE_VIEW_CONFIDENTIALITY_DOCUMENT = 'view_confidentiality_document';
     public const ATTRIBUTE_EDIT                          = 'edit';
@@ -53,7 +50,7 @@ class ProjectVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canView(Project $project, Clients $user): bool
+    protected function canView(Project $project, Clients $user): bool
     {
         if ($this->canEdit($project, $user)) {
             return true;
@@ -71,7 +68,7 @@ class ProjectVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canViewConfidentialityDocument(Project $project, Clients $user): bool
+    protected function canViewConfidentialityDocument(Project $project, Clients $user): bool
     {
         if ($this->canEdit($project, $user) || $this->canView($project, $user)) {
             return true;
@@ -88,7 +85,7 @@ class ProjectVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canEdit(Project $project, Clients $user): bool
+    protected function canEdit(Project $project, Clients $user): bool
     {
         if ($user->getCompany() === $project->getSubmitterCompany()) {
             return true;
@@ -107,7 +104,7 @@ class ProjectVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canManageTrancheOffer(Project $project, Clients $user): bool
+    protected function canManageTrancheOffer(Project $project, Clients $user): bool
     {
         $projectOrganizer = $this->getProjectOrganizer($project, $user);
 
@@ -122,7 +119,7 @@ class ProjectVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canRate(Project $project, Clients $user): bool
+    protected function canRate(Project $project, Clients $user): bool
     {
         $projectOrganizer = $this->getProjectOrganizer($project, $user);
 
@@ -137,7 +134,7 @@ class ProjectVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canCreateTrancheOffer(Project $project, Clients $user): bool
+    protected function canCreateTrancheOffer(Project $project, Clients $user): bool
     {
         return $this->projectParticipationManager->isParticipant($user, $project);
     }
@@ -150,7 +147,7 @@ class ProjectVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canComment(Project $project, Clients $user): bool
+    protected function canComment(Project $project, Clients $user): bool
     {
         return $this->canView($project, $user);
     }
@@ -161,7 +158,7 @@ class ProjectVoter extends AbstractVoter
      *
      * @return ProjectOrganizer|null
      */
-    private function getProjectOrganizer(Project $project, Clients $user): ?ProjectOrganizer
+    protected function getProjectOrganizer(Project $project, Clients $user): ?ProjectOrganizer
     {
         return $this->projectOrganizerRepository->findOneBy(['project' => $project, 'company' => $user->getCompany()]);
     }

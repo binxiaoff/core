@@ -37,7 +37,7 @@ class ProjectOrganizerVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canCreate(ProjectOrganizer $subject)
+    protected function canCreate(ProjectOrganizer $subject)
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $subject->getProject());
     }
@@ -47,7 +47,7 @@ class ProjectOrganizerVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canDelete(ProjectOrganizer $subject): bool
+    protected function canDelete(ProjectOrganizer $subject): bool
     {
         return $subject->hasRole(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER) && $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $subject->getProject());
     }
@@ -57,7 +57,7 @@ class ProjectOrganizerVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canEdit(ProjectOrganizer $subject): bool
+    protected function canEdit(ProjectOrganizer $subject): bool
     {
         return $subject->hasRole(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER) && $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $subject->getProject());
     }

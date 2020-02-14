@@ -5,12 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Unilend\Entity\{Clients, ProjectComment};
-use Unilend\Traits\ConstantsAwareTrait;
 
 class ProjectCommentVoter extends AbstractVoter
 {
-    use ConstantsAwareTrait;
-
     public const ATTRIBUTE_EDIT = 'edit';
 
     /**
@@ -27,7 +24,7 @@ class ProjectCommentVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canEdit(ProjectComment $projectComment, Clients $user): bool
+    protected function canEdit(ProjectComment $projectComment, Clients $user): bool
     {
         return $projectComment->getClient() === $user;
     }

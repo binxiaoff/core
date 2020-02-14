@@ -8,12 +8,9 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, Project, ProjectOrganizer, ProjectParticipation, ProjectParticipationContact, ProjectParticipationOffer};
 use Unilend\Repository\{ProjectOrganizerRepository, ProjectParticipationContactRepository};
-use Unilend\Traits\ConstantsAwareTrait;
 
 class ProjectParticipationOfferVoter extends AbstractVoter
 {
-    use ConstantsAwareTrait;
-
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_CREATE = 'create';
 
@@ -74,7 +71,7 @@ class ProjectParticipationOfferVoter extends AbstractVoter
      *
      * @return ProjectOrganizer|null
      */
-    private function getProjectOrganizer(Project $project, Clients $user): ?ProjectOrganizer
+    protected function getProjectOrganizer(Project $project, Clients $user): ?ProjectOrganizer
     {
         return $this->projectOrganizerRepository->findOneBy(['project' => $project, 'company' => $user->getCompany()]);
     }
@@ -85,7 +82,7 @@ class ProjectParticipationOfferVoter extends AbstractVoter
      *
      * @return ProjectParticipationContact|null
      */
-    private function getParticipationContact(ProjectParticipation $projectParticipation, Clients $user): ?ProjectParticipationContact
+    protected function getParticipationContact(ProjectParticipation $projectParticipation, Clients $user): ?ProjectParticipationContact
     {
         return $this->projectParticipationContactRepository->findOneBy(['projectParticipation' => $projectParticipation, 'client' => $user]);
     }

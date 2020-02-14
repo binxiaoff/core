@@ -6,12 +6,9 @@ namespace Unilend\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{ClientStatus, Clients};
-use Unilend\Traits\ConstantsAwareTrait;
 
 class ClientStatusVoter extends AbstractVoter
 {
-    use ConstantsAwareTrait;
-
     public const ATTRIBUTE_VIEW = 'view';
 
     /** @var AuthorizationCheckerInterface */
@@ -30,7 +27,7 @@ class ClientStatusVoter extends AbstractVoter
      */
     protected function supports($attribute, $subject): bool
     {
-        return parent::supports($attribute, $subject) && $subject instanceof ClientStatus;
+        return $subject instanceof ClientStatus && parent::supports($attribute, $subject);
     }
 
     /**
@@ -39,7 +36,7 @@ class ClientStatusVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canView(ClientStatus $clientStatus, Clients $user): bool
+    protected function canView(ClientStatus $clientStatus, Clients $user): bool
     {
         return $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || $user === $clientStatus->getClient();
     }

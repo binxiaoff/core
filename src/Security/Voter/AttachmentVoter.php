@@ -10,12 +10,9 @@ use Monolog\Logger;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Attachment, Clients, Project, ProjectParticipationContact, ProjectStatus};
 use Unilend\Repository\{AttachmentSignatureRepository, ProjectParticipationContactRepository};
-use Unilend\Traits\ConstantsAwareTrait;
 
 class AttachmentVoter extends AbstractVoter
 {
-    use ConstantsAwareTrait;
-
     public const ATTRIBUTE_DOWNLOAD = 'download';
 
     /** @var AuthorizationCheckerInterface */
@@ -61,7 +58,7 @@ class AttachmentVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canDownload(Attachment $attachment, Clients $user): bool
+    protected function canDownload(Attachment $attachment, Clients $user): bool
     {
         $project   = $attachment->getProject();
         $signature = $this->attachmentSignatureRepository->findOneBy(['attachment' => $attachment, 'signatory' => $user]);
@@ -95,7 +92,7 @@ class AttachmentVoter extends AbstractVoter
      *
      * @return ProjectParticipationContact|null
      */
-    private function getActiveParticipantParticipation(Project $project, Clients $user): ?ProjectParticipationContact
+    protected function getActiveParticipantParticipation(Project $project, Clients $user): ?ProjectParticipationContact
     {
         /** @var ProjectParticipationContact $participationContact */
         $participationContact = $this->participationContactRepository->findByProjectAndClient($project, $user);
@@ -109,7 +106,7 @@ class AttachmentVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function hasValidatedOffer(ProjectParticipationContact $contact): bool
+    protected function hasValidatedOffer(ProjectParticipationContact $contact): bool
     {
         return null !== ($participation = $contact->getProjectParticipation()) && $participation->hasValidatedOffer();
     }
@@ -120,7 +117,7 @@ class AttachmentVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function isAddedBeforeOfferCollected(Project $project, Attachment $attachment): bool
+    protected function isAddedBeforeOfferCollected(Project $project, Attachment $attachment): bool
     {
         $offerCollected = $project->getLastSpecificStatus(ProjectStatus::STATUS_OFFERS_COLLECTED);
 

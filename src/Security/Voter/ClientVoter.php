@@ -29,7 +29,7 @@ class ClientVoter extends AbstractVoter
      *
      * @return bool
      */
-    public function canView(Clients $subject, Clients $user)
+    protected function canView(Clients $subject, Clients $user)
     {
         return $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || $subject->getId() === $user->getId();
     }
@@ -40,7 +40,7 @@ class ClientVoter extends AbstractVoter
      *
      * @return bool
      */
-    public function canEdit(Clients $subject, Clients $user)
+    protected function canEdit(Clients $subject, Clients $user)
     {
         return $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || $subject->getId() === $user->getId();
     }

@@ -36,7 +36,7 @@ class TrancheOfferVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canManage(TrancheOffer $trancheOffer, Clients $user): bool
+    protected function canManage(TrancheOffer $trancheOffer, Clients $user): bool
     {
         if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_MANAGE_TRANCHE_OFFER, $trancheOffer->getTranche()->getProject())) {
             return true;

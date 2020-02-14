@@ -25,7 +25,7 @@ class AcceptationLegalDocVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canDownload(AcceptationsLegalDocs $attachment, Clients $user): bool
+    protected function canDownload(AcceptationsLegalDocs $attachment, Clients $user): bool
     {
         return $attachment->getClient() === $user;
     }

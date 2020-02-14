@@ -11,29 +11,20 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, Project, ProjectOrganizer, ProjectParticipation, ProjectParticipationContact, ProjectStatus};
 use Unilend\Repository\{ProjectOrganizerRepository, ProjectParticipationContactRepository};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
-use Unilend\Traits\ConstantsAwareTrait;
 
 class ProjectParticipationVoter extends AbstractVoter
 {
-    use ConstantsAwareTrait;
-
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_CREATE = 'create';
 
     /** @var AuthorizationCheckerInterface */
     private $authorizationChecker;
-    /**
-     * @var ProjectOrganizerRepository
-     */
+    /** @var ProjectOrganizerRepository */
     private $projectOrganizerRepository;
-    /**
-     * @var ProjectParticipationContactRepository
-     */
+    /** @var ProjectParticipationContactRepository */
     private $projectParticipationContactRepository;
-    /**
-     * @var ProjectParticipationManager
-     */
+    /** @var ProjectParticipationManager */
     private $projectParticipationManager;
 
     /**
@@ -89,7 +80,7 @@ class ProjectParticipationVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canView(ProjectParticipation $projectParticipation, Clients $user): bool
+    protected function canView(ProjectParticipation $projectParticipation, Clients $user): bool
     {
         $project = $projectParticipation->getProject();
 
@@ -110,7 +101,7 @@ class ProjectParticipationVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canEdit(ProjectParticipation $projectParticipation, Clients $user): bool
+    protected function canEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
         return null !== $this->getParticipationContact($projectParticipation, $user);
     }
@@ -121,7 +112,7 @@ class ProjectParticipationVoter extends AbstractVoter
      *
      * @return ProjectOrganizer|null
      */
-    private function getProjectOrganizer(Project $project, Clients $user): ?ProjectOrganizer
+    protected function getProjectOrganizer(Project $project, Clients $user): ?ProjectOrganizer
     {
         return $this->projectOrganizerRepository->findOneBy(['project' => $project, 'company' => $user->getCompany()]);
     }
@@ -132,7 +123,7 @@ class ProjectParticipationVoter extends AbstractVoter
      *
      * @return ProjectParticipationContact|null
      */
-    private function getParticipationContact(ProjectParticipation $projectParticipation, Clients $user): ?ProjectParticipationContact
+    protected function getParticipationContact(ProjectParticipation $projectParticipation, Clients $user): ?ProjectParticipationContact
     {
         return $this->projectParticipationContactRepository->findOneBy(['projectParticipation' => $projectParticipation, 'client' => $user]);
     }
@@ -144,7 +135,7 @@ class ProjectParticipationVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canCreate(ProjectParticipation $subject): bool
+    protected function canCreate(ProjectParticipation $subject): bool
     {
         $company   = $subject->getCompany();
         $blacklist = array_map('strtolower', ProjectParticipation::BLACKLISTED_COMPANIES);

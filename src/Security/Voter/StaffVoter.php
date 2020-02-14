@@ -7,28 +7,21 @@ namespace Unilend\Security\Voter;
 use Doctrine\ORM\PersistentCollection;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Unilend\Entity\{Clients, MarketSegment, Staff};
-use Unilend\Traits\ConstantsAwareTrait;
 
 class StaffVoter extends AbstractVoter
 {
-    use ConstantsAwareTrait;
-
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_DELETE = 'delete';
     public const ATTRIBUTE_CREATE = 'create';
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected function supports($attribute, $subject): bool
     {
         return $subject instanceof Staff && parent::supports($attribute, $subject);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
         /** @var Clients $user */
@@ -61,7 +54,7 @@ class StaffVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canCreate(Staff $subject, Staff $submitterStaff): bool
+    protected function canCreate(Staff $subject, Staff $submitterStaff): bool
     {
         // A manager cannot create a staff with markets other than is own. But we can create a staff without market segment (used for invitation via email)
         return 0 === $subject->getMarketSegments()->count()
@@ -76,7 +69,7 @@ class StaffVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canDelete(Staff $subject, Staff $submitterStaff): bool
+    protected function canDelete(Staff $subject, Staff $submitterStaff): bool
     {
         if (false === $submitterStaff->isManager() || $subject->getCompany() !== $submitterStaff->getCompany()) {
             return false;
@@ -94,7 +87,7 @@ class StaffVoter extends AbstractVoter
      *
      * @return bool
      */
-    private function canEdit(Staff $subject, Staff $submitterStaff): bool
+    protected function canEdit(Staff $subject, Staff $submitterStaff): bool
     {
         if (false === $submitterStaff->isManager() || $subject->getCompany() !== $submitterStaff->getCompany()) {
             return false;
