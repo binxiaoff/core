@@ -10,7 +10,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class JWTVersionSubscriber implements EventSubscriberInterface
 {
-    public const JWT_VERSION = 1;
+    public const JWT_VERSION = '2020-02-14';
 
     /**
      * {@inheritdoc}
@@ -42,7 +42,7 @@ class JWTVersionSubscriber implements EventSubscriberInterface
     {
         $payload = $event->getPayload();
 
-        if (!isset($payload['version']) || static::JWT_VERSION !== $payload['version']) {
+        if (false === isset($payload['version']) || static::JWT_VERSION === $payload['version']) {
             $event->markAsInvalid();
         }
     }
