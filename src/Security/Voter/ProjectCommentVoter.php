@@ -6,17 +6,9 @@ namespace Unilend\Security\Voter;
 
 use Unilend\Entity\{Clients, ProjectComment};
 
-class ProjectCommentVoter extends AbstractVoter
+class ProjectCommentVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_EDIT = 'edit';
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function supports($attribute, $subject): bool
-    {
-        return $subject instanceof ProjectComment && parent::supports($attribute, $subject);
-    }
 
     /**
      * @param ProjectComment $projectComment

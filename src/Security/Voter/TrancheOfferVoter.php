@@ -7,7 +7,7 @@ namespace Unilend\Security\Voter;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, TrancheOffer};
 
-class TrancheOfferVoter extends AbstractVoter
+class TrancheOfferVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_MANAGE = 'manage';
 
@@ -20,14 +20,6 @@ class TrancheOfferVoter extends AbstractVoter
     public function __construct(AuthorizationCheckerInterface $authorizationChecker)
     {
         $this->authorizationChecker = $authorizationChecker;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function supports($attribute, $subject): bool
-    {
-        return $subject instanceof TrancheOffer && parent::supports($attribute, $subject);
     }
 
     /**

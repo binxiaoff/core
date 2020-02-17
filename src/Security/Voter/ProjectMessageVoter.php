@@ -7,19 +7,11 @@ namespace Unilend\Security\Voter;
 use Exception;
 use Unilend\Entity\{Clients, ProjectMessage};
 
-class ProjectMessageVoter extends AbstractVoter
+class ProjectMessageVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_DELETE = 'delete';
     public const ATTRIBUTE_CREATE = 'create';
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function supports($attribute, $subject): bool
-    {
-        return $subject instanceof ProjectMessage && parent::supports($attribute, $subject);
-    }
 
     /**
      * @param ProjectMessage $subject

@@ -7,17 +7,9 @@ namespace Unilend\Security\Voter;
 use Unilend\Entity\AcceptationsLegalDocs;
 use Unilend\Entity\Clients;
 
-class AcceptationLegalDocVoter extends AbstractVoter
+class AcceptationLegalDocVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_DOWNLOAD = 'download';
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function supports($attribute, $subject): bool
-    {
-        return $subject instanceof AcceptationsLegalDocs && parent::supports($attribute, $subject);
-    }
 
     /**
      * @param AcceptationsLegalDocs $attachment

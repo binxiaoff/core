@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, Project, ProjectOrganizer, ProjectParticipation, ProjectParticipationContact, ProjectParticipationOffer};
 use Unilend\Repository\{ProjectOrganizerRepository, ProjectParticipationContactRepository};
 
-class ProjectParticipationOfferVoter extends AbstractVoter
+class ProjectParticipationOfferVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_CREATE = 'create';
@@ -37,26 +36,13 @@ class ProjectParticipationOfferVoter extends AbstractVoter
     }
 
     /**
-     * {@inheritdoc}
-     */
-    protected function supports($attribute, $subject): bool
-    {
-        return $subject instanceof ProjectParticipationOffer && parent::supports($attribute, $subject);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
      * @param ProjectParticipationOffer $subject
+     * @param Clients                   $user
+     *
+     * @return bool
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
+    protected function isGrantedAll($subject, Clients $user): bool
     {
-        $user = $this->getUser($token);
-
-        if (null === $user) {
-            return false;
-        }
-
         $projectParticipation = $subject->getProjectParticipation();
         $projectOrganizer     = $this->getProjectOrganizer($projectParticipation->getProject(), $user);
 
@@ -71,7 +57,7 @@ class ProjectParticipationOfferVoter extends AbstractVoter
      *
      * @return ProjectOrganizer|null
      */
-    protected function getProjectOrganizer(Project $project, Clients $user): ?ProjectOrganizer
+    private function getProjectOrganizer(Project $project, Clients $user): ?ProjectOrganizer
     {
         return $this->projectOrganizerRepository->findOneBy(['project' => $project, 'company' => $user->getCompany()]);
     }
@@ -82,7 +68,7 @@ class ProjectParticipationOfferVoter extends AbstractVoter
      *
      * @return ProjectParticipationContact|null
      */
-    protected function getParticipationContact(ProjectParticipation $projectParticipation, Clients $user): ?ProjectParticipationContact
+    private function getParticipationContact(ProjectParticipation $projectParticipation, Clients $user): ?ProjectParticipationContact
     {
         return $this->projectParticipationContactRepository->findOneBy(['projectParticipation' => $projectParticipation, 'client' => $user]);
     }

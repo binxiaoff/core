@@ -7,7 +7,7 @@ namespace Unilend\Security\Voter;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{ClientStatus, Clients};
 
-class ClientStatusVoter extends AbstractVoter
+class ClientStatusVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_VIEW = 'view';
 
@@ -20,14 +20,6 @@ class ClientStatusVoter extends AbstractVoter
     public function __construct(AuthorizationCheckerInterface $authorizationChecker)
     {
         $this->authorizationChecker = $authorizationChecker;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function supports($attribute, $subject): bool
-    {
-        return $subject instanceof ClientStatus && parent::supports($attribute, $subject);
     }
 
     /**

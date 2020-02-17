@@ -5,91 +5,84 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Doctrine\ORM\PersistentCollection;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Unilend\Entity\{Clients, MarketSegment, Staff};
 
-class StaffVoter extends AbstractVoter
+class StaffVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_DELETE = 'delete';
     public const ATTRIBUTE_CREATE = 'create';
 
-    /** {@inheritdoc} */
-    protected function supports($attribute, $subject): bool
+    /**
+     * @param mixed   $subject
+     * @param Clients $user
+     *
+     * @return bool
+     */
+    protected function fulfillPreconditions($subject, Clients $user): bool
     {
-        return $subject instanceof Staff && parent::supports($attribute, $subject);
-    }
-
-    /** {@inheritdoc} */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
-    {
-        /** @var Clients $user */
-        $user = $this->getUser($token);
-
-        if (null === $user) {
-            return false;
-        }
-
         $submitterStaff = $user->getStaff();
 
-        if (null === $submitterStaff) {
-            return false;
-        }
-
-        if ($submitterStaff->isAdmin() && $subject->getCompany() === $submitterStaff->getCompany()) {
-            return true;
-        }
-
-        if ($subject->isAdmin()) {
-            return false;
-        }
-
-        return parent::voteOnAttribute($attribute, $subject, $token);
+        return $submitterStaff ? true : false;
     }
 
     /**
-     * @param Staff $subject
-     * @param Staff $submitterStaff
+     * @param Staff   $subject
+     * @param Clients $user
      *
      * @return bool
      */
-    protected function canCreate(Staff $subject, Staff $submitterStaff): bool
+    protected function isGrantedAll($subject, Clients $user): bool
     {
+        $submitterStaff = $user->getStaff();
+
+        return $submitterStaff && $submitterStaff->isAdmin() && $subject->getCompany() === $submitterStaff->getCompany();
+    }
+
+    /**
+     * @param Staff   $subject
+     * @param Clients $user
+     *
+     * @return bool
+     */
+    protected function canCreate(Staff $subject, Clients $user): bool
+    {
+        $submitterStaff = $user->getStaff();
+
         // A manager cannot create a staff with markets other than is own. But we can create a staff without market segment (used for invitation via email)
-        return 0 === $subject->getMarketSegments()->count()
+        return $this->mayManage($subject, $user) && (0 === $subject->getMarketSegments()->count()
             || $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
                 return $submitterStaff->getMarketSegments()->contains($marketSegment);
-            });
+            }));
     }
 
     /**
-     * @param Staff $subject
-     * @param Staff $submitterStaff
+     * @param Staff   $subject
+     * @param Clients $user
      *
      * @return bool
      */
-    protected function canDelete(Staff $subject, Staff $submitterStaff): bool
+    protected function canDelete(Staff $subject, Clients $user): bool
     {
-        if (false === $submitterStaff->isManager() || $subject->getCompany() !== $submitterStaff->getCompany()) {
-            return false;
-        }
+        $submitterStaff = $user->getStaff();
 
         // A manager cannot delete a user with markets other than is own
-        return $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
+        return $this->mayManage($subject, $user) && $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
             return $submitterStaff->getMarketSegments()->contains($marketSegment);
         });
     }
 
     /**
-     * @param Staff $subject
-     * @param Staff $submitterStaff
+     * @param Staff   $subject
+     * @param Clients $user
      *
      * @return bool
      */
-    protected function canEdit(Staff $subject, Staff $submitterStaff): bool
+    protected function canEdit(Staff $subject, Clients $user): bool
     {
-        if (false === $submitterStaff->isManager() || $subject->getCompany() !== $submitterStaff->getCompany()) {
+        $submitterStaff = $user->getStaff();
+        if (false === $this->mayManage($subject, $user)) {
             return false;
         }
 
@@ -118,5 +111,27 @@ class StaffVoter extends AbstractVoter
         }
 
         return true;
+    }
+
+    /**
+     * TODO It might be interessing to return this data to the front.
+     *
+     * @param Staff   $managee
+     * @param Clients $manager
+     *
+     * @return bool
+     */
+    private function mayManage(Staff $managee, Clients $manager)
+    {
+        $managerStaff = $manager->getStaff();
+
+        if (null === $managerStaff) {
+            return false;
+        }
+
+        $managerCompany = $managerStaff->getCompany();
+
+        return ($managee->getCompany() === $managerCompany && false === $managee->isAdmin() && $managerStaff !== $managee)
+            || ($managee->getCompany() === $managerCompany && $managerStaff->isAdmin());
     }
 }

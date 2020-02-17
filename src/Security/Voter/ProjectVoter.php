@@ -9,7 +9,7 @@ use Unilend\Entity\{Clients, Embeddable\Permission, Project, ProjectOrganizer};
 use Unilend\Repository\ProjectOrganizerRepository;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
-class ProjectVoter extends AbstractVoter
+class ProjectVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_VIEW                          = 'view';
     public const ATTRIBUTE_VIEW_CONFIDENTIALITY_DOCUMENT = 'view_confidentiality_document';
@@ -32,14 +32,6 @@ class ProjectVoter extends AbstractVoter
     {
         $this->projectParticipationManager = $projectParticipationManager;
         $this->projectOrganizerRepository  = $projectOrganizerRepository;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function supports($attribute, $subject): bool
-    {
-        return $subject instanceof Project && parent::supports($attribute, $subject);
     }
 
     /**
@@ -158,7 +150,7 @@ class ProjectVoter extends AbstractVoter
      *
      * @return ProjectOrganizer|null
      */
-    protected function getProjectOrganizer(Project $project, Clients $user): ?ProjectOrganizer
+    private function getProjectOrganizer(Project $project, Clients $user): ?ProjectOrganizer
     {
         return $this->projectOrganizerRepository->findOneBy(['project' => $project, 'company' => $user->getCompany()]);
     }

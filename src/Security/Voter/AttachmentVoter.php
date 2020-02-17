@@ -6,12 +6,11 @@ namespace Unilend\Security\Voter;
 
 use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
-use Monolog\Logger;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Attachment, Clients, Project, ProjectParticipationContact, ProjectStatus};
 use Unilend\Repository\{AttachmentSignatureRepository, ProjectParticipationContactRepository};
 
-class AttachmentVoter extends AbstractVoter
+class AttachmentVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_DOWNLOAD = 'download';
 
@@ -23,9 +22,6 @@ class AttachmentVoter extends AbstractVoter
 
     /** @var ProjectParticipationContactRepository */
     private $participationContactRepository;
-
-    /** @var Logger */
-    private $logger;
 
     /**
      * @param AuthorizationCheckerInterface         $authorizationChecker
@@ -40,14 +36,6 @@ class AttachmentVoter extends AbstractVoter
         $this->attachmentSignatureRepository  = $attachmentSignatureRepository;
         $this->participationContactRepository = $participationContactRepository;
         $this->authorizationChecker           = $authorizationChecker;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function supports($attribute, $subject): bool
-    {
-        return $subject instanceof Attachment && parent::supports($attribute, $subject);
     }
 
     /**
