@@ -11,6 +11,7 @@ use Unilend\Entity\TemporaryToken;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\Service\Client\ClientNotifier;
+use Unilend\Service\GoogleRecaptchaManager;
 
 class ResetPasswordHandler implements MessageHandlerInterface
 {
@@ -20,17 +21,25 @@ class ResetPasswordHandler implements MessageHandlerInterface
     private $notifier;
     /** @var TemporaryTokenRepository */
     private $temporaryTokenRepository;
+    /** @var GoogleRecaptchaManager */
+    private $googleRecaptchaManager;
 
     /**
      * @param ClientsRepository        $clientsRepository
      * @param ClientNotifier           $notifier
      * @param TemporaryTokenRepository $temporaryTokenRepository
+     * @param GoogleRecaptchaManager   $googleRecaptchaManager
      */
-    public function __construct(ClientsRepository $clientsRepository, ClientNotifier $notifier, TemporaryTokenRepository $temporaryTokenRepository)
-    {
+    public function __construct(
+        ClientsRepository $clientsRepository,
+        ClientNotifier $notifier,
+        TemporaryTokenRepository $temporaryTokenRepository,
+        GoogleRecaptchaManager $googleRecaptchaManager
+    ) {
         $this->clientsRepository        = $clientsRepository;
         $this->temporaryTokenRepository = $temporaryTokenRepository;
         $this->notifier                 = $notifier;
+        $this->googleRecaptchaManager   = $googleRecaptchaManager;
     }
 
     /**
@@ -46,7 +55,10 @@ class ResetPasswordHandler implements MessageHandlerInterface
             return;
         }
 
-        if (false === $clients->isGrantedLogin()) {
+        if (
+            false === $clients->isGrantedLogin()
+            || false === $this->googleRecaptchaManager->isValid($resetPasswordRequest->captchaValue)
+        ) {
             return;
         }
 
