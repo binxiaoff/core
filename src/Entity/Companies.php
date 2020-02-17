@@ -66,7 +66,7 @@ class Companies
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:create", "project:list", "project:update", "project:view", "company:read", "company:jwt:read"})
+     * @Groups({"company:write", "company:read", "company:jwt:read"})
      */
     private $name;
 
@@ -77,8 +77,6 @@ class Companies
      *
      * @Assert\Length(9)
      * @Assert\Luhn
-     *
-     * @Groups({"project:create", "project:view"})
      */
     private $siren;
 
@@ -115,14 +113,14 @@ class Companies
     /**
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
      *
-     * @Groups({"company:read", "company:jwt:read", "project:view"})
+     * @Groups({"company:read", "company:jwt:read"})
      */
     private $emailDomain;
 
     /**
      * @ORM\Column(type="string", length=4, nullable=true, unique=true)
      *
-     * @Groups({"project:list", "project:view", "company:read", "company:jwt:read"})
+     * @Groups({"company:read", "company:jwt:read"})
      */
     private $shortCode;
 
