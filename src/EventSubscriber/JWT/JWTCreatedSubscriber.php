@@ -45,14 +45,14 @@ class JWTCreatedSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            JwtEvents::JWT_CREATED => 'addClientHashOnCreated',
+            JwtEvents::JWT_CREATED => ['addClientData'],
         ];
     }
 
     /**
      * @param JWTCreatedEvent $event
      */
-    public function addClientHashOnCreated(JWTCreatedEvent $event)
+    public function addClientData(JWTCreatedEvent $event)
     {
         $payload = $event->getData();
         $user    = $event->getUser();
