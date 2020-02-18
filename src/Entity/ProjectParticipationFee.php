@@ -63,7 +63,7 @@ class ProjectParticipationFee
      *
      * @Assert\Valid
      *
-     * @Groups({"project:view", "projectParticipation:list", "projectParticipationFee:create", "projectParticipationFee:update"})
+     * @Groups({"project:view", "projectParticipationFee:create", "projectParticipationFee:update"})
      */
     private $projectParticipation;
 
