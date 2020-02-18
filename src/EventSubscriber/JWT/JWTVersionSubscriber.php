@@ -42,7 +42,7 @@ class JWTVersionSubscriber implements EventSubscriberInterface
     {
         $payload = $event->getPayload();
 
-        if (false === isset($payload['version']) || static::JWT_VERSION === $payload['version']) {
+        if (false === isset($payload['version']) || static::JWT_VERSION !== $payload['version']) {
             $event->markAsInvalid();
         }
     }
