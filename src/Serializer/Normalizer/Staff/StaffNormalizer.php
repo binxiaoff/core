@@ -8,7 +8,7 @@ use ApiPlatform\Core\Api\IriConverterInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{ContextAwareDenormalizerInterface, ContextAwareNormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait,
     NormalizerAwareInterface, NormalizerAwareTrait};
-use Unilend\Entity\{Clients, Companies, Staff};
+use Unilend\Entity\{Clients, Company, Staff};
 
 class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface, ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -69,7 +69,7 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
     {
         // In patch is only allowed for manager and coordinator so we don't need to check
         if ('post' === ($context['collection_operation_name'] ?? '') && isset($data['company'])) {
-            /** @var Companies $company */
+            /** @var Company $company */
             $company = $this->iriConverter->getItemFromIri($data['company']);
 
             $context['groups'] = array_merge($context['groups'] ?? [], $this->canAdminDenormalize($company) ? [Staff::SERIALIZER_GROUP_ADMIN_CREATE] : []);
@@ -89,11 +89,11 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
     }
 
     /**
-     * @param Companies $company
+     * @param Company $company
      *
      * @return bool
      */
-    private function canAdminNormalize(Companies $company): bool
+    private function canAdminNormalize(Company $company): bool
     {
         $connectedStaff = $this->getConnectedStaff();
 
@@ -103,11 +103,11 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
     }
 
     /**
-     * @param Companies $company
+     * @param Company $company
      *
      * @return bool
      */
-    private function canAdminDenormalize(Companies $company): bool
+    private function canAdminDenormalize(Company $company): bool
     {
         $connectedStaff = $this->getConnectedStaff();
 

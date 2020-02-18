@@ -7,63 +7,63 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException, QueryBuilder};
-use Unilend\Entity\Companies;
+use Unilend\Entity\Company;
 use Unilend\Repository\Traits\OrderByHandlerTrait;
 
 /**
- * @method Companies|null find($id, $lockMode = null, $lockVersion = null)
- * @method Companies|null findOneBy(array $criteria, array $orderBy = null)
- * @method Companies[]    findAll()
- * @method Companies[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Company|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Company|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Company[]    findAll()
+ * @method Company[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class CompaniesRepository extends ServiceEntityRepository
+class CompanyRepository extends ServiceEntityRepository
 {
     use OrderByHandlerTrait;
 
     /**
-     * CompaniesRepository constructor.
+     * CompanyRepository constructor.
      *
      * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Companies::class);
+        parent::__construct($registry, Company::class);
     }
 
     /**
-     * @param Companies $company
+     * @param Company $company
      *
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function save(Companies $company): void
+    public function save(Company $company): void
     {
         $this->getEntityManager()->persist($company);
         $this->getEntityManager()->flush();
     }
 
     /**
-     * @param Companies|null $currentCompany
-     * @param array          $orderBy
+     * @param Company|null $currentCompany
+     * @param array        $orderBy
      *
-     * @return Companies[]
+     * @return Company[]
      */
-    public function findEligibleArrangers(?Companies $currentCompany, array $orderBy = []): iterable
+    public function findEligibleArrangers(?Company $currentCompany, array $orderBy = []): iterable
     {
         return $this->createEligibleArrangersQB($currentCompany, $orderBy)->getQuery()->getResult();
     }
 
     /**
-     * @param Companies|null $currentCompany
-     * @param array          $orderBy
+     * @param Company|null $currentCompany
+     * @param array        $orderBy
      *
      * @return QueryBuilder
      */
-    public function createEligibleArrangersQB(?Companies $currentCompany, array $orderBy = []): QueryBuilder
+    public function createEligibleArrangersQB(?Company $currentCompany, array $orderBy = []): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('c')
             ->where('c.id IN (:arrangersToSelect)')
-            ->setParameter('arrangersToSelect', array_merge(Companies::COMPANY_ELIGIBLE_ARRANGER, [$currentCompany]))
+            ->setParameter('arrangersToSelect', array_merge(Company::COMPANY_ELIGIBLE_ARRANGER, [$currentCompany]))
             ;
 
         $this->handleOrderBy($queryBuilder, $orderBy);
@@ -81,7 +81,7 @@ class CompaniesRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('c')
             ->where('c.id IN (:runsToSelect)')
             ->orWhere('c.parent IN (:runsParentToSelect)')
-            ->setParameters(['runsToSelect' => Companies::COMPANY_ELIGIBLE_RUN, 'runsParentToSelect' => Companies::COMPANY_SUBSIDIARY_ELIGIBLE_RUN])
+            ->setParameters(['runsToSelect' => Company::COMPANY_ELIGIBLE_RUN, 'runsParentToSelect' => Company::COMPANY_SUBSIDIARY_ELIGIBLE_RUN])
             ;
 
         $this->handleOrderBy($queryBuilder, $orderBy);
@@ -92,11 +92,11 @@ class CompaniesRepository extends ServiceEntityRepository
     /**
      * @param array $orderBy
      *
-     * @return Companies[]
+     * @return Company[]
      */
     public function findRegionalBanks(array $orderBy = []): iterable
     {
-        $queryBuilder = $this->createQueryBuilder('c')->where('c.parent = :casa')->setParameter('casa', Companies::COMPANY_ID_CASA);
+        $queryBuilder = $this->createQueryBuilder('c')->where('c.parent = :casa')->setParameter('casa', Company::COMPANY_ID_CASA);
 
         $this->handleOrderBy($queryBuilder, $orderBy);
 

@@ -30,7 +30,7 @@ class MailTemplate implements TwigTemplateInterface
     /**
      * @var MailHeader
      *
-     * @ORM\ManyToOne(targetEntity="MailHeader", fetch="EAGER")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MailHeader", fetch="EAGER")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_header")
      * })
@@ -40,7 +40,7 @@ class MailTemplate implements TwigTemplateInterface
     /**
      * @var MailFooter
      *
-     * @ORM\ManyToOne(targetEntity="MailFooter", fetch="EAGER")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MailFooter", fetch="EAGER")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_footer")
      * })
@@ -50,7 +50,7 @@ class MailTemplate implements TwigTemplateInterface
     /**
      * @var MailLayout
      *
-     * @ORM\ManyToOne(targetEntity="MailLayout", fetch="EAGER")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MailLayout", fetch="EAGER")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_layout")
      * })

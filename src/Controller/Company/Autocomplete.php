@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Controller\Companies;
+namespace Unilend\Controller\Company;
 
 use Unilend\Service\Company\CompanySearchManager;
 

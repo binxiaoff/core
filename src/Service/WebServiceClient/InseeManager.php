@@ -6,7 +6,7 @@ namespace Unilend\Service\WebServiceClient;
 
 use GuzzleHttp\Client;
 use Symfony\Component\HttpFoundation\Response;
-use Unilend\Entity\Companies;
+use Unilend\Entity\Company;
 
 class InseeManager
 {
@@ -27,7 +27,7 @@ class InseeManager
      * @param string $name
      * @param int    $limit
      *
-     * @return array|Companies[]
+     * @return array|Company[]
      */
     public function searchByName(string $name, int $limit = 5): array
     {

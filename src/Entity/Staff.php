@@ -63,9 +63,9 @@ class Staff
     private $id;
 
     /**
-     * @var Companies
+     * @var Company
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", inversedBy="staff")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company", inversedBy="staff")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      * })
@@ -103,13 +103,13 @@ class Staff
     /**
      * Staff constructor.
      *
-     * @param Companies             $company
+     * @param Company               $company
      * @param Clients               $client
      * @param array|string[]|string $roles
      *
      * @throws Exception
      */
-    public function __construct(Companies $company, Clients $client, $roles = [])
+    public function __construct(Company $company, Clients $client, $roles = [])
     {
         $this->marketSegments = new ArrayCollection();
         $this->added          = new DateTimeImmutable();
@@ -127,19 +127,19 @@ class Staff
     }
 
     /**
-     * @return Companies
+     * @return Company
      */
-    public function getCompany(): Companies
+    public function getCompany(): Company
     {
         return $this->company;
     }
 
     /**
-     * @param Companies $company
+     * @param Company $company
      *
      * @return Staff
      */
-    public function setCompany(Companies $company): Staff
+    public function setCompany(Company $company): Staff
     {
         $this->company = $company;
 

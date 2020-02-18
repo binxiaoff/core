@@ -8,7 +8,7 @@ use Exception;
 use LogicException;
 use Swift_Mailer;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{Clients, Companies, Project, ProjectParticipationContact, ProjectStatus, TemporaryToken};
+use Unilend\Entity\{Clients, Company, Project, ProjectParticipationContact, ProjectStatus, TemporaryToken};
 use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
@@ -93,13 +93,13 @@ class ProjectParticipationContactNotifier
     }
 
     /**
-     * @param Project   $project
-     * @param Companies $company
-     * @param Clients   $client
+     * @param Project $project
+     * @param Company $company
+     * @param Clients $client
      *
      * @return string|null
      */
-    private function getTemplateId(Project $project, Companies $company, Clients $client): ?string
+    private function getTemplateId(Project $project, Company $company, Clients $client): ?string
     {
         $templateId = null;
 
