@@ -23,17 +23,20 @@ use Unilend\Filter\ArrayFilter;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
+ * TODO in the post and patch operation borrower company is not denormalized while it is in get operation ?
+ *
  * @ApiResource(
  *     normalizationContext={"groups": {"project:view"}},
  *     collectionOperations={
- *         "get": {"normalization_context": {"groups": {"project:list", "marketSegment:read", "projectParticipation:read"}}},
- *         "post": {"denormalization_context": {"groups": {"project:create"}}}
+ *         "get": {"normalization_context": {"groups": {"project:list", "company:read", "marketSegment:read", "projectParticipation:read"}}},
+ *         "post": {"denormalization_context": {"groups": {"project:create", "company:write"}}}
  *     },
  *     itemOperations={
  *         "get": {
  *             "security": "is_granted('view', object)",
  *             "normalization_context": {"groups": {
  *                 "project:view",
+ *                 "company:read",
  *                 "tranche_project:view",
  *                 "attachment:read",
  *                 "projectParticipation:read",
@@ -50,7 +53,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "normalization_context": {"groups": {"project:confidentiality:view", "attachment:read"}},
  *             "path": "/projects/{id}/confidentiality"
  *         },
- *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)", "denormalization_context": {"groups": {"project:update"}}}
+ *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)", "denormalization_context": {"groups": {"project:update", "company:write"}}}
  *     }
  * )
  *
