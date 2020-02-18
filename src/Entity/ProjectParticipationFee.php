@@ -34,7 +34,7 @@ class ProjectParticipationFee
      * @ORM\GeneratedValue(strategy="IDENTITY")
      * @ORM\Column(type="integer")
      *
-     * @Groups({"project:view"})
+     * @Groups({"projectParticipationFee:read"})
      */
     private $id;
 
@@ -48,7 +48,6 @@ class ProjectParticipationFee
      * @Assert\Valid
      *
      * @Groups({
-     *     "project:view",
      *     "projectParticipationFee:read",
      *     "projectParticipationFee:write"
      * })
@@ -63,7 +62,7 @@ class ProjectParticipationFee
      *
      * @Assert\Valid
      *
-     * @Groups({"project:view", "projectParticipationFee:create", "projectParticipationFee:update"})
+     * @Groups({"projectParticipationFee:create"})
      */
     private $projectParticipation;
 

@@ -84,7 +84,7 @@ class ProjectParticipationOffer
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:list", "project:view", "projectParticipationOffer:read", "projectParticipationOffer:write"})
+     * @Groups({"projectParticipationOffer:read", "projectParticipationOffer:write"})
      */
     private $committeeStatus;
 
@@ -95,7 +95,7 @@ class ProjectParticipationOffer
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:list", "project:view", "projectParticipationOffer:read", "projectParticipationOffer:write"})
+     * @Groups({"projectParticipationOffer:read", "projectParticipationOffer:write"})
      */
     private $expectedCommitteeDate;
 
@@ -106,7 +106,7 @@ class ProjectParticipationOffer
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "projectParticipationOffer:read", "projectParticipationOffer:write"})
+     * @Groups({"projectParticipationOffer:read", "projectParticipationOffer:write"})
      */
     private $comment;
 
@@ -257,7 +257,7 @@ class ProjectParticipationOffer
      *
      * @return Embeddable\Money
      *
-     * @Groups({"project:view", "projectParticipationOffer:read"})
+     * @Groups({"projectParticipationOffer:read"})
      */
     public function getOfferMoney(): Money
     {
