@@ -420,6 +420,9 @@
     "pheromone/phpcs-security-audit": {
         "version": "2.0.1"
     },
+    "php": {
+        "version": "7.3"
+    },
     "php-cs-fixer/diff": {
         "version": "v1.3.0"
     },
@@ -669,6 +672,9 @@
     },
     "symfony/dotenv": {
         "version": "v4.3.0"
+    },
+    "symfony/error-handler": {
+        "version": "v4.4.4"
     },
     "symfony/event-dispatcher": {
         "version": "v4.3.0"
