@@ -47,7 +47,6 @@ class Kernel extends BaseKernel
         parent::build($container);
 
         $container->addCompilerPass(new MakeSonataCacheSymfonyPublicPass());
-        $container->addCompilerPass(new AddDbalCacheConfigurationPass());
     }
 
     /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\TrancheAttribute;
 
 /**
@@ -17,9 +17,9 @@ use Unilend\Entity\TrancheAttribute;
 class TrancheAttributeRepository extends ServiceEntityRepository
 {
     /**
-     * @param RegistryInterface $registry
+     * @param ManagerRegistry $registry
      */
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, TrancheAttribute::class);
     }

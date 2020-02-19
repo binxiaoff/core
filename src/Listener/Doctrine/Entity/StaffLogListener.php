@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Listener\Doctrine\Entity;
 
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\{Staff, StaffLog};
@@ -13,14 +13,14 @@ class StaffLogListener
 {
     /** @var Security */
     private $security;
-    /** @var ObjectManager */
+    /** @var EntityManagerInterface */
     private $manager;
 
     /**
-     * @param Security      $security
-     * @param ObjectManager $manager
+     * @param Security               $security
+     * @param EntityManagerInterface $manager
      */
-    public function __construct(Security $security, ObjectManager $manager)
+    public function __construct(Security $security, EntityManagerInterface $manager)
     {
         $this->security = $security;
         $this->manager  = $manager;

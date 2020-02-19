@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Symfony\Bridge\Doctrine\RegistryInterface;
 use Unilend\Entity\FoncarisRequest;
 
 /**
@@ -18,9 +18,9 @@ use Unilend\Entity\FoncarisRequest;
 class FoncarisRequestRepository extends ServiceEntityRepository
 {
     /**
-     * @param RegistryInterface $registry
+     * @param ManagerRegistry $registry
      */
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, FoncarisRequest::class);
     }
