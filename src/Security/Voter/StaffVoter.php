@@ -51,10 +51,10 @@ class StaffVoter extends AbstractEntityVoter
         $submitterStaff = $user->getStaff();
 
         // A manager cannot create a staff with markets other than is own. But we can create a staff without market segment (used for invitation via email)
-        return $this->ableToManage($subject, $user) && (0 === $subject->getMarketSegments()->count()
+        return 0 === $subject->getMarketSegments()->count()
             || $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
                 return $submitterStaff->getMarketSegments()->contains($marketSegment);
-            }));
+            });
     }
 
     /**
@@ -116,12 +116,12 @@ class StaffVoter extends AbstractEntityVoter
     /**
      * TODO It might be interessing to return this data to the front.
      *
-     * @param Staff   $managee
+     * @param Staff   $employee
      * @param Clients $manager
      *
      * @return bool
      */
-    private function ableToManage(Staff $managee, Clients $manager): bool
+    private function ableToManage(Staff $employee, Clients $manager): bool
     {
         $managerStaff = $manager->getStaff();
 
@@ -131,7 +131,7 @@ class StaffVoter extends AbstractEntityVoter
 
         $managerCompany = $managerStaff->getCompany();
 
-        return ($managee->getCompany() === $managerCompany && false === $managee->isAdmin() && $managerStaff !== $managee)
-            || ($managee->getCompany() === $managerCompany && $managerStaff->isAdmin());
+        return ($employee->getCompany() === $managerCompany && false === $employee->isAdmin() && $managerStaff !== $employee && $managerStaff->isManager())
+            || ($employee->getCompany() === $managerCompany && $managerStaff->isAdmin());
     }
 }

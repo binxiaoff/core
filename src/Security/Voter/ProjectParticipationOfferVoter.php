@@ -13,8 +13,6 @@ class ProjectParticipationOfferVoter extends AbstractEntityVoter
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_CREATE = 'create';
 
-    /** @var AuthorizationCheckerInterface */
-    private $authorizationChecker;
     /** @var ProjectOrganizerRepository */
     private $projectOrganizerRepository;
     /** @var ProjectParticipationContactRepository */
@@ -30,7 +28,7 @@ class ProjectParticipationOfferVoter extends AbstractEntityVoter
         ProjectOrganizerRepository $projectOrganizerRepository,
         ProjectParticipationContactRepository $projectParticipationContactRepository
     ) {
-        $this->authorizationChecker                  = $authorizationChecker;
+        parent::__construct($authorizationChecker);
         $this->projectOrganizerRepository            = $projectOrganizerRepository;
         $this->projectParticipationContactRepository = $projectParticipationContactRepository;
     }
@@ -46,8 +44,7 @@ class ProjectParticipationOfferVoter extends AbstractEntityVoter
         $projectParticipation = $subject->getProjectParticipation();
         $projectOrganizer     = $this->getProjectOrganizer($projectParticipation->getProject(), $user);
 
-        return $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN)
-            || ($projectOrganizer && $projectOrganizer->isArranger())
+        return ($projectOrganizer && $projectOrganizer->isArranger())
             || null !== $this->getParticipationContact($projectParticipation, $user);
     }
 

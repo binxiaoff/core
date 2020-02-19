@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\Clients;
 use Unilend\Entity\ProjectOrganizer;
 
@@ -13,17 +12,6 @@ class ProjectOrganizerVoter extends AbstractEntityVoter
     public const ATTRIBUTE_DELETE = 'delete';
     public const ATTRIBUTE_CREATE = 'create';
     public const ATTRIBUTE_EDIT   = 'edit';
-
-    /** @var AuthorizationCheckerInterface */
-    private $authorizationChecker;
-
-    /**
-     * @param AuthorizationCheckerInterface $authorizationChecker
-     */
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker)
-    {
-        $this->authorizationChecker = $authorizationChecker;
-    }
 
     /**
      * @param ProjectOrganizer $subject

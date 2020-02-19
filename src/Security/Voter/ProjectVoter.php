@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Exception;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, Embeddable\Permission, Project, ProjectOrganizer};
 use Unilend\Repository\ProjectOrganizerRepository;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
@@ -25,11 +26,16 @@ class ProjectVoter extends AbstractEntityVoter
     private $projectParticipationManager;
 
     /**
-     * @param ProjectParticipationManager $projectParticipationManager
-     * @param ProjectOrganizerRepository  $projectOrganizerRepository
+     * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param ProjectParticipationManager   $projectParticipationManager
+     * @param ProjectOrganizerRepository    $projectOrganizerRepository
      */
-    public function __construct(ProjectParticipationManager $projectParticipationManager, ProjectOrganizerRepository $projectOrganizerRepository)
-    {
+    public function __construct(
+        AuthorizationCheckerInterface $authorizationChecker,
+        ProjectParticipationManager $projectParticipationManager,
+        ProjectOrganizerRepository $projectOrganizerRepository
+    ) {
+        parent::__construct($authorizationChecker);
         $this->projectParticipationManager = $projectParticipationManager;
         $this->projectOrganizerRepository  = $projectOrganizerRepository;
     }

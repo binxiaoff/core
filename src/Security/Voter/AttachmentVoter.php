@@ -14,9 +14,6 @@ class AttachmentVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_DOWNLOAD = 'download';
 
-    /** @var AuthorizationCheckerInterface */
-    private $authorizationChecker;
-
     /** @var AttachmentSignatureRepository */
     private $attachmentSignatureRepository;
 
@@ -33,9 +30,9 @@ class AttachmentVoter extends AbstractEntityVoter
         AttachmentSignatureRepository $attachmentSignatureRepository,
         ProjectParticipationContactRepository $participationContactRepository
     ) {
+        parent::__construct($authorizationChecker);
         $this->attachmentSignatureRepository  = $attachmentSignatureRepository;
         $this->participationContactRepository = $participationContactRepository;
-        $this->authorizationChecker           = $authorizationChecker;
     }
 
     /**

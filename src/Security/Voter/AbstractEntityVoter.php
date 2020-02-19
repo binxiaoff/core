@@ -6,6 +6,7 @@ namespace Unilend\Security\Voter;
 
 use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Unilend\Entity\Clients;
 use Unilend\Traits\ConstantsAwareTrait;
@@ -15,6 +16,17 @@ abstract class AbstractEntityVoter extends Voter
     use ConstantsAwareTrait;
 
     private const UNILEND_ENTITY_NAMESPACE = 'Unilend\\Entity\\';
+
+    /** @var AuthorizationCheckerInterface */
+    protected $authorizationChecker;
+
+    /**
+     * @param AuthorizationCheckerInterface $authorizationChecker
+     */
+    public function __construct(AuthorizationCheckerInterface $authorizationChecker)
+    {
+        $this->authorizationChecker = $authorizationChecker;
+    }
 
     /**
      * {@inheritdoc}
@@ -33,7 +45,7 @@ abstract class AbstractEntityVoter extends Voter
     {
         $user = $this->getUser($token);
 
-        if ($user && $this->isGrantedAll($subject, $user)) {
+        if (($user && $this->isGrantedAll($subject, $user)) || $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN)) {
             return true;
         }
 
