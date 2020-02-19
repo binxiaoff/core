@@ -6,34 +6,22 @@ namespace Unilend\Security\Voter;
 
 use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Authorization\{AuthorizationCheckerInterface, Voter\Voter};
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, Project, ProjectOrganizer, ProjectParticipation, ProjectParticipationContact, ProjectStatus};
 use Unilend\Repository\{ProjectOrganizerRepository, ProjectParticipationContactRepository};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
-use Unilend\Traits\ConstantsAwareTrait;
 
-class ProjectParticipationVoter extends Voter
+class ProjectParticipationVoter extends AbstractEntityVoter
 {
-    use ConstantsAwareTrait;
-
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_CREATE = 'create';
 
-    /** @var AuthorizationCheckerInterface */
-    private $authorizationChecker;
-    /**
-     * @var ProjectOrganizerRepository
-     */
+    /** @var ProjectOrganizerRepository */
     private $projectOrganizerRepository;
-    /**
-     * @var ProjectParticipationContactRepository
-     */
+    /** @var ProjectParticipationContactRepository */
     private $projectParticipationContactRepository;
-    /**
-     * @var ProjectParticipationManager
-     */
+    /** @var ProjectParticipationManager */
     private $projectParticipationManager;
 
     /**
@@ -48,71 +36,43 @@ class ProjectParticipationVoter extends Voter
         ProjectParticipationContactRepository $projectParticipationContactRepository,
         ProjectParticipationManager $projectParticipationManager
     ) {
-        $this->authorizationChecker                  = $authorizationChecker;
+        parent::__construct($authorizationChecker);
         $this->projectOrganizerRepository            = $projectOrganizerRepository;
         $this->projectParticipationContactRepository = $projectParticipationContactRepository;
         $this->projectParticipationManager           = $projectParticipationManager;
     }
 
     /**
-     * {@inheritdoc}
-     */
-    protected function supports($attribute, $subject): bool
-    {
-        return $subject instanceof ProjectParticipation && in_array($attribute, self::getConstants('ATTRIBUTE_'), true);
-    }
-
-    /**
-     * {@inheritdoc}
+     * @param mixed   $subject
+     * @param Clients $user
      *
-     * @throws NonUniqueResultException
+     * @return bool
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
+    protected function fulfillPreconditions($subject, Clients $user): bool
     {
-        /** @var Clients $user */
-        $user = $token->getUser();
-
-        if (false === $user instanceof Clients) {
-            return false;
-        }
-
-        $projectOrganizer = $this->getProjectOrganizer($subject->getProject(), $user);
-
-        if ($subject->getProject()->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_INTERESTS_COLLECTED) {
-            return false;
-        }
-
-        if ($this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || ($projectOrganizer && $projectOrganizer->isArranger())) {
-            return true;
-        }
-
-        switch ($attribute) {
-            case self::ATTRIBUTE_CREATE:
-                return $this->canCreate($subject);
-            case self::ATTRIBUTE_VIEW:
-                return $this->canView($subject, $user);
-            case self::ATTRIBUTE_EDIT:
-                return $this->canEdit($subject, $user);
-        }
-
-        throw new LogicException('This code should not be reached');
+        return $subject->getProject()->getCurrentStatus()->getStatus() <= ProjectStatus::STATUS_INTERESTS_COLLECTED;
     }
 
     /**
-     * @param ProjectParticipation $projectParticipation
+     * @param ProjectParticipation $subject
      * @param Clients              $user
      *
      * @throws NonUniqueResultException
      *
      * @return bool
      */
-    private function canView(ProjectParticipation $projectParticipation, Clients $user): bool
+    protected function canView(ProjectParticipation $subject, Clients $user): bool
     {
-        $project = $projectParticipation->getProject();
+        $project = $subject->getProject();
+
+        $projectOrganizer = $subject->getProject()->getArranger();
+        if ($projectOrganizer && $projectOrganizer->isArranger()) {
+            return true;
+        }
 
         switch ($project->getOfferVisibility()) {
             case Project::OFFER_VISIBILITY_PRIVATE:
-                return null !== $this->getParticipationContact($projectParticipation, $user);
+                return null !== $this->getParticipationContact($subject, $user);
             case Project::OFFER_VISIBILITY_PARTICIPANT:
             case Project::OFFER_VISIBILITY_PUBLIC:
                 return $this->projectParticipationManager->isParticipant($user, $project);
@@ -122,14 +82,32 @@ class ProjectParticipationVoter extends Voter
     }
 
     /**
-     * @param ProjectParticipation $projectParticipation
+     * @param ProjectParticipation $subject
      * @param Clients              $user
      *
      * @return bool
      */
-    private function canEdit(ProjectParticipation $projectParticipation, Clients $user): bool
+    protected function canEdit(ProjectParticipation $subject, Clients $user): bool
     {
-        return null !== $this->getParticipationContact($projectParticipation, $user);
+        $projectOrganizer = $subject->getProject()->getArranger();
+
+        return ($projectOrganizer && $projectOrganizer->isArranger()) || null !== $this->getParticipationContact($subject, $user);
+    }
+
+    /**
+     * @see https://lafabriquebyca.atlassian.net/browse/CALS-759
+     *
+     * @param ProjectParticipation $subject
+     * @param Clients              $user
+     *
+     * @return bool
+     */
+    protected function canCreate(ProjectParticipation $subject, Clients $user): bool
+    {
+        $company   = $subject->getCompany();
+        $blacklist = array_map('strtolower', ProjectParticipation::BLACKLISTED_COMPANIES);
+
+        return false === \in_array(mb_strtolower($company->getName()), $blacklist, true) && $this->authorizationChecker->isGranted('edit', $subject->getProject());
     }
 
     /**
@@ -152,20 +130,5 @@ class ProjectParticipationVoter extends Voter
     private function getParticipationContact(ProjectParticipation $projectParticipation, Clients $user): ?ProjectParticipationContact
     {
         return $this->projectParticipationContactRepository->findOneBy(['projectParticipation' => $projectParticipation, 'client' => $user]);
-    }
-
-    /**
-     * @see https://lafabriquebyca.atlassian.net/browse/CALS-759
-     *
-     * @param ProjectParticipation $subject
-     *
-     * @return bool
-     */
-    private function canCreate(ProjectParticipation $subject): bool
-    {
-        $company   = $subject->getCompany();
-        $blacklist = array_map('strtolower', ProjectParticipation::BLACKLISTED_COMPANIES);
-
-        return false === \in_array(mb_strtolower($company->getName()), $blacklist, true) && $this->authorizationChecker->isGranted('edit', $subject->getProject());
     }
 }
