@@ -51,7 +51,7 @@ class StaffVoter extends AbstractEntityVoter
         $submitterStaff = $user->getStaff();
 
         // A manager cannot create a staff with markets other than is own. But we can create a staff without market segment (used for invitation via email)
-        return $this->mayManage($subject, $user) && (0 === $subject->getMarketSegments()->count()
+        return $this->ableToManage($subject, $user) && (0 === $subject->getMarketSegments()->count()
             || $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
                 return $submitterStaff->getMarketSegments()->contains($marketSegment);
             }));
@@ -68,7 +68,7 @@ class StaffVoter extends AbstractEntityVoter
         $submitterStaff = $user->getStaff();
 
         // A manager cannot delete a user with markets other than is own
-        return $this->mayManage($subject, $user) && $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
+        return $this->ableToManage($subject, $user) && $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
             return $submitterStaff->getMarketSegments()->contains($marketSegment);
         });
     }
@@ -82,7 +82,7 @@ class StaffVoter extends AbstractEntityVoter
     protected function canEdit(Staff $subject, Clients $user): bool
     {
         $submitterStaff = $user->getStaff();
-        if (false === $this->mayManage($subject, $user)) {
+        if (false === $this->ableToManage($subject, $user)) {
             return false;
         }
 
@@ -121,7 +121,7 @@ class StaffVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    private function mayManage(Staff $managee, Clients $manager)
+    private function ableToManage(Staff $managee, Clients $manager): bool
     {
         $managerStaff = $manager->getStaff();
 

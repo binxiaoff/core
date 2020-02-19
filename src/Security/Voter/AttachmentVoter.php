@@ -80,7 +80,7 @@ class AttachmentVoter extends AbstractEntityVoter
      *
      * @return ProjectParticipationContact|null
      */
-    protected function getActiveParticipantParticipation(Project $project, Clients $user): ?ProjectParticipationContact
+    private function getActiveParticipantParticipation(Project $project, Clients $user): ?ProjectParticipationContact
     {
         /** @var ProjectParticipationContact $participationContact */
         $participationContact = $this->participationContactRepository->findByProjectAndClient($project, $user);
@@ -94,7 +94,7 @@ class AttachmentVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function hasValidatedOffer(ProjectParticipationContact $contact): bool
+    private function hasValidatedOffer(ProjectParticipationContact $contact): bool
     {
         return null !== ($participation = $contact->getProjectParticipation()) && $participation->hasValidatedOffer();
     }
@@ -105,7 +105,7 @@ class AttachmentVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function isAddedBeforeOfferCollected(Project $project, Attachment $attachment): bool
+    private function isAddedBeforeOfferCollected(Project $project, Attachment $attachment): bool
     {
         $offerCollected = $project->getLastSpecificStatus(ProjectStatus::STATUS_OFFERS_COLLECTED);
 
