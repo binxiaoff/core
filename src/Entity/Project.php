@@ -28,7 +28,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiResource(
  *     normalizationContext={"groups": {"project:view"}},
  *     collectionOperations={
- *         "get": {"normalization_context": {"groups": {"project:list", "company:read", "marketSegment:read", "projectParticipation:read"}}},
+ *         "get": {"normalization_context": {"groups": {"project:read", "project:list", "company:read", "marketSegment:read", "projectParticipation:read"}}},
  *         "post": {"denormalization_context": {"groups": {"project:create", "company:write"}}}
  *     },
  *     itemOperations={
@@ -36,6 +36,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "security": "is_granted('view', object)",
  *             "normalization_context": {"groups": {
  *                 "project:view",
+ *                 "project:read",
  *                 "company:read",
  *                 "tranche_project:view",
  *                 "attachment:read",
