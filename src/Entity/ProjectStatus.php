@@ -119,7 +119,7 @@ class ProjectStatus implements StatusInterface
     /**
      * @return string
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"projectStatus:read"})
      */
     public function getHumanLabel(): string
     {

@@ -130,7 +130,7 @@ class Project
      *
      * @ApiProperty(identifier=true)
      *
-     * @Groups({"project:list", "project:view", "projectParticipation:list"})
+     * @Groups({"project:list", "project:view"})
      */
     private $hash;
 
@@ -144,7 +144,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list", "project:view", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:list", "project:view"})
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -189,7 +189,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list", "project:view", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:list", "project:view"})
      */
     private $title;
 
@@ -204,7 +204,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:list", "project:create", "project:update", "project:view", "projectParticipation:list"})
+     * @Groups({"project:list", "project:create", "project:update", "project:view"})
      */
     private $marketSegment;
 
@@ -252,7 +252,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $replyDeadline;
 
@@ -267,7 +267,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $expectedClosingDate;
 
@@ -282,7 +282,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list", "project:view", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:list", "project:view"})
      */
     private $lenderConsultationClosingDate;
 
@@ -381,7 +381,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"project:view", "projectParticipation:list", "project:update"})
+     * @Groups({"project:view", "project:update"})
      */
     private $currentStatus;
 
@@ -405,7 +405,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $syndicationType;
 
@@ -419,7 +419,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $participationType;
 
@@ -433,7 +433,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
+     * @Groups({"project:create", "project:update", "project:view"})
      */
     private $riskType;
 
@@ -454,7 +454,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"project:create", "project:view", "project:update", "projectParticipation:list"})
+     * @Groups({"project:create", "project:view", "project:update"})
      */
     private $globalFundingMoney;
 
@@ -833,7 +833,7 @@ class Project
     /**
      * @return ProjectOrganizer|null
      *
-     * @Groups({"project:view", "project:list", "projectParticipation:list"})
+     * @Groups({"project:view", "project:list"})
      *
      * @MaxDepth(1)
      */
@@ -1157,7 +1157,7 @@ class Project
     /**
      * @return Money
      *
-     * @Groups({"project:list", "projectParticipation:list"})
+     * @Groups({"project:read"})
      */
     public function getTranchesTotalMoney(): Money
     {
@@ -1258,7 +1258,7 @@ class Project
     /**
      * @return Money
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:read"})
      */
     public function getSyndicatedAmount(): Money
     {
@@ -1280,7 +1280,7 @@ class Project
      *
      * @return Money
      *
-     * @Groups({"project:list"})
+     * @Groups({"project:list", "project:read"})
      */
     public function getOffersMoney(): Money
     {

@@ -30,7 +30,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "nullableMoney:read",
  *         "trancheOffer:read",
  *         "money:read",
- *         "lendingRate:read"
+ *         "lendingRate:read",
+ *         "marketSegment:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
@@ -40,14 +41,17 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     collectionOperations={
  *         "get": {"normalization_context": {"groups": {
  *             "projectParticipation:list",
+ *             "project:view",
  *             "projectParticipation:read",
  *             "projectParticipationContact:read",
  *             "projectParticipationFee:read",
  *             "projectParticipationOffer:read",
  *             "projectOrganizer:read",
+ *             "projectStatus:read",
  *             "company:read",
  *             "role:read",
  *             "fee:read",
+ *             "marketSegment:read",
  *             "nullableMoney:read"
  *         }}},
  *         "post": {
