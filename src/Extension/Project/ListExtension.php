@@ -37,20 +37,23 @@ class ListExtension implements QueryCollectionExtensionInterface
 
         /** @var Clients $user */
         $user = $this->security->getUser();
+
         if (!$user instanceof Clients) {
             return;
         }
 
+        $staff = $user->getStaff();
+
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
-            ->innerJoin($rootAlias . '.currentStatus', 'cpsh')
-            ->leftJoin($rootAlias . '.projectParticipations', 'pp')
-            ->leftJoin('pp.projectParticipationContacts', 'pc')
-            ->andWhere($rootAlias . '.submitterClient = :client or ' . $rootAlias . '.submitterCompany = :company or cpsh.status IN (:activeStatus) AND pc.client = :client')
+            ->andWhere($queryBuilder->expr()->orX(
+                $rootAlias . '.submitterClient = :client',
+                $rootAlias . '.submitterCompany = :company ' . 'AND (' . $rootAlias . '.marketSegment IN (:marketSegments)' . ($staff && $staff->isAdmin() ? ' OR 1 = 1' : '') . ')'
+            ))
             ->setParameters([
-                'company'      => $user->getCompany(),
-                'activeStatus' => ProjectStatus::DISPLAYABLE_STATUS,
-                'client'       => $user,
+                'company'        => $staff->getCompany(),
+                'client'         => $user,
+                'marketSegments' => $staff ? $staff->getMarketSegments() : [],
             ])
         ;
     }
