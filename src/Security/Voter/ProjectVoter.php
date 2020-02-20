@@ -8,6 +8,7 @@ use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, Project, ProjectOrganizer};
 use Unilend\Repository\ProjectOrganizerRepository;
+use Unilend\Repository\StaffRepository;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectVoter extends AbstractEntityVoter
@@ -24,20 +25,27 @@ class ProjectVoter extends AbstractEntityVoter
     private $projectOrganizerRepository;
     /** @var ProjectParticipationManager */
     private $projectParticipationManager;
+    /**
+     * @var StaffRepository
+     */
+    private $staffRepository;
 
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
      * @param ProjectParticipationManager   $projectParticipationManager
      * @param ProjectOrganizerRepository    $projectOrganizerRepository
+     * @param StaffRepository               $staffRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         ProjectParticipationManager $projectParticipationManager,
-        ProjectOrganizerRepository $projectOrganizerRepository
+        ProjectOrganizerRepository $projectOrganizerRepository,
+        StaffRepository $staffRepository
     ) {
         parent::__construct($authorizationChecker);
         $this->projectParticipationManager = $projectParticipationManager;
         $this->projectOrganizerRepository  = $projectOrganizerRepository;
+        $this->staffRepository             = $staffRepository;
     }
 
     /**
@@ -50,6 +58,17 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canView(Project $project, Clients $user): bool
     {
+        $staff = $this->staffRepository->findOneBy(['client' => $user, 'company' => $project->getArranger()->getCompany()]);
+
+        if (
+            null === $staff
+            || ($staff
+            && $staff->hasRestrictedAccess()
+            && false === $staff->getMarketSegments()->contains($project->getMarketSegment()))
+        ) {
+            return false;
+        }
+
         if ($this->canEdit($project, $user)) {
             return true;
         }

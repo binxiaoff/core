@@ -78,15 +78,11 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->setParameter('marketSegments', $staff ? $staff->getMarketSegments() : [])
         ;
 
+        //@todo change retrieval method when multiple staffs will be established ($client->getStaffs())
         $staffs = $this->staffRepository->findBy(['client' => $user]);
 
         foreach ($staffs as $staff) {
-            $roles = $staff->getRoles();
-            if (
-                !in_array(Staff::DUTY_STAFF_ADMIN, $roles)
-                && (in_array(Staff::DUTY_STAFF_MANAGER, $roles)
-                    || in_array(Staff::DUTY_STAFF_OPERATOR, $roles))
-            ) {
+            if ($staff->hasRestrictedAccess()) {
                 $marketSegments = $staff->getMarketSegments();
                 $queryBuilder
                     ->andWhere($rootAlias . '.marketSegment IN (:marketSegments)')

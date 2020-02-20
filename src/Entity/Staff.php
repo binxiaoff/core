@@ -231,4 +231,20 @@ class Staff
     {
         return $this->hasRole(static::DUTY_STAFF_MANAGER);
     }
+
+    /**
+     * @return bool
+     */
+    public function isOperator(): bool
+    {
+        return $this->hasRole(static::DUTY_STAFF_OPERATOR);
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasRestrictedAccess(): bool
+    {
+        return false === $this->isAdmin() && ($this->isManager() || $this->isOperator());
+    }
 }
