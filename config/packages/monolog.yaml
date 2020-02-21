@@ -51,7 +51,6 @@ monolog:
             webhook_url: "%env(string:SLACK_WEBHOOK_URL)%"
             level: info
             channels: ['support']
-            channel: '#%env(string:SLACK_CHANNEL_SUPPORT)%'
             bot_name: 'API'
             use_short_attachment: false
             include_extra: true
