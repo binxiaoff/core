@@ -73,7 +73,7 @@ class ProjectParticipationOffer
      *     @ORM\JoinColumn(name="id_project_participation", nullable=false)
      * })
      *
-     * @Groups({"project:list", "projectParticipationOffer:create"})
+     * @Groups({"projectParticipationOffer:create"})
      */
     private $projectParticipation;
 

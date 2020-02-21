@@ -42,7 +42,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     collectionOperations={
  *         "get": {"normalization_context": {"groups": {
  *             "projectParticipation:list",
- *             "project:view",
+ *             "project:read",
  *             "projectParticipation:read",
  *             "projectParticipationContact:read",
  *             "projectParticipationFee:read",

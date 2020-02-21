@@ -26,9 +26,21 @@ use Unilend\Traits\ConstantsAwareTrait;
  * TODO in the post and patch operation borrower company is not denormalized while it is in get operation ?
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"project:read"}},
+ *     normalizationContext={"groups": {"project:read", "company:read", "marketSegment:read", "projectParticipationOffer:read", "money:read"}},
  *     collectionOperations={
- *         "get": {"normalization_context": {"groups": {"project:read", "project:list", "company:read", "marketSegment:read", "projectParticipation:read", "projectParticipationOffer:read", "money:read"}}},
+ *         "get": {
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "project:read",
+ *                     "project:list",
+ *                     "company:read",
+ *                     "marketSegment:read",
+ *                     "projectParticipation:read",
+ *                     "projectParticipationOffer:read",
+ *                     "money:read"
+ *                 }
+ *             }
+ *         },
  *         "post": {"denormalization_context": {"groups": {"project:write", "project:create", "company:write", "money:write", "tag:write"}}}
  *     },
  *     itemOperations={
@@ -52,7 +64,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "timestampable:read",
  *                 "projectParticipationOffer:read",
  *                 "traceableStatus:read",
- *                 "projectParticipationOffer:read",
  *                 "nullableLendingRate:read",
  *                 "lendingRate:read",
  *                 "fee:read",
@@ -154,7 +165,7 @@ class Project
      *
      * @ApiProperty(identifier=true)
      *
-     * @Groups({"project:list", "project:read"})
+     * @Groups({"project:read"})
      */
     private $hash;
 
@@ -168,7 +179,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", "project:list", "project:read"})
+     * @Groups({"project:write", "project:read"})
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -213,7 +224,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", "project:list", "project:read"})
+     * @Groups({"project:write", "project:read"})
      */
     private $title;
 
@@ -228,7 +239,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:list", "project:write", "project:read"})
+     * @Groups({"project:write", "project:read"})
      */
     private $marketSegment;
 
@@ -306,7 +317,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", "project:list", "project:read"})
+     * @Groups({"project:write", "project:read"})
      */
     private $lenderConsultationClosingDate;
 
@@ -857,7 +868,7 @@ class Project
     /**
      * @return ProjectOrganizer|null
      *
-     * @Groups({"project:read", "project:list"})
+     * @Groups({"project:read"})
      *
      * @MaxDepth(1)
      */
@@ -1304,7 +1315,7 @@ class Project
      *
      * @return Money
      *
-     * @Groups({"project:list", "project:read"})
+     * @Groups({"project:read"})
      */
     public function getOffersMoney(): Money
     {
