@@ -71,15 +71,15 @@ class ProjectParticipationContact
      * ProjectParticipationContact constructor.
      *
      * @param ProjectParticipation $projectParticipation
-     * @param Clients|null         $addedBy
      * @param Clients              $client
+     * @param Clients|null         $addedBy
      *
      * @throws Exception
      */
     public function __construct(
         ProjectParticipation $projectParticipation,
-        Clients $addedBy,
-        Clients $client
+        Clients $client,
+        Clients $addedBy
     ) {
         $this->projectParticipation = $projectParticipation;
         $this->client               = $client;
