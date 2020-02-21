@@ -52,7 +52,7 @@ class ProjectStatus implements StatusInterface
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="statuses")
      * @ORM\JoinColumn(name="id_project", nullable=false)
      *
-     * @Groups({"project:update"})
+     * @Groups({"projectStatus:create"})
      */
     private $project;
 
@@ -61,7 +61,7 @@ class ProjectStatus implements StatusInterface
      *
      * @ORM\Column(type="smallint")
      *
-     * @Groups({"projectParticipation:list", "project:view", "project:update"})
+     * @Groups({"projectStatus:read", "projectStatus:create"})
      */
     private $status;
 
@@ -82,7 +82,7 @@ class ProjectStatus implements StatusInterface
      */
     public function __construct(Project $project, int $status)
     {
-        if (!in_array($status, static::getPossibleStatuses(), true)) {
+        if (!\in_array($status, static::getPossibleStatuses(), true)) {
             throw new InvalidArgumentException(
                 sprintf('%s is not a possible status for %s', $status, __CLASS__)
             );

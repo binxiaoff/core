@@ -41,7 +41,7 @@ class LendingRate
      * @Assert\NotBlank
      * @Assert\Choice(callback="getIndexes")
      *
-     * @Groups({"project:view", "lendingRate:read", "lendingRate:write"})
+     * @Groups({"lendingRate:read", "lendingRate:write"})
      */
     protected $indexType;
 
@@ -57,7 +57,7 @@ class LendingRate
      * @Assert\PositiveOrZero
      * @Assert\Range(min="0", max="0.9999")
      *
-     * @Groups({"project:view", "lendingRate:read", "lendingRate:write"})
+     * @Groups({"lendingRate:read", "lendingRate:write"})
      */
     protected $margin;
 
@@ -71,7 +71,7 @@ class LendingRate
      * @Assert\Type("numeric")
      * @Assert\Range(max="-0.9999", max="0.9999")
      *
-     * @Groups({"project:view", "lendingRate:read", "lendingRate:write"})
+     * @Groups({"lendingRate:read", "lendingRate:write"})
      */
     protected $floor;
 
@@ -80,7 +80,7 @@ class LendingRate
      *
      * @ORM\Column(length=20, nullable=true)
      *
-     * @Groups({"project:view", "lendingRate:read", "lendingRate:write"})
+     * @Groups({"lendingRate:read", "lendingRate:write"})
      */
     protected $floorType;
 

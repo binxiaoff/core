@@ -22,7 +22,7 @@ class Fee
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:view", "fee:read", "fee:write"})
+     * @Groups({"fee:read", "fee:write"})
      */
     private $type;
 
@@ -31,7 +31,7 @@ class Fee
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"project:view", "fee:read", "fee:write"})
+     * @Groups({"fee:read", "fee:write"})
      */
     private $comment;
 
@@ -44,7 +44,7 @@ class Fee
      *
      * @Assert\NotBlank
      *
-     * @Groups({"project:view", "fee:read", "fee:write"})
+     * @Groups({"fee:read", "fee:write"})
      */
     private $rate;
 

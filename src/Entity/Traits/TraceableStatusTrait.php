@@ -13,7 +13,7 @@ trait TraceableStatusTrait
     /**
      * @var StatusInterface|null
      *
-     * @Groups({"projectParticipation:list", "project:view"})
+     * @Groups({"traceableStatus:read"})
      */
     private $currentStatus;
 
