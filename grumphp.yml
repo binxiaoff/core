@@ -9,7 +9,8 @@ parameters:
             config: .php_cs
         phpcs:
             exclude:
-                - "PHPCS_SecurityAudit.BadFunctions.CallbackFunctions.WarnCallbackFunctions"
-                - "PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem"
-                - "PHPCS_SecurityAudit.BadFunctions.PregReplace.PregReplaceDyn"
+                - "PHPCS_SecurityAudit.BadFunctions.CallbackFunctions"
+                - "PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions"
+                - "PHPCS_SecurityAudit.BadFunctions.PregReplace"
+                - "PHPCS_SecurityAudit.Drupal7.DynQueries"
         phpstan: ~
