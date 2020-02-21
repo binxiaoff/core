@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource, ApiSubresource};
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\{NumericFilter, SearchFilter};
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
@@ -17,8 +16,7 @@ use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
-use Unilend\Entity\Embeddable\Money;
-use Unilend\Entity\Traits\{TimestampableTrait, TraceableStatusTrait};
+use Unilend\Entity\{Embeddable\Money, Traits\TimestampableTrait, Traits\TraceableStatusTrait};
 use Unilend\Filter\ArrayFilter;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -26,13 +24,14 @@ use Unilend\Traits\ConstantsAwareTrait;
  * TODO in the post and patch operation borrower company is not denormalized while it is in get operation ?
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"project:read", "company:read", "marketSegment:read", "projectParticipationOffer:read", "money:read"}},
+ *     normalizationContext={"groups": {"project:read", "company:read", "marketSegment:read", "projectParticipation:read", "projectParticipationOffer:read", "money:read"}},
+ *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "tag:write"}},
  *     collectionOperations={
  *         "get": {
  *             "normalization_context": {
  *                 "groups": {
- *                     "project:read",
  *                     "project:list",
+ *                     "project:read",
  *                     "company:read",
  *                     "marketSegment:read",
  *                     "projectParticipation:read",
@@ -41,28 +40,28 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 }
  *             }
  *         },
- *         "post": {"denormalization_context": {"groups": {"project:write", "project:create", "company:write", "money:write", "tag:write"}}}
+ *         "post": {"denormalization_context": {"groups": {"project:create", "project:write", "company:write", "money:write", "tag:write"}}}
  *     },
  *     itemOperations={
  *         "get": {
  *             "security": "is_granted('view', object)",
  *             "normalization_context": {"groups": {
  *                 "project:read",
- *                 "money:read",
- *                 "projectStatus:read",
  *                 "company:read",
- *                 "tranche_project:read",
- *                 "attachment:read",
- *                 "trancheFee:read",
- *                 "tranche:read",
  *                 "projectParticipation:read",
+ *                 "projectParticipationOffer:read",
+ *                 "money:read",
+ *                 "attachment:read",
+ *                 "projectStatus:read",
  *                 "projectParticipationContact:read",
  *                 "projectParticipationFee:read",
  *                 "projectOrganizer:read",
+ *                 "tranche_project:read",
+ *                 "trancheFee:read",
+ *                 "tranche:read",
  *                 "role:read",
  *                 "client:read",
  *                 "timestampable:read",
- *                 "projectParticipationOffer:read",
  *                 "traceableStatus:read",
  *                 "nullableLendingRate:read",
  *                 "lendingRate:read",
@@ -73,21 +72,12 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "project_confidentiality": {
  *             "method": "GET",
  *             "security": "is_granted('view_confidentiality_document', object)",
- *             "normalization_context": {"groups": {"project:confidentiality:view", "attachment:read"}},
+ *             "normalization_context": {"groups": {"project:confidentiality:read", "attachment:read"}},
  *             "path": "/projects/{id}/confidentiality"
  *         },
  *         "patch": {
  *             "security_post_denormalize": "is_granted('edit', previous_object)",
- *             "denormalization_context": {
- *                 "groups": {
- *                     "project:write",
- *                     "project:update",
- *                     "projectStatus:create",
- *                     "money:write",
- *                     "tag:write",
- *                     "company:write"
- *                 }
- *             }
+ *             "denormalization_context": {"groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "tag:write"}}
  *         }
  *     }
  * )
@@ -272,7 +262,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", "project:read", "project:confidentiality:view"})
+     * @Groups({"project:write", "project:read", "project:confidentiality:read"})
      */
     private $confidentialityDisclaimer;
 
@@ -477,7 +467,7 @@ class Project
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\Tag", cascade={"persist"})
      *
-     * @Groups({"project:read", "project:update"})
+     * @Groups({"project:read", "project:write"})
      */
     private $tags;
 
@@ -489,7 +479,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"project:write", "project:update"})
+     * @Groups({"project:read", "project:write"})
      */
     private $globalFundingMoney;
 
@@ -674,7 +664,7 @@ class Project
     /**
      * @return Attachment|null
      *
-     * @Groups({"project:confidentiality:view", "project:read"})
+     * @Groups({"project:confidentiality:read", "project:read"})
      */
     public function getConfidentialityDisclaimerDocument(): ?Attachment
     {

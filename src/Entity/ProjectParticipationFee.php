@@ -55,7 +55,7 @@ class ProjectParticipationFee
     private $fee;
 
     /**
-     * @var Project
+     * @var ProjectParticipation
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationFee")
      * @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
