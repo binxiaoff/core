@@ -41,7 +41,7 @@ class ProjectOrganizerVoter extends AbstractEntityVoter
      */
     protected function canDelete(ProjectOrganizer $subject): bool
     {
-        return false === $subject->hasRole(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER);
+        return $subject->getCompany() !== $subject->getProject()->getSubmitterCompany();
     }
 
     /**

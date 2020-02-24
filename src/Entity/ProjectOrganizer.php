@@ -115,9 +115,9 @@ class ProjectOrganizer
     }
 
     /**
-     * @return mixed
+     * @return Project
      */
-    public function getProject()
+    public function getProject(): Project
     {
         return $this->project;
     }
