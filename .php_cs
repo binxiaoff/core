@@ -12,6 +12,7 @@ return PhpCsFixer\Config::create()
         '@PHP71Migration'                        => true,
         '@PHPUnit60Migration:risky'              => true,
         'array_syntax'                           => ['syntax' => 'short'],
+        'no_superfluous_phpdoc_tags'             => false,
         'single_import_per_statement'            => false,
         'binary_operator_spaces'                 => ['default' => 'align_single_space_minimal'],
         'concat_space'                           => ['spacing' => 'one'],
