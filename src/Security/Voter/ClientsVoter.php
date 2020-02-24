@@ -6,7 +6,7 @@ namespace Unilend\Security\Voter;
 
 use Unilend\Entity\Clients;
 
-class ClientVoter extends AbstractEntityVoter
+class ClientsVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_VIEW = 'view';
     public const ATTRIBUTE_EDIT = 'edit';
