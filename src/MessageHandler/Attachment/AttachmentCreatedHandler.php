@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\MessageHandler\Attachment;
 
+use InvalidArgumentException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Message\Attachment\AttachmentCreated;
@@ -36,10 +37,13 @@ class AttachmentCreatedHandler implements MessageHandlerInterface
      */
     public function __invoke(AttachmentCreated $attachmentCreated)
     {
-        $attachment = $this->attachmentRepository->find($attachmentCreated->getAttachmentId());
+        $attachmentId = $attachmentCreated->getAttachmentId();
+        $attachment   = $this->attachmentRepository->find($attachmentId);
 
-        if ($attachment) {
-            $this->attachmentNotifier->notifyUploaded($attachment);
+        if (null === $attachment) {
+            throw new InvalidArgumentException(sprintf('The attachment with id %d does not exist', $attachmentId));
         }
+
+        $this->attachmentNotifier->notifyUploaded($attachment);
     }
 }
