@@ -2,7 +2,7 @@ parameters:
     maxmind.license_key: '%env(string:MAXMIND_LICENSE_KEY)%'
 
 cravler_max_mind_geo_ip:
-    path: '%kernel.root_dir%/Resources/MaxMind'
+    path: '%kernel.project_dir%/src/Resources/MaxMind'
     db:
         country: 'GeoIP2-Country.mmdb'
         city: 'GeoIP2-City.mmdb'
