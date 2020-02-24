@@ -61,7 +61,7 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
             return [];
         }
 
-        if ($this->security->isGranted('ROLE_ADMIN') || ($project->getArranger() && $project->getArranger()->getCompany() === $client->getCompany())) {
+        if ($this->security->isGranted('ROLE_ADMIN') || ($project->getSubmitterCompany() === $client->getCompany())) {
             return [Project::SERIALIZER_GROUP_ADMIN_READ];
         }
 
