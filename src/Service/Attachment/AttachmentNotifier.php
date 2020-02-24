@@ -47,7 +47,7 @@ class AttachmentNotifier
         }
 
         foreach ($project->getProjectParticipations() as $participation) {
-            if ($participation->getCompany() !== $project->getArranger()->getCompany()) {
+            if ($participation->getCompany() !== $project->getSubmitterCompany()) {
                 foreach ($participation->getProjectParticipationContacts() as $contact) {
                     $message = $this->messageProvider->newMessage('attachment-uploaded', [
                         'client' => [
