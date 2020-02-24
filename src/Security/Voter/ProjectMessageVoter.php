@@ -5,13 +5,30 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Exception;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, ProjectMessage};
+use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectMessageVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_DELETE = 'delete';
     public const ATTRIBUTE_CREATE = 'create';
+
+    /** @var ProjectParticipationManager */
+    private $projectParticipationManager;
+
+    /**
+     * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param ProjectParticipationManager   $projectParticipationManager
+     */
+    public function __construct(
+        AuthorizationCheckerInterface $authorizationChecker,
+        ProjectParticipationManager $projectParticipationManager
+    ) {
+        parent::__construct($authorizationChecker);
+        $this->projectParticipationManager = $projectParticipationManager;
+    }
 
     /**
      * @param ProjectMessage $subject
@@ -23,12 +40,11 @@ class ProjectMessageVoter extends AbstractEntityVoter
      */
     protected function canCreate(ProjectMessage $subject, Clients $user): bool
     {
-        /** @var ProjectMessage $subject */
-        $arranger           = $subject->getParticipation()->getProject()->getArranger();
-        $arrangerCompany    = $arranger ? $arranger->getCompany() : null;
-        $participantCompany = $subject->getParticipation()->getCompany();
-
-        return $user->getCompany() === $arrangerCompany || $user->getCompany() === $participantCompany;
+        return $subject->getParticipation()->getProject()->getSubmitterCompany() === $user->getCompany()
+            || (
+                $this->projectParticipationManager->isParticipant($user, $subject->getParticipation()->getProject())
+                && $subject->getParticipation()->getCompany() === $user->getCompany() // TODO See if it should be here or in the validation layer
+            );
     }
 
     /**
