@@ -6,7 +6,7 @@ namespace Unilend\Security\Voter;
 
 use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, Embeddable\Permission, Project, ProjectOrganizer};
+use Unilend\Entity\{Clients, Project, ProjectOrganizer};
 use Unilend\Repository\ProjectOrganizerRepository;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
@@ -89,9 +89,7 @@ class ProjectVoter extends AbstractEntityVoter
             return true;
         }
 
-        $projectOrganizer = $this->getProjectOrganizer($project, $user);
-
-        return $projectOrganizer && $projectOrganizer->getPermission()->has(Permission::PERMISSION_EDIT);
+        return null !== $this->getProjectOrganizer($project, $user);
     }
 
     /**
