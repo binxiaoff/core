@@ -15,6 +15,7 @@ use Ramsey\Uuid\Uuid;
 use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Throwable;
 use Unilend\Entity\{Embeddable\Money, Traits\TimestampableTrait, Traits\TraceableStatusTrait};
 use Unilend\Filter\ArrayFilter;
@@ -528,6 +529,24 @@ class Project
 
         $participant = new ProjectParticipation($this->submitterCompany, $this, $addedBy);
         $this->projectParticipations->add($participant);
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateMarketSegment(ExecutionContextInterface $context)
+    {
+        // @todo update when client will have multiple staffs
+        $clientStaff = $this->getSubmitterClient()->getStaff();
+
+        if ($clientStaff->hasRestrictedAccess() && false === $clientStaff->getMarketSegments()->contains($this->getMarketSegment())) {
+            $context->buildViolation("You don't have rights to create or update a project in this market segment.")
+                ->atPath('marketSegment')
+                ->addViolation()
+            ;
+        }
     }
 
     /**
