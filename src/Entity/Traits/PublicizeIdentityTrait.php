@@ -7,7 +7,6 @@ namespace Unilend\Entity\Traits;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\Serializer\Annotation\Groups;
 use Throwable;
 
 trait PublicizeIdentityTrait
@@ -31,8 +30,6 @@ trait PublicizeIdentityTrait
      * @ORM\Column(length=36, unique=true)
      *
      * @ApiProperty(identifier=true)
-     *
-     * @Groups({"publicId:read"})
      */
     private $publicId;
 

@@ -10,7 +10,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class JWTVersionSubscriber implements EventSubscriberInterface
 {
-    public const JWT_VERSION = '2020-02-21';
+    public const JWT_VERSION = '2020-02-25';
 
     /**
      * {@inheritdoc}
