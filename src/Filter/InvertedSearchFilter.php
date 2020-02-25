@@ -6,7 +6,6 @@ namespace Unilend\Filter;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
-use ApiPlatform\Core\Util\RequestParser;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,27 +28,27 @@ class InvertedSearchFilter extends AbstractFilter
      */
     protected function extractProperties(Request $request/*, string $resourceClass*/): array
     {
-        @trigger_error(sprintf('The use of "%s::extractProperties()" is deprecated since 2.2. Use the "filters" key of the context instead.', __CLASS__), E_USER_DEPRECATED);
+        $this->properties = array_combine(
+            array_map(
+                static function ($property) {
+                    return $property . '!';
+                },
+                array_keys($this->properties)
+            ),
+            array_values($this->properties)
+        );
+        $extracted        = parent::extractProperties(...\func_get_args());
+        $this->properties = array_combine(
+            array_map(
+                static function ($property) {
+                    return trim($property, '!');
+                },
+                array_keys($this->properties)
+            ),
+            array_values($this->properties)
+        );
 
-        $resourceClass = \func_num_args() > 1 ? (string) func_get_arg(1) : null;
-        $needsFixing   = false;
-        if (null !== $this->properties) {
-            foreach ($this->properties as $property => $value) {
-                if (
-                    ($this->isPropertyNested($property, $resourceClass)
-                        || $this->isPropertyEmbedded($property, $resourceClass))
-                    && $request->query->has(str_replace('.', '_', $property . '!'))
-                ) {
-                    $needsFixing = true;
-                }
-            }
-        }
-
-        if ($needsFixing) {
-            $request = RequestParser::parseAndDuplicateRequest($request);
-        }
-
-        return $request->query->all();
+        return $extracted;
     }
 
     /**
@@ -100,7 +99,7 @@ class InvertedSearchFilter extends AbstractFilter
      */
     protected function isPropertyEnabled(string $property): bool
     {
-        return parent::isPropertyEnabled(...$this->fixArguments(func_get_args()));
+        return parent::isPropertyEnabled(...$this->fixArguments(\func_get_args()));
     }
 
     /**
@@ -108,7 +107,7 @@ class InvertedSearchFilter extends AbstractFilter
      */
     protected function isPropertyMapped(string $property, string $resourceClass, bool $allowAssociation = false): bool
     {
-        return parent::isPropertyMapped(...$this->fixArguments(func_get_args()));
+        return parent::isPropertyMapped(...$this->fixArguments(\func_get_args()));
     }
 
     /**
@@ -116,7 +115,7 @@ class InvertedSearchFilter extends AbstractFilter
      */
     protected function isPropertyNested(string $property): bool
     {
-        return parent::isPropertyNested(...$this->fixArguments(func_get_args()));
+        return parent::isPropertyNested(...$this->fixArguments(\func_get_args()));
     }
 
     /**
@@ -124,7 +123,7 @@ class InvertedSearchFilter extends AbstractFilter
      */
     protected function isPropertyEmbedded(string $property, string $resourceClass): bool
     {
-        return parent::isPropertyEmbedded(...$this->fixArguments(func_get_args()));
+        return parent::isPropertyEmbedded(...$this->fixArguments(\func_get_args()));
     }
 
     /**

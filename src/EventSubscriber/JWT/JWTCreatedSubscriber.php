@@ -63,7 +63,7 @@ class JWTCreatedSubscriber implements EventSubscriberInterface
 
         if ($user instanceof Clients) {
             $payload['@id']       = $this->iriConverter->getIriFromItem($user);
-            $payload['hash']      = $user->getPublicId();
+            $payload['publicId']  = $user->getPublicId();
             $payload['firstName'] = $user->getFirstName();
             $payload['lastName']  = $user->getLastName();
 
@@ -71,13 +71,15 @@ class JWTCreatedSubscriber implements EventSubscriberInterface
 
             if ($staff) {
                 $payload['marketSegments'] = $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
-                    return  $this->iriConverter->getIriFromItem($marketSegment);
+                    return $this->iriConverter->getIriFromItem($marketSegment);
                 })->toArray();
-                $payload['roles'] = $staff->getRoles();
-                //todo: put the exact fields
-                $company                   = $staff->getCompany();
-                $payload['company']        = $this->serializer->normalize($company, 'array', ['groups' => 'company:jwt:read']);
-                $payload['company']['@id'] = $this->iriConverter->getIriFromItem($company);
+                $payload['roles']                  = $staff->getRoles();
+                $company                           = $staff->getCompany();
+                $payload['company']['@id']         = $this->iriConverter->getIriFromItem($company);
+                $payload['company']['publicId']    = $company->getPublicId();
+                $payload['company']['name']        = $company->getName();
+                $payload['company']['shortCode']   = $company->getShortCode();
+                $payload['company']['emailDomain'] = $company->getEmailDomain();
             }
             $event->setData($payload);
         }

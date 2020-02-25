@@ -48,13 +48,17 @@ class ListExtension implements QueryCollectionExtensionInterface
         $queryBuilder
             ->andWhere($queryBuilder->expr()->orX(
                 $rootAlias . '.submitterClient = :client',
-                $rootAlias . '.submitterCompany = :company ' . 'AND (' . $rootAlias . '.marketSegment IN (:marketSegments)' . ($staff && $staff->isAdmin() ? ' OR 1 = 1' : '') . ')'
+                $queryBuilder->expr()->andX(
+                    $rootAlias . '.submitterCompany = :company',
+                    $queryBuilder->expr()->orX(
+                        $rootAlias . '.marketSegment IN (:marketSegments)',
+                        ($staff && $staff->isAdmin() ? '1 = 1' : '0 = 1')
+                    )
+                )
             ))
-            ->setParameters([
-                'company'        => $staff->getCompany(),
-                'client'         => $user,
-                'marketSegments' => $staff ? $staff->getMarketSegments() : [],
-            ])
+            ->setParameter('company', $staff->getCompany())
+            ->setParameter('client', $user)
+            ->setParameter('marketSegments', $staff ? $staff->getMarketSegments() : [])
         ;
     }
 }
