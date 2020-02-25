@@ -186,7 +186,7 @@ class Project
      *     @ORM\JoinColumn(name="id_company_submitter", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"project:list"})
+     * @Groups({"project:read"})
      *
      * @Assert\NotBlank
      * @Assert\Valid
