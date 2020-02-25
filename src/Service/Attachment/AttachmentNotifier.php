@@ -54,9 +54,9 @@ class AttachmentNotifier
                             'firstName' => $contact->getClient()->getFirstName(),
                         ],
                         'project' => [
-                            'arranger' => $project->getArranger()->getCompany()->getName(),
-                            'title'    => $project->getTitle(),
-                            'hash'     => $project->getHash(),
+                            'submitterCompany' => $project->getSubmitterCompany()->getName(),
+                            'title'            => $project->getTitle(),
+                            'hash'             => $project->getHash(),
                         ],
                     ])->setTo($contact->getClient()->getEmail());
                     $sent += $this->mailer->send($message);
