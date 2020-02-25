@@ -52,18 +52,6 @@ class Kernel extends BaseKernel
     /**
      * {@inheritdoc}
      */
-    public function getCacheDir(): string
-    {
-        if ('dev' === $this->environment) {
-            return '/data/misc/api/var/dev/cache';
-        }
-
-        return parent::getCacheDir();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader): void
     {
         $container->addResource(new FileResource($this->getProjectDir() . '/config/bundles.php'));
