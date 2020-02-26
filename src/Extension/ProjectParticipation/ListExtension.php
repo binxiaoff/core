@@ -55,6 +55,7 @@ class ListExtension implements QueryCollectionExtensionInterface
         ;
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
+            ->distinct()
             ->leftJoin("{$rootAlias}.projectParticipationContacts", 'ppc')
             ->innerJoin("{$rootAlias}.project", 'p')
             ->innerJoin('p.organizers', 'organizers')

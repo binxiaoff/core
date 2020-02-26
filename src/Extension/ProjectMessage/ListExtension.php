@@ -46,6 +46,7 @@ class ListExtension implements QueryCollectionExtensionInterface
         $arranger  = ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER;
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
+            ->distinct()
             ->innerJoin($rootAlias . '.participation', 'pp')
             ->leftJoin('pp.projectParticipationContacts', 'ppc')
             ->leftJoin('pp.project', 'project')
