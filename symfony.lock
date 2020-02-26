@@ -543,6 +543,9 @@
     "ramsey/uuid": {
         "version": "3.8.0"
     },
+    "robrichards/xmlseclibs": {
+        "version": "3.0.4"
+    },
     "rollbar/rollbar": {
         "version": "v1.8.1"
     },
