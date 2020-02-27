@@ -46,6 +46,10 @@ class ListExtension implements QueryCollectionExtensionInterface
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
+            ->distinct()
+            ->innerJoin($rootAlias . '.currentStatus', 'cs')
+            ->leftJoin($rootAlias . '.projectParticipations', 'p')
+            ->leftJoin('p.projectParticipationContacts', 'ppc')
             ->andWhere($queryBuilder->expr()->orX(
                 $rootAlias . '.submitterClient = :client',
                 $queryBuilder->expr()->andX(
@@ -54,8 +58,13 @@ class ListExtension implements QueryCollectionExtensionInterface
                         $rootAlias . '.marketSegment IN (:marketSegments)',
                         ($staff && $staff->isAdmin() ? '1 = 1' : '0 = 1')
                     )
+                ),
+                $queryBuilder->expr()->andX(
+                    'cs.status >= :minimumParticipantDisplayableStatus',
+                    'ppc.client = :client'
                 )
             ))
+            ->setParameter('minimumParticipantDisplayableStatus', ProjectStatus::STATUS_PUBLISHED)
             ->setParameter('company', $staff->getCompany())
             ->setParameter('client', $user)
             ->setParameter('marketSegments', $staff ? $staff->getMarketSegments() : [])

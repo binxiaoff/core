@@ -85,6 +85,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  * @ApiFilter(SearchFilter::class, properties={"organizers.company.publicId"})
  * @ApiFilter(ArrayFilter::class, properties={"organizers.roles"})
+ * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId"})
  *
  * @ORM\Table(indexes={
  *     @ORM\Index(name="hash", columns={"hash"})
