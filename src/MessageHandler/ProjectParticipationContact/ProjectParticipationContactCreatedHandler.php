@@ -46,10 +46,6 @@ class ProjectParticipationContactCreatedHandler implements MessageHandlerInterfa
             throw new InvalidArgumentException(sprintf("The participationContact with id %d doesn't exist anymore", $projectParticipationContactId));
         }
 
-        $participation = $projectParticipationContact->getProjectParticipation();
-
-        if ($participation->getCompany() !== $participation->getProject()->getSubmitterCompany()) {
-            $this->projectParticipationContactNotifier->sendInvitation($projectParticipationContact);
-        }
+        $this->projectParticipationContactNotifier->notifyContactAdded($projectParticipationContact);
     }
 }
