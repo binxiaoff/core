@@ -40,11 +40,16 @@ class ProjectParticipationContactNotifier
      * @throws SyntaxError
      * @throws Exception
      */
-    public function sendInvitation(ProjectParticipationContact $contact): void
+    public function notifyContactAdded(ProjectParticipationContact $contact): void
     {
         $projectParticipation = $contact->getProjectParticipation();
-        $company              = $projectParticipation->getCompany();
-        $project              = $projectParticipation->getProject();
+
+        if ($contact->getAddedBy() === $contact->getClient() || $contact->getAddedBy()->getCompany() === $projectParticipation->getCompany()) {
+            return;
+        }
+
+        $company = $projectParticipation->getCompany();
+        $project = $projectParticipation->getProject();
 
         $client     = $contact->getClient();
         $templateId = $this->getTemplateId($project, $company, $client);
