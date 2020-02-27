@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -170,9 +171,9 @@ class Clients implements UserInterface, EquatableInterface
     private $jobFunction;
 
     /**
-     * @var Staff|null
+     * @var Staff[]|Collection
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\Staff", mappedBy="client")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\Staff", mappedBy="client")
      */
     private $staff;
 
@@ -214,6 +215,7 @@ class Clients implements UserInterface, EquatableInterface
 
         $this->added   = new DateTimeImmutable();
         $this->roles[] = self::ROLE_USER;
+        $this->staff   = new ArrayCollection();
         $this->email   = $email;
     }
 
@@ -454,9 +456,9 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return Staff|null
+     * @return Staff[]|Collection
      */
-    public function getStaff(): ?Staff
+    public function getStaff(): Collection
     {
         return $this->staff;
     }
@@ -469,7 +471,7 @@ class Clients implements UserInterface, EquatableInterface
         $company = null;
 
         if ($this->getStaff()) {
-            $company = $this->getStaff()->getCompany();
+            $company = $this->getStaff()->first()->getCompany();
         }
 
         return $company;
@@ -621,6 +623,8 @@ class Clients implements UserInterface, EquatableInterface
 
     /**
      * Set user status to created when profile (firstName, lastName and password) is complete.
+     *
+     * @throws Exception
      */
     private function onProfileUpdated(): void
     {

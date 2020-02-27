@@ -128,6 +128,6 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
             return null;
         }
 
-        return $client->getStaff();
+        return $client->getStaff()->first();
     }
 }

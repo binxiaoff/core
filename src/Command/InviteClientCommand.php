@@ -62,7 +62,7 @@ class InviteClientCommand extends Command
             if ($staff && $client->isInitializationNeeded() && $client->isGrantedLogin()) {
                 $temporaryToken = TemporaryToken::generateUltraLongToken($client);
                 $this->temporaryTokenRepository->save($temporaryToken);
-                $this->staffNotifier->notifyClientInitialisation($staff, $temporaryToken);
+                $this->staffNotifier->notifyClientInitialisation($staff->first(), $temporaryToken);
             }
         }
 

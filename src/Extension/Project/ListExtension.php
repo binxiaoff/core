@@ -39,7 +39,7 @@ class ListExtension implements QueryCollectionExtensionInterface
             return;
         }
 
-        $staff = $user->getStaff();
+        $staff = $user->getStaff()->first();
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder

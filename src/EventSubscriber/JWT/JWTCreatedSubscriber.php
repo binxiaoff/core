@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Unilend\Entity\Clients;
 use Unilend\Entity\MarketSegment;
+use Unilend\Entity\Staff;
 use Unilend\Repository\ClientsRepository;
 
 class JWTCreatedSubscriber implements EventSubscriberInterface
@@ -67,7 +68,8 @@ class JWTCreatedSubscriber implements EventSubscriberInterface
             $payload['firstName'] = $user->getFirstName();
             $payload['lastName']  = $user->getLastName();
 
-            $staff = $user->getStaff();
+            /** @var Staff $staff */
+            $staff = $user->getStaff()->first();
 
             if ($staff) {
                 $payload['marketSegments'] = $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
