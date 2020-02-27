@@ -8,7 +8,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\{AuthorizationCheckerInterface, Voter\Voter};
-use Unilend\Entity\{Clients, Project, ProjectOrganizer, ProjectParticipation, ProjectParticipationContact};
+use Unilend\Entity\{Clients, Project, ProjectOrganizer, ProjectParticipation, ProjectParticipationContact, ProjectStatus};
 use Unilend\Repository\{ProjectOrganizerRepository, ProjectParticipationContactRepository};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 use Unilend\Traits\ConstantsAwareTrait;
@@ -77,6 +77,10 @@ class ProjectParticipationVoter extends Voter
         }
 
         $projectOrganizer = $this->getProjectOrganizer($subject->getProject(), $user);
+
+        if ($subject->getProject()->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_INTERESTS_COLLECTED) {
+            return false;
+        }
 
         if ($this->authorizationChecker->isGranted(Clients::ROLE_ADMIN) || ($projectOrganizer && $projectOrganizer->isArranger())) {
             return true;

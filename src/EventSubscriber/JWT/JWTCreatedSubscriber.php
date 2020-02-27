@@ -63,7 +63,7 @@ class JWTCreatedSubscriber implements EventSubscriberInterface
 
         if ($user instanceof Clients) {
             $payload['@id']       = $this->iriConverter->getIriFromItem($user);
-            $payload['hash']      = $user->getHash();
+            $payload['hash']      = $user->getPublicId();
             $payload['firstName'] = $user->getFirstName();
             $payload['lastName']  = $user->getLastName();
 

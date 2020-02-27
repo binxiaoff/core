@@ -6,7 +6,6 @@
   "autoload": {
     "psr-4": {
       "Unilend\\": "src/",
-      "Unilend\\core\\": "apps/core/",
       "Unilend\\Test\\": "tests/",
       "PHPUnit\\": "bin/.phpunit/phpunit-8.1/src/"
     }
@@ -95,6 +94,7 @@
     "escapestudios/symfony2-coding-standard": "^3.5",
     "friendsofphp/php-cs-fixer": "^2.14",
     "hautelook/alice-bundle": "^2.5",
+    "pheromone/phpcs-security-audit": "^2.0",
     "phpmd/phpmd": "^2.6",
     "phpro/grumphp": "^0.15",
     "phpspec/prophecy": "^1.8",
@@ -143,7 +143,7 @@
     "symfony/symfony": "*"
   },
   "extra": {
-    "public-dir": "public/default",
+    "public-dir": "public",
     "symfony": {
       "allow-contrib": true,
       "require": "4.3.*"

@@ -8,7 +8,7 @@ use Exception;
 use LogicException;
 use Swift_Mailer;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{Clients, Companies, Project, ProjectParticipationContact, ProjectStatus, TemporaryToken};
+use Unilend\Entity\{Clients, Company, Project, ProjectParticipationContact, ProjectStatus, TemporaryToken};
 use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
@@ -45,9 +45,9 @@ class ProjectParticipationContactNotifier
     {
         $projectParticipation = $contact->getProjectParticipation();
         $company              = $projectParticipation->getCompany();
-        $client               = $contact->getClient();
         $project              = $projectParticipation->getProject();
 
+        $client     = $contact->getClient();
         $templateId = $this->getTemplateId($project, $company, $client);
 
         $arranger = $project->getArranger();
@@ -56,8 +56,12 @@ class ProjectParticipationContactNotifier
             throw new LogicException('The arranger should not be null');
         }
 
+        if ($arranger->getCompany() === $company) {
+            return;
+        }
+
         $temporaryToken = null;
-        if ($client->isInvited()) {
+        if ($client->isInitializationNeeded()) {
             $temporaryToken = TemporaryToken::generateMediumToken($client);
             $this->temporaryTokenRepository->persist($temporaryToken);
         }
@@ -65,7 +69,7 @@ class ProjectParticipationContactNotifier
         $context = [
             'client' => [
                 'firstName' => $client->getFirstName(),
-                'hash'      => $client->getHash(),
+                'hash'      => $client->getPublicId(),
             ],
             'arranger' => [
                 'name' => $arranger->getCompany()->getName(),
@@ -89,13 +93,13 @@ class ProjectParticipationContactNotifier
     }
 
     /**
-     * @param Project   $project
-     * @param Companies $company
-     * @param Clients   $client
+     * @param Project $project
+     * @param Company $company
+     * @param Clients $client
      *
      * @return string|null
      */
-    private function getTemplateId(Project $project, Companies $company, Clients $client): ?string
+    private function getTemplateId(Project $project, Company $company, Clients $client): ?string
     {
         $templateId = null;
 
@@ -105,7 +109,7 @@ class ProjectParticipationContactNotifier
             }
 
             if ($company->hasSigned()) {
-                $templateId = $client->isInvited() ? 'publication-uninitialized-user' : 'publication';
+                $templateId = $client->isInitializationNeeded() ? 'publication-uninitialized-user' : 'publication';
             }
         }
 
@@ -115,7 +119,7 @@ class ProjectParticipationContactNotifier
             }
 
             if ($company->hasSigned()) {
-                $templateId = $client->isInvited() ? 'syndication-uninitialized-user' : 'syndication';
+                $templateId = $client->isInitializationNeeded() ? 'syndication-uninitialized-user' : 'syndication';
             }
         }
 

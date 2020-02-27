@@ -417,6 +417,9 @@
     "pdepend/pdepend": {
         "version": "2.5.2"
     },
+    "pheromone/phpcs-security-audit": {
+        "version": "2.0.1"
+    },
     "php-cs-fixer/diff": {
         "version": "v1.3.0"
     },
@@ -708,7 +711,7 @@
             "config/packages/framework.yaml",
             "config/packages/test/framework.yaml",
             "config/services.yaml",
-            "public/default/index.php",
+            "public/index.php",
             "src/Controller/.gitignore",
             "src/Kernel.php"
         ]

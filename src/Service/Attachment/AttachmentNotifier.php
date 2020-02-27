@@ -47,18 +47,20 @@ class AttachmentNotifier
         }
 
         foreach ($project->getProjectParticipations() as $participation) {
-            foreach ($participation->getProjectParticipationContacts() as $contact) {
-                $message = $this->messageProvider->newMessage('attachment-uploaded', [
-                    'client' => [
-                        'firstName' => $contact->getClient()->getFirstName(),
-                    ],
-                    'project' => [
-                        'arranger' => $project->getArranger()->getCompany()->getName(),
-                        'title'    => $project->getTitle(),
-                        'hash'     => $project->getHash(),
-                    ],
-                ])->setTo($contact->getClient()->getEmail());
-                $sent += $this->mailer->send($message);
+            if ($participation->getCompany() !== $project->getArranger()->getCompany()) {
+                foreach ($participation->getProjectParticipationContacts() as $contact) {
+                    $message = $this->messageProvider->newMessage('attachment-uploaded', [
+                        'client' => [
+                            'firstName' => $contact->getClient()->getFirstName(),
+                        ],
+                        'project' => [
+                            'arranger' => $project->getArranger()->getCompany()->getName(),
+                            'title'    => $project->getTitle(),
+                            'hash'     => $project->getHash(),
+                        ],
+                    ])->setTo($contact->getClient()->getEmail());
+                    $sent += $this->mailer->send($message);
+                }
             }
         }
 

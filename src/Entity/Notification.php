@@ -54,9 +54,9 @@ class Notification
     /**
      * @var Clients
      *
-     * @ORM\ManyToOne(targetEntity="Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
      * })
      */
     private $client;
@@ -64,7 +64,7 @@ class Notification
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Project")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project", referencedColumnName="id")
      * })
@@ -74,7 +74,7 @@ class Notification
     /**
      * @var TrancheOffer
      *
-     * @ORM\ManyToOne(targetEntity="TrancheOffer")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\TrancheOffer")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_tranche_offer")
      * })

@@ -37,20 +37,20 @@ class AttachmentDownload
      * @var Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
-     * @ORM\JoinColumn(referencedColumnName="id_client", name="id_client", nullable=false)
+     * @ORM\JoinColumn(referencedColumnName="id", name="id_client", nullable=false)
      */
     private $client;
 
     /**
      * @param Attachment $attachment
-     * @param Clients    $client
+     * @param Clients    $addedBy
      *
      * @throws Exception
      */
-    public function __construct(Attachment $attachment, Clients $client)
+    public function __construct(Attachment $attachment, Clients $addedBy)
     {
         $this->attachment = $attachment;
-        $this->client     = $client;
+        $this->client     = $addedBy;
         $this->added      = new DateTimeImmutable();
     }
 

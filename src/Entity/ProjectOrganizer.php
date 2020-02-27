@@ -78,9 +78,9 @@ class ProjectOrganizer
     private $project;
 
     /**
-     * @var Companies
+     * @var Company
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company")
      * @ORM\JoinColumn(name="id_company", nullable=false)
      *
      * @Assert\NotBlank
@@ -97,18 +97,18 @@ class ProjectOrganizer
     private $permission;
 
     /**
-     * @param Companies             $company
+     * @param Company               $company
      * @param Project               $project
-     * @param Clients               $client
+     * @param Clients               $addedBy
      * @param array|string[]|string $roles
      *
      * @throws Exception
      */
-    public function __construct(Companies $company, Project $project, Clients $client, $roles = [])
+    public function __construct(Company $company, Project $project, Clients $addedBy, $roles = [])
     {
         $this->project    = $project;
         $this->company    = $company;
-        $this->addedBy    = $client;
+        $this->addedBy    = $addedBy;
         $this->added      = new DateTimeImmutable();
         $this->permission = new Permission();
 
@@ -132,7 +132,7 @@ class ProjectOrganizer
     }
 
     /**
-     * @return Companies
+     * @return Company
      */
     public function getCompany()
     {

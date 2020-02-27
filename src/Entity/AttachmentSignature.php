@@ -35,7 +35,7 @@ class AttachmentSignature
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_signatory", referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_signatory", referencedColumnName="id", nullable=false)
      * })
      */
     private $signatory;

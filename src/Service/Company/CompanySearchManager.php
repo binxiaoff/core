@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Company;
 
-use Unilend\Entity\Companies;
-use Unilend\Repository\CompaniesRepository;
+use Unilend\Entity\Company;
+use Unilend\Repository\CompanyRepository;
 use Unilend\Service\WebServiceClient\InseeManager;
 
 class CompanySearchManager
 {
-    /** @var CompaniesRepository */
-    private $companiesRepository;
+    /** @var CompanyRepository */
+    private $companyRepository;
     /** @var InseeManager */
     private $inseeManager;
 
     /**
-     * @param CompaniesRepository $companiesRepository
-     * @param InseeManager        $inseeManager
+     * @param CompanyRepository $companyRepository
+     * @param InseeManager      $inseeManager
      */
-    public function __construct(CompaniesRepository $companiesRepository, InseeManager $inseeManager)
+    public function __construct(CompanyRepository $companyRepository, InseeManager $inseeManager)
     {
-        $this->companiesRepository = $companiesRepository;
-        $this->inseeManager        = $inseeManager;
+        $this->companyRepository = $companyRepository;
+        $this->inseeManager      = $inseeManager;
     }
 
     /**
@@ -39,7 +39,7 @@ class CompanySearchManager
     /**
      * @param string $siren
      *
-     * @return Companies|null
+     * @return Company|null
      */
     private function searchCompanyBySiren(string $siren): ?array
     {
@@ -54,7 +54,7 @@ class CompanySearchManager
     private function searchCompaniesByName(string $term): array
     {
         return array_merge(
-            $this->companiesRepository->findByName($term, 5),
+            $this->companyRepository->findByName($term, 5),
             $this->inseeManager->searchByName($term)
         );
     }

@@ -73,7 +73,7 @@ class MailQueueManager
             $clients  = $clientRepository->findBy(['email' => $email]);
 
             if (1 === count($clients)) {
-                $clientId = $clients[0]->getIdClient();
+                $clientId = $clients[0]->getId();
             }
 
             $mailQueue = new MailQueue();

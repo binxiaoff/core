@@ -7,5 +7,9 @@ parameters:
         phpcsfixer2:
             allow_risky: true
             config: .php_cs
-        phpcs: ~
+        phpcs:
+            exclude:
+                - "PHPCS_SecurityAudit.BadFunctions.CallbackFunctions.WarnCallbackFunctions"
+                - "PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem"
+                - "PHPCS_SecurityAudit.BadFunctions.PregReplace.PregReplaceDyn"
         phpstan: ~

@@ -7,30 +7,30 @@ namespace Unilend\Command;
 use Exception;
 use Symfony\Component\Console\{Command\Command, Input\InputArgument, Input\InputInterface, Output\OutputInterface};
 use Unilend\Entity\{CompanyStatus, TemporaryToken};
-use Unilend\Repository\{CompaniesRepository, TemporaryTokenRepository};
+use Unilend\Repository\{CompanyRepository, TemporaryTokenRepository};
 use Unilend\Service\Staff\StaffNotifier;
 
 class SignCompanyCommand extends Command
 {
     /** @var string */
     protected static $defaultName = 'kls:company:sign';
-    /** @var CompaniesRepository */
-    private $companiesRepository;
+    /** @var CompanyRepository */
+    private $companyRepository;
     /** @var StaffNotifier */
     private $staffNotifier;
     /** @var TemporaryTokenRepository */
     private $temporaryTokenRepository;
 
     /**
-     * @param CompaniesRepository      $companiesRepository
+     * @param CompanyRepository        $companyRepository
      * @param StaffNotifier            $staffNotifier
      * @param TemporaryTokenRepository $temporaryTokenRepository
      */
-    public function __construct(CompaniesRepository $companiesRepository, StaffNotifier $staffNotifier, TemporaryTokenRepository $temporaryTokenRepository)
+    public function __construct(CompanyRepository $companyRepository, StaffNotifier $staffNotifier, TemporaryTokenRepository $temporaryTokenRepository)
     {
         parent::__construct();
 
-        $this->companiesRepository      = $companiesRepository;
+        $this->companyRepository        = $companyRepository;
         $this->staffNotifier            = $staffNotifier;
         $this->temporaryTokenRepository = $temporaryTokenRepository;
     }
@@ -53,19 +53,19 @@ class SignCompanyCommand extends Command
     {
         $inputCompanies = $input->getArgument('companies');
         foreach ($inputCompanies as $companyId) {
-            $company = $this->companiesRepository->find($companyId);
+            $company = $this->companyRepository->find($companyId);
             if (null === $company) {
                 continue;
             }
 
             $company->setCurrentStatus(CompanyStatus::STATUS_SIGNED);
 
-            $this->companiesRepository->save($company);
+            $this->companyRepository->save($company);
 
             foreach ($company->getStaff() as $staff) {
                 $client = $staff->getClient();
 
-                if ($client->isInvited() && $client->isGrantedLogin()) {
+                if ($client->isInitializationNeeded() && $client->isGrantedLogin()) {
                     $temporaryToken = TemporaryToken::generateUltraLongToken($client);
                     $this->temporaryTokenRepository->save($temporaryToken);
                     $this->staffNotifier->notifyClientInitialisation($staff, $temporaryToken);

@@ -40,7 +40,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "projectParticipationContact:read",
  *                 "projectOrganizer:read",
  *                 "role:read",
- *                 "profile:read",
+ *                 "client:read",
  *                 "timestampable:read"
  *             }}
  *         },
@@ -132,9 +132,9 @@ class Project
     private $hash;
 
     /**
-     * @var Companies
+     * @var Company
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company", cascade={"persist"})
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_borrower_company", referencedColumnName="id", nullable=false)
      * })
@@ -151,9 +151,9 @@ class Project
     private $borrowerCompany;
 
     /**
-     * @var Companies
+     * @var Company
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company_submitter", referencedColumnName="id", nullable=false)
      * })
@@ -170,7 +170,7 @@ class Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client_submitter",  referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_client_submitter",  referencedColumnName="id", nullable=false)
      * })
      * @Assert\NotBlank
      * @Assert\Valid
@@ -456,14 +456,14 @@ class Project
     private $globalFundingMoney;
 
     /**
-     * @param Clients       $submitter
-     * @param Companies     $borrowerCompany
+     * @param Clients       $addedBy
+     * @param Company       $borrowerCompany
      * @param Money         $globalFundingMoney
      * @param MarketSegment $marketSegment
      *
      * @throws Exception
      */
-    public function __construct(Clients $submitter, Companies $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
+    public function __construct(Clients $addedBy, Company $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
     {
         $this->attachments           = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
@@ -474,8 +474,8 @@ class Project
         $this->organizers            = new ArrayCollection();
         $this->added                 = new DateTimeImmutable();
         $this->marketSegment         = $marketSegment;
-        $this->submitterClient       = $submitter;
-        $this->submitterCompany      = $submitter->getCompany();
+        $this->submitterClient       = $addedBy;
+        $this->submitterCompany      = $addedBy->getCompany();
 
         $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_REQUESTED));
 
@@ -494,10 +494,10 @@ class Project
             }
         }
 
-        $arranger = new ProjectOrganizer($this->submitterCompany, $this, $submitter, [ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER]);
+        $arranger = new ProjectOrganizer($this->submitterCompany, $this, $addedBy, [ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER]);
         $this->organizers->add($arranger);
 
-        $participant = new ProjectParticipation($this->submitterCompany, $this, $submitter);
+        $participant = new ProjectParticipation($this->submitterCompany, $this, $addedBy);
         $this->projectParticipations->add($participant);
     }
 
@@ -518,11 +518,11 @@ class Project
     }
 
     /**
-     * @param Companies $company
+     * @param Company $company
      *
      * @return Project
      */
-    public function setBorrowerCompany(Companies $company): Project
+    public function setBorrowerCompany(Company $company): Project
     {
         $this->borrowerCompany = $company;
 
@@ -530,17 +530,17 @@ class Project
     }
 
     /**
-     * @return Companies
+     * @return Company
      */
-    public function getBorrowerCompany(): Companies
+    public function getBorrowerCompany(): Company
     {
         return $this->borrowerCompany;
     }
 
     /**
-     * @return Companies
+     * @return Company
      */
-    public function getSubmitterCompany(): Companies
+    public function getSubmitterCompany(): Company
     {
         return $this->submitterCompany;
     }
@@ -802,14 +802,14 @@ class Project
     }
 
     /**
-     * @param Companies $companies
+     * @param Company $company
      *
      * @return ProjectParticipation|null
      */
-    public function getProjectParticipationByCompany(Companies $companies): ?ProjectParticipation
+    public function getProjectParticipationByCompany(Company $company): ?ProjectParticipation
     {
         $criteria = new Criteria();
-        $criteria->where(Criteria::expr()->eq('company', $companies));
+        $criteria->where(Criteria::expr()->eq('company', $company));
 
         // A company can only have one Participation on a project.
         return $this->projectParticipations->matching($criteria)->first() ?: null;

@@ -26,9 +26,9 @@ class CompanyStatus implements StatusInterface
     public const STATUS_SIGNED   = 10;
 
     /**
-     * @var Companies
+     * @var Company
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", inversedBy="statuses")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company", inversedBy="statuses")
      * @ORM\JoinColumn(name="id_company", nullable=false)
      */
     private $company;
@@ -50,12 +50,12 @@ class CompanyStatus implements StatusInterface
     private $id;
 
     /**
-     * @param Companies $company
-     * @param int       $status
+     * @param Company $company
+     * @param int     $status
      *
      * @throws Exception
      */
-    public function __construct(Companies $company, int $status)
+    public function __construct(Company $company, int $status)
     {
         if (!\in_array($status, static::getPossibleStatuses(), true)) {
             throw new InvalidArgumentException(
@@ -68,9 +68,9 @@ class CompanyStatus implements StatusInterface
     }
 
     /**
-     * @return Companies
+     * @return Company
      */
-    public function getCompany(): Companies
+    public function getCompany(): Company
     {
         return $this->company;
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
@@ -12,13 +12,12 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use libphonenumber\PhoneNumber;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
-use Ramsey\Uuid\{Exception\UnsatisfiedDependencyException, Uuid};
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait, TraceableStatusTrait};
+use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait, TraceableStatusTrait};
 use Unilend\Validator\Constraints\Password as AssertPassword;
 use URLify;
 
@@ -38,7 +37,7 @@ use URLify;
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedClients")
  *
  * @ORM\Table(name="clients", indexes={
- *     @ORM\Index(columns={"hash"}),
+ *     @ORM\Index(columns={"public_id"}),
  *     @ORM\Index(columns={"email"}),
  *     @ORM\Index(columns={"last_name"})
  * })
@@ -54,21 +53,13 @@ class Clients implements UserInterface, EquatableInterface
     use TraceableStatusTrait {
         setCurrentStatus as baseStatusSetter;
     }
+    use PublicizeIdentityTrait;
 
     public const ROLE_USER        = 'ROLE_USER';
     public const ROLE_ADMIN       = 'ROLE_ADMIN';
     public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
 
     public const PHONE_NUMBER_DEFAULT_REGION = 'FR';
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="hash", type="string", length=191)
-     *
-     * @ApiProperty(identifier=true)
-     */
-    private $hash;
 
     /**
      * @var string
@@ -80,7 +71,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "profile:read"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="title", type="string", nullable=true)
      */
@@ -89,7 +80,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "profile:read"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="last_name", type="string", length=191, nullable=true)
      *
@@ -101,7 +92,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "profile:read"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="first_name", type="string", length=191, nullable=true)
      *
@@ -120,7 +111,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var PhoneNumber
      *
-     * @Groups({"client:read", "client:write", "profile:read"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="phone", type="phone_number", nullable=true)
      *
@@ -131,7 +122,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var PhoneNumber
      *
-     * @Groups({"client:read", "client:write", "profile:read"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="mobile", type="phone_number", nullable=true)
      *
@@ -142,7 +133,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "profile:read", "client:create"})
+     * @Groups({"client:read", "client:create"})
      *
      * @ORM\Column(name="email", type="string", length=191, nullable=false, unique=true)
      *
@@ -172,22 +163,11 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "profile:read"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $jobFunction;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="id_client", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     *
-     * @ApiProperty(identifier=false)
-     */
-    private $idClient;
 
     /**
      * @var Staff|null
@@ -206,7 +186,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var ClientStatus
      *
-     * @Groups({"client:read", "profile:read"})
+     * @Groups({"client:read"})
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientStatus")
      * @ORM\JoinColumn(name="id_current_status", unique=true)
@@ -245,26 +225,6 @@ class Clients implements UserInterface, EquatableInterface
     public function __toString(): string
     {
         return $this->getEmail();
-    }
-
-    /**
-     * @param string $hash
-     *
-     * @return Clients
-     */
-    public function setHash(string $hash): Clients
-    {
-        $this->hash = $hash;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getHash(): string
-    {
-        return $this->hash;
     }
 
     /**
@@ -494,30 +454,6 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return int
-     */
-    public function getIdClient(): ?int
-    {
-        return $this->idClient;
-    }
-
-    /**
-     * @throws Exception
-     *
-     * @ORM\PrePersist
-     */
-    public function setHashValue(): void
-    {
-        if (null === $this->hash) {
-            try {
-                $this->hash = $this->generateHash();
-            } catch (UnsatisfiedDependencyException $exception) {
-                $this->hash = md5(uniqid('', false));
-            }
-        }
-    }
-
-    /**
      * @return Staff|null
      */
     public function getStaff(): ?Staff
@@ -526,9 +462,9 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return Companies|null
+     * @return Company|null
      */
-    public function getCompany(): ?Companies
+    public function getCompany(): ?Company
     {
         $company = null;
 
@@ -556,27 +492,11 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @todo: remove the group and rename the method to isInitializationNeeded after the release 1.0.0
-     *
-     * @Groups({"client:read"})
-     *
      * @return bool
      */
-    public function isInvited(): bool
+    public function isInitializationNeeded(): bool
     {
         return $this->isInStatus([ClientStatus::STATUS_INVITED]) || false === $this->isProfileCompleted();
-    }
-
-    /**
-     * @todo: remove the method after the release 1.0.0
-     *
-     * @Groups({"client:read"})
-     *
-     * @return bool
-     */
-    public function isCreated(): bool
-    {
-        return $this->isInStatus([ClientStatus::STATUS_CREATED]);
     }
 
     /**
@@ -588,7 +508,7 @@ class Clients implements UserInterface, EquatableInterface
             return false;
         }
 
-        if ($this->getHash() !== $user->getHash()) {
+        if ($this->getPublicId() !== $user->getPublicId()) {
             return false;
         }
 
@@ -677,18 +597,6 @@ class Clients implements UserInterface, EquatableInterface
         }
 
         return $newName;
-    }
-
-    /**
-     * @throws Exception
-     *
-     * @return string
-     */
-    private function generateHash(): string
-    {
-        $uuid4 = Uuid::uuid4();
-
-        return $uuid4->toString();
     }
 
     /**

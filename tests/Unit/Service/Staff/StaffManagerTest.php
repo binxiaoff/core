@@ -10,9 +10,9 @@ use Faker\Provider\{Base, Internet};
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Unilend\Entity\{Clients, Companies, Staff};
+use Unilend\Entity\{Clients, Company, Staff};
 use Unilend\Exception\{Client\ClientNotFoundException, Staff\StaffNotFoundException};
-use Unilend\Repository\{ClientsRepository, CompaniesRepository, StaffRepository};
+use Unilend\Repository\{ClientsRepository, CompanyRepository, StaffRepository};
 use Unilend\Service\{Company\CompanyManager, Staff\StaffManager};
 
 /**
@@ -26,8 +26,8 @@ class StaffManagerTest extends TestCase
     private $companyManager;
     /** @var ClientsRepository|ObjectProphecy */
     private $clientsRepository;
-    /** @var CompaniesRepository|ObjectProphecy */
-    private $companiesRepository;
+    /** @var CompanyRepository|ObjectProphecy */
+    private $companyRepository;
     /** @var StaffRepository|ObjectProphecy */
     private $staffRepository;
 
@@ -36,10 +36,10 @@ class StaffManagerTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->companyManager      = $this->prophesize(CompanyManager::class);
-        $this->clientsRepository   = $this->prophesize(ClientsRepository::class);
-        $this->companiesRepository = $this->prophesize(CompaniesRepository::class);
-        $this->staffRepository     = $this->prophesize(StaffRepository::class);
+        $this->companyManager    = $this->prophesize(CompanyManager::class);
+        $this->clientsRepository = $this->prophesize(ClientsRepository::class);
+        $this->companyRepository = $this->prophesize(CompanyRepository::class);
+        $this->staffRepository   = $this->prophesize(StaffRepository::class);
     }
 
     /**
@@ -50,7 +50,7 @@ class StaffManagerTest extends TestCase
     public function testGetStaffByEmail(): void
     {
         $email         = 'test@' . Internet::safeEmailDomain();
-        $company       = new Companies('CALS');
+        $company       = new Company('CALS');
         $client        = new Clients($email);
         $expectedStaff = new Staff($company, $client);
 
@@ -76,7 +76,7 @@ class StaffManagerTest extends TestCase
         $this->expectException(ClientNotFoundException::class);
 
         $email = Internet::safeEmailDomain();
-        $this->companyManager->getCompanyByEmail(Argument::exact($email))->willReturn(new Companies('CALS'));
+        $this->companyManager->getCompanyByEmail(Argument::exact($email))->willReturn(new Company('CALS'));
         $this->clientsRepository->findOneBy(Argument::exact(['email' => $email]))->willReturn(null);
 
         $this->createTestObject()->getStaffByEmail($email);
@@ -92,7 +92,7 @@ class StaffManagerTest extends TestCase
         $this->expectException(StaffNotFoundException::class);
 
         $email   = 'test@' . Internet::safeEmailDomain();
-        $company = new Companies('CALS');
+        $company = new Company('CALS');
         $client  = new Clients($email);
         $company->setName(Base::lexify('?????????'));
 
@@ -116,7 +116,7 @@ class StaffManagerTest extends TestCase
     public function testAddStaffFromEmail(?Clients $client): void
     {
         $email   = 'test@' . Internet::safeEmailDomain();
-        $company = new Companies('CALS');
+        $company = new Company('CALS');
 
         if ($client) {
             $client->setEmail($email);
@@ -135,7 +135,7 @@ class StaffManagerTest extends TestCase
             $clientSaver->shouldHaveBeenCalled();
         }
 
-        $this->companiesRepository->save(Argument::exact($company))->shouldHaveBeenCalled();
+        $this->companyRepository->save(Argument::exact($company))->shouldHaveBeenCalled();
 
         static::assertSame($company, $staff->getCompany());
         static::assertSame($email, $staff->getClient()->getEmail());
@@ -178,7 +178,7 @@ class StaffManagerTest extends TestCase
         return new StaffManager(
             $this->companyManager->reveal(),
             $this->clientsRepository->reveal(),
-            $this->companiesRepository->reveal(),
+            $this->companyRepository->reveal(),
             $this->staffRepository->reveal()
         );
     }

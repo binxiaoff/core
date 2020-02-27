@@ -87,7 +87,7 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
      */
     protected function getFileName(FileStorageInterface $acceptedLegalDoc): string
     {
-        return self::FILE_PREFIX . '-' . $acceptedLegalDoc->getClient()->getHash() . '-' . $acceptedLegalDoc->getLegalDoc()->getId() . '.pdf';
+        return self::FILE_PREFIX . '-' . $acceptedLegalDoc->getClient()->getPublicId() . '-' . $acceptedLegalDoc->getLegalDoc()->getId() . '.pdf';
     }
 
     /**
@@ -97,7 +97,7 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
      */
     protected function generateRelativeDirectory(FileStorageInterface $acceptedLegalDoc): string
     {
-        return self::PATH . DIRECTORY_SEPARATOR . $acceptedLegalDoc->getClient()->getIdClient();
+        return self::PATH . DIRECTORY_SEPARATOR . $acceptedLegalDoc->getClient()->getId();
     }
 
     /**

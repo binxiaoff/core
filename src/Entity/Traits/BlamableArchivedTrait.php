@@ -14,7 +14,7 @@ trait BlamableArchivedTrait
      * @var Clients|null
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
-     * @ORM\JoinColumn(name="archived_by", referencedColumnName="id_client")
+     * @ORM\JoinColumn(name="archived_by", referencedColumnName="id")
      */
     private $archivedBy;
 

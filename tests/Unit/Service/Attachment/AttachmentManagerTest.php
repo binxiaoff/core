@@ -14,7 +14,7 @@ use Prophecy\Prophecy\{ObjectProphecy};
 use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, Clients, Companies, Embeddable\Money, MarketSegment, Project};
+use Unilend\Entity\{Attachment, Clients, Company, Embeddable\Money, MarketSegment, Project};
 use Unilend\Repository\AttachmentRepository;
 use Unilend\Service\{Attachment\AttachmentManager, FileSystem\FileUploadManager};
 
@@ -72,7 +72,7 @@ class AttachmentManagerTest extends TestCase
         $this->attachmentRepository->save(Argument::type(Attachment::class));
         $attachmentManager = $this->createTestObject();
 
-        $idClientsReflectionProperty = new ReflectionProperty(Clients::class, 'idClient');
+        $idClientsReflectionProperty = new ReflectionProperty(Clients::class, 'id');
         $idClientsReflectionProperty->setAccessible(true);
         $owner   = new Clients('test@' . Internet::safeEmailDomain());
         $ownerId = Base::randomDigitNotNull();
@@ -95,7 +95,7 @@ class AttachmentManagerTest extends TestCase
         );
 
         static::assertSame($uploader, $createdAttachment->getAddedBy());
-        static::assertStringContainsString((string) $uploader->getIdClient(), $createdAttachment->getPath());
+        static::assertStringContainsString((string) $uploader->getId(), $createdAttachment->getPath());
         static::assertSame($type, $createdAttachment->getType());
         static::assertSame($project, $createdAttachment->getProject());
         static::assertSame($description, $createdAttachment->getDescription());
@@ -156,9 +156,9 @@ class AttachmentManagerTest extends TestCase
     protected function createProject(): Project
     {
         $client = $this->prophesize(Clients::class);
-        $client->getCompany()->willReturn(new Companies(Base::lexify('????')));
+        $client->getCompany()->willReturn(new Company(Base::lexify('????')));
 
-        return new Project($client->reveal(), new Companies(Base::lexify('????')), new Money(Miscellaneous::currencyCode()), new MarketSegment());
+        return new Project($client->reveal(), new Company(Base::lexify('????')), new Money(Miscellaneous::currencyCode()), new MarketSegment());
     }
 
     /**

@@ -163,7 +163,7 @@ class Attachment
     /**
      * @var AttachmentSignature[]
      *
-     * @ORM\OneToMany(targetEntity="AttachmentSignature", mappedBy="attachment")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\AttachmentSignature", mappedBy="attachment")
      *
      * @Groups({"attachment:read"})
      */
@@ -183,7 +183,7 @@ class Attachment
     /**
      * @var Collection|AttachmentDownload[]
      *
-     * @ORM\OneToMany(targetEntity="AttachmentDownload", fetch="EXTRA_LAZY", mappedBy="attachment", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\AttachmentDownload", fetch="EXTRA_LAZY", mappedBy="attachment", cascade={"persist", "remove"})
      */
     private $attachmentDownloads;
 

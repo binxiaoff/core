@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Unilend\Entity\Clients;
-use Unilend\Entity\Companies;
+use Unilend\Entity\Company;
 use Unilend\Entity\Embeddable\Money;
 use Unilend\Entity\FoncarisRequest;
 use Unilend\Entity\Interfaces\FileStorageInterface;
@@ -215,8 +215,8 @@ class GuaranteeRequestGeneratorTest extends TestCase
      */
     protected function createFoncarisRequest(): FoncarisRequest
     {
-        /** @var Companies|ObjectProphecy $borrowerCompany */
-        $borrowerCompany = $this->prophesize(Companies::class);
+        /** @var Company|ObjectProphecy $borrowerCompany */
+        $borrowerCompany = $this->prophesize(Company::class);
         $borrowerCompany->getName()->willReturn(Base::randomLetter());
         $borrowerCompany->getSiren()->willReturn(Base::numerify(str_repeat('#', 9)));
         $borrowerCompany = $borrowerCompany->reveal();

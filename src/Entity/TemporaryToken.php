@@ -5,20 +5,14 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiResource;
 use DateInterval;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
 use Exception;
-use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * @ApiResource(
- *     itemOperations={"get"},
- *     collectionOperations={}
- * )
  * @ORM\Table(name="temporary_token", indexes={@ORM\Index(name="fk_temporary_token_id_client", columns={"id_client"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\TemporaryTokenRepository")
  * @ORM\HasLifecycleCallbacks
@@ -89,10 +83,8 @@ class TemporaryToken
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
      * })
-     *
-     * @Groups({"temporaryToken:read"})
      */
     private $client;
 

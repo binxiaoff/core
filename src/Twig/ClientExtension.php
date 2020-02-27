@@ -57,7 +57,7 @@ class ClientExtension extends AbstractExtension
             return $this->notificationDisplayManager->getLastClientNotifications($client);
         } catch (Exception $exception) {
             $this->logger->error('Unable to retrieve last client notifications. Error: ' . $exception->getMessage(), [
-                'id_client' => $client->getIdClient(),
+                'id_client' => $client->getId(),
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__,
                 'file'      => $exception->getFile(),

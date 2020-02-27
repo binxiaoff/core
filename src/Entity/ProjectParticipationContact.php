@@ -51,7 +51,7 @@ class ProjectParticipationContact
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
      * })
      *
      * @Groups({"projectParticipationContact:read", "projectParticipationContact:create"})
@@ -71,18 +71,18 @@ class ProjectParticipationContact
      * ProjectParticipationContact constructor.
      *
      * @param ProjectParticipation $projectParticipation
-     * @param Clients              $clients
      * @param Clients|null         $addedBy
+     * @param Clients              $client
      *
      * @throws Exception
      */
     public function __construct(
         ProjectParticipation $projectParticipation,
-        Clients $clients,
-        Clients $addedBy
+        Clients $addedBy,
+        Clients $client
     ) {
         $this->projectParticipation = $projectParticipation;
-        $this->client               = $clients;
+        $this->client               = $client;
         $this->addedBy              = $addedBy;
         $this->added                = new DateTimeImmutable();
     }

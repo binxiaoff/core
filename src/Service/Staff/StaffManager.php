@@ -10,7 +10,7 @@ use Exception;
 use Unilend\Entity\{ClientStatus, Clients, Staff};
 use Unilend\Exception\Client\ClientNotFoundException;
 use Unilend\Exception\Staff\StaffNotFoundException;
-use Unilend\Repository\{ClientsRepository, CompaniesRepository, StaffRepository};
+use Unilend\Repository\{ClientsRepository, CompanyRepository, StaffRepository};
 use Unilend\Service\Company\CompanyManager;
 
 class StaffManager
@@ -19,23 +19,23 @@ class StaffManager
     private $companyManager;
     /** @var ClientsRepository */
     private $clientsRepository;
-    /** @var CompaniesRepository */
-    private $companiesRepository;
+    /** @var CompanyRepository */
+    private $companyRepository;
     /** @var StaffRepository */
     private $staffRepository;
 
     /**
-     * @param CompanyManager      $companyManager
-     * @param ClientsRepository   $clientsRepository
-     * @param CompaniesRepository $companiesRepository
-     * @param StaffRepository     $staffRepository
+     * @param CompanyManager    $companyManager
+     * @param ClientsRepository $clientsRepository
+     * @param CompanyRepository $companyRepository
+     * @param StaffRepository   $staffRepository
      */
-    public function __construct(CompanyManager $companyManager, ClientsRepository $clientsRepository, CompaniesRepository $companiesRepository, StaffRepository $staffRepository)
+    public function __construct(CompanyManager $companyManager, ClientsRepository $clientsRepository, CompanyRepository $companyRepository, StaffRepository $staffRepository)
     {
-        $this->companyManager      = $companyManager;
-        $this->clientsRepository   = $clientsRepository;
-        $this->companiesRepository = $companiesRepository;
-        $this->staffRepository     = $staffRepository;
+        $this->companyManager    = $companyManager;
+        $this->clientsRepository = $clientsRepository;
+        $this->companyRepository = $companyRepository;
+        $this->staffRepository   = $staffRepository;
     }
 
     /**
@@ -91,7 +91,7 @@ class StaffManager
         }
 
         $staff = $company->addStaff($client, Staff::DUTY_STAFF_OPERATOR);
-        $this->companiesRepository->save($company);
+        $this->companyRepository->save($company);
 
         return $staff;
     }

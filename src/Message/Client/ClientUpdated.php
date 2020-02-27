@@ -19,7 +19,7 @@ class ClientUpdated
      */
     public function __construct(Clients $client, array $changeSet)
     {
-        $this->clientId  = $client->getIdClient();
+        $this->clientId  = $client->getId();
         $this->changeSet = $changeSet;
     }
 

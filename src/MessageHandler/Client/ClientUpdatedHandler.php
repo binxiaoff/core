@@ -40,7 +40,7 @@ class ClientUpdatedHandler implements MessageHandlerInterface
         $changeSet = $clientUpdated->getChangeSet();
 
         if ($client && $changeSet) {
-            $this->clientNotifier->sendIdentityUpdated($client, array_keys($changeSet));
+            //$this->clientNotifier->sendIdentityUpdated($client, array_keys($changeSet));
         }
     }
 }
