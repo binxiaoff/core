@@ -8,7 +8,6 @@ use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, Project, ProjectOrganizer};
 use Unilend\Repository\ProjectOrganizerRepository;
-use Unilend\Repository\StaffRepository;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectVoter extends AbstractEntityVoter
@@ -20,32 +19,26 @@ class ProjectVoter extends AbstractEntityVoter
     public const ATTRIBUTE_RATE                          = 'rate';
     public const ATTRIBUTE_CREATE_TRANCHE_OFFER          = 'create_tranche_offer';
     public const ATTRIBUTE_COMMENT                       = 'comment';
+    public const ATTRIBUTE_CREATE                        = 'create';
 
     /** @var ProjectOrganizerRepository */
     private $projectOrganizerRepository;
     /** @var ProjectParticipationManager */
     private $projectParticipationManager;
-    /**
-     * @var StaffRepository
-     */
-    private $staffRepository;
 
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
      * @param ProjectParticipationManager   $projectParticipationManager
      * @param ProjectOrganizerRepository    $projectOrganizerRepository
-     * @param StaffRepository               $staffRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         ProjectParticipationManager $projectParticipationManager,
-        ProjectOrganizerRepository $projectOrganizerRepository,
-        StaffRepository $staffRepository
+        ProjectOrganizerRepository $projectOrganizerRepository
     ) {
         parent::__construct($authorizationChecker);
         $this->projectParticipationManager = $projectParticipationManager;
         $this->projectOrganizerRepository  = $projectOrganizerRepository;
-        $this->staffRepository             = $staffRepository;
     }
 
     /**
@@ -58,21 +51,25 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canView(Project $project, Clients $user): bool
     {
-        $staff = $user->getStaff();
-
-        if (
-            false === $staff->isAdmin()
-            && false === $staff->getMarketSegments()->contains($project->getMarketSegment())
-        ) {
-            return false;
-        }
-
         if ($this->canEdit($project, $user)) {
             return true;
         }
 
         return $this->projectParticipationManager->isParticipant($user, $project)
             && (false === $project->isConfidential() || $this->projectParticipationManager->isConfidentialityAccepted($user, $project));
+    }
+
+    /**
+     * @param Project $project
+     * @param Clients $user
+     *
+     * @return bool
+     */
+    protected function canCreate(Project $project, Clients $user): bool
+    {
+        $staff = $user->getStaff();
+
+        return  $staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment());
     }
 
     /**
