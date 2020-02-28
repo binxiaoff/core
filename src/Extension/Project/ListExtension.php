@@ -12,17 +12,14 @@ use Unilend\Entity\{Clients, Project, ProjectStatus};
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
-    /**
-     * @var Security
-     */
+    /** @var Security */
     private $security;
 
     /**
      * @param Security $security
      */
-    public function __construct(
-        Security $security
-    ) {
+    public function __construct(Security $security)
+    {
         $this->security = $security;
     }
 

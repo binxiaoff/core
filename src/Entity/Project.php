@@ -40,7 +40,18 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 }
  *             }
  *         },
- *         "post": {"denormalization_context": {"groups": {"project:create", "project:write", "company:write", "money:write", "tag:write"}}}
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "project:create",
+ *                     "project:write",
+ *                     "company:write",
+ *                     "money:write",
+ *                     "tag:write"
+ *                 }
+ *             }
+ *         }
  *     },
  *     itemOperations={
  *         "get": {
