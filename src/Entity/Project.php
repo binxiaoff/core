@@ -41,7 +41,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             }
  *         },
  *         "post": {
- *             "security_post_denormalize": "is_granted('edit', object)",
+ *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
  *                 "groups": {
  *                     "project:create",
