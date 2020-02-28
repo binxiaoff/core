@@ -8,30 +8,19 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInter
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\{Clients, Project, ProjectStatus, Staff};
-use Unilend\Repository\StaffRepository;
+use Unilend\Entity\{Clients, Project};
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
-    /**
-     * @var Security
-     */
+    /** @var Security */
     private $security;
-    /**
-     * @var StaffRepository
-     */
-    private $staffRepository;
 
     /**
-     * @param Security        $security
-     * @param StaffRepository $staffRepository
+     * @param Security $security
      */
-    public function __construct(
-        Security $security,
-        StaffRepository $staffRepository
-    ) {
-        $this->security        = $security;
-        $this->staffRepository = $staffRepository;
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
     }
 
     /**
@@ -77,18 +66,5 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->setParameter('client', $user)
             ->setParameter('marketSegments', $staff ? $staff->getMarketSegments() : [])
         ;
-
-        //@todo change retrieval method when multiple staffs will be established ($client->getStaffs())
-        $staffs = $this->staffRepository->findBy(['client' => $user]);
-
-        foreach ($staffs as $staff) {
-            if ($staff->hasRestrictedAccess()) {
-                $marketSegments = $staff->getMarketSegments();
-                $queryBuilder
-                    ->andWhere($rootAlias . '.marketSegment IN (:marketSegments)')
-                    ->setParameter('marketSegments', $marketSegments->toArray())
-                ;
-            }
-        }
     }
 }

@@ -239,12 +239,4 @@ class Staff
     {
         return $this->hasRole(static::DUTY_STAFF_OPERATOR);
     }
-
-    /**
-     * @return bool
-     */
-    public function hasRestrictedAccess(): bool
-    {
-        return false === $this->isAdmin() && ($this->isManager() || $this->isOperator());
-    }
 }

@@ -58,13 +58,11 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canView(Project $project, Clients $user): bool
     {
-        $staff = $this->staffRepository->findOneBy(['client' => $user, 'company' => $project->getArranger()->getCompany()]);
+        $staff = $user->getStaff();
 
         if (
-            null === $staff
-            || ($staff
-            && $staff->hasRestrictedAccess()
-            && false === $staff->getMarketSegments()->contains($project->getMarketSegment()))
+            false === $staff->isAdmin()
+            && false === $staff->getMarketSegments()->contains($project->getMarketSegment())
         ) {
             return false;
         }
@@ -104,11 +102,17 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canEdit(Project $project, Clients $user): bool
     {
-        if ($user->getCompany() === $project->getSubmitterCompany()) {
+        if ($project->getSubmitterClient() === $user) {
             return true;
         }
 
-        return null !== $this->getProjectOrganizer($project, $user);
+        if ($user->getCompany() !== $project->getSubmitterCompany()) {
+            return false;
+        }
+
+        $staff = $user->getStaff();
+
+        return  $staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment());
     }
 
     /**
