@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -19,11 +20,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait, TraceableStatusTrait};
+use Unilend\Validator\Constraints\EmailDomain as AssertEmailDomain;
 use Unilend\Validator\Constraints\Password as AssertPassword;
 use URLify;
 
 /**
  * @ApiResource(
+ *     collectionOperations={
+ *         "get"
+ *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
  *         "put": {"security": "is_granted('edit', object)"},
@@ -46,6 +51,8 @@ use URLify;
  * @ORM\HasLifecycleCallbacks
  *
  * @UniqueEntity({"email"}, message="Clients.email.unique")
+ *
+ * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"email": "exact"})
  */
 class Clients implements UserInterface, EquatableInterface
 {
@@ -140,6 +147,8 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @Assert\NotBlank
      * @Assert\Email
+     *
+     * @AssertEmailDomain(message="Clients.email.emailDomain")
      */
     private $email;
 
@@ -157,7 +166,7 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @SerializedName("password")
      *
-     * @AssertPassword
+     * @AssertPassword(message="Clients.password.password")
      */
     private $plainPassword;
 
