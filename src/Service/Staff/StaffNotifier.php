@@ -65,7 +65,7 @@ class StaffNotifier
             'staff' => [
                 'roles' => array_map(
                     function (string $role) {
-                        return $this->translator->trans('staff-roles.' . mb_strtoupper($role));
+                        return $this->translator->trans('staff-roles.' . mb_strtolower($role));
                     },
                     $staff->getRoles()
                 ),
