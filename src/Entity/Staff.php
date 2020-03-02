@@ -47,6 +47,7 @@ class Staff
     public const DUTY_STAFF_OPERATOR   = 'DUTY_STAFF_OPERATOR';
     public const DUTY_STAFF_MANAGER    = 'DUTY_STAFF_MANAGER';
     public const DUTY_STAFF_ADMIN      = 'DUTY_STAFF_ADMIN';
+    public const DUTY_STAFF_AUDITOR    = 'DUTY_STAFF_AUDITOR';
     public const DUTY_STAFF_ACCOUNTANT = 'DUTY_STAFF_ACCOUNTANT';
     public const DUTY_STAFF_SIGNATORY  = 'DUTY_STAFF_SIGNATORY';
 
@@ -230,5 +231,13 @@ class Staff
     public function isManager(): bool
     {
         return $this->hasRole(static::DUTY_STAFF_MANAGER);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAuditor(): bool
+    {
+        return $this->hasRole(static::DUTY_STAFF_AUDITOR);
     }
 }
