@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Entity\Clients;
+use Unilend\Entity\Staff;
 
 class CurrentUser implements SerializerContextBuilderInterface
 {
@@ -52,15 +53,18 @@ class CurrentUser implements SerializerContextBuilderInterface
 
         $user = $this->security->getUser();
 
-        if ($resourceClass && $user instanceof Clients) {
+        if ($resourceClass) {
             $reflection  = new ReflectionClass($resourceClass);
             $constructor = $reflection->getConstructor();
             if ($constructor) {
                 $parameters = $constructor->getParameters();
 
                 foreach ($parameters as $parameter) {
-                    // TODO See if we need a convention about the constructor parameter name (problem with validation)
-                    if (($type = $parameter->getType()) && (Clients::class === $type->getName()) && 'addedBy' === $parameter->getName()) {
+                    if ($user instanceof Clients && ($type = $parameter->getType()) && (Clients::class === $type->getName()) && 'addedBy' === $parameter->getName()) {
+                        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user;
+                    }
+
+                    if ($user instanceof Staff && ($type = $parameter->getType()) && (Staff::class === $type->getName()) && 'addedBy' === $parameter->getName()) {
                         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user;
                     }
                 }

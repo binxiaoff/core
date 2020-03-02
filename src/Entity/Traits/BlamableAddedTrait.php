@@ -7,15 +7,14 @@ namespace Unilend\Entity\Traits;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\Clients;
-use Unilend\Service\User\RealUserFinder;
+use Unilend\Entity\Staff;
 
 trait BlamableAddedTrait
 {
     /**
-     * @var Clients
+     * @var Staff
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff")
      * @ORM\JoinColumn(name="added_by", referencedColumnName="id", nullable=false)
      *
      * @Groups({"blameable:read"})
@@ -25,32 +24,10 @@ trait BlamableAddedTrait
     private $addedBy;
 
     /**
-     * @return Clients
+     * @return Staff
      */
-    public function getAddedBy(): Clients
+    public function getAddedBy(): Staff
     {
         return $this->addedBy;
-    }
-
-    /**
-     * @param callable|RealUserFinder $realUserFinder
-     *
-     * @return self
-     */
-    public function setAddedByValue(callable $realUserFinder): self
-    {
-        return $this->setAddedBy($realUserFinder());
-    }
-
-    /**
-     * @param Clients $addedBy
-     *
-     * @return self
-     */
-    private function setAddedBy(Clients $addedBy): self
-    {
-        $this->addedBy = $addedBy;
-
-        return $this;
     }
 }

@@ -192,12 +192,12 @@ class Attachment
      *
      * @param string  $path
      * @param string  $type
-     * @param Clients $addedBy
+     * @param Staff   $addedBy
      * @param Project $project
      *
      * @throws Exception
      */
-    public function __construct(string $path, string $type, Clients $addedBy, Project $project)
+    public function __construct(string $path, string $type, Staff $addedBy, Project $project)
     {
         $this->signatures          = new ArrayCollection();
         $this->attachmentDownloads = new ArrayCollection();

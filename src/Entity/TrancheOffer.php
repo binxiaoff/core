@@ -106,7 +106,7 @@ class TrancheOffer
      * @param ProjectParticipationOffer $projectOffer
      * @param Tranche                   $tranche
      * @param Money                     $money
-     * @param Clients                   $addedBy
+     * @param Staff                     $addedBy
      * @param LendingRate|null          $rate
      * @param string                    $status
      *
@@ -116,7 +116,7 @@ class TrancheOffer
         ProjectParticipationOffer $projectOffer,
         Tranche $tranche,
         Money $money,
-        Clients $addedBy,
+        Staff $addedBy,
         LendingRate $rate = null,
         string $status = self::STATUS_PENDED
     ) {

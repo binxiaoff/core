@@ -71,12 +71,12 @@ class ProjectMessage
 
     /**
      * @param ProjectParticipation $participation
-     * @param Clients              $addedBy
+     * @param Staff                $addedBy
      * @param string               $content
      *
      * @throws Exception
      */
-    public function __construct(ProjectParticipation $participation, Clients $addedBy, string $content)
+    public function __construct(ProjectParticipation $participation, Staff $addedBy, string $content)
     {
         $this->participation = $participation;
         $this->addedBy       = $addedBy;

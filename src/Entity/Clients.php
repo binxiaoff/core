@@ -211,6 +211,11 @@ class Clients implements UserInterface, EquatableInterface
     private $statuses;
 
     /**
+     * @var Staff
+     */
+    private $currentStaff;
+
+    /**
      * Clients constructor.
      *
      * @param string $email
@@ -280,6 +285,8 @@ class Clients implements UserInterface, EquatableInterface
 
     /**
      * @param string|null $lastName
+     *
+     * @throws Exception
      *
      * @return Clients
      */
@@ -404,6 +411,8 @@ class Clients implements UserInterface, EquatableInterface
 
     /**
      * @param string|null $password
+     *
+     * @throws Exception
      *
      * @return Clients
      */
@@ -579,6 +588,22 @@ class Clients implements UserInterface, EquatableInterface
     public static function getAvailableRoles(): array
     {
         return self::getConstants('ROLE_');
+    }
+
+    /**
+     * @return Staff|null
+     */
+    public function getCurrentStaff(): ?Staff
+    {
+        return $this->currentStaff;
+    }
+
+    /**
+     * @param Staff $currentStaff
+     */
+    public function setCurrentStaff(Staff $currentStaff): void
+    {
+        $this->currentStaff = $currentStaff;
     }
 
     /**

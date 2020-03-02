@@ -107,7 +107,7 @@ class MailerManager
             'firstName'              => '',
             'projectUrl'             => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
             'projectName'            => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
-            'submitterName'          => $trancheOffer->getAddedBy()->getName(),
+            'submitterName'          => $trancheOffer->getAddedBy()->getClient()->getName(),
             'trancheOfferAmount'     => $this->numberFormatter->format($trancheOffer->getMoney()->getAmount()),
             'trancheOfferRateIndex'  => $trancheOffer->getRate()->getIndexType(),
             'trancheOfferMarginRate' => $this->percentageFormatter->format($trancheOffer->getRate()->getMargin()),

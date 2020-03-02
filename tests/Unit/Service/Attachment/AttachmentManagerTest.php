@@ -94,7 +94,7 @@ class AttachmentManagerTest extends TestCase
             $description
         );
 
-        static::assertSame($uploader, $createdAttachment->getAddedBy());
+        static::assertSame($uploader, $createdAttachment->getAddedBy()->getClient());
         static::assertStringContainsString((string) $uploader->getId(), $createdAttachment->getPath());
         static::assertSame($type, $createdAttachment->getType());
         static::assertSame($project, $createdAttachment->getProject());
