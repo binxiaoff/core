@@ -9,7 +9,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\{Clients, Project, ProjectOrganizer, ProjectParticipation};
+use Unilend\Entity\{Clients, Project, ProjectParticipation, ProjectStatus};
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
@@ -49,9 +49,10 @@ class ListExtension implements QueryCollectionExtensionInterface
         $subQueryBuilder   = $this->entityManager->createQueryBuilder();
         $subQueryBuilder->select('sub_project')
             ->from(Project::class, 'sub_project')
+            ->innerJoin('sub_project.currentStatus', 'sub_cs')
             ->innerJoin('sub_project.projectParticipations', 'sub_participation')
             ->innerJoin('sub_participation.projectParticipationContacts', 'sub_contact')
-            ->where('sub_contact.client = :client')
+            ->where('sub_contact.client = :client AND sub_cs.status >= :minimumParticipantDisplayableStatus')
         ;
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
@@ -75,6 +76,7 @@ class ListExtension implements QueryCollectionExtensionInterface
             )
             ->setParameter('client', $user)
             ->setParameter('private', Project::OFFER_VISIBILITY_PRIVATE)
+            ->setParameter('minimumParticipantDisplayableStatus', ProjectStatus::STATUS_PUBLISHED)
             ->setParameter('nonPrivate', [Project::OFFER_VISIBILITY_PARTICIPANT, Project::OFFER_VISIBILITY_PUBLIC])
             ->setParameter('company', $user->getCompany())
             ->setParameter('marketSegments', $user->getStaff()->getMarketSegments())
