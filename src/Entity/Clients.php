@@ -486,13 +486,7 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function getCompany(): ?Company
     {
-        $company = null;
-
-        if ($this->getStaff()) {
-            $company = $this->getStaff()->first()->getCompany();
-        }
-
-        return $company;
+        return $this->getCurrentStaff() ? $this->getCurrentStaff()->getCompany() : null;
     }
 
     /**
@@ -508,7 +502,12 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function isGrantedLogin(): bool
     {
-        return $this->isInStatus(ClientStatus::GRANTED_LOGIN) && null !== $this->getCompany() && $this->getCompany()->hasSigned();
+        return $this->isInStatus(ClientStatus::GRANTED_LOGIN) && $this->getStaff()->exists(
+            static function (int $key, Staff $staff) {
+                return $staff->getCompany()->hasSigned();
+            }
+        )
+            ;
     }
 
     /**

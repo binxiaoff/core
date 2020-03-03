@@ -116,7 +116,7 @@ class Staff
         $this->added          = new DateTimeImmutable();
         $this->company        = $company;
         $this->client         = $client;
-        $this->client->getStaff()->add($this); // To be remove when async message queue is put in place
+        $this->client->getStaff()->add($this); // TODO To be removed when async message queue is put in place
     }
 
     /**

@@ -9,9 +9,11 @@ use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Entity\Clients;
 use Unilend\Entity\Staff;
+use Unilend\Repository\ClientsRepository;
 
 class CurrentUser implements SerializerContextBuilderInterface
 {
@@ -24,15 +26,22 @@ class CurrentUser implements SerializerContextBuilderInterface
      * @var Security
      */
     private $security;
+    /** @var ClientsRepository */
+    private $clientsRepository;
 
     /**
      * @param SerializerContextBuilderInterface $decorated
      * @param Security                          $security
+     * @param ClientsRepository                 $clientsRepository
      */
-    public function __construct(SerializerContextBuilderInterface $decorated, Security $security)
-    {
-        $this->decorated = $decorated;
-        $this->security  = $security;
+    public function __construct(
+        SerializerContextBuilderInterface $decorated,
+        Security $security,
+        ClientsRepository $clientsRepository
+    ) {
+        $this->decorated         = $decorated;
+        $this->security          = $security;
+        $this->clientsRepository = $clientsRepository;
     }
 
     /**
@@ -53,19 +62,23 @@ class CurrentUser implements SerializerContextBuilderInterface
 
         $user = $this->security->getUser();
 
-        if ($resourceClass) {
+        if ($user instanceof UserInterface && false === $user instanceof Clients) {
+            $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
+        }
+
+        if ($resourceClass && $user instanceof Clients) {
             $reflection  = new ReflectionClass($resourceClass);
             $constructor = $reflection->getConstructor();
             if ($constructor) {
                 $parameters = $constructor->getParameters();
 
                 foreach ($parameters as $parameter) {
-                    if ($user instanceof Clients && ($type = $parameter->getType()) && (Clients::class === $type->getName()) && 'addedBy' === $parameter->getName()) {
+                    if (($type = $parameter->getType()) && (Clients::class === $type->getName()) && 'addedBy' === $parameter->getName()) {
                         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user;
                     }
 
-                    if ($user instanceof Staff && ($type = $parameter->getType()) && (Staff::class === $type->getName()) && 'addedBy' === $parameter->getName()) {
-                        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user;
+                    if ($user->getCurrentStaff() && ($type = $parameter->getType()) && (Staff::class === $type->getName()) && 'addedBy' === $parameter->getName()) {
+                        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user->getCurrentStaff();
                     }
                 }
             }

@@ -70,12 +70,16 @@ class StaffSubscriber implements EventSubscriberInterface
      */
     public function createTokens(AuthenticationSuccessEvent $event): void
     {
-        $staffCollection = $event->getUser()->getStaff();
+        $user = $event->getUser();
+
+        if ($user instanceof UserInterface && false === $user instanceof Clients) {
+            $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
+        }
+
+        $staffCollection = $user->getStaff();
 
         $data = $event->getData();
         unset($data['token']);
-
-        $user = $event->getUser();
 
         /** @var Staff $staffEntry */
         foreach ($staffCollection as $staffEntry) {

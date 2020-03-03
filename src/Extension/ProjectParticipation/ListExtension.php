@@ -79,7 +79,7 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->setParameter('minimumParticipantDisplayableStatus', ProjectStatus::STATUS_PUBLISHED)
             ->setParameter('nonPrivate', [Project::OFFER_VISIBILITY_PARTICIPANT, Project::OFFER_VISIBILITY_PUBLIC])
             ->setParameter('company', $user->getCompany())
-            ->setParameter('marketSegments', $user->getStaff()->first()->getMarketSegments())
+            ->setParameter('marketSegments', $user->getCurrentStaff()->getMarketSegments())
         ;
     }
 }

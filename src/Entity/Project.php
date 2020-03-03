@@ -485,14 +485,14 @@ class Project
     private $globalFundingMoney;
 
     /**
-     * @param Clients       $addedBy
+     * @param Staff         $addedBy
      * @param Company       $borrowerCompany
      * @param Money         $globalFundingMoney
      * @param MarketSegment $marketSegment
      *
      * @throws Exception
      */
-    public function __construct(Clients $addedBy, Company $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
+    public function __construct(Staff $addedBy, Company $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
     {
         $this->attachments           = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
@@ -503,10 +503,10 @@ class Project
         $this->organizers            = new ArrayCollection();
         $this->added                 = new DateTimeImmutable();
         $this->marketSegment         = $marketSegment;
-        $this->submitterClient       = $addedBy;
+        $this->submitterClient       = $addedBy->getClient();
         $this->submitterCompany      = $addedBy->getCompany();
 
-        $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_REQUESTED));
+        $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_REQUESTED, $addedBy));
 
         $this->syndicationType   = static::PROJECT_SYNDICATION_TYPE_PRIMARY;
         $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;

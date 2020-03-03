@@ -22,7 +22,7 @@ class StaffVoter extends AbstractEntityVoter
      */
     protected function fulfillPreconditions($subject, Clients $user): bool
     {
-        return $user->getStaff()->first() ? true : false;
+        return $user->getCurrentStaff() ? true : false;
     }
 
     /**
@@ -33,7 +33,7 @@ class StaffVoter extends AbstractEntityVoter
      */
     protected function isGrantedAll($subject, Clients $user): bool
     {
-        $submitterStaff = $user->getStaff()->first();
+        $submitterStaff = $user->getCurrentStaff();
 
         return $submitterStaff && $submitterStaff->isAdmin() && $subject->getCompany() === $submitterStaff->getCompany();
     }
@@ -46,7 +46,7 @@ class StaffVoter extends AbstractEntityVoter
      */
     protected function canCreate(Staff $subject, Clients $user): bool
     {
-        $submitterStaff = $user->getStaff()->first();
+        $submitterStaff = $user->getCurrentStaff();
 
         // A manager cannot create a staff with markets other than is own. But we can create a staff without market segment (used for invitation via email)
         return 0 === $subject->getMarketSegments()->count()
@@ -63,7 +63,7 @@ class StaffVoter extends AbstractEntityVoter
      */
     protected function canDelete(Staff $subject, Clients $user): bool
     {
-        $submitterStaff = $user->getStaff()->first();
+        $submitterStaff = $user->getCurrentStaff();
 
         // A manager cannot delete a user with markets other than is own
         return $this->ableToManage($subject, $user) && $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
@@ -79,7 +79,7 @@ class StaffVoter extends AbstractEntityVoter
      */
     protected function canEdit(Staff $subject, Clients $user): bool
     {
-        $submitterStaff = $user->getStaff()->first();
+        $submitterStaff = $user->getCurrentStaff();
         if (false === $this->ableToManage($subject, $user)) {
             return false;
         }
@@ -121,7 +121,7 @@ class StaffVoter extends AbstractEntityVoter
      */
     private function ableToManage(Staff $employee, Clients $manager): bool
     {
-        $managerStaff = $manager->getStaff()->first();
+        $managerStaff = $manager->getCurrentStaff();
 
         if (null === $managerStaff) {
             return false;

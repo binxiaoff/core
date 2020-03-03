@@ -124,10 +124,6 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
     {
         $client = $this->security->getUser();
 
-        if (!$client instanceof Clients) {
-            return null;
-        }
-
-        return $client->getStaff()->first();
+        return $client instanceof Clients ? $client->getCurrentStaff() : null;
     }
 }
