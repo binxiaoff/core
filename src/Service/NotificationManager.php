@@ -11,17 +11,10 @@ use Unilend\Repository\NotificationRepository;
 
 class NotificationManager
 {
-    public const RECIPIENT_TYPE_AGENCY       = 'agency';
-    public const RECIPIENT_TYPE_ARRANGER     = 'arranger';
-    public const RECIPIENT_TYPE_LENDERS      = 'lenders';
-    public const RECIPIENT_TYPE_RUN          = 'run';
-    public const RECIPIENT_TYPE_SUBMITTER    = 'submitter';
-    public const RECIPIENT_TYPES_BACK_OFFICE = [
-        self::RECIPIENT_TYPE_AGENCY,
-        self::RECIPIENT_TYPE_ARRANGER,
-        self::RECIPIENT_TYPE_RUN,
-        self::RECIPIENT_TYPE_SUBMITTER,
-    ];
+    public const RECIPIENT_TYPE_AGENCY    = 'agency';
+    public const RECIPIENT_TYPE_LENDERS   = 'lenders';
+    public const RECIPIENT_TYPE_RUN       = 'run';
+    public const RECIPIENT_TYPE_SUBMITTER = 'submitter';
 
     /** @var EntityManagerInterface */
     private $entityManager;
@@ -133,16 +126,6 @@ class NotificationManager
 
         foreach ($types as $type) {
             switch ($type) {
-                case self::RECIPIENT_TYPE_ARRANGER:
-                    if ($arranger = $project->getArranger()) {
-                        $recipients[$arranger->getCompany()->getIdClientOwner()->getId()] = $arranger->getCompany()->getIdClientOwner();
-                    }
-
-                    if ($deputyArranger = $project->getDeputyArranger()) {
-                        $recipients[$deputyArranger->getCompany()->getIdClientOwner()->getId()] = $deputyArranger->getCompany()->getIdClientOwner();
-                    }
-
-                    break;
                 case self::RECIPIENT_TYPE_LENDERS:
                     $lenders = $project->getParticipants();
                     foreach ($lenders as $lender) {
