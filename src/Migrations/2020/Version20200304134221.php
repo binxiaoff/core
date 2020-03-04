@@ -19,6 +19,27 @@ final class Version20200304134221 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+        $this->addSql('ALTER TABLE attachment_download CHANGE id_client added_by INT NOT NULL');
+
+        $tables = [
+            'tranche_offer',
+            'project_participation',
+            'staff_log',
+            'project_status',
+            'project_organizer',
+            'project_participation_contact',
+            'project_participation_offer',
+            'project_message',
+            'attachment',
+            'attachment_download',
+        ];
+
+        $this->addSql('SET foreign_key_checks = 0');
+        foreach ($tables as $table) {
+            $this->addSql("UPDATE {$table} a SET added_by = (SELECT id FROM staff WHERE a.added_by = staff.id_client LIMIT 1)");
+        }
+        $this->addSql('SET foreign_key_checks = 1');
+
         $this->addSql('ALTER TABLE tranche_offer DROP FOREIGN KEY FK_4E7E9DEC699B6BAF');
         $this->addSql('ALTER TABLE tranche_offer ADD CONSTRAINT FK_4E7E9DEC699B6BAF FOREIGN KEY (added_by) REFERENCES staff (id)');
         $this->addSql('ALTER TABLE project_participation DROP FOREIGN KEY FK_7FC47549699B6BAF');
@@ -39,13 +60,31 @@ final class Version20200304134221 extends AbstractMigration
         $this->addSql('ALTER TABLE attachment ADD CONSTRAINT FK_795FD9BB699B6BAF FOREIGN KEY (added_by) REFERENCES staff (id)');
         $this->addSql('ALTER TABLE attachment_download DROP FOREIGN KEY FK_7C093130E173B1B8');
         $this->addSql('DROP INDEX IDX_7C093130E173B1B8 ON attachment_download');
-        $this->addSql('ALTER TABLE attachment_download CHANGE id_client added_by INT NOT NULL');
         $this->addSql('ALTER TABLE attachment_download ADD CONSTRAINT FK_7C093130699B6BAF FOREIGN KEY (added_by) REFERENCES staff (id)');
         $this->addSql('CREATE INDEX IDX_7C093130699B6BAF ON attachment_download (added_by)');
     }
 
     public function down(Schema $schema): void
     {
+        $tables = [
+            'tranche_offer',
+            'project_participation',
+            'staff_log',
+            'project_status',
+            'project_organizer',
+            'project_participation_contact',
+            'project_participation_offer',
+            'project_message',
+            'attachment',
+            'attachment_download',
+        ];
+
+        $this->addSql('SET foreign_key_checks = 0');
+        foreach ($tables as $table) {
+            $this->addSql("UPDATE {$table} a SET added_by = (SELECT id_client FROM staff WHERE a.added_by = staff.id LIMIT 1)");
+        }
+        $this->addSql('SET foreign_key_checks = 1');
+
         $this->addSql('ALTER TABLE attachment DROP FOREIGN KEY FK_795FD9BB699B6BAF');
         $this->addSql('ALTER TABLE attachment ADD CONSTRAINT FK_795FD9BB699B6BAF FOREIGN KEY (added_by) REFERENCES clients (id) ON UPDATE NO ACTION ON DELETE NO ACTION');
         $this->addSql('ALTER TABLE attachment_download DROP FOREIGN KEY FK_7C093130699B6BAF');
