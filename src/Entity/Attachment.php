@@ -241,16 +241,16 @@ class Attachment
     }
 
     /**
-     * @param Clients $clients
+     * @param Staff $staff
      *
      * @throws Exception
      *
      * @return Attachment
      */
-    public function archive(Clients $clients): Attachment
+    public function archive(Staff $staff): Attachment
     {
         $this->setArchived(new DateTimeImmutable())
-            ->setArchivedBy($clients)
+            ->setArchivedBy($staff)
         ;
 
         return $this;

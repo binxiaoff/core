@@ -7,16 +7,19 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
 final class Version20200304134221 extends AbstractMigration
 {
+    /**
+     * @return string
+     */
     public function getDescription(): string
     {
         return 'CALS-1228 Replace Client by Staff for addedBy attribute';
     }
 
+    /**
+     * @param Schema $schema
+     */
     public function up(Schema $schema): void
     {
         $this->addSql('ALTER TABLE attachment_download CHANGE id_client added_by INT NOT NULL');
@@ -64,6 +67,9 @@ final class Version20200304134221 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_7C093130699B6BAF ON attachment_download (added_by)');
     }
 
+    /**
+     * @param Schema $schema
+     */
     public function down(Schema $schema): void
     {
         $tables = [
