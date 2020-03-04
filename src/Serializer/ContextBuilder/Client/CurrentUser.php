@@ -73,12 +73,15 @@ class CurrentUser implements SerializerContextBuilderInterface
                 $parameters = $constructor->getParameters();
 
                 foreach ($parameters as $parameter) {
-                    if (($type = $parameter->getType()) && (Clients::class === $type->getName()) && 'addedBy' === $parameter->getName()) {
-                        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user;
-                    }
+                    $type = $parameter->getType();
+                    if ($type && 'addedBy' === $parameter->getName()) {
+                        if (Clients::class === $type->getName()) {
+                            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user;
+                        }
 
-                    if ($user->getCurrentStaff() && ($type = $parameter->getType()) && (Staff::class === $type->getName()) && 'addedBy' === $parameter->getName()) {
-                        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user->getCurrentStaff();
+                        if ($user->getCurrentStaff() && (Staff::class === $type->getName())) {
+                            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user->getCurrentStaff();
+                        }
                     }
                 }
             }

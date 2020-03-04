@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use InvalidArgumentException;
 use libphonenumber\PhoneNumber;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -310,6 +311,8 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @param string|null $firstName
      *
+     * @throws Exception
+     *
      * @return Clients
      */
     public function setFirstName(?string $firstName): Clients
@@ -482,6 +485,18 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
+     * @param Staff $staff
+     */
+    public function addStaff(Staff $staff)
+    {
+        if ($staff->getClient() !== $this) {
+            throw new InvalidArgumentException('The staff should concern the client');
+        }
+
+        $this->staff->add($staff);
+    }
+
+    /**
      * @return Company|null
      */
     public function getCompany(): ?Company
@@ -643,7 +658,7 @@ class Clients implements UserInterface, EquatableInterface
     {
         $clientStatus = $this->getCurrentStatus();
 
-        return $clientStatus && in_array($clientStatus->getStatus(), $status, true);
+        return $clientStatus && \in_array($clientStatus->getStatus(), $status, true);
     }
 
     /**

@@ -74,7 +74,7 @@ class Staff
      *
      * @Assert\NotBlank(message="Staff.company.empty")
      *
-     * @Groups({"staff:create"})
+     * @Groups({"staff:read", "staff:create"})
      */
     private $company;
 
@@ -116,7 +116,7 @@ class Staff
         $this->added          = new DateTimeImmutable();
         $this->company        = $company;
         $this->client         = $client;
-        $this->client->getStaff()->add($this); // TODO To be removed when async message queue is put in place
+        $this->client->addStaff($this); // TODO To be removed when async message queue is put in place
     }
 
     /**

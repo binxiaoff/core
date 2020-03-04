@@ -14,7 +14,7 @@ use Prophecy\Prophecy\{ObjectProphecy};
 use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, Clients, Company, Embeddable\Money, MarketSegment, Project};
+use Unilend\Entity\{Attachment, Clients, Company, Embeddable\Money, MarketSegment, Project, Staff};
 use Unilend\Repository\AttachmentRepository;
 use Unilend\Service\{Attachment\AttachmentManager, FileSystem\FileUploadManager};
 
@@ -81,6 +81,7 @@ class AttachmentManagerTest extends TestCase
         $uploader   = new Clients('test@' . Internet::safeEmailDomain());
         $uploaderId = Base::randomDigitNotNull() + 1;
         $idClientsReflectionProperty->setValue($uploader, $uploaderId);
+        $uploaderStaff = new Staff(new Company('test'), $uploader);
 
         $filePath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';
         fopen($filePath, 'wb+');
@@ -88,7 +89,7 @@ class AttachmentManagerTest extends TestCase
 
         $createdAttachment = $attachmentManager->upload(
             $uploadedFile,
-            $uploader,
+            $uploaderStaff,
             $type,
             $project,
             $description
@@ -143,7 +144,7 @@ class AttachmentManagerTest extends TestCase
         return new Attachment(
             'test',
             'someType',
-            new Clients('test@' . Internet::safeEmailDomain()),
+            new Staff(new Company('test'), new Clients('test@' . Internet::safeEmailDomain())),
             $this->createProject()
         );
     }
@@ -155,10 +156,11 @@ class AttachmentManagerTest extends TestCase
      */
     protected function createProject(): Project
     {
-        $client = $this->prophesize(Clients::class);
-        $client->getCompany()->willReturn(new Company(Base::lexify('????')));
+        $company = new Company(Base::lexify('????'));
+        $client  = new Clients('test@' . Internet::freeEmailDomain());
+        $staff   = new Staff($company, $client);
 
-        return new Project($client->reveal(), new Company(Base::lexify('????')), new Money(Miscellaneous::currencyCode()), new MarketSegment());
+        return new Project($staff, $company, new Money(Miscellaneous::currencyCode()), new MarketSegment());
     }
 
     /**
@@ -168,8 +170,7 @@ class AttachmentManagerTest extends TestCase
     {
         return new AttachmentManager(
             $this->userAttachmentFilesystem->reveal(),
-            $this->fileUploadManager->reveal(),
-            $this->attachmentRepository->reveal()
+            $this->fileUploadManager->reveal()
         );
     }
 }
