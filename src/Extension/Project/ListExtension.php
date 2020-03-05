@@ -48,7 +48,9 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->leftJoin($rootAlias . '.projectParticipations', 'p')
             ->leftJoin('p.projectParticipationContacts', 'ppc')
             ->andWhere($queryBuilder->expr()->orX(
+                // if you are owner
                 $rootAlias . '.submitterClient = :client',
+                // or you are in owner company and you have market segment
                 $queryBuilder->expr()->andX(
                     $rootAlias . '.submitterCompany = :company',
                     $queryBuilder->expr()->orX(
@@ -56,6 +58,7 @@ class ListExtension implements QueryCollectionExtensionInterface
                         ($staff && $staff->isAdmin() ? '1 = 1' : '0 = 1')
                     )
                 ),
+                // or you are participant and the project is published
                 $queryBuilder->expr()->andX(
                     'cs.status >= :minimumParticipantDisplayableStatus',
                     'ppc.client = :client'
