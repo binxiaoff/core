@@ -206,6 +206,11 @@ class ProjectParticipation
     private $messages;
 
     /**
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\Attachment", cascade={"persist", "remove"})
+     */
+    private $confidentialityDisclaimerDocument;
+
+    /**
      * @param Company            $company
      * @param Project            $project
      * @param Staff              $addedBy
@@ -500,5 +505,25 @@ class ProjectParticipation
     public function getStatuses()
     {
         return self::getConstants('STATUS_');
+    }
+
+    /**
+     * @return Attachment|null
+     */
+    public function getConfidentialityDisclaimerDocument(): ?Attachment
+    {
+        return $this->confidentialityDisclaimerDocument;
+    }
+
+    /**
+     * @param Attachment $confidentialityDisclaimerDocument
+     *
+     * @return $this
+     */
+    public function setConfidentialityDisclaimerDocument(Attachment $confidentialityDisclaimerDocument): self
+    {
+        $this->confidentialityDisclaimerDocument = $confidentialityDisclaimerDocument;
+
+        return $this;
     }
 }
