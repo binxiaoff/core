@@ -58,10 +58,10 @@ class UserAgentManager
         return (new UserAgent())
             ->setClient($client)
             ->setBrowserName($browser->getName())
-            ->setBrowserVersion($browser->getVersion()->getComplete())
+            ->setBrowserVersion($browser->getVersion() ? $browser->getVersion()->getComplete() : null)
             ->setDeviceModel($device->getModel())
             ->setDeviceBrand($device->getBrand())
-            ->setDeviceType(mb_strtolower($device->getType()))
+            ->setDeviceType($device->getType() ? mb_strtolower($device->getType()) : null)
             ->setUserAgentString($userAgent)
             ;
     }
