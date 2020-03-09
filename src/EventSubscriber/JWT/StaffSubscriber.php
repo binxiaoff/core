@@ -9,7 +9,6 @@ use ApiPlatform\Core\Bridge\Symfony\Routing\IriConverter;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTAuthenticatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
-use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -26,7 +25,7 @@ class StaffSubscriber implements EventSubscriberInterface
     /** @var IriConverter */
     private $iriConverter;
     /** @var JWTTokenManagerInterface */
-    private $JWTManager;
+    private $jwtManager;
 
     /**
      * @param ClientsRepository        $clientsRepository
@@ -37,7 +36,7 @@ class StaffSubscriber implements EventSubscriberInterface
     {
         $this->clientsRepository = $clientsRepository;
         $this->iriConverter      = $iriConverter;
-        $this->JWTManager        = $JWTManager;
+        $this->jwtManager        = $JWTManager;
     }
 
     /**
@@ -49,20 +48,7 @@ class StaffSubscriber implements EventSubscriberInterface
             JwtEvents::JWT_CREATED            => ['addPayloadData'],
             JwtEvents::AUTHENTICATION_SUCCESS => ['createTokens'],
             JwtEvents::JWT_AUTHENTICATED      => ['addSecurityTokenData'],
-            JwtEvents::JWT_DECODED            => ['validate'],
         ];
-    }
-
-    /**
-     * @param JWTDecodedEvent $event
-     */
-    public function validate(JWTDecodedEvent $event): void
-    {
-        $payload = $event->getPayload();
-
-        if (false === isset($payload['staff'])) {
-            $event->markAsInvalid();
-        }
     }
 
     /**
@@ -84,7 +70,7 @@ class StaffSubscriber implements EventSubscriberInterface
         /** @var Staff $staffEntry */
         foreach ($staffCollection as $staffEntry) {
             $user->setCurrentStaff($staffEntry);
-            $data['tokens'][] = $this->JWTManager->create($user);
+            $data['tokens'][] = $this->jwtManager->create($user);
         }
 
         $event->setData($data);

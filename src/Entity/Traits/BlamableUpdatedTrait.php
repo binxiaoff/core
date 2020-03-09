@@ -12,7 +12,7 @@ trait BlamableUpdatedTrait
     /**
      * @var Staff|null
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff")
      * @ORM\JoinColumn(name="updated_by", referencedColumnName="id")
      */
     private $updatedBy;
@@ -23,5 +23,17 @@ trait BlamableUpdatedTrait
     public function getUpdatedBy(): ?Staff
     {
         return $this->updatedBy;
+    }
+
+    /**
+     * @param Staff|null $updatedBy
+     *
+     * @return self
+     */
+    public function setUpdatedBy(Staff $updatedBy): self
+    {
+        $this->updatedBy = $updatedBy;
+
+        return $this;
     }
 }

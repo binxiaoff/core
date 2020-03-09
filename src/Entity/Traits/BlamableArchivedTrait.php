@@ -30,7 +30,7 @@ trait BlamableArchivedTrait
      *
      * @return self
      */
-    private function setArchivedBy(?Staff $archivedBy): self
+    public function setArchivedBy(?Staff $archivedBy): self
     {
         $this->archivedBy = $archivedBy;
 
