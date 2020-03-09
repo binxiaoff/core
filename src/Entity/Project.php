@@ -268,17 +268,6 @@ class Project
     private $confidential = false;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(type="text", nullable=true)
-     *
-     * @Gedmo\Versioned
-     *
-     * @Groups({"project:write", "project:read", "project:confidentiality:read"})
-     */
-    private $confidentialityDisclaimer;
-
-    /**
      * Date limite de réponse de la contrepartie (borrowerCompany).
      *
      * @var DateTimeImmutable
@@ -649,26 +638,6 @@ class Project
     public function setConfidential(bool $confidential): Project
     {
         $this->confidential = $confidential;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getConfidentialityDisclaimer(): ?string
-    {
-        return $this->confidentialityDisclaimer;
-    }
-
-    /**
-     * @param string|null $confidentialityDisclaimer
-     *
-     * @return Project
-     */
-    public function setConfidentialityDisclaimer(?string $confidentialityDisclaimer): Project
-    {
-        $this->confidentialityDisclaimer = $confidentialityDisclaimer;
 
         return $this;
     }
