@@ -5,53 +5,29 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Exception;
-use LogicException;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\Clients;
-use Unilend\Entity\ProjectMessage;
-use Unilend\Traits\ConstantsAwareTrait;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Unilend\Entity\{Clients, ProjectMessage};
+use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
-class ProjectMessageVoter extends Voter
+class ProjectMessageVoter extends AbstractEntityVoter
 {
-    use ConstantsAwareTrait;
-
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_DELETE = 'delete';
     public const ATTRIBUTE_CREATE = 'create';
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function supports($attribute, $subject): bool
-    {
-        return $subject instanceof ProjectMessage && \in_array($attribute, self::getConstants('ATTRIBUTE_'), true);
-    }
+    /** @var ProjectParticipationManager */
+    private $projectParticipationManager;
 
     /**
-     * {@inheritdoc}
-     *
-     * @throws Exception
+     * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param ProjectParticipationManager   $projectParticipationManager
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
-    {
-        /** @var Clients $user */
-        $user = $token->getUser();
-
-        if (false === $user instanceof Clients || null === $user->getCompany()) {
-            return false;
-        }
-
-        switch ($attribute) {
-            case self::ATTRIBUTE_CREATE:
-                return $this->canCreate($subject, $user);
-            case self::ATTRIBUTE_EDIT:
-                return $this->canEdit($subject, $user);
-            case self::ATTRIBUTE_DELETE:
-                return $this->canDelete($subject, $user);
-        }
-
-        throw new LogicException('This code should not be reached');
+    public function __construct(
+        AuthorizationCheckerInterface $authorizationChecker,
+        ProjectParticipationManager $projectParticipationManager
+    ) {
+        parent::__construct($authorizationChecker);
+        $this->projectParticipationManager = $projectParticipationManager;
     }
 
     /**
@@ -64,12 +40,11 @@ class ProjectMessageVoter extends Voter
      */
     protected function canCreate(ProjectMessage $subject, Clients $user): bool
     {
-        /** @var ProjectMessage $subject */
-        $arranger           = $subject->getParticipation()->getProject()->getArranger();
-        $arrangerCompany    = $arranger ? $arranger->getCompany() : null;
-        $participantCompany = $subject->getParticipation()->getCompany();
-
-        return $user->getCompany() === $arrangerCompany || $user->getCompany() === $participantCompany;
+        return $subject->getParticipation()->getProject()->getSubmitterCompany() === $user->getCompany()
+            || (
+                $this->projectParticipationManager->isParticipant($user, $subject->getParticipation()->getProject())
+                && $subject->getParticipation()->getCompany() === $user->getCompany() // TODO See if it should be here or in the validation layer
+            );
     }
 
     /**

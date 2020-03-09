@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\MessageHandler\ProjectParticipationContact;
 
+use InvalidArgumentException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Message\ProjectParticipationContact\ProjectParticipationContactCreated;
@@ -30,23 +31,21 @@ class ProjectParticipationContactCreatedHandler implements MessageHandlerInterfa
     }
 
     /**
-     * @param ProjectParticipationContactCreated $clientCreated
+     * @param ProjectParticipationContactCreated $participationContactCreated
      *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function __invoke(ProjectParticipationContactCreated $clientCreated)
+    public function __invoke(ProjectParticipationContactCreated $participationContactCreated)
     {
-        $projectParticipationContact = $this->projectParticipationContactRepository->find($clientCreated->getProjectParticipationContactId());
-        $arranger                    = $projectParticipationContact->getProjectParticipation()->getProject()->getArranger();
+        $projectParticipationContactId = $participationContactCreated->getProjectParticipationContactId();
+        $projectParticipationContact   = $this->projectParticipationContactRepository->find($projectParticipationContactId);
 
-        if (
-            $projectParticipationContact
-            && $arranger
-            && $arranger->getCompany() !== $projectParticipationContact->getProjectParticipation()->getCompany()
-        ) {
-            $this->projectParticipationContactNotifier->sendInvitation($projectParticipationContact);
+        if (!$projectParticipationContact) {
+            throw new InvalidArgumentException(sprintf("The participationContact with id %d doesn't exist anymore", $projectParticipationContactId));
         }
+
+        $this->projectParticipationContactNotifier->notifyContactAdded($projectParticipationContact);
     }
 }

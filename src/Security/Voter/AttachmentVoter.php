@@ -5,33 +5,20 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Doctrine\ORM\NonUniqueResultException;
-use Exception;
 use LogicException;
-use Monolog\Logger;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Unilend\Entity\{Attachment, Clients, Project, ProjectParticipationContact, ProjectStatus};
 use Unilend\Repository\{AttachmentSignatureRepository, ProjectParticipationContactRepository};
-use Unilend\Traits\ConstantsAwareTrait;
 
-class AttachmentVoter extends Voter
+class AttachmentVoter extends AbstractEntityVoter
 {
-    use ConstantsAwareTrait;
-
     public const ATTRIBUTE_DOWNLOAD = 'download';
-
-    /** @var AuthorizationCheckerInterface */
-    private $authorizationChecker;
 
     /** @var AttachmentSignatureRepository */
     private $attachmentSignatureRepository;
 
     /** @var ProjectParticipationContactRepository */
     private $participationContactRepository;
-
-    /** @var Logger */
-    private $logger;
 
     /**
      * @param AuthorizationCheckerInterface         $authorizationChecker
@@ -43,41 +30,9 @@ class AttachmentVoter extends Voter
         AttachmentSignatureRepository $attachmentSignatureRepository,
         ProjectParticipationContactRepository $participationContactRepository
     ) {
+        parent::__construct($authorizationChecker);
         $this->attachmentSignatureRepository  = $attachmentSignatureRepository;
         $this->participationContactRepository = $participationContactRepository;
-        $this->authorizationChecker           = $authorizationChecker;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function supports($attribute, $subject): bool
-    {
-        $attributes = self::getConstants('ATTRIBUTE_');
-
-        return $subject instanceof Attachment && in_array($attribute, $attributes, true);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @throws Exception
-     */
-    protected function voteOnAttribute($attribute, $attachment, TokenInterface $token): bool
-    {
-        /** @var Clients $user */
-        $user = $token->getUser();
-
-        if (false === $user instanceof Clients) {
-            return false;
-        }
-
-        switch ($attribute) {
-            case self::ATTRIBUTE_DOWNLOAD:
-                return $this->canDownload($attachment, $user);
-        }
-
-        throw new LogicException('This code should not be reached');
     }
 
     /**
@@ -88,23 +43,12 @@ class AttachmentVoter extends Voter
      *
      * @return bool
      */
-    private function canDownload(Attachment $attachment, Clients $user): bool
+    protected function canDownload(Attachment $attachment, Clients $user): bool
     {
-        $project = $attachment->getProject();
-        if ($project->getBorrowerCompany() === $user->getCompany()) {
-            return true;
-        }
+        $project   = $attachment->getProject();
+        $signature = $this->attachmentSignatureRepository->findOneBy(['attachment' => $attachment, 'signatory' => $user]);
 
-        $signature = $this->attachmentSignatureRepository->findOneBy([
-            'attachment' => $attachment,
-            'signatory'  => $user,
-        ]);
-
-        if ($signature) {
-            return true;
-        }
-
-        if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
+        if ($signature || $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project) || $project->getBorrowerCompany() === $user->getCompany()) {
             return true;
         }
 

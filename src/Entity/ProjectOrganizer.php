@@ -11,7 +11,6 @@ use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Embeddable\Permission;
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
 
 /**
@@ -90,13 +89,6 @@ class ProjectOrganizer
     private $company;
 
     /**
-     * @var Permission
-     *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Permission")
-     */
-    private $permission;
-
-    /**
      * @param Company               $company
      * @param Project               $project
      * @param Clients               $addedBy
@@ -106,11 +98,10 @@ class ProjectOrganizer
      */
     public function __construct(Company $company, Project $project, Clients $addedBy, $roles = [])
     {
-        $this->project    = $project;
-        $this->company    = $company;
-        $this->addedBy    = $addedBy;
-        $this->added      = new DateTimeImmutable();
-        $this->permission = new Permission();
+        $this->project = $project;
+        $this->company = $company;
+        $this->addedBy = $addedBy;
+        $this->added   = new DateTimeImmutable();
 
         $this->setRoles((array) $roles);
     }
@@ -124,9 +115,9 @@ class ProjectOrganizer
     }
 
     /**
-     * @return mixed
+     * @return Project
      */
-    public function getProject()
+    public function getProject(): Project
     {
         return $this->project;
     }
@@ -137,26 +128,6 @@ class ProjectOrganizer
     public function getCompany()
     {
         return $this->company;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPermission()
-    {
-        return $this->permission;
-    }
-
-    /**
-     * @param mixed $permission
-     *
-     * @return ProjectOrganizer
-     */
-    public function setPermission(Permission $permission): ProjectOrganizer
-    {
-        $this->permission = $permission;
-
-        return $this;
     }
 
     /**

@@ -26,7 +26,7 @@ class Tag
      *
      * @ORM\Column
      *
-     * @Groups({"project:view", "project:update"})
+     * @Groups({"tag:read", "tag:write"})
      */
     private $label;
 

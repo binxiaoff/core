@@ -70,7 +70,7 @@ class Tranche
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      *
-     * @Groups({"project:view", "tranche:read"})
+     * @Groups({"tranche:read"})
      */
     private $id;
 
@@ -95,7 +95,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:write", "tranche:read"})
+     * @Groups({"tranche:write", "tranche:read"})
      */
     private $name;
 
@@ -109,7 +109,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:write", "tranche:read"})
+     * @Groups({"tranche:write", "tranche:read"})
      */
     private $loanType;
 
@@ -123,7 +123,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:write", "tranche:read"})
+     * @Groups({"tranche:write", "tranche:read"})
      */
     private $repaymentType;
 
@@ -139,7 +139,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:write", "tranche:read"})
+     * @Groups({"tranche:write", "tranche:read"})
      */
     private $duration;
 
@@ -175,7 +175,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:read", "tranche:write"})
+     * @Groups({"tranche:read", "tranche:write"})
      */
     private $money;
 
@@ -189,7 +189,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:view", "tranche:read", "tranche:write"})
+     * @Groups({"tranche:read", "tranche:write"})
      */
     private $rate;
 
@@ -220,7 +220,7 @@ class Tranche
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheFee", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"project:view", "tranche:write", "tranche:read"})
+     * @Groups({"tranche:write", "tranche:read"})
      */
     private $trancheFees;
 
@@ -244,7 +244,7 @@ class Tranche
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"project:view", "tranche:write", "tranche:read"})
+     * @Groups({"tranche:write", "tranche:read"})
      */
     private $comment;
 

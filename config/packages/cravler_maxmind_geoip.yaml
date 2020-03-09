@@ -1,0 +1,17 @@
+parameters:
+    maxmind.license_key: '%env(string:MAXMIND_LICENSE_KEY)%'
+
+cravler_max_mind_geo_ip:
+    path: '%kernel.project_dir%/src/Resources/MaxMind'
+    db:
+        country: 'GeoIP2-Country.mmdb'
+        city: 'GeoIP2-City.mmdb'
+        asn: 'GeoIP2-ASN.mmdb'
+    source:
+        country: 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&suffix=tar.gz&license_key=%maxmind.license_key%'
+        city: 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&suffix=tar.gz&license_key=%maxmind.license_key%'
+        asn: 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN&suffix=tar.gz&license_key=%maxmind.license_key%'
+    md5_check:
+        country: 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&suffix=tar.gz.md5&license_key=%maxmind.license_key%'
+        city: 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&suffix=tar.gz.md5&license_key=%maxmind.license_key%'
+        asn: 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN&suffix=tar.gz.md5&license_key=%maxmind.license_key%'

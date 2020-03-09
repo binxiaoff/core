@@ -53,7 +53,7 @@ class TrancheFee
      *
      * @Assert\Valid
      *
-     * @Groups({"project:view", "trancheFee:read", "trancheFee:write"})
+     * @Groups({"trancheFee:read", "trancheFee:write"})
      */
     private $fee;
 

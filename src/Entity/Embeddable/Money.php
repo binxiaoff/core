@@ -24,10 +24,6 @@ class Money
      * @Assert\Positive
      *
      * @Groups({
-     *     "project:create",
-     *     "project:list",
-     *     "project:view",
-     *     "project:update",
      *     "money:read",
      *     "money:write"
      * })
@@ -45,10 +41,6 @@ class Money
      * @Assert\Currency
      *
      * @Groups({
-     *     "project:create",
-     *     "project:list",
-     *     "project:view",
-     *     "project:update",
      *     "money:read",
      *     "money:write"
      * })

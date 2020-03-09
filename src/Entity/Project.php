@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource, ApiSubresource};
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\{NumericFilter, SearchFilter};
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
@@ -17,46 +16,76 @@ use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
-use Unilend\Entity\Embeddable\Money;
-use Unilend\Entity\Traits\{TimestampableTrait, TraceableStatusTrait};
+use Unilend\Entity\{Embeddable\Money, Traits\TimestampableTrait, Traits\TraceableStatusTrait};
 use Unilend\Filter\ArrayFilter;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
+ * TODO in the post and patch operation borrower company is not denormalized while it is in get operation ?
+ *
  * @ApiResource(
- *     normalizationContext={"groups": {"project:view"}},
+ *     normalizationContext={"groups": {"project:read", "company:read", "marketSegment:read", "projectParticipation:read", "projectParticipationOffer:read", "money:read"}},
+ *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "tag:write"}},
  *     collectionOperations={
- *         "get": {"normalization_context": {"groups": {"project:list", "marketSegment:read", "projectParticipation:read"}}},
- *         "post": {"denormalization_context": {"groups": {"project:create"}}}
+ *         "get": {
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "project:list",
+ *                     "project:read",
+ *                     "company:read",
+ *                     "marketSegment:read",
+ *                     "projectParticipation:read",
+ *                     "projectParticipationOffer:read",
+ *                     "money:read"
+ *                 }
+ *             }
+ *         },
+ *         "post": {"denormalization_context": {"groups": {"project:create", "project:write", "company:write", "money:write", "tag:write"}}}
  *     },
  *     itemOperations={
  *         "get": {
  *             "security": "is_granted('view', object)",
  *             "normalization_context": {"groups": {
- *                 "project:view",
- *                 "tranche_project:view",
- *                 "attachment:read",
+ *                 "project:read",
+ *                 "company:read",
  *                 "projectParticipation:read",
+ *                 "projectParticipationOffer:read",
+ *                 "money:read",
+ *                 "attachment:read",
+ *                 "projectStatus:read",
  *                 "projectParticipationContact:read",
+ *                 "projectParticipationFee:read",
  *                 "projectOrganizer:read",
+ *                 "tranche_project:read",
+ *                 "trancheFee:read",
+ *                 "tranche:read",
  *                 "role:read",
  *                 "client:read",
- *                 "timestampable:read"
+ *                 "timestampable:read",
+ *                 "traceableStatus:read",
+ *                 "nullableLendingRate:read",
+ *                 "lendingRate:read",
+ *                 "fee:read",
+ *                 "tag:read"
  *             }}
  *         },
  *         "project_confidentiality": {
  *             "method": "GET",
- *             "security": "is_granted('view_confidentiality_doc', object)",
- *             "normalization_context": {"groups": {"project:confidentiality:view", "attachment:read"}},
+ *             "security": "is_granted('view_confidentiality_document', object)",
+ *             "normalization_context": {"groups": {"project:confidentiality:read", "attachment:read"}},
  *             "path": "/projects/{id}/confidentiality"
  *         },
- *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)", "denormalization_context": {"groups": {"project:update"}}}
+ *         "patch": {
+ *             "security_post_denormalize": "is_granted('edit', previous_object)",
+ *             "denormalization_context": {"groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "tag:write"}}
+ *         }
  *     }
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  * @ApiFilter(SearchFilter::class, properties={"organizers.company.publicId"})
  * @ApiFilter(ArrayFilter::class, properties={"organizers.roles"})
+ * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId"})
  *
  * @ORM\Table(indexes={
  *     @ORM\Index(name="hash", columns={"hash"})
@@ -127,7 +156,7 @@ class Project
      *
      * @ApiProperty(identifier=true)
      *
-     * @Groups({"project:list", "project:view", "projectParticipation:list"})
+     * @Groups({"project:read"})
      */
     private $hash;
 
@@ -141,7 +170,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list", "project:view", "projectParticipation:list"})
+     * @Groups({"project:write", "project:read"})
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -158,7 +187,7 @@ class Project
      *     @ORM\JoinColumn(name="id_company_submitter", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"project:list"})
+     * @Groups({"project:read"})
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -186,7 +215,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list", "project:view", "projectParticipation:list"})
+     * @Groups({"project:write", "project:read"})
      */
     private $title;
 
@@ -201,7 +230,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:list", "project:create", "project:update", "project:view", "projectParticipation:list"})
+     * @Groups({"project:write", "project:read"})
      */
     private $marketSegment;
 
@@ -212,7 +241,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view"})
+     * @Groups({"project:write", "project:read"})
      */
     private $description;
 
@@ -223,7 +252,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view"})
+     * @Groups({"project:write", "project:read"})
      */
     private $confidential = false;
 
@@ -234,7 +263,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view", "project:confidentiality:view"})
+     * @Groups({"project:write", "project:read", "project:confidentiality:read"})
      */
     private $confidentialityDisclaimer;
 
@@ -249,7 +278,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
+     * @Groups({"project:write", "project:read"})
      */
     private $replyDeadline;
 
@@ -264,7 +293,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
+     * @Groups({"project:write", "project:read"})
      */
     private $expectedClosingDate;
 
@@ -279,7 +308,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:list", "project:view", "projectParticipation:list"})
+     * @Groups({"project:write", "project:read"})
      */
     private $lenderConsultationClosingDate;
 
@@ -292,7 +321,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view"})
+     * @Groups({"project:write", "project:read"})
      */
     private $internalRatingScore;
 
@@ -306,7 +335,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Choice(callback="getOfferVisibilities")
      *
-     * @Groups({"project:create", "project:update", "project:view"})
+     * @Groups({"project:write", "project:read"})
      */
     private $offerVisibility;
 
@@ -317,7 +346,7 @@ class Project
      *
      * @ApiSubresource
      *
-     * @Groups({"project:view"})
+     * @Groups({"project:read"})
      */
     private $attachments;
 
@@ -347,7 +376,7 @@ class Project
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectComment", mappedBy="project")
      * @ORM\OrderBy({"added": "DESC"})
      *
-     * @Groups({"project:view"})
+     * @Groups({"project:read"})
      */
     private $comments;
 
@@ -358,7 +387,7 @@ class Project
      *
      * @Assert\Valid
      *
-     * @Groups({"project:create", "project:view"})
+     * @Groups({"project:read"})
      */
     private $tranches;
 
@@ -378,7 +407,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"project:view", "projectParticipation:list", "project:update"})
+     * @Groups({"project:read", "project:update"})
      */
     private $currentStatus;
 
@@ -402,7 +431,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
+     * @Groups({"project:write", "project:read"})
      */
     private $syndicationType;
 
@@ -416,7 +445,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
+     * @Groups({"project:write", "project:read"})
      */
     private $participationType;
 
@@ -430,7 +459,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create", "project:update", "project:view", "projectParticipation:list"})
+     * @Groups({"project:write", "project:read"})
      */
     private $riskType;
 
@@ -439,7 +468,7 @@ class Project
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\Tag", cascade={"persist"})
      *
-     * @Groups({"project:view", "project:update"})
+     * @Groups({"project:read", "project:write"})
      */
     private $tags;
 
@@ -451,7 +480,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"project:create", "project:view", "project:update", "projectParticipation:list"})
+     * @Groups({"project:read", "project:write"})
      */
     private $globalFundingMoney;
 
@@ -636,7 +665,7 @@ class Project
     /**
      * @return Attachment|null
      *
-     * @Groups({"project:confidentiality:view", "project:view"})
+     * @Groups({"project:confidentiality:read", "project:read"})
      */
     public function getConfidentialityDisclaimerDocument(): ?Attachment
     {
@@ -830,7 +859,7 @@ class Project
     /**
      * @return ProjectOrganizer|null
      *
-     * @Groups({"project:view", "project:list", "projectParticipation:list"})
+     * @Groups({"project:read"})
      *
      * @MaxDepth(1)
      */
@@ -882,7 +911,7 @@ class Project
     /**
      * @return Collection|ProjectOrganizer[]
      *
-     * @Groups({"project:view"})
+     * @Groups({"project:read"})
      *
      * @MaxDepth(2)
      */
@@ -1154,7 +1183,7 @@ class Project
     /**
      * @return Money
      *
-     * @Groups({"project:list", "projectParticipation:list"})
+     * @Groups({"project:read"})
      */
     public function getTranchesTotalMoney(): Money
     {
@@ -1229,7 +1258,7 @@ class Project
     /**
      * @return Attachment|null
      *
-     * @Groups({"project:view"})
+     * @Groups({"project:read"})
      */
     public function getDescriptionDocument(): ?Attachment
     {
@@ -1255,7 +1284,7 @@ class Project
     /**
      * @return Money
      *
-     * @Groups({"projectParticipation:list"})
+     * @Groups({"project:read"})
      */
     public function getSyndicatedAmount(): Money
     {
@@ -1277,7 +1306,7 @@ class Project
      *
      * @return Money
      *
-     * @Groups({"project:list"})
+     * @Groups({"project:read"})
      */
     public function getOffersMoney(): Money
     {
@@ -1293,7 +1322,7 @@ class Project
     /**
      * @return array|string[]
      *
-     * @Groups({"project:view"})
+     * @Groups({"project:read"})
      */
     public function getAvailableOrganiserRoles(): array
     {

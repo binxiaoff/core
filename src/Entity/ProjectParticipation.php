@@ -30,24 +30,31 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "nullableMoney:read",
  *         "trancheOffer:read",
  *         "money:read",
- *         "lendingRate:read"
+ *         "lendingRate:read",
+ *         "marketSegment:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
  *         "fee:write",
+ *         "projectParticipationFee:write",
  *         "nullableMoney:write"
  *     }},
  *     collectionOperations={
  *         "get": {"normalization_context": {"groups": {
  *             "projectParticipation:list",
+ *             "project:read",
  *             "projectParticipation:read",
  *             "projectParticipationContact:read",
  *             "projectParticipationFee:read",
  *             "projectParticipationOffer:read",
  *             "projectOrganizer:read",
+ *             "projectStatus:read",
  *             "company:read",
+ *             "projectStatus:read",
+ *             "traceableStatus:read",
  *             "role:read",
  *             "fee:read",
+ *             "marketSegment:read",
  *             "nullableMoney:read"
  *         }}},
  *         "post": {
@@ -55,6 +62,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "projectParticipation:create",
  *                 "projectParticipation:write",
  *                 "projectParticipationContact:write",
+ *                 "projectParticipationFee:create",
+ *                 "projectParticipationFee:write",
  *                 "fee:write",
  *                 "nullableMoney:write"
  *             }},
@@ -72,7 +81,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiFilter("Unilend\Filter\CountFilter", properties={"projectParticipationOffers"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status"})
- * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"project.hash": "exact", "projectParticipationContacts.client.email": "exact"})
+ * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"project.hash": "exact", "projectParticipationContacts.client.publicId": "exact"})
+ * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"project.submitterCompany.publicId"})
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationRepository")

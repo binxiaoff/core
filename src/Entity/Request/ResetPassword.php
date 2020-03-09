@@ -19,4 +19,5 @@ use ApiPlatform\Core\Annotation\ApiResource;
 class ResetPassword
 {
     public $email;
+    public $captchaValue;
 }

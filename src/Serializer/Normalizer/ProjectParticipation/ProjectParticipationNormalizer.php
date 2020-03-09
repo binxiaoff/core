@@ -63,11 +63,12 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
 
         $project = $participation->getProject();
 
+        $clientCurrentCompany = $client->getCompany();
+
         if (
             $this->security->isGranted('ROLE_ADMIN')
-            || $participation->getCompany() === $client->getCompany()
-            || ($project->getArranger()
-                && $project->getArranger()->getCompany() === $client->getCompany())
+            || $participation->getCompany() === $clientCurrentCompany
+            || $participation->getProject()->getSubmitterCompany() === $clientCurrentCompany
         ) {
             return [ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ];
         }

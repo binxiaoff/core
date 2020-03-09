@@ -34,7 +34,7 @@ class ProjectParticipationFee
      * @ORM\GeneratedValue(strategy="IDENTITY")
      * @ORM\Column(type="integer")
      *
-     * @Groups({"project:view"})
+     * @Groups({"projectParticipationFee:read"})
      */
     private $id;
 
@@ -48,7 +48,6 @@ class ProjectParticipationFee
      * @Assert\Valid
      *
      * @Groups({
-     *     "project:view",
      *     "projectParticipationFee:read",
      *     "projectParticipationFee:write"
      * })
@@ -56,14 +55,14 @@ class ProjectParticipationFee
     private $fee;
 
     /**
-     * @var Project
+     * @var ProjectParticipation
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationFee")
      * @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
      *
      * @Assert\Valid
      *
-     * @Groups({"project:view", "projectParticipation:list", "projectParticipationFee:create", "projectParticipationFee:update"})
+     * @Groups({"projectParticipationFee:create"})
      */
     private $projectParticipation;
 

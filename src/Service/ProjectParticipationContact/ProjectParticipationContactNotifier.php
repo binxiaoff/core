@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Service\ProjectParticipationContact;
 
 use Exception;
-use LogicException;
 use Swift_Mailer;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{Clients, Company, Project, ProjectParticipationContact, ProjectStatus, TemporaryToken};
@@ -41,24 +40,19 @@ class ProjectParticipationContactNotifier
      * @throws SyntaxError
      * @throws Exception
      */
-    public function sendInvitation(ProjectParticipationContact $contact): void
+    public function notifyContactAdded(ProjectParticipationContact $contact): void
     {
         $projectParticipation = $contact->getProjectParticipation();
-        $company              = $projectParticipation->getCompany();
-        $project              = $projectParticipation->getProject();
+
+        if ($contact->getAddedBy() === $contact->getClient() || $contact->getAddedBy()->getCompany() === $projectParticipation->getCompany()) {
+            return;
+        }
+
+        $company = $projectParticipation->getCompany();
+        $project = $projectParticipation->getProject();
 
         $client     = $contact->getClient();
         $templateId = $this->getTemplateId($project, $company, $client);
-
-        $arranger = $project->getArranger();
-
-        if (null === $arranger) {
-            throw new LogicException('The arranger should not be null');
-        }
-
-        if ($arranger->getCompany() === $company) {
-            return;
-        }
 
         $temporaryToken = null;
         if ($client->isInitializationNeeded()) {
@@ -71,8 +65,8 @@ class ProjectParticipationContactNotifier
                 'firstName' => $client->getFirstName(),
                 'hash'      => $client->getPublicId(),
             ],
-            'arranger' => [
-                'name' => $arranger->getCompany()->getName(),
+            'submitterCompany' => [
+                'name' => $project->getSubmitterCompany()->getName(),
             ],
             'project' => [
                 'name' => $project->getTitle(),

@@ -33,7 +33,7 @@ class MarketSegment
     /**
      * @ORM\Column(type="string", length=30)
      *
-     * @Groups({"projectParticipation:list", "marketSegment:read"})
+     * @Groups({"marketSegment:read"})
      */
     private $label;
 

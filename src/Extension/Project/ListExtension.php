@@ -37,21 +37,37 @@ class ListExtension implements QueryCollectionExtensionInterface
 
         /** @var Clients $user */
         $user = $this->security->getUser();
+
         if (!$user instanceof Clients) {
             return;
         }
 
+        $staff = $user->getStaff();
+
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
-            ->innerJoin($rootAlias . '.currentStatus', 'cpsh')
-            ->leftJoin($rootAlias . '.projectParticipations', 'pp')
-            ->leftJoin('pp.projectParticipationContacts', 'pc')
-            ->andWhere($rootAlias . '.submitterClient = :client or ' . $rootAlias . '.submitterCompany = :company or cpsh.status IN (:activeStatus) AND pc.client = :client')
-            ->setParameters([
-                'company'      => $user->getCompany(),
-                'activeStatus' => ProjectStatus::DISPLAYABLE_STATUS,
-                'client'       => $user,
-            ])
+            ->distinct()
+            ->innerJoin($rootAlias . '.currentStatus', 'cs')
+            ->leftJoin($rootAlias . '.projectParticipations', 'p')
+            ->leftJoin('p.projectParticipationContacts', 'ppc')
+            ->andWhere($queryBuilder->expr()->orX(
+                $rootAlias . '.submitterClient = :client',
+                $queryBuilder->expr()->andX(
+                    $rootAlias . '.submitterCompany = :company',
+                    $queryBuilder->expr()->orX(
+                        $rootAlias . '.marketSegment IN (:marketSegments)',
+                        ($staff && $staff->isAdmin() ? '1 = 1' : '0 = 1')
+                    )
+                ),
+                $queryBuilder->expr()->andX(
+                    'cs.status >= :minimumParticipantDisplayableStatus',
+                    'ppc.client = :client'
+                )
+            ))
+            ->setParameter('minimumParticipantDisplayableStatus', ProjectStatus::STATUS_PUBLISHED)
+            ->setParameter('company', $staff->getCompany())
+            ->setParameter('client', $user)
+            ->setParameter('marketSegments', $staff ? $staff->getMarketSegments() : [])
         ;
     }
 }
