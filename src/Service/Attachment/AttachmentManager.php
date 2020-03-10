@@ -62,6 +62,8 @@ class AttachmentManager
             ->setSize($this->userAttachmentFilesystem->getSize($relativeUploadedPath))
         ;
 
+        $this->attachmentRepository->save($attachment);
+
         return $attachment;
     }
 

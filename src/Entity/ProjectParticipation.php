@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
@@ -40,7 +41,40 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "nullableMoney:write"
  *     }},
  *     collectionOperations={
+ *         "nda": {
+ *             "method": "POST",
+ *             "controller": "Unilend\Controller\ProjectParticipation\UploadNDA",
+ *             "path": "/project_participations/{id}/nda",
+ *             "deserialize": false,
+ *             "swagger_context": {
+ *                 "consumes": {"multipart/form-data"},
+ *                 "parameters": {
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "file",
+ *                         "type": "file",
+ *                         "description": "The uploaded file",
+ *                         "required": true
+ *                     },
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "type",
+ *                         "type": "string",
+ *                         "description": "The attachment type",
+ *                         "required": true
+ *                     },
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "project",
+ *                         "type": "string",
+ *                         "description": "The project as an IRI",
+ *                         "required": true
+ *                     }
+ *                 }
+ *             }
+ *         },
  *         "get": {"normalization_context": {"groups": {
+ *             "attachment:read",
  *             "projectParticipation:list",
  *             "project:read",
  *             "projectParticipation:read",
@@ -83,6 +117,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"project.hash": "exact", "projectParticipationContacts.client.publicId": "exact"})
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"project.submitterCompany.publicId"})
+ *
+ * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectParticipation")
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationRepository")
@@ -206,7 +242,7 @@ class ProjectParticipation
     private $messages;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\Attachment", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Attachment")
      */
     private $confidentialityDisclaimerDocument;
 
@@ -507,20 +543,12 @@ class ProjectParticipation
         return self::getConstants('STATUS_');
     }
 
-    /**
-     * @return Attachment|null
-     */
     public function getConfidentialityDisclaimerDocument(): ?Attachment
     {
         return $this->confidentialityDisclaimerDocument;
     }
 
-    /**
-     * @param Attachment $confidentialityDisclaimerDocument
-     *
-     * @return $this
-     */
-    public function setConfidentialityDisclaimerDocument(Attachment $confidentialityDisclaimerDocument): self
+    public function setConfidentialityDisclaimerDocument(?Attachment $confidentialityDisclaimerDocument): self
     {
         $this->confidentialityDisclaimerDocument = $confidentialityDisclaimerDocument;
 

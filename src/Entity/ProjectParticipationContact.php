@@ -59,13 +59,9 @@ class ProjectParticipationContact
     private $client;
 
     /**
-     * @var DateTimeImmutable|null
-     *
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     *
-     * @Groups({"projectParticipationContact:read", "projectParticipationContact:write"})
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Attachment")
      */
-    private $confidentialityAccepted;
+    private $confidentialityDisclaimerDocument;
 
     /**
      * ProjectParticipationContact constructor.
@@ -127,23 +123,16 @@ class ProjectParticipationContact
         return $this;
     }
 
-    /**
-     * @return DateTimeImmutable|null
-     */
-    public function getConfidentialityAccepted(): ?DateTimeImmutable
+    public function getConfidentialityDisclaimerDocument(): ?Attachment
     {
-        return $this->confidentialityAccepted;
+        return $this->confidentialityDisclaimerDocument;
     }
 
-    /**
-     * @param DateTimeImmutable|null $confidentialityAccepted
-     *
-     * @return ProjectParticipationContact
-     */
-    public function setConfidentialityAccepted(?DateTimeImmutable $confidentialityAccepted): ProjectParticipationContact
+    public function setConfidentialityDisclaimerDocument(?Attachment $confidentialityDisclaimerDocument): self
     {
-        $this->confidentialityAccepted = $confidentialityAccepted;
+        $this->confidentialityDisclaimerDocument = $confidentialityDisclaimerDocument;
 
         return $this;
     }
+
 }

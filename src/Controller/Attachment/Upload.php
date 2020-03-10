@@ -49,6 +49,8 @@ class Upload
         /** @var Clients $user */
         $user = $this->security->getUser();
 
+        // If a "user" is found in the request, it means that we want to upload a file for the "user".
+        // In this case, we check if the current user is admin.
         if ($userIri = $request->request->get('user')) {
             if (false === $this->security->isGranted(Clients::ROLE_ADMIN)) {
                 throw new AccessDeniedHttpException();
