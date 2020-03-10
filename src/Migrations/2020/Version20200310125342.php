@@ -20,7 +20,7 @@ final class Version20200310125342 extends AbstractMigration
         $this->addSql('ALTER TABLE project_participation ADD confidentiality_disclaimer_document_id INT DEFAULT NULL');
         $this->addSql('ALTER TABLE project_participation ADD CONSTRAINT FK_7FC475495C6D5FD2 FOREIGN KEY (confidentiality_disclaimer_document_id) REFERENCES attachment (id)');
         $this->addSql('CREATE INDEX IDX_7FC475495C6D5FD2 ON project_participation (confidentiality_disclaimer_document_id)');
-        $this->addSql('ALTER TABLE project_participation_contact ADD confidentiality_disclaimer_document_id INT DEFAULT NULL, DROP confidentiality_accepted');
+        $this->addSql('ALTER TABLE project_participation_contact ADD confidentiality_disclaimer_document_id INT DEFAULT NULL');
         $this->addSql('ALTER TABLE project_participation_contact ADD CONSTRAINT FK_41530AB35C6D5FD2 FOREIGN KEY (confidentiality_disclaimer_document_id) REFERENCES attachment (id)');
         $this->addSql('CREATE INDEX IDX_41530AB35C6D5FD2 ON project_participation_contact (confidentiality_disclaimer_document_id)');
     }
@@ -33,6 +33,6 @@ final class Version20200310125342 extends AbstractMigration
         $this->addSql('ALTER TABLE project_participation DROP confidentiality_disclaimer_document_id');
         $this->addSql('ALTER TABLE project_participation_contact DROP FOREIGN KEY FK_41530AB35C6D5FD2');
         $this->addSql('DROP INDEX IDX_41530AB35C6D5FD2 ON project_participation_contact');
-        $this->addSql('ALTER TABLE project_participation_contact ADD confidentiality_accepted DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', DROP confidentiality_disclaimer_document_id');
+        $this->addSql('ALTER TABLE project_participation_contact DROP confidentiality_disclaimer_document_id');
     }
 }
