@@ -99,14 +99,14 @@ class MailQueue
     /**
      * @var DateTimeImmutable
      *
-     * @ORM\Column(name="to_send_at", type="date_immutable", nullable=true)
+     * @ORM\Column(name="to_send_at", type="datetime_immutable", nullable=true)
      */
     private $toSendAt;
 
     /**
      * @var DateTimeImmutable
      *
-     * @ORM\Column(name="sent_at", type="date_immutable", nullable=true)
+     * @ORM\Column(name="sent_at", type="datetime_immutable", nullable=true)
      */
     private $sentAt;
 
