@@ -67,9 +67,9 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canCreate(Project $project, Clients $user): bool
     {
-        $staff = $user->getStaff();
+        $staff = $user->getCurrentStaff();
 
-        return  $staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment());
+        return  $staff && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
     }
 
     /**
@@ -103,13 +103,9 @@ class ProjectVoter extends AbstractEntityVoter
             return true;
         }
 
-        if ($user->getCompany() !== $project->getSubmitterCompany()) {
-            return false;
-        }
+        $staff = $user->getCurrentStaff();
 
-        $staff = $user->getStaff();
-
-        return  $staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment());
+        return  $user->getCompany() === $project->getSubmitterCompany() && $staff && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
     }
 
     /**

@@ -2,17 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Serializer\ContextBuilder\Client;
+namespace Unilend\Serializer\ContextBuilder\Staff;
 
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Entity\Clients;
+use Unilend\Entity\ProjectStatus;
+use Unilend\Entity\Staff;
+use Unilend\Repository\ClientsRepository;
 
-class CurrentUser implements SerializerContextBuilderInterface
+class CurrentStaff implements SerializerContextBuilderInterface
 {
     /**
      * @var SerializerContextBuilderInterface
@@ -23,15 +27,19 @@ class CurrentUser implements SerializerContextBuilderInterface
      * @var Security
      */
     private $security;
+    /** @var ClientsRepository */
+    private $clientsRepository;
 
     /**
      * @param SerializerContextBuilderInterface $decorated
      * @param Security                          $security
+     * @param ClientsRepository                 $clientsRepository
      */
-    public function __construct(SerializerContextBuilderInterface $decorated, Security $security)
+    public function __construct(SerializerContextBuilderInterface $decorated, Security $security, ClientsRepository $clientsRepository)
     {
-        $this->decorated = $decorated;
-        $this->security  = $security;
+        $this->decorated         = $decorated;
+        $this->security          = $security;
+        $this->clientsRepository = $clientsRepository;
     }
 
     /**
@@ -52,6 +60,10 @@ class CurrentUser implements SerializerContextBuilderInterface
 
         $user = $this->security->getUser();
 
+        if ($user instanceof UserInterface && false === $user instanceof Clients) {
+            $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
+        }
+
         if ($resourceClass && $user instanceof Clients) {
             $reflection  = new ReflectionClass($resourceClass);
             $constructor = $reflection->getConstructor();
@@ -59,13 +71,16 @@ class CurrentUser implements SerializerContextBuilderInterface
                 $parameters = $constructor->getParameters();
 
                 foreach ($parameters as $parameter) {
-                    // TODO See if we need a convention about the constructor parameter name (problem with validation)
-                    if (($type = $parameter->getType()) && (Clients::class === $type->getName()) && 'addedBy' === $parameter->getName()) {
-                        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user;
+                    $type = $parameter->getType();
+                    if ($type && 'addedBy' === $parameter->getName() && $user->getCurrentStaff() && (Staff::class === $type->getName())) {
+                        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user->getCurrentStaff();
                     }
                 }
             }
         }
+
+        // Needed for ProjectStatus because we patch project to change status
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['addedBy'] = $user->getCurrentStaff();
 
         return $context;
     }

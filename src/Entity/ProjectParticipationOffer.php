@@ -121,7 +121,7 @@ class ProjectParticipationOffer
 
     /**
      * @param ProjectParticipation $projectParticipation
-     * @param Clients              $addedBy
+     * @param Staff                $addedBy
      * @param Money|null           $offerMoney
      * @param string               $committeeStatus
      *
@@ -129,7 +129,7 @@ class ProjectParticipationOffer
      */
     public function __construct(
         ProjectParticipation $projectParticipation,
-        Clients $addedBy,
+        Staff $addedBy,
         Money $offerMoney = null,
         string $committeeStatus = self::COMMITTEE_STATUS_PENDED
     ) {

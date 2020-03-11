@@ -91,12 +91,12 @@ class ProjectOrganizer
     /**
      * @param Company               $company
      * @param Project               $project
-     * @param Clients               $addedBy
+     * @param Staff                 $addedBy
      * @param array|string[]|string $roles
      *
      * @throws Exception
      */
-    public function __construct(Company $company, Project $project, Clients $addedBy, $roles = [])
+    public function __construct(Company $company, Project $project, Staff $addedBy, $roles = [])
     {
         $this->project = $project;
         $this->company = $company;

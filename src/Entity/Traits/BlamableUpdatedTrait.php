@@ -5,43 +5,32 @@ declare(strict_types=1);
 namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Clients;
-use Unilend\Service\User\RealUserFinder;
+use Unilend\Entity\Staff;
 
 trait BlamableUpdatedTrait
 {
     /**
-     * @var Clients|null
+     * @var Staff|null
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff")
      * @ORM\JoinColumn(name="updated_by", referencedColumnName="id")
      */
     private $updatedBy;
 
     /**
-     * @return Clients|null
+     * @return Staff|null
      */
-    public function getUpdatedBy(): ?Clients
+    public function getUpdatedBy(): ?Staff
     {
         return $this->updatedBy;
     }
 
     /**
-     * @param callable|RealUserFinder $realUserFinder
+     * @param Staff|null $updatedBy
      *
      * @return self
      */
-    public function setUpdatedByValue(callable $realUserFinder): self
-    {
-        return $this->setUpdatedBy($realUserFinder());
-    }
-
-    /**
-     * @param Clients|null $updatedBy
-     *
-     * @return self
-     */
-    public function setUpdatedBy(?Clients $updatedBy): self
+    public function setUpdatedBy(Staff $updatedBy): self
     {
         $this->updatedBy = $updatedBy;
 

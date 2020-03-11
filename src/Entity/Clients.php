@@ -4,25 +4,33 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use InvalidArgumentException;
 use libphonenumber\PhoneNumber;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
+use RuntimeException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait, TraceableStatusTrait};
+use Unilend\Validator\Constraints\EmailDomain as AssertEmailDomain;
 use Unilend\Validator\Constraints\Password as AssertPassword;
 use URLify;
 
 /**
  * @ApiResource(
+ *     collectionOperations={
+ *         "get"
+ *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
  *         "put": {"security": "is_granted('edit', object)"},
@@ -45,6 +53,8 @@ use URLify;
  * @ORM\HasLifecycleCallbacks
  *
  * @UniqueEntity({"email"}, message="Clients.email.unique")
+ *
+ * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"email": "exact"})
  */
 class Clients implements UserInterface, EquatableInterface
 {
@@ -139,6 +149,8 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @Assert\NotBlank
      * @Assert\Email
+     *
+     * @AssertEmailDomain(message="Clients.email.emailDomain")
      */
     private $email;
 
@@ -156,7 +168,7 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @SerializedName("password")
      *
-     * @AssertPassword
+     * @AssertPassword(message="Clients.password.password")
      */
     private $plainPassword;
 
@@ -170,9 +182,9 @@ class Clients implements UserInterface, EquatableInterface
     private $jobFunction;
 
     /**
-     * @var Staff|null
+     * @var Staff[]|Collection
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\Staff", mappedBy="client")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\Staff", mappedBy="client")
      */
     private $staff;
 
@@ -201,6 +213,11 @@ class Clients implements UserInterface, EquatableInterface
     private $statuses;
 
     /**
+     * @var Staff
+     */
+    private $currentStaff;
+
+    /**
      * Clients constructor.
      *
      * @param string $email
@@ -214,6 +231,7 @@ class Clients implements UserInterface, EquatableInterface
 
         $this->added   = new DateTimeImmutable();
         $this->roles[] = self::ROLE_USER;
+        $this->staff   = new ArrayCollection();
         $this->email   = $email;
     }
 
@@ -270,6 +288,8 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @param string|null $lastName
      *
+     * @throws Exception
+     *
      * @return Clients
      */
     public function setLastName(?string $lastName): Clients
@@ -291,6 +311,8 @@ class Clients implements UserInterface, EquatableInterface
 
     /**
      * @param string|null $firstName
+     *
+     * @throws Exception
      *
      * @return Clients
      */
@@ -394,6 +416,8 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @param string|null $password
      *
+     * @throws Exception
+     *
      * @return Clients
      */
     public function setPassword(?string $password): Clients
@@ -454,11 +478,23 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return Staff|null
+     * @return Staff[]|Collection
      */
-    public function getStaff(): ?Staff
+    public function getStaff(): Collection
     {
         return $this->staff;
+    }
+
+    /**
+     * @param Staff $staff
+     */
+    public function addStaff(Staff $staff)
+    {
+        if ($staff->getClient() !== $this) {
+            throw new InvalidArgumentException('The staff should concern the client');
+        }
+
+        $this->staff->add($staff);
     }
 
     /**
@@ -466,13 +502,15 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function getCompany(): ?Company
     {
-        $company = null;
-
-        if ($this->getStaff()) {
-            $company = $this->getStaff()->getCompany();
+        if ($this->getStaff()->isEmpty()) {
+            return null;
         }
 
-        return $company;
+        if (null === $this->getCurrentStaff()) {
+            throw new RuntimeException('Attempt to access company while logged staff is not set');
+        }
+
+        return $this->getCurrentStaff()->getCompany();
     }
 
     /**
@@ -488,7 +526,12 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function isGrantedLogin(): bool
     {
-        return $this->isInStatus(ClientStatus::GRANTED_LOGIN) && null !== $this->getCompany() && $this->getCompany()->hasSigned();
+        return $this->isInStatus(ClientStatus::GRANTED_LOGIN) && $this->getStaff()->exists(
+            static function (int $key, Staff $staff) {
+                return $staff->getCompany()->hasSigned();
+            }
+        )
+            ;
     }
 
     /**
@@ -571,6 +614,22 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
+     * @return Staff|null
+     */
+    public function getCurrentStaff(): ?Staff
+    {
+        return $this->currentStaff;
+    }
+
+    /**
+     * @param Staff $currentStaff
+     */
+    public function setCurrentStaff(Staff $currentStaff): void
+    {
+        $this->currentStaff = $currentStaff;
+    }
+
+    /**
      * @param string|null $name
      *
      * @return string|null
@@ -608,7 +667,7 @@ class Clients implements UserInterface, EquatableInterface
     {
         $clientStatus = $this->getCurrentStatus();
 
-        return $clientStatus && in_array($clientStatus->getStatus(), $status, true);
+        return $clientStatus && \in_array($clientStatus->getStatus(), $status, true);
     }
 
     /**
@@ -621,6 +680,8 @@ class Clients implements UserInterface, EquatableInterface
 
     /**
      * Set user status to created when profile (firstName, lastName and password) is complete.
+     *
+     * @throws Exception
      */
     private function onProfileUpdated(): void
     {

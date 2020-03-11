@@ -73,23 +73,28 @@ class ProjectStatus implements StatusInterface
      * @ORM\Column(type="integer")
      */
     private $id;
+    /** @var Staff */
+    private $staff;
 
     /**
      * @param Project $project
      * @param int     $status
+     * @param Staff   $addedBy
      *
      * @throws Exception
      */
-    public function __construct(Project $project, int $status)
+    public function __construct(Project $project, int $status, Staff $addedBy)
     {
         if (!\in_array($status, static::getPossibleStatuses(), true)) {
             throw new InvalidArgumentException(
                 sprintf('%s is not a possible status for %s', $status, __CLASS__)
             );
         }
+
         $this->status  = $status;
         $this->project = $project;
         $this->added   = new DateTimeImmutable();
+        $this->addedBy = $addedBy;
     }
 
     /**

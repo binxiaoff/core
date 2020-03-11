@@ -72,7 +72,7 @@ class Upload
 
         return $this->attachmentManager->upload(
             $request->files->get('file'),
-            $user,
+            $user->getCurrentStaff(),
             $type,
             $project
         );

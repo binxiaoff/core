@@ -16,7 +16,7 @@ use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{Clients, Company, Embeddable\Money, Notification, Project, ProjectParticipation, ProjectParticipationOffer, Tranche, TrancheOffer};
+use Unilend\Entity\{Clients, Company, Embeddable\Money, Notification, Project, ProjectParticipation, ProjectParticipationOffer, Staff, Tranche, TrancheOffer};
 use Unilend\Repository\NotificationRepository;
 use Unilend\Service\Notification\NotificationDisplayManager;
 
@@ -165,11 +165,12 @@ class NotificationDisplayManagerTest extends TestCase
         /** @var Clients|ObjectProphecy $clients */
         $clients = $this->prophesize(Clients::class);
         $clients->getId()->willReturn(Base::randomDigitNotNull());
+        $staff = new Staff($submitterCompany->reveal(), $clients->reveal());
 
         $tranche = $this->prophesize(Tranche::class);
         $tranche->getProject()->willReturn($project);
 
-        $projectParticipation = new ProjectParticipationOffer($projectParticipation->reveal(), $clients->reveal());
+        $projectParticipation = new ProjectParticipationOffer($projectParticipation->reveal(), $staff);
 
         /** @var TrancheOffer|ObjectProphecy $trancheOffer */
         $trancheOffer = $this->prophesize(TrancheOffer::class);

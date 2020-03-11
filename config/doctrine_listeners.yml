@@ -54,6 +54,14 @@ services:
         tags:
             - { name: doctrine.event_listener, event: prePersist }
 
+    Unilend\Listener\Doctrine\Lifecycle\UpdatedByListener:
+        tags:
+            - { name: doctrine.event_listener, event: preUpdate }
+
+    Unilend\Listener\Doctrine\Lifecycle\ArchivedByListener:
+        tags:
+            - { name: doctrine.event_listener, event: preRemove }
+
     Unilend\Listener\Doctrine\Entity\MessageDispatcher\ProjectListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }

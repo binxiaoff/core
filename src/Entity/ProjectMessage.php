@@ -15,7 +15,7 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, Timestamp
 /**
  * @ApiResource(
  *     attributes={"order": {"added", "id"}, "pagination_enabled": false},
- *     normalizationContext={"groups": {"message:read", "blameable:read", "client:read", "timestampable:read"}},
+ *     normalizationContext={"groups": {"staff:read", "message:read", "blameable:read", "client:read", "timestampable:read", "company:read"}},
  *     denormalizationContext={"groups": {"message:write"}},
  *     collectionOperations={
  *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"message:create", "message:write"}}}
@@ -71,12 +71,12 @@ class ProjectMessage
 
     /**
      * @param ProjectParticipation $participation
-     * @param Clients              $addedBy
+     * @param Staff                $addedBy
      * @param string               $content
      *
      * @throws Exception
      */
-    public function __construct(ProjectParticipation $participation, Clients $addedBy, string $content)
+    public function __construct(ProjectParticipation $participation, Staff $addedBy, string $content)
     {
         $this->participation = $participation;
         $this->addedBy       = $addedBy;

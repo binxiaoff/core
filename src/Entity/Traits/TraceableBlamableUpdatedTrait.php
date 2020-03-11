@@ -6,18 +6,18 @@ namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Unilend\Entity\Clients;
+use Unilend\Entity\Staff;
 
 trait TraceableBlamableUpdatedTrait
 {
     use BlamableUpdatedTrait;
 
     /**
-     * @var Clients|null
+     * @var Staff|null
      *
      * @Gedmo\Versioned
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff")
      * @ORM\JoinColumn(name="updated_by", referencedColumnName="id")
      */
     private $updatedBy;

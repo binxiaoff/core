@@ -18,6 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\{Embeddable\Money, Traits\TimestampableTrait, Traits\TraceableStatusTrait};
 use Unilend\Filter\ArrayFilter;
+use Unilend\Filter\InvertedSearchFilter;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -94,9 +95,9 @@ use Unilend\Traits\ConstantsAwareTrait;
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
- * @ApiFilter(SearchFilter::class, properties={"organizers.company.publicId"})
  * @ApiFilter(ArrayFilter::class, properties={"organizers.roles"})
  * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId"})
+ * @ApiFilter(InvertedSearchFilter::class, properties={"projectParticipations.projectParticipationContacts.client.publicId"})
  *
  * @ORM\Table(indexes={
  *     @ORM\Index(name="hash", columns={"hash"})
@@ -485,14 +486,14 @@ class Project
     private $globalFundingMoney;
 
     /**
-     * @param Clients       $addedBy
+     * @param Staff         $addedBy
      * @param Company       $borrowerCompany
      * @param Money         $globalFundingMoney
      * @param MarketSegment $marketSegment
      *
      * @throws Exception
      */
-    public function __construct(Clients $addedBy, Company $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
+    public function __construct(Staff $addedBy, Company $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
     {
         $this->attachments           = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
@@ -503,10 +504,10 @@ class Project
         $this->organizers            = new ArrayCollection();
         $this->added                 = new DateTimeImmutable();
         $this->marketSegment         = $marketSegment;
-        $this->submitterClient       = $addedBy;
+        $this->submitterClient       = $addedBy->getClient();
         $this->submitterCompany      = $addedBy->getCompany();
 
-        $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_REQUESTED));
+        $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_REQUESTED, $addedBy));
 
         $this->syndicationType   = static::PROJECT_SYNDICATION_TYPE_PRIMARY;
         $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;

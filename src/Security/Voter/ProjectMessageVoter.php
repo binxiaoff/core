@@ -55,7 +55,7 @@ class ProjectMessageVoter extends AbstractEntityVoter
      */
     protected function canEdit(ProjectMessage $subject, Clients $user): bool
     {
-        return $user === $subject->getAddedBy();
+        return $user->getCurrentStaff() === $subject->getAddedBy();
     }
 
     /**
@@ -66,6 +66,6 @@ class ProjectMessageVoter extends AbstractEntityVoter
      */
     protected function canDelete(ProjectMessage $subject, Clients $user): bool
     {
-        return $user === $subject->getAddedBy();
+        return $user->getCurrentStaff() === $subject->getAddedBy();
     }
 }

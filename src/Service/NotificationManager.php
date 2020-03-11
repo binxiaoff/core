@@ -61,7 +61,7 @@ class NotificationManager
      */
     public function createTrancheOfferSubmitted(TrancheOffer $trancheOffer): void
     {
-        $trancheOfferMaker = $trancheOffer->getAddedBy();
+        $trancheOfferMaker = $trancheOffer->getAddedBy()->getClient();
         $recipients        = $this->getProjectRecipients($trancheOffer->getTranche()->getProject());
 
         unset($recipients[$trancheOfferMaker->getId()]);
