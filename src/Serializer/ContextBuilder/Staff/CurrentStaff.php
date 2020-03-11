@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Entity\Clients;
+use Unilend\Entity\ProjectStatus;
 use Unilend\Entity\Staff;
 use Unilend\Repository\ClientsRepository;
 
@@ -77,6 +78,9 @@ class CurrentStaff implements SerializerContextBuilderInterface
                 }
             }
         }
+
+        // Needed for ProjectStatus because we patch project to change status
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['addedBy'] = $user->getCurrentStaff();
 
         return $context;
     }
