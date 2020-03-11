@@ -241,22 +241,6 @@ class Attachment
     }
 
     /**
-     * @param Staff $staff
-     *
-     * @throws Exception
-     *
-     * @return Attachment
-     */
-    public function archive(Staff $staff): Attachment
-    {
-        $this->setArchived(new DateTimeImmutable())
-            ->setArchivedBy($staff)
-        ;
-
-        return $this;
-    }
-
-    /**
      * @return DateTimeImmutable
      */
     public function getArchived(): ?DateTimeImmutable

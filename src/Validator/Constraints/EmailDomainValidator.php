@@ -28,7 +28,7 @@ class EmailDomainValidator extends ConstraintValidator
      * @param mixed      $value      The value that should be validated
      * @param Constraint $constraint
      */
-    public function validate($value, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
         if (!$constraint instanceof EmailDomain) {
             throw new UnexpectedTypeException($constraint, EmailDomain::class);

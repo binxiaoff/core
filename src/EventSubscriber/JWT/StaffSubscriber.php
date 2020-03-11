@@ -69,8 +69,10 @@ class StaffSubscriber implements EventSubscriberInterface
 
         /** @var Staff $staffEntry */
         foreach ($staffCollection as $staffEntry) {
-            $user->setCurrentStaff($staffEntry);
-            $data['tokens'][] = $this->jwtManager->create($user);
+            if ($staffEntry->getCompany()->hasSigned()) {
+                $user->setCurrentStaff($staffEntry);
+                $data['tokens'][] = $this->jwtManager->create($user);
+            }
         }
 
         $event->setData($data);
@@ -119,7 +121,6 @@ class StaffSubscriber implements EventSubscriberInterface
 
         $currentStaff = $this->iriConverter->getItemFromIri($payload['staff']);
 
-        $token->setAttribute('staff', $currentStaff);
         $token->getUser()->setCurrentStaff($currentStaff);
     }
 }
