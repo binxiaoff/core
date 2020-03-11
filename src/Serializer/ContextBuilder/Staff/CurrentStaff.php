@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Serializer\ContextBuilder\Client;
+namespace Unilend\Serializer\ContextBuilder\Staff;
 
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use ReflectionClass;
@@ -15,7 +15,7 @@ use Unilend\Entity\Clients;
 use Unilend\Entity\Staff;
 use Unilend\Repository\ClientsRepository;
 
-class CurrentUser implements SerializerContextBuilderInterface
+class CurrentStaff implements SerializerContextBuilderInterface
 {
     /**
      * @var SerializerContextBuilderInterface
@@ -34,11 +34,8 @@ class CurrentUser implements SerializerContextBuilderInterface
      * @param Security                          $security
      * @param ClientsRepository                 $clientsRepository
      */
-    public function __construct(
-        SerializerContextBuilderInterface $decorated,
-        Security $security,
-        ClientsRepository $clientsRepository
-    ) {
+    public function __construct(SerializerContextBuilderInterface $decorated, Security $security, ClientsRepository $clientsRepository)
+    {
         $this->decorated         = $decorated;
         $this->security          = $security;
         $this->clientsRepository = $clientsRepository;
@@ -74,14 +71,8 @@ class CurrentUser implements SerializerContextBuilderInterface
 
                 foreach ($parameters as $parameter) {
                     $type = $parameter->getType();
-                    if ($type && 'addedBy' === $parameter->getName()) {
-                        if (Clients::class === $type->getName()) {
-                            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user;
-                        }
-
-                        if ($user->getCurrentStaff() && (Staff::class === $type->getName())) {
-                            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user->getCurrentStaff();
-                        }
+                    if ($type && 'addedBy' === $parameter->getName() && $user->getCurrentStaff() && (Staff::class === $type->getName())) {
+                        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user->getCurrentStaff();
                     }
                 }
             }
