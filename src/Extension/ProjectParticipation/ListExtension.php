@@ -45,6 +45,8 @@ class ListExtension implements QueryCollectionExtensionInterface
             return;
         }
 
+        $staff = $user->getCurrentStaff();
+
         $expressionBuilder = $this->entityManager->getExpressionBuilder();
         $subQueryBuilder   = $this->entityManager->createQueryBuilder();
         $subQueryBuilder->select('sub_project')
@@ -65,7 +67,10 @@ class ListExtension implements QueryCollectionExtensionInterface
                     // Submitter condition
                     $expressionBuilder->andX(
                         'p.submitterCompany = :company',
-                        'p.marketSegment IN (:marketSegments)'
+                        $queryBuilder->expr()->orX(
+                            'p.marketSegment IN (:marketSegments)',
+                            ($staff && $staff->isAdmin() ? '1 = 1' : '0 = 1')
+                        )
                     ),
                     // Participant condition
                     $expressionBuilder->andX(
