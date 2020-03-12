@@ -540,6 +540,12 @@
     "ramsey/uuid": {
         "version": "3.8.0"
     },
+    "rollbar/rollbar": {
+        "version": "v1.8.1"
+    },
+    "rollbar/rollbar-php-symfony-bundle": {
+        "version": "v3.1.2"
+    },
     "scienta/doctrine-json-functions": {
         "version": "4.0.2"
     },
