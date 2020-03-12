@@ -64,23 +64,25 @@ class CurrentStaff implements SerializerContextBuilderInterface
             $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
         }
 
-        if ($resourceClass && $user instanceof Clients) {
-            $reflection  = new ReflectionClass($resourceClass);
-            $constructor = $reflection->getConstructor();
-            if ($constructor) {
-                $parameters = $constructor->getParameters();
+        if ($user && $user instanceof Clients) {
+            if ($resourceClass) {
+                $reflection  = new ReflectionClass($resourceClass);
+                $constructor = $reflection->getConstructor();
+                if ($constructor) {
+                    $parameters = $constructor->getParameters();
 
-                foreach ($parameters as $parameter) {
-                    $type = $parameter->getType();
-                    if ($type && 'addedBy' === $parameter->getName() && $user->getCurrentStaff() && (Staff::class === $type->getName())) {
-                        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user->getCurrentStaff();
+                    foreach ($parameters as $parameter) {
+                        $type = $parameter->getType();
+                        if ($type && 'addedBy' === $parameter->getName() && $user->getCurrentStaff() && (Staff::class === $type->getName())) {
+                            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user->getCurrentStaff();
+                        }
                     }
                 }
             }
-        }
 
-        // Needed for ProjectStatus because we patch project to change status
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['addedBy'] = $user->getCurrentStaff();
+            // Needed for ProjectStatus because we patch project to change status
+            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['addedBy'] = $user->getCurrentStaff();
+        }
 
         return $context;
     }
