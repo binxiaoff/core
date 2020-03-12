@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "152fb31f123ec140ba37300c1e2f3db9",
+    "content-hash": "f578123cfc981dd9b1548aaf4e63003a",
     "packages": [
         {
             "name": "api-platform/api-pack",
@@ -13647,11 +13647,13 @@
         "ext-bcmath": "*",
         "ext-ctype": "*",
         "ext-curl": "*",
+        "ext-dom": "*",
         "ext-hash": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-openssl": "*",
         "ext-pdo": "*",
+        "ext-simplexml": "*",
         "ext-soap": "*",
         "ext-zip": "*"
     },

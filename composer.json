@@ -21,6 +21,7 @@
     "ext-mbstring": "*",
     "ext-openssl": "*",
     "ext-pdo": "*",
+    "ext-simplexml": "*",
     "ext-soap": "*",
     "ext-zip": "*",
     "api-platform/api-pack": "^1.2",

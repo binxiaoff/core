@@ -67,7 +67,7 @@ class Company
     private $name;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(name="siren", type="string", length=15, nullable=true)
      *
@@ -107,6 +107,8 @@ class Company
     private $projectParticipations;
 
     /**
+     * @var string|null
+     *
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
      *
      * @Groups({"company:read", "company:jwt:read"})
@@ -114,11 +116,20 @@ class Company
     private $emailDomain;
 
     /**
+     * @var string|null
+     *
      * @ORM\Column(type="string", length=4, nullable=true, unique=true)
      *
      * @Groups({"company:read", "company:jwt:read"})
      */
     private $shortCode;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", length=5, nullable=true, unique=true)
+     */
+    private $entityCode;
 
     /**
      * @var CompanyStatus
@@ -324,6 +335,26 @@ class Company
     public function setShortCode(string $shortCode): Company
     {
         $this->shortCode = $shortCode;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getEntityCode(): ?string
+    {
+        return $this->entityCode;
+    }
+
+    /**
+     * @param string|null $entityCode
+     *
+     * @return Company
+     */
+    public function setEntityCode(?string $entityCode): Company
+    {
+        $this->entityCode = $entityCode;
 
         return $this;
     }

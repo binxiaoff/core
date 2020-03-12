@@ -6,7 +6,7 @@ namespace Unilend\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 
 /**
  * @ORM\Entity
@@ -15,6 +15,8 @@ use Unilend\Entity\Traits\TimestampableTrait;
 class AttachmentSignature
 {
     use TimestampableTrait;
+    use PublicizeIdentityTrait;
+    use BlamableAddedTrait;
 
     public const STATUS_PENDING = 0;
     public const STATUS_SIGNED  = 1;
@@ -31,9 +33,9 @@ class AttachmentSignature
     private $attachment;
 
     /**
-     * @var Clients
+     * @var Staff
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_signatory", referencedColumnName="id", nullable=false)
      * })
@@ -43,25 +45,9 @@ class AttachmentSignature
     /**
      * @var int
      *
-     * @ORM\Column(name="docusign_envelope_id", type="integer", nullable=true)
-     */
-    private $docusignEnvelopeId;
-
-    /**
-     * @var int
-     *
      * @ORM\Column(name="status", type="smallint")
      */
     private $status;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    private $id;
 
     /**
      * AttachmentSignature constructor.
@@ -86,19 +72,19 @@ class AttachmentSignature
     }
 
     /**
-     * @return Attachment|null
+     * @return Attachment
      */
-    public function getAttachment(): ?Attachment
+    public function getAttachment(): Attachment
     {
         return $this->attachment;
     }
 
     /**
-     * @param Clients $signatory
+     * @param Staff $signatory
      *
      * @return AttachmentSignature
      */
-    public function setSignatory(Clients $signatory): AttachmentSignature
+    public function setSignatory(Staff $signatory): AttachmentSignature
     {
         $this->signatory = $signatory;
 
@@ -106,31 +92,11 @@ class AttachmentSignature
     }
 
     /**
-     * @return Clients|null
+     * @return Staff
      */
-    public function getSignatory(): ?Clients
+    public function getSignatory(): Staff
     {
         return $this->signatory;
-    }
-
-    /**
-     * @param int|null $docusignEnvelopeId
-     *
-     * @return AttachmentSignature
-     */
-    public function setDocusignEnvelopeId(?int $docusignEnvelopeId): AttachmentSignature
-    {
-        $this->docusignEnvelopeId = $docusignEnvelopeId;
-
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getDocusignEnvelopeId(): ?int
-    {
-        return $this->docusignEnvelopeId;
     }
 
     /**
@@ -151,13 +117,5 @@ class AttachmentSignature
     public function getStatus(): ?int
     {
         return $this->status;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 }

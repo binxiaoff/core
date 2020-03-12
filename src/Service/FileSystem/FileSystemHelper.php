@@ -76,7 +76,7 @@ class FileSystemHelper
      *
      * @throws Exception
      *
-     * @return object|null
+     * @return object|FilesystemInterface|null
      */
     public function getFileSystemForClass($class)
     {

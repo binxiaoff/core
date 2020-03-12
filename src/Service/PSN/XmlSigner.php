@@ -6,8 +6,8 @@ namespace Unilend\Service\PSN;
 
 use DOMDocument;
 use Exception;
-use RobRichards\XMLSecLibs\XMLSecurityDSig;
-use RobRichards\XMLSecLibs\XMLSecurityKey;
+use InvalidArgumentException;
+use RobRichards\XMLSecLibs\{XMLSecurityDSig, XMLSecurityKey};
 
 class XmlSigner
 {
@@ -28,6 +28,10 @@ class XmlSigner
     {
         $xml = new DOMDocument();
         $xml->loadXML($xmlSource);
+
+        if (false === $xml) {
+            throw new InvalidArgumentException('The xml is not valid');
+        }
 
         $xmlDSig = new XMLSecurityDSig();
         $xmlDSig->setCanonicalMethod(self::CANONICAL_METHOD);
