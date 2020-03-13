@@ -12,7 +12,7 @@ use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
+use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
@@ -41,6 +41,7 @@ class Staff
 {
     use RoleableTrait;
     use TimestampableTrait;
+    use PublicizeIdentityTrait;
 
     /** @deprecated Just for backward compatibility. Later, we will define a new role list for staff.*/
     public const ROLE_COMPANY_OWNER = 'ROLE_COMPANY_OWNER';
@@ -54,15 +55,6 @@ class Staff
 
     public const SERIALIZER_GROUP_ADMIN_READ   = 'staff:admin:read';
     public const SERIALIZER_GROUP_ADMIN_CREATE = 'staff:admin:create';
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    private $id;
 
     /**
      * @var Company
@@ -117,14 +109,6 @@ class Staff
         $this->company        = $company;
         $this->client         = $client;
         $this->client->addStaff($this); // TODO To be removed when async message queue is put in place
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
     }
 
     /**
