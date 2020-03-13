@@ -14,7 +14,7 @@ final class Version20200313144748 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'CALS-';
+        return 'CALS-1302 Add public id to staff';
     }
 
     public function up(Schema $schema): void
