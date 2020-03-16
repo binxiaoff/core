@@ -55,3 +55,6 @@ monolog:
             use_short_attachment: false
             include_extra: true
             formatter: 'unilend_monolog_support_formatter'
+        rollbar:
+            type: service
+            id: Rollbar\Monolog\Handler\RollbarHandler

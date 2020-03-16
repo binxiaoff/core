@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Unilend\Entity\Traits\BlamableAddedTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
@@ -14,6 +15,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  */
 class AttachmentDownload
 {
+    use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
 
     /**
@@ -34,23 +36,15 @@ class AttachmentDownload
     private $attachment;
 
     /**
-     * @var Clients
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
-     * @ORM\JoinColumn(referencedColumnName="id", name="id_client", nullable=false)
-     */
-    private $client;
-
-    /**
      * @param Attachment $attachment
-     * @param Clients    $addedBy
+     * @param Staff      $addedBy
      *
      * @throws Exception
      */
-    public function __construct(Attachment $attachment, Clients $addedBy)
+    public function __construct(Attachment $attachment, Staff $addedBy)
     {
         $this->attachment = $attachment;
-        $this->client     = $addedBy;
+        $this->addedBy    = $addedBy;
         $this->added      = new DateTimeImmutable();
     }
 
@@ -68,13 +62,5 @@ class AttachmentDownload
     public function getAttachment(): Attachment
     {
         return $this->attachment;
-    }
-
-    /**
-     * @return Clients
-     */
-    public function getClient(): Clients
-    {
-        return $this->client;
     }
 }

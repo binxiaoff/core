@@ -12,17 +12,14 @@ use Unilend\Entity\{Clients, Project, ProjectStatus};
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
-    /**
-     * @var Security
-     */
+    /** @var Security */
     private $security;
 
     /**
      * @param Security $security
      */
-    public function __construct(
-        Security $security
-    ) {
+    public function __construct(Security $security)
+    {
         $this->security = $security;
     }
 
@@ -42,7 +39,7 @@ class ListExtension implements QueryCollectionExtensionInterface
             return;
         }
 
-        $staff = $user->getStaff();
+        $staff = $user->getCurrentStaff();
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
@@ -51,7 +48,9 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->leftJoin($rootAlias . '.projectParticipations', 'p')
             ->leftJoin('p.projectParticipationContacts', 'ppc')
             ->andWhere($queryBuilder->expr()->orX(
+                // if you are owner
                 $rootAlias . '.submitterClient = :client',
+                // or you are in owner company and you have market segment
                 $queryBuilder->expr()->andX(
                     $rootAlias . '.submitterCompany = :company',
                     $queryBuilder->expr()->orX(
@@ -59,6 +58,7 @@ class ListExtension implements QueryCollectionExtensionInterface
                         ($staff && $staff->isAdmin() ? '1 = 1' : '0 = 1')
                     )
                 ),
+                // or you are participant and the project is published
                 $queryBuilder->expr()->andX(
                     'cs.status >= :minimumParticipantDisplayableStatus',
                     'ppc.client = :client'

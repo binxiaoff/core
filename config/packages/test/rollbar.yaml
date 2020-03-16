@@ -1,0 +1,3 @@
+rollbar:
+  enabled: false
+  environment: test

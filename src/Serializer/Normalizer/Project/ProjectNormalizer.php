@@ -7,6 +7,7 @@ namespace Unilend\Serializer\Normalizer\Project;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{ContextAwareNormalizerInterface, NormalizerAwareInterface, NormalizerAwareTrait};
 use Unilend\Entity\{Clients, Project};
+use Unilend\Security\Voter\ProjectVoter;
 
 class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
@@ -57,11 +58,11 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
     private function getAdditionalNormalizerGroups(Project $project): array
     {
         $client = $this->security->getUser();
-        if (!$client instanceof Clients) {
+        if (false === $client instanceof Clients) {
             return [];
         }
 
-        if ($this->security->isGranted('ROLE_ADMIN') || ($project->getSubmitterCompany() === $client->getCompany())) {
+        if ($this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
             return [Project::SERIALIZER_GROUP_ADMIN_READ];
         }
 

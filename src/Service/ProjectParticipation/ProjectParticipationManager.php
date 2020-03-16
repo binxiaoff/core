@@ -64,9 +64,9 @@ class ProjectParticipationManager
     {
         $projectParticipationContact = $this->projectParticipationContactRepository->findOneBy(['client' => $invitee, 'projectParticipation' => $projectParticipation]);
         if ($projectParticipationContact) {
-            return $projectParticipationContact->getAddedBy();
+            return $projectParticipationContact->getAddedBy()->getClient();
         }
 
-        return $projectParticipation->getAddedBy();
+        return $projectParticipation->getAddedBy()->getClient();
     }
 }

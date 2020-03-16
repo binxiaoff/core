@@ -44,7 +44,7 @@ class IpGeoLocManager
         try {
             return $this->geoIpService->getRecord($ip, self::DATABASE_TYPE, [$this->defaultLocal]);
         } catch (Exception $exception) {
-            $this->logger->error('Could not initialize IP GeoLoc service. Error: ' . $exception->getMessage(), [
+            $this->logger->warning('Could not initialize IP GeoLoc service. Error: ' . $exception->getMessage(), [
                 'client_ip' => $ip,
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__,

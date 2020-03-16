@@ -208,7 +208,7 @@ class ProjectParticipation
     /**
      * @param Company            $company
      * @param Project            $project
-     * @param Clients            $addedBy
+     * @param Staff              $addedBy
      * @param NullableMoney|null $invitationMoney
      *
      * @throws Exception
@@ -216,7 +216,7 @@ class ProjectParticipation
     public function __construct(
         Company $company,
         Project $project,
-        Clients $addedBy,
+        Staff $addedBy,
         NullableMoney $invitationMoney = null
     ) {
         $this->added                      = new DateTimeImmutable();
@@ -228,7 +228,7 @@ class ProjectParticipation
 
         $this->projectParticipationContacts = $company->getStaff()
             ->filter(static function (Staff $staff) use ($project) {
-                return $staff->isManager() && $staff->getMarketSegments()->contains($project->getMarketSegment());
+                return ($staff->isManager() || $staff->isAuditor()) && $staff->getMarketSegments()->contains($project->getMarketSegment());
             })
             ->map(function (Staff $staff) use ($addedBy) {
                 return new ProjectParticipationContact($this, $staff->getClient(), $addedBy);

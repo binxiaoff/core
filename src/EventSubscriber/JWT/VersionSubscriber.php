@@ -8,9 +8,9 @@ use Lexik\Bundle\JWTAuthenticationBundle\Event\{JWTCreatedEvent, JWTDecodedEvent
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class JWTVersionSubscriber implements EventSubscriberInterface
+class VersionSubscriber implements EventSubscriberInterface
 {
-    public const JWT_VERSION = '2020-02-25';
+    public const JWT_VERSION = '2020-02-28';
 
     /**
      * {@inheritdoc}

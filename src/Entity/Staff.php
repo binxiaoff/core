@@ -32,9 +32,10 @@ use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
  * )
  *
  * @ORM\Entity
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "id_company"})})
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity(fields={"client"}, message="Staff.client.unique")
+ * @UniqueEntity(fields={"company", "client"}, message="Staff.client.unique")
  */
 class Staff
 {
@@ -47,6 +48,7 @@ class Staff
     public const DUTY_STAFF_OPERATOR   = 'DUTY_STAFF_OPERATOR';
     public const DUTY_STAFF_MANAGER    = 'DUTY_STAFF_MANAGER';
     public const DUTY_STAFF_ADMIN      = 'DUTY_STAFF_ADMIN';
+    public const DUTY_STAFF_AUDITOR    = 'DUTY_STAFF_AUDITOR';
     public const DUTY_STAFF_ACCOUNTANT = 'DUTY_STAFF_ACCOUNTANT';
     public const DUTY_STAFF_SIGNATORY  = 'DUTY_STAFF_SIGNATORY';
 
@@ -72,14 +74,14 @@ class Staff
      *
      * @Assert\NotBlank(message="Staff.company.empty")
      *
-     * @Groups({"staff:create"})
+     * @Groups({"staff:read", "staff:create"})
      */
     private $company;
 
     /**
      * @var Clients
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\Clients", inversedBy="staff", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="staff", cascade={"persist"})
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
      * })
@@ -103,19 +105,18 @@ class Staff
     /**
      * Staff constructor.
      *
-     * @param Company               $company
-     * @param Clients               $client
-     * @param array|string[]|string $roles
+     * @param Company $company
+     * @param Clients $client
      *
      * @throws Exception
      */
-    public function __construct(Company $company, Clients $client, $roles = [])
+    public function __construct(Company $company, Clients $client)
     {
         $this->marketSegments = new ArrayCollection();
         $this->added          = new DateTimeImmutable();
         $this->company        = $company;
         $this->client         = $client;
-        $this->roles          = (array) $roles;
+        $this->client->addStaff($this); // TODO To be removed when async message queue is put in place
     }
 
     /**
@@ -207,7 +208,7 @@ class Staff
      */
     public function setMarketSegments($marketSegments): Staff
     {
-        if (is_array($marketSegments)) {
+        if (\is_array($marketSegments)) {
             $marketSegments = new ArrayCollection($marketSegments);
         }
 
@@ -230,5 +231,13 @@ class Staff
     public function isManager(): bool
     {
         return $this->hasRole(static::DUTY_STAFF_MANAGER);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAuditor(): bool
+    {
+        return $this->hasRole(static::DUTY_STAFF_AUDITOR);
     }
 }

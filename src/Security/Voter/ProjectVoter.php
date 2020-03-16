@@ -19,6 +19,7 @@ class ProjectVoter extends AbstractEntityVoter
     public const ATTRIBUTE_RATE                          = 'rate';
     public const ATTRIBUTE_CREATE_TRANCHE_OFFER          = 'create_tranche_offer';
     public const ATTRIBUTE_COMMENT                       = 'comment';
+    public const ATTRIBUTE_CREATE                        = 'create';
 
     /** @var ProjectOrganizerRepository */
     private $projectOrganizerRepository;
@@ -62,6 +63,19 @@ class ProjectVoter extends AbstractEntityVoter
      * @param Project $project
      * @param Clients $user
      *
+     * @return bool
+     */
+    protected function canCreate(Project $project, Clients $user): bool
+    {
+        $staff = $user->getCurrentStaff();
+
+        return  $staff && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
+    }
+
+    /**
+     * @param Project $project
+     * @param Clients $user
+     *
      * @throws Exception
      *
      * @return bool
@@ -85,11 +99,13 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canEdit(Project $project, Clients $user): bool
     {
-        if ($user->getCompany() === $project->getSubmitterCompany()) {
+        if ($project->getSubmitterClient() === $user) {
             return true;
         }
 
-        return null !== $this->getProjectOrganizer($project, $user);
+        $staff = $user->getCurrentStaff();
+
+        return  $user->getCompany() === $project->getSubmitterCompany() && $staff && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
     }
 
     /**

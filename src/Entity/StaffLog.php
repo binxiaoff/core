@@ -52,12 +52,12 @@ class StaffLog
     private $added;
 
     /**
-     * @param Staff   $staff
-     * @param Clients $addedBy
+     * @param Staff $staff
+     * @param Staff $addedBy
      *
      * @throws Exception
      */
-    public function __construct(Staff $staff, Clients $addedBy)
+    public function __construct(Staff $staff, Staff $addedBy)
     {
         $this->staffId = $staff->getId();
         $this->added   = new DateTimeImmutable();

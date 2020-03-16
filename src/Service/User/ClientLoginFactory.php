@@ -48,12 +48,13 @@ class ClientLoginFactory
         $request = $this->requestStack->getCurrentRequest();
 
         if ($request) {
-            $userAgent = $this->userAgentManager->getClientUserAgent($client, $request->headers->get('User-Agent'));
-            $ip        = $request->getClientIp();
+            $ip = $request->getClientIp();
+            $entry->setIp($ip);
 
-            $entry->setUserAgent($userAgent)
-                ->setIp($ip)
-            ;
+            if ($request->headers->get('User-Agent')) {
+                $userAgent = $this->userAgentManager->getClientUserAgent($client, $request->headers->get('User-Agent'));
+                $entry->setUserAgent($userAgent);
+            }
 
             if ($ip) {
                 $geoIp = $this->ipGeoLocManager->getGeoIpRecord($ip);

@@ -19,18 +19,18 @@ class Download
     /** @var Security */
     private $security;
     /** @var AttachmentDownloadRepository */
-    private $repository;
+    private $attachmentDownloadRepository;
 
     /**
      * @param FileSystemHelper             $fileSystemHelper
-     * @param AttachmentDownloadRepository $repository
+     * @param AttachmentDownloadRepository $attachmentDownloadRepository
      * @param Security                     $security
      */
-    public function __construct(FileSystemHelper $fileSystemHelper, AttachmentDownloadRepository $repository, Security $security)
+    public function __construct(FileSystemHelper $fileSystemHelper, AttachmentDownloadRepository $attachmentDownloadRepository, Security $security)
     {
-        $this->fileSystemHelper = $fileSystemHelper;
-        $this->security         = $security;
-        $this->repository       = $repository;
+        $this->fileSystemHelper             = $fileSystemHelper;
+        $this->security                     = $security;
+        $this->attachmentDownloadRepository = $attachmentDownloadRepository;
     }
 
     /**
@@ -43,7 +43,10 @@ class Download
      */
     public function __invoke(Attachment $data): StreamedResponse
     {
-        $this->repository->save(new AttachmentDownload($data, $this->security->getUser()));
+        $user         = $this->security->getUser();
+        $currentStaff = $user->getCurrentStaff();
+
+        $this->attachmentDownloadRepository->save(new AttachmentDownload($data, $currentStaff));
 
         return $this->fileSystemHelper->download($this->fileSystemHelper->getFileSystemForClass($data), $data->getPath(), $data->getOriginalName());
     }

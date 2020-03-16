@@ -33,7 +33,10 @@ class StaffLogListener
      */
     public function logStaff(Staff $staff): void
     {
-        $logEntry = new StaffLog($staff, $this->security->getUser());
+        $user = $this->security->getUser();
+
+        $addedBy  = $user->getCurrentStaff();
+        $logEntry = new StaffLog($staff, $addedBy);
         $this->manager->persist($logEntry);
         $this->manager->flush();
     }
