@@ -6,9 +6,11 @@ namespace Unilend\EventSubscriber\JWT;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Bridge\Symfony\Routing\IriConverter;
+use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTAuthenticatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
+use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -26,17 +28,21 @@ class ClientSubscriber implements EventSubscriberInterface
     private $iriConverter;
     /** @var JWTTokenManagerInterface */
     private $jwtManager;
+    /** @var EntityManagerInterface */
+    private $em;
 
     /**
+     * @param EntityManagerInterface   $em
      * @param ClientsRepository        $clientsRepository
      * @param IriConverterInterface    $iriConverter
      * @param JWTTokenManagerInterface $JWTManager
      */
-    public function __construct(ClientsRepository $clientsRepository, IriConverterInterface $iriConverter, JWTTokenManagerInterface $JWTManager)
+    public function __construct(EntityManagerInterface $em, ClientsRepository $clientsRepository, IriConverterInterface $iriConverter, JWTTokenManagerInterface $JWTManager)
     {
         $this->clientsRepository = $clientsRepository;
         $this->iriConverter      = $iriConverter;
         $this->jwtManager        = $JWTManager;
+        $this->em                = $em;
     }
 
     /**
@@ -46,9 +52,37 @@ class ClientSubscriber implements EventSubscriberInterface
     {
         return [
             JwtEvents::JWT_CREATED            => [['addStaffPayload'], ['addClientPayload']],
+            JwtEvents::JWT_DECODED            => ['validateToken'],
             JwtEvents::AUTHENTICATION_SUCCESS => ['createTokens'],
             JwtEvents::JWT_AUTHENTICATED      => ['addSecurityTokenData'],
         ];
+    }
+
+    /**
+     * To handle case where the staff is disabled whereas user is still connected
+     * This will disconnect him the next time the user attempts to access the api after its token has been disabled.
+     *
+     * @param JWTDecodedEvent $event
+     */
+    public function validateToken(JWTDecodedEvent $event): void
+    {
+        $payload = $event->getPayload();
+
+        if (false === isset($payload['staff'])) {
+            $event->markAsInvalid();
+        }
+
+        // In case use attempt to authenticate with an archived token
+        $this->em->getFilters()->disable('softdeletable');
+
+        /** @var Staff $staff */
+        $staff = $this->iriConverter->getItemFromIri($payload['staff']);
+
+        $this->em->getFilters()->enable('softdeletable');
+
+        if (false === $staff->isAvailable()) {
+            $event->markAsInvalid();
+        }
     }
 
     /**
@@ -69,7 +103,7 @@ class ClientSubscriber implements EventSubscriberInterface
 
         /** @var Staff $staffEntry */
         foreach ($staffCollection as $staffEntry) {
-            if ($staffEntry->getCompany()->hasSigned()) {
+            if ($staffEntry->isAvailable() && $staffEntry->getCompany()->hasSigned()) {
                 $user->setCurrentStaff($staffEntry);
                 $data['tokens'][] = $this->jwtManager->create($user);
             }
@@ -97,8 +131,7 @@ class ClientSubscriber implements EventSubscriberInterface
 
                 $payload['marketSegments'] = $currentStaff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
                     return $this->iriConverter->getIriFromItem($marketSegment);
-                })->toArray()
-                ;
+                })->toArray();
                 $payload['roles']                  = $currentStaff->getRoles();
                 $company                           = $currentStaff->getCompany();
                 $payload['company']['@id']         = $this->iriConverter->getIriFromItem($company);

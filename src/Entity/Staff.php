@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -32,10 +33,12 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableT
  * )
  *
  * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "id_company"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "id_company", "archived"})})
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity(fields={"company", "client"}, message="Staff.client.unique")
+ * @UniqueEntity(fields={"company", "client", "archived"}, message="Staff.client.unique")
+ *
+ * @Gedmo\SoftDeleteable(fieldName="archived")
  */
 class Staff
 {
@@ -43,7 +46,7 @@ class Staff
     use TimestampableTrait;
     use PublicizeIdentityTrait;
 
-    /** @deprecated Just for backward compatibility. Later, we will define a new role list for staff.*/
+    /** @deprecated Just for backward compatibility. Later, we will define a new role list for staff. */
     public const ROLE_COMPANY_OWNER = 'ROLE_COMPANY_OWNER';
 
     public const DUTY_STAFF_OPERATOR   = 'DUTY_STAFF_OPERATOR';
@@ -95,6 +98,20 @@ class Staff
     private $marketSegments;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean", nullable=false, options={"default": 1}, nullable=false)
+     */
+    private $active;
+
+    /**
+     * @var DateTimeImmutable
+     *
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $archived;
+
+    /**
      * Staff constructor.
      *
      * @param Company $company
@@ -108,6 +125,7 @@ class Staff
         $this->added          = new DateTimeImmutable();
         $this->company        = $company;
         $this->client         = $client;
+        $this->active         = true;
         $this->client->addStaff($this); // TODO To be removed when async message queue is put in place
     }
 
@@ -223,5 +241,33 @@ class Staff
     public function isAuditor(): bool
     {
         return $this->hasRole(static::DUTY_STAFF_AUDITOR);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAvailable(): bool
+    {
+        return null === $this->archived && $this->active;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    /**
+     * @param bool $active
+     *
+     * @return Staff
+     */
+    public function setActive(bool $active): Staff
+    {
+        $this->active = $active;
+
+        return $this;
     }
 }
