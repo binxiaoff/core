@@ -37,7 +37,7 @@ arrangement_project_syndicate:
 arrangement_project_create:            
   path: /arrangement/project
 arrangement_document_sign_result:
-  path: /arrangemeent/document/{documentId}/signature/result
+  path: /arrangemeent/document-signature/{documentSignatureId}/result
 image:
   path: /images/{imageFileName}
   requirements:

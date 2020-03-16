@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service\PSN;
+namespace Unilend\Service\Psn;
 
 use Exception;
 use SimpleXMLElement;
@@ -85,7 +85,7 @@ class XmlGenerator
         $parametresdesignature->addChild('IDNISE', '003');
         $parametresdesignature->addChild('URLRET', $this->router->generate(
             'front_arrangement_document_sign_result',
-            ['documentId' => $attachmentSignature->getPublicId()],
+            ['documentSignatureId' => $attachmentSignature->getPublicId()],
             RouterInterface::ABSOLUTE_URL
         ));
         $parametresdesignature->addChild('PARRET')->addChild('ParamsRetour')->addChild('Parametre');

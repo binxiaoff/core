@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service\PSN;
+namespace Unilend\Service\Psn;
 
 use DOMDocument;
 use Exception;
@@ -16,15 +16,32 @@ class XmlSigner
     private const PRIVATE_KEY_ALGORITHM = XMLSecurityKey::RSA_SHA256;
 
     /**
-     * @param string $xmlSource
-     * @param string $privateKey
+     * @var string
+     */
+    private $publicKey;
+    /**
+     * @var string
+     */
+    private $privateKey;
+
+    /**
      * @param string $publicKey
+     * @param string $privateKey
+     */
+    public function __construct(string $publicKey, string $privateKey)
+    {
+        $this->publicKey  = $publicKey;
+        $this->privateKey = $privateKey;
+    }
+
+    /**
+     * @param string $xmlSource
      *
      * @throws Exception
      *
      * @return string
      */
-    public function signe(string $xmlSource, string $privateKey, string $publicKey): string
+    public function signe(string $xmlSource): string
     {
         $xml = new DOMDocument();
         $xml->loadXML($xmlSource);
@@ -38,10 +55,10 @@ class XmlSigner
         $xmlDSig->addReference($xml, self::DIGEST_METHOD, ['http://www.w3.org/2000/09/xmldsig#enveloped-signature']);
 
         $xmlDSigKey = new XMLSecurityKey(self::PRIVATE_KEY_ALGORITHM, ['type' => 'private']);
-        $xmlDSigKey->loadKey($privateKey, true);
+        $xmlDSigKey->loadKey($this->privateKey);
 
         $xmlDSig->sign($xmlDSigKey);
-        $xmlDSig->add509Cert($publicKey);
+        $xmlDSig->add509Cert($this->publicKey);
 
         $xmlDSig->appendSignature($xml->documentElement);
 

@@ -4,11 +4,21 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 
 /**
+ * @ApiResource(
+ *     denormalizationContext={"groups": "attachmentSignature:write"},
+ *     collectionOperations={
+ *         "post"
+ *     }
+ * )
+ *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -29,6 +39,8 @@ class AttachmentSignature
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_attachment", nullable=false)
      * })
+     *
+     * @Groups({"attachmentSignature:write"})
      */
     private $attachment;
 
@@ -39,6 +51,8 @@ class AttachmentSignature
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_signatory", referencedColumnName="id", nullable=false)
      * })
+     *
+     * @Groups({"attachmentSignature:write"})
      */
     private $signatory;
 
@@ -52,11 +66,19 @@ class AttachmentSignature
     /**
      * AttachmentSignature constructor.
      *
-     * @throws \Exception
+     * @param Attachment $attachment
+     * @param Staff      $signatory
+     * @param Staff      $addedBy
+     *
+     * @throws Exception
      */
-    public function __construct()
+    public function __construct(Attachment $attachment, Staff $signatory, Staff $addedBy)
     {
-        $this->added = new DateTimeImmutable();
+        $this->attachment = $attachment;
+        $this->signatory  = $signatory;
+        $this->addedBy    = $addedBy;
+        $this->status     = self::STATUS_PENDING;
+        $this->added      = new DateTimeImmutable();
     }
 
     /**
