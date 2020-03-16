@@ -76,7 +76,7 @@ class UserAgentManager
         try {
             return $this->chain->parse($userAgent);
         } catch (Exception $exception) {
-            $this->logger->error('Could not initialize user agent parser. Error: ' . $exception->getMessage(), [
+            $this->logger->warning('Could not initialize user agent parser. Error: ' . $exception->getMessage(), [
                 'user_agent' => $userAgent,
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__,
