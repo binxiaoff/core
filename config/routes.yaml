@@ -28,3 +28,4 @@ health_check:
 # Route created to return a 404 for pulse check
 home:
     path: /
+    defaults: { _controller: ApiPlatform\Core\Action\NotFoundAction }
