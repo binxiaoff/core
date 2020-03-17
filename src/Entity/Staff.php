@@ -36,7 +36,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableT
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "id_company", "archived"})})
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity(fields={"company", "client", "archived"}, message="Staff.client.unique")
+ * @UniqueEntity(fields={"company", "client", "archived"}, message="Staff.client.unique", ignoreNull=false)
  *
  * @Gedmo\SoftDeleteable(fieldName="archived")
  */
