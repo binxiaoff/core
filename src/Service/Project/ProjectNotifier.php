@@ -18,15 +18,19 @@ class ProjectNotifier
     private $client;
     /** @var ProjectRepository */
     private $projectRepository;
+    /** @var string */
+    private $environment;
 
     /**
      * @param Client            $client
      * @param ProjectRepository $projectRepository
+     * @param string            $environment
      */
-    public function __construct(Client $client, ProjectRepository $projectRepository)
+    public function __construct(Client $client, ProjectRepository $projectRepository, string $environment)
     {
         $this->client            = $client;
         $this->projectRepository = $projectRepository;
+        $this->environment       = $environment;
     }
 
     /**
@@ -39,7 +43,9 @@ class ProjectNotifier
      */
     public function notifyProjectCreated(Project $project)
     {
-        $this->client->sendMessage($this->createSlackMessage($project));
+        if ('dev' !== $this->environment) {
+            $this->client->sendMessage($this->createSlackMessage($project));
+        }
     }
 
     /**
@@ -52,7 +58,9 @@ class ProjectNotifier
      */
     public function notifyProjectStatusChanged(Project $project): void
     {
-        $this->client->sendMessage($this->createSlackMessage($project));
+        if ('dev' !== $this->environment) {
+            $this->client->sendMessage($this->createSlackMessage($project));
+        }
     }
 
     /**
