@@ -6,7 +6,12 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\{
+    NoResultException,
+    NonUniqueResultException,
+    ORMException,
+    OptimisticLockException
+};
 use Unilend\Entity\Attachment;
 use Unilend\Entity\Project;
 use Unilend\Repository\Traits\{OrderByHandlerTrait, PaginationHandlerTrait};
@@ -56,6 +61,27 @@ class ProjectRepository extends ServiceEntityRepository
             ->setParameter('attachment', $attachment)
             ->getQuery()
             ->getResult()
+        ;
+    }
+
+    /**
+     * @param Project $project
+     *
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     *
+     * @return int
+     */
+    public function countProjectParticipationContact(Project $project): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(ppc)')
+            ->innerJoin('p.projectParticipations', 'pp')
+            ->innerJoin('pp.projectParticipationContacts', 'ppc')
+            ->where('p = :project')
+            ->setParameter('project', $project)
+            ->getQuery()
+            ->getSingleScalarResult()
         ;
     }
 }

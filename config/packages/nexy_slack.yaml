@@ -1,6 +1,4 @@
 nexy_slack:
     http:
         client: httplug.client.nexy_slack
-    endpoint: 'https://hooks.slack.com/services'
-    channel: '#it-testing'
-    username: 'CALS'
+    endpoint: '%env(string:SLACK_WEBHOOK_URL)%'
