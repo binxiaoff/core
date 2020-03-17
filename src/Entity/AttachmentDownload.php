@@ -28,20 +28,20 @@ class AttachmentDownload
     private $id;
 
     /**
-     * @var Attachment
+     * @var FileVersion
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Attachment", inversedBy="attachmentDownloads")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion", inversedBy="attachmentDownloads")
      * @ORM\JoinColumn(name="id_attachment", nullable=false)
      */
     private $attachment;
 
     /**
-     * @param Attachment $attachment
-     * @param Staff      $addedBy
+     * @param FileVersion $attachment
+     * @param Staff       $addedBy
      *
      * @throws Exception
      */
-    public function __construct(Attachment $attachment, Staff $addedBy)
+    public function __construct(FileVersion $attachment, Staff $addedBy)
     {
         $this->attachment = $attachment;
         $this->addedBy    = $addedBy;
@@ -57,9 +57,9 @@ class AttachmentDownload
     }
 
     /**
-     * @return Attachment
+     * @return FileVersion
      */
-    public function getAttachment(): Attachment
+    public function getAttachment(): FileVersion
     {
         return $this->attachment;
     }

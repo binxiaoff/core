@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Message\Attachment;
 
-use Unilend\Entity\Attachment;
+use Unilend\Entity\FileVersion;
 
 class AttachmentCreated
 {
@@ -12,9 +12,9 @@ class AttachmentCreated
     private $attachmentId;
 
     /**
-     * @param Attachment $attachment
+     * @param FileVersion $attachment
      */
-    public function __construct(Attachment $attachment)
+    public function __construct(FileVersion $attachment)
     {
         $this->attachmentId = $attachment->getId();
     }

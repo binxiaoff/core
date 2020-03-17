@@ -33,21 +33,32 @@ class UploadNDA
      */
     public function __construct(
         AttachmentManager $attachmentManager,
-        Security $security, IriConverterInterface $converter,
+        Security $security,
+        IriConverterInterface $converter,
         ProjectParticipationRepository $projectParticipationRepository
     ) {
-        $this->attachmentManager = $attachmentManager;
-        $this->security = $security;
-        $this->converter = $converter;
+        $this->attachmentManager              = $attachmentManager;
+        $this->security                       = $security;
+        $this->converter                      = $converter;
         $this->projectParticipationRepository = $projectParticipationRepository;
     }
 
+    /**
+     * @param ProjectParticipation $data
+     * @param Request              $request
+     *
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \League\Flysystem\FileExistsException
+     *
+     * @return ProjectParticipation
+     */
     public function __invoke(ProjectParticipation $data, Request $request)
     {
-        $type = $request->request->get('type');
-        $file = $request->files->get('file');
+        $type    = $request->request->get('type');
+        $file    = $request->files->get('file');
         $project = $this->converter->getItemFromIri($request->request->get('project'), [AbstractNormalizer::GROUPS => ['project:read']]);
-        $user = $this->security->getUser();
+        $user    = $this->security->getUser();
 
         if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
             throw new AccessDeniedHttpException('You cannot upload NDA for this project');
@@ -63,7 +74,7 @@ class UploadNDA
         }
 
         $attachment = $this->attachmentManager->upload($file, $user, $type, $project);
-        $data->setConfidentialityDisclaimerDocument($attachment);
+        $data->setConfidentialityDisclaimer($attachment);
         $this->projectParticipationRepository->save($data);
 
         return $data;

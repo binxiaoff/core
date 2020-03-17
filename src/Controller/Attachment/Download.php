@@ -8,7 +8,7 @@ use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\{Attachment, AttachmentDownload};
+use Unilend\Entity\{AttachmentDownload, FileVersion};
 use Unilend\Repository\AttachmentDownloadRepository;
 use Unilend\Service\FileSystem\FileDownloadManager;
 
@@ -34,7 +34,7 @@ class Download
     }
 
     /**
-     * @param Attachment $data
+     * @param FileVersion $data
      *
      * @throws OptimisticLockException
      * @throws Exception
@@ -42,7 +42,7 @@ class Download
      *
      * @return StreamedResponse
      */
-    public function __invoke(Attachment $data): StreamedResponse
+    public function __invoke(FileVersion $data): StreamedResponse
     {
         $user         = $this->security->getUser();
         $currentStaff = $user->getCurrentStaff();

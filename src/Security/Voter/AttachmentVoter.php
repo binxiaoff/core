@@ -7,7 +7,7 @@ namespace Unilend\Security\Voter;
 use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Attachment, Clients, Project, ProjectParticipationContact, ProjectStatus};
+use Unilend\Entity\{Clients, FileVersion, Project, ProjectParticipationContact, ProjectStatus};
 use Unilend\Repository\{AttachmentSignatureRepository, ProjectParticipationContactRepository};
 
 class AttachmentVoter extends AbstractEntityVoter
@@ -36,15 +36,16 @@ class AttachmentVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param Attachment $attachment
-     * @param Clients    $user
+     * @param FileVersion $attachment
+     * @param Clients     $user
      *
-     * @throws NonUniqueResultException
+     *@throws NonUniqueResultException
      *
      * @return bool
      */
-    protected function canDownload(Attachment $attachment, Clients $user): bool
+    protected function canDownload(FileVersion $attachment, Clients $user): bool
     {
+        //@todo change that
         $project   = $attachment->getProject();
         $signature = $this->attachmentSignatureRepository->findOneBy(['attachment' => $attachment, 'signatory' => $user]);
 
@@ -97,12 +98,12 @@ class AttachmentVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param Project    $project
-     * @param Attachment $attachment
+     * @param Project     $project
+     * @param FileVersion $attachment
      *
      * @return bool
      */
-    private function isAddedBeforeOfferCollected(Project $project, Attachment $attachment): bool
+    private function isAddedBeforeOfferCollected(Project $project, FileVersion $attachment): bool
     {
         $offerCollected = $project->getLastSpecificStatus(ProjectStatus::STATUS_OFFERS_COLLECTED);
 

@@ -8,21 +8,21 @@ use InvalidArgumentException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Message\Attachment\AttachmentCreated;
-use Unilend\Repository\AttachmentRepository;
+use Unilend\Repository\FileVersionRepository;
 use Unilend\Service\{Attachment\AttachmentNotifier};
 
 class AttachmentCreatedHandler implements MessageHandlerInterface
 {
-    /** @var AttachmentRepository */
+    /** @var FileVersionRepository */
     private $attachmentRepository;
     /** @var AttachmentNotifier */
     private $attachmentNotifier;
 
     /**
-     * @param AttachmentRepository $attachmentRepository
-     * @param AttachmentNotifier   $attachmentNotifier
+     * @param FileVersionRepository $attachmentRepository
+     * @param AttachmentNotifier    $attachmentNotifier
      */
-    public function __construct(AttachmentRepository $attachmentRepository, AttachmentNotifier $attachmentNotifier)
+    public function __construct(FileVersionRepository $attachmentRepository, AttachmentNotifier $attachmentNotifier)
     {
         $this->attachmentRepository = $attachmentRepository;
         $this->attachmentNotifier   = $attachmentNotifier;

@@ -49,9 +49,9 @@ class AttachmentSignature
     public const STATUS_REFUSED        = 40;
 
     /**
-     * @var Attachment
+     * @var FileVersion
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Attachment", inversedBy="signatures")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion", inversedBy="signatures")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_attachment", nullable=false)
      * })
@@ -100,13 +100,13 @@ class AttachmentSignature
     /**
      * AttachmentSignature constructor.
      *
-     * @param Attachment $attachment
-     * @param Staff      $signatory
-     * @param Staff      $addedBy
+     * @param FileVersion $attachment
+     * @param Staff       $signatory
+     * @param Staff       $addedBy
      *
      * @throws Exception
      */
-    public function __construct(Attachment $attachment, Staff $signatory, Staff $addedBy)
+    public function __construct(FileVersion $attachment, Staff $signatory, Staff $addedBy)
     {
         $this->attachment = $attachment;
         $this->signatory  = $signatory;
@@ -116,11 +116,11 @@ class AttachmentSignature
     }
 
     /**
-     * @param Attachment $attachment
+     * @param FileVersion $attachment
      *
      * @return AttachmentSignature
      */
-    public function setAttachment(Attachment $attachment): AttachmentSignature
+    public function setAttachment(FileVersion $attachment): AttachmentSignature
     {
         $this->attachment = $attachment;
 
@@ -128,9 +128,9 @@ class AttachmentSignature
     }
 
     /**
-     * @return Attachment
+     * @return FileVersion
      */
-    public function getAttachment(): Attachment
+    public function getAttachment(): ?FileVersion
     {
         return $this->attachment;
     }

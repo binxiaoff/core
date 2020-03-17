@@ -242,9 +242,9 @@ class ProjectParticipation
     private $messages;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Attachment")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\File")
      */
-    private $confidentialityDisclaimerDocument;
+    private $confidentialityDisclaimer;
 
     /**
      * @param Company            $company
@@ -543,14 +543,22 @@ class ProjectParticipation
         return self::getConstants('STATUS_');
     }
 
-    public function getConfidentialityDisclaimerDocument(): ?Attachment
+    /**
+     * @return FileVersion|null
+     */
+    public function getConfidentialityDisclaimer(): ?FileVersion
     {
-        return $this->confidentialityDisclaimerDocument;
+        return $this->confidentialityDisclaimer;
     }
 
-    public function setConfidentialityDisclaimerDocument(?Attachment $confidentialityDisclaimerDocument): self
+    /**
+     * @param FileVersion|null $confidentialityDisclaimer
+     *
+     * @return $this
+     */
+    public function setConfidentialityDisclaimer(?FileVersion $confidentialityDisclaimer): self
     {
-        $this->confidentialityDisclaimerDocument = $confidentialityDisclaimerDocument;
+        $this->confidentialityDisclaimer = $confidentialityDisclaimer;
 
         return $this;
     }

@@ -9,7 +9,8 @@ use InvalidArgumentException;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FilesystemInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, Clients, Project, Staff};
+use Unilend\Entity\{Clients, FileVersion, Project, Staff};
+use Unilend\Repository\FileVersionRepository;
 use Unilend\Service\FileSystem\FileUploadManager;
 
 class AttachmentManager
@@ -18,15 +19,22 @@ class AttachmentManager
     private $fileUploadManager;
     /** @var FilesystemInterface */
     private $userAttachmentFilesystem;
+    /** @var FileVersionRepository */
+    private $fileVersionRepository;
 
     /**
-     * @param FilesystemInterface $userAttachmentFilesystem
-     * @param FileUploadManager   $fileUploadManager
+     * @param FilesystemInterface   $userAttachmentFilesystem
+     * @param FileUploadManager     $fileUploadManager
+     * @param FileVersionRepository $fileVersionRepository
      */
-    public function __construct(FilesystemInterface $userAttachmentFilesystem, FileUploadManager $fileUploadManager)
-    {
+    public function __construct(
+        FilesystemInterface $userAttachmentFilesystem,
+        FileUploadManager $fileUploadManager,
+        FileVersionRepository $fileVersionRepository
+    ) {
         $this->userAttachmentFilesystem = $userAttachmentFilesystem;
         $this->fileUploadManager        = $fileUploadManager;
+        $this->fileVersionRepository    = $fileVersionRepository;
     }
 
     /**
@@ -36,10 +44,10 @@ class AttachmentManager
      * @param Project      $project
      * @param string|null  $description
      *
+     *@throws FileExistsException
      * @throws Exception
-     * @throws FileExistsException
      *
-     * @return Attachment
+     * @return FileVersion
      */
     public function upload(
         UploadedFile $uploadedFile,
@@ -47,22 +55,21 @@ class AttachmentManager
         string $type,
         Project $project,
         ?string $description = null
-    ): Attachment {
+    ): FileVersion {
         $mineType                               = $uploadedFile->getMimeType();
         [$relativeUploadedPath, $encryptionKey] = $this->fileUploadManager
             ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader->getClient()))
         ;
 
-        $attachment = new Attachment($relativeUploadedPath, $type, $uploader, $project, $encryptionKey, $mineType);
+        $attachment = new FileVersion($relativeUploadedPath, $type, $uploader, $encryptionKey, $mineType);
 
+        //@todo change that
         $attachment
             ->setOriginalName($uploadedFile->getClientOriginalName())
-            ->setProject($project)
-            ->setDescription($description)
             ->setSize($this->userAttachmentFilesystem->getSize($relativeUploadedPath))
         ;
 
-        $this->attachmentRepository->save($attachment);
+        $this->fileVersionRepository->save($attachment);
 
         return $attachment;
     }

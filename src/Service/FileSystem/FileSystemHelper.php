@@ -10,7 +10,7 @@ use Exception;
 use League\Flysystem\{FileExistsException, FilesystemInterface};
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Unilend\Entity\{AcceptationsLegalDocs, Attachment};
+use Unilend\Entity\{AcceptationsLegalDocs, FileVersion};
 
 class FileSystemHelper
 {
@@ -85,13 +85,11 @@ class FileSystemHelper
 
         $filesystem = null;
         switch ($class) {
-            case Attachment::class:
+            case FileVersion::class:
                 $serviceId = 'League\Flysystem\UserAttachmentFilesystem';
-
                 break;
             case AcceptationsLegalDocs::class:
                 $serviceId = 'League\Flysystem\GeneratedDocumentFilesystem';
-
                 break;
             default:
                 throw new RuntimeException('This class is not be supported');

@@ -14,7 +14,7 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableTrait, TraceableBlamableUpdatedTrait};
+use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -78,25 +78,23 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedAttachment")
  * @Gedmo\SoftDeleteable(fieldName="archived")
  *
- * @ORM\Entity(repositoryClass="Unilend\Repository\AttachmentRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\FileVersionRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class Attachment
+class FileVersion
 {
-    use PublicizeIdentityTrait;
     use ConstantsAwareTrait;
     use TimestampableTrait;
     use BlamableAddedTrait;
-    use BlamableArchivedTrait;
-    use TraceableBlamableUpdatedTrait;
 
-    public const TYPE_PROJECT_CONFIDENTIALITY_DISCLAIMER = 'project_confidentiality_disclaimer';
-    public const TYPE_PROJECT_DESCRIPTION                = 'project_description';
-
-    private const TYPE_GENERAL              = 'general';
-    private const TYPE_ACCOUNTING_FINANCIAL = 'accounting_financial';
-    private const TYPE_LEGAL                = 'legal';
-    private const TYPE_KYC                  = 'kyc';
+    /**
+     * @var int
+     *
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\Column(name="id", type="integer")
+     */
+    private $id;
 
     /**
      * @var string
@@ -130,20 +128,6 @@ class Attachment
     private $type;
 
     /**
-     * @var Project
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="attachments")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project", referencedColumnName="id", nullable=false)
-     * })
-     *
-     * @Groups({"attachment:write"})
-     *
-     * @Assert\NotBlank
-     */
-    private $project;
-
-    /**
      * @var string
      *
      * @ORM\Column(length=191, nullable=true)
@@ -151,15 +135,6 @@ class Attachment
      * @Groups({"attachment:read"})
      */
     private $originalName;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(length=191, nullable=true)
-     *
-     * @Gedmo\Versioned
-     */
-    private $description;
 
     /**
      * @var AttachmentSignature[]
@@ -189,6 +164,12 @@ class Attachment
     private $attachmentDownloads;
 
     /**
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\File", inversedBy="versions")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $file;
+
+    /**
      * @var|null string
      *
      * @ORM\Column(length=512, nullable=true)
@@ -211,13 +192,12 @@ class Attachment
      * @param string      $path
      * @param string      $type
      * @param Staff       $addedBy
-     * @param Project     $project
      * @param string|null $plainEncryptionKey
      * @param string|null $mimeType
      *
      * @throws Exception
      */
-    public function __construct(string $path, string $type, Staff $addedBy, Project $project, ?string $plainEncryptionKey, ?string $mimeType)
+    public function __construct(string $path, string $type, Staff $addedBy, ?string $plainEncryptionKey, ?string $mimeType)
     {
         $this->signatures          = new ArrayCollection();
         $this->attachmentDownloads = new ArrayCollection();
@@ -225,7 +205,28 @@ class Attachment
         $this->type                = $type;
         $this->addedBy             = $addedBy;
         $this->added               = new DateTimeImmutable();
-        $this->project             = $project;
+        $this->plainEncryptionKey  = $plainEncryptionKey;
+        $this->mimeType            = $mimeType;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return File
+     */
+    public function setId(int $id): File
+    {
+        $this->id = $id;
+
+        return $this;
         $this->plainEncryptionKey  = $plainEncryptionKey;
         $this->mimeType            = $mimeType;
     }
@@ -241,9 +242,9 @@ class Attachment
     /**
      * @param string $path
      *
-     * @return Attachment
+     * @return FileVersion
      */
-    public function setPath(string $path): Attachment
+    public function setPath(string $path): FileVersion
     {
         $this->path = $path;
 
@@ -253,9 +254,9 @@ class Attachment
     /**
      * @param DateTimeImmutable $archived
      *
-     * @return Attachment
+     * @return FileVersion
      */
-    public function setArchived(DateTimeImmutable $archived): Attachment
+    public function setArchived(DateTimeImmutable $archived): FileVersion
     {
         $this->archived = $archived;
 
@@ -273,9 +274,9 @@ class Attachment
     /**
      * @param string $type
      *
-     * @return Attachment
+     * @return FileVersion
      */
-    public function setType(string $type): Attachment
+    public function setType(string $type): FileVersion
     {
         $this->type = $type;
 
@@ -293,9 +294,9 @@ class Attachment
     /**
      * @param string $originalName
      *
-     * @return Attachment
+     * @return FileVersion
      */
-    public function setOriginalName(string $originalName): Attachment
+    public function setOriginalName(string $originalName): FileVersion
     {
         $this->originalName = $originalName;
 
@@ -308,46 +309,6 @@ class Attachment
     public function getOriginalName(): ?string
     {
         return $this->originalName;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-
-    /**
-     * @param string|null $description
-     *
-     * @return Attachment
-     */
-    public function setDescription(?string $description): Attachment
-    {
-        $this->description = $description;
-
-        return $this;
-    }
-
-    /**
-     * @return Project
-     */
-    public function getProject(): Project
-    {
-        return $this->project;
-    }
-
-    /**
-     * @param Project $project
-     *
-     * @return Attachment
-     */
-    public function setProject(Project $project): Attachment
-    {
-        $this->project = $project;
-
-        return $this;
     }
 
     /**
@@ -377,9 +338,9 @@ class Attachment
     /**
      * @param int $size
      *
-     * @return Attachment
+     * @return FileVersion
      */
-    public function setSize(?int $size): Attachment
+    public function setSize(?int $size): FileVersion
     {
         $this->size = $size;
 
@@ -407,7 +368,7 @@ class Attachment
      *
      * @return Attachment
      */
-    public function setEncryptionKey(?string $encryptionKey): Attachment
+    public function setEncryptionKey(?string $encryptionKey): FileVersion
     {
         $this->encryptionKey = $encryptionKey;
 
@@ -427,7 +388,7 @@ class Attachment
      *
      * @return Attachment
      */
-    public function setPlainEncryptionKey(?string $plainEncryptionKey): Attachment
+    public function setPlainEncryptionKey(?string $plainEncryptionKey): FileVersion
     {
         $this->plainEncryptionKey = $plainEncryptionKey;
 
@@ -440,5 +401,25 @@ class Attachment
     public function getMimeType()
     {
         return $this->mimeType;
+    }
+
+    /**
+     * @return File|null
+     */
+    public function getFile(): ?File
+    {
+        return $this->file;
+    }
+
+    /**
+     * @param File|null $file
+     *
+     * @return $this
+     */
+    public function setFile(?File $file): self
+    {
+        $this->file = $file;
+
+        return $this;
     }
 }

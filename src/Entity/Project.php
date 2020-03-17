@@ -258,6 +258,18 @@ class Project
     private $description;
 
     /**
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\File")
+     * @ORM\JoinColumn(name="id_description_document", unique=true)
+     */
+    private $descriptionDocument;
+
+    /**
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\File")
+     * @ORM\JoinColumn(name="id_confidentiality_disclaimer", unique=true)
+     */
+    private $confidentialityDisclaimer;
+
+    /**
      * @var bool
      *
      * @ORM\Column(type="boolean", options={"default": false})
@@ -339,17 +351,6 @@ class Project
      * @Groups({"project:write", "project:read"})
      */
     private $offerVisibility;
-
-    /**
-     * @var Attachment[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Attachment", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
-     *
-     * @ApiSubresource
-     *
-     * @Groups({"project:read"})
-     */
-    private $attachments;
 
     /**
      * @var ProjectParticipation[]|ArrayCollection
@@ -486,6 +487,15 @@ class Project
     private $globalFundingMoney;
 
     /**
+     * @var ProjectAttachment[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @ApiSubresource
+     */
+    private $projectAttachments;
+
+    /**
      * @param Staff         $addedBy
      * @param Company       $borrowerCompany
      * @param Money         $globalFundingMoney
@@ -495,7 +505,6 @@ class Project
      */
     public function __construct(Staff $addedBy, Company $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
     {
-        $this->attachments           = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
         $this->comments              = new ArrayCollection();
         $this->statuses              = new ArrayCollection();
@@ -624,6 +633,46 @@ class Project
     }
 
     /**
+     * @param File $file
+     *
+     * @return Project
+     */
+    public function setDescriptionDocument(File $file): self
+    {
+        $this->descriptionDocument = $file;
+
+        return $this;
+    }
+
+    /**
+     * @return File|null
+     */
+    public function getDescriptionDocument(): ?File
+    {
+        return $this->descriptionDocument;
+    }
+
+    /**
+     * @param File $file
+     *
+     * @return Project
+     */
+    public function setConfidentialityDisclaimer(File $file): self
+    {
+        $this->confidentialityDisclaimer = $file;
+
+        return $this;
+    }
+
+    /**
+     * @return File|null
+     */
+    public function getConfidentialityDisclaimer(): ?File
+    {
+        return $this->confidentialityDisclaimer;
+    }
+
+    /**
      * @return bool
      */
     public function isConfidential(): bool
@@ -641,20 +690,6 @@ class Project
         $this->confidential = $confidential;
 
         return $this;
-    }
-
-    /**
-     * @return Attachment|null
-     *
-     * @Groups({"project:confidentiality:read", "project:read"})
-     */
-    public function getConfidentialityDisclaimerDocument(): ?Attachment
-    {
-        return $this->attachments->filter(
-            static function (Attachment $attachment) {
-                return Attachment::TYPE_PROJECT_CONFIDENTIALITY_DISCLAIMER === $attachment->getType();
-            }
-        )->first() ?: null;
     }
 
     /**
@@ -801,6 +836,26 @@ class Project
     public static function getOfferVisibilities(): iterable
     {
         return self::getConstants('OFFER_VISIBILITY_');
+    }
+
+    /**
+     * @return ProjectAttachment[]|Collection
+     */
+    public function getProjectAttachments(): Collection
+    {
+        return $this->projectAttachments;
+    }
+
+    /**
+     * @param ProjectAttachment $projectAttachment
+     *
+     * @return Project
+     */
+    public function removeProjectAttachment(ProjectAttachment $projectAttachment): Project
+    {
+        $this->projectAttachments->removeElement($projectAttachment);
+
+        return $this;
     }
 
     /**
@@ -1226,40 +1281,6 @@ class Project
             ['name' => /*'tranches'*/'Tranches', 'done' => 0 < count($this->getTranches())],
             ['name' => /*'calendar'*/'Calendrier', 'done' => null !== $this->getLenderConsultationClosingDate()],
         ];
-    }
-
-    /**
-     * @return ArrayCollection|Attachment[]
-     */
-    public function getAttachments()
-    {
-        return $this->attachments;
-    }
-
-    /**
-     * @return Attachment|null
-     *
-     * @Groups({"project:read"})
-     */
-    public function getDescriptionDocument(): ?Attachment
-    {
-        return $this->attachments->filter(
-            static function (Attachment $attachment) {
-                return Attachment::TYPE_PROJECT_DESCRIPTION === $attachment->getType();
-            }
-        )->first() ?: null;
-    }
-
-    /**
-     * @param ArrayCollection|Attachment[] $attachments
-     *
-     * @return Project
-     */
-    public function setAttachments($attachments): Project
-    {
-        $this->attachments = $attachments;
-
-        return $this;
     }
 
     /**

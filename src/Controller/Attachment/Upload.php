@@ -10,8 +10,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Entity\Attachment;
 use Unilend\Entity\Clients;
+use Unilend\Entity\FileVersion;
 use Unilend\Entity\Project;
 use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\Attachment\AttachmentManager;
@@ -40,11 +40,11 @@ class Upload
     /**
      * @param Request $request
      *
-     * @throws Exception
+     *@throws Exception
      *
-     * @return Attachment
+     * @return FileVersion
      */
-    public function __invoke(Request $request): Attachment
+    public function __invoke(Request $request): FileVersion
     {
         /** @var Clients $user */
         $user = $this->security->getUser();
