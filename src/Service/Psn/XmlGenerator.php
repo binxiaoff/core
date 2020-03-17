@@ -13,7 +13,7 @@ use Unilend\Service\FileSystem\FileSystemHelper;
 
 class XmlGenerator
 {
-    private const KLS_CODE_ENTITY = '55500';
+    private const KLS_CODE_ENTITY = '14000';
     /**
      * @var FileSystemHelper
      */
@@ -82,7 +82,7 @@ class XmlGenerator
         $parametresdesignature->addChild('IDPROT', 'CIB01'); // unconfirmed value
         $parametresdesignature->addChild('NUMARCH', $attachmentSignature->getPublicId());
         $parametresdesignature->addChild('OMEXML', $fileBase64Content);
-        $parametresdesignature->addChild('IDNISE', '003');
+        $parametresdesignature->addChild('IDNISE', '001');
         $parametresdesignature->addChild('URLRET', $this->router->generate(
             'front_arrangement_document_sign_result',
             ['documentSignatureId' => $attachmentSignature->getPublicId()],

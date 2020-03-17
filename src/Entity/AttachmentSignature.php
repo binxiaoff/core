@@ -9,11 +9,23 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
  *     denormalizationContext={"groups": "attachmentSignature:write"},
+ *     itemOperations={
+ *         "signe": {
+ *             "security": "is_granted('signe', object)",
+ *             "method": "POST",
+ *             "output": false,
+ *             "controller": "Unilend\Controller\AttachmentSignature\Signe",
+ *             "path": "/attachment_signatures/{id}/signe",
+ *             "denormalization_context": {"groups": {"attachmentSignature:signe"}}
+ *         }
+ *     },
  *     collectionOperations={
  *         "post"
  *     }
@@ -27,10 +39,12 @@ class AttachmentSignature
     use TimestampableTrait;
     use PublicizeIdentityTrait;
     use BlamableAddedTrait;
+    use ConstantsAwareTrait;
 
-    public const STATUS_PENDING = 0;
-    public const STATUS_SIGNED  = 1;
-    public const STATUS_REFUSED = 2;
+    public const STATUS_PENDED    = 10;
+    public const STATUS_REQUESTED = 20;
+    public const STATUS_SIGNED    = 30;
+    public const STATUS_REFUSED   = 40;
 
     /**
      * @var Attachment
@@ -60,6 +74,8 @@ class AttachmentSignature
      * @var int
      *
      * @ORM\Column(name="status", type="smallint")
+     *
+     * @Assert\Choice(callback="getStatuses")
      */
     private $status;
 
@@ -77,7 +93,7 @@ class AttachmentSignature
         $this->attachment = $attachment;
         $this->signatory  = $signatory;
         $this->addedBy    = $addedBy;
-        $this->status     = self::STATUS_PENDING;
+        $this->status     = self::STATUS_PENDED;
         $this->added      = new DateTimeImmutable();
     }
 
@@ -139,5 +155,13 @@ class AttachmentSignature
     public function getStatus(): ?int
     {
         return $this->status;
+    }
+
+    /**
+     * @return iterable
+     */
+    public function getStatuses(): iterable
+    {
+        return self::getConstants('STATUS_');
     }
 }

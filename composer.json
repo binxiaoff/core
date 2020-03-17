@@ -24,6 +24,7 @@
     "ext-simplexml": "*",
     "ext-soap": "*",
     "ext-zip": "*",
+    "ext-zlib": "*",
     "api-platform/api-pack": "^1.2",
     "azuyalabs/yasumi": "^2.0",
     "beberlei/doctrineextensions": "^1.0",
