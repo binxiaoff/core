@@ -72,15 +72,14 @@ class ClientSubscriber implements EventSubscriberInterface
             $event->markAsInvalid();
         }
 
-        // In case use attempt to authenticate with an archived token
-        $this->em->getFilters()->disable('softdeletable');
+        try {
+            /** @var Staff $staff */
+            $staff = $this->iriConverter->getItemFromIri($payload['staff']);
+        } catch (\Exception $exception) {
+            $staff = null;
+        }
 
-        /** @var Staff $staff */
-        $staff = $this->iriConverter->getItemFromIri($payload['staff']);
-
-        $this->em->getFilters()->enable('softdeletable');
-
-        if (false === $staff->isAvailable()) {
+        if (null === $staff || false === $staff->isAvailable()) {
             $event->markAsInvalid();
         }
     }
