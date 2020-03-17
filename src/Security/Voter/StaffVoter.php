@@ -65,10 +65,7 @@ class StaffVoter extends AbstractEntityVoter
     {
         $submitterStaff = $user->getCurrentStaff();
 
-        // A manager cannot delete a user with markets other than is own
-        return $this->ableToManage($subject, $user) && $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
-            return $submitterStaff->getMarketSegments()->contains($marketSegment);
-        });
+        return $submitterStaff && $submitterStaff->isAdmin() && $submitterStaff->getCompany() === $subject->getCompany();
     }
 
     /**

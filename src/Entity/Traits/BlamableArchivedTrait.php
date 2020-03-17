@@ -26,11 +26,11 @@ trait BlamableArchivedTrait
     }
 
     /**
-     * @param Staff|null $archivedBy
+     * @param Staff $archivedBy
      *
      * @return self
      */
-    public function setArchivedBy(?Staff $archivedBy): self
+    public function setArchivedBy(Staff $archivedBy): self
     {
         $this->archivedBy = $archivedBy;
 
