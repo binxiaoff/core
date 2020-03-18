@@ -12,7 +12,7 @@ parameters:
     directory.temporary: '%directory.shared%tmp/'
     directory.protected: '%directory.shared%protected/'
     front.host: '%env(HOST_APP_URL)%'
-
+    slack.webhook.support: '%env(SLACK_WEBHOOK_URL)%'
 services:
     _defaults:
         autowire: true

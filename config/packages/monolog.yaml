@@ -48,7 +48,7 @@ monolog:
             path: "%kernel.logs_dir%/site.%kernel.environment%.log"
         slack_support:
             type: slackwebhook
-            webhook_url: "%env(string:SLACK_WEBHOOK_URL)%"
+            webhook_url: "%slack.webhook.support%"
             level: info
             channels: ['support']
             bot_name: 'API'

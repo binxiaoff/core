@@ -1,4 +1,4 @@
 nexy_slack:
     http:
         client: httplug.client.nexy_slack
-    endpoint: '%env(string:SLACK_WEBHOOK_URL)%'
+    endpoint: '%slack.webhook.support%'

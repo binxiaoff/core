@@ -95,15 +95,15 @@ class ProjectNotifier
     {
         switch ($project->getCurrentStatus()->getStatus()) {
             case ProjectStatus::STATUS_REQUESTED:
-                return "Le dosier « {$project->getTitle()} » vient d’être créé";
+                return 'Le dosier « ' . $project->getTitle() . ' » vient d’être créé';
             case ProjectStatus::STATUS_PUBLISHED:
-                return "Les sollicitations des marques d'intérêt ont été envoyées pour le dossier « {$project->getTitle()} ».";
+                return 'Les sollicitations des marques d\'intérêt ont été envoyées pour le dossier « ' . $project->getTitle() . ' ».';
             case ProjectStatus::STATUS_INTERESTS_COLLECTED:
-                return "Les demandes de réponse ferme ont été envoyées pour le dossier « {$project->getTitle()} ».";
+                return 'Les demandes de réponse ferme ont été envoyées pour le dossier « ' . $project->getTitle() . ' ».';
             case ProjectStatus::STATUS_OFFERS_COLLECTED:
-                return "Le dossier « {$project->getTitle()} » vient de passer en phase de contractualisation.";
+                return 'Le dossier « ' . $project->getTitle() . ' » vient de passer en phase de contractualisation.';
             case ProjectStatus::STATUS_CONTRACTS_SIGNED:
-                return "Le dossier « {$project->getTitle()} » vient d‘être clos.";
+                return 'Le dossier « ' . $project->getTitle() . ' » vient d‘être clos.';
             case ProjectStatus::STATUS_REPAID:
                 return '';
         }
