@@ -11,9 +11,10 @@ use RobRichards\XMLSecLibs\{XMLSecurityDSig, XMLSecurityKey};
 
 class XmlSigner
 {
-    private const CANONICAL_METHOD      = XMLSecurityDSig::EXC_C14N;
+    private const CANONICAL_METHOD      = XMLSecurityDSig::C14N;
     private const DIGEST_METHOD         = XMLSecurityDSig::SHA256;
     private const PRIVATE_KEY_ALGORITHM = XMLSecurityKey::RSA_SHA256;
+    private const TRANSFORM_ALGORITHMS  = ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', XMLSecurityDSig::EXC_C14N];
 
     /**
      * @var string
@@ -52,7 +53,7 @@ class XmlSigner
 
         $xmlDSig = new XMLSecurityDSig();
         $xmlDSig->setCanonicalMethod(self::CANONICAL_METHOD);
-        $xmlDSig->addReference($xml, self::DIGEST_METHOD, ['http://www.w3.org/2000/09/xmldsig#enveloped-signature']);
+        $xmlDSig->addReference($xml, self::DIGEST_METHOD, self::TRANSFORM_ALGORITHMS, ['force_uri' => true]);
 
         $xmlDSigKey = new XMLSecurityKey(self::PRIVATE_KEY_ALGORITHM, ['type' => 'private']);
         $xmlDSigKey->loadKey($this->privateKey);
