@@ -8,7 +8,6 @@ use Exception;
 use SimpleXMLElement;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\AttachmentSignature;
-use Unilend\Entity\Staff;
 use Unilend\Service\FileSystem\FileSystemHelper;
 
 class XmlGenerator
@@ -42,14 +41,9 @@ class XmlGenerator
      */
     public function generate(AttachmentSignature $attachmentSignature): string
     {
-        $requester = $attachmentSignature->getAttachment()->getAddedBy();
-        $signatory = $attachmentSignature->getSignatory();
-
-        $this->check($requester, $signatory);
-
-        $attachment = $attachmentSignature->getAttachment();
-        $fileSystem = $this->fileSystemHelper->getFileSystemForClass($attachmentSignature->getAttachment());
-
+        $signatory         = $attachmentSignature->getSignatory();
+        $attachment        = $attachmentSignature->getAttachment();
+        $fileSystem        = $this->fileSystemHelper->getFileSystemForClass($attachmentSignature->getAttachment());
         $fileBase64Content = base64_encode($fileSystem->read($attachment->getPath()));
 
         $xml = new SimpleXMLElement('<Donnees/>');
@@ -76,8 +70,8 @@ class XmlGenerator
         $contextepu->addAttribute('NUMCR', self::KLS_CODE_ENTITY);
 
         $parametresDeSignature = $appelpm->addChild('PARAMETRESdePM')->addChild('PARAMETRESdeSIGNATURE');
-        $parametresDeSignature->addChild('NUMCRP', $signatory->getCompany()->getEntityCode());
-        $parametresDeSignature->addChild('NUMCRA', $requester->getCompany()->getEntityCode());
+        $parametresDeSignature->addChild('NUMCRP', self::KLS_CODE_ENTITY);
+        $parametresDeSignature->addChild('NUMCRA', self::KLS_CODE_ENTITY);
         $parametresDeSignature->addChild('NUMCRT', self::KLS_CODE_ENTITY); // Optional
         $parametresDeSignature->addChild('IDPART', '1234567890123'); // unconfirmed value
         $parametresDeSignature->addChild('IDPROT', 'CIB01');
@@ -90,11 +84,11 @@ class XmlGenerator
             RouterInterface::ABSOLUTE_URL
         ));
         $parametresDeSignature->addChild('PARRET')->addChild('ParamsRetour')->addChild('Parametre');
-        $parametresDeSignature->addChild('TOPARCHIVAGE', 'N'); // unconfirmed value
+        $parametresDeSignature->addChild('TOPARCHIVAGE', 'O'); //last signature ? O = yes, N = no
         $parametresDeSignature->addChild('IDTECHCOMM', '170');
 
         $donneeEntreprise = $parametresDeSignature->addChild('DONNEEENTREPRISE');
-        $donneeEntreprise->addChild('INDICATEURENTREPRISE', 'O'); // unconfirmed value
+        $donneeEntreprise->addChild('INDICATEURENTREPRISE', 'O');
         $donneeEntreprise->addChild('LIBELLEENTREPRISE', $signatory->getCompany()->getName());
 
         $donneePP = $parametresDeSignature->addChild('DONNEEPP');
@@ -121,20 +115,5 @@ class XmlGenerator
         $visuelSignatureEntity->addChild('LARGEUR', '55');
 
         return $xml->asXML();
-    }
-
-    /**
-     * @param Staff $requester
-     * @param Staff $signatory
-     */
-    private function check(Staff $requester, Staff $signatory): void
-    {
-        if (!$requester->getCompany()->getEntityCode()) {
-            throw new \RuntimeException('The requester company has no entity code');
-        }
-
-        if (!$signatory->getCompany()->getEntityCode()) {
-            throw new \RuntimeException('The signatory company has no entity code');
-        }
     }
 }
