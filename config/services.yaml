@@ -13,6 +13,9 @@ parameters:
     directory.protected: '%directory.shared%protected/'
     front.host: '%env(HOST_APP_URL)%'
     slack.webhook.support: '%env(SLACK_WEBHOOK_URL)%'
+    slack.webhook.security: https://hooks.slack.com/services/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
+    security.recipients: ['tech@ca-lendingservices.com']
+
 services:
     _defaults:
         autowire: true
@@ -34,6 +37,7 @@ services:
             $userAttachmentFilesystem: '@League\Flysystem\UserAttachmentFilesystem'
             $publicUserUploadFilesystem: '@League\Flysystem\PublicUserUploadFilesystem'
             $generatedDocumentFilesystem: '@League\Flysystem\GeneratedDocumentFilesystem'
+            $securityRecipients: '%security.recipients%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -158,3 +162,7 @@ services:
         autoconfigure: false
 
     Sonata\CacheBundle\Adapter\SymfonyCache: '@sonata.cache.symfony'
+
+    Unilend\Service\Monolog\Processor\EnvironmentProcessor:
+        tags:
+            - { name: monolog.processor }
