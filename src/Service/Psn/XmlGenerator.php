@@ -63,46 +63,62 @@ class XmlGenerator
         $pm->addAttribute('nom', 'SignatureEntite');
         $pm->addAttribute('version', '4');
 
+        // The Context ADSU that PSN doesn't parse. So this part stay constant.
         $contextepu = $paramsentree->addChild('CONTEXTEPU');
-        $contextepu->addAttribute('IDAGEN', 'MP01210'); // unconfirmed value
-        $contextepu->addAttribute('IDELSTCO', '42510'); // unconfirmed value
-        $contextepu->addAttribute('IDPOFO', 'POFO010203'); // unconfirmed value
-        $contextepu->addAttribute('IDPTVE', 'PostePC973663'); // unconfirmed value
-        $contextepu->addAttribute('IDSESSIONAPP', '9876543210123'); // unconfirmed value
-        $contextepu->addAttribute('IDSESSIONPU', '1005200314h23m16sCREATEPP04958231005200314h23m16sCREATEPP0495823'); // unconfirmed value
-        $contextepu->addAttribute('IDSESSIONSAG', '42510-PC973663-POFO010203*******.ServeurParam123'); // unconfirmed value
-        $contextepu->addAttribute('NOMPU', 'CREATION DE PARTENAIRE PERSONNE*'); // unconfirmed value
-        $contextepu->addAttribute('NUMCR', self::KLS_CODE_ENTITY); // unconfirmed value
+        $contextepu->addAttribute('IDAGEN', 'MP01210');
+        $contextepu->addAttribute('IDELSTCO', '42510');
+        $contextepu->addAttribute('IDPOFO', 'POFO010203');
+        $contextepu->addAttribute('IDPTVE', 'PostePC973663');
+        $contextepu->addAttribute('IDSESSIONAPP', '9876543210123');
+        $contextepu->addAttribute('IDSESSIONPU', '1005200314h23m16sCREATEPP04958231005200314h23m16sCREATEPP0495823');
+        $contextepu->addAttribute('IDSESSIONSAG', '42510-PC973663-POFO010203*******.ServeurParam123');
+        $contextepu->addAttribute('NOMPU', 'CREATION DE PARTENAIRE PERSONNE*');
+        $contextepu->addAttribute('NUMCR', self::KLS_CODE_ENTITY);
 
-        $parametresdesignature = $appelpm->addChild('PARAMETRESdePM')->addChild('PARAMETRESdeSIGNATURE');
-        $parametresdesignature->addChild('NUMCRP', $signatory->getCompany()->getEntityCode());
-        $parametresdesignature->addChild('NUMCRA', $requester->getCompany()->getEntityCode());
-        //$parametresdesignature->addChild('NUMCRT', self::KLS_CODE_ENTITY); // Optional
-        $parametresdesignature->addChild('IDPART', '1234567890123'); // unconfirmed value
-        $parametresdesignature->addChild('IDPROT', 'CIB01'); // unconfirmed value
-        $parametresdesignature->addChild('NUMARCH', $attachmentSignature->getPublicId());
-        $parametresdesignature->addChild('OMEXML', $fileBase64Content);
-        $parametresdesignature->addChild('IDNISE', '001');
-        $parametresdesignature->addChild('URLRET', $this->router->generate(
+        $parametresDeSignature = $appelpm->addChild('PARAMETRESdePM')->addChild('PARAMETRESdeSIGNATURE');
+        $parametresDeSignature->addChild('NUMCRP', $signatory->getCompany()->getEntityCode());
+        $parametresDeSignature->addChild('NUMCRA', $requester->getCompany()->getEntityCode());
+        $parametresDeSignature->addChild('NUMCRT', self::KLS_CODE_ENTITY); // Optional
+        $parametresDeSignature->addChild('IDPART', '1234567890123'); // unconfirmed value
+        $parametresDeSignature->addChild('IDPROT', 'CIB01');
+        $parametresDeSignature->addChild('NUMARCH', $attachmentSignature->getPublicId());
+        $parametresDeSignature->addChild('OMEXML', $fileBase64Content);
+        $parametresDeSignature->addChild('IDNISE', '001');
+        $parametresDeSignature->addChild('URLRET', $this->router->generate(
             'front_arrangement_document_sign_result',
             ['documentSignatureId' => $attachmentSignature->getPublicId()],
             RouterInterface::ABSOLUTE_URL
         ));
-        $parametresdesignature->addChild('PARRET')->addChild('ParamsRetour')->addChild('Parametre');
-        $parametresdesignature->addChild('TOPARCHIVAGE', '0'); // unconfirmed value
-        $parametresdesignature->addChild('IDTECHCOMM', '170');
+        $parametresDeSignature->addChild('PARRET')->addChild('ParamsRetour')->addChild('Parametre');
+        $parametresDeSignature->addChild('TOPARCHIVAGE', 'N'); // unconfirmed value
+        $parametresDeSignature->addChild('IDTECHCOMM', '170');
 
-        $donneeentreprise = $parametresdesignature->addChild('DONNEEENTREPRISE');
-        $donneeentreprise->addChild('INDICATEURENTREPRISE', $signatory->getCompany()->getEntityCode()); // unconfirmed value
-        $donneeentreprise->addChild('LIBELLEENTREPRISE', $signatory->getCompany()->getName());
+        $donneeEntreprise = $parametresDeSignature->addChild('DONNEEENTREPRISE');
+        $donneeEntreprise->addChild('INDICATEURENTREPRISE', 'O'); // unconfirmed value
+        $donneeEntreprise->addChild('LIBELLEENTREPRISE', $signatory->getCompany()->getName());
 
-        $visuelsignature = $parametresdesignature->addChild('LISTEVISUELSSIGNATURE')->addChild('VISUELSIGNATURE');
-        $visuelsignature->addChild('TYPESIGNATAIRE', 'ENTITE');
-        $visuelsignature->addChild('PAGE', '1');
-        $visuelsignature->addChild('POSITIONXCOINHAUTGAUCHE', '35');
-        $visuelsignature->addChild('POSITIONYCOINHAUTGAUCHE', '57');
-        $visuelsignature->addChild('HAUTEUR', '25');
-        $visuelsignature->addChild('LARGEUR', '55');
+        $donneePP = $parametresDeSignature->addChild('DONNEEPP');
+        $donneePP->addChild('CDTICI', '1'); // unconfirmed value
+        $donneePP->addChild('LNPRUS', $signatory->getClient()->getFirstName());
+        $donneePP->addChild('LNPATR', $signatory->getClient()->getLastName());
+
+        $listeVisuelsSignature = $parametresDeSignature->addChild('LISTEVISUELSSIGNATURE');
+
+        $visuelSignatureClient = $listeVisuelsSignature->addChild('VISUELSIGNATURE');
+        $visuelSignatureClient->addChild('TYPESIGNATAIRE', 'client');
+        $visuelSignatureClient->addChild('PAGE', '1');
+        $visuelSignatureClient->addChild('POSITIONXCOINHAUTGAUCHE', '110');
+        $visuelSignatureClient->addChild('POSITIONYCOINHAUTGAUCHE', '57');
+        $visuelSignatureClient->addChild('HAUTEUR', '25');
+        $visuelSignatureClient->addChild('LARGEUR', '55');
+
+        $visuelSignatureEntity = $listeVisuelsSignature->addChild('VISUELSIGNATURE');
+        $visuelSignatureEntity->addChild('TYPESIGNATAIRE', 'entite');
+        $visuelSignatureEntity->addChild('PAGE', '1');
+        $visuelSignatureEntity->addChild('POSITIONXCOINHAUTGAUCHE', '35');
+        $visuelSignatureEntity->addChild('POSITIONYCOINHAUTGAUCHE', '57');
+        $visuelSignatureEntity->addChild('HAUTEUR', '25');
+        $visuelSignatureEntity->addChild('LARGEUR', '55');
 
         return $xml->asXML();
     }
