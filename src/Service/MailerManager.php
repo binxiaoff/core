@@ -202,7 +202,7 @@ class MailerManager
         $keywords = [
             'firstName'    => $signature->getSignatory()->getFirstName(),
             'projectName'  => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
-            'signatureUrl' => $this->router->generate('signature_sign', ['attachment' => $signature->getAttachment()->getId()], RouterInterface::ABSOLUTE_URL),
+            'signatureUrl' => $this->router->generate('signature_sign', ['attachment' => $signature->getFileVersion()->getId()], RouterInterface::ABSOLUTE_URL),
         ];
 
         return 1;

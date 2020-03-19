@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Controller\Attachment;
+namespace Unilend\Controller\File;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use Exception;
@@ -14,27 +14,27 @@ use Unilend\Entity\Clients;
 use Unilend\Entity\FileVersion;
 use Unilend\Entity\Project;
 use Unilend\Security\Voter\ProjectVoter;
-use Unilend\Service\Attachment\AttachmentManager;
+use Unilend\Service\File\FileManager;
 
 class Upload
 {
-    /** @var AttachmentManager */
-    private $attachmentManager;
+    /** @var FileManager */
+    private $fileManager;
     /** @var Security */
     private $security;
     /** @var IriConverterInterface */
     private $converter;
 
     /**
-     * @param AttachmentManager     $attachmentManager
+     * @param FileManager           $fileManager
      * @param Security              $security
      * @param IriConverterInterface $converter
      */
-    public function __construct(AttachmentManager $attachmentManager, Security $security, IriConverterInterface $converter)
+    public function __construct(FileManager $fileManager, Security $security, IriConverterInterface $converter)
     {
-        $this->attachmentManager = $attachmentManager;
-        $this->security          = $security;
-        $this->converter         = $converter;
+        $this->fileManager = $fileManager;
+        $this->security    = $security;
+        $this->converter   = $converter;
     }
 
     /**
@@ -72,7 +72,7 @@ class Upload
             throw new AccessDeniedHttpException('You cannot upload file for the project');
         }
 
-        return $this->attachmentManager->upload(
+        return $this->fileManager->upload(
             $request->files->get('file'),
             $user->getCurrentStaff(),
             $type,

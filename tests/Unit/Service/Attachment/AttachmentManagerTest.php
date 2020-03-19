@@ -16,10 +16,10 @@ use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Entity\{Clients, Company, Embeddable\Money, FileVersion, MarketSegment, Project, Staff};
 use Unilend\Repository\FileVersionRepository;
-use Unilend\Service\{Attachment\AttachmentManager, FileSystem\FileUploadManager};
+use Unilend\Service\{FileSystem\FileUploadManager, File\FileManager};
 
 /**
- * @coversDefaultClass \Unilend\Service\Attachment\AttachmentManager
+ * @coversDefaultClass \Unilend\Service\File\FileManager
  *
  * @internal
  */
@@ -124,11 +124,10 @@ class AttachmentManagerTest extends TestCase
      *
      * @return FileVersion
      */
-    protected function createAttachment(): FileVersion
+    protected function createFile(): FileVersion
     {
         return new FileVersion(
             'test',
-            'someType',
             new Staff(
                 new Company('test'),
                 new Clients('test@' . Internet::safeEmailDomain()),
@@ -155,11 +154,11 @@ class AttachmentManagerTest extends TestCase
     }
 
     /**
-     * @return AttachmentManager
+     * @return FileManager
      */
-    protected function createTestObject(): AttachmentManager
+    protected function createTestObject(): FileManager
     {
-        return new AttachmentManager(
+        return new FileManager(
             $this->userAttachmentFilesystem->reveal(),
             $this->fileUploadManager->reveal(),
             $this->fileVersionRepository->reveal(),

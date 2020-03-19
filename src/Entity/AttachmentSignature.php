@@ -58,7 +58,7 @@ class AttachmentSignature
      *
      * @Groups({"attachmentSignature:write", "attachmentSignature:read"})
      */
-    private $attachment;
+    private $fileVersion;
 
     /**
      * @var Staff
@@ -116,13 +116,13 @@ class AttachmentSignature
     }
 
     /**
-     * @param FileVersion $attachment
+     * @param FileVersion $fileVersion
      *
      * @return AttachmentSignature
      */
-    public function setAttachment(FileVersion $attachment): AttachmentSignature
+    public function setFileVersion(FileVersion $fileVersion): AttachmentSignature
     {
-        $this->attachment = $attachment;
+        $this->fileVersion = $fileVersion;
 
         return $this;
     }
@@ -130,9 +130,9 @@ class AttachmentSignature
     /**
      * @return FileVersion
      */
-    public function getAttachment(): ?FileVersion
+    public function getFileVersion(): ?FileVersion
     {
-        return $this->attachment;
+        return $this->fileVersion;
     }
 
     /**

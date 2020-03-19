@@ -130,7 +130,7 @@ class FileVersion
     /**
      * @var AttachmentSignature[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\AttachmentSignature", mappedBy="attachment")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\AttachmentSignature", mappedBy="fileVersion")
      *
      * @Groups({"attachment:read"})
      */
@@ -150,7 +150,7 @@ class FileVersion
     /**
      * @var Collection|FileDownload[]
      *
-     * @ORM\OneToMany(targetEntity="FileDownload", fetch="EXTRA_LAZY", mappedBy="attachment", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="FileDownload", fetch="EXTRA_LAZY", mappedBy="fileVersion", cascade={"persist", "remove"})
      */
     private $fileVersionDownloads;
 
@@ -186,22 +186,21 @@ class FileVersion
 
     /**
      * @param string      $path
-     * @param string      $type
      * @param Staff       $addedBy
      * @param string|null $plainEncryptionKey
      * @param string|null $mimeType
      *
      * @throws Exception
      */
-    public function __construct(string $path, string $type, Staff $addedBy, ?string $plainEncryptionKey, ?string $mimeType)
+    public function __construct(string $path, Staff $addedBy, ?string $plainEncryptionKey, ?string $mimeType)
     {
         $this->signatures           = new ArrayCollection();
         $this->fileVersionDownloads = new ArrayCollection();
         $this->path                 = $path;
         $this->addedBy              = $addedBy;
         $this->added                = new DateTimeImmutable();
-        $this->plainEncryptionKey  = $plainEncryptionKey;
-        $this->mimeType            = $mimeType;
+        $this->plainEncryptionKey   = $plainEncryptionKey;
+        $this->mimeType             = $mimeType;
     }
 
     /**
@@ -292,14 +291,6 @@ class FileVersion
     public function getSignatures(): iterable
     {
         return $this->signatures;
-    }
-
-    /**
-     * @return array
-     */
-    public function getAttachmentTypes(): array
-    {
-        return self::getConstants('TYPE_');
     }
 
     /**

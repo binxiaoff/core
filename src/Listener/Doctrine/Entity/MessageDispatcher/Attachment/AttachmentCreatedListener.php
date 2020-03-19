@@ -6,7 +6,7 @@ namespace Unilend\Listener\Doctrine\Entity\MessageDispatcher\Attachment;
 
 use Unilend\Entity\FileVersion;
 use Unilend\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
-use Unilend\Message\Attachment\AttachmentCreated;
+use Unilend\Message\File\FileCreated;
 
 class AttachmentCreatedListener
 {
@@ -17,6 +17,6 @@ class AttachmentCreatedListener
      */
     public function postPersist(FileVersion $attachment): void
     {
-        $this->messageBus->dispatch(new AttachmentCreated($attachment));
+        $this->messageBus->dispatch(new FileCreated($attachment));
     }
 }

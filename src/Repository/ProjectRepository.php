@@ -45,15 +45,15 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param FileVersion $attachment
+     * @param FileVersion $fileVersion
      *
      * @return iterable|Project[]
      */
-    public function findByAttachment(FileVersion $attachment): iterable
+    public function findByFileVersion(FileVersion $fileVersion): iterable
     {
         return $this->createQueryBuilder('p')
-            ->where(':attachment MEMBER OF p.attachment')
-            ->setParameter('attachment', $attachment)
+            ->where(':fileVersion MEMBER OF p.projectFiles')
+            ->setParameter('fileVersion', $fileVersion)
             ->getQuery()
             ->getResult()
         ;

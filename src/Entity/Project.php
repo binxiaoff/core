@@ -487,13 +487,13 @@ class Project
     private $globalFundingMoney;
 
     /**
-     * @var ProjectAttachment[]|ArrayCollection
+     * @var ProjectFile[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="ProjectFile", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      *
      * @ApiSubresource
      */
-    private $projectAttachments;
+    private $projectFiles;
 
     /**
      * @param Staff         $addedBy
@@ -839,21 +839,21 @@ class Project
     }
 
     /**
-     * @return ProjectAttachment[]|Collection
+     * @return ProjectFile[]|Collection
      */
-    public function getProjectAttachments(): Collection
+    public function getProjectFiles(): Collection
     {
-        return $this->projectAttachments;
+        return $this->projectFiles;
     }
 
     /**
-     * @param ProjectAttachment $projectAttachment
+     * @param ProjectFile $projectFile
      *
      * @return Project
      */
-    public function removeProjectAttachment(ProjectAttachment $projectAttachment): Project
+    public function removeProjectFile(ProjectFile $projectFile): Project
     {
-        $this->projectAttachments->removeElement($projectAttachment);
+        $this->projectFiles->removeElement($projectFile);
 
         return $this;
     }

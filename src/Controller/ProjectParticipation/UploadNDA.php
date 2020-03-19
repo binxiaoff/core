@@ -12,11 +12,11 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Repository\ProjectParticipationRepository;
 use Unilend\Security\Voter\ProjectVoter;
-use Unilend\Service\Attachment\AttachmentManager;
+use Unilend\Service\File\FileManager;
 
 class UploadNDA
 {
-    /** @var AttachmentManager */
+    /** @var FileManager */
     private $attachmentManager;
     /** @var Security */
     private $security;
@@ -26,13 +26,13 @@ class UploadNDA
     private $projectParticipationRepository;
 
     /**
-     * @param AttachmentManager              $attachmentManager
+     * @param FileManager                    $attachmentManager
      * @param Security                       $security
      * @param IriConverterInterface          $converter
      * @param ProjectParticipationRepository $projectParticipationRepository
      */
     public function __construct(
-        AttachmentManager $attachmentManager,
+        FileManager $attachmentManager,
         Security $security,
         IriConverterInterface $converter,
         ProjectParticipationRepository $projectParticipationRepository

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Controller\Attachment;
+namespace Unilend\Controller\File;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\{AttachmentDownload, FileVersion};
-use Unilend\Repository\AttachmentDownloadRepository;
+use Unilend\Entity\{FileDownload, FileVersion};
+use Unilend\Repository\FileDownloadRepository;
 use Unilend\Service\FileSystem\FileDownloadManager;
 
 class Download
@@ -18,19 +18,19 @@ class Download
     private $fileDownloadManager;
     /** @var Security */
     private $security;
-    /** @var AttachmentDownloadRepository */
-    private $attachmentDownloadRepository;
+    /** @var FileDownloadRepository */
+    private $fileDownloadRepository;
 
     /**
      * @param FileDownloadManager          $fileDownloadManager
-     * @param AttachmentDownloadRepository $attachmentDownloadRepository
-     * @param Security                     $security
+     * @param FileDownloadRepository $fileDownloadRepository
+     * @param Security               $security
      */
-    public function __construct(FileDownloadManager $fileDownloadManager, AttachmentDownloadRepository $attachmentDownloadRepository, Security $security)
+    public function __construct(FileDownloadManager $fileDownloadManager, FileDownloadRepository $fileDownloadRepository, Security $security)
     {
         $this->fileDownloadManager          = $fileDownloadManager;
-        $this->security                     = $security;
-        $this->attachmentDownloadRepository = $attachmentDownloadRepository;
+        $this->security               = $security;
+        $this->fileDownloadRepository = $fileDownloadRepository;
     }
 
     /**
@@ -47,7 +47,7 @@ class Download
         $user         = $this->security->getUser();
         $currentStaff = $user->getCurrentStaff();
 
-        $this->attachmentDownloadRepository->save(new AttachmentDownload($data, $currentStaff));
+        $this->fileDownloadRepository->save(new FileDownload($data, $currentStaff));
 
         return $this->fileDownloadManager->download($data);
     }

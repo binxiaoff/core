@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\BlamableAddedTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
@@ -17,6 +18,7 @@ class ProjectFile
     // @todo uncomment when add ApiResource annotation
 //    use PublicizeIdentityTrait;
     use TimestampableAddedOnlyTrait;
+    use ConstantsAwareTrait;
 
     private const TYPE_GENERAL              = 'general';
     private const TYPE_ACCOUNTING_FINANCIAL = 'accounting_financial';
@@ -55,7 +57,6 @@ class ProjectFile
 
     /**
      * @param string  $type
-     *
      * @param File    $file
      * @param Project $project
      */
@@ -88,5 +89,13 @@ class ProjectFile
     public function getFile(): File
     {
         return $this->file;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAttachmentTypes(): array
+    {
+        return self::getConstants('TYPE_');
     }
 }

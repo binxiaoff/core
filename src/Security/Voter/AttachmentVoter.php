@@ -36,18 +36,18 @@ class AttachmentVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param FileVersion $attachment
+     * @param FileVersion $fileVersion
      * @param Clients     $user
      *
-     *@throws NonUniqueResultException
+     * @throws NonUniqueResultException
      *
      * @return bool
      */
-    protected function canDownload(FileVersion $attachment, Clients $user): bool
+    protected function canDownload(FileVersion $fileVersion, Clients $user): bool
     {
         //@todo change that
-        $project   = $attachment->getProject();
-        $signature = $this->attachmentSignatureRepository->findOneBy(['attachment' => $attachment, 'signatory' => $user]);
+        $project   = $fileVersion->getProject();
+        $signature = $this->attachmentSignatureRepository->findOneBy(['attachment' => $fileVersion, 'signatory' => $user]);
 
         if ($signature || $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project) || $project->getBorrowerCompany() === $user->getCompany()) {
             return true;
@@ -62,7 +62,7 @@ class AttachmentVoter extends AbstractEntityVoter
             case ProjectStatus::STATUS_REPAID:
                 return
                     null !== ($contact = $this->getActiveParticipantParticipation($project, $user))
-                        && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeOfferCollected($project, $attachment));
+                        && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeOfferCollected($project, $fileVersion));
             default:
                 throw new LogicException('This code should not be reached');
         }
@@ -99,14 +99,14 @@ class AttachmentVoter extends AbstractEntityVoter
 
     /**
      * @param Project     $project
-     * @param FileVersion $attachment
+     * @param FileVersion $fileVersion
      *
      * @return bool
      */
-    private function isAddedBeforeOfferCollected(Project $project, FileVersion $attachment): bool
+    private function isAddedBeforeOfferCollected(Project $project, FileVersion $fileVersion): bool
     {
         $offerCollected = $project->getLastSpecificStatus(ProjectStatus::STATUS_OFFERS_COLLECTED);
 
-        return null === $offerCollected || $attachment->getAdded() <= $offerCollected->getAdded();
+        return null === $offerCollected || $fileVersion->getAdded() <= $offerCollected->getAdded();
     }
 }

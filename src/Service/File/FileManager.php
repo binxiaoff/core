@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service\Attachment;
+namespace Unilend\Service\File;
 
 use Exception;
 use InvalidArgumentException;
@@ -13,7 +13,7 @@ use Unilend\Entity\{Clients, FileVersion, Project, Staff};
 use Unilend\Repository\FileVersionRepository;
 use Unilend\Service\FileSystem\FileUploadManager;
 
-class AttachmentManager
+class FileManager
 {
     /** @var FileUploadManager */
     private $fileUploadManager;
@@ -61,7 +61,7 @@ class AttachmentManager
             ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader->getClient()))
         ;
 
-        $attachment = new FileVersion($relativeUploadedPath, $type, $uploader, $encryptionKey, $mineType);
+        $attachment = new FileVersion($relativeUploadedPath, $uploader, $encryptionKey, $mineType);
 
         //@todo change that
         $attachment
