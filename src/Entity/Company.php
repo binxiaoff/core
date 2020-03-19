@@ -262,30 +262,6 @@ class Company
     }
 
     /**
-     * @param Clients $client
-     * @param string  $role
-     *
-     * @throws Exception
-     *
-     * @return Staff
-     */
-    public function addStaff(Clients $client, string $role): Staff
-    {
-        $staff = $this->getStaff($client);
-
-        if ($staff->count()) {
-            $theStaff = $staff->first();
-        } else {
-            $theStaff = (new Staff($this, $client));
-        }
-
-        $theStaff->addRoles([$role]);
-        $this->staff->add($theStaff);
-
-        return $theStaff;
-    }
-
-    /**
      * @param Staff $staff
      *
      * @return Company
