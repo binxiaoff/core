@@ -125,13 +125,6 @@ class Company
     private $shortCode;
 
     /**
-     * @var string|null
-     *
-     * @ORM\Column(type="string", length=5, nullable=true, unique=true)
-     */
-    private $entityCode;
-
-    /**
      * @var CompanyStatus
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\CompanyStatus")
@@ -335,26 +328,6 @@ class Company
     public function setShortCode(string $shortCode): Company
     {
         $this->shortCode = $shortCode;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getEntityCode(): ?string
-    {
-        return $this->entityCode;
-    }
-
-    /**
-     * @param string|null $entityCode
-     *
-     * @return Company
-     */
-    public function setEntityCode(?string $entityCode): Company
-    {
-        $this->entityCode = $entityCode;
 
         return $this;
     }

@@ -15,12 +15,13 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
+ *     normalizationContext={"groups": "attachmentSignature:read"},
  *     denormalizationContext={"groups": "attachmentSignature:write"},
  *     itemOperations={
+ *         "get": {"security": "is_granted('view', object"},
  *         "signe": {
  *             "security": "is_granted('signe', object)",
  *             "method": "POST",
- *             "output": false,
  *             "controller": "Unilend\Controller\AttachmentSignature\Signe",
  *             "path": "/attachment_signatures/{id}/signe",
  *             "denormalization_context": {"groups": {"attachmentSignature:signe"}}
@@ -41,10 +42,11 @@ class AttachmentSignature
     use BlamableAddedTrait;
     use ConstantsAwareTrait;
 
-    public const STATUS_PENDED    = 10;
-    public const STATUS_REQUESTED = 20;
-    public const STATUS_SIGNED    = 30;
-    public const STATUS_REFUSED   = 40;
+    public const STATUS_PENDED         = 10;
+    public const STATUS_REQUESTED      = 20;
+    public const STATUS_REQUEST_FAILED = 25;
+    public const STATUS_SIGNED         = 30;
+    public const STATUS_REFUSED        = 40;
 
     /**
      * @var Attachment
@@ -54,7 +56,7 @@ class AttachmentSignature
      *     @ORM\JoinColumn(name="id_attachment", nullable=false)
      * })
      *
-     * @Groups({"attachmentSignature:write"})
+     * @Groups({"attachmentSignature:write", "attachmentSignature:read"})
      */
     private $attachment;
 
@@ -66,18 +68,34 @@ class AttachmentSignature
      *     @ORM\JoinColumn(name="id_signatory", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"attachmentSignature:write"})
+     * @Groups({"attachmentSignature:write", "attachmentSignature:read"})
      */
     private $signatory;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="status", type="smallint")
+     * @ORM\Column(type="smallint")
      *
      * @Assert\Choice(callback="getStatuses")
      */
     private $status;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(length=100, nullable=true)
+     */
+    private $transactionNumber;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(length=255, nullable=true)
+     *
+     * @Groups({ "attachmentSignature:read"})
+     */
+    private $signatureUrl;
 
     /**
      * AttachmentSignature constructor.
@@ -155,6 +173,46 @@ class AttachmentSignature
     public function getStatus(): ?int
     {
         return $this->status;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTransactionNumber(): ?string
+    {
+        return $this->transactionNumber;
+    }
+
+    /**
+     * @param string|null $transactionNumber
+     *
+     * @return AttachmentSignature
+     */
+    public function setTransactionNumber(?string $transactionNumber): AttachmentSignature
+    {
+        $this->transactionNumber = $transactionNumber;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getSignatureUrl(): ?string
+    {
+        return $this->signatureUrl;
+    }
+
+    /**
+     * @param string|null $signatureUrl
+     *
+     * @return AttachmentSignature
+     */
+    public function setSignatureUrl(?string $signatureUrl): AttachmentSignature
+    {
+        $this->signatureUrl = $signatureUrl;
+
+        return $this;
     }
 
     /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Psn;
 
-use Exception;
+use League\Flysystem\FileNotFoundException;
 use SimpleXMLElement;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\AttachmentSignature;
@@ -35,7 +35,7 @@ class XmlGenerator
     /**
      * @param AttachmentSignature $attachmentSignature
      *
-     * @throws Exception
+     * @throws FileNotFoundException
      *
      * @return string
      */
@@ -75,15 +75,19 @@ class XmlGenerator
         $parametresDeSignature->addChild('NUMCRT', self::KLS_CODE_ENTITY); // Optional
         $parametresDeSignature->addChild('IDPART', '1234567890123'); // unconfirmed value
         $parametresDeSignature->addChild('IDPROT', 'CIB01');
-        $parametresDeSignature->addChild('NUMARCH', $attachmentSignature->getPublicId());
+        $parametresDeSignature->addChild('NUMARCH', (string) $attachmentSignature->getId());
         $parametresDeSignature->addChild('OMEXML', $fileBase64Content);
         $parametresDeSignature->addChild('IDNISE', '001');
         $parametresDeSignature->addChild('URLRET', $this->router->generate(
-            'front_arrangement_document_sign_result',
-            ['documentSignatureId' => $attachmentSignature->getPublicId()],
+            'file-signature-result',
+            ['fileSignatureId' => $attachmentSignature->getPublicId()],
             RouterInterface::ABSOLUTE_URL
         ));
-        $parametresDeSignature->addChild('PARRET')->addChild('ParamsRetour')->addChild('Parametre');
+
+        $parameter = $parametresDeSignature->addChild('PARRET')->addChild('ParamsRetour')->addChild('Parametre');
+        $parameter->addAttribute('Nom', 'fileSignatureId');
+        $parameter->addAttribute('Valeur', (string) $attachmentSignature->getId());
+
         $parametresDeSignature->addChild('TOPARCHIVAGE', 'O'); //last signature ? O = yes, N = no
         $parametresDeSignature->addChild('IDTECHCOMM', '170');
 

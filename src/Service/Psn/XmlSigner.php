@@ -7,7 +7,8 @@ namespace Unilend\Service\Psn;
 use DOMDocument;
 use Exception;
 use InvalidArgumentException;
-use RobRichards\XMLSecLibs\{XMLSecurityDSig, XMLSecurityKey};
+use RobRichards\XMLSecLibs\{XMLSecEnc, XMLSecurityDSig, XMLSecurityKey};
+use RuntimeException;
 
 class XmlSigner
 {
@@ -64,5 +65,45 @@ class XmlSigner
         $xmlDSig->appendSignature($xml->documentElement);
 
         return $xml->saveXML();
+    }
+
+    /**
+     * @param string $xmlSource
+     *
+     * @throws Exception
+     *
+     * @return bool
+     */
+    public function verify(string $xmlSource): bool
+    {
+        $xml = new DOMDocument();
+        $xml->loadXML($xmlSource);
+
+        if (false === $xml) {
+            throw new InvalidArgumentException('The xml is not valid');
+        }
+
+        $xmlDSig = new XMLSecurityDSig();
+
+        $signature = $xmlDSig->locateSignature($xml);
+        if (!$signature) {
+            throw new RuntimeException('Cannot locate Signature Node');
+        }
+
+        if (!$xmlDSig->validateReference()) {
+            throw new RuntimeException('Reference Validation Failed');
+        }
+
+        $key = $xmlDSig->locateKey();
+        if (!$key) {
+            throw new RuntimeException('We have no idea about the key');
+        }
+
+        $keyInfo = XMLSecEnc::staticLocateKeyInfo($key, $signature);
+        if (null === $keyInfo || !$keyInfo->key) {
+            throw new RuntimeException('Key info not found');
+        }
+
+        return 1 === $xmlDSig->verify($key);
     }
 }

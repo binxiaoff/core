@@ -4,64 +4,44 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\AttachmentSignature;
 
-use Exception;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use League\Flysystem\FileNotFoundException;
+use Symfony\Contracts\HttpClient\Exception\{ClientExceptionInterface, RedirectionExceptionInterface, ServerExceptionInterface, TransportExceptionInterface};
 use Unilend\Entity\AttachmentSignature;
-use Unilend\Repository\AttachmentSignatureRepository;
-use Unilend\Service\Psn\{RequestSender, XmlGenerator, XmlSigner};
+use Unilend\Service\Psn\RequestSender;
 
 class Signe
 {
-    /**
-     * @var XmlSigner
-     */
-    private $xmlSigner;
-    /**
-     * @var XmlGenerator
-     */
-    private $xmlGenerator;
-    /**
-     * @var AttachmentSignatureRepository
-     */
-    private $attachmentSignatureRepository;
     /**
      * @var RequestSender
      */
     private $requestSender;
 
     /**
-     * @param XmlSigner                     $xmlSigner
-     * @param XmlGenerator                  $xmlGenerator
-     * @param AttachmentSignatureRepository $attachmentSignatureRepository
-     * @param RequestSender                 $requestSender
+     * @param RequestSender $requestSender
      */
-    public function __construct(XmlSigner $xmlSigner, XmlGenerator $xmlGenerator, AttachmentSignatureRepository $attachmentSignatureRepository, RequestSender $requestSender)
+    public function __construct(RequestSender $requestSender)
     {
-        $this->xmlSigner                     = $xmlSigner;
-        $this->xmlGenerator                  = $xmlGenerator;
-        $this->attachmentSignatureRepository = $attachmentSignatureRepository;
-        $this->requestSender                 = $requestSender;
+        $this->requestSender = $requestSender;
     }
 
     /**
      * @param AttachmentSignature $data
      *
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
-     * @throws Exception
+     * @throws FileNotFoundException
      *
-     * @return string
+     * @return AttachmentSignature
      */
-    public function __invoke(AttachmentSignature $data)
+    public function __invoke(AttachmentSignature $data): AttachmentSignature
     {
+        // todo: If the business requires, we can have a option to "force" the sending of signature request even the status is not valid.
         if ($data->getStatus() > AttachmentSignature::STATUS_REQUESTED) {
             throw new \InvalidArgumentException(sprintf('The signature (id: %s) has already been treated', $data->getPublicId()));
         }
 
-        $xml = $this->xmlSigner->signe($this->xmlGenerator->generate($data));
-
-        $this->requestSender->requestSignature($xml);
-
-        $data->setStatus(AttachmentSignature::STATUS_REQUESTED);
-        $this->attachmentSignatureRepository->save($data);
+        return $this->requestSender->requestSignature($data);
     }
 }

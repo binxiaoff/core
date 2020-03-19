@@ -25,6 +25,10 @@ health_check:
     path: /pulse
     controller: Unilend\Controller\HealthCheck
 
+file-signature-result:
+    path: /file-signature/{fileSignatureId}/result
+    controller: Unilend\Controller\AttachmentSignature\Result
+
 # Route created to return a 404 for pulse check
 home:
     path: /
