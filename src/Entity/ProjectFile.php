@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
+use Unilend\Entity\Traits\BlamableAddedTrait;
+use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
- * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectAttachmentRepository")
+ * @ORM\Entity
  */
-class ProjectAttachment
+class ProjectFile
 {
+    use BlamableAddedTrait;
+    // @todo uncomment when add ApiResource annotation
+//    use PublicizeIdentityTrait;
+    use TimestampableAddedOnlyTrait;
+
     private const TYPE_GENERAL              = 'general';
     private const TYPE_ACCOUNTING_FINANCIAL = 'accounting_financial';
     private const TYPE_LEGAL                = 'legal';
@@ -25,6 +31,7 @@ class ProjectAttachment
      * @ORM\Column(name="id", type="integer")
      */
     private $id;
+
     /**
      * @var string
      *
@@ -34,47 +41,29 @@ class ProjectAttachment
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Entity\File", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(name="id_file", nullable=false)
      */
     private $file;
 
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectAttachments")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectFiles")
+     * @ORM\JoinColumn(name="id_project", nullable=false)
      */
     private $project;
 
     /**
-     * @param string $type
-     *
-     * @throws Exception
-     */
-    public function __construct(string $type)
-    {
-        $this->type = $type;
-    }
-
-    /**
-     * @param Project $project
      * @param string  $type
      *
-     * @return ProjectAttachment
+     * @param File    $file
+     * @param Project $project
      */
-    public function setType(Project $project, string $type): ProjectAttachment
+    public function __construct(string $type, File $file, Project $project)
     {
-        $this->project = $project;
         $this->type    = $type;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getType(): string
-    {
-        return $this->type;
+        $this->file    = $file;
+        $this->project = $project;
     }
 
     /**
@@ -86,30 +75,18 @@ class ProjectAttachment
     }
 
     /**
-     * @param int $id
+     * @return string
      */
-    public function setId(int $id): void
+    public function getType(): string
     {
-        $this->id = $id;
+        return $this->type;
     }
 
     /**
-     * @return File|null
+     * @return File
      */
-    public function getFile(): ?File
+    public function getFile(): File
     {
         return $this->file;
-    }
-
-    /**
-     * @param File $file
-     *
-     * @return $this
-     */
-    public function setFile(File $file): self
-    {
-        $this->file = $file;
-
-        return $this;
     }
 }

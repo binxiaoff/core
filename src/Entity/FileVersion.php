@@ -13,8 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableTrait};
+use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -75,10 +74,9 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     }
  * )
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedAttachment")
  * @Gedmo\SoftDeleteable(fieldName="archived")
  *
- * @ORM\Entity(repositoryClass="Unilend\Repository\FileVersionRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
 class FileVersion
@@ -86,6 +84,10 @@ class FileVersion
     use ConstantsAwareTrait;
     use TimestampableTrait;
     use BlamableAddedTrait;
+    use BlamableArchivedTrait;
+
+    public const FILE_SYSTEM_USER_ATTACHMENT    = 'user_attachment';
+    public const FILE_SYSTEM_GENERATED_DOCUMENT = 'generated_document';
 
     /**
      * @var int
@@ -119,17 +121,6 @@ class FileVersion
     /**
      * @var string
      *
-     * @ORM\Column(length=60)
-     *
-     * @Assert\Choice(callback="getAttachmentTypes")
-     *
-     * @Groups({"attachment:read", "attachment:write"})
-     */
-    private $type;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(length=191, nullable=true)
      *
      * @Groups({"attachment:read"})
@@ -157,17 +148,22 @@ class FileVersion
     private $size;
 
     /**
-     * @var Collection|AttachmentDownload[]
+     * @var Collection|FileDownload[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\AttachmentDownload", fetch="EXTRA_LAZY", mappedBy="attachment", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="FileDownload", fetch="EXTRA_LAZY", mappedBy="attachment", cascade={"persist", "remove"})
      */
-    private $attachmentDownloads;
+    private $fileVersionDownloads;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\File", inversedBy="versions")
      * @ORM\JoinColumn(nullable=false)
      */
     private $file;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $fileSystem;
 
     /**
      * @var|null string
@@ -199,12 +195,11 @@ class FileVersion
      */
     public function __construct(string $path, string $type, Staff $addedBy, ?string $plainEncryptionKey, ?string $mimeType)
     {
-        $this->signatures          = new ArrayCollection();
-        $this->attachmentDownloads = new ArrayCollection();
-        $this->path                = $path;
-        $this->type                = $type;
-        $this->addedBy             = $addedBy;
-        $this->added               = new DateTimeImmutable();
+        $this->signatures           = new ArrayCollection();
+        $this->fileVersionDownloads = new ArrayCollection();
+        $this->path                 = $path;
+        $this->addedBy              = $addedBy;
+        $this->added                = new DateTimeImmutable();
         $this->plainEncryptionKey  = $plainEncryptionKey;
         $this->mimeType            = $mimeType;
     }
@@ -272,26 +267,6 @@ class FileVersion
     }
 
     /**
-     * @param string $type
-     *
-     * @return FileVersion
-     */
-    public function setType(string $type): FileVersion
-    {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    /**
      * @param string $originalName
      *
      * @return FileVersion
@@ -348,11 +323,11 @@ class FileVersion
     }
 
     /**
-     * @return Collection|AttachmentDownload[]
+     * @return Collection|FileDownload[]
      */
-    public function getAttachmentDownloads()
+    public function getFileVersionDownloads()
     {
-        return $this->attachmentDownloads;
+        return $this->fileVersionDownloads;
     }
 
     /**
@@ -416,9 +391,29 @@ class FileVersion
      *
      * @return $this
      */
-    public function setFile(?File $file): self
+    public function setFile(?File $file): FileVersion
     {
         $this->file = $file;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getFileSystem(): ?string
+    {
+        return $this->fileSystem;
+    }
+
+    /**
+     * @param string $fileSystem
+     *
+     * @return FileVersion
+     */
+    public function setFileSystem(string $fileSystem): FileVersion
+    {
+        $this->fileSystem = $fileSystem;
 
         return $this;
     }

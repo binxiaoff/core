@@ -10,7 +10,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
@@ -117,8 +116,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"project.hash": "exact", "projectParticipationContacts.client.publicId": "exact"})
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"project.submitterCompany.publicId"})
- *
- * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectParticipation")
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationRepository")
@@ -243,6 +240,7 @@ class ProjectParticipation
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\File")
+     * @ORM\JoinColumn(name="id_confidentiality_disclaimer")
      */
     private $confidentialityDisclaimer;
 
@@ -556,7 +554,7 @@ class ProjectParticipation
      *
      * @return $this
      */
-    public function setConfidentialityDisclaimer(?FileVersion $confidentialityDisclaimer): self
+    public function setConfidentialityDisclaimer(?FileVersion $confidentialityDisclaimer): ProjectParticipation
     {
         $this->confidentialityDisclaimer = $confidentialityDisclaimer;
 

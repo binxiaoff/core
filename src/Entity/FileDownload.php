@@ -13,7 +13,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 /**
  * @ORM\Entity
  */
-class AttachmentDownload
+class FileDownload
 {
     use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
@@ -30,22 +30,22 @@ class AttachmentDownload
     /**
      * @var FileVersion
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion", inversedBy="attachmentDownloads")
-     * @ORM\JoinColumn(name="id_attachment", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion", inversedBy="fileVersionDownloads")
+     * @ORM\JoinColumn(name="id_file_version", nullable=false)
      */
-    private $attachment;
+    private $fileVersion;
 
     /**
-     * @param FileVersion $attachment
+     * @param FileVersion $fileVersion
      * @param Staff       $addedBy
      *
      * @throws Exception
      */
-    public function __construct(FileVersion $attachment, Staff $addedBy)
+    public function __construct(FileVersion $fileVersion, Staff $addedBy)
     {
-        $this->attachment = $attachment;
-        $this->addedBy    = $addedBy;
-        $this->added      = new DateTimeImmutable();
+        $this->fileVersion = $fileVersion;
+        $this->addedBy     = $addedBy;
+        $this->added       = new DateTimeImmutable();
     }
 
     /**
@@ -59,8 +59,8 @@ class AttachmentDownload
     /**
      * @return FileVersion
      */
-    public function getAttachment(): FileVersion
+    public function getFileVersion(): FileVersion
     {
-        return $this->attachment;
+        return $this->fileVersion;
     }
 }

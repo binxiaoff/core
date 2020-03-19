@@ -69,8 +69,9 @@ class ProjectParticipationContact
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion")
+     * @ORM\JoinColumn(name="id_accepted_confidentiality_disclaimer_version")
      */
-    private $confidentialityDisclaimerDocument;
+    private $acceptedConfidentialityDisclaimerVersion;
 
     /**
      * ProjectParticipationContact constructor.
@@ -155,19 +156,19 @@ class ProjectParticipationContact
     /**
      * @return FileVersion|null
      */
-    public function getConfidentialityDisclaimerDocument(): ?FileVersion
+    public function getAcceptedConfidentialityDisclaimerVersion(): ?FileVersion
     {
-        return $this->confidentialityDisclaimerDocument;
+        return $this->acceptedConfidentialityDisclaimerVersion;
     }
 
     /**
-     * @param FileVersion|null $confidentialityDisclaimerDocument
+     * @param FileVersion|null $acceptedConfidentialityDisclaimerVersion
      *
      * @return $this
      */
-    public function setConfidentialityDisclaimerDocument(?FileVersion $confidentialityDisclaimerDocument): self
+    public function setAcceptedConfidentialityDisclaimerVersion(?FileVersion $acceptedConfidentialityDisclaimerVersion): ProjectParticipationContact
     {
-        $this->confidentialityDisclaimerDocument = $confidentialityDisclaimerDocument;
+        $this->acceptedConfidentialityDisclaimerVersion = $acceptedConfidentialityDisclaimerVersion;
 
         return $this;
     }
