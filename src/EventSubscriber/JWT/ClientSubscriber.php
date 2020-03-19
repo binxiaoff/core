@@ -7,6 +7,7 @@ namespace Unilend\EventSubscriber\JWT;
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Bridge\Symfony\Routing\IriConverter;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTAuthenticatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
@@ -75,11 +76,11 @@ class ClientSubscriber implements EventSubscriberInterface
         try {
             /** @var Staff $staff */
             $staff = $this->iriConverter->getItemFromIri($payload['staff']);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $staff = null;
         }
 
-        if (null === $staff || false === $staff->isAvailable()) {
+        if (null === $staff || false === $staff->isActive()) {
             $event->markAsInvalid();
         }
     }
@@ -102,7 +103,7 @@ class ClientSubscriber implements EventSubscriberInterface
 
         /** @var Staff $staffEntry */
         foreach ($staffCollection as $staffEntry) {
-            if ($staffEntry->isAvailable() && $staffEntry->getCompany()->hasSigned()) {
+            if ($staffEntry->isActive() && $staffEntry->getCompany()->hasSigned()) {
                 $user->setCurrentStaff($staffEntry);
                 $data['tokens'][] = $this->jwtManager->create($user);
             }

@@ -73,8 +73,6 @@ class ProjectStatus implements StatusInterface
      * @ORM\Column(type="integer")
      */
     private $id;
-    /** @var Staff */
-    private $staff;
 
     /**
      * @param Project $project

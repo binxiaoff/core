@@ -6,7 +6,9 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\ORMException;
+use Unilend\Entity\Company;
 use Unilend\Entity\Staff;
 
 /**
@@ -33,5 +35,27 @@ class StaffRepository extends ServiceEntityRepository
     public function refresh(Staff $staff): void
     {
         $this->getEntityManager()->refresh($staff);
+    }
+
+    /**
+     * @param string  $email
+     * @param Company $company
+     *
+     * @throws NonUniqueResultException
+     *
+     * @return Staff|null
+     */
+    public function findOneByClientEmailAndCompany(string $email, Company $company): ?Staff
+    {
+        return $this->createQueryBuilder('s')
+            ->innerJoin('s.client', 'c')
+            ->where(
+                'c.email = :email',
+                's.company = :company'
+            )
+            ->setParameters(['email' => $email, 'company' => $company])
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
     }
 }
