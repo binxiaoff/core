@@ -40,40 +40,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "nullableMoney:write"
  *     }},
  *     collectionOperations={
- *         "nda": {
- *             "method": "POST",
- *             "controller": "Unilend\Controller\ProjectParticipation\UploadNDA",
- *             "path": "/project_participations/{id}/nda",
- *             "deserialize": false,
- *             "swagger_context": {
- *                 "consumes": {"multipart/form-data"},
- *                 "parameters": {
- *                     {
- *                         "in": "formData",
- *                         "name": "file",
- *                         "type": "file",
- *                         "description": "The uploaded file",
- *                         "required": true
- *                     },
- *                     {
- *                         "in": "formData",
- *                         "name": "type",
- *                         "type": "string",
- *                         "description": "The attachment type",
- *                         "required": true
- *                     },
- *                     {
- *                         "in": "formData",
- *                         "name": "project",
- *                         "type": "string",
- *                         "description": "The project as an IRI",
- *                         "required": true
- *                     }
- *                 }
- *             }
- *         },
  *         "get": {"normalization_context": {"groups": {
- *             "attachment:read",
  *             "projectParticipation:list",
  *             "project:read",
  *             "projectParticipation:read",
@@ -237,12 +204,6 @@ class ProjectParticipation
      * @ApiSubresource
      */
     private $messages;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\File")
-     * @ORM\JoinColumn(name="id_confidentiality_disclaimer")
-     */
-    private $confidentialityDisclaimer;
 
     /**
      * @param Company            $company
@@ -539,25 +500,5 @@ class ProjectParticipation
     public function getStatuses()
     {
         return self::getConstants('STATUS_');
-    }
-
-    /**
-     * @return FileVersion|null
-     */
-    public function getConfidentialityDisclaimer(): ?FileVersion
-    {
-        return $this->confidentialityDisclaimer;
-    }
-
-    /**
-     * @param FileVersion|null $confidentialityDisclaimer
-     *
-     * @return $this
-     */
-    public function setConfidentialityDisclaimer(?FileVersion $confidentialityDisclaimer): ProjectParticipation
-    {
-        $this->confidentialityDisclaimer = $confidentialityDisclaimer;
-
-        return $this;
     }
 }

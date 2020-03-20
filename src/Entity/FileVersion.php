@@ -11,9 +11,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, TimestampableTrait};
+use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -74,8 +73,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     }
  * )
  *
- * @Gedmo\SoftDeleteable(fieldName="archived")
- *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -84,7 +81,7 @@ class FileVersion
     use ConstantsAwareTrait;
     use TimestampableTrait;
     use BlamableAddedTrait;
-    use BlamableArchivedTrait;
+    use PublicizeIdentityTrait;
 
     public const FILE_SYSTEM_USER_ATTACHMENT    = 'user_attachment';
     public const FILE_SYSTEM_GENERATED_DOCUMENT = 'generated_document';
@@ -102,21 +99,8 @@ class FileVersion
      * @var string
      *
      * @ORM\Column(length=191)
-     *
-     * @Gedmo\Versioned
      */
     private $path;
-
-    /**
-     * @var DateTimeImmutable
-     *
-     * @ORM\Column(type="datetime", nullable=true)
-     *
-     * @Gedmo\Versioned
-     *
-     * @Groups({"attachment:read"})
-     */
-    private $archived;
 
     /**
      * @var string
@@ -187,16 +171,18 @@ class FileVersion
     /**
      * @param string      $path
      * @param Staff       $addedBy
+     * @param File        $file
      * @param string|null $plainEncryptionKey
      * @param string|null $mimeType
      *
      * @throws Exception
      */
-    public function __construct(string $path, Staff $addedBy, ?string $plainEncryptionKey, ?string $mimeType)
+    public function __construct(string $path, Staff $addedBy, File $file, ?string $plainEncryptionKey, ?string $mimeType)
     {
         $this->signatures           = new ArrayCollection();
         $this->fileVersionDownloads = new ArrayCollection();
         $this->path                 = $path;
+        $this->file                 = $file;
         $this->addedBy              = $addedBy;
         $this->added                = new DateTimeImmutable();
         $this->plainEncryptionKey   = $plainEncryptionKey;
@@ -209,20 +195,6 @@ class FileVersion
     public function getId(): int
     {
         return $this->id;
-    }
-
-    /**
-     * @param int $id
-     *
-     * @return File
-     */
-    public function setId(int $id): File
-    {
-        $this->id = $id;
-
-        return $this;
-        $this->plainEncryptionKey  = $plainEncryptionKey;
-        $this->mimeType            = $mimeType;
     }
 
     /**
@@ -243,26 +215,6 @@ class FileVersion
         $this->path = $path;
 
         return $this;
-    }
-
-    /**
-     * @param DateTimeImmutable $archived
-     *
-     * @return FileVersion
-     */
-    public function setArchived(DateTimeImmutable $archived): FileVersion
-    {
-        $this->archived = $archived;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeImmutable
-     */
-    public function getArchived(): ?DateTimeImmutable
-    {
-        return $this->archived;
     }
 
     /**

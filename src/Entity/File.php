@@ -10,16 +10,20 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
+use Gedmo\Mapping\Annotation as Gedmo;
+use Unilend\Entity\Traits\{BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableTrait};
 
 /**
  * @ORM\Entity
+ *
+ * @Gedmo\SoftDeleteable(fieldName="archived")
  *
  * @ApiResource
  */
 class File
 {
     use PublicizeIdentityTrait;
+    use BlamableArchivedTrait;
     use TimestampableTrait;
 
     /**
@@ -32,21 +36,28 @@ class File
     /**
      * @ORM\OneToMany(targetEntity="Unilend\Entity\FileVersion", mappedBy="file", orphanRemoval=true)
      */
-    private $versions;
+    private $fileVersions;
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Entity\FileVersion", cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_current_version")
      */
-    private $currentVersion;
+    private $currentFileVersion;
+
+    /**
+     * @var DateTimeImmutable
+     *
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $archived;
 
     /**
      * @throws Exception
      */
     public function __construct()
     {
-        $this->added    = new DateTimeImmutable();
-        $this->versions = new ArrayCollection();
+        $this->added        = new DateTimeImmutable();
+        $this->fileVersions = new ArrayCollection();
     }
 
     /**
@@ -72,9 +83,54 @@ class File
     /**
      * @return Collection|FileVersion[]
      */
-    public function getVersions(): Collection
+    public function getFileVersions(): Collection
     {
-        return $this->versions;
+        return $this->fileVersions;
+    }
+
+    /**
+     * @return FileVersion|null
+     */
+    public function getCurrentFileVersion(): ?FileVersion
+    {
+        return $this->currentFileVersion;
+    }
+
+    /**
+     * @param FileVersion $fileVersion
+     *
+     * @return $this
+     */
+    public function setCurrentFileVersion(FileVersion $fileVersion): File
+    {
+        $currentFileVersion = $this->currentFileVersion;
+
+        if (null === $currentFileVersion || $currentFileVersion->getPath() !== $fileVersion->getPath()) {
+            $this->currentFileVersion = $fileVersion;
+            $this->addVersion($fileVersion);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param DateTimeImmutable $archived
+     *
+     * @return File
+     */
+    public function setArchived(DateTimeImmutable $archived): File
+    {
+        $this->archived = $archived;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable
+     */
+    public function getArchived(): ?DateTimeImmutable
+    {
+        return $this->archived;
     }
 
     /**
@@ -82,32 +138,12 @@ class File
      *
      * @return $this
      */
-    public function addVersion(FileVersion $version): File
+    private function addVersion(FileVersion $version): File
     {
-        if (!$this->versions->contains($version)) {
+        if (!$this->fileVersions->contains($version)) {
             $version->setFile($this);
-            $this->versions->add($version);
+            $this->fileVersions->add($version);
         }
-
-        return $this;
-    }
-
-    /**
-     * @return FileVersion|null
-     */
-    public function getCurrentVersion(): ?FileVersion
-    {
-        return $this->currentVersion;
-    }
-
-    /**
-     * @param FileVersion $currentVersion
-     *
-     * @return $this
-     */
-    public function setCurrentVersion(FileVersion $currentVersion): File
-    {
-        $this->currentVersion = $currentVersion;
 
         return $this;
     }

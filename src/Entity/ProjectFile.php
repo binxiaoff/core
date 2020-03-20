@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\BlamableAddedTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Traits\ConstantsAwareTrait;
@@ -38,6 +39,8 @@ class ProjectFile
      * @var string
      *
      * @ORM\Column(length=60)
+     *
+     * @Assert\Choice(callback="getTypes")
      */
     private $type;
 
@@ -59,12 +62,17 @@ class ProjectFile
      * @param string  $type
      * @param File    $file
      * @param Project $project
+     * @param Clients $addedBy
+     *
+     * @throws \Exception
      */
-    public function __construct(string $type, File $file, Project $project)
+    public function __construct(string $type, File $file, Project $project, Clients $addedBy)
     {
         $this->type    = $type;
         $this->file    = $file;
         $this->project = $project;
+        $this->addedBy = $addedBy;
+        $this->added   = new \DateTimeImmutable();
     }
 
     /**
@@ -94,7 +102,7 @@ class ProjectFile
     /**
      * @return array
      */
-    public function getAttachmentTypes(): array
+    public static function getTypes(): array
     {
         return self::getConstants('TYPE_');
     }
