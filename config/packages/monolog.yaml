@@ -40,7 +40,6 @@ monolog:
         slack_security:
             type: slackwebhook
             webhook_url: "%slack.webhook.security%"
-            level: critical
             channels: ['security']
             use_short_attachment: false
             include_extra: true

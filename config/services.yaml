@@ -162,7 +162,3 @@ services:
         autoconfigure: false
 
     Sonata\CacheBundle\Adapter\SymfonyCache: '@sonata.cache.symfony'
-
-    Unilend\Service\Monolog\Processor\EnvironmentProcessor:
-        tags:
-            - { name: monolog.processor }
