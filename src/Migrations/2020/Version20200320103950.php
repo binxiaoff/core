@@ -17,16 +17,15 @@ final class Version20200320103950 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->addSql('CREATE TABLE project_file (id INT AUTO_INCREMENT NOT NULL, id_file INT NOT NULL, id_project INT NOT NULL, added_by INT NOT NULL, type VARCHAR(60) NOT NULL, added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', UNIQUE INDEX UNIQ_B50EFE087BF2A12 (id_file), INDEX IDX_B50EFE08F12E799E (id_project), INDEX IDX_B50EFE08699B6BAF (added_by), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
-        $this->addSql('CREATE TABLE file (id INT AUTO_INCREMENT NOT NULL, id_current_file_version INT DEFAULT NULL, archived_by INT DEFAULT NULL, description VARCHAR(191) DEFAULT NULL, archived DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', public_id VARCHAR(36) NOT NULL, updated DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', UNIQUE INDEX UNIQ_8C9F3610B5B48B91 (public_id), UNIQUE INDEX UNIQ_8C9F3610FC4F95CE (id_current_file_version), INDEX IDX_8C9F361051B07D6D (archived_by), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
-        $this->addSql('CREATE TABLE file_version (id INT AUTO_INCREMENT NOT NULL, file_id INT NOT NULL, added_by INT NOT NULL, path VARCHAR(191) NOT NULL, original_name VARCHAR(191) DEFAULT NULL, size INT DEFAULT NULL, file_system VARCHAR(255) NOT NULL, updated DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', public_id VARCHAR(36) NOT NULL, UNIQUE INDEX UNIQ_E47A6AF8B5B48B91 (public_id), INDEX IDX_E47A6AF893CB796C (file_id), INDEX IDX_E47A6AF8699B6BAF (added_by), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE file (id INT AUTO_INCREMENT NOT NULL, id_current_file_version INT DEFAULT NULL, archived_by INT DEFAULT NULL, description VARCHAR(191) DEFAULT NULL, archived DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', public_id VARCHAR(36) NOT NULL, updated DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', UNIQUE INDEX UNIQ_8C9F3610B5B48B91 (public_id), UNIQUE INDEX UNIQ_8C9F3610173B2587 (id_current_file_version), INDEX IDX_8C9F361051B07D6D (archived_by), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE file_version (id INT AUTO_INCREMENT NOT NULL, id_file INT NOT NULL, added_by INT NOT NULL, path VARCHAR(191) NOT NULL, original_name VARCHAR(191) DEFAULT NULL, size INT DEFAULT NULL, file_system VARCHAR(255) NOT NULL, updated DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', public_id VARCHAR(36) NOT NULL, UNIQUE INDEX UNIQ_E47A6AF8B5B48B91 (public_id), INDEX IDX_E47A6AF87BF2A12 (id_file), INDEX IDX_E47A6AF8699B6BAF (added_by), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE file_download (id INT AUTO_INCREMENT NOT NULL, id_file_version INT NOT NULL, added_by INT NOT NULL, added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_C94A0DEDC7BB1F8A (id_file_version), INDEX IDX_C94A0DED699B6BAF (added_by), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
-
         $this->addSql('ALTER TABLE project_file ADD CONSTRAINT FK_B50EFE087BF2A12 FOREIGN KEY (id_file) REFERENCES file (id)');
         $this->addSql('ALTER TABLE project_file ADD CONSTRAINT FK_B50EFE08F12E799E FOREIGN KEY (id_project) REFERENCES project (id)');
         $this->addSql('ALTER TABLE project_file ADD CONSTRAINT FK_B50EFE08699B6BAF FOREIGN KEY (added_by) REFERENCES staff (id)');
-        $this->addSql('ALTER TABLE file ADD CONSTRAINT FK_8C9F3610FC4F95CE FOREIGN KEY (id_current_file_version) REFERENCES file_version (id)');
+        $this->addSql('ALTER TABLE file ADD CONSTRAINT FK_8C9F3610173B2587 FOREIGN KEY (id_current_file_version) REFERENCES file_version (id)');
         $this->addSql('ALTER TABLE file ADD CONSTRAINT FK_8C9F361051B07D6D FOREIGN KEY (archived_by) REFERENCES staff (id)');
-        $this->addSql('ALTER TABLE file_version ADD CONSTRAINT FK_E47A6AF893CB796C FOREIGN KEY (file_id) REFERENCES file (id)');
+        $this->addSql('ALTER TABLE file_version ADD CONSTRAINT FK_E47A6AF87BF2A12 FOREIGN KEY (id_file) REFERENCES file (id)');
         $this->addSql('ALTER TABLE file_version ADD CONSTRAINT FK_E47A6AF8699B6BAF FOREIGN KEY (added_by) REFERENCES staff (id)');
         $this->addSql('ALTER TABLE file_download ADD CONSTRAINT FK_C94A0DEDC7BB1F8A FOREIGN KEY (id_file_version) REFERENCES file_version (id)');
         $this->addSql('ALTER TABLE file_download ADD CONSTRAINT FK_C94A0DED699B6BAF FOREIGN KEY (added_by) REFERENCES staff (id)');
@@ -45,7 +44,7 @@ final class Version20200320103950 extends AbstractMigration
             FROM attachment
             ');
 
-        $this->addSql('INSERT INTO file_version (id, file_id, added_by, path, original_name, size, file_system, updated, added, public_id)
+        $this->addSql('INSERT INTO file_version (id, id_file, added_by, path, original_name, size, file_system, updated, added, public_id)
             SELECT id, id, added_by, path, original_name, size, "user_attachment", updated, added, public_id
             FROM attachment
         ');
@@ -69,10 +68,10 @@ final class Version20200320103950 extends AbstractMigration
     public function down(Schema $schema): void
     {
         $this->addSql('ALTER TABLE project_file DROP FOREIGN KEY FK_B50EFE087BF2A12');
-        $this->addSql('ALTER TABLE file_version DROP FOREIGN KEY FK_E47A6AF893CB796C');
+        $this->addSql('ALTER TABLE file_version DROP FOREIGN KEY FK_E47A6AF87BF2A12');
         $this->addSql('ALTER TABLE project DROP FOREIGN KEY FK_2FB3D0EE61AA99F6');
         $this->addSql('ALTER TABLE project DROP FOREIGN KEY FK_2FB3D0EE3018FCE3');
-        $this->addSql('ALTER TABLE file DROP FOREIGN KEY FK_8C9F3610FC4F95CE');
+        $this->addSql('ALTER TABLE file DROP FOREIGN KEY FK_8C9F3610173B2587');
         $this->addSql('ALTER TABLE project_participation_contact DROP FOREIGN KEY FK_41530AB3D8274047');
         $this->addSql('ALTER TABLE attachment_signature DROP FOREIGN KEY FK_D8505362DCD5596C');
         $this->addSql('ALTER TABLE file_download DROP FOREIGN KEY FK_C94A0DEDC7BB1F8A');

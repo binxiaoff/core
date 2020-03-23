@@ -140,7 +140,7 @@ class FileVersion
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\File", inversedBy="versions")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(name="id_file", nullable=false)
      */
     private $file;
 
