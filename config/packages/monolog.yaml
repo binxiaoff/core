@@ -41,12 +41,14 @@ monolog:
             type: slackwebhook
             webhook_url: "%slack.webhook.security%"
             channels: ['security']
+            level: critical
             use_short_attachment: false
             include_extra: true
         email_security:
             type: service
             id: Unilend\Service\Monolog\Handler\MailTemplateHandler
             channels: ['security']
+            level: critical
         rollbar:
             type: service
             id: Rollbar\Monolog\Handler\RollbarHandler
