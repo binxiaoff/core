@@ -40,7 +40,7 @@ class File
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Entity\FileVersion", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_current_version")
+     * @ORM\JoinColumn(name="id_current_file_version")
      */
     private $currentFileVersion;
 
