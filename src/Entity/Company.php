@@ -137,6 +137,15 @@ class Company
     private $statuses;
 
     /**
+     * @var Module[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="Module", mappedBy="company", indexBy="name")
+     *
+     * @ApiSubresource
+     */
+    private $modules;
+
+    /**
      * @param string $name
      *
      * @throws Exception
@@ -148,6 +157,7 @@ class Company
         $this->projectParticipations = new ArrayCollection();
         $this->statuses              = new ArrayCollection();
         $this->added                 = new DateTimeImmutable();
+        $this->modules               = new ArrayCollection();
     }
 
     /**
@@ -371,5 +381,15 @@ class Company
         $currentStatus = $this->getCurrentStatus();
 
         return $currentStatus && CompanyStatus::STATUS_REFUSED === $currentStatus->getStatus();
+    }
+
+    /**
+     * @param string $module
+     *
+     * @return bool
+     */
+    public function hasModuleActivated(string $module): bool
+    {
+        return isset($this->modules[$module]) && $this->modules[$module]->isActivated();
     }
 }
