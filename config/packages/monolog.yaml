@@ -5,7 +5,7 @@ monolog:
             type: fingers_crossed
             action_level: error
             handler: error_handler
-            channels: ['!translation', '!security']
+            channels: ['!translation']
         error_handler:
             type: group
             members: [error_file]
@@ -13,7 +13,6 @@ monolog:
             type: stream
             level: info
             path: "%kernel.logs_dir%/error.%kernel.environment%.log"
-            channels: ['!security']
         console_filter:
             type: filter
             handler: console_handler
@@ -32,7 +31,7 @@ monolog:
             type: filter
             handler: site_handler
             max_level: warning
-            channels: ['!console', '!translation', '!security']
+            channels: ['!console', '!translation']
         site_handler:
             type: stream
             level: warning
@@ -41,12 +40,14 @@ monolog:
             type: slackwebhook
             webhook_url: "%slack.webhook.security%"
             channels: ['security']
+            level: critical
             use_short_attachment: false
             include_extra: true
         email_security:
             type: service
             id: Unilend\Service\Monolog\Handler\MailTemplateHandler
             channels: ['security']
+            level: critical
         rollbar:
             type: service
             id: Rollbar\Monolog\Handler\RollbarHandler
