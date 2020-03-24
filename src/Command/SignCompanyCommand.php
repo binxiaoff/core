@@ -6,8 +6,8 @@ namespace Unilend\Command;
 
 use Exception;
 use Symfony\Component\Console\{Command\Command, Input\InputArgument, Input\InputInterface, Output\OutputInterface};
-use Unilend\Entity\{CompanyStatus, TemporaryToken};
-use Unilend\Repository\{CompanyRepository, TemporaryTokenRepository};
+use Unilend\Entity\{CompanyModule, CompanyStatus, TemporaryToken};
+use Unilend\Repository\{CompanyModuleRepository, CompanyRepository, TemporaryTokenRepository};
 use Unilend\Service\Staff\StaffNotifier;
 
 class SignCompanyCommand extends Command
@@ -20,19 +20,27 @@ class SignCompanyCommand extends Command
     private $staffNotifier;
     /** @var TemporaryTokenRepository */
     private $temporaryTokenRepository;
+    /** @var CompanyModuleRepository */
+    private $moduleRepository;
 
     /**
      * @param CompanyRepository        $companyRepository
      * @param StaffNotifier            $staffNotifier
      * @param TemporaryTokenRepository $temporaryTokenRepository
+     * @param CompanyModuleRepository  $moduleRepository
      */
-    public function __construct(CompanyRepository $companyRepository, StaffNotifier $staffNotifier, TemporaryTokenRepository $temporaryTokenRepository)
-    {
+    public function __construct(
+        CompanyRepository $companyRepository,
+        StaffNotifier $staffNotifier,
+        TemporaryTokenRepository $temporaryTokenRepository,
+        CompanyModuleRepository $moduleRepository
+    ) {
         parent::__construct();
 
         $this->companyRepository        = $companyRepository;
         $this->staffNotifier            = $staffNotifier;
         $this->temporaryTokenRepository = $temporaryTokenRepository;
+        $this->moduleRepository         = $moduleRepository;
     }
 
     /**
@@ -69,6 +77,14 @@ class SignCompanyCommand extends Command
                     $temporaryToken = TemporaryToken::generateUltraLongToken($client);
                     $this->temporaryTokenRepository->save($temporaryToken);
                     $this->staffNotifier->notifyClientInitialisation($staff, $temporaryToken);
+                }
+            }
+
+            $modules = $company->getModules();
+
+            foreach (CompanyModule::getAvailableModuleLabels() as $moduleName) {
+                if (false === isset($modules[$moduleName])) {
+                    $this->moduleRepository->save(new CompanyModule($moduleName, $company));
                 }
             }
         }

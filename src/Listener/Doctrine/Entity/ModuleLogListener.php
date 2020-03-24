@@ -6,8 +6,8 @@ namespace Unilend\Listener\Doctrine\Entity;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Unilend\Entity\Module;
-use Unilend\Entity\ModuleLog;
+use Unilend\Entity\CompanyModule;
+use Unilend\Entity\CompanyModuleLog;
 
 class ModuleLogListener
 {
@@ -23,13 +23,13 @@ class ModuleLogListener
     }
 
     /**
-     * @param Module $moduleStatus
+     * @param CompanyModule $moduleStatus
      *
      * @throws Exception
      */
-    public function logModule(Module $moduleStatus)
+    public function logModule(CompanyModule $moduleStatus)
     {
-        $this->entityManager->persist(new ModuleLog($moduleStatus));
+        $this->entityManager->persist(new CompanyModuleLog($moduleStatus));
         $this->entityManager->flush();
     }
 }

@@ -137,9 +137,9 @@ class Company
     private $statuses;
 
     /**
-     * @var Module[]|Collection
+     * @var CompanyModule[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Module", mappedBy="company", indexBy="name")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyModule", mappedBy="company", indexBy="label")
      *
      * @ApiSubresource
      */
@@ -391,5 +391,13 @@ class Company
     public function hasModuleActivated(string $module): bool
     {
         return isset($this->modules[$module]) && $this->modules[$module]->isActivated();
+    }
+
+    /**
+     * @return array|CompanyModule
+     */
+    public function getModules(): array
+    {
+        return $this->modules->toArray();
     }
 }

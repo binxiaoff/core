@@ -15,7 +15,7 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_company", "name"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_company", "label"})})
  *
  * @ApiResource(
  *     normalizationContext={"groups": {"module:read"}},
@@ -32,7 +32,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     }
  * )
  */
-class Module
+class CompanyModule
 {
     use TimestampableTrait;
     use PublicizeIdentityTrait;
@@ -52,7 +52,7 @@ class Module
      *
      * @Groups({"module:read"})
      */
-    private $name;
+    private $label;
 
     /**
      * @var Company
@@ -84,7 +84,7 @@ class Module
      */
     public function __construct(string $name, Company $company, bool $activated = false)
     {
-        $this->name      = $name;
+        $this->label     = $name;
         $this->company   = $company;
         $this->activated = $activated;
         $this->added     = new DateTimeImmutable();
@@ -93,9 +93,9 @@ class Module
     /**
      * @return string
      */
-    public function getName(): string
+    public function getLabel(): string
     {
-        return $this->name;
+        return $this->label;
     }
 
     /**
@@ -117,9 +117,9 @@ class Module
     /**
      * @param bool $activated
      *
-     * @return Module
+     * @return CompanyModule
      */
-    public function setActivated(bool $activated): Module
+    public function setActivated(bool $activated): CompanyModule
     {
         $this->activated = $activated;
 
@@ -129,7 +129,7 @@ class Module
     /**
      * @return array|string[]
      */
-    public static function getAvailableModulesNames(): array
+    public static function getAvailableModuleLabels(): array
     {
         return static::getConstants('MODULE_');
     }

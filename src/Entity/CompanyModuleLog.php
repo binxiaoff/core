@@ -12,18 +12,18 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
 /**
  * @ORM\Entity
  */
-class ModuleLog
+class CompanyModuleLog
 {
     use TimestampableAddedOnlyTrait;
     use BlamableAddedTrait;
 
     /**
-     * @var Module
+     * @var CompanyModule
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Module")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\CompanyModule")
      * @ORM\JoinColumn(nullable=false, name="id_module")
      */
-    private $module;
+    private $companyModule;
 
     /**
      * @var bool
@@ -42,16 +42,16 @@ class ModuleLog
     private $id;
 
     /**
-     * @param Module $module
+     * @param CompanyModule $module
      *
      * @throws Exception
      */
-    public function __construct(Module $module)
+    public function __construct(CompanyModule $module)
     {
-        $this->module    = $module;
-        $this->addedBy   = $module->getUpdatedBy();
-        $this->activated = $module->isActivated();
-        $this->added     = new DateTimeImmutable();
+        $this->companyModule = $module;
+        $this->addedBy       = $module->getUpdatedBy();
+        $this->activated     = $module->isActivated();
+        $this->added         = new DateTimeImmutable();
     }
 
     /**
