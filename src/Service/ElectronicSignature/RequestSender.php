@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service\Psn;
+namespace Unilend\Service\ElectronicSignature;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;

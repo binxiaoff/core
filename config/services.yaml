@@ -166,7 +166,7 @@ services:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Service\Psn\XmlSigner:
+    Unilend\Service\ElectronicSignature\XmlSigner:
         $publicKey: '%psn.public_key%'
         $privateKey: '%psn.private_key%'
 

@@ -7,7 +7,7 @@ namespace Unilend\Controller\AttachmentSignature;
 use League\Flysystem\FileNotFoundException;
 use Symfony\Contracts\HttpClient\Exception\{ClientExceptionInterface, RedirectionExceptionInterface, ServerExceptionInterface, TransportExceptionInterface};
 use Unilend\Entity\AttachmentSignature;
-use Unilend\Service\Psn\RequestSender;
+use Unilend\Service\ElectronicSignature\RequestSender;
 
 class Signe
 {
