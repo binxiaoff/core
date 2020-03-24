@@ -52,7 +52,21 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "tag:write"
  *                 }
  *             }
- *         }
+ *         },
+ *         "project_confidentiality": {
+ *             "method": "POST",
+ *             "security": "is_granted('edit', object)",
+ *             "controller": "Unilend\Controller\File\Upload",
+ *             "path": "/project/confidentiality_document",
+ *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
+ *         },
+ *         "project_description": {
+ *             "method": "POST",
+ *             "security": "is_granted('edit', object)",
+ *             "controller": "Unilend\Controller\File\Upload",
+ *             "path": "/project/description",
+ *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
@@ -84,8 +98,16 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "project_confidentiality": {
  *             "method": "GET",
  *             "security": "is_granted('view_confidentiality_document', object)",
+ *             "controller": "Unilend\Controller\File\Download",
+ *             "path": "/project/{id}/confidentiality_document/download",
  *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
- *             "path": "/projects/{id}/confidentiality"
+ *         },
+ *         "project_description": {
+ *             "method": "GET",
+ *             "security": "is_granted('view', object)",
+ *             "controller": "Unilend\Controller\File\Download",
+ *             "path": "/project/{id}/description/download",
+ *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
  *         },
  *         "patch": {
  *             "security_post_denormalize": "is_granted('edit', previous_object)",
@@ -258,7 +280,7 @@ class Project
     private $description;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\File")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\File", cascade={"persist"})
      * @ORM\JoinColumn(name="id_description_document", unique=true)
      */
     private $descriptionDocument;

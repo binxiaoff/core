@@ -2,19 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Controller\ProjectFile;
+namespace Unilend\Controller\File;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
+use League\Flysystem\FileExistsException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Entity\Clients;
-use Unilend\Entity\FileVersion;
+use Unilend\Entity\File;
 use Unilend\Entity\Project;
-use Unilend\Entity\ProjectFile;
-use Unilend\Repository\ProjectFileRepository;
 use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\File\FileManager;
 
@@ -26,31 +28,35 @@ class Upload
     private $security;
     /** @var IriConverterInterface */
     private $converter;
-    /** @var ProjectFileRepository */
-    private $projectFileRepository;
+    /**
+     * @var EntityManagerInterface
+     */
+    private $entityManager;
 
     /**
-     * @param FileManager           $fileManager
-     * @param Security              $security
-     * @param IriConverterInterface $converter
-     * @param ProjectFileRepository $projectFileRepository
+     * @param FileManager            $fileManager
+     * @param Security               $security
+     * @param IriConverterInterface  $converter
+     * @param EntityManagerInterface $entityManager
      */
-    public function __construct(FileManager $fileManager, Security $security, IriConverterInterface $converter, ProjectFileRepository $projectFileRepository)
+    public function __construct(FileManager $fileManager, Security $security, IriConverterInterface $converter, EntityManagerInterface $entityManager)
     {
-        $this->fileManager           = $fileManager;
-        $this->security              = $security;
-        $this->converter             = $converter;
-        $this->projectFileRepository = $projectFileRepository;
+        $this->fileManager   = $fileManager;
+        $this->security      = $security;
+        $this->converter     = $converter;
+        $this->entityManager = $entityManager;
     }
 
     /**
      * @param Request $request
      *
-     *@throws Exception
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws FileExistsException
      *
-     * @return FileVersion
+     * @return File
      */
-    public function __invoke(Request $request): FileVersion
+    public function __invoke(Request $request): File
     {
         /** @var Clients $user */
         $user = $this->security->getUser();
@@ -78,14 +84,37 @@ class Upload
             throw new AccessDeniedHttpException('You cannot upload file for the project');
         }
 
-        $file = $this->fileManager->upload(
+        $pathName = $request->request->get('_api_item_operation_name');
+        $file     = null;
+
+        switch ($pathName) {
+            case 'project_description':
+                $file = 'DescriptionDocument';
+
+                break;
+            case 'project_confidentiality':
+                $file = 'ConfidentialityDisclaimer';
+
+                break;
+        }
+
+        $getter = 'get' . $file;
+        $setter = 'set' . $file;
+
+        if (false === is_callable($project, $getter) || false === is_callable($project, $setter)) {
+            throw new Exception();
+        }
+
+        $file = $this->fileManager->uploadFile(
+            $project->{$getter}(),
             $request->files->get('file'),
-            $user->getCurrentStaff(),
+            $user->getCurrentStaff()
         );
 
-        $projectFile = new ProjectFile($type, $file, $project, $user);
-        $this->projectFileRepository->save($projectFile);
+        $project->{$setter}($file);
 
-        return $projectFile;
+        $this->entityManager->flush();
+
+        return $file;
     }
 }

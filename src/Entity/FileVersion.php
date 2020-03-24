@@ -276,6 +276,18 @@ class FileVersion
     }
 
     /**
+     * @param File|null $file
+     *
+     * @return $this
+     */
+    public function setFile(?File $file): FileVersion
+    {
+        $this->file = $file;
+
+        return $this;
+    }
+
+    /**
      * @return string|null
      */
     public function getFileSystem(): ?string

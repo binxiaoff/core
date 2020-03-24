@@ -17,7 +17,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
- *             "projectFile:read"
+ *             "projectFile:read",
  *             "file:read",
  *             "fileVersion:read",
  *             "blameable:read"

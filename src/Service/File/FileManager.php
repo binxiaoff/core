@@ -6,6 +6,7 @@ namespace Unilend\Service\File;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Exception;
 use InvalidArgumentException;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FilesystemInterface;
@@ -44,7 +45,8 @@ class FileManager
      * @param string|null  $description
      *
      * @throws ORMException
-     * @throws OptimisticLockException*@throws \Exception
+     * @throws OptimisticLockException
+     * @throws Exception
      * @throws FileExistsException
      *
      * @return FileVersion
@@ -61,6 +63,43 @@ class FileManager
 
         $file        = new File();
         $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file, $encryptionKey, $mineType);
+        $fileVersion->setFileSystem(FileVersion::FILE_SYSTEM_USER_ATTACHMENT)
+            ->setOriginalName($uploadedFile->getClientOriginalName())
+            ->setSize($uploadedFile->getSize())
+        ;
+
+        $file->setCurrentFileVersion($fileVersion);
+
+        $this->fileRepository->save($file);
+
+        return $file;
+    }
+
+    /**
+     * @param File         $file
+     * @param UploadedFile $uploadedFile
+     * @param Staff        $uploader
+     *
+     * @throws FileExistsException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return FileVersion
+     */
+    public function uploadFile(
+        File $file,
+        UploadedFile $uploadedFile,
+        Staff $uploader
+    ): FileVersion {
+        $relativeUploadedPath = $this->fileUploadManager
+            ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader->getClient()))
+        ;
+
+        if (null === $file) {
+            $file = new File();
+        }
+
+        $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file);
         $fileVersion->setFileSystem(FileVersion::FILE_SYSTEM_USER_ATTACHMENT)
             ->setOriginalName($uploadedFile->getClientOriginalName())
             ->setSize($uploadedFile->getSize())
