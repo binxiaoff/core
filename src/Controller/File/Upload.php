@@ -13,11 +13,9 @@ use League\Flysystem\FileExistsException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Entity\Clients;
 use Unilend\Entity\File;
 use Unilend\Entity\Project;
-use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\File\FileManager;
 
 class Upload
@@ -48,17 +46,18 @@ class Upload
     }
 
     /**
+     * @param Project $data
      * @param Request $request
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws Exception
      * @throws FileExistsException
      *
      * @return File
      */
-    public function __invoke(Request $request): File
+    public function __invoke(Project $data, Request $request): File
     {
-        /** @var Clients $user */
         $user = $this->security->getUser();
 
         // If a "user" is found in the request, it means that we want to upload a file for the "user".
@@ -70,48 +69,25 @@ class Upload
             $user = $this->converter->getItemFromIri($userIri);
         }
 
-        $type = $request->request->get('type');
+        // Dynamically find the requested document based on defined operation name
+        $document = array_map(function ($element) {
+            return ucfirst($element);
+        }, explode('_', $request->request->get('_api_item_operation_name')));
 
-        if (null === $type) {
-            throw new \InvalidArgumentException('You should define a type for the project file.');
-        }
+        $getter = 'get' . $document;
+        $setter = 'set' . $document;
 
-        $projectIri = $request->request->get('project');
-        /** @var Project $project */
-        $project = $projectIri ? $this->converter->getItemFromIri($projectIri, [AbstractNormalizer::GROUPS => ['project:read']]) : null;
-
-        if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
-            throw new AccessDeniedHttpException('You cannot upload file for the project');
-        }
-
-        $pathName = $request->request->get('_api_item_operation_name');
-        $file     = null;
-
-        switch ($pathName) {
-            case 'project_description':
-                $file = 'DescriptionDocument';
-
-                break;
-            case 'project_confidentiality':
-                $file = 'ConfidentialityDisclaimer';
-
-                break;
-        }
-
-        $getter = 'get' . $file;
-        $setter = 'set' . $file;
-
-        if (false === is_callable($project, $getter) || false === is_callable($project, $setter)) {
+        if (false === is_callable($data, $getter) || false === is_callable($data, $setter)) {
             throw new Exception();
         }
 
-        $file = $this->fileManager->uploadFile(
-            $project->{$getter}(),
+        $file = $this->fileManager->upload(
+            $data->{$getter}(),
             $request->files->get('file'),
             $user->getCurrentStaff()
         );
 
-        $project->{$setter}($file);
+        $data->{$setter}($file);
 
         $this->entityManager->flush();
 

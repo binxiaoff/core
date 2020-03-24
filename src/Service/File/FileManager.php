@@ -6,7 +6,6 @@ namespace Unilend\Service\File;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Exception;
 use InvalidArgumentException;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FilesystemInterface;
@@ -40,58 +39,26 @@ class FileManager
     }
 
     /**
+     * @param File|null    $file
      * @param UploadedFile $uploadedFile
      * @param Staff        $uploader
      * @param string|null  $description
      *
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws Exception
+     * @throws \Exception
      * @throws FileExistsException
      *
-     * @return FileVersion
+     * @return File
      */
     public function upload(
+        ?File $file,
         UploadedFile $uploadedFile,
         Staff $uploader,
-        ?string $description = null
-    ): FileVersion {
+        string $description = null
+    ): File {
         $mineType                               = $uploadedFile->getMimeType();
         [$relativeUploadedPath, $encryptionKey] = $this->fileUploadManager
-            ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader->getClient()))
-        ;
-
-        $file        = new File();
-        $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file, $encryptionKey, $mineType);
-        $fileVersion->setFileSystem(FileVersion::FILE_SYSTEM_USER_ATTACHMENT)
-            ->setOriginalName($uploadedFile->getClientOriginalName())
-            ->setSize($uploadedFile->getSize())
-        ;
-
-        $file->setCurrentFileVersion($fileVersion);
-
-        $this->fileRepository->save($file);
-
-        return $file;
-    }
-
-    /**
-     * @param File         $file
-     * @param UploadedFile $uploadedFile
-     * @param Staff        $uploader
-     *
-     * @throws FileExistsException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     *
-     * @return FileVersion
-     */
-    public function uploadFile(
-        File $file,
-        UploadedFile $uploadedFile,
-        Staff $uploader
-    ): FileVersion {
-        $relativeUploadedPath = $this->fileUploadManager
             ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader->getClient()))
         ;
 
@@ -99,7 +66,7 @@ class FileManager
             $file = new File();
         }
 
-        $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file);
+        $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file, $encryptionKey, $mineType);
         $fileVersion->setFileSystem(FileVersion::FILE_SYSTEM_USER_ATTACHMENT)
             ->setOriginalName($uploadedFile->getClientOriginalName())
             ->setSize($uploadedFile->getSize())

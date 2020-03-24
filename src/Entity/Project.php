@@ -53,18 +53,18 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 }
  *             }
  *         },
- *         "project_confidentiality": {
+ *         "confidentiality_disclaimer": {
  *             "method": "POST",
  *             "security": "is_granted('edit', object)",
  *             "controller": "Unilend\Controller\File\Upload",
- *             "path": "/project/confidentiality_document",
+ *             "path": "/project/{publicId}/confidentiality_document/upload",
  *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
  *         },
- *         "project_description": {
+ *         "description_document": {
  *             "method": "POST",
  *             "security": "is_granted('edit', object)",
  *             "controller": "Unilend\Controller\File\Upload",
- *             "path": "/project/description",
+ *             "path": "/project/{publicId}/description/upload",
  *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
  *         },
  *     },
@@ -99,14 +99,14 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "method": "GET",
  *             "security": "is_granted('view_confidentiality_document', object)",
  *             "controller": "Unilend\Controller\File\Download",
- *             "path": "/project/{id}/confidentiality_document/download",
+ *             "path": "/project/{publicId}/confidentiality_document/download",
  *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
  *         },
  *         "project_description": {
  *             "method": "GET",
  *             "security": "is_granted('view', object)",
  *             "controller": "Unilend\Controller\File\Download",
- *             "path": "/project/{id}/description/download",
+ *             "path": "/project/{publicId}/description/download",
  *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
  *         },
  *         "patch": {

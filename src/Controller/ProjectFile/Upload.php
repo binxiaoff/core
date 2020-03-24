@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Unilend\Controller\ProjectFile;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
+use League\Flysystem\FileExistsException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Entity\Clients;
-use Unilend\Entity\FileVersion;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectFile;
+use Unilend\Entity\{Clients, File, Project, ProjectFile};
 use Unilend\Repository\ProjectFileRepository;
 use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\File\FileManager;
@@ -44,15 +44,18 @@ class Upload
     }
 
     /**
-     * @param Request $request
+     * @param ProjectFile $data
+     * @param Request     $request
      *
-     *@throws Exception
+     * @throws OptimisticLockException
+     * @throws FileExistsException
+     * @throws Exception
+     * @throws ORMException
      *
-     * @return FileVersion
+     * @return ProjectFile
      */
-    public function __invoke(Request $request): FileVersion
+    public function __invoke(?ProjectFile $data, Request $request): ProjectFile
     {
-        /** @var Clients $user */
         $user = $this->security->getUser();
 
         // If a "user" is found in the request, it means that we want to upload a file for the "user".
@@ -79,13 +82,16 @@ class Upload
         }
 
         $file = $this->fileManager->upload(
+            $data ? $data->getFile() : new File(),
             $request->files->get('file'),
             $user->getCurrentStaff(),
         );
 
-        $projectFile = new ProjectFile($type, $file, $project, $user);
-        $this->projectFileRepository->save($projectFile);
+        if (!$data) {
+            $data = new ProjectFile($type, $file, $project, $user);
+            $this->projectFileRepository->save($data);
+        }
 
-        return $projectFile;
+        return $data;
     }
 }
