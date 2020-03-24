@@ -63,7 +63,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "projectParticipation:read",
  *                 "projectParticipationOffer:read",
  *                 "money:read",
- *                 "attachment:read",
+ *                 "file:read",
  *                 "projectStatus:read",
  *                 "projectParticipationContact:read",
  *                 "projectParticipationFee:read",
@@ -84,7 +84,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "project_confidentiality": {
  *             "method": "GET",
  *             "security": "is_granted('view_confidentiality_document', object)",
- *             "normalization_context": {"groups": {"project:confidentiality:read", "attachment:read"}},
+ *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
  *             "path": "/projects/{id}/confidentiality"
  *         },
  *         "patch": {

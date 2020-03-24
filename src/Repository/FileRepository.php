@@ -26,14 +26,14 @@ class FileRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param File $attachment
+     * @param File $file
      *
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function save(File $attachment): void
+    public function save(File $file): void
     {
-        $this->getEntityManager()->persist($attachment);
+        $this->getEntityManager()->persist($file);
         $this->getEntityManager()->flush();
     }
 }

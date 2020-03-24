@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Traits\{BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableTrait};
 
 /**
  * @ORM\Entity
  *
  * @Gedmo\SoftDeleteable(fieldName="archived")
- *
- * @ApiResource
  */
 class File
 {
@@ -30,17 +28,23 @@ class File
      * @var string
      *
      * @ORM\Column(length=191, nullable=true)
+     *
+     * @Groups({"file:read"})
      */
     private $description;
 
     /**
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\FileVersion", mappedBy="file", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\FileVersion", mappedBy="file", orphanRemoval=true, cascade={"persist"})
+     *
+     * @Groups({"file:read"})
      */
     private $fileVersions;
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Entity\FileVersion", cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_current_file_version")
+     *
+     * @Groups({"file:read"})
      */
     private $currentFileVersion;
 
@@ -48,6 +52,8 @@ class File
      * @var DateTimeImmutable
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"file:read"})
      */
     private $archived;
 

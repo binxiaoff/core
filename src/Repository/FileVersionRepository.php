@@ -26,14 +26,14 @@ class FileVersionRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param FileVersion $attachment
+     * @param FileVersion $fileVersion
      *
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function save(FileVersion $attachment): void
+    public function save(FileVersion $fileVersion): void
     {
-        $this->getEntityManager()->persist($attachment);
+        $this->getEntityManager()->persist($fileVersion);
         $this->getEntityManager()->flush();
     }
 }

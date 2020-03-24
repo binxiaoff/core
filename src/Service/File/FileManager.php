@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Service\File;
 
-use Exception;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use InvalidArgumentException;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FilesystemInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Clients, FileVersion, Project, Staff};
-use Unilend\Repository\FileVersionRepository;
+use Unilend\Entity\{Clients, File, FileVersion, Project, Staff};
+use Unilend\Repository\FileRepository;
 use Unilend\Service\FileSystem\FileUploadManager;
 
 class FileManager
@@ -19,41 +20,38 @@ class FileManager
     private $fileUploadManager;
     /** @var FilesystemInterface */
     private $userAttachmentFilesystem;
-    /** @var FileVersionRepository */
-    private $fileVersionRepository;
+    /** @var FileRepository */
+    private $fileRepository;
 
     /**
-     * @param FilesystemInterface   $userAttachmentFilesystem
-     * @param FileUploadManager     $fileUploadManager
-     * @param FileVersionRepository $fileVersionRepository
+     * @param FilesystemInterface $userAttachmentFilesystem
+     * @param FileUploadManager   $fileUploadManager
+     * @param FileRepository      $fileRepository
      */
     public function __construct(
         FilesystemInterface $userAttachmentFilesystem,
         FileUploadManager $fileUploadManager,
-        FileVersionRepository $fileVersionRepository
+        FileRepository $fileRepository
     ) {
         $this->userAttachmentFilesystem = $userAttachmentFilesystem;
         $this->fileUploadManager        = $fileUploadManager;
-        $this->fileVersionRepository    = $fileVersionRepository;
+        $this->fileRepository           = $fileRepository;
     }
 
     /**
      * @param UploadedFile $uploadedFile
      * @param Staff        $uploader
-     * @param string       $type
-     * @param Project      $project
      * @param string|null  $description
      *
-     *@throws FileExistsException
-     * @throws Exception
+     * @throws ORMException
+     * @throws OptimisticLockException*@throws \Exception
+     * @throws FileExistsException
      *
      * @return FileVersion
      */
     public function upload(
         UploadedFile $uploadedFile,
         Staff $uploader,
-        string $type,
-        Project $project,
         ?string $description = null
     ): FileVersion {
         $mineType                               = $uploadedFile->getMimeType();
@@ -61,17 +59,18 @@ class FileManager
             ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader->getClient()))
         ;
 
-        $attachment = new FileVersion($relativeUploadedPath, $uploader, $encryptionKey, $mineType);
-
-        //@todo change that
-        $attachment
+        $file        = new File();
+        $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file, $encryptionKey, $mineType);
+        $fileVersion->setFileSystem(FileVersion::FILE_SYSTEM_USER_ATTACHMENT)
             ->setOriginalName($uploadedFile->getClientOriginalName())
-            ->setSize($this->userAttachmentFilesystem->getSize($relativeUploadedPath))
+            ->setSize($uploadedFile->getSize())
         ;
 
-        $this->fileVersionRepository->save($attachment);
+        $file->setCurrentFileVersion($fileVersion);
 
-        return $attachment;
+        $this->fileRepository->save($file);
+
+        return $file;
     }
 
     /**

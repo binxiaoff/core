@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Controller\File;
+namespace Unilend\Controller\ProjectFile;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use Exception;
@@ -13,6 +13,8 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Entity\Clients;
 use Unilend\Entity\FileVersion;
 use Unilend\Entity\Project;
+use Unilend\Entity\ProjectFile;
+use Unilend\Repository\ProjectFileRepository;
 use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\File\FileManager;
 
@@ -24,17 +26,21 @@ class Upload
     private $security;
     /** @var IriConverterInterface */
     private $converter;
+    /** @var ProjectFileRepository */
+    private $projectFileRepository;
 
     /**
      * @param FileManager           $fileManager
      * @param Security              $security
      * @param IriConverterInterface $converter
+     * @param ProjectFileRepository $projectFileRepository
      */
-    public function __construct(FileManager $fileManager, Security $security, IriConverterInterface $converter)
+    public function __construct(FileManager $fileManager, Security $security, IriConverterInterface $converter, ProjectFileRepository $projectFileRepository)
     {
-        $this->fileManager = $fileManager;
-        $this->security    = $security;
-        $this->converter   = $converter;
+        $this->fileManager           = $fileManager;
+        $this->security              = $security;
+        $this->converter             = $converter;
+        $this->projectFileRepository = $projectFileRepository;
     }
 
     /**
@@ -61,7 +67,7 @@ class Upload
         $type = $request->request->get('type');
 
         if (null === $type) {
-            throw new \InvalidArgumentException('You should define a type for the uploaded file.');
+            throw new \InvalidArgumentException('You should define a type for the project file.');
         }
 
         $projectIri = $request->request->get('project');
@@ -72,11 +78,16 @@ class Upload
             throw new AccessDeniedHttpException('You cannot upload file for the project');
         }
 
-        return $this->fileManager->upload(
+        $file = $this->fileManager->upload(
             $request->files->get('file'),
             $user->getCurrentStaff(),
             $type,
             $project
         );
+
+        $projectFile = new ProjectFile($type, $file, $project, $user);
+        $this->projectFileRepository->save($projectFile);
+
+        return $projectFile;
     }
 }

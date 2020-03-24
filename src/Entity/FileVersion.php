@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Defuse\Crypto\{Exception\EnvironmentIsBrokenException, Key};
 use Doctrine\Common\Collections\ArrayCollection;
@@ -16,63 +15,6 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, Timestamp
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * @ApiResource(
- *     attributes={"pagination_client_enabled": true},
- *     normalizationContext={"groups": {"attachment:read", "blameable:read"}},
- *     denormalizationContext={"groups": "attachment:write"},
- *     itemOperations={
- *         "get": {
- *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
- *             "read": false,
- *             "output": false,
- *         },
- *         "delete": {"security": "is_granted('edit', object.getProject())"},
- *         "download": {
- *             "security": "is_granted('download', object)",
- *             "method": "GET",
- *             "controller": "Unilend\Controller\Attachment\Download",
- *             "path": "/attachments/{id}/download"
- *         }
- *     },
- *     collectionOperations={
- *         "post": {
- *             "method": "POST",
- *             "controller": "Unilend\Controller\Attachment\Upload",
- *             "deserialize": false,
- *             "swagger_context": {
- *                 "consumes": {"multipart/form-data"},
- *                 "parameters": {
- *                     {
- *                         "in": "formData",
- *                         "name": "file",
- *                         "type": "file",
- *                         "description": "The uploaded file",
- *                         "required": true
- *                     },
- *                     {
- *                         "in": "formData",
- *                         "name": "type",
- *                         "type": "string",
- *                         "description": "The attachment type"
- *                     },
- *                     {
- *                         "in": "formData",
- *                         "name": "project",
- *                         "type": "string",
- *                         "description": "The project as an IRI"
- *                     },
- *                     {
- *                         "in": "formData",
- *                         "name": "user",
- *                         "type": "string",
- *                         "description": "The uploader as an IRI (available as an admin)"
- *                     }
- *                 }
- *             }
- *         }
- *     }
- * )
- *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -99,6 +41,8 @@ class FileVersion
      * @var string
      *
      * @ORM\Column(length=191)
+     *
+     * @Groups({"fileVersion:read"})
      */
     private $path;
 
@@ -107,7 +51,7 @@ class FileVersion
      *
      * @ORM\Column(length=191, nullable=true)
      *
-     * @Groups({"attachment:read"})
+     * @Groups({"fileVersion:read"})
      */
     private $originalName;
 
@@ -116,7 +60,7 @@ class FileVersion
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\AttachmentSignature", mappedBy="fileVersion")
      *
-     * @Groups({"attachment:read"})
+     * @Groups({"fileVersion:read"})
      */
     private $signatures;
 
@@ -127,7 +71,7 @@ class FileVersion
      *
      * @ORM\Column(type="integer", nullable=true)
      *
-     * @Groups({"attachment:read"})
+     * @Groups({"fileVersion:read"})
      */
     private $size;
 
@@ -146,6 +90,8 @@ class FileVersion
 
     /**
      * @ORM\Column(type="string", length=255)
+     *
+     * @Groups({"fileVersion:read"})
      */
     private $fileSystem;
 
@@ -327,18 +273,6 @@ class FileVersion
     public function getFile(): ?File
     {
         return $this->file;
-    }
-
-    /**
-     * @param File|null $file
-     *
-     * @return $this
-     */
-    public function setFile(?File $file): FileVersion
-    {
-        $this->file = $file;
-
-        return $this;
     }
 
     /**

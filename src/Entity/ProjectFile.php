@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\BlamableAddedTrait;
@@ -12,6 +13,67 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
+ *
+ * @ApiResource(
+ *     normalizationContext={
+ *         "groups": {
+ *             "projectFile:read"
+ *             "file:read",
+ *             "fileVersion:read",
+ *             "blameable:read"
+ *         }
+ *     },
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *         "download": {
+ *             "security": "is_granted('download', object)",
+ *             "method": "GET",
+ *             "controller": "Unilend\Controller\ProjectFile\Download",
+ *             "path": "/project_file/{id}/download"
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "method": "POST",
+ *             "controller": "Unilend\Controller\ProjectFile\Upload",
+ *             "deserialize": false,
+ *             "swagger_context": {
+ *                 "consumes": {"multipart/form-data"},
+ *                 "parameters": {
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "file",
+ *                         "type": "file",
+ *                         "description": "The uploaded file",
+ *                         "required": true
+ *                     },
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "type",
+ *                         "type": "string",
+ *                         "description": "The file type"
+ *                     },
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "project",
+ *                         "type": "string",
+ *                         "description": "The project as an IRI"
+ *                     },
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "user",
+ *                         "type": "string",
+ *                         "description": "The uploader as an IRI (available as an admin)"
+ *                     }
+ *                 }
+ *             }
+ *         }
+ *     }
+ * )
  */
 class ProjectFile
 {

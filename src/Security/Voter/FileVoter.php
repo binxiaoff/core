@@ -10,7 +10,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, FileVersion, Project, ProjectParticipationContact, ProjectStatus};
 use Unilend\Repository\{AttachmentSignatureRepository, ProjectParticipationContactRepository};
 
-class AttachmentVoter extends AbstractEntityVoter
+class FileVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_DOWNLOAD = 'download';
 
