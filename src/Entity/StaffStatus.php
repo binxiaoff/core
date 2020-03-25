@@ -20,8 +20,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     name="staff_status",
  *     indexes={
  *         @ORM\Index(columns={"status"}, name="idx_staff_status_status"),
- *         @ORM\Index(columns={"id_staff"}, name="idx_staff_status_id_project"),
- *         @ORM\Index(columns={"added_by"}, name="idx_staff_status_added_by")
  *     }
  * )
  */

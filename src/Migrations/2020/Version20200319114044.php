@@ -30,6 +30,9 @@ final class Version20200319114044 extends AbstractMigration
         $this->addSql('CREATE UNIQUE INDEX UNIQ_426EF392E173B1B89122A03F ON staff (id_client, id_company)');
         $this->addSql('INSERT INTO staff_status SELECT NULL, id, id, 10, NOW() as added FROM staff');
         $this->addSql('UPDATE staff SET id_current_status = (SELECT id FROM staff_status as status WHERE staff.id = status.id_staff LIMIT 1) WHERE 1 = 1');
+
+        $this->addSql('ALTER TABLE staff_status RENAME INDEX idx_staff_status_id_project TO IDX_7E7DD7A7ACEBB2A2');
+        $this->addSql('ALTER TABLE staff_status RENAME INDEX idx_staff_status_added_by TO IDX_7E7DD7A7699B6BAF');
     }
 
     /**
@@ -37,6 +40,9 @@ final class Version20200319114044 extends AbstractMigration
      */
     public function down(Schema $schema): void
     {
+        $this->addSql('ALTER TABLE staff_status RENAME INDEX idx_7e7dd7a7699b6baf TO idx_staff_status_added_by');
+        $this->addSql('ALTER TABLE staff_status RENAME INDEX idx_7e7dd7a7acebb2a2 TO idx_staff_status_id_project');
+
         $this->addSql('ALTER TABLE staff DROP FOREIGN KEY FK_426EF39241AF0274');
         $this->addSql('DROP TABLE staff_status');
         $this->addSql('DROP INDEX UNIQ_426EF39241AF0274 ON staff');

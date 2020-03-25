@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait, TraceableStatusTrait};
@@ -27,8 +28,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableT
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"role:write", "staff:create", "client:create"}},
- *             "input": "Unilend\Entity\Staff"
+ *             "denormalization_context": {"groups": {"role:write", "staff:create", "client:create"}}
  *         }
  *     }
  * )
@@ -36,6 +36,8 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableT
  * @ORM\Entity
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "id_company"})})
  * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity(fields={"company", "client"}, message="Staff.client.unique")
  */
 class Staff
 {
