@@ -56,15 +56,15 @@ services:
 
     Unilend\Listener\Doctrine\Entity\FileVersion\FileVersionCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, method: encryptKey}
+            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\Attachment, method: encryptKey}
 
     Unilend\Listener\Doctrine\Entity\FileVersion\FileVersionLoadedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postLoad, method: decryptKey }
+            - { name: doctrine.orm.entity_listener, event: postLoad, entity: Unilend\Entity\Attachment, method: decryptKey }
 
     Unilend\Listener\Doctrine\Entity\FileVersion\FileVersionUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, method: blockUpdating }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\Attachment, method: blockUpdating }
 
     Unilend\Listener\Doctrine\Lifecycle\UuidListener:
         tags:
