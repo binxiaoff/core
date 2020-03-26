@@ -37,7 +37,7 @@ final class Version20200320103950 extends AbstractMigration
         $this->addSql('ALTER TABLE project_participation_contact ADD id_accepted_confidentiality_disclaimer_version INT DEFAULT NULL');
         $this->addSql('ALTER TABLE project_participation_contact ADD CONSTRAINT FK_41530AB3D8274047 FOREIGN KEY (id_accepted_confidentiality_disclaimer_version) REFERENCES file_version (id)');
         $this->addSql('CREATE INDEX IDX_41530AB3D8274047 ON project_participation_contact (id_accepted_confidentiality_disclaimer_version)');
-        $this->addSql('ALTER TABLE attachment_signature ADD CONSTRAINT FK_D8505362DCD5596C FOREIGN KEY (id_attachment) REFERENCES file_version (id)');
+        $this->addSql('ALTER TABLE attachment_signature DROP FOREIGN KEY FK_D8505362DCD5596C');
 
         $this->addSql('INSERT INTO file (id, description, public_id, updated, added, archived, archived_by)
             SELECT id, description, public_id, updated, added, archived, archived_by
@@ -60,8 +60,9 @@ final class Version20200320103950 extends AbstractMigration
             FROM attachment
         ');
 
-        $this->addSql('DROP TABLE attachment');
+        $this->addSql('ALTER TABLE attachment_signature ADD CONSTRAINT FK_D8505362DCD5596C FOREIGN KEY (id_attachment) REFERENCES file_version (id)');
         $this->addSql('DROP TABLE attachment_download');
+        $this->addSql('DROP TABLE attachment');
         $this->addSql('DROP TABLE zz_versioned_attachment');
     }
 
@@ -101,5 +102,7 @@ final class Version20200320103950 extends AbstractMigration
         $this->addSql('ALTER TABLE project DROP id_description_document, DROP id_confidentiality_disclaimer');
         $this->addSql('DROP INDEX IDX_41530AB3D8274047 ON project_participation_contact');
         $this->addSql('ALTER TABLE project_participation_contact DROP id_accepted_confidentiality_disclaimer_version');
+        $this->addSql('ALTER TABLE attachment_signature ADD CONSTRAINT FK_D8505362DCD5596C FOREIGN KEY (id_attachment) REFERENCES attachment (id)');
+        $this->addSql('ALTER TABLE attachment_download ADD CONSTRAINT FK_7C093130DCD5596C FOREIGN KEY (id_attachment) REFERENCES attachment (id)');
     }
 }

@@ -41,8 +41,6 @@ class FileVersion
      * @var string
      *
      * @ORM\Column(length=191)
-     *
-     * @Groups({"fileVersion:read"})
      */
     private $path;
 
@@ -90,8 +88,6 @@ class FileVersion
 
     /**
      * @ORM\Column(type="string", length=255)
-     *
-     * @Groups({"fileVersion:read"})
      */
     private $fileSystem;
 
@@ -118,12 +114,13 @@ class FileVersion
      * @param string      $path
      * @param Staff       $addedBy
      * @param File        $file
+     * @param string      $fileSystem
      * @param string|null $plainEncryptionKey
      * @param string|null $mimeType
      *
      * @throws Exception
      */
-    public function __construct(string $path, Staff $addedBy, File $file, ?string $plainEncryptionKey, ?string $mimeType)
+    public function __construct(string $path, Staff $addedBy, File $file, string $fileSystem, ?string $plainEncryptionKey, ?string $mimeType)
     {
         $this->signatures           = new ArrayCollection();
         $this->fileVersionDownloads = new ArrayCollection();
@@ -131,6 +128,7 @@ class FileVersion
         $this->file                 = $file;
         $this->addedBy              = $addedBy;
         $this->added                = new DateTimeImmutable();
+        $this->fileSystem           = $fileSystem;
         $this->plainEncryptionKey   = $plainEncryptionKey;
         $this->mimeType             = $mimeType;
     }

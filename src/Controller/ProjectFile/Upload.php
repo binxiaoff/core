@@ -82,9 +82,9 @@ class Upload
         }
 
         $file = $this->fileManager->upload(
-            $data ? $data->getFile() : new File(),
             $request->files->get('file'),
             $user->getCurrentStaff(),
+            $data ? $data->getFile() : new File(),
         );
 
         if (!$data) {

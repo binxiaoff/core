@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Service\File;
 
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use InvalidArgumentException;
-use League\Flysystem\FileExistsException;
-use League\Flysystem\FilesystemInterface;
+use League\Flysystem\{FileExistsException, FileNotFoundException, FilesystemInterface};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Clients, File, FileVersion, Project, Staff};
+use Unilend\Entity\{Clients, File, FileVersion, Staff};
 use Unilend\Repository\FileRepository;
 use Unilend\Service\FileSystem\FileUploadManager;
 
@@ -28,20 +26,17 @@ class FileManager
      * @param FileUploadManager   $fileUploadManager
      * @param FileRepository      $fileRepository
      */
-    public function __construct(
-        FilesystemInterface $userAttachmentFilesystem,
-        FileUploadManager $fileUploadManager,
-        FileRepository $fileRepository
-    ) {
+    public function __construct(FilesystemInterface $userAttachmentFilesystem, FileUploadManager $fileUploadManager, FileRepository $fileRepository)
+    {
         $this->userAttachmentFilesystem = $userAttachmentFilesystem;
         $this->fileUploadManager        = $fileUploadManager;
         $this->fileRepository           = $fileRepository;
     }
 
     /**
-     * @param File|null    $file
      * @param UploadedFile $uploadedFile
      * @param Staff        $uploader
+     * @param File|null    $file
      * @param string|null  $description
      *
      * @throws ORMException
@@ -51,12 +46,8 @@ class FileManager
      *
      * @return File
      */
-    public function upload(
-        ?File $file,
-        UploadedFile $uploadedFile,
-        Staff $uploader,
-        string $description = null
-    ): File {
+    public function upload(UploadedFile $uploadedFile, Staff $uploader, ?File $file = null, string $description = null): File
+    {
         $mineType                               = $uploadedFile->getMimeType();
         [$relativeUploadedPath, $encryptionKey] = $this->fileUploadManager
             ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader->getClient()))
@@ -66,13 +57,12 @@ class FileManager
             $file = new File();
         }
 
-        $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file, $encryptionKey, $mineType);
-        $fileVersion->setFileSystem(FileVersion::FILE_SYSTEM_USER_ATTACHMENT)
-            ->setOriginalName($uploadedFile->getClientOriginalName())
+        $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file, FileVersion::FILE_SYSTEM_USER_ATTACHMENT, $encryptionKey, $mineType);
+        $fileVersion->setOriginalName($uploadedFile->getClientOriginalName())
             ->setSize($uploadedFile->getSize())
         ;
 
-        $file->setCurrentFileVersion($fileVersion);
+        $file->setCurrentFileVersion($fileVersion)->setDescription($description);
 
         $this->fileRepository->save($file);
 

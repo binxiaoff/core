@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\File;
 
+use ApiPlatform\Core\Exception\RuntimeException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Exception;
 use League\Flysystem\FileNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\{FileDownload, Project};
@@ -40,9 +43,10 @@ class Download
      * @param Project $data
      * @param Request $request
      *
-     * @throws FileNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws Exception
+     * @throws FileNotFoundException
      *
      * @return StreamedResponse
      */
@@ -66,8 +70,18 @@ class Download
             throw new NotFoundHttpException();
         }
 
-        $user               = $this->security->getUser();
-        $currentStaff       = $user->getCurrentStaff();
+        $user = $this->security->getUser();
+
+        if (null === $user) {
+            throw new AccessDeniedHttpException();
+        }
+
+        $currentStaff = $user->getCurrentStaff();
+
+        if (null === $currentStaff) {
+            throw new RuntimeException();
+        }
+
         $currentFileVersion = $document->getCurrentFileVersion();
 
         $this->fileDownloadRepository->save(new FileDownload($currentFileVersion, $currentStaff));

@@ -58,14 +58,12 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "security": "is_granted('edit', object)",
  *             "controller": "Unilend\Controller\File\Upload",
  *             "path": "/project/{publicId}/confidentiality_document/upload",
- *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
  *         },
  *         "description_document": {
  *             "method": "POST",
  *             "security": "is_granted('edit', object)",
  *             "controller": "Unilend\Controller\File\Upload",
  *             "path": "/project/{publicId}/description/upload",
- *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
  *         },
  *     },
  *     itemOperations={
@@ -99,15 +97,13 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "method": "GET",
  *             "security": "is_granted('view_confidentiality_document', object)",
  *             "controller": "Unilend\Controller\File\Download",
- *             "path": "/project/{publicId}/confidentiality_document/download",
- *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
+ *             "path": "/project/{publicId}/confidentiality_document/download"
  *         },
  *         "project_description": {
  *             "method": "GET",
  *             "security": "is_granted('view', object)",
  *             "controller": "Unilend\Controller\File\Download",
- *             "path": "/project/{publicId}/description/download",
- *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
+ *             "path": "/project/{publicId}/description/download"
  *         },
  *         "patch": {
  *             "security_post_denormalize": "is_granted('edit', previous_object)",

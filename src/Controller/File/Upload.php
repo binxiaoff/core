@@ -26,9 +26,7 @@ class Upload
     private $security;
     /** @var IriConverterInterface */
     private $converter;
-    /**
-     * @var EntityManagerInterface
-     */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /**
@@ -82,14 +80,12 @@ class Upload
         }
 
         $file = $this->fileManager->upload(
-            $data->{$getter}(),
             $request->files->get('file'),
-            $user->getCurrentStaff()
+            $user->getCurrentStaff(),
+            $data->{$getter}(),
         );
 
         $data->{$setter}($file);
-
-        $this->entityManager->flush();
 
         return $file;
     }

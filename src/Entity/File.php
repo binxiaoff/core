@@ -34,7 +34,7 @@ class File
     private $description;
 
     /**
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\FileVersion", mappedBy="file", orphanRemoval=true, cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\FileVersion", mappedBy="file", orphanRemoval=true)
      *
      * @Groups({"file:read"})
      */
@@ -52,8 +52,6 @@ class File
      * @var DateTimeImmutable
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
-     *
-     * @Groups({"file:read"})
      */
     private $archived;
 

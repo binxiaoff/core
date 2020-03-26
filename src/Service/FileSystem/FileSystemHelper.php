@@ -85,14 +85,23 @@ class FileSystemHelper
 
         $filesystem = null;
         switch ($class) {
-            case FileVersion::class:
-                $serviceId = 'League\Flysystem\UserAttachmentFilesystem';
-                break;
             case AcceptationsLegalDocs::class:
                 $serviceId = 'League\Flysystem\GeneratedDocumentFilesystem';
                 break;
+            case FileVersion::class:
+                switch ($class->getFileSystem()) {
+                    case FileVersion::FILE_SYSTEM_USER_ATTACHMENT:
+                        $serviceId = 'League\Flysystem\UserAttachmentFilesystem';
+                        break;
+                    case FileVersion::FILE_SYSTEM_GENERATED_DOCUMENT:
+                        $serviceId = 'League\Flysystem\GeneratedDocumentFilesystem';
+                        break;
+                    default:
+                        throw new RuntimeException(sprintf('The filesystem %s is not be supported', $class->getFileSystem()));
+                }
+                break;
             default:
-                throw new RuntimeException('This class is not be supported');
+                throw new RuntimeException(sprintf('The class %s is not be supported', $class));
         }
 
         $filesystem = $this->getService($serviceId);
