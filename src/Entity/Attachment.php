@@ -6,6 +6,7 @@ namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
+use Defuse\Crypto\{Exception\EnvironmentIsBrokenException, Key};
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -188,16 +189,23 @@ class Attachment
     private $attachmentDownloads;
 
     /**
-     * Attachment constructor.
+     * @var|null string
      *
+     * @ORM\Column(length=512, nullable=true)
+     */
+    private $key;
+
+    /**
      * @param string  $path
      * @param string  $type
      * @param Staff   $addedBy
      * @param Project $project
+     * @param bool    $encryption
      *
+     * @throws EnvironmentIsBrokenException
      * @throws Exception
      */
-    public function __construct(string $path, string $type, Staff $addedBy, Project $project)
+    public function __construct(string $path, string $type, Staff $addedBy, Project $project, bool $encryption = true)
     {
         $this->signatures          = new ArrayCollection();
         $this->attachmentDownloads = new ArrayCollection();
@@ -206,6 +214,9 @@ class Attachment
         $this->addedBy             = $addedBy;
         $this->added               = new DateTimeImmutable();
         $this->project             = $project;
+        if ($encryption) {
+            $this->key = (Key::createNewRandomKey())->saveToAsciiSafeString();
+        }
     }
 
     /**
@@ -370,5 +381,25 @@ class Attachment
     public function getAttachmentDownloads()
     {
         return $this->attachmentDownloads;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getKey(): ?string
+    {
+        return $this->key;
+    }
+
+    /**
+     * @param string|null $key
+     *
+     * @return Attachment
+     */
+    public function setKey(?string $key): Attachment
+    {
+        $this->key = $key;
+
+        return $this;
     }
 }
