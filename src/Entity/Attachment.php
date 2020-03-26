@@ -193,7 +193,7 @@ class Attachment
      *
      * @ORM\Column(length=512, nullable=true)
      */
-    private $key;
+    private $encryptionKey;
 
     /**
      * @param string  $path
@@ -215,7 +215,7 @@ class Attachment
         $this->added               = new DateTimeImmutable();
         $this->project             = $project;
         if ($encryption) {
-            $this->key = (Key::createNewRandomKey())->saveToAsciiSafeString();
+            $this->encryptionKey = (Key::createNewRandomKey())->saveToAsciiSafeString();
         }
     }
 
@@ -386,19 +386,19 @@ class Attachment
     /**
      * @return string|null
      */
-    public function getKey(): ?string
+    public function getEncryptionKey(): ?string
     {
-        return $this->key;
+        return $this->encryptionKey;
     }
 
     /**
-     * @param string|null $key
+     * @param string|null $encryptionKey
      *
      * @return Attachment
      */
-    public function setKey(?string $key): Attachment
+    public function setEncryptionKey(?string $encryptionKey): Attachment
     {
-        $this->key = $key;
+        $this->encryptionKey = $encryptionKey;
 
         return $this;
     }

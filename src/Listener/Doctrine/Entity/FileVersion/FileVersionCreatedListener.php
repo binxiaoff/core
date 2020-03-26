@@ -30,10 +30,10 @@ class FileVersionCreatedListener
      */
     public function encryptKey(Attachment $attachment): void
     {
-        if (null === $attachment->getKey()) {
+        if (null === $attachment->getEncryptionKey()) {
             return;
         }
 
-        $attachment->setKey($this->dataCrypto->encrypt($attachment->getKey()));
+        $attachment->setEncryptionKey($this->dataCrypto->encrypt($attachment->getEncryptionKey()));
     }
 }

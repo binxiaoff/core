@@ -31,10 +31,10 @@ class FileVersionLoadedListener
      */
     public function decryptKey(Attachment $attachment): void
     {
-        if (null === $attachment->getKey()) {
+        if (null === $attachment->getEncryptionKey()) {
             return;
         }
 
-        $attachment->setKey($this->dataCrypto->decrypt($attachment->getKey()));
+        $attachment->setEncryptionKey($this->dataCrypto->decrypt($attachment->getEncryptionKey()));
     }
 }
