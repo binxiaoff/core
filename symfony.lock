@@ -49,6 +49,9 @@
     "cravler/maxmind-geoip-bundle": {
         "version": "v1.3.0"
     },
+    "defuse/php-encryption": {
+        "version": "v2.2.1"
+    },
     "dg/bypass-finals": {
         "version": "v1.1.2"
     },
