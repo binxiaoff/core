@@ -4,31 +4,31 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\Attachment;
 
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
-use League\Flysystem\FileNotFoundException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\{Attachment, AttachmentDownload};
 use Unilend\Repository\AttachmentDownloadRepository;
-use Unilend\Service\FileSystem\FileSystemHelper;
+use Unilend\Service\FileSystem\FileDownloadManager;
 
 class Download
 {
-    /** @var FileSystemHelper */
-    private $fileSystemHelper;
+    /** @var FileDownloadManager */
+    private $fileDownloadManager;
     /** @var Security */
     private $security;
     /** @var AttachmentDownloadRepository */
     private $attachmentDownloadRepository;
 
     /**
-     * @param FileSystemHelper             $fileSystemHelper
+     * @param FileDownloadManager          $fileDownloadManager
      * @param AttachmentDownloadRepository $attachmentDownloadRepository
      * @param Security                     $security
      */
-    public function __construct(FileSystemHelper $fileSystemHelper, AttachmentDownloadRepository $attachmentDownloadRepository, Security $security)
+    public function __construct(FileDownloadManager $fileDownloadManager, AttachmentDownloadRepository $attachmentDownloadRepository, Security $security)
     {
-        $this->fileSystemHelper             = $fileSystemHelper;
+        $this->fileDownloadManager          = $fileDownloadManager;
         $this->security                     = $security;
         $this->attachmentDownloadRepository = $attachmentDownloadRepository;
     }
@@ -36,8 +36,9 @@ class Download
     /**
      * @param Attachment $data
      *
-     * @throws FileNotFoundException
+     * @throws OptimisticLockException
      * @throws Exception
+     * @throws ORMException
      *
      * @return StreamedResponse
      */
@@ -48,6 +49,6 @@ class Download
 
         $this->attachmentDownloadRepository->save(new AttachmentDownload($data, $currentStaff));
 
-        return $this->fileSystemHelper->download($this->fileSystemHelper->getFileSystemForClass($data), $data->getPath(), $data->getOriginalName());
+        return $this->fileDownloadManager->download($data);
     }
 }

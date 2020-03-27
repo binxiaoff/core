@@ -125,7 +125,8 @@ class ServiceTermsGeneratorTest extends TestCase
         $this->fileSystemHelper->writeTempFileToFileSystem(
             Argument::exact((reset($calls)->getArguments())[$renderedFilePathArgumentIndex]),
             Argument::type(FilesystemInterface::class),
-            Argument::exact($serviceTermsGenerator->getFilePath($acceptationLegalDoc))
+            Argument::exact($serviceTermsGenerator->getFilePath($acceptationLegalDoc)),
+            Argument::exact(false)
         )->shouldHaveBeenCalled();
     }
 

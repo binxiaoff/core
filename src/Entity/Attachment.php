@@ -196,16 +196,28 @@ class Attachment
     private $encryptionKey;
 
     /**
-     * @param string  $path
-     * @param string  $type
-     * @param Staff   $addedBy
-     * @param Project $project
-     * @param bool    $encryption
+     * @var string|null
+     */
+    private $plainEncryptionKey;
+
+    /**
+     * @var|null string
      *
-     * @throws EnvironmentIsBrokenException
+     * @ORM\Column(length=150, nullable=true)
+     */
+    private $mimeType;
+
+    /**
+     * @param string      $path
+     * @param string      $type
+     * @param Staff       $addedBy
+     * @param Project     $project
+     * @param string|null $plainEncryptionKey
+     * @param string|null $mimeType
+     *
      * @throws Exception
      */
-    public function __construct(string $path, string $type, Staff $addedBy, Project $project, bool $encryption = true)
+    public function __construct(string $path, string $type, Staff $addedBy, Project $project, ?string $plainEncryptionKey, ?string $mimeType)
     {
         $this->signatures          = new ArrayCollection();
         $this->attachmentDownloads = new ArrayCollection();
@@ -214,9 +226,8 @@ class Attachment
         $this->addedBy             = $addedBy;
         $this->added               = new DateTimeImmutable();
         $this->project             = $project;
-        if ($encryption) {
-            $this->encryptionKey = (Key::createNewRandomKey())->saveToAsciiSafeString();
-        }
+        $this->plainEncryptionKey  = $plainEncryptionKey;
+        $this->mimeType            = $mimeType;
     }
 
     /**
@@ -401,5 +412,33 @@ class Attachment
         $this->encryptionKey = $encryptionKey;
 
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPlainEncryptionKey(): ?string
+    {
+        return $this->plainEncryptionKey;
+    }
+
+    /**
+     * @param string|null $plainEncryptionKey
+     *
+     * @return Attachment
+     */
+    public function setPlainEncryptionKey(?string $plainEncryptionKey): Attachment
+    {
+        $this->plainEncryptionKey = $plainEncryptionKey;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMimeType()
+    {
+        return $this->mimeType;
     }
 }

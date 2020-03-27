@@ -4,75 +4,71 @@ declare(strict_types=1);
 
 namespace Unilend\Service\FileSystem;
 
+use Defuse\Crypto\Exception\{BadFormatException, EnvironmentIsBrokenException, IOException, WrongKeyOrModifiedCiphertextException};
 use Doctrine\ORM\Proxy\Proxy;
 use Exception;
-use League\Flysystem\{FileExistsException, FileNotFoundException, FilesystemInterface};
+use League\Flysystem\{FileExistsException, FilesystemInterface};
 use LogicException;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\{ResponseHeaderBag, StreamedResponse};
 use Unilend\Entity\{AcceptationsLegalDocs, Attachment};
-use URLify;
 
 class FileSystemHelper
 {
+    private const ENCRYPTED_FILE_SUFFIX = '-encrypted';
+
     /** @var ContainerInterface */
     private $container;
+    /** @var FileCrypto */
+    private $fileCrypto;
 
     /**
      * @param ContainerInterface $container
+     * @param FileCrypto         $fileCrypto
      */
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, FileCrypto $fileCrypto)
     {
-        $this->container = $container;
+        $this->container  = $container;
+        $this->fileCrypto = $fileCrypto;
     }
 
     /**
      * @param string              $temporaryFilePath
      * @param FilesystemInterface $filesystem
      * @param string              $filesystemDestPath
+     * @param bool                $encryption
      *
      * @throws FileExistsException
+     * @throws EnvironmentIsBrokenException
+     * @throws IOException
+     *
+     * @return string|null
      */
-    public function writeTempFileToFileSystem(string $temporaryFilePath, FilesystemInterface $filesystem, string $filesystemDestPath): void
+    public function writeTempFileToFileSystem(string $temporaryFilePath, FilesystemInterface $filesystem, string $filesystemDestPath, bool $encryption = true): ?string
     {
-        $fileResource = @fopen($temporaryFilePath, 'r+b');
+        $key      = null;
+        $filePath = $temporaryFilePath;
+
+        if ($encryption) {
+            $filePath = $temporaryFilePath . self::ENCRYPTED_FILE_SUFFIX;
+            $key      = $this->fileCrypto->encryptFile($temporaryFilePath, $filePath);
+            @unlink($temporaryFilePath);
+        }
+
+        $fileResource = @fopen($filePath, 'r+b');
 
         if (is_resource($fileResource)) {
             $result = $filesystem->writeStream($filesystemDestPath, $fileResource);
             fclose($fileResource);
 
             if (false === $result) {
-                throw new RuntimeException(sprintf('Could not write file "%s"', $temporaryFilePath));
+                throw new RuntimeException(sprintf('Could not write file "%s"', $filePath));
             }
         }
 
-        @unlink($temporaryFilePath);
-    }
+        @unlink($filePath);
 
-    /**
-     * @param FilesystemInterface $filesystem
-     * @param string              $filePath
-     * @param string|null         $fileName
-     *
-     * @throws FileNotFoundException
-     *
-     * @return StreamedResponse
-     */
-    public function download(FilesystemInterface $filesystem, string $filePath, ?string $fileName = null): StreamedResponse
-    {
-        $response = new StreamedResponse(static function () use ($filePath, $filesystem) {
-            stream_copy_to_stream($filesystem->readStream($filePath), fopen('php://output', 'w+b'));
-        });
-
-        $fileName         = URLify::downcode($fileName ?? pathinfo($filePath, PATHINFO_FILENAME));
-        $fileNameFallback = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $fileName);
-
-        $contentDisposition = $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $fileName, $fileNameFallback);
-        $response->headers->set('Content-Disposition', $contentDisposition);
-        $response->headers->set('Content-Type', $filesystem->getMimetype($filePath) ?: 'application/octet-stream');
-
-        return $response;
+        return $key;
     }
 
     /**
@@ -95,6 +91,50 @@ class FileSystemHelper
             default:
                 throw new LogicException('This code should not be reached');
         }
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @throws Exception
+     *
+     * @return false|resource
+     */
+    public function readStream(Attachment $attachment)
+    {
+        $fileSystem = $this->getFileSystemForClass($attachment);
+
+        if (!$fileSystem) {
+            return false;
+        }
+
+        $fileResource = $fileSystem->readStream($attachment->getPath());
+
+        if ($fileResource && $attachment->getPlainEncryptionKey()) {
+            $fileResource = $this->decrypt($fileResource, $attachment->getPlainEncryptionKey());
+        }
+
+        return $fileResource;
+    }
+
+    /**
+     * @param resource $fileResource
+     * @param string   $key
+     *
+     * @throws IOException
+     * @throws WrongKeyOrModifiedCiphertextException
+     * @throws BadFormatException
+     * @throws EnvironmentIsBrokenException
+     *
+     * @return false|resource
+     */
+    private function decrypt($fileResource, string $key)
+    {
+        $outputFileResource = tmpfile();
+        $this->fileCrypto->decryptFileResource($fileResource, $outputFileResource, $key);
+
+        // Re-open the file to change the resource mode, so that the mode is the same as FilesystemInterface::readStream
+        return fopen(stream_get_meta_data($outputFileResource)['uri'], 'rb');
     }
 
     /**

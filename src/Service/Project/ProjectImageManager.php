@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Project;
 
+use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
+use Defuse\Crypto\Exception\IOException;
 use League\Flysystem\{FileExistsException, FileNotFoundException, FilesystemInterface};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Entity\Project;
@@ -36,8 +38,10 @@ class ProjectImageManager
      * @param Project           $project
      * @param UploadedFile|null $file
      *
+     * @throws EnvironmentIsBrokenException
      * @throws FileExistsException
      * @throws FileNotFoundException
+     * @throws IOException
      */
     public function setImage(Project $project, ?UploadedFile $file): void
     {
@@ -57,12 +61,24 @@ class ProjectImageManager
      * @param UploadedFile $file
      *
      * @throws FileExistsException
+     * @throws EnvironmentIsBrokenException
+     * @throws IOException
      *
      * @return string
      */
     private function uploadImage(Project $project, UploadedFile $file): string
     {
-        return $this->uploadManager->uploadFile($file, $this->publicUserUploadFilesystem, self::PROJECT_IMAGE_DIRECTORY, $project->getId() ? (string) $project->getId() : null);
+        [$relativeUploadedPath] = $this->uploadManager
+            ->uploadFile(
+                $file,
+                $this->publicUserUploadFilesystem,
+                self::PROJECT_IMAGE_DIRECTORY,
+                $project->getId() ? (string) $project->getId() : null,
+                false
+            )
+        ;
+
+        return $relativeUploadedPath;
     }
 
     /**

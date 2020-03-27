@@ -12,8 +12,8 @@ use Prophecy\Argument;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\{HeaderUtils, ResponseHeaderBag, StreamedResponse};
+use Unilend\Service\FileSystem\FileCrypto;
 use Unilend\Service\FileSystem\FileSystemHelper;
-use URLify;
 
 /**
  * @coversDefaultClass \Unilend\Service\FileSystem\FileSystemHelper
@@ -32,6 +32,8 @@ class FileSystemHelperTest extends TestCase
     private $container;
     /** @var ManagerRegistry */
     private $managerRegistry;
+    /** @var FileCrypto */
+    private $fileCrypto;
 
     /**
      * {@inheritdoc}
@@ -43,6 +45,7 @@ class FileSystemHelperTest extends TestCase
         $this->testFileResource = $this->buildTestFile();
         $this->container        = $this->prophesize(ContainerInterface::class);
         $this->managerRegistry  = $this->prophesize(ManagerRegistry::class);
+        $this->fileCrypto       = $this->prophesize(FileCrypto::class);
     }
 
     /**
@@ -58,7 +61,7 @@ class FileSystemHelperTest extends TestCase
         }));
         $streamWriter->willReturn(true);
 
-        $this->createTestObject()->writeTempFileToFileSystem($this->srcPath, $fileSystem->reveal(), $this->destPath);
+        $this->createTestObject()->writeTempFileToFileSystem($this->srcPath, $fileSystem->reveal(), $this->destPath, false);
 
         $streamWriter->shouldHaveBeenCalled();
         static::assertFileNotExists($this->srcPath);
@@ -72,7 +75,7 @@ class FileSystemHelperTest extends TestCase
         $nonexistentSrcFile = Base::lexify('/????/???');
         $fileSystem         = $this->prophesize(FilesystemInterface::class);
 
-        $this->createTestObject()->writeTempFileToFileSystem($nonexistentSrcFile, $fileSystem->reveal(), $this->destPath);
+        $this->createTestObject()->writeTempFileToFileSystem($nonexistentSrcFile, $fileSystem->reveal(), $this->destPath, false);
 
         $fileSystem->writeStream(Argument::any(), Argument::any())->shouldNotHaveBeenCalled();
     }
@@ -87,33 +90,7 @@ class FileSystemHelperTest extends TestCase
         $fileSystem = $this->prophesize(FilesystemInterface::class);
         $fileSystem->writeStream(Argument::any(), Argument::any())->willReturn(false);
 
-        $this->createTestObject()->writeTempFileToFileSystem($this->srcPath, $fileSystem->reveal(), $this->destPath);
-    }
-
-    /**
-     * @dataProvider downloadDataProvider
-     *
-     * @covers ::download
-     *
-     * @param string|false $mimeType
-     * @param string|null  $fileName
-     *
-     * @throws FileNotFoundException
-     */
-    public function testDownload($mimeType, ?string $fileName = null): void
-    {
-        $filesystem = $this->prophesize(FilesystemInterface::class);
-        $filesystem->readStream(Argument::exact($this->srcPath))->willReturn($this->testFileResource);
-        $filesystem->getMimetype(Argument::exact($this->srcPath))->willReturn($mimeType);
-
-        $response = $this->createTestObject()->download($filesystem->reveal(), $this->srcPath, $fileName);
-
-        static::assertInstanceOf(StreamedResponse::class, $response);
-        static::assertSame(
-            HeaderUtils::makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, URLify::downcode($fileName ?? pathinfo($this->srcPath, PATHINFO_FILENAME))),
-            $response->headers->get('Content-Disposition')
-        );
-        static::assertSame($mimeType ?: 'application/octet-stream', $response->headers->get('Content-Type'));
+        $this->createTestObject()->writeTempFileToFileSystem($this->srcPath, $fileSystem->reveal(), $this->destPath, false);
     }
 
     /**
@@ -143,7 +120,8 @@ class FileSystemHelperTest extends TestCase
     private function createTestObject(): FileSystemHelper
     {
         return new FileSystemHelper(
-            $this->container->reveal()
+            $this->container->reveal(),
+            $this->fileCrypto->reveal()
         );
     }
 }
