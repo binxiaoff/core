@@ -39,7 +39,7 @@ class SecurityCheckNotificationCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('unilend:security:checker:notify')
+            ->setName('kls:security:check')
             ->setDescription('Check known security issues in the packages managed by Composer using SensioLabs Security Advisories Checker')
         ;
     }
