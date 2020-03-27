@@ -7,14 +7,12 @@ namespace Unilend\Controller\File;
 use ApiPlatform\Core\Exception\RuntimeException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Exception;
 use League\Flysystem\FileNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\{FileDownload, Project};
+use Unilend\Entity\{FileDownload, FileVersion};
 use Unilend\Repository\FileDownloadRepository;
 use Unilend\Service\FileSystem\FileSystemHelper;
 
@@ -40,36 +38,19 @@ class Download
     }
 
     /**
-     * @param Project $data
-     * @param Request $request
+     * @param FileVersion $data
+     * @param Request     $request
      *
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws Exception
+     * @throws \Exception
      * @throws FileNotFoundException
      *
      * @return StreamedResponse
      */
-    public function __invoke(Project $data, Request $request): StreamedResponse
+    public function __invoke(FileVersion $data, Request $request): StreamedResponse
     {
-        $pathName = $request->request->get('_api_item_operation_name');
-        $document = null;
-
-        switch ($pathName) {
-            case 'project_description':
-                $document = $data->getDescriptionDocument();
-
-                break;
-            case 'project_confidentiality':
-                $document = $data->getConfidentialityDisclaimer();
-
-                break;
-        }
-
-        if (null === $document) {
-            throw new NotFoundHttpException();
-        }
-
+        // Useless if we use DTO
         $user = $this->security->getUser();
 
         if (null === $user) {
@@ -82,14 +63,12 @@ class Download
             throw new RuntimeException();
         }
 
-        $currentFileVersion = $document->getCurrentFileVersion();
-
-        $this->fileDownloadRepository->save(new FileDownload($currentFileVersion, $currentStaff));
+        $this->fileDownloadRepository->save(new FileDownload($data, $currentStaff));
 
         return $this->fileSystemHelper->download(
-            $this->fileSystemHelper->getFileSystemForClass($currentFileVersion),
-            $currentFileVersion->getPath(),
-            $currentFileVersion->getOriginalName()
+            $this->fileSystemHelper->getFileSystemForClass($data),
+            $data->getPath(),
+            $data->getOriginalName()
         );
     }
 }

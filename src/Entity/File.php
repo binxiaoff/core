@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -17,6 +18,11 @@ use Unilend\Entity\Traits\{BlamableArchivedTrait, PublicizeIdentityTrait, Timest
  * @ORM\Entity
  *
  * @Gedmo\SoftDeleteable(fieldName="archived")
+ *
+ * @ApiResource(
+ *     input=FileInput::class,
+ *     output=true
+ * )
  */
 class File
 {
