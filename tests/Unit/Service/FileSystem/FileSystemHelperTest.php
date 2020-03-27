@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Unilend\Test\Unit\Service\FileSystem;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Faker\Provider\{Base, File};
-use League\Flysystem\{FileNotFoundException, FilesystemInterface};
+use Faker\Provider\Base;
+use League\Flysystem\FilesystemInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\{HeaderUtils, ResponseHeaderBag, StreamedResponse};
 use Unilend\Service\FileSystem\FileCrypto;
 use Unilend\Service\FileSystem\FileSystemHelper;
 
@@ -91,19 +90,6 @@ class FileSystemHelperTest extends TestCase
         $fileSystem->writeStream(Argument::any(), Argument::any())->willReturn(false);
 
         $this->createTestObject()->writeTempFileToFileSystem($this->srcPath, $fileSystem->reveal(), $this->destPath, false);
-    }
-
-    /**
-     * @return array
-     */
-    public function downloadDataProvider(): array
-    {
-        return [
-            'mime type detected, file name defined'         => [File::mimeType(), Base::lexify('???') . '.' . File::fileExtension()],
-            'mime type not detected, file name defined'     => [false, Base::lexify('???') . '.' . File::fileExtension()],
-            'mime type detected, file name not defined'     => [File::mimeType(), null],
-            'mime type not detected, file name not defined' => [false, null],
-        ];
     }
 
     /**
