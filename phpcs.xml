@@ -57,5 +57,7 @@
         </properties>
     </rule>
     
-    <rule ref="vendor/pheromone/phpcs-security-audit/Security/ruleset.xml"/>
+    <rule ref="vendor/pheromone/phpcs-security-audit/Security/ruleset.xml">
+        <exclude name="PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem"/>
+    </rule>
 </ruleset>

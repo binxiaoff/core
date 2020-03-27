@@ -35,6 +35,6 @@ class FileVersionLoadedListener
             return;
         }
 
-        $attachment->setEncryptionKey($this->dataCrypto->decrypt($attachment->getEncryptionKey()));
+        $attachment->setPlainEncryptionKey($this->dataCrypto->decrypt($attachment->getEncryptionKey()));
     }
 }
