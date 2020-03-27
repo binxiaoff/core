@@ -13,7 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use InvalidArgumentException;
-use libphonenumber\PhoneNumber;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use RuntimeException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -119,22 +118,22 @@ class Clients implements UserInterface, EquatableInterface
     private $slug;
 
     /**
-     * @var PhoneNumber
+     * @var string
      *
      * @Groups({"client:read", "client:write"})
      *
-     * @ORM\Column(name="phone", type="phone_number", nullable=true)
+     * @ORM\Column(name="phone", type="string", length=35, nullable=true)
      *
      * @AssertPhoneNumber(defaultRegion="Clients::PHONE_NUMBER_DEFAULT_REGION", type="any")
      */
     private $phone;
 
     /**
-     * @var PhoneNumber
+     * @var string
      *
      * @Groups({"client:read", "client:write"})
      *
-     * @ORM\Column(name="mobile", type="phone_number", nullable=true)
+     * @ORM\Column(name="mobile", type="string", length=35, nullable=true)
      *
      * @AssertPhoneNumber(defaultRegion="Clients::PHONE_NUMBER_DEFAULT_REGION", type="mobile")
      */
@@ -354,11 +353,11 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param PhoneNumber|null $phone
+     * @param string|null $phone
      *
      * @return Clients
      */
-    public function setPhone(?PhoneNumber $phone): Clients
+    public function setPhone(?string $phone): Clients
     {
         $this->phone = $phone;
 
@@ -366,19 +365,19 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return PhoneNumber|null
+     * @return string|null
      */
-    public function getPhone(): ?PhoneNumber
+    public function getPhone(): ?string
     {
         return $this->phone;
     }
 
     /**
-     * @param PhoneNumber|null $mobile
+     * @param string|null $mobile
      *
      * @return Clients
      */
-    public function setMobile(?PhoneNumber $mobile): Clients
+    public function setMobile(?string $mobile): Clients
     {
         $this->mobile = $mobile;
 
@@ -386,9 +385,9 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return PhoneNumber|null
+     * @return string|null
      */
-    public function getMobile(): ?PhoneNumber
+    public function getMobile(): ?string
     {
         return $this->mobile;
     }
