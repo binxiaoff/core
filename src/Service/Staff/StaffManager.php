@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Staff;
 
-use Unilend\Entity\{ClientStatus, Clients, Staff};
+use Unilend\Entity\Staff;
 use Unilend\Exception\Client\ClientNotFoundException;
 use Unilend\Exception\Staff\StaffNotFoundException;
 use Unilend\Repository\{ClientsRepository, CompanyRepository, StaffRepository};
@@ -24,14 +24,12 @@ class StaffManager
     /**
      * @param CompanyManager    $companyManager
      * @param ClientsRepository $clientsRepository
-     * @param CompanyRepository $companyRepository
      * @param StaffRepository   $staffRepository
      */
-    public function __construct(CompanyManager $companyManager, ClientsRepository $clientsRepository, CompanyRepository $companyRepository, StaffRepository $staffRepository)
+    public function __construct(CompanyManager $companyManager, ClientsRepository $clientsRepository, StaffRepository $staffRepository)
     {
         $this->companyManager    = $companyManager;
         $this->clientsRepository = $clientsRepository;
-        $this->companyRepository = $companyRepository;
         $this->staffRepository   = $staffRepository;
     }
 

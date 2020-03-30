@@ -40,7 +40,7 @@ class ArchivedStaffSubscriber implements EventSubscriberInterface
      */
     public static function getSubscribedEvents()
     {
-        return [KernelEvents::VIEW => ['fetchArchivedEntity', EventPriorities::PRE_VALIDATE + 1]];
+        return [KernelEvents::VIEW => ['fetchArchivedEntity', EventPriorities::PRE_VALIDATE]];
     }
 
     /**
