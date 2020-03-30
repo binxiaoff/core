@@ -7,7 +7,6 @@ namespace Unilend\Service\Attachment;
 use Exception;
 use InvalidArgumentException;
 use League\Flysystem\FileExistsException;
-use League\Flysystem\FileNotFoundException;
 use League\Flysystem\FilesystemInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Entity\{Attachment, Clients, Project, Staff};
@@ -24,10 +23,8 @@ class AttachmentManager
      * @param FilesystemInterface $userAttachmentFilesystem
      * @param FileUploadManager   $fileUploadManager
      */
-    public function __construct(
-        FilesystemInterface $userAttachmentFilesystem,
-        FileUploadManager $fileUploadManager
-    ) {
+    public function __construct(FilesystemInterface $userAttachmentFilesystem, FileUploadManager $fileUploadManager)
+    {
         $this->userAttachmentFilesystem = $userAttachmentFilesystem;
         $this->fileUploadManager        = $fileUploadManager;
     }
@@ -51,11 +48,12 @@ class AttachmentManager
         Project $project,
         ?string $description = null
     ): Attachment {
-        $relativeUploadedPath = $this->fileUploadManager
+        $mineType                               = $uploadedFile->getMimeType();
+        [$relativeUploadedPath, $encryptionKey] = $this->fileUploadManager
             ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader->getClient()))
         ;
 
-        $attachment = new Attachment($relativeUploadedPath, $type, $uploader, $project);
+        $attachment = new Attachment($relativeUploadedPath, $type, $uploader, $project, $encryptionKey, $mineType);
 
         $attachment
             ->setOriginalName($uploadedFile->getClientOriginalName())
@@ -65,18 +63,6 @@ class AttachmentManager
         ;
 
         return $attachment;
-    }
-
-    /**
-     * @param Attachment $attachment
-     *
-     * @throws FileNotFoundException
-     *
-     * @return false|resource
-     */
-    public function read(Attachment $attachment)
-    {
-        return $this->userAttachmentFilesystem->read($attachment->getPath());
     }
 
     /**

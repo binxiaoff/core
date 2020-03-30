@@ -15,6 +15,8 @@ parameters:
     slack.webhook.support: '%env(SLACK_WEBHOOK_URL)%'
     slack.webhook.security: https://hooks.slack.com/services/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
     security.recipients: ['tech@ca-lendingservices.com']
+    file_encryption.kek_file: '%env(FILE_ENCRYPTION_KEK_FILE)%'
+    file_encryption.kek_passphrase: '%env(FILE_ENCRYPTION_KEK_PASSPHRASE)%'
 
 services:
     _defaults:
@@ -162,3 +164,7 @@ services:
         autoconfigure: false
 
     Sonata\CacheBundle\Adapter\SymfonyCache: '@sonata.cache.symfony'
+
+    Unilend\Service\DataCrypto:
+        $masterKeyPath: '%file_encryption.kek_file%'
+        $masterKeyPassPhrase: '%file_encryption.kek_passphrase%'

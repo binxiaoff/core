@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Service\FileSystem;
 
+use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, IOException};
 use League\Flysystem\{FileExistsException, FilesystemInterface};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use URLify;
@@ -26,12 +27,15 @@ class FileUploadManager
      * @param FilesystemInterface $filesystem
      * @param string              $uploadRootDirectory
      * @param string|null         $subdirectory
+     * @param bool                $encryption
      *
+     * @throws EnvironmentIsBrokenException
      * @throws FileExistsException
+     * @throws IOException
      *
-     * @return string
+     * @return array
      */
-    public function uploadFile(UploadedFile $file, FilesystemInterface $filesystem, string $uploadRootDirectory, ?string $subdirectory = null): string
+    public function uploadFile(UploadedFile $file, FilesystemInterface $filesystem, string $uploadRootDirectory, ?string $subdirectory = null, bool $encryption = true): array
     {
         $hash         = hash('sha256', $subdirectory ?? uniqid('', true));
         $subdirectory = $hash[0] . DIRECTORY_SEPARATOR . $hash[1] . ($subdirectory ? DIRECTORY_SEPARATOR . $subdirectory : '');
@@ -42,9 +46,9 @@ class FileUploadManager
         $filename = $this->generateFileName($file, $filesystem, $uploadDirectory);
         $filePath = $uploadDirectory . DIRECTORY_SEPARATOR . $filename;
 
-        $this->fileSystemHelper->writeTempFileToFileSystem($file->getPathname(), $filesystem, $filePath);
+        $key = $this->fileSystemHelper->writeTempFileToFileSystem($file->getPathname(), $filesystem, $filePath, $encryption);
 
-        return $filePath;
+        return [$filePath, $key];
     }
 
     /**

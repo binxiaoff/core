@@ -64,9 +64,9 @@ class AttachmentManagerTest extends TestCase
         Project $project = null,
         ?string $description = null
     ): void {
-        $this->fileUploadManager->uploadFile(Argument::type(UploadedFile::class), Argument::cetera())->will(
+        $this->fileUploadManager->uploadFile(Argument::type(UploadedFile::class), Argument::cetera(), '/', null, false)->will(
             function ($args) {
-                return $args[3];
+                return [$args[3], null];
             }
         );
         $this->attachmentRepository->save(Argument::type(Attachment::class));
@@ -119,22 +119,6 @@ class AttachmentManagerTest extends TestCase
     }
 
     /**
-     * @covers ::read
-     *
-     * @throws FileNotFoundException
-     * @throws Exception
-     */
-    public function testRead(): void
-    {
-        $attachment = $this->createAttachment();
-
-        $attachmentManager = $this->createTestObject();
-        $attachmentManager->read($attachment);
-
-        $this->userAttachmentFilesystem->read(Argument::exact($attachment->getPath()))->shouldHaveBeenCalled();
-    }
-
-    /**
      * @throws Exception
      *
      * @return Attachment
@@ -149,7 +133,9 @@ class AttachmentManagerTest extends TestCase
                 new Clients('test@' . Internet::safeEmailDomain()),
                 $this->prophesize(Staff::class)->reveal()
             ),
-            $this->createProject()
+            $this->createProject(),
+            'key',
+            'application/octet-stream'
         );
     }
 
