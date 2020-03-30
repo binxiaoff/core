@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Service\Monolog\Handler;
 
 use Monolog\Handler\AbstractProcessingHandler;
+use Monolog\Logger;
 use Swift_Mailer;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -25,13 +26,17 @@ class MailTemplateHandler extends AbstractProcessingHandler
      * @param TemplateMessageProvider $templateMessageProvider
      * @param Swift_Mailer            $mailer
      * @param mixed                   $securityRecipients
+     * @param int                     $level
+     * @param bool                    $bubble
      */
     public function __construct(
         TemplateMessageProvider $templateMessageProvider,
         Swift_Mailer $mailer,
-        $securityRecipients
+        $securityRecipients,
+        $level = Logger::CRITICAL, // @see https://github.com/symfony/monolog-bundle/issues/322
+        $bubble = true
     ) {
-        parent::__construct();
+        parent::__construct($level, $bubble);
         $this->templateMessageProvider = $templateMessageProvider;
         $this->mailer                  = $mailer;
         $this->securityRecipients      = $securityRecipients;
