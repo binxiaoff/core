@@ -6,6 +6,7 @@ namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
+use Defuse\Crypto\{Exception\EnvironmentIsBrokenException, Key};
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -188,16 +189,35 @@ class Attachment
     private $attachmentDownloads;
 
     /**
-     * Attachment constructor.
+     * @var|null string
      *
-     * @param string  $path
-     * @param string  $type
-     * @param Staff   $addedBy
-     * @param Project $project
+     * @ORM\Column(length=512, nullable=true)
+     */
+    private $encryptionKey;
+
+    /**
+     * @var string|null
+     */
+    private $plainEncryptionKey;
+
+    /**
+     * @var|null string
+     *
+     * @ORM\Column(length=150, nullable=true)
+     */
+    private $mimeType;
+
+    /**
+     * @param string      $path
+     * @param string      $type
+     * @param Staff       $addedBy
+     * @param Project     $project
+     * @param string|null $plainEncryptionKey
+     * @param string|null $mimeType
      *
      * @throws Exception
      */
-    public function __construct(string $path, string $type, Staff $addedBy, Project $project)
+    public function __construct(string $path, string $type, Staff $addedBy, Project $project, ?string $plainEncryptionKey, ?string $mimeType)
     {
         $this->signatures          = new ArrayCollection();
         $this->attachmentDownloads = new ArrayCollection();
@@ -206,6 +226,8 @@ class Attachment
         $this->addedBy             = $addedBy;
         $this->added               = new DateTimeImmutable();
         $this->project             = $project;
+        $this->plainEncryptionKey  = $plainEncryptionKey;
+        $this->mimeType            = $mimeType;
     }
 
     /**
@@ -370,5 +392,53 @@ class Attachment
     public function getAttachmentDownloads()
     {
         return $this->attachmentDownloads;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getEncryptionKey(): ?string
+    {
+        return $this->encryptionKey;
+    }
+
+    /**
+     * @param string|null $encryptionKey
+     *
+     * @return Attachment
+     */
+    public function setEncryptionKey(?string $encryptionKey): Attachment
+    {
+        $this->encryptionKey = $encryptionKey;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPlainEncryptionKey(): ?string
+    {
+        return $this->plainEncryptionKey;
+    }
+
+    /**
+     * @param string|null $plainEncryptionKey
+     *
+     * @return Attachment
+     */
+    public function setPlainEncryptionKey(?string $plainEncryptionKey): Attachment
+    {
+        $this->plainEncryptionKey = $plainEncryptionKey;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMimeType()
+    {
+        return $this->mimeType;
     }
 }

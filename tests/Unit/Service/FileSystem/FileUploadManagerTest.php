@@ -45,12 +45,13 @@ class FileUploadManagerTest extends TestCase
 
         $fileUploadManager = new FileUploadManager($fileSystemHelper->reveal());
 
-        $uploadedFilePath = $fileUploadManager->uploadFile($file, $filesystem->reveal(), $uploadRootDirectory, $subdirectory);
+        [$uploadedFilePath] = $fileUploadManager->uploadFile($file, $filesystem->reveal(), $uploadRootDirectory, $subdirectory);
 
         $fileSystemHelper->writeTempFileToFileSystem(
             Argument::exact($file->getPathname()),
             Argument::exact($filesystem),
-            Argument::exact($uploadedFilePath)
+            Argument::exact($uploadedFilePath),
+            Argument::exact(true),
         )->shouldHaveBeenCalled();
 
         $filesystem->has(Argument::type('string'))->willReturn(false)->shouldHaveBeenCalled();

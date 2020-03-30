@@ -77,7 +77,7 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
         $this->snappy->setOption('user-style-sheet', $this->publicDirectory . 'styles/pdf/style.css');
         $this->snappy->generateFromHtml($content, $temporaryFilePath);
 
-        $this->fileSystemHelper->writeTempFileToFileSystem($temporaryFilePath, $this->generatedDocumentFilesystem, $this->getFilePath($acceptedLegalDoc));
+        $this->fileSystemHelper->writeTempFileToFileSystem($temporaryFilePath, $this->generatedDocumentFilesystem, $this->getFilePath($acceptedLegalDoc), false);
     }
 
     /**
