@@ -81,6 +81,11 @@ class StaffVoter extends AbstractEntityVoter
             return false;
         }
 
+        // A manager cannot archive a staff or modify an archived staff
+        if ($subject->isArchived()) {
+            return false;
+        }
+
         /** @var PersistentCollection $subjectMarketSegments */
         $subjectMarketSegments = $subject->getMarketSegments();
 

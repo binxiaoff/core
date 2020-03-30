@@ -9,42 +9,44 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait};
+use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait, TraceableStatusTrait};
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"staff:read", "client:read", "client_status:read"}},
+ *     normalizationContext={"groups": {"staff:read", "client:read", "client_status:read", "staffStatus:read", "timestampable:read", "traceableStatus:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
  *         },
- *         "delete": {"security": "is_granted('delete', object)"},
- *         "patch": {"security_post_denormalize": "is_granted('edit', object)", "denormalization_context": {"groups": {"staff:update", "role:write"}}}
+ *         "patch": {"security_post_denormalize": "is_granted('edit', object)", "denormalization_context": {"groups": {"staff:update", "role:write", "staffStatus:create"}}}
  *     },
  *     collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"role:write", "staff:create", "client:create"}}}
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *             "denormalization_context": {"groups": {"role:write", "staff:create", "client:create"}}
+ *         }
  *     }
  * )
  *
  * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "id_company", "archived"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "id_company"})})
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity(fields={"company", "client", "archived"}, message="Staff.client.unique", ignoreNull=false)
- *
- * @Gedmo\SoftDeleteable(fieldName="archived")
+ * @UniqueEntity(fields={"company", "client"}, message="Staff.client.unique")
  */
 class Staff
 {
     use RoleableTrait;
     use TimestampableTrait;
     use PublicizeIdentityTrait;
+    use TraceableStatusTrait {
+        setCurrentStatus as private baseStatusSetter;
+    }
 
     /** @deprecated Just for backward compatibility. Later, we will define a new role list for staff. */
     public const ROLE_COMPANY_OWNER = 'ROLE_COMPANY_OWNER';
@@ -70,13 +72,15 @@ class Staff
      * @Assert\NotBlank(message="Staff.company.empty")
      *
      * @Groups({"staff:read", "staff:create"})
+     *
+     * @MaxDepth(2)
      */
     private $company;
 
     /**
      * @var Clients
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="staff", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="staff", cascade={"persist", "refresh"})
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
      * })
@@ -85,6 +89,8 @@ class Staff
      * @Assert\Valid
      *
      * @Groups({"staff:read", "staff:create"})
+     *
+     * @MaxDepth(1)
      */
     private $client;
 
@@ -98,35 +104,47 @@ class Staff
     private $marketSegments;
 
     /**
-     * @var bool
+     * @var StaffStatus
      *
-     * @ORM\Column(type="boolean", nullable=false, options={"default": 1})
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\StaffStatus")
+     * @ORM\JoinColumn(name="id_current_status", unique=true)
+     *
+     * @Assert\NotBlank
+     * @Assert\Valid
+     *
+     * @Groups({"staff:read", "staff:update"})
+     *
+     * @MaxDepth(1)
      */
-    private $active;
+    private $currentStatus;
 
     /**
-     * @var DateTimeImmutable
+     * @var ArrayCollection|StaffStatus[]
      *
-     * @ORM\Column(type="datetime", nullable=true)
+     * @Assert\Count(min="1")
+     * @Assert\Valid
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\StaffStatus", mappedBy="staff", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      */
-    private $archived;
+    private $statuses;
 
     /**
      * Staff constructor.
      *
      * @param Company $company
      * @param Clients $client
+     * @param Staff   $addedBy
      *
      * @throws Exception
      */
-    public function __construct(Company $company, Clients $client)
+    public function __construct(Company $company, Clients $client, Staff $addedBy)
     {
         $this->marketSegments = new ArrayCollection();
         $this->added          = new DateTimeImmutable();
         $this->company        = $company;
         $this->client         = $client;
-        $this->active         = true;
-        $this->client->addStaff($this); // TODO To be removed when async message queue is put in place
+        $this->statuses       = new ArrayCollection();
+        $this->setCurrentStatus(new StaffStatus($this, StaffStatus::STATUS_ACTIVE, $addedBy));
     }
 
     /**
@@ -246,28 +264,37 @@ class Staff
     /**
      * @return bool
      */
-    public function isAvailable(): bool
+    public function isActive(): bool
     {
-        return null === $this->archived && $this->active;
+        return $this->getCurrentStatus() && StaffStatus::STATUS_ACTIVE === $this->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * TODO its argument should be an int and the necessary parameters to create it not the object itself.
+     * TODO It might be solved with a DTO.
+     *
+     * @param StaffStatus $staffStatus
+     *
+     * @return Staff
+     */
+    public function setCurrentStatus(StaffStatus $staffStatus): self
+    {
+        return $this->baseStatusSetter($staffStatus);
     }
 
     /**
      * @return bool
      */
-    public function isActive(): bool
+    public function isArchived(): bool
     {
-        return $this->active;
+        return $this->getCurrentStatus() && StaffStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
     }
 
     /**
-     * @param bool $active
-     *
-     * @return Staff
+     * @return bool
      */
-    public function setActive(bool $active): Staff
+    public function isInactive(): bool
     {
-        $this->active = $active;
-
-        return $this;
+        return null === $this->getCurrentStatus() || StaffStatus::STATUS_INACTIVE === $this->getCurrentStatus()->getStatus();
     }
 }

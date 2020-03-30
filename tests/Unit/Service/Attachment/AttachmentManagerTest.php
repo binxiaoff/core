@@ -81,7 +81,7 @@ class AttachmentManagerTest extends TestCase
         $uploader   = new Clients('test@' . Internet::safeEmailDomain());
         $uploaderId = Base::randomDigitNotNull() + 1;
         $idClientsReflectionProperty->setValue($uploader, $uploaderId);
-        $uploaderStaff = new Staff(new Company('test'), $uploader);
+        $uploaderStaff = new Staff(new Company('test'), $uploader, $this->prophesize(Staff::class)->reveal());
 
         $filePath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';
         fopen($filePath, 'wb+');
@@ -144,7 +144,11 @@ class AttachmentManagerTest extends TestCase
         return new Attachment(
             'test',
             'someType',
-            new Staff(new Company('test'), new Clients('test@' . Internet::safeEmailDomain())),
+            new Staff(
+                new Company('test'),
+                new Clients('test@' . Internet::safeEmailDomain()),
+                $this->prophesize(Staff::class)->reveal()
+            ),
             $this->createProject()
         );
     }
@@ -158,7 +162,7 @@ class AttachmentManagerTest extends TestCase
     {
         $company = new Company(Base::lexify('????'));
         $client  = new Clients('test@' . Internet::freeEmailDomain());
-        $staff   = new Staff($company, $client);
+        $staff   = new Staff($company, $client, $this->prophesize(Staff::class)->reveal());
 
         return new Project($staff, $company, new Money(Miscellaneous::currencyCode()), new MarketSegment());
     }
