@@ -26,8 +26,6 @@ class StaffManagerTest extends TestCase
     private $companyManager;
     /** @var ClientsRepository|ObjectProphecy */
     private $clientsRepository;
-    /** @var CompanyRepository|ObjectProphecy */
-    private $companyRepository;
     /** @var StaffRepository|ObjectProphecy */
     private $staffRepository;
 
@@ -38,7 +36,6 @@ class StaffManagerTest extends TestCase
     {
         $this->companyManager    = $this->prophesize(CompanyManager::class);
         $this->clientsRepository = $this->prophesize(ClientsRepository::class);
-        $this->companyRepository = $this->prophesize(CompanyRepository::class);
         $this->staffRepository   = $this->prophesize(StaffRepository::class);
     }
 
@@ -140,7 +137,6 @@ class StaffManagerTest extends TestCase
         return new StaffManager(
             $this->companyManager->reveal(),
             $this->clientsRepository->reveal(),
-            $this->companyRepository->reveal(),
             $this->staffRepository->reveal()
         );
     }
