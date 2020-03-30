@@ -33,4 +33,13 @@ class AttachmentSignatureVoter extends AbstractEntityVoter
     {
         return $attachmentSignature->getSignatory() === $user->getCurrentStaff() || $attachmentSignature->getAddedBy() === $user->getCurrentStaff();
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function fulfillPreconditions($subject, Clients $user): bool
+    {
+        // Disable the signature for now
+        return false;
+    }
 }

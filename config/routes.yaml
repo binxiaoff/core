@@ -25,6 +25,7 @@ health_check:
     path: /pulse
     controller: Unilend\Controller\HealthCheck
 
+# PSN callback URL
 file-signature-result:
     path: /file-signature/{fileSignatureId}/result
     controller: Unilend\Controller\AttachmentSignature\Result

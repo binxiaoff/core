@@ -72,8 +72,8 @@ class XmlGenerator
         $parametresDeSignature = $appelpm->addChild('PARAMETRESdePM')->addChild('PARAMETRESdeSIGNATURE');
         $parametresDeSignature->addChild('NUMCRP', self::KLS_CODE_ENTITY);
         $parametresDeSignature->addChild('NUMCRA', self::KLS_CODE_ENTITY);
-        $parametresDeSignature->addChild('NUMCRT', self::KLS_CODE_ENTITY); // Optional
-        $parametresDeSignature->addChild('IDPART', '1234567890123'); // unconfirmed value
+        $parametresDeSignature->addChild('NUMCRT', self::KLS_CODE_ENTITY);
+        $parametresDeSignature->addChild('IDPART', '1234567890123'); // static value, don't ask why
         $parametresDeSignature->addChild('IDPROT', 'CIB01');
         $parametresDeSignature->addChild('NUMARCH', (string) $attachmentSignature->getId());
         $parametresDeSignature->addChild('OMEXML', $fileBase64Content);
@@ -88,7 +88,7 @@ class XmlGenerator
         $parameter->addAttribute('Nom', 'fileSignatureId');
         $parameter->addAttribute('Valeur', (string) $attachmentSignature->getId());
 
-        $parametresDeSignature->addChild('TOPARCHIVAGE', 'O'); //last signature ? O = yes, N = no
+        $parametresDeSignature->addChild('TOPARCHIVAGE', 'O'); // last signature ? O = yes, N = no
         $parametresDeSignature->addChild('IDTECHCOMM', '170');
 
         $donneeEntreprise = $parametresDeSignature->addChild('DONNEEENTREPRISE');
@@ -96,7 +96,7 @@ class XmlGenerator
         $donneeEntreprise->addChild('LIBELLEENTREPRISE', $signatory->getCompany()->getName());
 
         $donneePP = $parametresDeSignature->addChild('DONNEEPP');
-        $donneePP->addChild('CDTICI', '1'); // unconfirmed value
+        $donneePP->addChild('CDTICI', '1'); // todo: ask for the values for other titles
         $donneePP->addChild('LNPRUS', $signatory->getClient()->getFirstName());
         $donneePP->addChild('LNPATR', $signatory->getClient()->getLastName());
 
