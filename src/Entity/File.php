@@ -20,8 +20,14 @@ use Unilend\Entity\Traits\{BlamableArchivedTrait, PublicizeIdentityTrait, Timest
  * @Gedmo\SoftDeleteable(fieldName="archived")
  *
  * @ApiResource(
- *     input=FileInput::class,
- *     output=true
+ *     collectionOperations={
+ *         "post"
+ *     },
+ *     itemOperations={
+ *         "patch",
+ *         "get"
+ *     },
+ *     input=FileInput::class
  * )
  */
 class File

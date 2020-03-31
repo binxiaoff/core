@@ -83,10 +83,10 @@ class ProjectFile
     use TimestampableAddedOnlyTrait;
     use ConstantsAwareTrait;
 
-    private const TYPE_GENERAL              = 'general';
-    private const TYPE_ACCOUNTING_FINANCIAL = 'accounting_financial';
-    private const TYPE_LEGAL                = 'legal';
-    private const TYPE_KYC                  = 'kyc';
+    public const TYPE_GENERAL              = 'general';
+    public const TYPE_ACCOUNTING_FINANCIAL = 'accounting_financial';
+    public const TYPE_LEGAL                = 'legal';
+    public const TYPE_KYC                  = 'kyc';
 
     /**
      * @var int

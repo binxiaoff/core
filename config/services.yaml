@@ -174,3 +174,5 @@ services:
     Unilend\Service\DataCrypto:
         $masterKeyPath: '%file_encryption.kek_file%'
         $masterKeyPassPhrase: '%file_encryption.kek_passphrase%'
+
+    Unilend\DataTransformer\FileInputDataTransformer: ~
