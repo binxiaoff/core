@@ -19,12 +19,12 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     denormalizationContext={"groups": "attachmentSignature:write"},
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object"},
- *         "signe": {
- *             "security": "is_granted('signe', object)",
+ *         "sign": {
+ *             "security": "is_granted('sign', object)",
  *             "method": "POST",
- *             "controller": "Unilend\Controller\AttachmentSignature\Signe",
- *             "path": "/attachment_signatures/{id}/signe",
- *             "denormalization_context": {"groups": {"attachmentSignature:signe"}}
+ *             "controller": "Unilend\Controller\AttachmentSignature\Sign",
+ *             "path": "/attachment_signatures/{id}/sign",
+ *             "denormalization_context": {"groups": {"attachmentSignature:sign"}}
  *         }
  *     },
  *     collectionOperations={

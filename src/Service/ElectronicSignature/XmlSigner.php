@@ -43,7 +43,7 @@ class XmlSigner
      *
      * @return string
      */
-    public function signe(string $xmlSource): string
+    public function sign(string $xmlSource): string
     {
         $xml = new DOMDocument();
         $xml->loadXML($xmlSource);

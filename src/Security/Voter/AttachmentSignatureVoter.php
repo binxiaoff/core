@@ -9,8 +9,8 @@ use Unilend\Entity\Clients;
 
 class AttachmentSignatureVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW     = 'view';
-    public const ATTRIBUTE_DOWNLOAD = 'signe';
+    public const ATTRIBUTE_VIEW = 'view';
+    public const ATTRIBUTE_SIGN = 'sign';
 
     /**
      * @param AttachmentSignature $attachmentSignature
@@ -18,7 +18,7 @@ class AttachmentSignatureVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function canSigne(AttachmentSignature $attachmentSignature, Clients $user): bool
+    protected function canSign(AttachmentSignature $attachmentSignature, Clients $user): bool
     {
         return $attachmentSignature->getSignatory() === $user->getCurrentStaff();
     }

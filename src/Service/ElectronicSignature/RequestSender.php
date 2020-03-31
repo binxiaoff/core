@@ -76,7 +76,7 @@ class RequestSender
     {
         $this->handleResponse($fileSignature, $this->psnClient->request(Request::METHOD_POST, self::REQUEST_PATH, [
             'headers' => ['Content-Type' => 'application/gzip'],
-            'body'    => gzencode($this->xmlSigner->signe($this->xmlGenerator->generate($fileSignature))),
+            'body'    => gzencode($this->xmlSigner->sign($this->xmlGenerator->generate($fileSignature))),
         ]));
 
         return $fileSignature;
@@ -115,7 +115,7 @@ class RequestSender
 
         if (200 !== (int) $header['CodeMessage']) {
             $this->handlePSNError($fileSignature, sprintf(
-                'The PSN server returns other code than 200. Code: %d. State: %s. Message: %s',
+                'The PSN server returns a code other than 200. Code: %d. State: %s. Message: %s',
                 (int) $header['CodeMessage'],
                 (string) $header['ETAT'],
                 (string) $header['LibelleMessage']

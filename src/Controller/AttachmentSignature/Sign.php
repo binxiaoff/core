@@ -9,7 +9,7 @@ use Symfony\Contracts\HttpClient\Exception\{ClientExceptionInterface, Redirectio
 use Unilend\Entity\AttachmentSignature;
 use Unilend\Service\ElectronicSignature\RequestSender;
 
-class Signe
+class Sign
 {
     /**
      * @var RequestSender
