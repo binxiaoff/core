@@ -8,30 +8,30 @@ use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, FileVersion, Project, ProjectParticipationContact, ProjectStatus};
-use Unilend\Repository\{AttachmentSignatureRepository, ProjectParticipationContactRepository};
+use Unilend\Repository\{FileVersionSignatureRepository, ProjectParticipationContactRepository};
 
 class FileVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_DOWNLOAD = 'download';
 
-    /** @var AttachmentSignatureRepository */
-    private $attachmentSignatureRepository;
+    /** @var FileVersionSignatureRepository */
+    private $fileVersionSignatureRepository;
 
     /** @var ProjectParticipationContactRepository */
     private $participationContactRepository;
 
     /**
      * @param AuthorizationCheckerInterface         $authorizationChecker
-     * @param AttachmentSignatureRepository         $attachmentSignatureRepository
+     * @param FileVersionSignatureRepository        $fileVersionSignatureRepository
      * @param ProjectParticipationContactRepository $participationContactRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
-        AttachmentSignatureRepository $attachmentSignatureRepository,
+        FileVersionSignatureRepository $fileVersionSignatureRepository,
         ProjectParticipationContactRepository $participationContactRepository
     ) {
         parent::__construct($authorizationChecker);
-        $this->attachmentSignatureRepository  = $attachmentSignatureRepository;
+        $this->fileVersionSignatureRepository = $fileVersionSignatureRepository;
         $this->participationContactRepository = $participationContactRepository;
     }
 
@@ -47,7 +47,7 @@ class FileVoter extends AbstractEntityVoter
     {
         //@todo change that
         $project   = $fileVersion->getProject();
-        $signature = $this->attachmentSignatureRepository->findOneBy(['attachment' => $fileVersion, 'signatory' => $user]);
+        $signature = $this->fileVersionSignatureRepository->findOneBy(['fileVersion' => $fileVersion, 'signatory' => $user->getCurrentStaff()]);
 
         if ($signature || $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project) || $project->getBorrowerCompany() === $user->getCompany()) {
             return true;

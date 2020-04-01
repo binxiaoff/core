@@ -54,9 +54,9 @@ class FileVersion
     private $originalName;
 
     /**
-     * @var AttachmentSignature[]
+     * @var FileVersionSignature[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\AttachmentSignature", mappedBy="fileVersion")
+     * @ORM\OneToMany(targetEntity="FileVersionSignature", mappedBy="fileVersion")
      *
      * @Groups({"fileVersion:read"})
      */
@@ -182,7 +182,7 @@ class FileVersion
     }
 
     /**
-     * @return AttachmentSignature[]
+     * @return FileVersionSignature[]
      */
     public function getSignatures(): iterable
     {
@@ -228,7 +228,7 @@ class FileVersion
     /**
      * @param string|null $encryptionKey
      *
-     * @return Attachment
+     * @return FileVersion
      */
     public function setEncryptionKey(?string $encryptionKey): FileVersion
     {
@@ -248,7 +248,7 @@ class FileVersion
     /**
      * @param string|null $plainEncryptionKey
      *
-     * @return Attachment
+     * @return FileVersion
      */
     public function setPlainEncryptionKey(?string $plainEncryptionKey): FileVersion
     {

@@ -5,34 +5,32 @@ declare(strict_types=1);
 namespace Unilend\Controller\File;
 
 use ApiPlatform\Core\Exception\RuntimeException;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
-use League\Flysystem\FileNotFoundException;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Exception;
+use Symfony\Component\HttpFoundation\{Request, StreamedResponse};
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\{FileDownload, FileVersion};
 use Unilend\Repository\FileDownloadRepository;
-use Unilend\Service\FileSystem\FileSystemHelper;
+use Unilend\Service\File\FileDownloadManager;
 
 class Download
 {
-    /** @var FileSystemHelper */
-    private $fileSystemHelper;
     /** @var Security */
     private $security;
     /** @var FileDownloadRepository */
     private $fileDownloadRepository;
+    /** @var FileDownloadManager */
+    private $fileDownloadManager;
 
     /**
-     * @param FileSystemHelper       $fileSystemHelper
+     * @param FileDownloadManager    $fileDownloadManager
      * @param FileDownloadRepository $fileDownloadRepository
      * @param Security               $security
      */
-    public function __construct(FileSystemHelper $fileSystemHelper, FileDownloadRepository $fileDownloadRepository, Security $security)
+    public function __construct(FileDownloadManager $fileDownloadManager, FileDownloadRepository $fileDownloadRepository, Security $security)
     {
-        $this->fileSystemHelper       = $fileSystemHelper;
+        $this->fileDownloadManager    = $fileDownloadManager;
         $this->security               = $security;
         $this->fileDownloadRepository = $fileDownloadRepository;
     }
@@ -43,8 +41,7 @@ class Download
      *
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws \Exception
-     * @throws FileNotFoundException
+     * @throws Exception
      *
      * @return StreamedResponse
      */
@@ -65,10 +62,6 @@ class Download
 
         $this->fileDownloadRepository->save(new FileDownload($data, $currentStaff));
 
-        return $this->fileSystemHelper->download(
-            $this->fileSystemHelper->getFileSystemForClass($data),
-            $data->getPath(),
-            $data->getOriginalName()
-        );
+        return $this->fileDownloadManager->download($data);
     }
 }

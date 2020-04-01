@@ -21,8 +21,8 @@ final class Version20200326120550 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
-
-        $this->addSql('ALTER TABLE attachment ADD encryption_key VARCHAR(512) DEFAULT NULL');
+        // The attachment table exists no longer.
+        //$this->addSql('ALTER TABLE attachment ADD encryption_key VARCHAR(512) DEFAULT NULL');
     }
 
     public function down(Schema $schema): void

@@ -31,9 +31,9 @@ class ProjectCommentRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function save(ProjectComment $comment)
+    public function save(ProjectComment $comment): void
     {
-        $this->_em->persist($comment);
-        $this->_em->flush($comment);
+        $this->getEntityManager()->persist($comment);
+        $this->getEntityManager()->flush();
     }
 }

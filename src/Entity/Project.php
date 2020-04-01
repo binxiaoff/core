@@ -412,13 +412,6 @@ class Project
     private $tranches;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(type="string", unique=true, nullable=true, length=320)
-     */
-    private $image;
-
-    /**
      * @var ProjectStatus
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus")
@@ -1038,26 +1031,6 @@ class Project
     public function isOnline(): bool
     {
         return ProjectStatus::STATUS_PUBLISHED === $this->getCurrentStatus()->getStatus();
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getImage(): ?string
-    {
-        return $this->image;
-    }
-
-    /**
-     * @param string|null $image
-     *
-     * @return Project
-     */
-    public function setImage(?string $image): Project
-    {
-        $this->image = $image;
-
-        return $this;
     }
 
     /**

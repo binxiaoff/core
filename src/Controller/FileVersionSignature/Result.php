@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Controller\AttachmentSignature;
+namespace Unilend\Controller\FileVersionSignature;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;

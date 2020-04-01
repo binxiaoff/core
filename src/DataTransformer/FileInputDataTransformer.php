@@ -13,12 +13,8 @@ use Prophecy\Exception\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\Clients;
-use Unilend\Entity\File;
-use Unilend\Entity\FileInput;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectFile;
-use Unilend\Service\File\FileManager;
+use Unilend\Entity\{Clients, File, FileInput, Project, ProjectFile};
+use Unilend\Service\File\FileUploadManager;
 
 class FileInputDataTransformer implements DataTransformerInterface
 {
@@ -28,8 +24,8 @@ class FileInputDataTransformer implements DataTransformerInterface
     private $iriConverter;
     /** @var Security */
     private $security;
-    /** @var FileManager */
-    private $fileManager;
+    /** @var FileUploadManager */
+    private $fileUploadManager;
     /** @var EntityManagerInterface */
     private $entityManager;
 
@@ -37,21 +33,21 @@ class FileInputDataTransformer implements DataTransformerInterface
      * @param ValidatorInterface     $validator
      * @param IriConverterInterface  $iriConverter
      * @param Security               $security
-     * @param FileManager            $fileManager
+     * @param FileUploadManager      $fileUploadManager
      * @param EntityManagerInterface $entityManager
      */
     public function __construct(
         ValidatorInterface $validator,
         IriConverterInterface $iriConverter,
         Security $security,
-        FileManager $fileManager,
+        FileUploadManager $fileUploadManager,
         EntityManagerInterface $entityManager
     ) {
-        $this->validator     = $validator;
-        $this->iriConverter  = $iriConverter;
-        $this->security      = $security;
-        $this->fileManager   = $fileManager;
-        $this->entityManager = $entityManager;
+        $this->validator         = $validator;
+        $this->iriConverter      = $iriConverter;
+        $this->security          = $security;
+        $this->fileUploadManager = $fileUploadManager;
+        $this->entityManager     = $entityManager;
     }
 
     /**
@@ -100,7 +96,7 @@ class FileInputDataTransformer implements DataTransformerInterface
 
         $user = $this->getUser($meta['userIri']);
 
-        $file = $this->fileManager->upload($uploadedFile, $user->getCurrentStaff(), $file);
+        $file = $this->fileUploadManager->upload($uploadedFile, $user->getCurrentStaff(), $file);
 
         if ($targetEntity instanceof Project) {
             if (in_array($type, FileInput::PROJECT_FILE_TYPES) && $request->isMethod(Request::METHOD_POST)) {

@@ -15,16 +15,16 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": "attachmentSignature:read"},
- *     denormalizationContext={"groups": "attachmentSignature:write"},
+ *     normalizationContext={"groups": "fileVersionSignature:read"},
+ *     denormalizationContext={"groups": "fileVersionSignature:write"},
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object"},
  *         "sign": {
  *             "security": "is_granted('sign', object)",
  *             "method": "POST",
- *             "controller": "Unilend\Controller\AttachmentSignature\Sign",
- *             "path": "/attachment_signatures/{id}/sign",
- *             "denormalization_context": {"groups": {"attachmentSignature:sign"}}
+ *             "controller": "Unilend\Controller\FileVersionSignature\Sign",
+ *             "path": "/file_version_signatures/{id}/sign",
+ *             "denormalization_context": {"groups": {"fileVersionSignature:sign"}}
  *         }
  *     },
  *     collectionOperations={
@@ -35,7 +35,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class AttachmentSignature
+class FileVersionSignature
 {
     use TimestampableTrait;
     use PublicizeIdentityTrait;
@@ -53,10 +53,10 @@ class AttachmentSignature
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion", inversedBy="signatures")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_attachment", nullable=false)
+     *     @ORM\JoinColumn(name="id_file_version", nullable=false)
      * })
      *
-     * @Groups({"attachmentSignature:write", "attachmentSignature:read"})
+     * @Groups({"fileVersionSignature:write", "fileVersionSignature:read"})
      */
     private $fileVersion;
 
@@ -68,7 +68,7 @@ class AttachmentSignature
      *     @ORM\JoinColumn(name="id_signatory", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"attachmentSignature:write", "attachmentSignature:read"})
+     * @Groups({"fileVersionSignature:write", "fileVersionSignature:read"})
      */
     private $signatory;
 
@@ -93,34 +93,32 @@ class AttachmentSignature
      *
      * @ORM\Column(length=255, nullable=true)
      *
-     * @Groups({ "attachmentSignature:read"})
+     * @Groups({"fileVersionSignature:read"})
      */
     private $signatureUrl;
 
     /**
-     * AttachmentSignature constructor.
-     *
-     * @param FileVersion $attachment
+     * @param FileVersion $fileVersion
      * @param Staff       $signatory
      * @param Staff       $addedBy
      *
      * @throws Exception
      */
-    public function __construct(FileVersion $attachment, Staff $signatory, Staff $addedBy)
+    public function __construct(FileVersion $fileVersion, Staff $signatory, Staff $addedBy)
     {
-        $this->attachment = $attachment;
-        $this->signatory  = $signatory;
-        $this->addedBy    = $addedBy;
-        $this->status     = self::STATUS_PENDED;
-        $this->added      = new DateTimeImmutable();
+        $this->fileVersion = $fileVersion;
+        $this->signatory   = $signatory;
+        $this->addedBy     = $addedBy;
+        $this->status      = self::STATUS_PENDED;
+        $this->added       = new DateTimeImmutable();
     }
 
     /**
      * @param FileVersion $fileVersion
      *
-     * @return AttachmentSignature
+     * @return FileVersionSignature
      */
-    public function setFileVersion(FileVersion $fileVersion): AttachmentSignature
+    public function setFileVersion(FileVersion $fileVersion): FileVersionSignature
     {
         $this->fileVersion = $fileVersion;
 
@@ -138,9 +136,9 @@ class AttachmentSignature
     /**
      * @param Staff $signatory
      *
-     * @return AttachmentSignature
+     * @return FileVersionSignature
      */
-    public function setSignatory(Staff $signatory): AttachmentSignature
+    public function setSignatory(Staff $signatory): FileVersionSignature
     {
         $this->signatory = $signatory;
 
@@ -158,9 +156,9 @@ class AttachmentSignature
     /**
      * @param int $status
      *
-     * @return AttachmentSignature
+     * @return FileVersionSignature
      */
-    public function setStatus(int $status): AttachmentSignature
+    public function setStatus(int $status): FileVersionSignature
     {
         $this->status = $status;
 
@@ -186,9 +184,9 @@ class AttachmentSignature
     /**
      * @param string|null $transactionNumber
      *
-     * @return AttachmentSignature
+     * @return FileVersionSignature
      */
-    public function setTransactionNumber(?string $transactionNumber): AttachmentSignature
+    public function setTransactionNumber(?string $transactionNumber): FileVersionSignature
     {
         $this->transactionNumber = $transactionNumber;
 
@@ -206,9 +204,9 @@ class AttachmentSignature
     /**
      * @param string|null $signatureUrl
      *
-     * @return AttachmentSignature
+     * @return FileVersionSignature
      */
-    public function setSignatureUrl(?string $signatureUrl): AttachmentSignature
+    public function setSignatureUrl(?string $signatureUrl): FileVersionSignature
     {
         $this->signatureUrl = $signatureUrl;
 

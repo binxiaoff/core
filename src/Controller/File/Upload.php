@@ -5,42 +5,34 @@ declare(strict_types=1);
 namespace Unilend\Controller\File;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use League\Flysystem\FileExistsException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\Clients;
-use Unilend\Entity\File;
-use Unilend\Entity\Project;
-use Unilend\Service\File\FileManager;
+use Unilend\Entity\{Clients, File, Project};
+use Unilend\Service\File\FileUploadManager;
 
 class Upload
 {
-    /** @var FileManager */
-    private $fileManager;
+    /** @var FileUploadManager */
+    private $fileUploadManager;
     /** @var Security */
     private $security;
     /** @var IriConverterInterface */
     private $converter;
-    /** @var EntityManagerInterface */
-    private $entityManager;
 
     /**
-     * @param FileManager            $fileManager
-     * @param Security               $security
-     * @param IriConverterInterface  $converter
-     * @param EntityManagerInterface $entityManager
+     * @param FileUploadManager     $fileUploadManager
+     * @param Security              $security
+     * @param IriConverterInterface $converter
      */
-    public function __construct(FileManager $fileManager, Security $security, IriConverterInterface $converter, EntityManagerInterface $entityManager)
+    public function __construct(FileUploadManager $fileUploadManager, Security $security, IriConverterInterface $converter)
     {
-        $this->fileManager   = $fileManager;
-        $this->security      = $security;
-        $this->converter     = $converter;
-        $this->entityManager = $entityManager;
+        $this->fileUploadManager = $fileUploadManager;
+        $this->security          = $security;
+        $this->converter         = $converter;
     }
 
     /**
@@ -79,7 +71,7 @@ class Upload
             throw new Exception();
         }
 
-        $file = $this->fileManager->upload(
+        $file = $this->fileUploadManager->upload(
             $request->files->get('file'),
             $user->getCurrentStaff(),
             $data->{$getter}(),

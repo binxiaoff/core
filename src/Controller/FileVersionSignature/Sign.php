@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Controller\AttachmentSignature;
+namespace Unilend\Controller\FileVersionSignature;
 
 use League\Flysystem\FileNotFoundException;
 use Symfony\Contracts\HttpClient\Exception\{ClientExceptionInterface, RedirectionExceptionInterface, ServerExceptionInterface, TransportExceptionInterface};
-use Unilend\Entity\AttachmentSignature;
+use Unilend\Entity\FileVersionSignature;
 use Unilend\Service\ElectronicSignature\RequestSender;
 
 class Sign
@@ -25,20 +25,20 @@ class Sign
     }
 
     /**
-     * @param AttachmentSignature $data
+     * @param FileVersionSignature $data
      *
-     * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws FileNotFoundException
+     * @throws ClientExceptionInterface
      *
-     * @return AttachmentSignature
+     * @return FileVersionSignature
      */
-    public function __invoke(AttachmentSignature $data): AttachmentSignature
+    public function __invoke(FileVersionSignature $data): FileVersionSignature
     {
         // todo: If the business requires, we can have a option to "force" the sending of signature request even the status is not valid.
-        if ($data->getStatus() > AttachmentSignature::STATUS_REQUESTED) {
+        if ($data->getStatus() > FileVersionSignature::STATUS_REQUESTED) {
             throw new \InvalidArgumentException(sprintf('The signature (id: %s) has already been treated', $data->getPublicId()));
         }
 

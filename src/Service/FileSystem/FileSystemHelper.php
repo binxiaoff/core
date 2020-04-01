@@ -87,39 +87,45 @@ class FileSystemHelper
         switch ($class) {
             case AcceptationsLegalDocs::class:
                 $serviceId = 'League\Flysystem\GeneratedDocumentFilesystem';
+
                 break;
             case FileVersion::class:
                 switch ($class->getFileSystem()) {
                     case FileVersion::FILE_SYSTEM_USER_ATTACHMENT:
                         $serviceId = 'League\Flysystem\UserAttachmentFilesystem';
+
                         break;
                     case FileVersion::FILE_SYSTEM_GENERATED_DOCUMENT:
                         $serviceId = 'League\Flysystem\GeneratedDocumentFilesystem';
+
                         break;
                     default:
                         throw new RuntimeException(sprintf('The filesystem %s is not be supported', $class->getFileSystem()));
                 }
+
                 break;
             default:
                 throw new RuntimeException(sprintf('The class %s is not be supported', $class));
         }
 
         $filesystem = $this->getService($serviceId);
-        if (false === $filesystem instanceof FilesystemInterface) {
-            throw new RuntimeException(sprintf('Cannot find the filesystem by class %s. Please check the services configurations', $class));
+
+        if ($filesystem instanceof FilesystemInterface) {
+            // Do like this, so that the IDE can analyse easier the code.
+            return $filesystem;
         }
 
-        return $filesystem;
+        throw new RuntimeException(sprintf('Cannot find the filesystem by class %s. Please check the services configurations', $class));
     }
 
     /**
-     * @param Attachment $attachment
+     * @param FileVersion $attachment
      *
      * @throws Exception
      *
      * @return false|resource
      */
-    public function readStream(Attachment $attachment)
+    public function readStream(FileVersion $attachment)
     {
         $fileSystem = $this->getFileSystemForClass($attachment);
 
@@ -134,6 +140,16 @@ class FileSystemHelper
         }
 
         return $fileResource;
+    }
+
+    /**
+     * @param string $fileName
+     *
+     * @return string
+     */
+    public function normalizeFileName(string $fileName): string
+    {
+        return \URLify::downcode($fileName);
     }
 
     /**
