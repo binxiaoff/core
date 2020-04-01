@@ -67,7 +67,7 @@ class Company
     private $name;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(name="siren", type="string", length=15, nullable=true)
      *
@@ -107,6 +107,8 @@ class Company
     private $projectParticipations;
 
     /**
+     * @var string|null
+     *
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
      *
      * @Groups({"company:read", "company:jwt:read"})
@@ -114,6 +116,8 @@ class Company
     private $emailDomain;
 
     /**
+     * @var string|null
+     *
      * @ORM\Column(type="string", length=4, nullable=true, unique=true)
      *
      * @Groups({"company:read", "company:jwt:read"})

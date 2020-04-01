@@ -8,7 +8,6 @@ use Defuse\Crypto\Exception\{BadFormatException, EnvironmentIsBrokenException, I
 use Doctrine\ORM\Proxy\Proxy;
 use Exception;
 use League\Flysystem\{FileExistsException, FilesystemInterface};
-use LogicException;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Unilend\Entity\{AcceptationsLegalDocs, Attachment};
@@ -76,21 +75,34 @@ class FileSystemHelper
      *
      * @throws Exception
      *
-     * @return object|null
+     * @return FilesystemInterface
      */
-    public function getFileSystemForClass($class)
+    public function getFileSystemForClass($class): FilesystemInterface
     {
         if (is_object($class)) {
             $class = $class instanceof Proxy ? get_parent_class($class) : get_class($class);
         }
+
+        $filesystem = null;
         switch ($class) {
             case Attachment::class:
-                return $this->getService('League\Flysystem\UserAttachmentFilesystem');
+                $serviceId = 'League\Flysystem\UserAttachmentFilesystem';
+
+                break;
             case AcceptationsLegalDocs::class:
-                return $this->getService('League\Flysystem\GeneratedDocumentFilesystem');
+                $serviceId = 'League\Flysystem\GeneratedDocumentFilesystem';
+
+                break;
             default:
-                throw new LogicException('This code should not be reached');
+                throw new RuntimeException('This class is not be supported');
         }
+
+        $filesystem = $this->getService($serviceId);
+        if (false === $filesystem instanceof FilesystemInterface) {
+            throw new RuntimeException(sprintf('Cannot find the filesystem by class %s. Please check the services configurations', $class));
+        }
+
+        return $filesystem;
     }
 
     /**

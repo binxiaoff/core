@@ -17,6 +17,9 @@ parameters:
     security.recipients: ['tech@ca-lendingservices.com']
     file_encryption.kek_file: '%env(FILE_ENCRYPTION_KEK_FILE)%'
     file_encryption.kek_passphrase: '%env(FILE_ENCRYPTION_KEK_PASSPHRASE)%'
+    psn.public_key: '%env(base64:PSN_PUBLIC_KEY)%'
+    psn.private_key: '%env(base64:PSN_PRIVATE_KEY)%'
+    psn.base_uri: '%env(PSN_BASE_URI)%'
 
 services:
     _defaults:
@@ -162,6 +165,10 @@ services:
     Unilend\Serializer\ContextBuilder\CircularReferenceHandler:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
+
+    Unilend\Service\ElectronicSignature\XmlSigner:
+        $publicKey: '%psn.public_key%'
+        $privateKey: '%psn.private_key%'
 
     Sonata\CacheBundle\Adapter\SymfonyCache: '@sonata.cache.symfony'
 
