@@ -27,25 +27,17 @@ class FileInput
     ];
 
     /**
-     * Assert its a File.
+     * @Assert\File
      */
     public $uploadedFile;
 
     /**
-     * @Assert\NotBlank(groups={"file:patch"})
-     * @Assert\NotNull(groups={"file:patch"})
-     */
-    public $file;
-
-    /**
-     * @Assert\NotBlank(groups={"file:post"})
-     * @Assert\NotNull(groups={"file:post"})
+     * @Assert\NotBlank
      */
     public $targetEntity;
 
     /**
-     * @Assert\NotBlank(groups={"file:post"})
-     * @Assert\NotNull(groups={"file:post"})
+     * @Assert\NotBlank
      */
     public $type;
 

@@ -27,7 +27,8 @@ use Unilend\Entity\Traits\{BlamableArchivedTrait, PublicizeIdentityTrait, Timest
  *         "patch",
  *         "get"
  *     },
- *     input=FileInput::class
+ *     input=FileInput::class,
+ *
  * )
  */
 class File

@@ -6,6 +6,9 @@ api_platform:
     enable_docs: '%kernel.debug%'
     mapping:
         paths: ['%kernel.project_dir%/src/Entity']
+    formats:
+        form:
+            mime_types: ['multipart/form-data']
     patch_formats:
         json:     ['application/merge-patch+json']
     swagger:
