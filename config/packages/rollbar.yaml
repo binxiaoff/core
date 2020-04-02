@@ -1,7 +1,7 @@
 rollbar:
     enabled: false
     access_token: 2aae46c5bee64e9fa47d706a0ee56aac
-    environment: '%app_env%'
+    environment: '%kernel.environment%'
     autodetect_branch: true
     scrub_fields:
         # default values

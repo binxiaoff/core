@@ -20,7 +20,6 @@ parameters:
     psn.public_key: '%env(base64:PSN_PUBLIC_KEY)%'
     psn.private_key: '%env(base64:PSN_PRIVATE_KEY)%'
     psn.base_uri: '%env(PSN_BASE_URI)%'
-    app_env: '%env(APP_ENV)%'
 
 services:
     _defaults:
