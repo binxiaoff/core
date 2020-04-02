@@ -1,3 +1,2 @@
 rollbar:
-  enabled: true
-  environment: prod
+    enabled: true
