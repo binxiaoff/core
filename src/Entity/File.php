@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Unilend\DTO\FileInput;
 use Unilend\Entity\Traits\{BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableTrait};
 
 /**
@@ -27,8 +28,7 @@ use Unilend\Entity\Traits\{BlamableArchivedTrait, PublicizeIdentityTrait, Timest
  *         "patch",
  *         "get"
  *     },
- *     input=FileInput::class,
- *
+ *     input=FileInput::class
  * )
  */
 class File

@@ -174,3 +174,10 @@ services:
     Unilend\Service\DataCrypto:
         $masterKeyPath: '%file_encryption.kek_file%'
         $masterKeyPassPhrase: '%file_encryption.kek_passphrase%'
+
+    Unilend\Listener\ApiPlatform\MultipartFormDeserializeListener:
+        tags:
+            - { name: 'kernel.event_listener', event: 'kernel.request', method: 'onKernelRequest', priority: 2 }
+
+    ApiPlatform\Core\EventListener\DeserializeListener:
+        alias: 'api_platform.listener.request.deserialize'

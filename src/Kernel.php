@@ -11,6 +11,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Routing\RouteCollectionBuilder;
 use Unilend\DependencyInjection\Compiler\{AddDbalCacheConfigurationPass, MakeSonataCacheSymfonyPublicPass};
+use Unilend\Listener\ApiPlatform\RemoveTagsOnOriginalDeserializeListener;
 
 class Kernel extends BaseKernel
 {
@@ -46,7 +47,9 @@ class Kernel extends BaseKernel
     {
         parent::build($container);
 
-        $container->addCompilerPass(new MakeSonataCacheSymfonyPublicPass());
+        $container->addCompilerPass(new MakeSonataCacheSymfonyPublicPass())
+            ->addCompilerPass(new RemoveTagsOnOriginalDeserializeListener())
+        ;
     }
 
     /**

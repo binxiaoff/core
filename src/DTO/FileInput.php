@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity;
+namespace Unilend\DTO;
 
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Entity\ProjectFile;
 use Unilend\Traits\ConstantsAwareTrait;
 
 class FileInput

@@ -12,7 +12,8 @@ use ApiPlatform\Core\Validator\ValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Prophecy\Exception\InvalidArgumentException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\{File, FileInput, Project, ProjectFile};
+use Unilend\DTO\FileInput;
+use Unilend\Entity\{File, Project, ProjectFile};
 use Unilend\Service\File\FileUploadManager;
 
 class FileInputDataTransformer implements DataTransformerInterface
