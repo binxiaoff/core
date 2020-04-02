@@ -44,7 +44,7 @@ abstract class AbstractEntityVoter extends Voter
     {
         $user = $this->getUser($token);
 
-        if (null === $user || null === $user->getCurrentStaff()) {
+        if (null === $user) {
             return false;
         }
 
