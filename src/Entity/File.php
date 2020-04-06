@@ -12,7 +12,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\DTO\FileInput;
 use Unilend\Entity\Traits\{BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableTrait};
 
 /**
@@ -21,14 +20,79 @@ use Unilend\Entity\Traits\{BlamableArchivedTrait, PublicizeIdentityTrait, Timest
  * @Gedmo\SoftDeleteable(fieldName="archived")
  *
  * @ApiResource(
+ *     normalizationContext={"groups": {"file:read", "fileVersion:read"}},
  *     collectionOperations={
- *         "post"
+ *         "post": {
+ *             "controller": "Unilend\Controller\File\Upload",
+ *             "path": "/files/upload",
+ *             "deserialize": false,
+ *             "swagger_context": {
+ *                 "consumes": {"multipart/form-data"},
+ *                 "parameters": {
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "file",
+ *                         "type": "file",
+ *                         "description": "The uploaded file",
+ *                         "required": true
+ *                     },
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "type",
+ *                         "type": "string",
+ *                         "description": "The file type",
+ *                         "required": true
+ *                     },
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "targetEntity",
+ *                         "type": "string",
+ *                         "description": "The target entity as an IRI",
+ *                         "required": true
+ *                     }
+ *                 }
+ *             }
+ *         }
  *     },
  *     itemOperations={
- *         "patch",
- *         "get"
- *     },
- *     input=FileInput::class
+ *         "add_file_version": {
+ *             "method": "POST",
+ *             "controller": "Unilend\Controller\File\Upload",
+ *             "path": "/files/{id}/file_versions/upload",
+ *             "deserialize": false,
+ *             "swagger_context": {
+ *                 "consumes": {"multipart/form-data"},
+ *                 "parameters": {
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "file",
+ *                         "type": "file",
+ *                         "description": "The uploaded file",
+ *                         "required": true
+ *                     },
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "type",
+ *                         "type": "string",
+ *                         "description": "The file type",
+ *                         "required": true
+ *                     },
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "targetEntity",
+ *                         "type": "string",
+ *                         "description": "The target entity as an IRI",
+ *                         "required": true
+ *                     }
+ *                 }
+ *             }
+ *         },
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     }
  * )
  */
 class File

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Service\FileSystem;
 
 use Defuse\Crypto\Exception\{BadFormatException, EnvironmentIsBrokenException, IOException, WrongKeyOrModifiedCiphertextException};
-use Doctrine\ORM\Proxy\Proxy;
 use Exception;
 use League\Flysystem\{FileExistsException, FilesystemInterface};
 use RuntimeException;
@@ -51,7 +50,6 @@ class FileSystemHelper
         if ($encryption) {
             $filePath = $temporaryFilePath . self::ENCRYPTED_FILE_SUFFIX;
             $key      = $this->fileCrypto->encryptFile($temporaryFilePath, $filePath);
-            @unlink($temporaryFilePath);
         }
 
         $fileResource = @fopen($filePath, 'r+b');
@@ -65,47 +63,37 @@ class FileSystemHelper
             }
         }
 
-        @unlink($filePath);
+        /* We delete only the temporary file that we created for the encryption.
+         * The orignal file ($temporaryFilePath) is managed by other module (for example, Symfony file system), which should not be touched.
+        */
+        if ($encryption) {
+            @unlink($filePath);
+        }
 
         return $key;
     }
 
     /**
-     * @param string|object $class
+     * @param FileVersion $fileVersion
      *
      * @throws Exception
      *
      * @return FilesystemInterface
      */
-    public function getFileSystemForClass($class): FilesystemInterface
+    public function getFileSystem(FileVersion $fileVersion): FilesystemInterface
     {
-        if (is_object($class)) {
-            $class = $class instanceof Proxy ? get_parent_class($class) : get_class($class);
-        }
-
         $filesystem = null;
-        switch ($class) {
-            case AcceptationsLegalDocs::class:
+        switch ($fileVersion->getFileSystem()) {
+            case FileVersion::FILE_SYSTEM_USER_ATTACHMENT:
+                $serviceId = 'League\Flysystem\UserAttachmentFilesystem';
+
+                break;
+            case FileVersion::FILE_SYSTEM_GENERATED_DOCUMENT:
                 $serviceId = 'League\Flysystem\GeneratedDocumentFilesystem';
 
                 break;
-            case FileVersion::class:
-                switch ($class->getFileSystem()) {
-                    case FileVersion::FILE_SYSTEM_USER_ATTACHMENT:
-                        $serviceId = 'League\Flysystem\UserAttachmentFilesystem';
-
-                        break;
-                    case FileVersion::FILE_SYSTEM_GENERATED_DOCUMENT:
-                        $serviceId = 'League\Flysystem\GeneratedDocumentFilesystem';
-
-                        break;
-                    default:
-                        throw new RuntimeException(sprintf('The filesystem %s is not be supported', $class->getFileSystem()));
-                }
-
-                break;
             default:
-                throw new RuntimeException(sprintf('The class %s is not be supported', $class));
+                throw new RuntimeException(sprintf('The filesystem %s is not be supported', $fileVersion->getFileSystem()));
         }
 
         $filesystem = $this->getService($serviceId);
@@ -115,28 +103,28 @@ class FileSystemHelper
             return $filesystem;
         }
 
-        throw new RuntimeException(sprintf('Cannot find the filesystem by class %s. Please check the services configurations', $class));
+        throw new RuntimeException(sprintf('Cannot find the filesystem for %s. Please check the services configurations', $fileVersion->getFileSystem()));
     }
 
     /**
-     * @param FileVersion $attachment
+     * @param FileVersion $fileVersion
      *
      * @throws Exception
      *
      * @return false|resource
      */
-    public function readStream(FileVersion $attachment)
+    public function readStream(FileVersion $fileVersion)
     {
-        $fileSystem = $this->getFileSystemForClass($attachment);
+        $fileSystem = $this->getFileSystem($fileVersion);
 
         if (!$fileSystem) {
             return false;
         }
 
-        $fileResource = $fileSystem->readStream($attachment->getPath());
+        $fileResource = $fileSystem->readStream($fileVersion->getPath());
 
-        if ($fileResource && $attachment->getPlainEncryptionKey()) {
-            $fileResource = $this->decrypt($fileResource, $attachment->getPlainEncryptionKey());
+        if ($fileResource && $fileVersion->getPlainEncryptionKey()) {
+            $fileResource = $this->decrypt($fileResource, $fileVersion->getPlainEncryptionKey());
         }
 
         return $fileResource;

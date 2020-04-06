@@ -6,48 +6,103 @@ namespace Unilend\Security\Voter;
 
 use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
+use Prophecy\Exception\InvalidArgumentException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, FileVersion, Project, ProjectParticipationContact, ProjectStatus};
-use Unilend\Repository\{FileVersionSignatureRepository, ProjectParticipationContactRepository};
+use Unilend\Entity\{Clients, FileDownload, FileVersion, Project, ProjectFile, ProjectParticipationContact, ProjectStatus};
+use Unilend\Repository\{FileVersionSignatureRepository, ProjectFileRepository, ProjectParticipationContactRepository, ProjectRepository};
 
-class FileVoter extends AbstractEntityVoter
+class FileDownloadVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_DOWNLOAD = 'download';
+    public const ATTRIBUTE_CREATE = 'create';
 
     /** @var FileVersionSignatureRepository */
     private $fileVersionSignatureRepository;
 
     /** @var ProjectParticipationContactRepository */
     private $participationContactRepository;
+    /**
+     * @var ProjectFileRepository
+     */
+    private $projectFileRepository;
+    /**
+     * @var ProjectRepository
+     */
+    private $projectRepository;
 
     /**
      * @param AuthorizationCheckerInterface         $authorizationChecker
      * @param FileVersionSignatureRepository        $fileVersionSignatureRepository
      * @param ProjectParticipationContactRepository $participationContactRepository
+     * @param ProjectFileRepository                 $projectFileRepository
+     * @param ProjectRepository                     $projectRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         FileVersionSignatureRepository $fileVersionSignatureRepository,
-        ProjectParticipationContactRepository $participationContactRepository
+        ProjectParticipationContactRepository $participationContactRepository,
+        ProjectFileRepository $projectFileRepository,
+        ProjectRepository $projectRepository
     ) {
         parent::__construct($authorizationChecker);
         $this->fileVersionSignatureRepository = $fileVersionSignatureRepository;
         $this->participationContactRepository = $participationContactRepository;
+        $this->projectFileRepository          = $projectFileRepository;
+        $this->projectRepository              = $projectRepository;
     }
 
     /**
-     * @param FileVersion $fileVersion
-     * @param Clients     $user
+     * @param FileDownload $fileDownload
+     * @param Clients      $user
+     *
+     * @return bool
+     */
+    protected function fulfillPreconditions($fileDownload, Clients $user): bool
+    {
+        return $fileDownload->getFileVersion()->getFile() && $fileDownload->getFileVersion() === $fileDownload->getFileVersion()->getFile()->getCurrentFileVersion();
+    }
+
+    /**
+     * @param FileDownload $fileDownload
+     * @param Clients      $user
      *
      * @throws NonUniqueResultException
      *
      * @return bool
      */
-    protected function canDownload(FileVersion $fileVersion, Clients $user): bool
+    protected function canCreate(FileDownload $fileDownload, Clients $user): bool
     {
-        //@todo change that
-        $project   = $fileVersion->getProject();
-        $signature = $this->fileVersionSignatureRepository->findOneBy(['fileVersion' => $fileVersion, 'signatory' => $user->getCurrentStaff()]);
+        $file    = $fileDownload->getFileVersion()->getFile();
+        $type    = $fileDownload->getType();
+        $project = null;
+
+        if (in_array($type, ProjectFile::getProjectFileTypes(), true)) {
+            $projectFile = $this->projectFileRepository->findOneBy(['file' => $file, 'type' => $type]);
+            if (null === $projectFile) {
+                return false;
+            }
+            $project = $projectFile->getProject();
+        }
+
+        if (in_array($type, Project::getProjectFileTypes(), true)) {
+            switch ($type) {
+                case Project::PROJECT_FILE_TYPE_DESCRIPTION:
+                    $project = $this->projectRepository->findOneBy(['descriptionDocument' => $file]);
+
+                    break;
+                case Project::PROJECT_FILE_TYPE_CONFIDENTIALITY:
+                    $project = $this->projectRepository->findOneBy(['confidentialityDisclaimer' => $file]);
+
+                    break;
+                default:
+                    throw new InvalidArgumentException(sprintf('The type %s is not supported.', $type));
+            }
+        }
+
+        if (null === $project) {
+            return false;
+        }
+
+        $signature = $this->fileVersionSignatureRepository->findOneBy(['fileVersion' => $fileDownload->getFileVersion(), 'signatory' => $user->getCurrentStaff()]);
 
         if ($signature || $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project) || $project->getBorrowerCompany() === $user->getCompany()) {
             return true;
@@ -62,7 +117,7 @@ class FileVoter extends AbstractEntityVoter
             case ProjectStatus::STATUS_REPAID:
                 return
                     null !== ($contact = $this->getActiveParticipantParticipation($project, $user))
-                        && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeOfferCollected($project, $fileVersion));
+                    && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeOfferCollected($project, $fileDownload->getFileVersion()));
             default:
                 throw new LogicException('This code should not be reached');
         }

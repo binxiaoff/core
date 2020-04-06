@@ -60,6 +60,8 @@ final class Version20200320103950 extends AbstractMigration
             FROM attachment
         ');
 
+        $this->addSql('UPDATE project_file set type = concat(\'project_file_\', type)');
+
         $this->addSql('ALTER TABLE attachment_signature ADD CONSTRAINT FK_D8505362DCD5596C FOREIGN KEY (id_attachment) REFERENCES file_version (id)');
         $this->addSql('DROP TABLE attachment_download');
         $this->addSql('DROP TABLE attachment');

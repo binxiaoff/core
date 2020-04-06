@@ -4,51 +4,51 @@ declare(strict_types=1);
 
 namespace Unilend\DTO;
 
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Entity\Project;
 use Unilend\Entity\ProjectFile;
-use Unilend\Traits\ConstantsAwareTrait;
 
 class FileInput
 {
-    use ConstantsAwareTrait;
-
-    public const PROJECT_TYPE_CONFIDENTIALITY_DISCLAIMER = 'project_confidentiality_disclaimer';
-    public const PROJECT_TYPE_DESCRIPTION                = 'project_description';
-
-    public const PROJECT_FILE_TYPES = [
-        ProjectFile::TYPE_GENERAL,
-        ProjectFile::TYPE_ACCOUNTING_FINANCIAL,
-        ProjectFile::TYPE_KYC,
-        ProjectFile::TYPE_LEGAL,
-    ];
-
-    public const PROJECT_FIELDS_TYPES = [
-        self::PROJECT_TYPE_DESCRIPTION,
-        self::PROJECT_TYPE_CONFIDENTIALITY_DISCLAIMER,
-    ];
-
     /**
+     * @var UploadedFile
+     *
      * @Assert\File
      */
     public $uploadedFile;
 
     /**
+     * @var string
+     *
      * @Assert\NotBlank
      */
     public $targetEntity;
 
     /**
+     * @var string
+     *
      * @Assert\NotBlank
      */
     public $type;
 
-    public $meta;
+    /**
+     * @param UploadedFile $uploadedFile
+     * @param string       $type
+     * @param string       $targetEntity
+     */
+    public function __construct(UploadedFile $uploadedFile, string $type, string $targetEntity)
+    {
+        $this->uploadedFile = $uploadedFile;
+        $this->type         = $type;
+        $this->targetEntity = $targetEntity;
+    }
 
     /**
      * @return array
      */
-    public static function getProjectTypes(): array
+    public static function getProjectFileTypes(): array
     {
-        return array_merge(self::getConstants('PROJECT_FILE_TYPES'), self::getConstants('PROJECT_FIELDS_TYPES'));
+        return array_merge(Project::getProjectFileTypes(), ProjectFile::getProjectFileTypes());
     }
 }

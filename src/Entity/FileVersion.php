@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
-use Defuse\Crypto\{Exception\EnvironmentIsBrokenException, Key};
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -17,6 +17,21 @@ use Unilend\Traits\ConstantsAwareTrait;
 /**
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
+ *
+ * @ApiResource(
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *         "download": {
+ *             "method": "GET",
+ *             "controller": "Unilend\Controller\File\Download",
+ *             "path": "/file_versions/{id}/download/{type}"
+ *         }
+ *     }
+ * )
  */
 class FileVersion
 {
@@ -27,15 +42,6 @@ class FileVersion
 
     public const FILE_SYSTEM_USER_ATTACHMENT    = 'user_attachment';
     public const FILE_SYSTEM_GENERATED_DOCUMENT = 'generated_document';
-
-    /**
-     * @var int
-     *
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     * @ORM\Column(name="id", type="integer")
-     */
-    private $id;
 
     /**
      * @var string
@@ -81,7 +87,7 @@ class FileVersion
     private $fileVersionDownloads;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\File", inversedBy="versions")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\File", inversedBy="fileVersions")
      * @ORM\JoinColumn(name="id_file", nullable=false)
      */
     private $file;
@@ -131,14 +137,6 @@ class FileVersion
         $this->fileSystem           = $fileSystem;
         $this->plainEncryptionKey   = $plainEncryptionKey;
         $this->mimeType             = $mimeType;
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
     }
 
     /**

@@ -6,7 +6,7 @@ namespace Unilend\Service\File;
 
 use Swift_Mailer;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{FileVersion, ProjectStatus};
+use Unilend\Entity\{Project, ProjectStatus};
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class FileNotifier
@@ -29,19 +29,17 @@ class FileNotifier
     }
 
     /**
-     * @param FileVersion $fileVersion
+     * @param Project $project
      *
-     * @throws SyntaxError
      * @throws LoaderError
      * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @return int
      */
-    public function notifyUploaded(FileVersion $fileVersion): int
+    public function notifyUploaded(Project $project): int
     {
         $sent = 0;
-        //@todo change that
-        $project = $fileVersion->getProject();
 
         if (ProjectStatus::STATUS_PUBLISHED > $project->getCurrentStatus()->getStatus()) {
             return $sent;

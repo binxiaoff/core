@@ -6,71 +6,21 @@ namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\BlamableAddedTrait;
-use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
+use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
  *
  * @ApiResource(
- *     normalizationContext={
- *         "groups": {
- *             "projectFile:read",
- *             "file:read",
- *             "fileVersion:read",
- *             "blameable:read"
- *         }
- *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
- *         },
- *         "download": {
- *             "security": "is_granted('download', object)",
- *             "method": "GET",
- *             "controller": "Unilend\Controller\ProjectFile\Download",
- *             "path": "/project_file/{id}/download"
- *         }
- *     },
- *     collectionOperations={
- *         "post": {
- *             "method": "POST",
- *             "controller": "Unilend\Controller\ProjectFile\Upload",
- *             "deserialize": false,
- *             "swagger_context": {
- *                 "consumes": {"multipart/form-data"},
- *                 "parameters": {
- *                     {
- *                         "in": "formData",
- *                         "name": "file",
- *                         "type": "file",
- *                         "description": "The uploaded file",
- *                         "required": true
- *                     },
- *                     {
- *                         "in": "formData",
- *                         "name": "type",
- *                         "type": "string",
- *                         "description": "The file type"
- *                     },
- *                     {
- *                         "in": "formData",
- *                         "name": "project",
- *                         "type": "string",
- *                         "description": "The project as an IRI"
- *                     },
- *                     {
- *                         "in": "formData",
- *                         "name": "user",
- *                         "type": "string",
- *                         "description": "The uploader as an IRI (available as an admin)"
- *                     }
- *                 }
- *             }
  *         }
  *     }
  * )
@@ -78,15 +28,13 @@ use Unilend\Traits\ConstantsAwareTrait;
 class ProjectFile
 {
     use BlamableAddedTrait;
-    // @todo uncomment when add ApiResource annotation
-//    use PublicizeIdentityTrait;
     use TimestampableAddedOnlyTrait;
     use ConstantsAwareTrait;
 
-    public const TYPE_GENERAL              = 'general';
-    public const TYPE_ACCOUNTING_FINANCIAL = 'accounting_financial';
-    public const TYPE_LEGAL                = 'legal';
-    public const TYPE_KYC                  = 'kyc';
+    private const PROJECT_FILE_TYPE_GENERAL              = 'project_file_general';
+    private const PROJECT_FILE_TYPE_ACCOUNTING_FINANCIAL = 'project_file_accounting_financial';
+    private const PROJECT_FILE_TYPE_LEGAL                = 'project_file_legal';
+    private const PROJECT_FILE_TYPE_KYC                  = 'project_file_kyc';
 
     /**
      * @var int
@@ -103,12 +51,16 @@ class ProjectFile
      * @ORM\Column(length=60)
      *
      * @Assert\Choice(callback="getTypes")
+     *
+     * @Groups({"projectFile:read"})
      */
     private $type;
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Entity\File", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_file", nullable=false)
+     * @ORM\JoinColumn(name="id_file", nullable=false, unique=true)
+     *
+     * @Groups({"projectFile:read"})
      */
     private $file;
 
@@ -124,11 +76,11 @@ class ProjectFile
      * @param string  $type
      * @param File    $file
      * @param Project $project
-     * @param Clients $addedBy
+     * @param Staff   $addedBy
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function __construct(string $type, File $file, Project $project, Clients $addedBy)
+    public function __construct(string $type, File $file, Project $project, Staff $addedBy)
     {
         $this->type    = $type;
         $this->file    = $file;
@@ -167,5 +119,21 @@ class ProjectFile
     public static function getTypes(): array
     {
         return self::getConstants('TYPE_');
+    }
+
+    /**
+     * @return Project
+     */
+    public function getProject(): Project
+    {
+        return $this->project;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getProjectFileTypes(): array
+    {
+        return self::getConstants('PROJECT_FILE_TYPE_');
     }
 }

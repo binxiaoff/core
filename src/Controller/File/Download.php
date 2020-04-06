@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\File;
 
-use ApiPlatform\Core\Exception\RuntimeException;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Symfony\Component\HttpFoundation\{Request, StreamedResponse};
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\{FileDownload, FileVersion};
+use Unilend\Entity\{Clients, FileDownload, FileVersion};
 use Unilend\Repository\FileDownloadRepository;
+use Unilend\Security\Voter\FileDownloadVoter;
 use Unilend\Service\File\FileDownloadManager;
 
 class Download
@@ -38,6 +38,7 @@ class Download
     /**
      * @param FileVersion $data
      * @param Request     $request
+     * @param string      $type
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -45,22 +46,22 @@ class Download
      *
      * @return StreamedResponse
      */
-    public function __invoke(FileVersion $data, Request $request): StreamedResponse
+    public function __invoke(FileVersion $data, Request $request, string $type): StreamedResponse
     {
-        // Useless if we use DTO
-        $user = $this->security->getUser();
+        $user         = $this->security->getUser();
+        $currentStaff = $user instanceof Clients ? $user->getCurrentStaff() : null;
 
-        if (null === $user) {
+        if (null === $currentStaff) {
             throw new AccessDeniedHttpException();
         }
 
-        $currentStaff = $user->getCurrentStaff();
+        $fileDownload = new FileDownload($data, $currentStaff, $type);
 
-        if (null === $currentStaff) {
-            throw new RuntimeException();
+        if (false === $this->security->isGranted(FileDownloadVoter::ATTRIBUTE_CREATE, $fileDownload)) {
+            throw new AccessDeniedHttpException();
         }
 
-        $this->fileDownloadRepository->save(new FileDownload($data, $currentStaff));
+        $this->fileDownloadRepository->save($fileDownload);
 
         return $this->fileDownloadManager->download($data);
     }

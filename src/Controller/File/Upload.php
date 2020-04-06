@@ -4,81 +4,62 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\File;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Exception;
 use League\Flysystem\FileExistsException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\{Clients, File, Project};
-use Unilend\Service\File\FileUploadManager;
+use Unilend\DataTransformer\FileInputDataTransformer;
+use Unilend\DTO\FileInput;
+use Unilend\Entity\{Clients, File};
+use Unilend\Repository\FileRepository;
 
 class Upload
 {
-    /** @var FileUploadManager */
-    private $fileUploadManager;
     /** @var Security */
     private $security;
-    /** @var IriConverterInterface */
-    private $converter;
+    /** @var FileInputDataTransformer */
+    private $fileInputDataTransformer;
+    /**
+     * @var FileRepository
+     */
+    private $fileRepository;
 
     /**
-     * @param FileUploadManager     $fileUploadManager
-     * @param Security              $security
-     * @param IriConverterInterface $converter
+     * @param Security                 $security
+     * @param FileInputDataTransformer $fileInputDataTransformer
+     * @param FileRepository           $fileRepository
      */
-    public function __construct(FileUploadManager $fileUploadManager, Security $security, IriConverterInterface $converter)
+    public function __construct(Security $security, FileInputDataTransformer $fileInputDataTransformer, FileRepository $fileRepository)
     {
-        $this->fileUploadManager = $fileUploadManager;
-        $this->security          = $security;
-        $this->converter         = $converter;
+        $this->security                 = $security;
+        $this->fileInputDataTransformer = $fileInputDataTransformer;
+        $this->fileRepository           = $fileRepository;
     }
 
     /**
-     * @param Project $data
-     * @param Request $request
+     * @param Request     $request
+     * @param string|null $id
      *
+     * @throws FileExistsException
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws Exception
-     * @throws FileExistsException
      *
      * @return File
      */
-    public function __invoke(Project $data, Request $request): File
+    public function __invoke(Request $request, ?string $id): File
     {
-        $user = $this->security->getUser();
+        $user         = $this->security->getUser();
+        $currentStaff = $user instanceof Clients ? $user->getCurrentStaff() : null;
 
-        // If a "user" is found in the request, it means that we want to upload a file for the "user".
-        // In this case, we check if the current user is admin.
-        if ($userIri = $request->request->get('user')) {
-            if (false === $this->security->isGranted(Clients::ROLE_ADMIN)) {
-                throw new AccessDeniedHttpException();
-            }
-            $user = $this->converter->getItemFromIri($userIri);
+        if (null === $currentStaff) {
+            throw new AccessDeniedHttpException();
         }
 
-        // Dynamically find the requested document based on defined operation name
-        $document = array_map(function ($element) {
-            return ucfirst($element);
-        }, explode('_', $request->request->get('_api_item_operation_name')));
+        $file = $id ? $this->fileRepository->findOneBy(['publicId' => $id]) : null;
 
-        $getter = 'get' . $document;
-        $setter = 'set' . $document;
+        $fileInput = new FileInput($request->files->get('file'), $request->request->get('type'), $request->request->get('targetEntity'));
 
-        if (false === is_callable($data, $getter) || false === is_callable($data, $setter)) {
-            throw new Exception();
-        }
-
-        $file = $this->fileUploadManager->upload(
-            $request->files->get('file'),
-            $user->getCurrentStaff(),
-            $data->{$getter}(),
-        );
-
-        $data->{$setter}($file);
-
-        return $file;
+        return $this->fileInputDataTransformer->transform($fileInput, $file);
     }
 }

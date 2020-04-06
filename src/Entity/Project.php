@@ -52,19 +52,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "tag:write"
  *                 }
  *             }
- *         },
- *         "confidentiality_disclaimer": {
- *             "method": "POST",
- *             "security": "is_granted('edit', object)",
- *             "controller": "Unilend\Controller\File\Upload",
- *             "path": "/project/{publicId}/confidentiality_document/upload",
- *         },
- *         "description_document": {
- *             "method": "POST",
- *             "security": "is_granted('edit', object)",
- *             "controller": "Unilend\Controller\File\Upload",
- *             "path": "/project/{publicId}/description/upload",
- *         },
+ *         }
  *     },
  *     itemOperations={
  *         "get": {
@@ -96,14 +84,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "project_confidentiality": {
  *             "method": "GET",
  *             "security": "is_granted('view_confidentiality_document', object)",
- *             "controller": "Unilend\Controller\File\Download",
- *             "path": "/project/{publicId}/confidentiality_document/download"
- *         },
- *         "project_description": {
- *             "method": "GET",
- *             "security": "is_granted('view', object)",
- *             "controller": "Unilend\Controller\File\Download",
- *             "path": "/project/{publicId}/description/download"
+ *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
+ *             "path": "/projects/{id}/confidentiality"
  *         },
  *         "patch": {
  *             "security_post_denormalize": "is_granted('edit', previous_object)",
@@ -167,6 +149,9 @@ class Project
     public const SERIALIZER_GROUP_ADMIN_READ = 'project:admin:read'; // Additional group that is available for admin (admin user or arranger)
 
     public const MONITORED_FIELD_CURRENT_STATUS = 'currentStatus';
+
+    public const PROJECT_FILE_TYPE_DESCRIPTION     = 'project_file_description';
+    public const PROJECT_FILE_TYPE_CONFIDENTIALITY = 'project_file_confidentiality';
 
     /**
      * @var int
@@ -516,6 +501,7 @@ class Project
      */
     public function __construct(Staff $addedBy, Company $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
     {
+        $this->projectFiles          = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
         $this->comments              = new ArrayCollection();
         $this->statuses              = new ArrayCollection();
@@ -1329,6 +1315,14 @@ class Project
                 }
             )
         );
+    }
+
+    /**
+     * @return array
+     */
+    public static function getProjectFileTypes(): array
+    {
+        return self::getConstants('PROJECT_FILE_TYPE_');
     }
 
     /**

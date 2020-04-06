@@ -36,15 +36,24 @@ class FileDownload
     private $fileVersion;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(length=150)
+     */
+    private $type;
+
+    /**
      * @param FileVersion $fileVersion
      * @param Staff       $addedBy
+     * @param string      $type
      *
      * @throws Exception
      */
-    public function __construct(FileVersion $fileVersion, Staff $addedBy)
+    public function __construct(FileVersion $fileVersion, Staff $addedBy, string $type)
     {
         $this->fileVersion = $fileVersion;
         $this->addedBy     = $addedBy;
+        $this->type        = $type;
         $this->added       = new DateTimeImmutable();
     }
 
@@ -62,5 +71,13 @@ class FileDownload
     public function getFileVersion(): FileVersion
     {
         return $this->fileVersion;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
     }
 }

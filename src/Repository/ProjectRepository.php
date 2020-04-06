@@ -7,7 +7,6 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{NoResultException, NonUniqueResultException, ORMException, OptimisticLockException};
-use Unilend\Entity\FileVersion;
 use Unilend\Entity\Project;
 use Unilend\Repository\Traits\{OrderByHandlerTrait, PaginationHandlerTrait};
 
@@ -42,21 +41,6 @@ class ProjectRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($project);
         $this->getEntityManager()->flush();
-    }
-
-    /**
-     * @param FileVersion $fileVersion
-     *
-     * @return iterable|Project[]
-     */
-    public function findByFileVersion(FileVersion $fileVersion): iterable
-    {
-        return $this->createQueryBuilder('p')
-            ->where(':fileVersion MEMBER OF p.projectFiles')
-            ->setParameter('fileVersion', $fileVersion)
-            ->getQuery()
-            ->getResult()
-        ;
     }
 
     /**

@@ -10,7 +10,9 @@ use Exception;
 use InvalidArgumentException;
 use League\Flysystem\{FileExistsException, FilesystemInterface};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Clients, File, FileVersion, Staff};
+use Symfony\Component\Messenger\MessageBusInterface;
+use Unilend\Entity\{Clients, File, FileVersion, Project, Staff};
+use Unilend\Message\File\ProjectFileUploaded;
 use Unilend\Repository\FileRepository;
 use Unilend\Service\FileSystem\FileSystemHelper;
 
@@ -22,17 +24,21 @@ class FileUploadManager
     private $userAttachmentFilesystem;
     /** @var FileRepository */
     private $fileRepository;
+    /** @var MessageBusInterface */
+    private $messageBus;
 
     /**
      * @param FileSystemHelper    $fileSystemHelper
      * @param FilesystemInterface $userAttachmentFilesystem
      * @param FileRepository      $fileRepository
+     * @param MessageBusInterface $messageBus
      */
-    public function __construct(FileSystemHelper $fileSystemHelper, FilesystemInterface $userAttachmentFilesystem, FileRepository $fileRepository)
+    public function __construct(FileSystemHelper $fileSystemHelper, FilesystemInterface $userAttachmentFilesystem, FileRepository $fileRepository, MessageBusInterface $messageBus)
     {
         $this->fileSystemHelper         = $fileSystemHelper;
         $this->userAttachmentFilesystem = $userAttachmentFilesystem;
         $this->fileRepository           = $fileRepository;
+        $this->messageBus               = $messageBus;
     }
 
     /**
@@ -40,37 +46,43 @@ class FileUploadManager
      * @param Staff        $uploader
      * @param File|null    $file
      * @param string|null  $description
+     * @param array        $context
      *
+     * @throws EnvironmentIsBrokenException
+     * @throws FileExistsException
+     * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws Exception
-     * @throws FileExistsException
-     *
-     * @return File
      */
-    public function upload(UploadedFile $uploadedFile, Staff $uploader, ?File $file = null, string $description = null): File
+    public function upload(UploadedFile $uploadedFile, Staff $uploader, File $file, string $description = null, array $context = []): void
     {
         $mineType                               = $uploadedFile->getMimeType();
         [$relativeUploadedPath, $encryptionKey] = $this->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader->getClient()));
-
-        if (null === $file) {
-            $file = new File();
-        }
 
         $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file, FileVersion::FILE_SYSTEM_USER_ATTACHMENT, $encryptionKey, $mineType);
         $fileVersion
             ->setOriginalName($this->fileSystemHelper->normalizeFileName($uploadedFile->getClientOriginalName()))
             ->setSize($uploadedFile->getSize())
         ;
-
         $file
             ->setCurrentFileVersion($fileVersion)
             ->setDescription($description)
         ;
 
         $this->fileRepository->save($file);
+        $this->notify($file, $context);
+    }
 
-        return $file;
+    /**
+     * @param File  $file
+     * @param array $context
+     */
+    private function notify(File $file, array $context): void
+    {
+        if (isset($context['project']) && $context['project'] instanceof Project) {
+            $this->messageBus->dispatch(new ProjectFileUploaded($file, $context['project']));
+        }
     }
 
     /**
