@@ -14,6 +14,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Unilend\Entity\{Clients, Company, File, Staff};
 use Unilend\Repository\FileRepository;
 use Unilend\Service\File\FileUploadManager;
@@ -35,6 +36,9 @@ class FileUploadManagerTest extends TestCase
     /** @var FileRepository|ObjectProphecy */
     private $fileRepository;
 
+    /** @var MessageBusInterface|ObjectProphecy */
+    private $messageBus;
+
     /**
      * {@inheritdoc}
      */
@@ -43,6 +47,7 @@ class FileUploadManagerTest extends TestCase
         $this->userAttachmentFilesystem = $this->prophesize(FilesystemInterface::class);
         $this->fileSystemHelper         = $this->prophesize(FileSystemHelper::class);
         $this->fileRepository           = $this->prophesize(FileRepository::class);
+        $this->messageBus               = $this->prophesize(MessageBusInterface::class);
     }
 
     /**
@@ -63,8 +68,6 @@ class FileUploadManagerTest extends TestCase
         ?File $file = null,
         ?string $description = null
     ): void {
-        $attachmentManager = $this->createTestObject();
-
         $idClientsReflectionProperty = new ReflectionProperty(Clients::class, 'id');
         $idClientsReflectionProperty->setAccessible(true);
         $uploader   = new Clients('test@' . Internet::safeEmailDomain());
@@ -84,10 +87,13 @@ class FileUploadManagerTest extends TestCase
             Argument::exact(true),
         );
 
+        $fileNameNormalizer = $this->fileSystemHelper->normalizeFileName(Argument::type('string'));
+        $fileNameNormalizer->willReturn($originalFileName);
+
         $encryptionKey = Base::asciify(str_repeat('*', 440));
         $fileWriter->willReturn($encryptionKey);
 
-        $createdFile = $attachmentManager->upload(
+        $this->createTestObject()->upload(
             $uploadedFile,
             $uploaderStaff,
             $file,
@@ -95,10 +101,10 @@ class FileUploadManagerTest extends TestCase
         );
 
         $fileWriter->shouldHaveBeenCalled();
-        $this->fileRepository->save(Argument::exact($createdFile))->shouldHaveBeenCalled();
-        $this->userAttachmentFilesystem->has(Argument::type('string'))->willReturn(false)->shouldHaveBeenCalled();
+        $this->fileRepository->save(Argument::exact($file))->shouldHaveBeenCalled();
+        $fileNameNormalizer->shouldHaveBeenCalled();
 
-        $pathInfo                    = pathinfo($createdFile->getCurrentFileVersion()->getPath());
+        $pathInfo                    = pathinfo($file->getCurrentFileVersion()->getPath());
         $uploadedFilename            = $pathInfo['filename'];
         $uploadedDirname             = $pathInfo['dirname'];
         $originalFilename            = pathinfo($originalFileName, PATHINFO_FILENAME);
@@ -111,11 +117,11 @@ class FileUploadManagerTest extends TestCase
         static::assertSame(1, mb_strlen(array_shift($uploadedFilePathDirectories)), 'first mandatory subdirectory');
         static::assertSame(1, mb_strlen(array_shift($uploadedFilePathDirectories)), 'second mandatory subdirectory');
 
-        static::assertSame($uploaderStaff, $createdFile->getCurrentFileVersion()->getAddedBy());
-        static::assertStringContainsString((string) $uploader->getId(), $createdFile->getCurrentFileVersion()->getPath());
-        static::assertSame($description, $createdFile->getDescription());
-        static::assertSame('inode/x-empty', $createdFile->getCurrentFileVersion()->getMimeType());
-        static::assertSame($encryptionKey, $createdFile->getCurrentFileVersion()->getPlainEncryptionKey());
+        static::assertSame($uploaderStaff, $file->getCurrentFileVersion()->getAddedBy());
+        static::assertStringContainsString((string) $uploader->getId(), $file->getCurrentFileVersion()->getPath());
+        static::assertSame($description, $file->getDescription());
+        static::assertSame('inode/x-empty', $file->getCurrentFileVersion()->getMimeType());
+        static::assertSame($encryptionKey, $file->getCurrentFileVersion()->getPlainEncryptionKey());
     }
 
     /**
@@ -128,10 +134,8 @@ class FileUploadManagerTest extends TestCase
         $file = (new File())->setDescription(Base::randomLetter());
 
         return [
-            'new file with description'         => [null, Base::randomLetter()],
-            'new file without description'      => [null, null],
-            'existing file with description'    => [$file, null],
-            'existing file without description' => [$file, Base::randomLetter()],
+            'file without description' => [$file, null],
+            'file with description'    => [$file, Base::randomLetter()],
         ];
     }
 
@@ -143,7 +147,8 @@ class FileUploadManagerTest extends TestCase
         return new FileUploadManager(
             $this->fileSystemHelper->reveal(),
             $this->userAttachmentFilesystem->reveal(),
-            $this->fileRepository->reveal()
+            $this->fileRepository->reveal(),
+            $this->messageBus->reveal()
         );
     }
 }
