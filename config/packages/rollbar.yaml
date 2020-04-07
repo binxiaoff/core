@@ -1,2 +1,37 @@
 rollbar:
-  access_token: 2aae46c5bee64e9fa47d706a0ee56aac
+    enabled: false
+    access_token: 2aae46c5bee64e9fa47d706a0ee56aac
+    environment: '%kernel.environment%'
+    autodetect_branch: true
+    scrub_fields:
+        # default values
+        - passwd
+        - password
+        - secret
+        - confirm_password
+        - password_confirmation
+        - auth_token
+        - csrf_token
+        - access_token
+        # customised values
+        - google_recaptcha_secret
+        - aws_api_key
+        - maxmind_license_key
+        - app_secret
+        - mailjet_api_key
+        - mailjet_api_secret
+        - google_gtm_token
+        - jwt_secret_key
+        - cloudfront_distribution
+        - file_encryption_kek_passphrase
+        - aws_api_secret
+        - database_url_migration
+        - google_recaptcha_key
+        - docusign_user_id
+        - docusign_integrator_key
+        - slack_webhook_url
+        - database_url
+        - jwt_passphrase
+        - jwt_public_key
+        - psn_private_key
+        - psn_public_key

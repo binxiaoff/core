@@ -26,8 +26,6 @@ class StaffManagerTest extends TestCase
     private $companyManager;
     /** @var ClientsRepository|ObjectProphecy */
     private $clientsRepository;
-    /** @var CompanyRepository|ObjectProphecy */
-    private $companyRepository;
     /** @var StaffRepository|ObjectProphecy */
     private $staffRepository;
 
@@ -38,7 +36,6 @@ class StaffManagerTest extends TestCase
     {
         $this->companyManager    = $this->prophesize(CompanyManager::class);
         $this->clientsRepository = $this->prophesize(ClientsRepository::class);
-        $this->companyRepository = $this->prophesize(CompanyRepository::class);
         $this->staffRepository   = $this->prophesize(StaffRepository::class);
     }
 
@@ -49,10 +46,11 @@ class StaffManagerTest extends TestCase
      */
     public function testGetStaffByEmail(): void
     {
+        $addedByStaff  = $this->prophesize(Staff::class);
         $email         = 'test@' . Internet::safeEmailDomain();
         $company       = new Company('CALS');
         $client        = new Clients($email);
-        $expectedStaff = new Staff($company, $client);
+        $expectedStaff = new Staff($company, $client, $addedByStaff->reveal());
 
         $companyGetter = $this->companyManager->getCompanyByEmail(Argument::exact($email))->willReturn($company);
         $clientGetter  = $this->clientsRepository->findOneBy(Argument::exact(['email' => $email]))->willReturn($client);
@@ -104,45 +102,6 @@ class StaffManagerTest extends TestCase
     }
 
     /**
-     * @covers ::addStaffFromEmail
-     *
-     * @dataProvider clientProvider
-     *
-     * @param Clients|null $client
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function testAddStaffFromEmail(?Clients $client): void
-    {
-        $email   = 'test@' . Internet::safeEmailDomain();
-        $company = new Company('CALS');
-
-        if ($client) {
-            $client->setEmail($email);
-        }
-
-        $companyGetter = $this->companyManager->getCompanyByEmail(Argument::exact($email))->willReturn($company);
-        $clientGetter  = $this->clientsRepository->findOneBy(Argument::exact(['email' => $email]))->willReturn($client);
-        $clientSaver   = $this->clientsRepository->save(Argument::type(Clients::class));
-
-        $staff = $this->createTestObject()->addStaffFromEmail($email);
-
-        $companyGetter->shouldHaveBeenCalled();
-        $clientGetter->shouldHaveBeenCalled();
-
-        if (null === $client) {
-            $clientSaver->shouldHaveBeenCalled();
-        }
-
-        $this->companyRepository->save(Argument::exact($company))->shouldHaveBeenCalled();
-
-        static::assertSame($company, $staff->getCompany());
-        static::assertSame($email, $staff->getClient()->getEmail());
-        static::assertSame([Staff::DUTY_STAFF_OPERATOR], $staff->getRoles());
-    }
-
-    /**
      * @throws Exception
      *
      * @return array
@@ -178,7 +137,6 @@ class StaffManagerTest extends TestCase
         return new StaffManager(
             $this->companyManager->reveal(),
             $this->clientsRepository->reveal(),
-            $this->companyRepository->reveal(),
             $this->staffRepository->reveal()
         );
     }

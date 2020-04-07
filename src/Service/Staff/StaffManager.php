@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Staff;
 
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
-use Exception;
-use Unilend\Entity\{ClientStatus, Clients, Staff};
+use Unilend\Entity\Staff;
 use Unilend\Exception\Client\ClientNotFoundException;
 use Unilend\Exception\Staff\StaffNotFoundException;
 use Unilend\Repository\{ClientsRepository, CompanyRepository, StaffRepository};
@@ -27,14 +24,12 @@ class StaffManager
     /**
      * @param CompanyManager    $companyManager
      * @param ClientsRepository $clientsRepository
-     * @param CompanyRepository $companyRepository
      * @param StaffRepository   $staffRepository
      */
-    public function __construct(CompanyManager $companyManager, ClientsRepository $clientsRepository, CompanyRepository $companyRepository, StaffRepository $staffRepository)
+    public function __construct(CompanyManager $companyManager, ClientsRepository $clientsRepository, StaffRepository $staffRepository)
     {
         $this->companyManager    = $companyManager;
         $this->clientsRepository = $clientsRepository;
-        $this->companyRepository = $companyRepository;
         $this->staffRepository   = $staffRepository;
     }
 
@@ -61,37 +56,6 @@ class StaffManager
         if (null === $staff) {
             throw new StaffNotFoundException(sprintf('The staff with %s is not found in company %s.', $email, $company->getName()));
         }
-
-        return $staff;
-    }
-
-    /**
-     * @param string $email
-     *
-     * @throws OptimisticLockException
-     * @throws ORMException
-     * @throws Exception
-     *
-     * @return Staff
-     */
-    public function addStaffFromEmail(string $email): Staff
-    {
-        $company = $this->companyManager->getCompanyByEmail($email);
-
-        $client = $this->clientsRepository->findOneBy(['email' => $email]);
-
-        if (null === $client) {
-            $client = new Clients($email);
-            $client
-                ->setCurrentStatus(ClientStatus::STATUS_INVITED)
-                ->setEmail($email)
-                ->addRoles([Clients::ROLE_USER])
-            ;
-            $this->clientsRepository->save($client);
-        }
-
-        $staff = $company->addStaff($client, Staff::DUTY_STAFF_OPERATOR);
-        $this->companyRepository->save($company);
 
         return $staff;
     }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -45,14 +44,18 @@ abstract class AbstractEntityVoter extends Voter
     {
         $user = $this->getUser($token);
 
-        if (($user && $this->isGrantedAll($subject, $user)) || $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN)) {
+        if (null === $user) {
+            return false;
+        }
+
+        if ($this->isGrantedAll($subject, $user) || $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN)) {
             return true;
         }
 
         $methodName = 'can' . implode('', array_map('ucfirst', explode('_', $attribute)));
 
         if (false === method_exists($this, $methodName)) {
-            throw new LogicException(sprintf('You have to implement %s in %s', $methodName, __CLASS__));
+            return false;
         }
 
         return $user && $this->fulfillPreconditions($subject, $user) && $this->{$methodName}($subject, $user);

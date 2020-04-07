@@ -33,6 +33,10 @@ class StaffLogListener
      */
     public function logStaff(Staff $staff): void
     {
+        if ($staff->isArchived()) {
+            return;
+        }
+
         $user = $this->security->getUser();
 
         $addedBy  = $user->getCurrentStaff();

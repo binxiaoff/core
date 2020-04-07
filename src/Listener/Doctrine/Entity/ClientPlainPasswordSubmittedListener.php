@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Listener\Doctrine\Entity;
 
+use Exception;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Unilend\Entity\Clients;
 
@@ -22,6 +23,8 @@ class ClientPlainPasswordSubmittedListener
 
     /**
      * @param Clients $client
+     *
+     * @throws Exception
      */
     public function encodePlainPassword(Clients $client): void
     {

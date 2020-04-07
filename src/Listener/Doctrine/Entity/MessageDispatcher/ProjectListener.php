@@ -9,6 +9,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Unilend\Entity\Project;
 use Unilend\Message\Project\ProjectStatusUpdated;
 
+/** TODO To remove when queue are really asynchrous */
 class ProjectListener
 {
     /** @var MessageBusInterface */

@@ -67,7 +67,7 @@ class Company
     private $name;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(name="siren", type="string", length=15, nullable=true)
      *
@@ -107,6 +107,8 @@ class Company
     private $projectParticipations;
 
     /**
+     * @var string|null
+     *
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
      *
      * @Groups({"company:read", "company:jwt:read"})
@@ -114,6 +116,8 @@ class Company
     private $emailDomain;
 
     /**
+     * @var string|null
+     *
      * @ORM\Column(type="string", length=4, nullable=true, unique=true)
      *
      * @Groups({"company:read", "company:jwt:read"})
@@ -137,6 +141,15 @@ class Company
     private $statuses;
 
     /**
+     * @var CompanyModule[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyModule", mappedBy="company", indexBy="label")
+     *
+     * @ApiSubresource
+     */
+    private $modules;
+
+    /**
      * @param string $name
      *
      * @throws Exception
@@ -148,6 +161,7 @@ class Company
         $this->projectParticipations = new ArrayCollection();
         $this->statuses              = new ArrayCollection();
         $this->added                 = new DateTimeImmutable();
+        $this->modules               = new ArrayCollection();
     }
 
     /**
@@ -262,30 +276,6 @@ class Company
     }
 
     /**
-     * @param Clients $client
-     * @param string  $role
-     *
-     * @throws Exception
-     *
-     * @return Staff
-     */
-    public function addStaff(Clients $client, string $role): Staff
-    {
-        $staff = $this->getStaff($client);
-
-        if ($staff->count()) {
-            $theStaff = $staff->first();
-        } else {
-            $theStaff = (new Staff($this, $client));
-        }
-
-        $theStaff->addRoles([$role]);
-        $this->staff->add($theStaff);
-
-        return $theStaff;
-    }
-
-    /**
      * @param Staff $staff
      *
      * @return Company
@@ -395,5 +385,23 @@ class Company
         $currentStatus = $this->getCurrentStatus();
 
         return $currentStatus && CompanyStatus::STATUS_REFUSED === $currentStatus->getStatus();
+    }
+
+    /**
+     * @param string $module
+     *
+     * @return bool
+     */
+    public function hasModuleActivated(string $module): bool
+    {
+        return isset($this->modules[$module]) && $this->modules[$module]->isActivated();
+    }
+
+    /**
+     * @return array|CompanyModule
+     */
+    public function getModules(): array
+    {
+        return $this->modules->toArray();
     }
 }

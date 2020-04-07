@@ -12,8 +12,14 @@ parameters:
     directory.temporary: '%directory.shared%tmp/'
     directory.protected: '%directory.shared%protected/'
     front.host: '%env(HOST_APP_URL)%'
+    slack.webhook.support: '%env(SLACK_WEBHOOK_URL)%'
+    slack.webhook.security: https://hooks.slack.com/services/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
+    security.recipients: ['tech@ca-lendingservices.com']
     file_encryption.kek_file: '%env(FILE_ENCRYPTION_KEK_FILE)%'
     file_encryption.kek_passphrase: '%env(FILE_ENCRYPTION_KEK_PASSPHRASE)%'
+    psn.public_key: '%env(base64:PSN_PUBLIC_KEY)%'
+    psn.private_key: '%env(base64:PSN_PRIVATE_KEY)%'
+    psn.base_uri: '%env(PSN_BASE_URI)%'
 
 services:
     _defaults:
@@ -24,7 +30,6 @@ services:
             $defaultLocale: '%locale%'
             $temporaryDirectory: '%directory.temporary%'
             $templateMessageFQCN: 'Unilend\SwiftMailer\TemplateMessage'
-            $adminUrl: '%router.request_context.scheme%://%env(HOST_ADMIN_URL)%'
             $numberFormatter: '@number_formatter'
             $currencyFormatter: '@currency_formatter'
             $percentageFormatter: '@percentage_formatter'
@@ -36,6 +41,7 @@ services:
             $userAttachmentFilesystem: '@League\Flysystem\UserAttachmentFilesystem'
             $publicUserUploadFilesystem: '@League\Flysystem\PublicUserUploadFilesystem'
             $generatedDocumentFilesystem: '@League\Flysystem\GeneratedDocumentFilesystem'
+            $securityRecipients: '%security.recipients%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -159,9 +165,9 @@ services:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Service\Project\ProjectNotifier:
-        arguments:
-            $supportLogger: '@monolog.logger.support'
+    Unilend\Service\ElectronicSignature\XmlSigner:
+        $publicKey: '%psn.public_key%'
+        $privateKey: '%psn.private_key%'
 
     Sonata\CacheBundle\Adapter\SymfonyCache: '@sonata.cache.symfony'
 

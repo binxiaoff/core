@@ -1,28 +1,26 @@
-services:
-    unilend_monolog_support_formatter:
-        class: Monolog\Formatter\LineFormatter
-        autowire: true
-        autoconfigure: true
-        arguments:
-            $format: "%%message%%"
-            $ignoreEmptyContextAndExtra: true
+# *_filter: It defines what to show. It filters the log that we want to show. Something like a bootstrap.
+# *_handler: It defines how to show. It's a list of channels (for example file, console, email, third part tools like Rollbar) to show the logs. Its type is always "group"
+# *_[channel]: It defines each "how". It's the configurations of each channel in the previous list.
 
 monolog:
-    channels: [console, support]
+    channels: [console, security]
     handlers:
-        error:
+        error_filter:
             type: fingers_crossed
             action_level: error
             handler: error_handler
             channels: ['!translation']
         error_handler:
             type: group
-            members: [error_file]
+            members: [error_file, error_rollbar]
         error_file:
             type: stream
             level: info
             path: "%kernel.logs_dir%/error.%kernel.environment%.log"
-            channels: ['!support']
+        error_rollbar:
+            type: service
+            id: Rollbar\Monolog\Handler\RollbarHandler
+
         console_filter:
             type: filter
             handler: console_handler
@@ -37,24 +35,33 @@ monolog:
             level: info
         console_console:
             type: console
+
         site_filter:
             type: filter
             handler: site_handler
             max_level: warning
-            channels: ['!console', '!translation', '!support']
+            channels: ['!console', '!translation']
         site_handler:
+            type: group
+            members: [site_file]
+        site_file:
             type: stream
             level: warning
             path: "%kernel.logs_dir%/site.%kernel.environment%.log"
-        slack_support:
+
+        critical_security_filter:
+            type: filter
+            handler: critical_security_handler
+            min_level: critical
+            channels: ['security']
+        critical_security_handler:
+            type: group
+            members: [critical_security_slack, critical_security_email]
+        critical_security_slack:
             type: slackwebhook
-            webhook_url: "%env(string:SLACK_WEBHOOK_URL)%"
-            level: info
-            channels: ['support']
-            bot_name: 'API'
+            webhook_url: "%slack.webhook.security%"
             use_short_attachment: false
             include_extra: true
-            formatter: 'unilend_monolog_support_formatter'
-        rollbar:
+        critical_security_email:
             type: service
-            id: Rollbar\Monolog\Handler\RollbarHandler
+            id: Unilend\Service\Monolog\Handler\MailTemplateHandler
