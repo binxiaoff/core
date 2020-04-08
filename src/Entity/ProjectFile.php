@@ -9,20 +9,23 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
+use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
  *
  * @ApiResource(
+ *     normalizationContext={"groups": {"projectFile:read", "file:read", "fileVersion:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
- *         }
- *     }
+ *         },
+ *         "delete": {"security_post_denormalize": "is_granted('delete', previous_object)"}
+ *     },
+ *     collectionOperations={}
  * )
  */
 class ProjectFile
@@ -30,20 +33,12 @@ class ProjectFile
     use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
     use ConstantsAwareTrait;
+    use PublicizeIdentityTrait;
 
     private const PROJECT_FILE_TYPE_GENERAL              = 'project_file_general';
     private const PROJECT_FILE_TYPE_ACCOUNTING_FINANCIAL = 'project_file_accounting_financial';
     private const PROJECT_FILE_TYPE_LEGAL                = 'project_file_legal';
     private const PROJECT_FILE_TYPE_KYC                  = 'project_file_kyc';
-
-    /**
-     * @var int
-     *
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     * @ORM\Column(name="id", type="integer")
-     */
-    private $id;
 
     /**
      * @var string
@@ -87,14 +82,6 @@ class ProjectFile
         $this->project = $project;
         $this->addedBy = $addedBy;
         $this->added   = new \DateTimeImmutable();
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
     }
 
     /**

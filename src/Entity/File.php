@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\Traits\{BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Entity\Traits\{ArchivableTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableTrait};
 
 /**
  * @ORM\Entity
@@ -55,7 +55,7 @@ use Unilend\Entity\Traits\{BlamableArchivedTrait, PublicizeIdentityTrait, Timest
  *         }
  *     },
  *     itemOperations={
- *         "add_file_version": {
+ *         "upload_file_version": {
  *             "method": "POST",
  *             "controller": "Unilend\Controller\File\Upload",
  *             "path": "/files/{id}/file_versions/upload",
@@ -100,6 +100,7 @@ class File
     use PublicizeIdentityTrait;
     use BlamableArchivedTrait;
     use TimestampableTrait;
+    use ArchivableTrait;
 
     /**
      * @var string
@@ -111,26 +112,19 @@ class File
     private $description;
 
     /**
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\FileVersion", mappedBy="file", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\FileVersion", mappedBy="file")
      *
      * @Groups({"file:read"})
      */
     private $fileVersions;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\FileVersion", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\FileVersion", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_file_version")
      *
      * @Groups({"file:read"})
      */
     private $currentFileVersion;
-
-    /**
-     * @var DateTimeImmutable
-     *
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     */
-    private $archived;
 
     /**
      * @throws Exception
@@ -192,26 +186,6 @@ class File
         }
 
         return $this;
-    }
-
-    /**
-     * @param DateTimeImmutable $archived
-     *
-     * @return File
-     */
-    public function setArchived(DateTimeImmutable $archived): File
-    {
-        $this->archived = $archived;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeImmutable
-     */
-    public function getArchived(): ?DateTimeImmutable
-    {
-        return $this->archived;
     }
 
     /**

@@ -82,7 +82,7 @@ class FileVersion
     /**
      * @var Collection|FileDownload[]
      *
-     * @ORM\OneToMany(targetEntity="FileDownload", fetch="EXTRA_LAZY", mappedBy="fileVersion", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="FileDownload", fetch="EXTRA_LAZY", mappedBy="fileVersion")
      */
     private $fileVersionDownloads;
 

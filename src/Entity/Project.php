@@ -64,6 +64,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "projectParticipationOffer:read",
  *                 "money:read",
  *                 "file:read",
+ *                 "fileVersion:read",
  *                 "projectStatus:read",
  *                 "projectParticipationContact:read",
  *                 "projectParticipationFee:read",
@@ -261,14 +262,18 @@ class Project
     private $description;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\File", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\File", orphanRemoval=true)
      * @ORM\JoinColumn(name="id_description_document", unique=true)
+     *
+     * @Groups({"project:write", "project:read"})
      */
     private $descriptionDocument;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\File")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\File", orphanRemoval=true)
      * @ORM\JoinColumn(name="id_confidentiality_disclaimer", unique=true)
+     *
+     * @Groups({"project:write", "project:read"})
      */
     private $confidentialityDisclaimer;
 
@@ -630,11 +635,11 @@ class Project
     }
 
     /**
-     * @param File $file
+     * @param File|null $file
      *
      * @return Project
      */
-    public function setDescriptionDocument(File $file): self
+    public function setDescriptionDocument(?File $file): self
     {
         $this->descriptionDocument = $file;
 
@@ -650,11 +655,11 @@ class Project
     }
 
     /**
-     * @param File $file
+     * @param File|null $file
      *
      * @return Project
      */
-    public function setConfidentialityDisclaimer(File $file): self
+    public function setConfidentialityDisclaimer(?File $file): self
     {
         $this->confidentialityDisclaimer = $file;
 
