@@ -35,3 +35,5 @@ rollbar:
         - jwt_public_key
         - psn_private_key
         - psn_public_key
+        - authorization
+        - http_authorization
