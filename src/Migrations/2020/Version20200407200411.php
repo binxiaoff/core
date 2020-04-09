@@ -32,6 +32,8 @@ final class Version20200407200411 extends AbstractMigration
         $this->addSql('UPDATE project_file set public_id = UUID()');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_B50EFE08B5B48B91 ON project_file (public_id)');
         $this->addSql('ALTER TABLE file CHANGE archived archived DATETIME DEFAULT NULL');
+
+        $this->addSql("UPDATE mail_template set name = 'project-file-uploaded' WHERE name = 'attachment-uploaded'");
     }
 
     public function down(Schema $schema): void
@@ -39,6 +41,7 @@ final class Version20200407200411 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
+        $this->addSql("UPDATE mail_template set name = 'attachment-uploaded' WHERE name = 'project-file-uploaded'");
         $this->addSql('ALTER TABLE file CHANGE archived archived DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\'');
         $this->addSql('DROP INDEX UNIQ_B50EFE08B5B48B91 ON project_file');
         $this->addSql('ALTER TABLE project_file DROP public_id');

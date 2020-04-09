@@ -28,7 +28,7 @@ class FileInput
     /**
      * @var string
      *
-     * @Assert\NotBlank
+     * @Assert\Choice(callback="getProjectFileTypes")
      */
     public $type;
 

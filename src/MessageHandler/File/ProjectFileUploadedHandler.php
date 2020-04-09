@@ -9,23 +9,23 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Message\File\ProjectFileUploaded;
 use Unilend\Repository\ProjectRepository;
-use Unilend\Service\{File\FileNotifier};
+use Unilend\Service\Project\ProjectNotifier;
 
 class ProjectFileUploadedHandler implements MessageHandlerInterface
 {
-    /** @var FileNotifier */
-    private $fileNotifier;
+    /** @var ProjectNotifier */
+    private $projectNotifier;
     /** @var ProjectRepository */
     private $projectRepository;
 
     /**
      * @param ProjectRepository $projectRepository
-     * @param FileNotifier      $fileNotifier
+     * @param ProjectNotifier   $projectNotifier
      */
-    public function __construct(ProjectRepository $projectRepository, FileNotifier $fileNotifier)
+    public function __construct(ProjectRepository $projectRepository, ProjectNotifier $projectNotifier)
     {
         $this->projectRepository = $projectRepository;
-        $this->fileNotifier      = $fileNotifier;
+        $this->projectNotifier   = $projectNotifier;
     }
 
     /**
@@ -44,6 +44,6 @@ class ProjectFileUploadedHandler implements MessageHandlerInterface
             throw new InvalidArgumentException(sprintf('The project with id %d does not exist', $projectId));
         }
 
-        $this->fileNotifier->notifyUploaded($project);
+        $this->projectNotifier->notifyUploaded($project);
     }
 }

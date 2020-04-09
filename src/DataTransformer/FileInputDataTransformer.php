@@ -82,10 +82,6 @@ class FileInputDataTransformer
         $targetEntity = $this->iriConverter->getItemFromIri($fileInput->targetEntity, [AbstractNormalizer::GROUPS => []]);
         $type         = $fileInput->type;
 
-        if (false === in_array($type, FileInput::getProjectFileTypes(), true)) {
-            throw new InvalidArgumentException(sprintf('You cannot upload the file of the type %s.', $fileInput->type));
-        }
-
         $user         = $this->security->getUser();
         $currentStaff = $user instanceof Clients ? $user->getCurrentStaff() : null;
 
@@ -169,7 +165,7 @@ class FileInputDataTransformer
                 $descriptionDocument = $project->getDescriptionDocument();
                 if (null !== $file && null !== $descriptionDocument && $file !== $descriptionDocument) {
                     throw new RuntimeException(sprintf(
-                        'There is already a description file %s on the project %s. You can only update its version)',
+                        'There is already a description file %s on the project %s. You can only update its version',
                         $descriptionDocument->getPublicId(),
                         $project->getHash()
                     ));
@@ -182,7 +178,7 @@ class FileInputDataTransformer
                 $confidentialityDisclaimer = $project->getConfidentialityDisclaimer();
                 if (null !== $file && null !== $confidentialityDisclaimer && $file !== $confidentialityDisclaimer) {
                     throw new RuntimeException(sprintf(
-                        'There is already a confidentiality disclaimer file %s on the project %s. You can only update its version)',
+                        'There is already a confidentiality disclaimer file %s on the project %s. You can only update its version',
                         $confidentialityDisclaimer->getPublicId(),
                         $project->getHash()
                     ));
