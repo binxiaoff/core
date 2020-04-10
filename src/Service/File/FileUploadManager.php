@@ -11,8 +11,8 @@ use InvalidArgumentException;
 use League\Flysystem\{FileExistsException, FilesystemInterface};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Entity\{Clients, File, FileVersion, Project, Staff};
-use Unilend\Message\File\ProjectFileUploaded;
+use Unilend\Entity\{Clients, File, FileVersion, Staff};
+use Unilend\Message\File\FileUploaded;
 use Unilend\Repository\FileRepository;
 use Unilend\Service\FileSystem\FileSystemHelper;
 
@@ -71,18 +71,7 @@ class FileUploadManager
         ;
 
         $this->fileRepository->save($file);
-        $this->notify($file, $context);
-    }
-
-    /**
-     * @param File  $file
-     * @param array $context
-     */
-    private function notify(File $file, array $context): void
-    {
-        if (isset($context['project']) && $context['project'] instanceof Project) {
-            $this->messageBus->dispatch(new ProjectFileUploaded($file, $context['project']));
-        }
+        $this->messageBus->dispatch(new FileUploaded($file, $context));
     }
 
     /**

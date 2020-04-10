@@ -133,7 +133,7 @@ class FileInputDataTransformer
                 throw new AccessDeniedException();
             }
         }
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, null, ['project' => $projectFile->getProject()]);
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, null, ['projectId' => $projectFile->getProject()->getId()]);
 
         $this->projectFileRepository->save($projectFile);
 
@@ -191,7 +191,7 @@ class FileInputDataTransformer
                 throw new InvalidArgumentException(sprintf('You cannot upload the file of the type %s.', $fileInput->type));
         }
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, null, ['project' => $project]);
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, null, ['projectId' => $project->getId()]);
 
         $this->projectRepository->save($project);
 
