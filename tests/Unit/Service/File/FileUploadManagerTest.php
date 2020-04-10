@@ -14,8 +14,10 @@ use Prophecy\Prophecy\ObjectProphecy;
 use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Unilend\Entity\{Clients, Company, File, Staff};
+use Unilend\Message\File\FileUploaded;
 use Unilend\Repository\FileRepository;
 use Unilend\Service\File\FileUploadManager;
 use Unilend\Service\FileSystem\FileSystemHelper;
@@ -57,6 +59,7 @@ class FileUploadManagerTest extends TestCase
      *
      * @param File|null   $file
      * @param string|null $description
+     * @param array       $context
      *
      * @throws FileExistsException
      * @throws ORMException
@@ -64,10 +67,8 @@ class FileUploadManagerTest extends TestCase
      * @throws ReflectionException
      * @throws Exception
      */
-    public function testUpload(
-        ?File $file = null,
-        ?string $description = null
-    ): void {
+    public function testUpload(?File $file, ?string $description, array $context): void
+    {
         $idClientsReflectionProperty = new ReflectionProperty(Clients::class, 'id');
         $idClientsReflectionProperty->setAccessible(true);
         $uploader   = new Clients('test@' . Internet::safeEmailDomain());
@@ -93,16 +94,21 @@ class FileUploadManagerTest extends TestCase
         $encryptionKey = Base::asciify(str_repeat('*', 440));
         $fileWriter->willReturn($encryptionKey);
 
+        $dispatcher = $this->messageBus->dispatch(Argument::exact(new FileUploaded($file, $context)));
+        $dispatcher->willReturn($this->prophesize(Envelope::class)->reveal());
+
         $this->createTestObject()->upload(
             $uploadedFile,
             $uploaderStaff,
             $file,
-            $description
+            $description,
+            $context
         );
 
         $fileWriter->shouldHaveBeenCalled();
-        $this->fileRepository->save(Argument::exact($file))->shouldHaveBeenCalled();
         $fileNameNormalizer->shouldHaveBeenCalled();
+        $this->fileRepository->save(Argument::exact($file))->shouldHaveBeenCalled();
+        $dispatcher->shouldHaveBeenCalled();
 
         $pathInfo                    = pathinfo($file->getCurrentFileVersion()->getPath());
         $uploadedFilename            = $pathInfo['filename'];
@@ -133,9 +139,16 @@ class FileUploadManagerTest extends TestCase
     {
         $file = (new File())->setDescription(Base::randomLetter());
 
+        $fileIdReflectionProperty = new ReflectionProperty(File::class, 'id');
+        $fileIdReflectionProperty->setAccessible(true);
+        $fileId = Base::randomDigitNotNull() + 1;
+        $fileIdReflectionProperty->setValue($file, $fileId);
+
+        $context = ['projectId' => Base::randomDigitNotNull() + 1];
+
         return [
-            'file without description' => [$file, null],
-            'file with description'    => [$file, Base::randomLetter()],
+            'file without description' => [$file, null, $context],
+            'file with description'    => [$file, Base::randomLetter(), $context],
         ];
     }
 
