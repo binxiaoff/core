@@ -129,10 +129,20 @@ class FileInputDataTransformer
         } else {
             $projectFile = $this->projectFileRepository->findOneBy(['file' => $file, 'project' => $project, 'type' => $fileInput->type]);
 
+            if (null === $projectFile) {
+                throw new RuntimeException(sprintf(
+                    'We cannot find the file (%s) for project (%s) of type (%s). Do you tend to upload a new file (instead of updating it) ?',
+                    $file->getPublicId(),
+                    $project->getHash(),
+                    $fileInput->type
+                ));
+            }
+
             if (false === $this->security->isGranted(ProjectFileVoter::ATTRIBUTE_EDIT, $projectFile)) {
                 throw new AccessDeniedException();
             }
         }
+
         $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, null, ['projectId' => $projectFile->getProject()->getId()]);
 
         $this->projectFileRepository->save($projectFile);
