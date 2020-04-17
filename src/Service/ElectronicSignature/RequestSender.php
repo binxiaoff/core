@@ -12,8 +12,8 @@ use SimpleXMLElement;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\HttpClient\{Exception\ClientExceptionInterface, Exception\RedirectionExceptionInterface, Exception\ServerExceptionInterface,
     Exception\TransportExceptionInterface, HttpClientInterface, ResponseInterface};
-use Unilend\Entity\AttachmentSignature;
-use Unilend\Repository\AttachmentSignatureRepository;
+use Unilend\Entity\FileVersionSignature;
+use Unilend\Repository\FileVersionSignatureRepository;
 
 class RequestSender
 {
@@ -35,44 +35,44 @@ class RequestSender
      */
     private $xmlGenerator;
     /**
-     * @var AttachmentSignatureRepository
+     * @var FileVersionSignatureRepository
      */
-    private $attachmentSignatureRepository;
+    private $fileVersionSignatureRepository;
 
     /**
-     * @param XmlSigner                     $xmlSigner
-     * @param XmlGenerator                  $xmlGenerator
-     * @param AttachmentSignatureRepository $attachmentSignatureRepository
-     * @param HttpClientInterface           $psnClient
-     * @param LoggerInterface               $logger
+     * @param XmlSigner                      $xmlSigner
+     * @param XmlGenerator                   $xmlGenerator
+     * @param FileVersionSignatureRepository $fileVersionSignatureRepository
+     * @param HttpClientInterface            $psnClient
+     * @param LoggerInterface                $logger
      */
     public function __construct(
         XmlSigner $xmlSigner,
         XmlGenerator $xmlGenerator,
-        AttachmentSignatureRepository $attachmentSignatureRepository,
+        FileVersionSignatureRepository $fileVersionSignatureRepository,
         HttpClientInterface $psnClient,
         LoggerInterface $logger
     ) {
-        $this->psnClient                     = $psnClient;
-        $this->logger                        = $logger;
-        $this->xmlSigner                     = $xmlSigner;
-        $this->xmlGenerator                  = $xmlGenerator;
-        $this->attachmentSignatureRepository = $attachmentSignatureRepository;
+        $this->psnClient                      = $psnClient;
+        $this->logger                         = $logger;
+        $this->xmlSigner                      = $xmlSigner;
+        $this->xmlGenerator                   = $xmlGenerator;
+        $this->fileVersionSignatureRepository = $fileVersionSignatureRepository;
     }
 
     /**
-     * @param AttachmentSignature $fileSignature
+     * @param FileVersionSignature $fileSignature
      *
-     * @throws ClientExceptionInterface
-     * @throws RedirectionExceptionInterface
+     *@throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws FileNotFoundException
      * @throws Exception
+     * @throws ClientExceptionInterface
      *
-     * @return AttachmentSignature
+     * @return FileVersionSignature
      */
-    public function requestSignature(AttachmentSignature $fileSignature): AttachmentSignature
+    public function requestSignature(FileVersionSignature $fileSignature): FileVersionSignature
     {
         $this->handleResponse($fileSignature, $this->psnClient->request(Request::METHOD_POST, self::REQUEST_PATH, [
             'headers' => ['Content-Type' => 'application/gzip'],
@@ -83,8 +83,8 @@ class RequestSender
     }
 
     /**
-     * @param AttachmentSignature $fileSignature
-     * @param ResponseInterface   $response
+     * @param FileVersionSignature $fileSignature
+     * @param ResponseInterface    $response
      *
      * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
@@ -93,7 +93,7 @@ class RequestSender
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    private function handleResponse(AttachmentSignature $fileSignature, ResponseInterface $response): void
+    private function handleResponse(FileVersionSignature $fileSignature, ResponseInterface $response): void
     {
         try {
             $this->xmlSigner->verify($response->getContent());
@@ -137,23 +137,23 @@ class RequestSender
         $fileSignature
             ->setTransactionNumber($transactionNumber)
             ->setSignatureUrl($signatureUrl)
-            ->setStatus(AttachmentSignature::STATUS_REQUESTED)
+            ->setStatus(FileVersionSignature::STATUS_REQUESTED)
         ;
 
-        $this->attachmentSignatureRepository->save($fileSignature);
+        $this->fileVersionSignatureRepository->save($fileSignature);
     }
 
     /**
-     * @param AttachmentSignature $fileSignature
-     * @param string              $message
+     * @param FileVersionSignature $fileSignature
+     * @param string               $message
      *
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    private function handlePSNError(AttachmentSignature $fileSignature, string $message): void
+    private function handlePSNError(FileVersionSignature $fileSignature, string $message): void
     {
-        $fileSignature->setStatus(AttachmentSignature::STATUS_REQUEST_FAILED);
-        $this->attachmentSignatureRepository->save($fileSignature);
+        $fileSignature->setStatus(FileVersionSignature::STATUS_REQUEST_FAILED);
+        $this->fileVersionSignatureRepository->save($fileSignature);
 
         throw new \RuntimeException($message);
     }

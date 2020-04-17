@@ -27,8 +27,8 @@ health_check:
 
 # PSN callback URL
 file-signature-result:
-    path: /file-signature/{fileSignatureId}/result
-    controller: Unilend\Controller\AttachmentSignature\Result
+    path: /file_version_signatures/{fileSignatureId}/result
+    controller: Unilend\Controller\FileVersionSignature\Result
 
 # Route created to return a 404 for pulse check
 home:

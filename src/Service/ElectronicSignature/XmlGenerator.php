@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Service\ElectronicSignature;
 
+use Exception;
 use League\Flysystem\FileNotFoundException;
 use SimpleXMLElement;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Entity\AttachmentSignature;
+use Unilend\Entity\FileVersionSignature;
 use Unilend\Service\FileSystem\FileSystemHelper;
 
 class XmlGenerator
@@ -33,18 +34,22 @@ class XmlGenerator
     }
 
     /**
-     * @param AttachmentSignature $attachmentSignature
+     * @param FileVersionSignature $fileVersionSignature
      *
+     * @throws Exception
      * @throws FileNotFoundException
      *
      * @return string
      */
-    public function generate(AttachmentSignature $attachmentSignature): string
+    public function generate(FileVersionSignature $fileVersionSignature): string
     {
-        $signatory         = $attachmentSignature->getSignatory();
-        $attachment        = $attachmentSignature->getAttachment();
-        $fileSystem        = $this->fileSystemHelper->getFileSystemForClass($attachmentSignature->getAttachment());
-        $fileBase64Content = base64_encode($fileSystem->read($attachment->getPath()));
+        $signatory   = $fileVersionSignature->getSignatory();
+        $fileVersion = $fileVersionSignature->getFileVersion();
+        if (null === $fileVersion) {
+            throw new \RuntimeException(sprintf('No file version found for signature for %d', $fileVersionSignature->getId()));
+        }
+        $fileSystem        = $this->fileSystemHelper->getFileSystem($fileVersion);
+        $fileBase64Content = base64_encode($fileSystem->read($fileVersion->getPath()));
 
         $xml = new SimpleXMLElement('<Donnees/>');
         $xml->addChild('InfoControle')->addAttribute('Date', (new \DateTime())->format('Y-m-d H:i:s \G\M\TP'));
@@ -75,18 +80,18 @@ class XmlGenerator
         $parametresDeSignature->addChild('NUMCRT', self::KLS_CODE_ENTITY);
         $parametresDeSignature->addChild('IDPART', '1234567890123'); // static value, don't ask why
         $parametresDeSignature->addChild('IDPROT', 'CIB01');
-        $parametresDeSignature->addChild('NUMARCH', (string) $attachmentSignature->getId());
+        $parametresDeSignature->addChild('NUMARCH', (string) $fileVersionSignature->getId());
         $parametresDeSignature->addChild('OMEXML', $fileBase64Content);
         $parametresDeSignature->addChild('IDNISE', '001');
         $parametresDeSignature->addChild('URLRET', $this->router->generate(
             'file-signature-result',
-            ['fileSignatureId' => $attachmentSignature->getPublicId()],
+            ['fileSignatureId' => $fileVersionSignature->getPublicId()],
             RouterInterface::ABSOLUTE_URL
         ));
 
         $parameter = $parametresDeSignature->addChild('PARRET')->addChild('ParamsRetour')->addChild('Parametre');
         $parameter->addAttribute('Nom', 'fileSignatureId');
-        $parameter->addAttribute('Valeur', (string) $attachmentSignature->getId());
+        $parameter->addAttribute('Valeur', (string) $fileVersionSignature->getId());
 
         $parametresDeSignature->addChild('TOPARCHIVAGE', 'O'); // last signature ? O = yes, N = no
         $parametresDeSignature->addChild('IDTECHCOMM', '170');

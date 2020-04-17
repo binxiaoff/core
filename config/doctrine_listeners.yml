@@ -9,12 +9,6 @@ services:
                 event: preUpdate
                 entity: Unilend\Entity\Clients
 
-    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Attachment\AttachmentCreatedListener:
-      tags:
-        - name: doctrine.orm.entity_listener
-          event: postPersist
-          entity: Unilend\Entity\Attachment
-
     Unilend\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectCreatedListener:
         tags:
             -   name: doctrine.orm.entity_listener
@@ -56,15 +50,15 @@ services:
 
     Unilend\Listener\Doctrine\Entity\FileVersion\FileVersionCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\Attachment, method: encryptKey}
+            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\FileVersion, method: encryptKey}
 
     Unilend\Listener\Doctrine\Entity\FileVersion\FileVersionLoadedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postLoad, entity: Unilend\Entity\Attachment, method: decryptKey }
+            - { name: doctrine.orm.entity_listener, event: postLoad, entity: Unilend\Entity\FileVersion, method: decryptKey }
 
     Unilend\Listener\Doctrine\Entity\FileVersion\FileVersionUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\Attachment, method: blockUpdating }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\FileVersion, method: blockUpdating }
 
     Unilend\Listener\Doctrine\Entity\ModuleLogListener:
         tags:
