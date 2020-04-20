@@ -41,9 +41,15 @@ class StaffNotifier
      * @throws RuntimeError
      * @throws SyntaxError
      * @throws Exception
+     *
+     * @return int
      */
-    public function notifyClientInitialisation(Staff $staff, TemporaryToken $temporaryToken): void
+    public function notifyClientInitialisation(Staff $staff, TemporaryToken $temporaryToken): int
     {
+        if (!$staff->isActive()) {
+            return 0;
+        }
+
         $client = $staff->getClient();
 
         if (false === $temporaryToken->isValid()) {
@@ -77,6 +83,6 @@ class StaffNotifier
             ->setTo($client->getEmail())
         ;
 
-        $this->mailer->send($message);
+        return $this->mailer->send($message);
     }
 }
