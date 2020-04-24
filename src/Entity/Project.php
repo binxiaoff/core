@@ -18,7 +18,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\{Embeddable\Money, Traits\TimestampableTrait, Traits\TraceableStatusTrait};
 use Unilend\Filter\ArrayFilter;
-use Unilend\Filter\InvertedSearchFilter;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -97,7 +96,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  * @ApiFilter(ArrayFilter::class, properties={"organizers.roles"})
  * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId"})
- * @ApiFilter(InvertedSearchFilter::class, properties={"projectParticipations.projectParticipationContacts.client.publicId"})
  *
  * @ORM\Table(indexes={
  *     @ORM\Index(name="hash", columns={"hash"})
