@@ -20,7 +20,6 @@ rollbar:
         - app_secret
         - mailjet_api_key
         - mailjet_api_secret
-        - google_gtm_token
         - jwt_secret_key
         - cloudfront_distribution
         - file_encryption_kek_passphrase

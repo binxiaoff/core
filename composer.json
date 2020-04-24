@@ -95,8 +95,7 @@
     "symfony/yaml": "*",
     "thadafinser/user-agent-parser": "^2.0",
     "twig/extensions": "^1.5",
-    "whichbrowser/parser": "^2.0",
-    "xynnn/google-tag-manager-bundle": "^2.0"
+    "whichbrowser/parser": "^2.0"
   },
   "require-dev": {
     "dg/bypass-finals": "^1.1",

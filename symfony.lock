@@ -1006,9 +1006,6 @@
     "willdurand/negotiation": {
         "version": "v2.3.1"
     },
-    "xynnn/google-tag-manager-bundle": {
-        "version": "2.4.2"
-    },
     "zendframework/zend-code": {
         "version": "3.3.1"
     },
