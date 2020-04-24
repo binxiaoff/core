@@ -148,7 +148,8 @@ class Project
 
     public const SERIALIZER_GROUP_ADMIN_READ = 'project:admin:read'; // Additional group that is available for admin (admin user or arranger)
 
-    public const MONITORED_FIELD_CURRENT_STATUS = 'currentStatus';
+    public const FIELD_CURRENT_STATUS = 'currentStatus';
+    public const FIELD_DESCRIPTION    = 'description';
 
     /**
      * @var int
