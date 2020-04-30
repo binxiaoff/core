@@ -18,7 +18,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\{Embeddable\Money, Traits\TimestampableTrait, Traits\TraceableStatusTrait};
 use Unilend\Filter\ArrayFilter;
-use Unilend\Filter\InvertedSearchFilter;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -98,7 +97,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  * @ApiFilter(ArrayFilter::class, properties={"organizers.roles"})
  * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId"})
- * @ApiFilter(InvertedSearchFilter::class, properties={"projectParticipations.projectParticipationContacts.client.publicId"})
  *
  * @ORM\Table(indexes={
  *     @ORM\Index(name="hash", columns={"hash"})
@@ -149,7 +147,8 @@ class Project
 
     public const SERIALIZER_GROUP_ADMIN_READ = 'project:admin:read'; // Additional group that is available for admin (admin user or arranger)
 
-    public const MONITORED_FIELD_CURRENT_STATUS = 'currentStatus';
+    public const FIELD_CURRENT_STATUS = 'currentStatus';
+    public const FIELD_DESCRIPTION    = 'description';
 
     public const PROJECT_FILE_TYPE_DESCRIPTION     = 'project_file_description';
     public const PROJECT_FILE_TYPE_CONFIDENTIALITY = 'project_file_confidentiality';

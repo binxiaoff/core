@@ -155,6 +155,21 @@
     "escapestudios/symfony2-coding-standard": {
         "version": "3.8.0"
     },
+    "exercise/htmlpurifier-bundle": {
+        "version": "3.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "3.0",
+            "ref": "4667fd2103dc4645d234591e1c85f727c6fe0d11"
+        },
+        "files": [
+            "config/packages/exercise_html_purifier.yaml"
+        ]
+    },
+    "ezyang/htmlpurifier": {
+        "version": "v4.12.0"
+    },
     "facile-it/doctrine-mysql-come-back": {
         "version": "v1.7"
     },
