@@ -21,11 +21,11 @@ class ProjectUpdatedListener
      */
     public function preUpdate(Project $project, PreUpdateEventArgs $args): void
     {
-        if ($args->hasChangedField(Project::MONITORED_FIELD_CURRENT_STATUS)) {
+        if ($args->hasChangedField(Project::FIELD_CURRENT_STATUS)) {
             $this->messageBus->dispatch(new ProjectStatusUpdated(
                 $project,
-                $args->getOldValue(Project::MONITORED_FIELD_CURRENT_STATUS),
-                $args->getNewValue(Project::MONITORED_FIELD_CURRENT_STATUS)
+                $args->getOldValue(Project::FIELD_CURRENT_STATUS),
+                $args->getNewValue(Project::FIELD_CURRENT_STATUS)
             ));
         }
     }
