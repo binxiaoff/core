@@ -209,11 +209,11 @@ class ProjectParticipationOffer
     }
 
     /**
-     * @param string $comment
+     * @param string|null $comment
      *
      * @return ProjectParticipationOffer
      */
-    public function setComment(string $comment): ProjectParticipationOffer
+    public function setComment(?string $comment): ProjectParticipationOffer
     {
         $this->comment = $comment;
 
