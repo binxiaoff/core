@@ -7,9 +7,8 @@ namespace Unilend\MessageHandler\Staff;
 use Exception;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\TemporaryToken;
 use Unilend\Message\Staff\StaffCreated;
-use Unilend\Repository\{StaffRepository, TemporaryTokenRepository};
+use Unilend\Repository\StaffRepository;
 use Unilend\Service\Staff\StaffNotifier;
 
 class StaffCreatedHandler implements MessageHandlerInterface
@@ -18,19 +17,15 @@ class StaffCreatedHandler implements MessageHandlerInterface
     private $staffRepository;
     /** @var StaffNotifier */
     private $notifier;
-    /** @var TemporaryTokenRepository */
-    private $temporaryTokenRepository;
 
     /**
-     * @param StaffRepository          $staffRepository
-     * @param StaffNotifier            $notifier
-     * @param TemporaryTokenRepository $temporaryTokenRepository
+     * @param StaffRepository $staffRepository
+     * @param StaffNotifier   $notifier
      */
-    public function __construct(StaffRepository $staffRepository, StaffNotifier $notifier, TemporaryTokenRepository $temporaryTokenRepository)
+    public function __construct(StaffRepository $staffRepository, StaffNotifier $notifier)
     {
-        $this->staffRepository          = $staffRepository;
-        $this->notifier                 = $notifier;
-        $this->temporaryTokenRepository = $temporaryTokenRepository;
+        $this->staffRepository = $staffRepository;
+        $this->notifier        = $notifier;
     }
 
     /**
@@ -48,12 +43,7 @@ class StaffCreatedHandler implements MessageHandlerInterface
             // TODO Remove when this become asynchronous
             // Refresh the staff, so that the $client->getStaff() doesn't return null
             $this->staffRepository->refresh($staff);
-            $client = $staff->getClient();
-            if ($client->isInitializationNeeded() && $client->isGrantedLogin()) {
-                $temporaryToken = TemporaryToken::generateMediumToken($client);
-                $this->temporaryTokenRepository->save($temporaryToken);
-                $this->notifier->notifyClientInitialisation($staff, $temporaryToken);
-            }
+            $this->notifier->notifyClientInitialisation($staff);
         }
     }
 }
