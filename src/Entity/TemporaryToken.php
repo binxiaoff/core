@@ -98,6 +98,8 @@ class TemporaryToken
     }
 
     /**
+     * @internal Use Unilend\Service\TemporaryTokenGenerator::generateMediumToken
+     *
      * @param Clients $client
      *
      * @throws Exception
@@ -110,6 +112,8 @@ class TemporaryToken
     }
 
     /**
+     * @internal Use Unilend\Service\TemporaryTokenGenerator::generateUltraLongToken
+     *
      * @param Clients $client
      *
      * @throws Exception

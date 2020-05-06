@@ -8,7 +8,7 @@ use Exception;
 use Swift_Mailer;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{Clients, Company, Project, ProjectParticipationContact, ProjectStatus, TemporaryToken};
-use Unilend\Repository\TemporaryTokenRepository;
+use Unilend\Service\TemporaryTokenGenerator;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ProjectParticipationContactNotifier
@@ -17,19 +17,19 @@ class ProjectParticipationContactNotifier
     private $mailer;
     /** @var TemplateMessageProvider */
     private $templateMessageProvider;
-    /** @var TemporaryTokenRepository */
-    private $temporaryTokenRepository;
+    /** @var TemporaryTokenGenerator */
+    private $temporaryTokenGenerator;
 
     /**
-     * @param TemplateMessageProvider  $templateMessageProvider
-     * @param Swift_Mailer             $mailer
-     * @param TemporaryTokenRepository $temporaryTokenRepository
+     * @param TemplateMessageProvider $templateMessageProvider
+     * @param Swift_Mailer            $mailer
+     * @param TemporaryTokenGenerator $temporaryTokenGenerator
      */
-    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer, TemporaryTokenRepository $temporaryTokenRepository)
+    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator)
     {
-        $this->mailer                   = $mailer;
-        $this->templateMessageProvider  = $templateMessageProvider;
-        $this->temporaryTokenRepository = $temporaryTokenRepository;
+        $this->mailer                  = $mailer;
+        $this->templateMessageProvider = $templateMessageProvider;
+        $this->temporaryTokenGenerator = $temporaryTokenGenerator;
     }
 
     /**
@@ -56,8 +56,7 @@ class ProjectParticipationContactNotifier
 
         $temporaryToken = null;
         if ($client->isInitializationNeeded()) {
-            $temporaryToken = TemporaryToken::generateMediumToken($client);
-            $this->temporaryTokenRepository->persist($temporaryToken);
+            $temporaryToken = $this->temporaryTokenGenerator->generateMediumToken($client);
         }
 
         $context = [

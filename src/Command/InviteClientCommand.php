@@ -6,8 +6,8 @@ namespace Unilend\Command;
 
 use Exception;
 use Symfony\Component\Console\{Command\Command, Input\InputArgument, Input\InputInterface, Output\OutputInterface};
-use Unilend\Entity\TemporaryToken;
-use Unilend\Repository\{ClientsRepository, TemporaryTokenRepository};
+use Unilend\Entity\Clients;
+use Unilend\Repository\ClientsRepository;
 use Unilend\Service\Staff\StaffNotifier;
 
 class InviteClientCommand extends Command
@@ -16,23 +16,19 @@ class InviteClientCommand extends Command
 
     /** @var ClientsRepository */
     private $clientsRepository;
-    /** @var TemporaryTokenRepository */
-    private $temporaryTokenRepository;
     /** @var StaffNotifier */
     private $staffNotifier;
 
     /**
-     * @param ClientsRepository        $clientsRepository
-     * @param TemporaryTokenRepository $temporaryTokenRepository
-     * @param StaffNotifier            $staffNotifier
+     * @param ClientsRepository $clientsRepository
+     * @param StaffNotifier     $staffNotifier
      */
-    public function __construct(ClientsRepository $clientsRepository, TemporaryTokenRepository $temporaryTokenRepository, StaffNotifier $staffNotifier)
+    public function __construct(ClientsRepository $clientsRepository, StaffNotifier $staffNotifier)
     {
         parent::__construct();
 
-        $this->clientsRepository        = $clientsRepository;
-        $this->temporaryTokenRepository = $temporaryTokenRepository;
-        $this->staffNotifier            = $staffNotifier;
+        $this->clientsRepository = $clientsRepository;
+        $this->staffNotifier     = $staffNotifier;
     }
 
     /**
@@ -55,14 +51,13 @@ class InviteClientCommand extends Command
 
         foreach ($clientIds as $clientId) {
             $client = $this->clientsRepository->find($clientId);
-            if (null === $client) {
+            $staff  = $client instanceof Clients ? $client->getStaff() : [];
+            if (0 === count($staff)) {
                 continue;
             }
-            $staff = $client->getStaff();
-            if ($staff && $client->isInitializationNeeded() && $client->isGrantedLogin()) {
-                $temporaryToken = TemporaryToken::generateUltraLongToken($client);
-                $this->temporaryTokenRepository->save($temporaryToken);
-                $this->staffNotifier->notifyClientInitialisation($staff->first(), $temporaryToken);
+            $index = 0;
+            while (1 > $this->staffNotifier->notifyClientInitialisation($staff[$index], true)) {
+                ++$index;
             }
         }
 
