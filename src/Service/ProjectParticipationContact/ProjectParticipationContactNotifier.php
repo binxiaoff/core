@@ -8,7 +8,7 @@ use Exception;
 use Swift_Mailer;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{Clients, Company, Project, ProjectParticipationContact, ProjectStatus, TemporaryToken};
-use Unilend\Service\TemporaryTokenGenerator;
+use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ProjectParticipationContactNotifier
@@ -17,19 +17,19 @@ class ProjectParticipationContactNotifier
     private $mailer;
     /** @var TemplateMessageProvider */
     private $templateMessageProvider;
-    /** @var TemporaryTokenGenerator */
-    private $temporaryTokenGenerator;
+    /** @var TemporaryTokenRepository */
+    private $temporaryTokenRepository;
 
     /**
-     * @param TemplateMessageProvider $templateMessageProvider
-     * @param Swift_Mailer            $mailer
-     * @param TemporaryTokenGenerator $temporaryTokenGenerator
+     * @param TemplateMessageProvider  $templateMessageProvider
+     * @param Swift_Mailer             $mailer
+     * @param TemporaryTokenRepository $temporaryTokenRepository
      */
-    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator)
+    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer, TemporaryTokenRepository $temporaryTokenRepository)
     {
-        $this->mailer                  = $mailer;
-        $this->templateMessageProvider = $templateMessageProvider;
-        $this->temporaryTokenGenerator = $temporaryTokenGenerator;
+        $this->mailer                   = $mailer;
+        $this->templateMessageProvider  = $templateMessageProvider;
+        $this->temporaryTokenRepository = $temporaryTokenRepository;
     }
 
     /**
@@ -56,7 +56,10 @@ class ProjectParticipationContactNotifier
 
         $temporaryToken = null;
         if ($client->isInitializationNeeded()) {
-            $temporaryToken = $this->temporaryTokenGenerator->generateMediumToken($client);
+            // Remove the calling of flush, to prevent the infinitive triggering of onFlush listener.
+            //todo: use TemporaryTokenGenerator once we have the asynchronous message queue
+            $temporaryToken = TemporaryToken::generateMediumToken($client);
+            $this->temporaryTokenRepository->persist($temporaryToken);
         }
 
         $context = [
