@@ -56,7 +56,7 @@ class InviteClientCommand extends Command
                 continue;
             }
             $index = 0;
-            while (1 > $this->staffNotifier->notifyClientInitialisation($staff[$index], true)) {
+            while (1 > $this->staffNotifier->notifyClientInitialisation($staff[$index])) {
                 ++$index;
             }
         }
