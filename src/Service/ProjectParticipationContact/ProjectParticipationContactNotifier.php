@@ -34,13 +34,14 @@ class ProjectParticipationContactNotifier
 
     /**
      * @param ProjectParticipationContact $contact
+     * @param bool                        $doFlush
      *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      * @throws Exception
      */
-    public function notifyContactAdded(ProjectParticipationContact $contact): void
+    public function notifyContactAdded(ProjectParticipationContact $contact, bool $doFlush): void
     {
         $projectParticipation = $contact->getProjectParticipation();
 
@@ -56,10 +57,13 @@ class ProjectParticipationContactNotifier
 
         $temporaryToken = null;
         if ($client->isInitializationNeeded()) {
-            // Remove the calling of flush, to prevent the infinitive triggering of onFlush listener.
+            // Conditional calling of flush, to prevent the infinitive triggering of onFlush listener.
             //todo: use TemporaryTokenGenerator once we have the asynchronous message queue
             $temporaryToken = TemporaryToken::generateMediumToken($client);
             $this->temporaryTokenRepository->persist($temporaryToken);
+            if ($doFlush) {
+                $this->temporaryTokenRepository->save($temporaryToken);
+            }
         }
 
         $context = [
