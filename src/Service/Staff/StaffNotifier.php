@@ -43,7 +43,6 @@ class StaffNotifier
 
     /**
      * @param Staff $staff
-     * @param bool  $ultraLongValidation
      *
      * @throws LoaderError
      * @throws ORMException
@@ -53,14 +52,12 @@ class StaffNotifier
      *
      * @return int
      */
-    public function notifyClientInitialisation(Staff $staff, $ultraLongValidation = false): int
+    public function notifyClientInitialisation(Staff $staff): int
     {
         $client = $staff->getClient();
         if (!$staff->isActive() || false === $client->isInitializationNeeded() || false === $client->isGrantedLogin()) {
             return 0;
         }
-
-        $temporaryToken = $ultraLongValidation ? $this->temporaryTokenGenerator->generateUltraLongToken($client) : $this->temporaryTokenGenerator->generateMediumToken($client);
 
         $message = $this->templateMessageProvider->newMessage('staff-client-initialisation', [
             'client' => [
@@ -68,7 +65,7 @@ class StaffNotifier
                 'firstName' => $client->getFirstName(),
             ],
             'temporaryToken' => [
-                'token' => $temporaryToken->getToken(),
+                'token' => $this->temporaryTokenGenerator->generateUltraLongToken($client)->getToken(),
             ],
             'staff' => [
                 'roles' => array_map(
