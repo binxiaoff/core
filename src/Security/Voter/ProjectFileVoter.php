@@ -19,7 +19,7 @@ class ProjectFileVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function fulfillPreconditions($projectFile, Clients $user): bool
+    protected function isGrantedAll($projectFile, Clients $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $projectFile->getProject());
     }
