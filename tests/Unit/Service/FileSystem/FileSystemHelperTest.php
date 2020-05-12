@@ -33,18 +33,21 @@ class FileSystemHelperTest extends TestCase
     private $managerRegistry;
     /** @var FileCrypto */
     private $fileCrypto;
+    /** @var string */
+    private $encryptedFilePath;
 
     /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
-        $this->srcPath          = sys_get_temp_dir() . DIRECTORY_SEPARATOR . Base::lexify('?????');
-        $this->destPath         = Base::lexify('/????/???');
-        $this->testFileResource = $this->buildTestFile();
-        $this->container        = $this->prophesize(ContainerInterface::class);
-        $this->managerRegistry  = $this->prophesize(ManagerRegistry::class);
-        $this->fileCrypto       = $this->prophesize(FileCrypto::class);
+        $this->srcPath           = sys_get_temp_dir() . DIRECTORY_SEPARATOR . Base::lexify('?????');
+        $this->encryptedFilePath = $this->srcPath . '-encrypted';
+        $this->destPath          = Base::lexify('/????/???');
+        $this->testFileResource  = $this->buildTestFile();
+        $this->container         = $this->prophesize(ContainerInterface::class);
+        $this->managerRegistry   = $this->prophesize(ManagerRegistry::class);
+        $this->fileCrypto        = $this->prophesize(FileCrypto::class);
     }
 
     /**
@@ -63,7 +66,31 @@ class FileSystemHelperTest extends TestCase
         $this->createTestObject()->writeTempFileToFileSystem($this->srcPath, $fileSystem->reveal(), $this->destPath, false);
 
         $streamWriter->shouldHaveBeenCalled();
-        static::assertFileNotExists($this->srcPath);
+    }
+
+    /**
+     * @covers ::writeTempFileToFileSystem
+     */
+    public function testWriteTempFileToFileSystemWithEncryption(): void
+    {
+        $encryptedFilePath = $this->encryptedFilePath;
+        $resource          = fopen($encryptedFilePath, 'wb+');
+
+        $fileEncrypt = $this->fileCrypto->encryptFile(Argument::exact($this->srcPath), Argument::exact($this->encryptedFilePath));
+        $fileEncrypt->willReturn(Base::asciify(str_repeat('*', 440)));
+
+        $fileSystem   = $this->prophesize(FilesystemInterface::class);
+        $streamWriter = $fileSystem->writeStream(Argument::exact($this->destPath), Argument::that(static function ($usedResource) use ($encryptedFilePath) {
+            return stream_get_meta_data($usedResource)['uri'] === $encryptedFilePath;
+        }));
+        $streamWriter->willReturn(true);
+
+        $this->createTestObject()->writeTempFileToFileSystem($this->srcPath, $fileSystem->reveal(), $this->destPath, true);
+
+        $streamWriter->shouldHaveBeenCalled();
+        $fileEncrypt->shouldHaveBeenCalled();
+
+        fclose($resource);
     }
 
     /**

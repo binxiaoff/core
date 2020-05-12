@@ -62,7 +62,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "projectParticipation:read",
  *                 "projectParticipationOffer:read",
  *                 "money:read",
- *                 "attachment:read",
+ *                 "file:read",
+ *                 "fileVersion:read",
  *                 "projectStatus:read",
  *                 "projectParticipationContact:read",
  *                 "projectParticipationFee:read",
@@ -83,7 +84,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "project_confidentiality": {
  *             "method": "GET",
  *             "security": "is_granted('view_confidentiality_document', object)",
- *             "normalization_context": {"groups": {"project:confidentiality:read", "attachment:read"}},
+ *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
  *             "path": "/projects/{id}/confidentiality"
  *         },
  *         "patch": {
@@ -148,6 +149,9 @@ class Project
 
     public const FIELD_CURRENT_STATUS = 'currentStatus';
     public const FIELD_DESCRIPTION    = 'description';
+
+    public const PROJECT_FILE_TYPE_DESCRIPTION     = 'project_file_description';
+    public const PROJECT_FILE_TYPE_CONFIDENTIALITY = 'project_file_confidentiality';
 
     /**
      * @var int
@@ -257,6 +261,22 @@ class Project
     private $description;
 
     /**
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\File", orphanRemoval=true)
+     * @ORM\JoinColumn(name="id_description_document", unique=true)
+     *
+     * @Groups({"project:write", "project:read"})
+     */
+    private $descriptionDocument;
+
+    /**
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\File", orphanRemoval=true)
+     * @ORM\JoinColumn(name="id_confidentiality_disclaimer", unique=true)
+     *
+     * @Groups({"project:write", "project:read"})
+     */
+    private $confidentialityDisclaimer;
+
+    /**
      * @var bool
      *
      * @ORM\Column(type="boolean", options={"default": false})
@@ -340,17 +360,6 @@ class Project
     private $offerVisibility;
 
     /**
-     * @var Attachment[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Attachment", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
-     *
-     * @ApiSubresource
-     *
-     * @Groups({"project:read"})
-     */
-    private $attachments;
-
-    /**
      * @var ProjectParticipation[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
@@ -390,13 +399,6 @@ class Project
      * @Groups({"project:read"})
      */
     private $tranches;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", unique=true, nullable=true, length=320)
-     */
-    private $image;
 
     /**
      * @var ProjectStatus
@@ -485,6 +487,15 @@ class Project
     private $globalFundingMoney;
 
     /**
+     * @var ProjectFile[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="ProjectFile", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @ApiSubresource
+     */
+    private $projectFiles;
+
+    /**
      * @param Staff         $addedBy
      * @param Company       $borrowerCompany
      * @param Money         $globalFundingMoney
@@ -494,7 +505,7 @@ class Project
      */
     public function __construct(Staff $addedBy, Company $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
     {
-        $this->attachments           = new ArrayCollection();
+        $this->projectFiles          = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
         $this->comments              = new ArrayCollection();
         $this->statuses              = new ArrayCollection();
@@ -623,6 +634,46 @@ class Project
     }
 
     /**
+     * @param File|null $file
+     *
+     * @return Project
+     */
+    public function setDescriptionDocument(?File $file): self
+    {
+        $this->descriptionDocument = $file;
+
+        return $this;
+    }
+
+    /**
+     * @return File|null
+     */
+    public function getDescriptionDocument(): ?File
+    {
+        return $this->descriptionDocument;
+    }
+
+    /**
+     * @param File|null $file
+     *
+     * @return Project
+     */
+    public function setConfidentialityDisclaimer(?File $file): self
+    {
+        $this->confidentialityDisclaimer = $file;
+
+        return $this;
+    }
+
+    /**
+     * @return File|null
+     */
+    public function getConfidentialityDisclaimer(): ?File
+    {
+        return $this->confidentialityDisclaimer;
+    }
+
+    /**
      * @return bool
      */
     public function isConfidential(): bool
@@ -640,20 +691,6 @@ class Project
         $this->confidential = $confidential;
 
         return $this;
-    }
-
-    /**
-     * @return Attachment|null
-     *
-     * @Groups({"project:confidentiality:read", "project:read"})
-     */
-    public function getConfidentialityDisclaimerDocument(): ?Attachment
-    {
-        return $this->attachments->filter(
-            static function (Attachment $attachment) {
-                return Attachment::TYPE_PROJECT_CONFIDENTIALITY_DISCLAIMER === $attachment->getType();
-            }
-        )->first() ?: null;
     }
 
     /**
@@ -800,6 +837,26 @@ class Project
     public static function getOfferVisibilities(): iterable
     {
         return self::getConstants('OFFER_VISIBILITY_');
+    }
+
+    /**
+     * @return ProjectFile[]|Collection
+     */
+    public function getProjectFiles(): Collection
+    {
+        return $this->projectFiles;
+    }
+
+    /**
+     * @param ProjectFile $projectFile
+     *
+     * @return Project
+     */
+    public function removeProjectFile(ProjectFile $projectFile): Project
+    {
+        $this->projectFiles->removeElement($projectFile);
+
+        return $this;
     }
 
     /**
@@ -964,26 +1021,6 @@ class Project
     public function isOnline(): bool
     {
         return ProjectStatus::STATUS_PUBLISHED === $this->getCurrentStatus()->getStatus();
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getImage(): ?string
-    {
-        return $this->image;
-    }
-
-    /**
-     * @param string|null $image
-     *
-     * @return Project
-     */
-    public function setImage(?string $image): Project
-    {
-        $this->image = $image;
-
-        return $this;
     }
 
     /**
@@ -1228,40 +1265,6 @@ class Project
     }
 
     /**
-     * @return ArrayCollection|Attachment[]
-     */
-    public function getAttachments()
-    {
-        return $this->attachments;
-    }
-
-    /**
-     * @return Attachment|null
-     *
-     * @Groups({"project:read"})
-     */
-    public function getDescriptionDocument(): ?Attachment
-    {
-        return $this->attachments->filter(
-            static function (Attachment $attachment) {
-                return Attachment::TYPE_PROJECT_DESCRIPTION === $attachment->getType();
-            }
-        )->first() ?: null;
-    }
-
-    /**
-     * @param ArrayCollection|Attachment[] $attachments
-     *
-     * @return Project
-     */
-    public function setAttachments($attachments): Project
-    {
-        $this->attachments = $attachments;
-
-        return $this;
-    }
-
-    /**
      * @return Money
      *
      * @Groups({"project:read"})
@@ -1316,6 +1319,14 @@ class Project
                 }
             )
         );
+    }
+
+    /**
+     * @return array
+     */
+    public static function getProjectFileTypes(): array
+    {
+        return self::getConstants('PROJECT_FILE_TYPE_');
     }
 
     /**

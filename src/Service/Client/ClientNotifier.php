@@ -4,65 +4,46 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Client;
 
-use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
-use LogicException;
 use Swift_Mailer;
-use Symfony\Component\Routing\RouterInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{ClientStatus, Clients, Project, ProjectStatus, TemporaryToken};
-use Unilend\Service\NotificationManager;
+use Unilend\Entity\Clients;
+use Unilend\Service\TemporaryTokenGenerator;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ClientNotifier
 {
-    /** @var RouterInterface */
-    private $router;
     /** @var TemplateMessageProvider */
     private $messageProvider;
     /** @var Swift_Mailer */
     private $mailer;
-    /** @var NotificationManager */
-    private $notificationManager;
-    /** @var TranslatorInterface */
-    private $translator;
+    /** @var TemporaryTokenGenerator */
+    private $temporaryTokenGenerator;
 
     /**
-     * @param RouterInterface         $router
      * @param TemplateMessageProvider $messageProvider
      * @param Swift_Mailer            $mailer
-     * @param NotificationManager     $notificationManager
-     * @param TranslatorInterface     $translator
+     * @param TemporaryTokenGenerator $temporaryTokenGenerator
      */
-    public function __construct(
-        RouterInterface $router,
-        TemplateMessageProvider $messageProvider,
-        Swift_Mailer $mailer,
-        NotificationManager $notificationManager,
-        TranslatorInterface $translator
-    ) {
-        $this->router              = $router;
-        $this->messageProvider     = $messageProvider;
-        $this->mailer              = $mailer;
-        $this->notificationManager = $notificationManager;
-        $this->translator          = $translator;
+    public function __construct(TemplateMessageProvider $messageProvider, Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator)
+    {
+        $this->messageProvider         = $messageProvider;
+        $this->mailer                  = $mailer;
+        $this->temporaryTokenGenerator = $temporaryTokenGenerator;
     }
 
     /**
-     * @param TemporaryToken $temporaryToken
+     * @param Clients $client
      *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      * @throws Exception
      */
-    public function notifyPasswordRequest(TemporaryToken $temporaryToken)
+    public function notifyPasswordRequest(Clients $client): void
     {
-        $client = $temporaryToken->getClient();
-
-        if (false === $temporaryToken->isValid()) {
-            throw new LogicException('The token should be valid at this point');
+        if (false === $client->isGrantedLogin()) {
+            return;
         }
 
         $message = $this->messageProvider->newMessage('client-password-request', [
@@ -71,7 +52,7 @@ class ClientNotifier
                 'hash'      => $client->getPublicId(),
             ],
             'temporaryToken' => [
-                'token' => $temporaryToken->getToken(),
+                'token' => $this->temporaryTokenGenerator->generateMediumToken($client)->getToken(),
             ],
         ])->setTo($client->getEmail());
 

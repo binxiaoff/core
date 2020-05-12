@@ -289,12 +289,4 @@ class Staff
     {
         return $this->getCurrentStatus() && StaffStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
     }
-
-    /**
-     * @return bool
-     */
-    public function isInactive(): bool
-    {
-        return null === $this->getCurrentStatus() || StaffStatus::STATUS_INACTIVE === $this->getCurrentStatus()->getStatus();
-    }
 }

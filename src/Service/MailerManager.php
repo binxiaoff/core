@@ -9,7 +9,7 @@ use NumberFormatter;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{AttachmentSignature, Clients, Project, ProjectComment, ProjectParticipationContact, Staff, Tranche, TrancheOffer};
+use Unilend\Entity\{Clients, FileVersionSignature, Project, ProjectComment, ProjectParticipationContact, Staff, Tranche, TrancheOffer};
 use Unilend\Repository\StaffRepository;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
@@ -188,21 +188,17 @@ class MailerManager
     }
 
     /**
-     * @param Project             $project
-     * @param AttachmentSignature $signature
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
+     * @param Project              $project
+     * @param FileVersionSignature $signature
      *
      * @return int
      */
-    public function sendElectronicSignature(Project $project, AttachmentSignature $signature): int
+    public function sendElectronicSignature(Project $project, FileVersionSignature $signature): int
     {
         $keywords = [
             'firstName'    => $signature->getSignatory()->getFirstName(),
             'projectName'  => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
-            'signatureUrl' => $this->router->generate('signature_sign', ['attachment' => $signature->getAttachment()->getId()], RouterInterface::ABSOLUTE_URL),
+            'signatureUrl' => $this->router->generate('signature_sign', ['attachment' => $signature->getFileVersion()->getId()], RouterInterface::ABSOLUTE_URL),
         ];
 
         return 1;

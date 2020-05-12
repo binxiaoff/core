@@ -8,7 +8,6 @@ return [
     Doctrine\Bundle\DoctrineBundle\DoctrineBundle::class => ['all' => true],
     Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
     Symfony\Bundle\SecurityBundle\SecurityBundle::class => ['all' => true],
-    Xynnn\GoogleTagManagerBundle\GoogleTagManagerBundle::class => ['all' => true],
     Knp\Bundle\SnappyBundle\KnpSnappyBundle::class => ['all' => true],
     Sonata\CacheBundle\SonataCacheBundle::class => ['all' => true],
     EightPoints\Bundle\GuzzleBundle\EightPointsGuzzleBundle::class => ['all' => true],

@@ -20,7 +20,6 @@ rollbar:
         - app_secret
         - mailjet_api_key
         - mailjet_api_secret
-        - google_gtm_token
         - jwt_secret_key
         - cloudfront_distribution
         - file_encryption_kek_passphrase
@@ -35,3 +34,5 @@ rollbar:
         - jwt_public_key
         - psn_private_key
         - psn_public_key
+        - authorization
+        - http_authorization
