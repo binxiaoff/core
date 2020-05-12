@@ -59,7 +59,7 @@ class ProjectParticipationContactNotifier
         if ($client->isInitializationNeeded()) {
             // Conditional calling of flush, to prevent the infinitive triggering of onFlush listener.
             //todo: use TemporaryTokenGenerator once we have the asynchronous message queue
-            $temporaryToken = TemporaryToken::generateMediumToken($client);
+            $temporaryToken = TemporaryToken::generateUltraLongToken($client);
             $this->temporaryTokenRepository->persist($temporaryToken);
             if ($doFlush) {
                 $this->temporaryTokenRepository->save($temporaryToken);
