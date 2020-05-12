@@ -52,42 +52,6 @@ class TemporaryTokenRepository extends ServiceEntityRepository
     /**
      * @param Clients $client
      *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws Exception
-     *
-     * @return TemporaryToken
-     */
-    public function generateShortTemporaryToken(Clients $client): TemporaryToken
-    {
-        $temporaryToken = TemporaryToken::generateShortToken($client);
-
-        $this->save($temporaryToken);
-
-        return $temporaryToken;
-    }
-
-    /**
-     * @param Clients $client
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws Exception
-     *
-     * @return TemporaryToken
-     */
-    public function generateLongTemporaryToken(Clients $client): TemporaryToken
-    {
-        $temporaryToken = TemporaryToken::generateLongToken($client);
-
-        $this->save($temporaryToken);
-
-        return $temporaryToken;
-    }
-
-    /**
-     * @param Clients $client
-     *
      * @throws Exception
      */
     public function expireTemporaryTokens(Clients $client): void
@@ -96,6 +60,7 @@ class TemporaryTokenRepository extends ServiceEntityRepository
             $this->createQueryBuilder('t')
                 ->update(TemporaryToken::class, 't')
                 ->set('t.expires', ':now')
+                ->set('t.updated', ':now')
                 ->where('t.client = :client')
                 ->andWhere('t.expires > :now')
                 ->setParameter('client', $client)

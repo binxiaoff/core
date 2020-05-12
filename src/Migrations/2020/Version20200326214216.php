@@ -21,8 +21,8 @@ final class Version20200326214216 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
-
-        $this->addSql('ALTER TABLE attachment ADD mime_type VARCHAR(150) DEFAULT NULL');
+        // The attachment table exists no longer.
+        //$this->addSql('ALTER TABLE attachment ADD mime_type VARCHAR(150) DEFAULT NULL');
     }
 
     public function down(Schema $schema): void
@@ -30,6 +30,6 @@ final class Version20200326214216 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE attachment DROP mime_type');
+        //$this->addSql('ALTER TABLE attachment DROP mime_type');
     }
 }

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Staff;
 
-use Exception;
-use LogicException;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Swift_Mailer;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{MarketSegment, Staff, TemporaryToken};
+use Unilend\Entity\{MarketSegment, Staff};
+use Unilend\Service\TemporaryTokenGenerator;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class StaffNotifier
@@ -20,38 +20,43 @@ class StaffNotifier
     private $mailer;
     /** @var TranslatorInterface */
     private $translator;
+    /** @var TemporaryTokenGenerator */
+    private $temporaryTokenGenerator;
 
     /**
      * @param TemplateMessageProvider $templateMessageProvider
      * @param Swift_Mailer            $mailer
      * @param TranslatorInterface     $translator
+     * @param TemporaryTokenGenerator $temporaryTokenGenerator
      */
-    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer, TranslatorInterface $translator)
-    {
+    public function __construct(
+        TemplateMessageProvider $templateMessageProvider,
+        Swift_Mailer $mailer,
+        TranslatorInterface $translator,
+        TemporaryTokenGenerator $temporaryTokenGenerator
+    ) {
         $this->templateMessageProvider = $templateMessageProvider;
         $this->mailer                  = $mailer;
         $this->translator              = $translator;
+        $this->temporaryTokenGenerator = $temporaryTokenGenerator;
     }
 
     /**
-     * @param Staff          $staff
-     * @param TemporaryToken $temporaryToken
+     * @param Staff $staff
      *
      * @throws LoaderError
+     * @throws ORMException
+     * @throws OptimisticLockException
      * @throws RuntimeError
      * @throws SyntaxError
-     * @throws Exception
+     *
+     * @return int
      */
-    public function notifyClientInitialisation(Staff $staff, TemporaryToken $temporaryToken): void
+    public function notifyClientInitialisation(Staff $staff): int
     {
         $client = $staff->getClient();
-
-        if (false === $temporaryToken->isValid()) {
-            throw new LogicException('The token should be valid at this point');
-        }
-
-        if ($staff->getClient() !== $temporaryToken->getClient()) {
-            throw new LogicException('The staff and the temporaryToken should refer to the same client');
+        if (!$staff->isActive() || false === $client->isInitializationNeeded() || false === $client->isGrantedLogin()) {
+            return 0;
         }
 
         $message = $this->templateMessageProvider->newMessage('staff-client-initialisation', [
@@ -60,7 +65,7 @@ class StaffNotifier
                 'firstName' => $client->getFirstName(),
             ],
             'temporaryToken' => [
-                'token' => $temporaryToken->getToken(),
+                'token' => $this->temporaryTokenGenerator->generateUltraLongToken($client)->getToken(),
             ],
             'staff' => [
                 'roles' => array_map(
@@ -77,6 +82,6 @@ class StaffNotifier
             ->setTo($client->getEmail())
         ;
 
-        $this->mailer->send($message);
+        return $this->mailer->send($message);
     }
 }

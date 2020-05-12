@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Listener\Doctrine\Entity\FileVersion;
 
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
-use Unilend\Entity\Attachment;
+use Unilend\Entity\FileVersion;
 use Unilend\Service\DataCrypto;
 
 class FileVersionCreatedListener
@@ -24,11 +24,11 @@ class FileVersionCreatedListener
     }
 
     /**
-     * @param Attachment $attachment
+     * @param FileVersion $attachment
      *
      * @throws EnvironmentIsBrokenException
      */
-    public function encryptKey(Attachment $attachment): void
+    public function encryptKey(FileVersion $attachment): void
     {
         if (null === $attachment->getPlainEncryptionKey()) {
             return;

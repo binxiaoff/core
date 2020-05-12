@@ -8,7 +8,6 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use DateInterval;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use DomainException;
 use Exception;
 use Unilend\Entity\Traits\TimestampableTrait;
 
@@ -21,13 +20,7 @@ class TemporaryToken
 {
     use TimestampableTrait;
 
-    public const SHORT  = 'short';
-    public const MEDIUM = 'medium';
-    public const LONG   = 'long';
-
-    private const LIFETIME_SHORT      = '1 hour';
     private const LIFETIME_MEDIUM     = '1 day';
-    private const LIFETIME_LONG       = '1 week';
     private const LIFETIME_ULTRA_LONG = '1 month';
 
     /**
@@ -96,10 +89,8 @@ class TemporaryToken
      *
      * @throws Exception
      */
-    private function __construct(
-        Clients $clients,
-        string $expirationDelay = self::LIFETIME_SHORT
-    ) {
+    private function __construct(Clients $clients, string $expirationDelay)
+    {
         $this->token   = bin2hex(random_bytes(16));
         $this->client  = $clients;
         $this->added   = new DateTimeImmutable();
@@ -107,18 +98,8 @@ class TemporaryToken
     }
 
     /**
-     * @param Clients $client
+     * @internal Use Unilend\Service\TemporaryTokenGenerator::generateMediumToken
      *
-     * @throws Exception
-     *
-     * @return TemporaryToken
-     */
-    public static function generateShortToken(Clients $client): TemporaryToken
-    {
-        return new TemporaryToken($client, static::LIFETIME_SHORT);
-    }
-
-    /**
      * @param Clients $client
      *
      * @throws Exception
@@ -131,18 +112,8 @@ class TemporaryToken
     }
 
     /**
-     * @param Clients $client
+     * @internal Use Unilend\Service\TemporaryTokenGenerator::generateUltraLongToken
      *
-     * @throws Exception
-     *
-     * @return TemporaryToken
-     */
-    public static function generateLongToken(Clients $client): TemporaryToken
-    {
-        return new TemporaryToken($client, static::LIFETIME_LONG);
-    }
-
-    /**
      * @param Clients $client
      *
      * @throws Exception
@@ -226,22 +197,5 @@ class TemporaryToken
     public function isValid(): bool
     {
         return (new DateTimeImmutable()) < $this->expires;
-    }
-
-    /**
-     * @throws Exception
-     * @throws DomainException
-     *
-     * @return TemporaryToken
-     */
-    public function extendLong(): TemporaryToken
-    {
-        if (false === $this->isValid()) {
-            throw new DomainException('Invalid token');
-        }
-
-        $this->expires = (new DateTimeImmutable())->add(DateInterval::createFromDateString(self::LIFETIME_LONG));
-
-        return $this;
     }
 }

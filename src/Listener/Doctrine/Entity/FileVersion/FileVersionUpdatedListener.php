@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Unilend\Listener\Doctrine\Entity\FileVersion;
 
+use LogicException;
+
 class FileVersionUpdatedListener
 {
     /**
-     * @todo Throw an exception here: FileVersion cannot be updated (to be done when file refactoring is merged).
+     * @throws LogicException
      */
     public function blockUpdating(): void
     {
+        throw new LogicException('FileVersion is an immutable object');
     }
 }

@@ -9,8 +9,8 @@ use Defuse\Crypto\{Exception\BadFormatException, Exception\EnvironmentIsBrokenEx
 class FileCrypto
 {
     /**
-     * @param $inputFilePath
-     * @param $outputFilePath
+     * @param string $inputFilePath
+     * @param string $outputFilePath
      *
      * @throws IOException
      * @throws EnvironmentIsBrokenException
@@ -26,16 +26,16 @@ class FileCrypto
     }
 
     /**
-     * @param $inputFileResource
-     * @param $outputFileResource
-     * @param $key
+     * @param resource $inputFileResource
+     * @param resource $outputFileResource
+     * @param string   $key
      *
      * @throws EnvironmentIsBrokenException
      * @throws IOException
      * @throws WrongKeyOrModifiedCiphertextException
      * @throws BadFormatException
      */
-    public function decryptFileResource($inputFileResource, $outputFileResource, $key): void
+    public function decryptFileResource($inputFileResource, $outputFileResource, string $key): void
     {
         File::decryptResource($inputFileResource, $outputFileResource, Key::loadFromAsciiSafeString($key));
     }

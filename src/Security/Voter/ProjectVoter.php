@@ -69,7 +69,7 @@ class ProjectVoter extends AbstractEntityVoter
     {
         $staff = $user->getCurrentStaff();
 
-        return  $staff && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
+        return  $staff && $staff->isActive() && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
     }
 
     /**
@@ -105,7 +105,10 @@ class ProjectVoter extends AbstractEntityVoter
 
         $staff = $user->getCurrentStaff();
 
-        return  $user->getCompany() === $project->getSubmitterCompany() && $staff && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
+        return  $staff
+                       && $staff->isActive()
+                       && $staff->getCompany() === $project->getSubmitterCompany()
+                       && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
     }
 
     /**
