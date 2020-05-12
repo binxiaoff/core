@@ -7,7 +7,7 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
-use Unilend\Entity\{Clients, Project, ProjectParticipationContact};
+use Unilend\Entity\{Project, ProjectParticipationContact, Staff};
 
 /**
  * @method ProjectParticipationContact|null find($id, $lockMode = null, $lockVersion = null)
@@ -27,21 +27,23 @@ class ProjectParticipationContactRepository extends ServiceEntityRepository
 
     /**
      * @param Project $project
-     * @param Clients $client
+     * @param Staff   $staff
      *
      * @throws NonUniqueResultException
      *
      * @return ProjectParticipationContact|null
      */
-    public function findByProjectAndClient(Project $project, Clients $client): ?ProjectParticipationContact
+    public function findByProjectAndStaff(Project $project, Staff $staff): ?ProjectParticipationContact
     {
         $queryBuilder = $this->createQueryBuilder('ppc')
             ->innerJoin('ppc.projectParticipation', 'pp')
             ->where('ppc.client = :client')
+            ->andWhere('pp.company = :company')
             ->andWhere('pp.project = :project')
             ->setParameters([
-                'client'  => $client,
+                'client'  => $staff->getClient(),
                 'project' => $project,
+                'company' => $staff->getCompany(),
             ])
         ;
 
