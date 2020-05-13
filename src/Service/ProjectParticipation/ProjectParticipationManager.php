@@ -6,7 +6,7 @@ namespace Unilend\Service\ProjectParticipation;
 
 use Doctrine\ORM\NonUniqueResultException;
 use RuntimeException;
-use Unilend\Entity\{Clients, Project, ProjectParticipation};
+use Unilend\Entity\{Project, Staff};
 use Unilend\Repository\ProjectParticipationContactRepository;
 
 class ProjectParticipationManager
@@ -23,50 +23,34 @@ class ProjectParticipationManager
     }
 
     /**
-     * @param Clients $client
+     * @param Staff   $staff
      * @param Project $project
      *
      * @throws NonUniqueResultException
      *
      * @return bool
      */
-    public function isParticipant(Clients $client, Project $project): bool
+    public function isParticipant(Staff $staff, Project $project): bool
     {
-        return null !== $this->projectParticipationContactRepository->findByProjectAndClient($project, $client);
+        return null !== $this->projectParticipationContactRepository->findByProjectAndStaff($project, $staff);
     }
 
     /**
-     * @param Clients $client
+     * @param Staff   $staff
      * @param Project $project
      *
      * @throws NonUniqueResultException
      *
      * @return bool
      */
-    public function isConfidentialityAccepted(Clients $client, Project $project): bool
+    public function isConfidentialityAccepted(Staff $staff, Project $project): bool
     {
-        $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndClient($project, $client);
+        $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndStaff($project, $staff);
 
         if (null === $projectParticipationContact) {
-            throw new RuntimeException(sprintf('The client %s is not a participant of project %s', $client->getPublicId(), $project->getHash()));
+            throw new RuntimeException(sprintf('The staff %s is not a participant of project %s', $staff->getPublicId(), $project->getHash()));
         }
 
         return null !== $projectParticipationContact->getConfidentialityAccepted();
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $invitee
-     *
-     * @return Clients
-     */
-    public function getInviter(ProjectParticipation $projectParticipation, Clients $invitee): Clients
-    {
-        $projectParticipationContact = $this->projectParticipationContactRepository->findOneBy(['client' => $invitee, 'projectParticipation' => $projectParticipation]);
-        if ($projectParticipationContact) {
-            return $projectParticipationContact->getAddedBy()->getClient();
-        }
-
-        return $projectParticipation->getAddedBy()->getClient();
     }
 }

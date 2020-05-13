@@ -75,7 +75,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
                 return null !== $this->getParticipationContact($subject, $user);
             case Project::OFFER_VISIBILITY_PARTICIPANT:
             case Project::OFFER_VISIBILITY_PUBLIC:
-                return $this->projectParticipationManager->isParticipant($user, $project);
+                return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $project);
         }
 
         throw new LogicException('This code should not be reached');
