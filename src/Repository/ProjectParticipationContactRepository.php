@@ -32,6 +32,12 @@ class ProjectParticipationContactRepository extends ServiceEntityRepository
      * @throws NonUniqueResultException
      *
      * @return ProjectParticipationContact|null
+     *
+     * @todo Maybe, we should replace the field client by staff in the ProjectParticipationContact class.
+     *       But as we don't know if we can add a non-staff (new) client as a participant or not, we won't change it now, we need a confirmation on this point.
+     *       Otherwise, after the change, the same staff can always be (technically) in different participations of the same project (when a staff is occasionally invited to anther
+     *       entity's participation), we need also a confirmation from business unit that it can happen or not. Thus, finding a ProjectParticipationContact by searching the company
+     *       in ProjectParticipation is just a workaround.
      */
     public function findByProjectAndStaff(Project $project, Staff $staff): ?ProjectParticipationContact
     {
