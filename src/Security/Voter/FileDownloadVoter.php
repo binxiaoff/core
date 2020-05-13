@@ -8,7 +8,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
 use Prophecy\Exception\InvalidArgumentException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, FileDownload, FileVersion, Project, ProjectFile, ProjectParticipationContact, ProjectStatus};
+use Unilend\Entity\{Clients, FileDownload, FileVersion, Project, ProjectFile, ProjectParticipationContact, ProjectStatus, Staff};
 use Unilend\Repository\{FileVersionSignatureRepository, ProjectFileRepository, ProjectParticipationContactRepository, ProjectRepository};
 
 class FileDownloadVoter extends AbstractEntityVoter
@@ -74,6 +74,11 @@ class FileDownloadVoter extends AbstractEntityVoter
         $file    = $fileDownload->getFileVersion()->getFile();
         $type    = $fileDownload->getType();
         $project = null;
+        $staff   = $user->getCurrentStaff();
+
+        if (null === $staff) {
+            return false;
+        }
 
         if (in_array($type, ProjectFile::getProjectFileTypes(), true)) {
             $projectFile = $this->projectFileRepository->findOneBy(['file' => $file, 'type' => $type]);
@@ -102,7 +107,7 @@ class FileDownloadVoter extends AbstractEntityVoter
             return false;
         }
 
-        $signature = $this->fileVersionSignatureRepository->findOneBy(['fileVersion' => $fileDownload->getFileVersion(), 'signatory' => $user->getCurrentStaff()]);
+        $signature = $this->fileVersionSignatureRepository->findOneBy(['fileVersion' => $fileDownload->getFileVersion(), 'signatory' => $staff]);
 
         if ($signature || $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project) || $project->getBorrowerCompany() === $user->getCompany()) {
             return true;
@@ -111,12 +116,12 @@ class FileDownloadVoter extends AbstractEntityVoter
         switch ($project->getCurrentStatus()->getStatus()) {
             case ProjectStatus::STATUS_PUBLISHED:
             case ProjectStatus::STATUS_INTERESTS_COLLECTED:
-                return null !== $this->getActiveParticipantParticipation($project, $user);
+                return null !== $this->getActiveParticipantParticipation($project, $staff);
             case ProjectStatus::STATUS_OFFERS_COLLECTED:
             case ProjectStatus::STATUS_CONTRACTS_SIGNED:
             case ProjectStatus::STATUS_REPAID:
                 return
-                    null !== ($contact = $this->getActiveParticipantParticipation($project, $user))
+                    null !== ($contact = $this->getActiveParticipantParticipation($project, $staff))
                     && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeOfferCollected($project, $fileDownload->getFileVersion()));
             default:
                 throw new LogicException('This code should not be reached');
@@ -127,16 +132,16 @@ class FileDownloadVoter extends AbstractEntityVoter
      * Fetch an active (i.e. an interested) participation relating to a participant and not an organizer.
      *
      * @param Project $project
-     * @param Clients $user
+     * @param Staff   $staff
      *
      * @throws NonUniqueResultException
      *
      * @return ProjectParticipationContact|null
      */
-    private function getActiveParticipantParticipation(Project $project, Clients $user): ?ProjectParticipationContact
+    private function getActiveParticipantParticipation(Project $project, Staff $staff): ?ProjectParticipationContact
     {
         /** @var ProjectParticipationContact $participationContact */
-        $participationContact = $this->participationContactRepository->findByProjectAndClient($project, $user);
+        $participationContact = $this->participationContactRepository->findByProjectAndStaff($project, $staff);
 
         return ($participationContact && false === $participationContact->getProjectParticipation()->isNotInterested())
             ? $participationContact : null;

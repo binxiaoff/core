@@ -55,8 +55,8 @@ class ProjectVoter extends AbstractEntityVoter
             return true;
         }
 
-        return $this->projectParticipationManager->isParticipant($user, $project)
-            && (false === $project->isConfidential() || $this->projectParticipationManager->isConfidentialityAccepted($user, $project));
+        return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $project)
+            && (false === $project->isConfidential() || $this->projectParticipationManager->isConfidentialityAccepted($user->getCurrentStaff(), $project));
     }
 
     /**
@@ -86,7 +86,7 @@ class ProjectVoter extends AbstractEntityVoter
             return true;
         }
 
-        return $this->projectParticipationManager->isParticipant($user, $project);
+        return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $project);
     }
 
     /**
@@ -151,7 +151,7 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canCreateTrancheOffer(Project $project, Clients $user): bool
     {
-        return $this->projectParticipationManager->isParticipant($user, $project);
+        return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $project);
     }
 
     /**
