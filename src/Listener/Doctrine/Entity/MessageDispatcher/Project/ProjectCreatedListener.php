@@ -15,7 +15,7 @@ class ProjectCreatedListener
     /**
      * @param Project $project
      */
-    public function postPersist(Project $project)
+    public function postPersist(Project $project): void
     {
         $this->messageBus->dispatch(new ProjectCreated($project));
     }
