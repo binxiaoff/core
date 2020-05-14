@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Message\ServiceTerms;
 
 use Unilend\Entity\AcceptationsLegalDocs;
+use Unilend\Message\AsyncMessageInterface;
 
-class ServiceTermsAccepted
+class ServiceTermsAccepted implements AsyncMessageInterface
 {
     /** @var int */
     private $acceptationId;

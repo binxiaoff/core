@@ -6,8 +6,9 @@ namespace Unilend\Message\Project;
 
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectStatus;
+use Unilend\Message\AsyncMessageInterface;
 
-class ProjectStatusUpdated
+class ProjectStatusUpdated implements AsyncMessageInterface
 {
     /** @var int */
     private $projectId;

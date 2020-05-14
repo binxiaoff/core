@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Message\Project;
 
 use Unilend\Entity\Project;
+use Unilend\Message\AsyncMessageInterface;
 
-class ProjectCreated
+class ProjectCreated implements AsyncMessageInterface
 {
     private $projectId;
 

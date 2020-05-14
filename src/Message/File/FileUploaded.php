@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Message\File;
 
 use Unilend\Entity\File;
+use Unilend\Message\AsyncMessageInterface;
 
-class FileUploaded
+class FileUploaded implements AsyncMessageInterface
 {
     /** @var int */
     private $fileId;
