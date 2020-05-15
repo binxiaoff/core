@@ -1,7 +1,5 @@
 swiftmailer:
     transport: 'mailjet'
-# CALS-1471 Disable the mail queue, as we cannot do a flush (in order to insert the mail into the DB) in the doctrine onFlush listener
-# If you need active the spool, please don't forget to remove the line 104 in Unilend\SwiftMailer\MailjetTransport
-#    spool:
-#        type: service
-#        id: 'Unilend\SwiftMailer\DatabaseSpool'
+    spool:
+        type: service
+        id: 'Unilend\SwiftMailer\DatabaseSpool'
