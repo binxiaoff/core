@@ -45,7 +45,8 @@ class ProjectParticipationContactNotifier
     {
         $projectParticipation = $contact->getProjectParticipation();
 
-        if ($contact->getAddedBy() === $contact->getClient() || $contact->getAddedBy()->getCompany() === $projectParticipation->getCompany()) {
+        // return if contact is self added e.g. arranger as project participatant on his own project
+        if ($contact->getAddedBy() === $contact->getClient()) {
             return;
         }
 
