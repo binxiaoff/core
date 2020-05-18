@@ -39,10 +39,10 @@ class Application extends FrameworkBundleApplication
                 if (false === $lock->acquire()) {
                     $logger  = $this->getKernel()->getContainer()->get('monolog.logger.console');
                     $message = sprintf('The command %s is already running in another process.', $this->getCommandName($input));
+                    $output->writeln($message);
                     if ($logger) {
                         $logger->warning($message);
                     }
-                    $output->writeln($message);
 
                     return 0;
                 }
