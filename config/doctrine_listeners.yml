@@ -4,36 +4,10 @@ services:
         autoconfigure: true
 
 # Doctrine Entity listeners
-    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientUpdatedListener:
-        tags:
-            -   name: doctrine.orm.entity_listener
-                event: preUpdate
-                entity: Unilend\Entity\Clients
-
-    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectCreatedListener:
-        tags:
-            -   name: doctrine.orm.entity_listener
-                event: postPersist
-                entity: Unilend\Entity\Project
-
-    Unilend\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationContact\ProjectParticipationContactCreatedListener:
-        tags:
-            -   name: doctrine.orm.entity_listener
-                event: postPersist
-                entity: Unilend\Entity\ProjectParticipationContact
-
-    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Staff\StaffCreatedListener:
-        tags:
-            -   name: doctrine.orm.entity_listener
-                event: postPersist
-                entity: Unilend\Entity\Staff
-
+    # General
     Unilend\Listener\Doctrine\Entity\TemporaryTokenCreatedListener:
         tags:
-            -   name: doctrine.orm.entity_listener
-                event: prePersist
-                entity: Unilend\Entity\TemporaryToken
-                method: expireOldTemporaryToken
+            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\TemporaryToken, method: expireOldTemporaryToken }
 
     Unilend\Listener\Doctrine\Entity\ClientPlainPasswordSubmittedListener:
         tags:
@@ -63,11 +37,32 @@ services:
 
     Unilend\Listener\Doctrine\Entity\Project\ProjectCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\Project, method: purify}
+            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\Project, method: purify }
 
     Unilend\Listener\Doctrine\Entity\Project\ProjectUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\Project, method: purify}
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\Project, method: purify }
+
+    # Message Dispatcher
+    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientUpdatedListener:
+        tags:
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\Clients }
+
+    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectCreatedListener:
+        tags:
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\Project }
+
+    Unilend\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationContact\ProjectParticipationContactCreatedListener:
+        tags:
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\ProjectParticipationContact }
+
+    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Staff\StaffCreatedListener:
+        tags:
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\Staff }
+
+    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectUpdatedListener:
+        tags:
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\Project}
 
 # Doctrine Lifecycle Event Listener
     Unilend\Listener\Doctrine\Lifecycle\UuidListener:
@@ -81,7 +76,3 @@ services:
     Unilend\Listener\Doctrine\Lifecycle\ArchivedByListener:
         tags:
             - { name: doctrine.event_listener, event: preRemove }
-
-    Unilend\Listener\Doctrine\Entity\MessageDispatcher\ProjectListener:
-        tags:
-            - { name: doctrine.event_listener, event: onFlush }

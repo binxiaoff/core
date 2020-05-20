@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Message\ProjectParticipationContact;
 
 use Unilend\Entity\ProjectParticipationContact;
+use Unilend\Message\AsyncMessageInterface;
 
-class ProjectParticipationContactCreated
+class ProjectParticipationContactCreated implements AsyncMessageInterface
 {
     /** @var int */
     private $projectParticipationContactId;

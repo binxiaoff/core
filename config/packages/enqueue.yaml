@@ -1,0 +1,4 @@
+enqueue:
+    symfony_messenger:
+        transport: '%env(ENQUEUE_DSN)%'
+        client: ~

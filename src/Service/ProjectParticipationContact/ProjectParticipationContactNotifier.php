@@ -7,8 +7,8 @@ namespace Unilend\Service\ProjectParticipationContact;
 use Exception;
 use Swift_Mailer;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{Clients, Company, Project, ProjectParticipationContact, ProjectStatus, TemporaryToken};
-use Unilend\Repository\TemporaryTokenRepository;
+use Unilend\Entity\{Clients, Company, Project, ProjectParticipationContact, ProjectStatus};
+use Unilend\Service\TemporaryTokenGenerator;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ProjectParticipationContactNotifier
@@ -17,31 +17,30 @@ class ProjectParticipationContactNotifier
     private $mailer;
     /** @var TemplateMessageProvider */
     private $templateMessageProvider;
-    /** @var TemporaryTokenRepository */
-    private $temporaryTokenRepository;
+    /** @var TemporaryTokenGenerator */
+    private $temporaryTokenGenerator;
 
     /**
-     * @param TemplateMessageProvider  $templateMessageProvider
-     * @param Swift_Mailer             $mailer
-     * @param TemporaryTokenRepository $temporaryTokenRepository
+     * @param TemplateMessageProvider $templateMessageProvider
+     * @param Swift_Mailer            $mailer
+     * @param TemporaryTokenGenerator $temporaryTokenGenerator
      */
-    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer, TemporaryTokenRepository $temporaryTokenRepository)
+    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator)
     {
-        $this->mailer                   = $mailer;
-        $this->templateMessageProvider  = $templateMessageProvider;
-        $this->temporaryTokenRepository = $temporaryTokenRepository;
+        $this->mailer                  = $mailer;
+        $this->templateMessageProvider = $templateMessageProvider;
+        $this->temporaryTokenGenerator = $temporaryTokenGenerator;
     }
 
     /**
      * @param ProjectParticipationContact $contact
-     * @param bool                        $doFlush
      *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      * @throws Exception
      */
-    public function notifyContactAdded(ProjectParticipationContact $contact, bool $doFlush): void
+    public function notifyContactAdded(ProjectParticipationContact $contact): void
     {
         $projectParticipation = $contact->getProjectParticipation();
 
@@ -57,13 +56,7 @@ class ProjectParticipationContactNotifier
 
         $temporaryToken = null;
         if ($client->isInitializationNeeded()) {
-            // Conditional calling of flush, to prevent the infinitive triggering of onFlush listener.
-            //todo: use TemporaryTokenGenerator once we have the asynchronous message queue
-            $temporaryToken = TemporaryToken::generateUltraLongToken($client);
-            $this->temporaryTokenRepository->persist($temporaryToken);
-            if ($doFlush) {
-                $this->temporaryTokenRepository->save($temporaryToken);
-            }
+            $temporaryToken = $this->temporaryTokenGenerator->generateUltraLongToken($client);
         }
 
         $context = [
