@@ -113,6 +113,8 @@ class FileVersion
      * @var|null string
      *
      * @ORM\Column(length=150, nullable=true)
+     *
+     * @Groups({"fileVersion:read"})
      */
     private $mimeType;
 

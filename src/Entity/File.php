@@ -20,7 +20,7 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableArchivedTrait, PublicizeIden
  * @Gedmo\SoftDeleteable(fieldName="archived")
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"file:read", "fileVersion:read"}},
+ *     normalizationContext={"groups": {"file:read", "fileVersion:read", "timestampable:read"}},
  *     collectionOperations={
  *         "post": {
  *             "controller": "Unilend\Controller\File\Upload",
