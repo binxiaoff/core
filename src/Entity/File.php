@@ -91,7 +91,11 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableArchivedTrait, PublicizeIden
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
- *         }
+ *         },
+ *         "delete": {
+ *             "controller": "Unilend\Controller\File\Delete",
+ *             "path": "/files/{id}/{type}",
+ *         },
  *     }
  * )
  */

@@ -44,6 +44,15 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function flush(): void
+    {
+        $this->getEntityManager()->flush();
+    }
+
+    /**
      * @param Project $project
      *
      * @throws NoResultException
