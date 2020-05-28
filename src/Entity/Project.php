@@ -1234,37 +1234,6 @@ class Project
     }
 
     /**
-     * @Groups({"project:list"})
-     *
-     * @return array
-     */
-    public function getTodos(): array
-    {
-        $projectComplete = true;
-
-        if (
-            null === $this->getTitle()
-            || null === $this->getBorrowerCompany()
-            || null === $this->getMarketSegment()
-            || null === $this->getSyndicationType()
-            || null === $this->getParticipationType()
-            || (true === $this->isSubParticipation()
-                && null === $this->getRiskType())
-        ) {
-            $projectComplete = false;
-        }
-
-        // @todo really quick and dirty translation
-        return [
-            ['name' => /*'project'*/'Synthèse', 'done' => $projectComplete],
-            ['name' => /*'invitations'*/'Participants', 'done' => 0 < count($this->getProjectParticipations())],
-            ['name' => /*'description'*/'Description', 'done' => null !== $this->getDescription()],
-            ['name' => /*'tranches'*/'Tranches', 'done' => 0 < count($this->getTranches())],
-            ['name' => /*'calendar'*/'Calendrier', 'done' => null !== $this->getLenderConsultationClosingDate()],
-        ];
-    }
-
-    /**
      * @return Money
      *
      * @Groups({"project:read"})
