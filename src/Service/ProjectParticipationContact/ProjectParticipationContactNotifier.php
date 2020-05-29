@@ -45,7 +45,8 @@ class ProjectParticipationContactNotifier
     {
         $projectParticipation = $contact->getProjectParticipation();
 
-        // return if contact is self added e.g. arranger as project participatant on his own project
+        // We notify only other users than the current user.
+        // For the arranger, we should not notify anyone in his entity. But it is not yet the case. We will review this part in V2.
         if ($contact->getAddedBy() === $contact->getClient()) {
             return;
         }
