@@ -288,7 +288,7 @@ class Project
     private $confidential = false;
 
     /**
-     * Signature.
+     * en front (barre de progression projet) : Signature.
      *
      * @var DateTimeImmutable|null
      *
@@ -300,10 +300,10 @@ class Project
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $signatureDate;
+    private $signingDeadline;
 
     /**
-     * Allocation.
+     * en front (barre de progression projet) : Allocation.
      *
      * @var DateTimeImmutable|null
      *
@@ -315,10 +315,10 @@ class Project
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $allocationDate;
+    private $allocationDeadline;
 
     /**
-     * Réponse ferme.
+     * en front (barre de progression projet) : Réponse ferme.
      *
      * @var DateTimeImmutable|null
      *
@@ -333,7 +333,7 @@ class Project
     private $participantReplyDeadline;
 
     /**
-     * Marque d'interet.
+     * en front (barre de progression projet) : Marque d'interet.
      *
      * @var DateTimeImmutable|null
      *
@@ -348,7 +348,7 @@ class Project
     private $interestExpressionDeadline;
 
     /**
-     * Projet de contrat.
+     * en front (barre de progression projet) : Projet de contrat.
      *
      * @var DateTimeImmutable|null
      *
@@ -360,7 +360,7 @@ class Project
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $expectedContractDate;
+    private $contractualizationDeadline;
 
     /**
      * @var string|null
@@ -760,19 +760,19 @@ class Project
     /**
      * @return DateTimeImmutable|null
      */
-    public function getSignatureDate(): ?DateTimeImmutable
+    public function getSigningDeadline(): ?DateTimeImmutable
     {
-        return $this->signatureDate;
+        return $this->signingDeadline;
     }
 
     /**
-     * @param DateTimeImmutable|null $signatureDate
+     * @param DateTimeImmutable|null $signingDeadline
      *
      * @return Project
      */
-    public function setSignatureDate(?DateTimeImmutable $signatureDate): Project
+    public function setSigningDeadline(?DateTimeImmutable $signingDeadline): Project
     {
-        $this->signatureDate = $signatureDate;
+        $this->signingDeadline = $signingDeadline;
 
         return $this;
     }
@@ -780,19 +780,19 @@ class Project
     /**
      * @return DateTimeImmutable|null
      */
-    public function getAllocationDate(): ?DateTimeImmutable
+    public function getAllocationDeadline(): ?DateTimeImmutable
     {
-        return $this->allocationDate;
+        return $this->allocationDeadline;
     }
 
     /**
-     * @param DateTimeImmutable|null $allocationDate
+     * @param DateTimeImmutable|null $allocationDeadline
      *
      * @return Project
      */
-    public function setAllocationDate(?DateTimeImmutable $allocationDate): Project
+    public function setAllocationDeadline(?DateTimeImmutable $allocationDeadline): Project
     {
-        $this->allocationDate = $allocationDate;
+        $this->allocationDeadline = $allocationDeadline;
 
         return $this;
     }
@@ -1351,19 +1351,19 @@ class Project
     /**
      * @return DateTimeImmutable|null
      */
-    public function getExpectedContractDate(): ?DateTimeImmutable
+    public function getContractualizationDeadline(): ?DateTimeImmutable
     {
-        return $this->expectedContractDate;
+        return $this->contractualizationDeadline;
     }
 
     /**
-     * @param DateTimeImmutable|null $expectedContractDate
+     * @param DateTimeImmutable|null $contractualizationDeadline
      *
      * @return Project
      */
-    public function setExpectedContractDate(?DateTimeImmutable $expectedContractDate): Project
+    public function setContractualizationDeadline(?DateTimeImmutable $contractualizationDeadline): Project
     {
-        $this->expectedContractDate = $expectedContractDate;
+        $this->contractualizationDeadline = $contractualizationDeadline;
 
         return $this;
     }
