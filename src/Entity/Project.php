@@ -526,6 +526,15 @@ class Project
     private $projectFiles;
 
     /**
+     * @var bool
+     *
+     * @Groups({"project:read", "project:create"})
+     *
+     * @ORM\Column(type="boolean")
+     */
+    private $interestExpressionEnabled;
+
+    /**
      * @param Staff         $addedBy
      * @param Company       $borrowerCompany
      * @param Money         $globalFundingMoney
@@ -569,6 +578,8 @@ class Project
 
         $participant = new ProjectParticipation($this->submitterCompany, $this, $addedBy);
         $this->projectParticipations->add($participant);
+
+        $this->interestExpressionEnabled = false;
     }
 
     /**
@@ -1347,7 +1358,6 @@ class Project
 
         return $this;
     }
-
     /**
      * @return DateTimeImmutable|null
      */
@@ -1364,6 +1374,26 @@ class Project
     public function setContractualizationDeadline(?DateTimeImmutable $contractualizationDeadline): Project
     {
         $this->contractualizationDeadline = $contractualizationDeadline;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInterestExpressionEnabled(): bool
+    {
+        return $this->interestExpressionEnabled;
+    }
+
+    /**
+     * @param bool $interestExpressionEnabled
+     *
+     * @return Project
+     */
+    public function setInterestExpressionEnabled(bool $interestExpressionEnabled): Project
+    {
+        $this->interestExpressionEnabled = $interestExpressionEnabled;
 
         return $this;
     }
