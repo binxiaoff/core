@@ -11,10 +11,27 @@ use Unilend\Entity\ProjectFile;
 
 class FileInput
 {
+    public const ACCEPTED_MEDIA_TYPE = [
+        'application/pdf',
+        'application/vnd.ms-excel',
+        'application/vnd.ms-powerpoint',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.oasis.opendocument.spreadsheet',
+        'application/vnd.oasis.opendocument.presentation',
+        'application/vnd.oasis.opendocument.text',
+        'image/jpeg',
+        'image/png',
+        'text/csv',
+        'text/plain',
+    ];
+
     /**
      * @var UploadedFile
      *
-     * @Assert\File
+     * @Assert\File(maxSize="250Mi", mimeTypes=Unilend\DTO\FileInput::ACCEPTED_MEDIA_TYPE)
      */
     public $uploadedFile;
 
