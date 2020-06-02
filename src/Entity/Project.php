@@ -288,9 +288,9 @@ class Project
     private $confidential = false;
 
     /**
-     * Date limite de réponse de la contrepartie (borrowerCompany).
+     * en front (barre de progression projet) : Signature.
      *
-     * @var DateTimeImmutable
+     * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
@@ -300,12 +300,12 @@ class Project
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $replyDeadline;
+    private $signingDeadline;
 
     /**
-     * Date de la fin de la syndication.
+     * en front (barre de progression projet) : Allocation.
      *
-     * @var DateTimeImmutable
+     * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
@@ -315,12 +315,12 @@ class Project
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $expectedClosingDate;
+    private $allocationDeadline;
 
     /**
-     * Date de fin de collection des offres participant.
+     * en front (barre de progression projet) : Réponse ferme.
      *
-     * @var DateTimeImmutable
+     * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
@@ -330,7 +330,37 @@ class Project
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $lenderConsultationClosingDate;
+    private $participantReplyDeadline;
+
+    /**
+     * en front (barre de progression projet) : Marque d'interet.
+     *
+     * @var DateTimeImmutable|null
+     *
+     * @ORM\Column(type="date_immutable", nullable=true)
+     *
+     * @Assert\Date
+     *
+     * @Gedmo\Versioned
+     *
+     * @Groups({"project:write", "project:read"})
+     */
+    private $interestExpressionDeadline;
+
+    /**
+     * en front (barre de progression projet) : Projet de contrat.
+     *
+     * @var DateTimeImmutable|null
+     *
+     * @ORM\Column(type="date_immutable", nullable=true)
+     *
+     * @Assert\Date
+     *
+     * @Gedmo\Versioned
+     *
+     * @Groups({"project:write", "project:read"})
+     */
+    private $contractualizationDeadline;
 
     /**
      * @var string|null
@@ -730,19 +760,19 @@ class Project
     /**
      * @return DateTimeImmutable|null
      */
-    public function getReplyDeadline(): ?DateTimeImmutable
+    public function getSigningDeadline(): ?DateTimeImmutable
     {
-        return $this->replyDeadline;
+        return $this->signingDeadline;
     }
 
     /**
-     * @param DateTimeImmutable|null $replyDeadline
+     * @param DateTimeImmutable|null $signingDeadline
      *
      * @return Project
      */
-    public function setReplyDeadline(?DateTimeImmutable $replyDeadline): Project
+    public function setSigningDeadline(?DateTimeImmutable $signingDeadline): Project
     {
-        $this->replyDeadline = $replyDeadline;
+        $this->signingDeadline = $signingDeadline;
 
         return $this;
     }
@@ -750,19 +780,19 @@ class Project
     /**
      * @return DateTimeImmutable|null
      */
-    public function getExpectedClosingDate(): ?DateTimeImmutable
+    public function getAllocationDeadline(): ?DateTimeImmutable
     {
-        return $this->expectedClosingDate;
+        return $this->allocationDeadline;
     }
 
     /**
-     * @param DateTimeImmutable|null $expectedClosingDate
+     * @param DateTimeImmutable|null $allocationDeadline
      *
      * @return Project
      */
-    public function setExpectedClosingDate(?DateTimeImmutable $expectedClosingDate): Project
+    public function setAllocationDeadline(?DateTimeImmutable $allocationDeadline): Project
     {
-        $this->expectedClosingDate = $expectedClosingDate;
+        $this->allocationDeadline = $allocationDeadline;
 
         return $this;
     }
@@ -770,19 +800,19 @@ class Project
     /**
      * @return DateTimeImmutable
      */
-    public function getLenderConsultationClosingDate(): ?DateTimeImmutable
+    public function getParticipantReplyDeadline(): ?DateTimeImmutable
     {
-        return $this->lenderConsultationClosingDate;
+        return $this->participantReplyDeadline;
     }
 
     /**
-     * @param DateTimeImmutable|null $lenderConsultationClosingDate
+     * @param DateTimeImmutable|null $participantReplyDeadline
      *
      * @return Project
      */
-    public function setLenderConsultationClosingDate(?DateTimeImmutable $lenderConsultationClosingDate): Project
+    public function setParticipantReplyDeadline(?DateTimeImmutable $participantReplyDeadline): Project
     {
-        $this->lenderConsultationClosingDate = $lenderConsultationClosingDate;
+        $this->participantReplyDeadline = $participantReplyDeadline;
 
         return $this;
     }
@@ -1296,6 +1326,46 @@ class Project
     public static function getProjectFileTypes(): array
     {
         return self::getConstants('PROJECT_FILE_TYPE_');
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getInterestExpressionDeadline(): ?DateTimeImmutable
+    {
+        return $this->interestExpressionDeadline;
+    }
+
+    /**
+     * @param DateTimeImmutable|null $interestExpressionDeadline
+     *
+     * @return Project
+     */
+    public function setInterestExpressionDeadline(?DateTimeImmutable $interestExpressionDeadline): Project
+    {
+        $this->interestExpressionDeadline = $interestExpressionDeadline;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getContractualizationDeadline(): ?DateTimeImmutable
+    {
+        return $this->contractualizationDeadline;
+    }
+
+    /**
+     * @param DateTimeImmutable|null $contractualizationDeadline
+     *
+     * @return Project
+     */
+    public function setContractualizationDeadline(?DateTimeImmutable $contractualizationDeadline): Project
+    {
+        $this->contractualizationDeadline = $contractualizationDeadline;
+
+        return $this;
     }
 
     /**
