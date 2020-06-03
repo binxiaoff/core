@@ -36,4 +36,16 @@ class ProjectFileRepository extends ServiceEntityRepository
         $this->getEntityManager()->persist($attachment);
         $this->getEntityManager()->flush();
     }
+
+    /**
+     * @param ProjectFile $attachment
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function remove(ProjectFile $attachment): void
+    {
+        $this->getEntityManager()->remove($attachment);
+        $this->getEntityManager()->flush();
+    }
 }
