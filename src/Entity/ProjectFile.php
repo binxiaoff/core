@@ -16,7 +16,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ORM\Entity
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"projectFile:read", "file:read", "fileVersion:read"}},
+ *     normalizationContext={"groups": {"projectFile:read", "file:read", "fileVersion:read", "timestampable:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",

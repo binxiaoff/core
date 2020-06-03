@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Message\Staff;
 
 use Unilend\Entity\Staff;
+use Unilend\Message\AsyncMessageInterface;
 
-class StaffCreated
+class StaffCreated implements AsyncMessageInterface
 {
     /** @var Staff */
     private $staffId;

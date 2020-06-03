@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Message\Client;
 
 use Unilend\Entity\Clients;
+use Unilend\Message\AsyncMessageInterface;
 
-class ClientUpdated
+class ClientUpdated implements AsyncMessageInterface
 {
     /** @var int */
     private $clientId;

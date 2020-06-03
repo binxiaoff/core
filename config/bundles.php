@@ -33,4 +33,6 @@ return [
     NotFloran\MjmlBundle\MjmlBundle::class => ['all' => true],
     Rollbar\Symfony\RollbarBundle\RollbarBundle::class => ['all' => true],
     Exercise\HTMLPurifierBundle\ExerciseHTMLPurifierBundle::class => ['all' => true],
+    Enqueue\Bundle\EnqueueBundle::class => ['all' => true],
+    Enqueue\MessengerAdapter\Bundle\EnqueueAdapterBundle::class => ['all' => true],
 ];

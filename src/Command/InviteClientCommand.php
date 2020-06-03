@@ -52,12 +52,12 @@ class InviteClientCommand extends Command
         foreach ($clientIds as $clientId) {
             $client = $this->clientsRepository->find($clientId);
             $staff  = $client instanceof Clients ? $client->getStaff() : [];
-            if (0 === count($staff)) {
+            if (0 === $staff->count()) {
                 continue;
             }
-            $index = 0;
-            while (1 > $this->staffNotifier->notifyClientInitialisation($staff[$index])) {
-                ++$index;
+            $currentStaff = $staff->current();
+            while ($currentStaff && 1 > $this->staffNotifier->notifyClientInitialisation($currentStaff)) {
+                $currentStaff = $staff->next();
             }
         }
 
