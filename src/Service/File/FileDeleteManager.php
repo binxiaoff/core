@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Service\File;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Prophecy\Exception\InvalidArgumentException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
 use Unilend\Entity\{File, Project, ProjectFile};
 use Unilend\Repository\{ProjectFileRepository, ProjectRepository};
@@ -123,6 +123,6 @@ class FileDeleteManager
      */
     private function throwException(File $file, string $type): void
     {
-        throw new InvalidArgumentException(sprintf('The type %s is not supported on file %s', $type, $file->getPublicId()));
+        throw new NotFoundHttpException(sprintf('Unable to delete the file "%s" of type "%s"', $file->getPublicId(), $type));
     }
 }
