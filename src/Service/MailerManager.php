@@ -61,10 +61,6 @@ class MailerManager
      * @param ProjectComment $comment
      * @param Clients[]      $recipients
      *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     *
      * @return int
      */
     public function sendProjectCommentAdded(ProjectComment $comment, array $recipients): int
@@ -75,7 +71,7 @@ class MailerManager
         $keywords = [
             'firstName'   => '',
             'projectUrl'  => $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL) . '#article-discussions',
-            'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
+            'projectName' => $project->getBorrowerCompany() . ' / ' . $project->getTitle(),
         ];
 
         foreach ($recipients as $recipient) {
@@ -93,10 +89,6 @@ class MailerManager
      * @param TrancheOffer $trancheOffer
      * @param Clients[]    $recipients
      *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     *
      * @return int
      */
     public function sendTrancheOfferSubmitted(TrancheOffer $trancheOffer, array $recipients): int
@@ -106,7 +98,7 @@ class MailerManager
         $keywords = [
             'firstName'              => '',
             'projectUrl'             => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
-            'projectName'            => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
+            'projectName'            => $project->getRiskGroupName() . ' / ' . $project->getTitle(),
             'submitterName'          => $trancheOffer->getAddedBy()->getClient()->getName(),
             'trancheOfferAmount'     => $this->numberFormatter->format($trancheOffer->getMoney()->getAmount()),
             'trancheOfferRateIndex'  => $trancheOffer->getRate()->getIndexType(),
@@ -127,10 +119,6 @@ class MailerManager
     /**
      * @param TrancheOffer $trancheOffer
      *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     *
      * @return int
      */
     public function sendTrancheOfferAcceptedRejected(TrancheOffer $trancheOffer): int
@@ -150,10 +138,6 @@ class MailerManager
 
     /**
      * @param Project $project
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
      *
      * @return int
      */
@@ -197,7 +181,7 @@ class MailerManager
     {
         $keywords = [
             'firstName'    => $signature->getSignatory()->getFirstName(),
-            'projectName'  => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
+            'projectName'  => $project->getRiskGroupName() . ' / ' . $project->getTitle(),
             'signatureUrl' => $this->router->generate('signature_sign', ['attachment' => $signature->getFileVersion()->getId()], RouterInterface::ABSOLUTE_URL),
         ];
 
@@ -206,10 +190,6 @@ class MailerManager
 
     /**
      * @param ProjectParticipationContact $projectParticipationContact
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
      *
      * @return int|string
      */
@@ -231,7 +211,7 @@ class MailerManager
         ]);
 
         foreach ($companyStaffs as $companyStaff) {
-            if (in_array(Staff::DUTY_STAFF_ADMIN, $companyStaff->getRoles())) {
+            if (\in_array(Staff::DUTY_STAFF_ADMIN, $companyStaff->getRoles(), true)) {
                 $recipient             = $companyStaff->getClient();
                 $keywords['firstName'] = $recipient->getFirstName();
             }

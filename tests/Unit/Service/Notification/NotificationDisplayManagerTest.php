@@ -156,7 +156,7 @@ class NotificationDisplayManagerTest extends TestCase
         $project->getId()->willReturn(Base::randomDigitNotNull());
         $project->getHash()->willReturn(Base::lexify('???????'));
         $project->getTitle()->willReturn(Base::lexify('???????'));
-        $project->getBorrowerCompany()->willReturn($borrowerCompany->reveal());
+        $project->getRiskGroupName()->willReturn('CALS');
         $project->getSubmitterCompany()->willReturn($submitterCompany->reveal());
 
         $projectParticipation = $this->prophesize(ProjectParticipation::class);

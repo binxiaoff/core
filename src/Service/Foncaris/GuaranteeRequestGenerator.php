@@ -100,8 +100,8 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         //Borrower
         $currentRow  = $this->localizeCurrentRow($sheet);
         $sectionData = [
-            ['Nom Emprunteur', $project->getBorrowerCompany()->getName()],
-            ['SIREN', $project->getBorrowerCompany()->getSiren()],
+            ['Nom Emprunteur', $project->getRiskGroupName()],
+            ['SIREN', $project->getRiskGroupName()], // TODO Not used but still incoherant see for replacement
             ['ID AGORA de l\'emprunteur ( = RICOS = TIGRE = TCA)', ''],
         ];
         $this->fillSection($sheet, 'Emprunteur', $sectionData, $sheetEndColumn, $currentRow, $this->getBorrowerSectionStyle());
@@ -193,7 +193,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
      */
     protected function getFileName(FileStorageInterface $foncarisRequest): string
     {
-        return self::FILE_PREFIX . URLify::filter($foncarisRequest->getProject()->getBorrowerCompany()->getName()) . '-ISOLE.xlsx';
+        return self::FILE_PREFIX . URLify::filter($foncarisRequest->getProject()->getRiskGroupName()) . '-ISOLE.xlsx';
     }
 
     /**
