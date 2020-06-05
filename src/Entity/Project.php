@@ -535,6 +535,22 @@ class Project
     private $interestExpressionEnabled;
 
     /**
+     * @var Money
+     *
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
+     */
+    private $targetArrangerParticipationMoney;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
+     *
+     * @Assert\Type("numeric")
+     */
+    private $targetArrangerCommission;
+
+    /**
      * @param Staff         $addedBy
      * @param Company       $borrowerCompany
      * @param Money         $globalFundingMoney
@@ -1358,6 +1374,7 @@ class Project
 
         return $this;
     }
+
     /**
      * @return DateTimeImmutable|null
      */
