@@ -16,7 +16,10 @@ use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
-use Unilend\Entity\{Embeddable\Money, Traits\TimestampableTrait, Traits\TraceableStatusTrait};
+use Unilend\Entity\{Embeddable\Money,
+    Embeddable\Person,
+    Traits\TimestampableTrait,
+    Traits\TraceableStatusTrait};
 use Unilend\Filter\ArrayFilter;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -563,6 +566,15 @@ class Project
      * @Assert\Choice({Project::FUNDING_SPECIFICITY_FSA, Project::FUNDING_SPECIFICITY_LBO})
      */
     private $fundingSpecificity;
+
+    /**
+     * @var Person
+     *
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Person", columnPrefix="privileged_contact_")
+     *
+     * @Assert\Valid
+     */
+    private $privilegedContactPerson;
 
     /**
      * @param Staff         $addedBy
@@ -1485,6 +1497,26 @@ class Project
     public function setFundingSpecificity(?string $fundingSpecificity): Project
     {
         $this->fundingSpecificity = $fundingSpecificity;
+
+        return $this;
+    }
+
+    /**
+     * @return Person
+     */
+    public function getPrivilegedContactPerson(): Person
+    {
+        return $this->privilegedContactPerson;
+    }
+
+    /**
+     * @param Person $privilegedContactPerson
+     *
+     * @return Project
+     */
+    public function setPrivilegedContactPerson(Person $privilegedContactPerson): Project
+    {
+        $this->privilegedContactPerson = $privilegedContactPerson;
 
         return $this;
     }
