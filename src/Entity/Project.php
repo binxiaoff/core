@@ -153,6 +153,9 @@ class Project
     public const PROJECT_FILE_TYPE_DESCRIPTION     = 'project_file_description';
     public const PROJECT_FILE_TYPE_CONFIDENTIALITY = 'project_file_confidentiality';
 
+    public const FUNDING_SPECIFICITY_FSA = 'FSA';
+    public const FUNDING_SPECIFICITY_LBO = 'LBO';
+
     /**
      * @var int
      *
@@ -555,6 +558,17 @@ class Project
      * @Groups({"project:admin:read", "project:create"})
      */
     private $arrangementCommissionMoney;
+
+    /**
+     * @var string|null
+     *
+     * @Groups({"project:read", "project:create"})
+     *
+     * @ORM\Column(type="string", nullable=true, length=10)
+     *
+     * @Assert\Choice({Project::FUNDING_SPECIFICITY_FSA, Project::FUNDING_SPECIFICITY_LBO})
+     */
+    private $fundingSpecificity;
 
     /**
      * @param Staff         $addedBy
@@ -1457,6 +1471,26 @@ class Project
     public function setArrangementCommissionMoney(Money $arrangementCommissionMoney): Project
     {
         $this->arrangementCommissionMoney = $arrangementCommissionMoney;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getFundingSpecificity(): ?string
+    {
+        return $this->fundingSpecificity;
+    }
+
+    /**
+     * @param string|null $fundingSpecificity
+     *
+     * @return Project
+     */
+    public function setFundingSpecificity(?string $fundingSpecificity): Project
+    {
+        $this->fundingSpecificity = $fundingSpecificity;
 
         return $this;
     }
