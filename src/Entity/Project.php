@@ -538,17 +538,23 @@ class Project
      * @var Money
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"project:read", "project:create"})
      */
     private $targetArrangerParticipationMoney;
 
     /**
-     * @var string
+     * @var Money
      *
-     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
      *
-     * @Assert\Type("numeric")
+     * @Assert\Valid
+     *
+     * @Groups({"project:admin:read", "project:create"})
      */
-    private $targetArrangerCommission;
+    private $arrangementCommissionMoney;
 
     /**
      * @param Staff         $addedBy
@@ -1411,6 +1417,46 @@ class Project
     public function setInterestExpressionEnabled(bool $interestExpressionEnabled): Project
     {
         $this->interestExpressionEnabled = $interestExpressionEnabled;
+
+        return $this;
+    }
+
+    /**
+     * @return Money
+     */
+    public function getTargetArrangerParticipationMoney(): Money
+    {
+        return $this->targetArrangerParticipationMoney;
+    }
+
+    /**
+     * @param Money $targetArrangerParticipationMoney
+     *
+     * @return Project
+     */
+    public function setTargetArrangerParticipationMoney(Money $targetArrangerParticipationMoney): Project
+    {
+        $this->targetArrangerParticipationMoney = $targetArrangerParticipationMoney;
+
+        return $this;
+    }
+
+    /**
+     * @return Money
+     */
+    public function getArrangementCommissionMoney(): Money
+    {
+        return $this->arrangementCommissionMoney;
+    }
+
+    /**
+     * @param Money $arrangementCommissionMoney
+     *
+     * @return Project
+     */
+    public function setArrangementCommissionMoney(Money $arrangementCommissionMoney): Project
+    {
+        $this->arrangementCommissionMoney = $arrangementCommissionMoney;
 
         return $this;
     }
