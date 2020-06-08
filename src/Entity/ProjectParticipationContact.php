@@ -74,6 +74,11 @@ class ProjectParticipationContact
     private $acceptedConfidentialityDisclaimerVersion;
 
     /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $archived;
+
+    /**
      * ProjectParticipationContact constructor.
      *
      * @param ProjectParticipation $projectParticipation
@@ -169,6 +174,26 @@ class ProjectParticipationContact
     public function setAcceptedConfidentialityDisclaimerVersion(?FileVersion $acceptedConfidentialityDisclaimerVersion): ProjectParticipationContact
     {
         $this->acceptedConfidentialityDisclaimerVersion = $acceptedConfidentialityDisclaimerVersion;
+
+        return $this;
+    }
+
+    /**
+     * @return \DateTimeInterface|null
+     */
+    public function getArchived(): ?\DateTimeInterface
+    {
+        return $this->archived;
+    }
+
+    /**
+     * @param \DateTimeInterface|null $archived
+     *
+     * @return $this
+     */
+    public function setArchived(?\DateTimeInterface $archived): self
+    {
+        $this->archived = $archived;
 
         return $this;
     }

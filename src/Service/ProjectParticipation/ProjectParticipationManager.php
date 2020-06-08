@@ -6,7 +6,7 @@ namespace Unilend\Service\ProjectParticipation;
 
 use Doctrine\ORM\NonUniqueResultException;
 use RuntimeException;
-use Unilend\Entity\{Project, Staff};
+use Unilend\Entity\{Project, ProjectParticipationContact, Staff};
 use Unilend\Repository\ProjectParticipationContactRepository;
 
 class ProjectParticipationManager
@@ -32,7 +32,7 @@ class ProjectParticipationManager
      */
     public function isParticipant(Staff $staff, Project $project): bool
     {
-        return null !== $this->projectParticipationContactRepository->findByProjectAndStaff($project, $staff);
+        return null !== $this->getProjectParticipationContact($staff, $project);
     }
 
     /**
@@ -52,5 +52,18 @@ class ProjectParticipationManager
         }
 
         return null !== $projectParticipationContact->getConfidentialityAccepted();
+    }
+
+    /**
+     * @param Staff   $staff
+     * @param Project $project
+     *
+     * @throws NonUniqueResultException
+     *
+     * @return ProjectParticipationContact|null
+     */
+    public function getProjectParticipationContact(Staff $staff, Project $project)
+    {
+        return $this->projectParticipationContactRepository->findByProjectAndStaff($project, $staff);
     }
 }
