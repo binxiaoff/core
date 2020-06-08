@@ -37,7 +37,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "marketSegment:read",
  *                     "projectParticipation:read",
  *                     "projectParticipationOffer:read",
- *                     "money:read"
+ *                     "money:read",
+ *                     "person:read"
  *                 }
  *             }
  *         },
@@ -49,7 +50,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "project:write",
  *                     "company:write",
  *                     "money:write",
- *                     "tag:write"
+ *                     "tag:write",
+ *                     "person:write"
  *                 }
  *             }
  *         }
@@ -79,7 +81,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "nullableLendingRate:read",
  *                 "lendingRate:read",
  *                 "fee:read",
- *                 "tag:read"
+ *                 "tag:read",
+ *                 "person:read"
  *             }}
  *         },
  *         "project_confidentiality": {
@@ -90,7 +93,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         },
  *         "patch": {
  *             "security_post_denormalize": "is_granted('edit', previous_object)",
- *             "denormalization_context": {"groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "tag:write"}}
+ *             "denormalization_context": {"groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "tag:write", "person:write"}}
  *         }
  *     }
  * )
@@ -573,6 +576,8 @@ class Project
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Person", columnPrefix="privileged_contact_")
      *
      * @Assert\Valid
+     *
+     * @Groups({"project:read", "project:write"})
      */
     private $privilegedContactPerson;
 

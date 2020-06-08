@@ -6,6 +6,7 @@ namespace Unilend\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -20,6 +21,11 @@ class Person
      *
      * @Assert\NotBlank
      * @Assert\Length(max=255)
+     *
+     * @Groups({
+     *     "person:read",
+     *     "person:write"
+     * })
      */
     private $firstName;
 
@@ -30,6 +36,11 @@ class Person
      *
      * @Assert\NotBlank
      * @Assert\Length(max=255)
+     *
+     * @Groups({
+     *     "person:read",
+     *     "person:write"
+     * })
      */
     private $lastName;
 
@@ -40,6 +51,11 @@ class Person
      *
      * @Assert\NotBlank
      * @Assert\Length(max=255)
+     *
+     * @Groups({
+     *     "person:read",
+     *     "person:write"
+     * })
      */
     private $parentUnit;
 
@@ -50,6 +66,11 @@ class Person
      *
      * @Assert\NotBlank
      * @Assert\Length(max=255)
+     *
+     * @Groups({
+     *     "person:read",
+     *     "person:write"
+     * })
      */
     private $occupation;
 
@@ -61,6 +82,11 @@ class Person
      * @Assert\NotBlank
      * @Assert\Email
      * @Assert\Length(max=255)
+     *
+     * @Groups({
+     *     "person:read",
+     *     "person:write"
+     * })
      */
     private $email;
 
@@ -73,6 +99,11 @@ class Person
      * @Assert\Length(max=35)
      *
      * @AssertPhoneNumber
+     *
+     * @Groups({
+     *     "person:read",
+     *     "person:write"
+     * })
      */
     private $phone;
 
