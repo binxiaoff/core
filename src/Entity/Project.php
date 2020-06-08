@@ -530,13 +530,13 @@ class Project
 
     /**
      * @param Staff         $addedBy
-     * @param Company       $borrowerCompany
+     * @param string        $riskGroupName
      * @param Money         $globalFundingMoney
      * @param MarketSegment $marketSegment
      *
      * @throws Exception
      */
-    public function __construct(Staff $addedBy, Company $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
+    public function __construct(Staff $addedBy, string $riskGroupName, Money $globalFundingMoney, MarketSegment $marketSegment)
     {
         $this->projectFiles          = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
@@ -556,7 +556,7 @@ class Project
         $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;
         $this->offerVisibility   = static::OFFER_VISIBILITY_PRIVATE;
 
-        $this->riskGroupName      = $borrowerCompany;
+        $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
 
         if (null === $this->hash) {

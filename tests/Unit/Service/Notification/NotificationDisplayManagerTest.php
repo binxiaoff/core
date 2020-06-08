@@ -136,11 +136,6 @@ class NotificationDisplayManagerTest extends TestCase
      */
     private function createNotification(int $type, int $status = Notification::STATUS_READ): Notification
     {
-        /** @var Company|ObjectProphecy $borrowerCompany */
-        $borrowerCompany = $this->prophesize(Company::class);
-        $borrowerCompany->getId()->willReturn(Base::randomDigitNotNull());
-        $borrowerCompany->getName()->willReturn(Base::lexify('???????'));
-
         /** @var Company|ObjectProphecy $submitterCompany */
         $submitterCompany = $this->prophesize(Company::class);
         $submitterCompany->getId()->willReturn(Base::randomDigitNotNull());

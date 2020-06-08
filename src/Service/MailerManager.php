@@ -71,7 +71,7 @@ class MailerManager
         $keywords = [
             'firstName'   => '',
             'projectUrl'  => $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL) . '#article-discussions',
-            'projectName' => $project->getBorrowerCompany() . ' / ' . $project->getTitle(),
+            'projectName' => $project->getRiskGroupName() . ' / ' . $project->getTitle(),
         ];
 
         foreach ($recipients as $recipient) {
@@ -147,7 +147,7 @@ class MailerManager
         $keywords = [
             'firstName'   => '',
             'projectUrl'  => $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
-            'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
+            'projectName' => $project->getRiskGroupName() . ' / ' . $project->getTitle(),
         ];
 
         $sent     = 0;
