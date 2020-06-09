@@ -8,6 +8,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Interfaces\StatusInterface;
 
+/**
+ * @deprecated use TraceableStatusInterface instead. See ProjectParticipationStatus for an implementation
+ */
 trait TraceableStatusTrait
 {
     /**
@@ -58,7 +61,7 @@ trait TraceableStatusTrait
     }
 
     /**
-     * @param StatusInterface|int $status
+     * @param StatusInterface $status
      *
      * @return self
      */

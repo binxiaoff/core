@@ -31,7 +31,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "company:read",
  *             "marketSegment:read",
  *             "projectParticipation:read",
- *             "projectParticipationOffer:read",
+ *             "projectParticipationTranche:read",
  *             "money:read",
  *             "nullablePerson:read",
  *             "projectStatus:read"
@@ -47,7 +47,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "company:read",
  *                     "marketSegment:read",
  *                     "projectParticipation:read",
- *                     "projectParticipationOffer:read",
+ *                     "projectParticipationTranche:read",
  *                     "money:read",
  *                     "nullablePerson:read"
  *                 }
@@ -74,13 +74,12 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "project:read",
  *                 "company:read",
  *                 "projectParticipation:read",
- *                 "projectParticipationOffer:read",
+ *                 "projectParticipationTranche:read",
  *                 "money:read",
  *                 "file:read",
  *                 "fileVersion:read",
  *                 "projectStatus:read",
  *                 "projectParticipationContact:read",
- *                 "projectParticipationFee:read",
  *                 "projectOrganizer:read",
  *                 "tranche_project:read",
  *                 "trancheFee:read",

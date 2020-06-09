@@ -217,14 +217,6 @@ class Tranche
     private $trancheFees;
 
     /**
-     * @var TrancheOffer[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheOffer", mappedBy="tranche")
-     * @ORM\OrderBy({"added": "DESC"})
-     */
-    private $trancheOffers;
-
-    /**
      * @var TrancheAttribute[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheAttribute", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
@@ -301,7 +293,6 @@ class Tranche
         $this->money             = $money;
         $this->rate              = new NullableLendingRate();
         $this->trancheFees       = new ArrayCollection();
-        $this->trancheOffers     = new ArrayCollection();
         $this->trancheAttributes = new ArrayCollection();
         $this->added             = new DateTimeImmutable();
         $this->project           = $project;
@@ -564,57 +555,6 @@ class Tranche
     public function getTrancheFees(): iterable
     {
         return $this->trancheFees;
-    }
-
-    /**
-     * @param array|null                     $status
-     * @param ProjectParticipationOffer|null $projectOffer
-     *
-     * @return TrancheOffer[]|ArrayCollection
-     */
-    public function getTrancheOffer(?array $status = null, ?ProjectParticipationOffer $projectOffer = null): iterable
-    {
-        $criteria = new Criteria();
-
-        if (null !== $status) {
-            $criteria->andWhere(Criteria::expr()->in('status', $status));
-        }
-
-        if (null !== $projectOffer) {
-            $criteria->andWhere(Criteria::expr()->eq('projectOffer', $projectOffer));
-        }
-
-        return $this->trancheOffers->matching($criteria);
-    }
-
-    /**
-     * @param TrancheOffer $trancheOffer
-     *
-     * @return Tranche
-     */
-    public function addTrancheOffer(TrancheOffer $trancheOffer): Tranche
-    {
-        $trancheOffer->setTranche($this);
-
-        if (false === $this->trancheOffers->contains($trancheOffer)) {
-            $this->trancheOffers->add($trancheOffer);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param TrancheOffer $trancheOffer
-     *
-     * @return Tranche
-     */
-    public function removeTrancheOffer(TrancheOffer $trancheOffer): Tranche
-    {
-        if ($this->trancheOffers->contains($trancheOffer)) {
-            $this->trancheOffers->removeElement($trancheOffer);
-        }
-
-        return $this;
     }
 
     /**

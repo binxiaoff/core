@@ -25,4 +25,9 @@ interface StatusInterface
      * @return array|string[]
      */
     public static function getPossibleStatuses(): array;
+
+    /**
+     * @return TraceableStatusAwareInterface
+     */
+    public function getAttachedObject();
 }

@@ -94,7 +94,7 @@ class NotificationDisplayManager
 
                     break;
                 case Notification::TYPE_TRANCHE_OFFER_SUBMITTED_SUBMITTER:
-                    $trancheOffer = $notification->getTrancheOffer();
+                    $trancheOffer = $notification->getProjectParticipationTranche();
                     if ($trancheOffer) {
                         $project = $trancheOffer->getTranche()->getProject();
                         $type    = 'normal';
@@ -111,7 +111,7 @@ class NotificationDisplayManager
 
                     break;
                 case Notification::TYPE_TRANCHE_OFFER_SUBMITTED_PARTICIPANTS:
-                    $trancheOffer = $notification->getTrancheOffer();
+                    $trancheOffer = $notification->getProjectParticipationTranche();
                     if ($trancheOffer) {
                         $project = $trancheOffer->getTranche()->getProject();
                         $type    = 'normal';
@@ -121,7 +121,7 @@ class NotificationDisplayManager
                             '%projectUrl%'     => '', // TODO Create a router
                             '%projectTitle%'   => $project->getTitle(),
                             '%borrowerName%'   => $project->getRiskGroupName(),
-                            '%offerMakerName%' => $trancheOffer->getProjectParticipationOffer()->getProjectParticipation()->getCompany(),
+                            '%offerMakerName%' => $trancheOffer->getProjectParticipation()->getCompany(),
                             '%offerAmount%'    => $this->currencyFormatterNoDecimal
                                 ->formatCurrency($trancheOffer->getMoney()->getAmount(), $trancheOffer->getMoney()->getCurrency()),
                         ]);

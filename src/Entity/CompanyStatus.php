@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use InvalidArgumentException;
 use Unilend\Entity\Interfaces\StatusInterface;
+use Unilend\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -97,5 +98,13 @@ class CompanyStatus implements StatusInterface
     public static function getPossibleStatuses(): array
     {
         return static::getConstants('STATUS_');
+    }
+
+    /**
+     * @return Company|TraceableStatusAwareInterface
+     */
+    public function getAttachedObject()
+    {
+        return $this->getCompany();
     }
 }

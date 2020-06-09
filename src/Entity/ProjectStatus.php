@@ -11,6 +11,7 @@ use Exception;
 use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Interfaces\StatusInterface;
+use Unilend\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -166,5 +167,13 @@ class ProjectStatus implements StatusInterface
         $this->project = $project;
 
         return $this;
+    }
+
+    /**
+     * @return TraceableStatusAwareInterface|Project
+     */
+    public function getAttachedObject()
+    {
+        return $this->getProject();
     }
 }
