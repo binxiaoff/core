@@ -359,7 +359,7 @@ class ProjectParticipation
     public function getValidProjectParticipationContacts(): iterable
     {
         return $this->projectParticipationContacts->filter(function (ProjectParticipationContact $participationContact) {
-            return null === $participationContact->getArchived();
+            return false === $participationContact->isArchived();
         });
     }
 

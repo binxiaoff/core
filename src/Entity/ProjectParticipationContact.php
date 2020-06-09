@@ -179,4 +179,12 @@ class ProjectParticipationContact
 
         return $this;
     }
+
+    /**
+     * @return bool
+     */
+    public function isArchived(): bool
+    {
+        return null !== $this->archived;
+    }
 }

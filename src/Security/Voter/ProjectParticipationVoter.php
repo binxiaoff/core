@@ -65,14 +65,9 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     {
         $project = $subject->getProject();
 
-        $projectOrganizer = $subject->getProject()->getArranger();
-        if ($projectOrganizer && $projectOrganizer->isArranger()) {
-            return true;
-        }
-
         switch ($project->getOfferVisibility()) {
             case Project::OFFER_VISIBILITY_PRIVATE:
-                return null !== $this->getParticipationContact($subject, $user);
+                return null !== $this->getValidParticipationContact($subject, $user);
             case Project::OFFER_VISIBILITY_PARTICIPANT:
             case Project::OFFER_VISIBILITY_PUBLIC:
                 return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $project);
@@ -89,9 +84,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canEdit(ProjectParticipation $subject, Clients $user): bool
     {
-        $projectOrganizer = $subject->getProject()->getArranger();
-
-        return ($projectOrganizer && $projectOrganizer->isArranger()) || null !== $this->getParticipationContact($subject, $user);
+        return null !== $this->getValidParticipationContact($subject, $user);
     }
 
     /**
@@ -127,8 +120,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      *
      * @return ProjectParticipationContact|null
      */
-    private function getParticipationContact(ProjectParticipation $projectParticipation, Clients $user): ?ProjectParticipationContact
+    private function getValidParticipationContact(ProjectParticipation $projectParticipation, Clients $user): ?ProjectParticipationContact
     {
-        return $this->projectParticipationContactRepository->findOneBy(['projectParticipation' => $projectParticipation, 'client' => $user]);
+        return $this->projectParticipationContactRepository->findOneBy(['projectParticipation' => $projectParticipation, 'client' => $user, 'archived' => null]);
     }
 }
