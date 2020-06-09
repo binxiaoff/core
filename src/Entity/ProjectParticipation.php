@@ -354,6 +354,16 @@ class ProjectParticipation
     }
 
     /**
+     * @return ProjectParticipationContact[]|ArrayCollection
+     */
+    public function getValidProjectParticipationContacts(): iterable
+    {
+        return $this->projectParticipationContacts->filter(function (ProjectParticipationContact $participationContact) {
+            return null === $participationContact->getArchived();
+        });
+    }
+
+    /**
      * @return ProjectParticipationFee|null
      */
     public function getProjectParticipationFee(): ?ProjectParticipationFee
