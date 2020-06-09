@@ -68,26 +68,18 @@ class Fee
     }
 
     /**
+     * the type hint is nullable because the child classes have this property nullable.
+     *
      * @return string
      */
-    public function getRate(): string
+    public function getRate(): ?string
     {
         return $this->rate;
     }
 
     /**
-     * @param string $rate
+     * the type hint is nullable because the child classes have this property nullable.
      *
-     * @return self
-     */
-    public function setRate(string $rate): self
-    {
-        $this->rate = $rate;
-
-        return $this;
-    }
-
-    /**
      * @return string|null
      */
     public function getComment(): ?string
@@ -96,18 +88,8 @@ class Fee
     }
 
     /**
-     * @param string|null $comment
+     * the type hint is nullable because the child classes have this property nullable.
      *
-     * @return self
-     */
-    public function setComment(?string $comment): self
-    {
-        $this->comment = $comment;
-
-        return $this;
-    }
-
-    /**
      * @return string
      */
     public function getType(): ?string
@@ -116,34 +98,12 @@ class Fee
     }
 
     /**
-     * @param string $type
+     * the type hint is nullable because the child classes have this property nullable.
      *
-     * @return self
-     */
-    public function setType(string $type): self
-    {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    /**
      * @return bool|null
      */
-    public function isRecurring(): bool
+    public function isRecurring(): ?bool
     {
         return $this->recurring;
-    }
-
-    /**
-     * @param bool $recurring
-     *
-     * @return self
-     */
-    public function setRecurring(bool $recurring): self
-    {
-        $this->recurring = $recurring;
-
-        return $this;
     }
 }

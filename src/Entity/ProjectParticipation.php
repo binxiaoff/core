@@ -201,7 +201,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Fee
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Fee")
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableFee")
      *
      * @Gedmo\Versioned
      *

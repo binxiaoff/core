@@ -15,7 +15,7 @@ class OfferWithFee extends Offer
     /**
      * @var Money|null
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Fee")
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableFee")
      *
      * @Groups({"offerWithFee:read", "offerWithFee:write"})
      */
@@ -34,7 +34,7 @@ class OfferWithFee extends Offer
     /**
      * @return Fee
      */
-    public function getFee(): Fee
+    public function getFee(): NullableFee
     {
         return $this->fee;
     }

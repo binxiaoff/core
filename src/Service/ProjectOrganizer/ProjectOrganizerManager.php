@@ -30,6 +30,6 @@ class ProjectOrganizerManager
     {
         $projectOrganizer = $this->projectOrganizerRepository->findOneBy(['project' => $project, 'company' => $staff->getCompany()]);
 
-        return null !== $projectOrganizer && $projectOrganizer->hasRole(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER);
+        return $projectOrganizer && $projectOrganizer->isArranger();
     }
 }
