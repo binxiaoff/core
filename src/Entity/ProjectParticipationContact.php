@@ -9,7 +9,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
+use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 
 /**
  * @ApiResource(
@@ -35,6 +35,8 @@ class ProjectParticipationContact
     use TimestampableAddedOnlyTrait;
     use BlamableAddedTrait;
     use PublicizeIdentityTrait;
+    use ArchivableTrait;
+    use BlamableArchivedTrait;
 
     /**
      * @var ProjectParticipation
@@ -174,26 +176,6 @@ class ProjectParticipationContact
     public function setAcceptedConfidentialityDisclaimerVersion(?FileVersion $acceptedConfidentialityDisclaimerVersion): ProjectParticipationContact
     {
         $this->acceptedConfidentialityDisclaimerVersion = $acceptedConfidentialityDisclaimerVersion;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTimeInterface|null
-     */
-    public function getArchived(): ?\DateTimeInterface
-    {
-        return $this->archived;
-    }
-
-    /**
-     * @param \DateTimeInterface|null $archived
-     *
-     * @return $this
-     */
-    public function setArchived(?\DateTimeInterface $archived): self
-    {
-        $this->archived = $archived;
 
         return $this;
     }
