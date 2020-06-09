@@ -32,7 +32,7 @@ class ProjectParticipationManager
      */
     public function isParticipant(Staff $staff, Project $project): bool
     {
-        $projectParticipationContact = $this->getProjectParticipationContact($staff, $project);
+        $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndStaff($project, $staff);
 
         return null !== $projectParticipationContact && false === $projectParticipationContact->isArchived();
     }
@@ -54,18 +54,5 @@ class ProjectParticipationManager
         }
 
         return null !== $projectParticipationContact->getConfidentialityAccepted();
-    }
-
-    /**
-     * @param Staff   $staff
-     * @param Project $project
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return ProjectParticipationContact|null
-     */
-    public function getProjectParticipationContact(Staff $staff, Project $project)
-    {
-        return $this->projectParticipationContactRepository->findByProjectAndStaff($project, $staff);
     }
 }

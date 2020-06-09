@@ -41,11 +41,12 @@ class ProjectParticipationOfferVoter extends AbstractEntityVoter
      */
     protected function isGrantedAll($subject, Clients $user): bool
     {
-        $projectParticipation = $subject->getProjectParticipation();
-        $projectOrganizer     = $this->getProjectOrganizer($projectParticipation->getProject(), $user);
+        $projectParticipation        = $subject->getProjectParticipation();
+        $projectOrganizer            = $this->getProjectOrganizer($projectParticipation->getProject(), $user);
+        $projectParticipationContact = $this->getValidParticipationContact($projectParticipation, $user);
 
         return ($projectOrganizer && $projectOrganizer->isArranger())
-            || null !== $this->getParticipationContact($projectParticipation, $user);
+            || null !== $projectParticipationContact;
     }
 
     /**
@@ -65,8 +66,8 @@ class ProjectParticipationOfferVoter extends AbstractEntityVoter
      *
      * @return ProjectParticipationContact|null
      */
-    private function getParticipationContact(ProjectParticipation $projectParticipation, Clients $user): ?ProjectParticipationContact
+    private function getValidParticipationContact(ProjectParticipation $projectParticipation, Clients $user): ?ProjectParticipationContact
     {
-        return $this->projectParticipationContactRepository->findOneBy(['projectParticipation' => $projectParticipation, 'client' => $user]);
+        return $this->projectParticipationContactRepository->findOneBy(['projectParticipation' => $projectParticipation, 'client' => $user, 'archived' => null]);
     }
 }
