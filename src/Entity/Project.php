@@ -21,8 +21,6 @@ use Unilend\Filter\ArrayFilter;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * TODO in the post and patch operation borrower company is not denormalized while it is in get operation ?
- *
  * @ApiResource(
  *     normalizationContext={"groups": {"project:read", "company:read", "marketSegment:read", "projectParticipation:read", "projectParticipationOffer:read", "money:read"}},
  *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "tag:write"}},
@@ -179,12 +177,9 @@ class Project
     private $hash;
 
     /**
-     * @var Company
+     * @var string
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_borrower_company", referencedColumnName="id", nullable=false)
-     * })
+     * @ORM\Column(type="string", length=255, nullable=false)
      *
      * @Gedmo\Versioned
      *
@@ -192,10 +187,9 @@ class Project
      *
      * @Assert\NotBlank
      * @Assert\Valid
-     *
-     * @MaxDepth(1)
+     * @Assert\Length(max="255")
      */
-    private $borrowerCompany;
+    private $riskGroupName;
 
     /**
      * @var Company
@@ -572,13 +566,13 @@ class Project
 
     /**
      * @param Staff         $addedBy
-     * @param Company       $borrowerCompany
+     * @param string        $riskGroupName
      * @param Money         $globalFundingMoney
      * @param MarketSegment $marketSegment
      *
      * @throws Exception
      */
-    public function __construct(Staff $addedBy, Company $borrowerCompany, Money $globalFundingMoney, MarketSegment $marketSegment)
+    public function __construct(Staff $addedBy, string $riskGroupName, Money $globalFundingMoney, MarketSegment $marketSegment)
     {
         $this->projectFiles          = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
@@ -598,7 +592,7 @@ class Project
         $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;
         $this->offerVisibility   = static::OFFER_VISIBILITY_PRIVATE;
 
-        $this->borrowerCompany    = $borrowerCompany;
+        $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
 
         if (null === $this->hash) {
@@ -635,13 +629,13 @@ class Project
     }
 
     /**
-     * @param Company $company
+     * @param string $riskGroupName
      *
      * @return Project
      */
-    public function setBorrowerCompany(Company $company): Project
+    public function setRiskGroupName(string $riskGroupName): Project
     {
-        $this->borrowerCompany = $company;
+        $this->riskGroupName = $riskGroupName;
 
         return $this;
     }
@@ -649,9 +643,9 @@ class Project
     /**
      * @return Company
      */
-    public function getBorrowerCompany(): Company
+    public function getRiskGroupName(): string
     {
-        return $this->borrowerCompany;
+        return $this->riskGroupName;
     }
 
     /**

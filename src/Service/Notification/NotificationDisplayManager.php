@@ -76,7 +76,7 @@ class NotificationDisplayManager
                     $content = $this->translator->trans('notifications.project-request-content', [
                         '%projectUrl%'    => '', // TODO Create a router
                         '%projectTitle%'  => $project->getTitle(),
-                        '%borrowerName%'  => $project->getBorrowerCompany()->getName(),
+                        '%borrowerName%'  => $project->getRiskGroupName(),
                         '%submitterName%' => $project->getSubmitterCompany()->getName(),
                     ]);
 
@@ -89,7 +89,7 @@ class NotificationDisplayManager
                     $content = $this->translator->trans('notifications.project-publication-content', [
                         '%projectUrl%'   => '', // TODO Create a router
                         '%projectTitle%' => $project->getTitle(),
-                        '%borrowerName%' => $project->getBorrowerCompany()->getName(),
+                        '%borrowerName%' => $project->getRiskGroupName(),
                     ]);
 
                     break;
@@ -103,7 +103,7 @@ class NotificationDisplayManager
                         $content = $this->translator->trans('notifications.tranche-offer-submitted-maker-content', [
                             '%projectUrl%'   => '', // TODO Create a router
                             '%projectTitle%' => $project->getTitle(),
-                            '%borrowerName%' => $project->getBorrowerCompany()->getName(),
+                            '%borrowerName%' => $project->getRiskGroupName(),
                             '%offerAmount%'  => $this->currencyFormatterNoDecimal
                                 ->formatCurrency((float) $trancheOffer->getMoney()->getAmount(), $trancheOffer->getMoney()->getCurrency()),
                         ]);
@@ -120,7 +120,7 @@ class NotificationDisplayManager
                         $content = $this->translator->trans('notifications.tranche-offer-submitted-participants-content', [
                             '%projectUrl%'     => '', // TODO Create a router
                             '%projectTitle%'   => $project->getTitle(),
-                            '%borrowerName%'   => $project->getBorrowerCompany()->getName(),
+                            '%borrowerName%'   => $project->getRiskGroupName(),
                             '%offerMakerName%' => $trancheOffer->getProjectParticipationOffer()->getProjectParticipation()->getCompany(),
                             '%offerAmount%'    => $this->currencyFormatterNoDecimal
                                 ->formatCurrency($trancheOffer->getMoney()->getAmount(), $trancheOffer->getMoney()->getCurrency()),
@@ -136,7 +136,7 @@ class NotificationDisplayManager
                     $content = $this->translator->trans('notifications.project-comment-added-content', [
                         '%projectUrl%'   => '', // TODO Create a router
                         '%projectTitle%' => $project->getTitle(),
-                        '%borrowerName%' => $project->getBorrowerCompany()->getName(),
+                        '%borrowerName%' => $project->getRiskGroupName(),
                     ]);
 
                     break;

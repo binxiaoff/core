@@ -109,7 +109,7 @@ class FileDownloadVoter extends AbstractEntityVoter
 
         $signature = $this->fileVersionSignatureRepository->findOneBy(['fileVersion' => $fileDownload->getFileVersion(), 'signatory' => $staff]);
 
-        if ($signature || $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project) || $project->getBorrowerCompany() === $user->getCompany()) {
+        if ($signature || $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
             return true;
         }
 
