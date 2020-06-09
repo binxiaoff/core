@@ -15,7 +15,7 @@ use Unilend\Entity\ProjectParticipationTranche;
  * @method ProjectParticipationTranche[]    findAll()
  * @method ProjectParticipationTranche[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class TrancheOfferRepository extends ServiceEntityRepository
+class ProjectParticipationTrancheRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry
@@ -26,14 +26,14 @@ class TrancheOfferRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param ProjectParticipationTranche $trancheOffer
+     * @param ProjectParticipationTranche $projectParticipationTranche
      *
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function save(ProjectParticipationTranche $trancheOffer): void
+    public function save(ProjectParticipationTranche $projectParticipationTranche): void
     {
-        $this->getEntityManager()->persist($trancheOffer);
+        $this->getEntityManager()->persist($projectParticipationTranche);
         $this->getEntityManager()->flush();
     }
 }

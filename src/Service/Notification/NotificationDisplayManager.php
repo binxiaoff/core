@@ -94,9 +94,9 @@ class NotificationDisplayManager
 
                     break;
                 case Notification::TYPE_TRANCHE_OFFER_SUBMITTED_SUBMITTER:
-                    $trancheOffer = $notification->getProjectParticipationTranche();
-                    if ($trancheOffer) {
-                        $project = $trancheOffer->getTranche()->getProject();
+                    $projectParticipationTranche = $notification->getProjectParticipationTranche();
+                    if ($projectParticipationTranche) {
+                        $project = $projectParticipationTranche->getTranche()->getProject();
                         $type    = 'normal';
                         $image   = 'offer';
                         $title   = $this->translator->trans('notifications.tranche-offer-submitted-maker-title');
@@ -105,15 +105,18 @@ class NotificationDisplayManager
                             '%projectTitle%' => $project->getTitle(),
                             '%borrowerName%' => $project->getRiskGroupName(),
                             '%offerAmount%'  => $this->currencyFormatterNoDecimal
-                                ->formatCurrency((float) $trancheOffer->getMoney()->getAmount(), $trancheOffer->getMoney()->getCurrency()),
+                                ->formatCurrency(
+                                    (float) $projectParticipationTranche->getInvitationReply()->getMoney()->getAmount(),
+                                    $projectParticipationTranche->getInvitationReply()->getMoney()->getCurrency()
+                                ),
                         ]);
                     }
 
                     break;
                 case Notification::TYPE_TRANCHE_OFFER_SUBMITTED_PARTICIPANTS:
-                    $trancheOffer = $notification->getProjectParticipationTranche();
-                    if ($trancheOffer) {
-                        $project = $trancheOffer->getTranche()->getProject();
+                    $projectParticipationTranche = $notification->getProjectParticipationTranche();
+                    if ($projectParticipationTranche) {
+                        $project = $projectParticipationTranche->getTranche()->getProject();
                         $type    = 'normal';
                         $image   = 'offer';
                         $title   = $this->translator->trans('notifications.tranche-offer-submitted-participants-title');
@@ -121,9 +124,12 @@ class NotificationDisplayManager
                             '%projectUrl%'     => '', // TODO Create a router
                             '%projectTitle%'   => $project->getTitle(),
                             '%borrowerName%'   => $project->getRiskGroupName(),
-                            '%offerMakerName%' => $trancheOffer->getProjectParticipation()->getCompany(),
+                            '%offerMakerName%' => $projectParticipationTranche->getProjectParticipation()->getCompany(),
                             '%offerAmount%'    => $this->currencyFormatterNoDecimal
-                                ->formatCurrency($trancheOffer->getMoney()->getAmount(), $trancheOffer->getMoney()->getCurrency()),
+                                ->formatCurrency(
+                                    (float) $projectParticipationTranche->getInvitationReply()->getMoney()->getAmount(),
+                                    $projectParticipationTranche->getInvitationReply()->getMoney()->getCurrency()
+                                ),
                         ]);
                     }
 
