@@ -1309,24 +1309,6 @@ class Project
     }
 
     /**
-     * @throws Exception
-     *
-     * @return Money
-     *
-     * @Groups({"project:read"})
-     */
-    public function getOffersMoney(): Money
-    {
-        $money = new Money($this->getGlobalFundingMoney()->getCurrency());
-
-        foreach ($this->getProjectParticipations() as $projectParticipation) {
-            $money = $projectParticipation->getOfferMoney() ? $money->add($projectParticipation->getOfferMoney()) : $money;
-        }
-
-        return $money;
-    }
-
-    /**
      * @return array|string[]
      *
      * @Groups({"project:read"})

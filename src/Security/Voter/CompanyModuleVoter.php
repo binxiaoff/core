@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use Unilend\Entity\Clients;
-use Unilend\Entity\CompanyModule;
+use Unilend\Entity\{Clients, CompanyModule};
 
 class CompanyModuleVoter extends AbstractEntityVoter
 {
@@ -20,8 +19,6 @@ class CompanyModuleVoter extends AbstractEntityVoter
      */
     public function canEdit(CompanyModule $companyModule, Clients $submitter): bool
     {
-        $staff = $submitter->getCurrentStaff();
-
-        return $staff && $companyModule->getCompany() === $staff->getCompany();
+        return $companyModule->getCompany() === $submitter->getCompany();
     }
 }

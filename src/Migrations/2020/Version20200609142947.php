@@ -90,12 +90,16 @@ ProjectParticipation
                  INNER JOIN tranche_offer t ON t.id_project_participation_offer = ppo.id;'
         );
 
+        $this->addSql('INSERT INTO project_participation_status (id_project_parcitipation, added_by, status, added) SELECT id, pp.added_by, 10, pp.added FROM project_participation pp');
+        $this->addSql('UPDATE project_participation pp INNER JOIN project_participation_status pps ON pp.id = pps.id_project_parcitipation SET pp.id_current_status = pps.id');
+
         $this->addSql('DROP TABLE project_participation_fee');
         $this->addSql('DROP TABLE project_participation_offer');
         $this->addSql('DROP TABLE tranche_offer');
         $this->addSql('DROP TABLE tranche_offer_fee');
         $this->addSql('DROP TABLE zz_versioned_project_participation_fee');
         $this->addSql('DROP TABLE zz_versioned_tranche_offer');
+        $this->addSql('DROP TABLE zz_versioned_project_offer');
     }
 
     public function down(Schema $schema): void

@@ -143,7 +143,7 @@ class FileDownloadVoter extends AbstractEntityVoter
         /** @var ProjectParticipationContact $participationContact */
         $participationContact = $this->participationContactRepository->findByProjectAndStaff($project, $staff);
 
-        return ($participationContact && false === $participationContact->getProjectParticipation()->isNotInterested())
+        return ($participationContact && $participationContact->getProjectParticipation()->isActive())
             ? $participationContact : null;
     }
 
@@ -154,7 +154,8 @@ class FileDownloadVoter extends AbstractEntityVoter
      */
     private function hasValidatedOffer(ProjectParticipationContact $contact): bool
     {
-        return null !== ($participation = $contact->getProjectParticipation()) && $participation->hasValidatedOffer();
+        // Todo: the rule of validate offer need to be defined CALS-1702
+        return null !== ($participation = $contact->getProjectParticipation()) && $participation->getAllocationFee();
     }
 
     /**

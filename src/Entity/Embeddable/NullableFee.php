@@ -20,18 +20,18 @@ class NullableFee extends Fee
      *
      * @Assert\NotBlank
      *
-     * @Groups({"nullablefee:read", "nullablefee:write"})
+     * @Groups({"nullableFee:read", "nullableFee:write"})
      */
-    private $type;
+    protected $type;
 
     /**
      * @var string|null
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"nullablefee:read", "nullablefee:write"})
+     * @Groups({"nullableFee:read", "nullableFee:write"})
      */
-    private $comment;
+    protected $comment;
 
     /**
      * @var string|null
@@ -42,30 +42,28 @@ class NullableFee extends Fee
      *
      * @Assert\NotBlank
      *
-     * @Groups({"fee:read", "fee:write"})
+     * @Groups({"nullableFee:read", "nullableFee:write"})
      */
-    private $rate;
+    protected $rate;
 
     /**
      * @var bool|null
      *
      * @ORM\Column(type="boolean", nullable=true)
      */
-    private $recurring;
+    protected $recurring;
 
     /**
      * @param string $rate
      * @param string $type
-     * @param bool   $recurring
      */
-    public function __construct(?string $rate, ?string $type, ?bool $recurring)
+    public function __construct(?string $rate, ?string $type)
     {
-        $this->rate      = $rate;
-        $this->recurring = $recurring;
-        $this->type      = $type;
+        $this->rate = $rate;
+        $this->type = $type;
 
-        if ($rate && $type && $recurring) {
-            parent::__construct($rate, $type, $recurring);
+        if ($rate && $type) {
+            parent::__construct($rate, $type);
         }
     }
 }

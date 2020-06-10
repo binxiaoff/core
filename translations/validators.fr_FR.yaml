@@ -24,3 +24,8 @@ Tranche:
         expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche
     thirdPartyFunder:
         expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche
+
+ProjectParticipation:
+    status:
+        duplicated: Le nouveau statut est en doublons avec le dernier.
+        unchangeable: La participation est déjà en statut définitive. Vous ne pouvez plus changer son statut.

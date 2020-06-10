@@ -24,40 +24,53 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     normalizationContext={"groups": {
  *         "projectParticipation:read",
  *         "projectParticipationContact:read",
- *         "projectOrganizer:read",
+ *         "projectParticipationTranche:read",
+ *         "projectParticipationStatus:read",
  *         "company:read",
- *         "fee:read",
+ *         "nullableFee:read",
  *         "nullableMoney:read",
- *         "ProjectParticipationTranche:read",
- *         "marketSegment:read"
+ *         "rangedOfferWithFee:read",
+ *         "offerWithFee:read",
+ *         "offer:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
- *         "fee:write",
- *         "nullableMoney:write"
+ *         "nullableFee:write",
+ *         "nullableMoney:write",
+ *         "rangedOfferWithFee:write",
+ *         "offerWithFee:write",
+ *         "offer:write"
  *     }},
  *     collectionOperations={
- *         "get": {"normalization_context": {"groups": {
- *             "projectParticipation:list",
- *             "project:read",
- *             "projectParticipation:read",
- *             "projectParticipationContact:read",
- *             "projectParticipationTranche:read",
- *             "projectOrganizer:read",
- *             "projectStatus:read",
- *             "company:read",
- *             "role:read",
- *             "fee:read",
- *             "marketSegment:read",
- *             "nullableMoney:read"
- *         }}},
+ *         "get": {
+ *             "normalization_context": {"groups": {
+ *                 "projectParticipation:list",
+ *                 "project:read",
+ *                 "projectParticipation:read",
+ *                 "projectParticipationContact:read",
+ *                 "projectParticipationTranche:read",
+ *                 "projectParticipationStatus:read",
+ *                 "projectOrganizer:read",
+ *                 "projectStatus:read",
+ *                 "company:read",
+ *                 "role:read",
+ *                 "nullableFee:read",
+ *                 "marketSegment:read",
+ *                 "nullableMoney:read",
+ *                 "rangedOfferWithFee:read",
+ *                 "offerWithFee:read",
+ *                 "offer:read"
+ *             }}
+ *         },
  *         "post": {
  *             "denormalization_context": {"groups": {
  *                 "projectParticipation:create",
  *                 "projectParticipation:write",
- *                 "projectParticipationContact:write",
- *                 "fee:write",
- *                 "nullableMoney:write"
+ *                 "nullableFee:write",
+ *                 "nullableMoney:write",
+ *                 "rangedOfferWithFee:write",
+ *                 "offerWithFee:write",
+ *                 "offer:write"
  *             }},
  *             "security_post_denormalize": "is_granted('create', object)"
  *         }
@@ -90,8 +103,14 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     use PublicizeIdentityTrait;
     use ConstantsAwareTrait;
 
-    public const SERIALIZER_GROUP_ADMIN_READ     = 'projectParticipation:admin:read'; // Additional group that is available for admin (admin user or arranger)
-    public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipation:sensitive:read'; // Additional group that is available for public visibility project
+    // Additional normalizer group that is available for those who have the admin right on the participation (participation owner or arranger)
+    public const SERIALIZER_GROUP_ADMIN_READ = 'projectParticipation:admin:read';
+    // Additional normalizer group that is available for public visibility project. It's also available for the participation owner and arranger
+    public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipation:sensitive:read';
+    // Additional denormalizer group that is available for the participation owner
+    public const SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE = 'projectParticipation:participantOwner:write';
+    // Additional denormalizer group that is available for the arranger
+    public const SERIALIZER_GROUP_ARRANGER_WRITE = 'projectParticipation:arranger:write';
 
     public const BLACKLISTED_COMPANIES = [
         'CA-CIB',
@@ -101,6 +120,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public const COMMITTEE_STATUS_PENDED   = 'pended';
     public const COMMITTEE_STATUS_ACCEPTED = 'accepted';
     public const COMMITTEE_STATUS_REJECTED = 'rejected';
+
+    public const FEE_TYPE_PARTICIPATION = 'participation';
 
     /**
      * @var Project
@@ -119,7 +140,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Company
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company", inversedBy="projectParticipations")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      * })
@@ -133,13 +154,13 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var ProjectParticipationStatus
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipationStatus")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipationStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true)
      *
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"projectParticipation:admin:read", "projectParticipation:update"})
+     * @Groups({"projectParticipation:admin:read"})
      */
     private $currentStatus;
 
@@ -155,7 +176,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private $committeeStatus;
 
     /**
-     * @var DateTimeImmutable
+     * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
@@ -172,7 +193,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipation:admin:read", "projectParticipation:arrangerOwner:write"})
+     * @Groups({"projectParticipation:admin:read", "projectParticipation:arranger:write", "projectParticipation:create"})
      */
     private $interestRequest;
 
@@ -194,7 +215,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipation:admin:read", "projectParticipation:arrangerOwner:write"})
+     * @Groups({"projectParticipation:admin:read", "projectParticipation:arranger:write", "projectParticipation:create"})
      */
     private $invitationRequest;
 
@@ -205,14 +226,14 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipation:sensitive:read", "projectParticipation:arrangerOwner:write"})
+     * @Groups({"projectParticipation:sensitive:read", "projectParticipation:arranger:write"})
      */
     private $allocationFee;
 
     /**
-     * @var DateTimeImmutable
+     * @var DateTimeImmutable|null
      *
-     * @ORM\Column(type="date_immutable", nullable=true)
+     * @ORM\Column(type="datetime_immutable", nullable=true)
      *
      * @Gedmo\Versioned
      *
@@ -242,14 +263,16 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var ArrayCollection|ProjectParticipationTranche[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="participation")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="projectParticipation")
+     *
+     * @Groups({"projectParticipation:sensitive:read"})
      */
     private $projectParticipationTranches;
 
     /**
      * @var ArrayCollection|ProjectParticipationStatus[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationStatus", mappedBy="participation", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationStatus", mappedBy="projectParticipation", cascade={"persist"})
      * @ORM\OrderBy({"added": "ASC"})
      */
     private $statuses;
@@ -322,21 +345,21 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return DateTimeImmutable
+     * @return DateTimeImmutable|null
      *
      * @Groups({"projectParticipation:admin:read"})
      */
-    public function getParticipantLastConsulted(): DateTimeImmutable
+    public function getParticipantLastConsulted(): ?DateTimeImmutable
     {
         return $this->participantLastConsulted;
     }
 
     /**
-     * @param DateTimeImmutable $participantLastConsulted
+     * @param DateTimeImmutable|null $participantLastConsulted
      *
      * @return ProjectParticipation
      */
-    public function setParticipantLastConsulted(DateTimeImmutable $participantLastConsulted): ProjectParticipation
+    public function setParticipantLastConsulted(?DateTimeImmutable $participantLastConsulted): ProjectParticipation
     {
         $this->participantLastConsulted = $participantLastConsulted;
 
@@ -364,19 +387,19 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return DateTimeImmutable
+     * @return DateTimeImmutable|null
      */
-    public function getCommitteeDeadline(): DateTimeImmutable
+    public function getCommitteeDeadline(): ?DateTimeImmutable
     {
         return $this->committeeDeadline;
     }
 
     /**
-     * @param DateTimeImmutable $committeeDeadline
+     * @param DateTimeImmutable|null $committeeDeadline
      *
      * @return ProjectParticipation
      */
-    public function setCommitteeDeadline(DateTimeImmutable $committeeDeadline): ProjectParticipation
+    public function setCommitteeDeadline(?DateTimeImmutable $committeeDeadline): ProjectParticipation
     {
         $this->committeeDeadline = $committeeDeadline;
 
@@ -485,5 +508,21 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public function getStatuses(): Collection
     {
         return $this->statuses;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return ProjectParticipationStatus::STATUS_ACTIVE === $this->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * @return ArrayCollection|ProjectParticipationTranche[]
+     */
+    public function getProjectParticipationTranches()
+    {
+        return $this->projectParticipationTranches;
     }
 }

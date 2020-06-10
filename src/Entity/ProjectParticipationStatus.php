@@ -11,7 +11,7 @@ use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
-use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
+use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -22,14 +22,24 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "denormalization_context": {"groups": {"projectParticipationStatus:create"}},
  *             "security_post_denormalize": "is_granted('create', object)"
  *         }
+ *     },
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
  *     }
  * )
  *
  * @ORM\Entity
  * @ORM\Table(indexes={@ORM\Index(columns={"status", "id_project_parcitipation"})})
+ *
+ * @Assert\Callback({"Unilend\Validator\Constraints\TraceableStatusValidator", "validate"})
  */
 class ProjectParticipationStatus implements StatusInterface
 {
+    use PublicizeIdentityTrait;
     use ConstantsAwareTrait;
     use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
@@ -37,15 +47,6 @@ class ProjectParticipationStatus implements StatusInterface
     public const STATUS_ACTIVE   = 10;
     public const STATUS_ARCHIVED = -10;
     public const STATUS_DECLINED = -20;
-
-    /**
-     * @var int
-     *
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     * @ORM\Column(type="integer")
-     */
-    private $id;
 
     /**
      * @var ProjectParticipation
@@ -63,7 +64,6 @@ class ProjectParticipationStatus implements StatusInterface
      * @ORM\Column(type="smallint")
      *
      * @Assert\Choice(callback="getPossibleStatuses")
-     * @Assert\Callback({"Unilend\Validator\Constraints\TraceableStatusValidator", "validate"})
      *
      * @Groups({"projectParticipationStatus:read", "projectParticipationStatus:create"})
      */

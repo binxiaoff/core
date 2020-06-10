@@ -6,14 +6,14 @@ namespace Unilend\Security\Voter;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\ProjectParticipationStatus;
-use Unilend\Entity\Staff;
+use Unilend\Entity\{Clients, ProjectParticipationStatus};
 use Unilend\Service\ProjectOrganizer\ProjectOrganizerManager;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationStatusVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
+
     /** @var ProjectParticipationManager */
     private $projectParticipationManager;
     /** @var ProjectOrganizerManager */
@@ -36,17 +36,19 @@ class ProjectParticipationStatusVoter extends AbstractEntityVoter
 
     /**
      * @param ProjectParticipationStatus $projectParticipationStatus
-     * @param Staff                      $staff
+     * @param Clients                    $client
      *
      * @throws NonUniqueResultException
      *
      * @return bool
      */
-    public function canCreate(ProjectParticipationStatus $projectParticipationStatus, Staff $staff): bool
+    public function canCreate(ProjectParticipationStatus $projectParticipationStatus, Clients $client): bool
     {
         $project = $projectParticipationStatus->getProjectParticipation()->getProject();
+        $staff   = $client->getCurrentStaff();
 
-        return (ProjectParticipationStatus::STATUS_ARCHIVED === $projectParticipationStatus->getStatus() && $this->projectOrganizerManager->isOrganizer($staff, $project))
-            || (ProjectParticipationStatus::STATUS_DECLINED === $projectParticipationStatus->getStatus() && $this->projectParticipationManager->isParticipant($staff, $project));
+        return $staff
+            && ((ProjectParticipationStatus::STATUS_ARCHIVED === $projectParticipationStatus->getStatus() && $this->projectOrganizerManager->isArranger($staff, $project))
+            || (ProjectParticipationStatus::STATUS_DECLINED === $projectParticipationStatus->getStatus() && $this->projectParticipationManager->isParticipant($staff, $project)));
     }
 }

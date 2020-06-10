@@ -19,23 +19,23 @@ class RangedOfferWithFee extends OfferWithFee
      *
      * @Groups({"rangedOfferWithFee:read", "rangedOfferWithFee:write"})
      */
-    protected $minMoney;
+    private $minMoney;
 
     /**
-     * @param NullableMoney $minMoney
-     * @param NullableMoney $money
-     * @param Fee           $fee
+     * @param NullableMoney      $money
+     * @param NullableFee        $fee
+     * @param NullableMoney|null $minMoney
      */
-    public function __construct(NullableMoney $minMoney, NullableMoney $money, Fee $fee)
+    public function __construct(NullableMoney $money, NullableFee $fee, ?NullableMoney $minMoney = null)
     {
         $this->minMoney = $minMoney;
         parent::__construct($money, $fee);
     }
 
     /**
-     * @return Money|null
+     * @return NullableMoney
      */
-    public function getMinMoney(): ?Money
+    public function getMinMoney(): NullableMoney
     {
         return $this->minMoney;
     }

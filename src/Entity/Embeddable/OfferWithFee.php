@@ -13,7 +13,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class OfferWithFee extends Offer
 {
     /**
-     * @var Money|null
+     * @var NullableFee
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableFee")
      *
@@ -23,16 +23,16 @@ class OfferWithFee extends Offer
 
     /**
      * @param NullableMoney $money
-     * @param Fee           $fee
+     * @param NullableFee   $fee
      */
-    public function __construct(NullableMoney $money, Fee $fee)
+    public function __construct(NullableMoney $money, NullableFee $fee)
     {
         $this->fee = $fee;
         parent::__construct($money);
     }
 
     /**
-     * @return Fee
+     * @return NullableFee
      */
     public function getFee(): NullableFee
     {

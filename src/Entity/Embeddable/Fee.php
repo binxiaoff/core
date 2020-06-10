@@ -24,7 +24,7 @@ class Fee
      *
      * @Groups({"fee:read", "fee:write"})
      */
-    private $type;
+    protected $type;
 
     /**
      * @var string|null
@@ -33,7 +33,7 @@ class Fee
      *
      * @Groups({"fee:read", "fee:write"})
      */
-    private $comment;
+    protected $comment;
 
     /**
      * @var string
@@ -46,14 +46,14 @@ class Fee
      *
      * @Groups({"fee:read", "fee:write"})
      */
-    private $rate;
+    protected $rate;
 
     /**
      * @var bool
      *
      * @ORM\Column(type="boolean")
      */
-    private $recurring;
+    protected $recurring;
 
     /**
      * @param string $rate

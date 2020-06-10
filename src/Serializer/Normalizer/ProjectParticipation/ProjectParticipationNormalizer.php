@@ -6,7 +6,7 @@ namespace Unilend\Serializer\Normalizer\ProjectParticipation;
 
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{ContextAwareNormalizerInterface, NormalizerAwareInterface, NormalizerAwareTrait};
-use Unilend\Entity\{Clients, Project, ProjectParticipation};
+use Unilend\Entity\{Clients, Project, ProjectParticipation, ProjectParticipationTranche};
 
 class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
@@ -28,7 +28,7 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
     /**
      * {@inheritdoc}
      */
-    public function supportsNormalization($data, $format = null, array $context = [])
+    public function supportsNormalization($data, $format = null, array $context = []): bool
     {
         if (isset($context[self::ALREADY_CALLED])) {
             return false;
@@ -70,11 +70,15 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
             || $participation->getCompany() === $clientCurrentCompany
             || $participation->getProject()->getSubmitterCompany() === $clientCurrentCompany
         ) {
-            return [ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ];
+            return [
+                ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ,
+                ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
+                ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ,
+            ];
         }
 
         if (Project::OFFER_VISIBILITY_PUBLIC === $project->getOfferVisibility()) {
-            return [ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ];
+            return [ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ];
         }
 
         return [];

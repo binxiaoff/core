@@ -5,33 +5,28 @@ declare(strict_types=1);
 namespace Unilend\Validator\Constraints;
 
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\Interfaces\StatusInterface;
+use Unilend\Entity\ProjectParticipationStatus;
 
 class TraceableStatusValidator
 {
-    /** @var TranslatorInterface */
-    private $translator;
-
-    /**
-     * @param TranslatorInterface $translator
-     */
-    public function __construct(TranslatorInterface $translator)
-    {
-        $this->translator = $translator;
-    }
-
     /**
      * @param StatusInterface           $object
      * @param ExecutionContextInterface $context
      * @param                           $payload
      */
-    public function validate(StatusInterface $object, ExecutionContextInterface $context, $payload): void
+    public static function validate(StatusInterface $object, ExecutionContextInterface $context, $payload): void
     {
         $lastStatus = $object->getAttachedObject()->getStatuses()->last();
-        if ($lastStatus && $object->getStatus() === $lastStatus->getStatus()) {
-            $message = $this->translator->trans('status.duplicated-status');
-            $context->buildViolation($message)->addViolation();
+        // We check the value only if it has previous status and only when we are adding a new status...
+        if ($lastStatus && null === $object->getId()) {
+            if ($object->getStatus() === $lastStatus->getStatus()) {
+                $context->buildViolation('ProjectParticipation.status.duplicated')->atPath('status')->addViolation();
+            }
+
+            if (ProjectParticipationStatus::STATUS_ACTIVE !== $lastStatus->getStatus()) {
+                $context->buildViolation('ProjectParticipation.status.unchangeable')->atPath('status')->addViolation();
+            }
         }
     }
 }

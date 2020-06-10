@@ -30,4 +30,9 @@ interface StatusInterface
      * @return TraceableStatusAwareInterface
      */
     public function getAttachedObject();
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int;
 }

@@ -26,10 +26,21 @@ class ProjectOrganizerManager
      *
      * @return bool
      */
-    public function isOrganizer(Staff $staff, Project $project): bool
+    public function isArranger(Staff $staff, Project $project): bool
     {
-        $projectOrganizer = $this->projectOrganizerRepository->findOneBy(['project' => $project, 'company' => $staff->getCompany()]);
+        $organizer = $this->getOrganizer($staff, $project);
 
-        return $projectOrganizer && $projectOrganizer->isArranger();
+        return $organizer && $organizer->isArranger();
+    }
+
+    /**
+     * @param Staff   $staff
+     * @param Project $project
+     *
+     * @return ProjectOrganizer|null
+     */
+    private function getOrganizer(Staff $staff, Project $project): ?ProjectOrganizer
+    {
+        return $this->projectOrganizerRepository->findOneBy(['project' => $project, 'company' => $staff->getCompany()]);
     }
 }

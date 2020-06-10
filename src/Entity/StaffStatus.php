@@ -79,6 +79,14 @@ class StaffStatus implements StatusInterface
     }
 
     /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
      * @return Staff
      */
     public function getStaff(): Staff

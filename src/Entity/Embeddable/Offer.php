@@ -7,15 +7,12 @@ namespace Unilend\Entity\Embeddable;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Embeddable
  */
 class Offer
 {
-    use TimestampableAddedOnlyTrait;
-
     /**
      * @var NullableMoney
      *
@@ -24,8 +21,9 @@ class Offer
      * @Groups({"offer:read", "offer:write"})
      */
     protected $money;
+
     /**
-     * @var DateTimeImmutable
+     * @var DateTimeImmutable|null
      *
      * @ORM\Column(name="added", type="datetime_immutable", nullable=true)
      *
@@ -43,17 +41,17 @@ class Offer
     }
 
     /**
-     * @return Money
+     * @return NullableMoney
      */
-    public function getMoney(): Money
+    public function getMoney(): NullableMoney
     {
         return $this->money;
     }
 
     /**
-     * @return DateTimeImmutable
+     * @return DateTimeImmutable|null
      */
-    public function getAdded(): DateTimeImmutable
+    public function getAdded(): ?DateTimeImmutable
     {
         return $this->added;
     }

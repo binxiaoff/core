@@ -27,10 +27,8 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
      * @param Security              $security
      * @param IriConverterInterface $iriConverter
      */
-    public function __construct(
-        Security $security,
-        IriConverterInterface $iriConverter
-    ) {
+    public function __construct(Security $security, IriConverterInterface $iriConverter)
+    {
         $this->security     = $security;
         $this->iriConverter = $iriConverter;
     }

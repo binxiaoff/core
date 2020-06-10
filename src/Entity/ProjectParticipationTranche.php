@@ -4,14 +4,32 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\{Embeddable\Offer, Traits\BlamableAddedTrait, Traits\TimestampableTrait};
+use Unilend\Entity\{Embeddable\Offer, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={"groups": {"projectParticipationTranche:read"}},
+ *     collectionOperations={
+ *         "post": {
+ *             "denormalization_context": {"groups": {"projectParticipationTranche:create"}},
+ *             "security_post_denormalize": "is_granted('create', object)"
+ *         }
+ *     },
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     }
+ * )
+ *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectParticipationTranche")
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_tranche", "id_project_participation"})})
@@ -20,18 +38,13 @@ use Unilend\Traits\ConstantsAwareTrait;
  */
 class ProjectParticipationTranche
 {
+    use PublicizeIdentityTrait;
     use TimestampableTrait;
     use ConstantsAwareTrait;
     use BlamableAddedTrait;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    private $id;
+    // Additional normalizer group that is available for public visibility project. It's also available for the participation owner and arranger
+    public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipationTranche:sensitive:read';
 
     /**
      * @var Tranche
@@ -40,6 +53,8 @@ class ProjectParticipationTranche
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_tranche", nullable=false)
      * })
+     *
+     * @Groups({"projectParticipationTranche:read", "projectParticipationTranche:create"})
      */
     private $tranche;
 
@@ -50,6 +65,8 @@ class ProjectParticipationTranche
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project_participation", nullable=false)
      * })
+     *
+     * @Groups({"projectParticipationTranche:create"})
      */
     private $projectParticipation;
 
@@ -60,7 +77,7 @@ class ProjectParticipationTranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"ProjectParticipationTranche:sensitive:read", "ProjectParticipationTranche:participantOwner:write"})
+     * @Groups({"projectParticipationTranche:sensitive:read", "projectParticipationTranche:participantOwner:write"})
      */
     private $invitationReply;
 
@@ -71,7 +88,7 @@ class ProjectParticipationTranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"ProjectParticipationTranche:sensitive:read", "ProjectParticipationTranche:arrangerOwner:write"})
+     * @Groups({"projectParticipationTranche:sensitive:read", "projectParticipationTranche:arrangerOwner:write"})
      */
     private $allocation;
 
@@ -86,14 +103,6 @@ class ProjectParticipationTranche
         $this->tranche              = $tranche;
         $this->added                = new DateTimeImmutable();
         $this->addedBy              = $addedBy;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**
