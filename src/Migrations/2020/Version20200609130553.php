@@ -14,14 +14,11 @@ final class Version20200609130553 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'CALS-1615 Add delete CASCADE to project foreign key';
     }
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
-
         $this->addSql('ALTER TABLE notification DROP FOREIGN KEY FK_BF5476CAF12E799E');
         $this->addSql('ALTER TABLE notification ADD CONSTRAINT FK_BF5476CAF12E799E FOREIGN KEY (id_project) REFERENCES project (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE project DROP FOREIGN KEY FK_2FB3D0EEB0D1B111');
@@ -42,9 +39,6 @@ final class Version20200609130553 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
-
         $this->addSql('ALTER TABLE notification DROP FOREIGN KEY FK_BF5476CAF12E799E');
         $this->addSql('ALTER TABLE notification ADD CONSTRAINT FK_BF5476CAF12E799E FOREIGN KEY (id_project) REFERENCES project (id) ON UPDATE NO ACTION ON DELETE NO ACTION');
         $this->addSql('ALTER TABLE project DROP FOREIGN KEY FK_2FB3D0EE41AF0274');
