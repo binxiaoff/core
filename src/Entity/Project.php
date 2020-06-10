@@ -18,7 +18,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\{Embeddable\Money,
     Embeddable\NullablePerson,
-    Embeddable\Person,
     Traits\TimestampableTrait,
     Traits\TraceableStatusTrait};
 use Unilend\Filter\ArrayFilter;
