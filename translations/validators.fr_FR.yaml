@@ -16,3 +16,11 @@ Clients:
         emailDomain: L'email fournit n'a pas pour domaine celui d'un de nos clients
     password:
         password: Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et au moins 8 caractères.
+
+Tranche:
+    color:
+        regex: Cette couleur ne correspond pas a un code RGB
+    unsyndicatedFunderType:
+        expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche
+    thirdPartyFunder:
+        expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche

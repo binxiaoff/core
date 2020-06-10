@@ -65,6 +65,9 @@ class Tranche
         self::REPAYMENT_TYPE_FIXED,
     ];
 
+    public const UNSYNDICATED_FUNDER_TYPE_ARRANGER    = 'arranger';
+    public const UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY = 'third_party';
+
     /**
      * @var Project
      *
@@ -240,6 +243,57 @@ class Tranche
     private $comment;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean")
+     *
+     * @Groups({"tranche:write", "tranche:read"})
+     */
+    private $syndicated;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", nullable=true)
+     *
+     * @Assert\Expression(
+     *     expression="(!this.isSyndicated() && this.getUnsyndicatedFunderType()) || this.isSyndicated() && this.getUnsyndicatedFunderType() === null",
+     *     message="Tranche.unsyndicatedFunderType.expression"
+     * )
+     * @Assert\Choice({Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER, Tranche::UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY})
+     *
+     * @Groups({"tranche:write", "tranche:read"})
+     */
+    private $unsyndicatedFunderType;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", nullable=true)
+     *
+     * @Assert\Expression(
+     *     expression="(this.getUnsyndicatedFunderType() === constant('\\Unilend\\Entity\\Tranche::UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY') && this.getThirdPartyFunder())
+     *          || (this.getUnsyndicatedFunderType() !== constant('\\Unilend\\Entity\\Tranche::UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY') && this.getThirdPartyFunder() === null)",
+     *     message="Tranche.thirdPartyFunder.expression"
+     * )
+     *
+     * @Groups({"tranche:write", "tranche:read"})
+     */
+    private $thirdPartyFunder;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string")
+     *
+     * @Assert\Regex(pattern="/#[0-9a-f]{3}([0-9a-f]{3})?/i", message="Tranche.color.regex")
+     * @Assert\NotBlank
+     *
+     * @Groups({"tranche:write", "tranche:read"})
+     */
+    private $color;
+
+    /**
      * @param Project $project
      * @param Money   $money
      *
@@ -254,6 +308,7 @@ class Tranche
         $this->trancheAttributes = new ArrayCollection();
         $this->added             = new DateTimeImmutable();
         $this->project           = $project;
+        $this->syndicated        = true;
     }
 
     /**
@@ -640,6 +695,91 @@ class Tranche
     public function setComment(?string $comment): Tranche
     {
         $this->comment = $comment;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSyndicated(): bool
+    {
+        return $this->syndicated;
+    }
+
+    /**
+     * @param bool $syndicated
+     *
+     * @return Tranche
+     */
+    public function setSyndicated(bool $syndicated): Tranche
+    {
+        $this->syndicated = $syndicated;
+
+        if (false === $this->syndicated) {
+            $this->unsyndicatedFunderType = null;
+            $this->thirdPartyFunder       = null;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getUnsyndicatedFunderType(): ?string
+    {
+        return $this->unsyndicatedFunderType;
+    }
+
+    /**
+     * @param string|null $unsyndicatedFunderType
+     *
+     * @return Tranche
+     */
+    public function setUnsyndicatedFunderType(?string $unsyndicatedFunderType): Tranche
+    {
+        $this->unsyndicatedFunderType = $unsyndicatedFunderType;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getThirdPartyFunder(): ?string
+    {
+        return $this->thirdPartyFunder;
+    }
+
+    /**
+     * @param string|null $thirdPartyFunder
+     *
+     * @return Tranche
+     */
+    public function setThirdPartyFunder(?string $thirdPartyFunder): Tranche
+    {
+        $this->thirdPartyFunder = $thirdPartyFunder;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getColor(): string
+    {
+        return $this->color;
+    }
+
+    /**
+     * @param string $color
+     *
+     * @return Tranche
+     */
+    public function setColor(string $color): Tranche
+    {
+        $this->color = $color;
 
         return $this;
     }
