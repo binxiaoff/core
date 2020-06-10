@@ -65,9 +65,7 @@ class Notification
      * @var Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project", referencedColumnName="id")
-     * })
+     * @ORM\JoinColumn(name="id_project", referencedColumnName="id", onDelete="CASCADE")
      */
     private $project;
 

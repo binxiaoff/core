@@ -99,6 +99,9 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "denormalization_context": {
  *                 "groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "tag:write", "nullablePerson:write"}
  *             }
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('edit', object)"
  *         }
  *     }
  * )
@@ -441,7 +444,7 @@ class Project
      * @var ProjectStatus
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus")
-     * @ORM\JoinColumn(name="id_current_status", unique=true)
+     * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
      * @Assert\Valid

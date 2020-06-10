@@ -115,9 +115,7 @@ class ProjectParticipation
      * @var Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectParticipations")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"projectParticipation:read", "projectParticipation:create"})
      *

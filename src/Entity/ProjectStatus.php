@@ -31,6 +31,7 @@ class ProjectStatus implements StatusInterface
     use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
 
+    public const STATUS_CANCELED            = -99;
     public const STATUS_REQUESTED           = 10;
     public const STATUS_PUBLISHED           = 20;
     public const STATUS_INTERESTS_COLLECTED = 30;
@@ -50,7 +51,7 @@ class ProjectStatus implements StatusInterface
      * @var Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="statuses")
-     * @ORM\JoinColumn(name="id_project", nullable=false)
+     * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"projectStatus:create"})
      */

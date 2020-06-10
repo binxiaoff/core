@@ -6,7 +6,7 @@ namespace Unilend\Security\Voter;
 
 use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, Project, ProjectOrganizer};
+use Unilend\Entity\{Clients, Project, ProjectOrganizer, ProjectStatus};
 use Unilend\Repository\ProjectOrganizerRepository;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
@@ -99,6 +99,10 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canEdit(Project $project, Clients $user): bool
     {
+        if (ProjectStatus::STATUS_CANCELED === $project->getCurrentStatus()->getStatus()) {
+            return false;
+        }
+
         if ($project->getSubmitterClient() === $user) {
             return true;
         }

@@ -69,9 +69,7 @@ class Tranche
      * @var Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="tranches")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"tranche:create", "tranche:read"})
      */

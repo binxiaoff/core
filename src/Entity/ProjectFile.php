@@ -63,7 +63,7 @@ class ProjectFile
      * @var Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectFiles")
-     * @ORM\JoinColumn(name="id_project", nullable=false)
+     * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      */
     private $project;
 
