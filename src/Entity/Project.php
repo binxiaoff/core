@@ -17,6 +17,7 @@ use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\{Embeddable\Money,
+    Embeddable\NullablePerson,
     Embeddable\Person,
     Traits\TimestampableTrait,
     Traits\TraceableStatusTrait};
@@ -25,8 +26,10 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"project:read", "company:read", "marketSegment:read", "projectParticipation:read", "projectParticipationOffer:read", "money:read"}},
- *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "tag:write"}},
+ *     normalizationContext={
+ *         "groups": {"project:read", "company:read", "marketSegment:read", "projectParticipation:read", "projectParticipationOffer:read", "money:read", "nullablePerson:read"}
+ *     },
+ *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "tag:write", "nullablePerson:write"}},
  *     collectionOperations={
  *         "get": {
  *             "normalization_context": {
@@ -38,7 +41,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "projectParticipation:read",
  *                     "projectParticipationOffer:read",
  *                     "money:read",
- *                     "person:read"
+ *                     "nullablePerson:read"
  *                 }
  *             }
  *         },
@@ -51,7 +54,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "company:write",
  *                     "money:write",
  *                     "tag:write",
- *                     "person:write"
+ *                     "nullablePerson:write"
  *                 }
  *             }
  *         }
@@ -82,7 +85,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "lendingRate:read",
  *                 "fee:read",
  *                 "tag:read",
- *                 "person:read"
+ *                 "nullablePerson:read"
  *             }}
  *         },
  *         "project_confidentiality": {
@@ -93,7 +96,9 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         },
  *         "patch": {
  *             "security_post_denormalize": "is_granted('edit', previous_object)",
- *             "denormalization_context": {"groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "tag:write", "person:write"}}
+ *             "denormalization_context": {
+ *                 "groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "tag:write", "nullablePerson:write"}
+ *             }
  *         }
  *     }
  * )
@@ -192,7 +197,6 @@ class Project
      * @Groups({"project:write", "project:read"})
      *
      * @Assert\NotBlank
-     * @Assert\Valid
      * @Assert\Length(max="255")
      */
     private $riskGroupName;
@@ -540,7 +544,7 @@ class Project
     /**
      * @var Money
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
      *
      * @Assert\Valid
      *
@@ -551,7 +555,7 @@ class Project
     /**
      * @var Money
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
      *
      * @Assert\Valid
      *
@@ -571,9 +575,9 @@ class Project
     private $fundingSpecificity;
 
     /**
-     * @var Person
+     * @var NullablePerson
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Person", columnPrefix="privileged_contact_")
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullablePerson", columnPrefix="privileged_contact_")
      *
      * @Assert\Valid
      *
@@ -1507,19 +1511,19 @@ class Project
     }
 
     /**
-     * @return Person
+     * @return NullablePerson
      */
-    public function getPrivilegedContactPerson(): Person
+    public function getPrivilegedContactPerson(): NullablePerson
     {
         return $this->privilegedContactPerson;
     }
 
     /**
-     * @param Person $privilegedContactPerson
+     * @param NullablePerson $privilegedContactPerson
      *
      * @return Project
      */
-    public function setPrivilegedContactPerson(Person $privilegedContactPerson): Project
+    public function setPrivilegedContactPerson(NullablePerson $privilegedContactPerson): Project
     {
         $this->privilegedContactPerson = $privilegedContactPerson;
 
