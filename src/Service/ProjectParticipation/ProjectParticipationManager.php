@@ -6,7 +6,7 @@ namespace Unilend\Service\ProjectParticipation;
 
 use Doctrine\ORM\NonUniqueResultException;
 use RuntimeException;
-use Unilend\Entity\{Project, Staff};
+use Unilend\Entity\{Project, ProjectParticipation, Staff};
 use Unilend\Repository\ProjectParticipationContactRepository;
 
 class ProjectParticipationManager
@@ -33,6 +33,20 @@ class ProjectParticipationManager
     public function isParticipant(Staff $staff, Project $project): bool
     {
         return null !== $this->projectParticipationContactRepository->findByProjectAndStaff($project, $staff);
+    }
+
+    /**
+     * @param Staff                $staff                we pass staff here to prepare for the migration from client to staff
+     * @param ProjectParticipation $projectParticipation
+     *
+     * @return bool
+     */
+    public function isParticipationOwner(Staff $staff, ProjectParticipation $projectParticipation): bool
+    {
+        return null !== $this->projectParticipationContactRepository->findOneBy([
+            'projectParticipation' => $projectParticipation,
+            'client'               => $staff->getClient(),
+        ]);
     }
 
     /**

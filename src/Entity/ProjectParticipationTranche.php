@@ -14,7 +14,15 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectParticipationTranche:read"}},
+ *     normalizationContext={"groups": {
+ *         "projectParticipationTranche:read",
+ *         "offer:read",
+ *         "nullableMoney:read"
+ *     }},
+ *     denormalizationContext={"groups": {
+ *         "offer:write",
+ *         "nullableMoney:write"
+ *     }},
  *     collectionOperations={
  *         "post": {
  *             "denormalization_context": {"groups": {"projectParticipationTranche:create"}},
@@ -22,11 +30,9 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         }
  *     },
  *     itemOperations={
- *         "get": {
- *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
- *             "read": false,
- *             "output": false,
- *         }
+ *         "get",
+ *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)"},
+ *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"}
  *     }
  * )
  *
@@ -45,6 +51,10 @@ class ProjectParticipationTranche
 
     // Additional normalizer group that is available for public visibility project. It's also available for the participation owner and arranger
     public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipationTranche:sensitive:read';
+    // Additional denormalizer group that is available for the participation owner
+    public const SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE = 'projectParticipationTranche:participantOwner:write';
+    // Additional denormalizer group that is available for the arranger
+    public const SERIALIZER_GROUP_ARRANGER_WRITE = 'projectParticipationTranche:arranger:write';
 
     /**
      * @var Tranche
@@ -88,7 +98,7 @@ class ProjectParticipationTranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipationTranche:sensitive:read", "projectParticipationTranche:arrangerOwner:write"})
+     * @Groups({"projectParticipationTranche:sensitive:read", "projectParticipationTranche:arranger:write"})
      */
     private $allocation;
 

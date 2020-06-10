@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Serializer\Normalizer\ProjectParticipation;
+namespace Unilend\Serializer\Normalizer\ProjectParticipationTranche;
 
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{ContextAwareNormalizerInterface, NormalizerAwareInterface, NormalizerAwareTrait};
-use Unilend\Entity\{Clients, Project, ProjectParticipation, ProjectParticipationTranche};
+use Unilend\Entity\{Clients, Project, ProjectParticipationTranche};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
-class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class ProjectParticipationTrancheNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
-    private const ALREADY_CALLED = 'PROJECT_PARTICIPATION_ATTRIBUTE_NORMALIZER_ALREADY_CALLED';
+    private const ALREADY_CALLED = 'PROJECT_PARTICIPATION_TRANCHE_ATTRIBUTE_NORMALIZER_ALREADY_CALLED';
 
     /** @var Security */
     private $security;
@@ -24,8 +24,10 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
      * @param Security                    $security
      * @param ProjectParticipationManager $projectParticipationManager
      */
-    public function __construct(Security $security, ProjectParticipationManager $projectParticipationManager)
-    {
+    public function __construct(
+        Security $security,
+        ProjectParticipationManager $projectParticipationManager
+    ) {
         $this->security                    = $security;
         $this->projectParticipationManager = $projectParticipationManager;
     }
@@ -39,7 +41,7 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
             return false;
         }
 
-        return $data instanceof ProjectParticipation;
+        return $data instanceof ProjectParticipationTranche;
     }
 
     /**
@@ -55,11 +57,11 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
     }
 
     /**
-     * @param ProjectParticipation $participation
+     * @param ProjectParticipationTranche $projectParticipationTranche
      *
      * @return array
      */
-    private function getAdditionalNormalizerGroups(ProjectParticipation $participation): array
+    private function getAdditionalNormalizerGroups(ProjectParticipationTranche $projectParticipationTranche): array
     {
         $client = $this->security->getUser();
         $staff  = $client instanceof Clients ? $client->getCurrentStaff() : null;
@@ -68,24 +70,15 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
             return [];
         }
 
-        $project = $participation->getProject();
-
-        $clientCurrentCompany = $client->getCompany();
+        $project = $projectParticipationTranche->getProjectParticipation()->getProject();
 
         if (
             $this->security->isGranted('ROLE_ADMIN')
-            || $this->projectParticipationManager->isParticipationOwner($staff, $participation)
-            || $participation->getProject()->getSubmitterCompany() === $clientCurrentCompany
+            || Project::OFFER_VISIBILITY_PUBLIC === $project->getOfferVisibility()
+            || $this->projectParticipationManager->isParticipationOwner($staff, $projectParticipationTranche->getProjectParticipation())
+            || $project->getSubmitterCompany() === $staff->getCompany()
         ) {
-            return [
-                ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ,
-                ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
-                ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ,
-            ];
-        }
-
-        if (Project::OFFER_VISIBILITY_PUBLIC === $project->getOfferVisibility()) {
-            return [ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ];
+            return [ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ];
         }
 
         return [];
