@@ -25,12 +25,12 @@ class OfferWithFee extends Offer
     protected $fee;
 
     /**
-     * @param NullableMoney         $money
-     * @param NullableSimplifiedFee $fee
+     * @param NullableMoney|null         $money
+     * @param NullableSimplifiedFee|null $fee
      */
-    public function __construct(NullableMoney $money, NullableSimplifiedFee $fee)
+    public function __construct(?NullableMoney $money = null, ?NullableSimplifiedFee $fee = null)
     {
-        $this->fee = $fee;
+        $this->fee = $fee ?? new NullableSimplifiedFee();
         parent::__construct($money);
     }
 

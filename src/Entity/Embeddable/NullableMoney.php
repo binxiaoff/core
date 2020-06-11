@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -21,6 +22,8 @@ class NullableMoney extends Money
      * @Assert\Type("numeric")
      * @Assert\Positive
      *
+     * @Gedmo\Versioned
+     *
      * @Groups({"nullableMoney:read", "nullableMoney:write"})
      */
     protected $amount;
@@ -33,6 +36,8 @@ class NullableMoney extends Money
      * @ORM\Column(type="string", length=3, nullable=true)
      *
      * @Assert\Currency
+     *
+     * @Gedmo\Versioned
      *
      * @Groups({"nullableMoney:read", "nullableMoney:write"})
      */

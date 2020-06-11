@@ -35,11 +35,11 @@ class Offer
     protected $added;
 
     /**
-     * @param NullableMoney $money
+     * @param NullableMoney|null $money
      */
-    public function __construct(NullableMoney $money)
+    public function __construct(?NullableMoney $money = null)
     {
-        $this->money = $money;
+        $this->money = $money ?? new NullableMoney();
         $this->added = new DateTimeImmutable();
     }
 

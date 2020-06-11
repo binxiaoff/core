@@ -9,7 +9,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\{Embeddable\NullableMoney, Embeddable\Offer, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Entity\{Embeddable\Offer, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -85,6 +85,8 @@ class ProjectParticipationTranche
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
      *
+     * @Gedmo\Versioned
+     *
      * @Groups({"projectParticipationTranche:sensitive:read", "projectParticipationTranche:participantOwner:write"})
      */
     private $invitationReply;
@@ -93,6 +95,8 @@ class ProjectParticipationTranche
      * @var Offer
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
+     *
+     * @Gedmo\Versioned
      *
      * @Groups({"projectParticipationTranche:sensitive:read", "projectParticipationTranche:arranger:write"})
      */
@@ -109,8 +113,8 @@ class ProjectParticipationTranche
         $this->tranche              = $tranche;
         $this->addedBy              = $addedBy;
         $this->added                = new DateTimeImmutable();
-        $this->invitationReply      = new Offer(new NullableMoney());
-        $this->allocation           = new Offer(new NullableMoney());
+        $this->invitationReply      = new Offer();
+        $this->allocation           = new Offer();
     }
 
     /**

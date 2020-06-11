@@ -14,7 +14,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class RangedOfferWithFee extends OfferWithFee
 {
     /**
-     * @var NullableMoney|null
+     * @var NullableMoney
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
      *
@@ -25,13 +25,14 @@ class RangedOfferWithFee extends OfferWithFee
     private $minMoney;
 
     /**
-     * @param NullableMoney         $money
-     * @param NullableSimplifiedFee $fee
-     * @param NullableMoney|null    $minMoney
+     * @param NullableMoney|null         $money
+     * @param NullableSimplifiedFee|null $fee
+     * @param NullableMoney|null         $minMoney
      */
-    public function __construct(NullableMoney $money, NullableSimplifiedFee $fee, ?NullableMoney $minMoney = null)
+    public function __construct(?NullableMoney $money = null, ?NullableSimplifiedFee $fee = null, ?NullableMoney $minMoney = null)
     {
-        $this->minMoney = $minMoney;
+        $this->minMoney = $minMoney ?? new NullableMoney();
+
         parent::__construct($money, $fee);
     }
 

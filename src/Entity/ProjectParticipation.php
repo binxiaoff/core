@@ -215,6 +215,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\RangedOfferWithFee")
      *
+     * @Gedmo\Versioned
+     *
      * @Groups({"projectParticipation:admin:read", "projectParticipation:arranger:write", "projectParticipation:create"})
      */
     private $interestRequest;
@@ -224,6 +226,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
      *
+     * @Gedmo\Versioned
+     *
      * @Groups({"projectParticipation:sensitive:read", "projectParticipation:participantOwner:write"})
      */
     private $interestReply;
@@ -232,6 +236,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @var OfferWithFee
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\OfferWithFee")
+     *
+     * @Gedmo\Versioned
      *
      * @Groups({"projectParticipation:admin:read", "projectParticipation:arranger:write", "projectParticipation:create"})
      */
@@ -254,6 +260,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @var NullableSimplifiedFee
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableSimplifiedFee")
+     *
+     * @Gedmo\Versioned
      *
      * @Groups({"projectParticipation:sensitive:read", "projectParticipation:arranger:write"})
      */
@@ -320,6 +328,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         $this->projectParticipationContacts = new ArrayCollection();
         $this->messages                     = new ArrayCollection();
         $this->statuses                     = new ArrayCollection();
+        $this->interestRequest              = new RangedOfferWithFee();
+        $this->interestReply                = new Offer();
+        $this->invitationRequest            = new OfferWithFee();
+        $this->allocationFee                = new NullableSimplifiedFee();
+
         $this->setCurrentStatus(new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_ACTIVE, $addedBy));
 
         $this->projectParticipationContacts = $company->getStaff()
