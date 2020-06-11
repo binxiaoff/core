@@ -32,6 +32,6 @@ final class Version20200611083408 extends AbstractMigration
     public function down(Schema $schema): void
     {
         $this->addSql('ALTER TABLE project RENAME COLUMN public_id TO hash');
-        $this->addSql('ALTER TABLE project DROP INDEX UNIQ_2FB3D0EEB5B48B91, ADD INDEX hash (public_id)');
+        $this->addSql('ALTER TABLE project DROP INDEX UNIQ_2FB3D0EEB5B48B91, ADD INDEX hash (hash)');
     }
 }
