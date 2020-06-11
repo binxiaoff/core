@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity\Traits;
 
 use DateTime;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 trait ArchivableTrait
 {
@@ -12,6 +13,8 @@ trait ArchivableTrait
      * @var DateTime
      *
      * @ORM\Column(type="datetime", nullable=true)
+     *
+     * @Groups({"archived:read", "archived:write"})
      */
     private $archived;
 

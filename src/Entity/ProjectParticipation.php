@@ -22,6 +22,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     normalizationContext={"groups": {
  *         "projectParticipation:read",
  *         "projectParticipationContact:read",
+ *         "archived:read",
  *         "projectParticipationFee:read",
  *         "projectParticipationOffer:read",
  *         "projectOrganizer:read",
@@ -45,6 +46,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "project:read",
  *             "projectParticipation:read",
  *             "projectParticipationContact:read",
+ *             "archived:read",
  *             "projectParticipationFee:read",
  *             "projectParticipationOffer:read",
  *             "projectOrganizer:read",

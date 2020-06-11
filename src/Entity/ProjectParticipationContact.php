@@ -13,7 +13,7 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchived
 
 /**
  * @ApiResource(
- *     denormalizationContext={"groups": {"projectParticipationContact:write"}},
+ *     denormalizationContext={"groups": {"projectParticipationContact:write", "archived:write"}},
  *     itemOperations={
  *         "get": {"security": "object.getClient() == user"},
  *         "patch": {"security_post_denormalize": "previous_object.getClient() == user"},
@@ -74,11 +74,6 @@ class ProjectParticipationContact
      * @ORM\JoinColumn(name="id_accepted_confidentiality_disclaimer_version")
      */
     private $acceptedConfidentialityDisclaimerVersion;
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $archived;
 
     /**
      * ProjectParticipationContact constructor.
