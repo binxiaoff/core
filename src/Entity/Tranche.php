@@ -13,6 +13,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\{Money, NullableLendingRate};
+use Unilend\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -46,6 +47,7 @@ class Tranche
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
+    use PublicizeIdentityTrait;
 
     public const LOAN_TYPE_TERM_LOAN            = 'term_loan';
     public const LOAN_TYPE_SHORT_TERM           = 'short_term';
@@ -62,17 +64,6 @@ class Tranche
         self::REPAYMENT_TYPE_CONSTANT_CAPITAL,
         self::REPAYMENT_TYPE_FIXED,
     ];
-
-    /**
-     * @var int
-     *
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     *
-     * @Groups({"tranche:read"})
-     */
-    private $id;
 
     /**
      * @var Project
@@ -263,14 +254,6 @@ class Tranche
         $this->trancheAttributes = new ArrayCollection();
         $this->added             = new DateTimeImmutable();
         $this->project           = $project;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**
