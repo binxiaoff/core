@@ -47,6 +47,10 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\ProjectStatus, method: setCurrentStatus }
 
+    Unilend\Listener\Doctrine\Entity\ProjectParticipationContact\ProjectParticipationContactArchivedListener:
+        tags:
+            - { name: doctrine.event_listener, event: preUpdate, entity: Unilend\Entity\ProjectParticipationContact, method: setArchivedBy }
+
     # Message Dispatcher
     Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientUpdatedListener:
         tags:
