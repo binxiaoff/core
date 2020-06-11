@@ -9,7 +9,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\{Embeddable\Offer, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Entity\{Embeddable\NullableMoney, Embeddable\Offer, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -85,8 +85,6 @@ class ProjectParticipationTranche
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
      *
-     * @Gedmo\Versioned
-     *
      * @Groups({"projectParticipationTranche:sensitive:read", "projectParticipationTranche:participantOwner:write"})
      */
     private $invitationReply;
@@ -95,8 +93,6 @@ class ProjectParticipationTranche
      * @var Offer
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
-     *
-     * @Gedmo\Versioned
      *
      * @Groups({"projectParticipationTranche:sensitive:read", "projectParticipationTranche:arranger:write"})
      */
@@ -111,8 +107,10 @@ class ProjectParticipationTranche
     {
         $this->projectParticipation = $projectParticipation;
         $this->tranche              = $tranche;
-        $this->added                = new DateTimeImmutable();
         $this->addedBy              = $addedBy;
+        $this->added                = new DateTimeImmutable();
+        $this->invitationReply      = new Offer(new NullableMoney());
+        $this->allocation           = new Offer(new NullableMoney());
     }
 
     /**
@@ -124,35 +122,11 @@ class ProjectParticipationTranche
     }
 
     /**
-     * @param Tranche $tranche
-     *
-     * @return ProjectParticipationTranche
-     */
-    public function setTranche(Tranche $tranche): ProjectParticipationTranche
-    {
-        $this->tranche = $tranche;
-
-        return $this;
-    }
-
-    /**
      * @return ProjectParticipation
      */
     public function getProjectParticipation(): ProjectParticipation
     {
         return $this->projectParticipation;
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return ProjectParticipationTranche
-     */
-    public function setProjectParticipation(ProjectParticipation $projectParticipation): ProjectParticipationTranche
-    {
-        $this->projectParticipation = $projectParticipation;
-
-        return $this;
     }
 
     /**
@@ -193,13 +167,5 @@ class ProjectParticipationTranche
         $this->allocation = $allocation;
 
         return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getAvailableStatus(): array
-    {
-        return self::getConstants('STATUS_');
     }
 }

@@ -7,7 +7,7 @@ namespace Unilend\Security\Voter;
 use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, Project, ProjectParticipation, ProjectStatus};
+use Unilend\Entity\{Clients, Project, ProjectParticipation, ProjectParticipationStatus, ProjectStatus};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationVoter extends AbstractEntityVoter
@@ -39,7 +39,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function fulfillPreconditions($subject, Clients $user): bool
     {
-        return $subject->getProject()->getCurrentStatus()->getStatus() <= ProjectStatus::STATUS_PARTICIPANT_REPLY;
+        return $subject->getProject()->getCurrentStatus()->getStatus() <= ProjectStatus::STATUS_ALLOCATION;
     }
 
     /**
@@ -79,7 +79,11 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     protected function canEdit(ProjectParticipation $subject, Clients $user): bool
     {
         return $subject->getProject()->getSubmitterCompany() === $user->getCompany()
-            || $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject);
+            || (
+                $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject)
+                && ProjectParticipationStatus::STATUS_ACTIVE === $subject->getCurrentStatus()->getStatus()
+                && !in_array($subject->getCommitteeStatus(), [ProjectParticipation::COMMITTEE_STATUS_ACCEPTED, ProjectParticipation::COMMITTEE_STATUS_REJECTED], true)
+            );
     }
 
     /**

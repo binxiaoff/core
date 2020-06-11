@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, ProjectParticipationStatus};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
@@ -30,8 +29,6 @@ class ProjectParticipationStatusVoter extends AbstractEntityVoter
      * @param ProjectParticipationStatus $projectParticipationStatus
      * @param Clients                    $client
      *
-     * @throws NonUniqueResultException
-     *
      * @return bool
      */
     public function canCreate(ProjectParticipationStatus $projectParticipationStatus, Clients $client): bool
@@ -41,11 +38,11 @@ class ProjectParticipationStatusVoter extends AbstractEntityVoter
 
         return $staff && (
             (
-                ProjectParticipationStatus::STATUS_ARCHIVED === $projectParticipationStatus->getStatus()
+                ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER === $projectParticipationStatus->getStatus()
                 && $project->getSubmitterCompany() === $staff->getCompany()
             )
             || (
-                ProjectParticipationStatus::STATUS_DECLINED === $projectParticipationStatus->getStatus()
+                ProjectParticipationStatus::STATUS_ARCHIVED_BY_PARTICIPANT === $projectParticipationStatus->getStatus()
                 && $this->projectParticipationManager->isParticipationOwner($staff, $projectParticipationStatus->getProjectParticipation())
             )
         );

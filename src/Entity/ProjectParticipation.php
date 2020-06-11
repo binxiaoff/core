@@ -14,7 +14,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Embeddable\{Fee, Offer, OfferWithFee, RangedOfferWithFee};
+use Unilend\Entity\Embeddable\{Fee, NullableSimplifiedFee, Offer, OfferWithFee, RangedOfferWithFee};
 use Unilend\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
@@ -27,7 +27,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "projectParticipationTranche:read",
  *         "projectParticipationStatus:read",
  *         "company:read",
- *         "nullableFee:read",
+ *         "nullableSimplifiedFee:read",
  *         "nullableMoney:read",
  *         "rangedOfferWithFee:read",
  *         "offerWithFee:read",
@@ -35,7 +35,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
- *         "nullableFee:write",
+ *         "nullableSimplifiedFee:write",
  *         "nullableMoney:write",
  *         "rangedOfferWithFee:write",
  *         "offerWithFee:write",
@@ -54,7 +54,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "projectStatus:read",
  *                 "company:read",
  *                 "role:read",
- *                 "nullableFee:read",
+ *                 "nullableSimplifiedFee:read",
  *                 "marketSegment:read",
  *                 "nullableMoney:read",
  *                 "rangedOfferWithFee:read",
@@ -66,7 +66,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "denormalization_context": {"groups": {
  *                 "projectParticipation:create",
  *                 "projectParticipation:write",
- *                 "nullableFee:write",
+ *                 "nullableSimplifiedFee:write",
  *                 "nullableMoney:write",
  *                 "rangedOfferWithFee:write",
  *                 "offerWithFee:write",
@@ -121,7 +121,10 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public const COMMITTEE_STATUS_ACCEPTED = 'accepted';
     public const COMMITTEE_STATUS_REJECTED = 'rejected';
 
-    public const FEE_TYPE_PARTICIPATION = 'participation';
+    public const FIELD_COMMITTEE_STATUS = 'committeeStatus';
+
+    private const INVITATION_REPLY_MODE_PRO_RATA   = 'pro-rata';
+    private const INVITATION_REPLY_MODE_CUSTOMIZED = 'customized';
 
     /**
      * @var Project
@@ -171,6 +174,12 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\Column(length=30, nullable=true)
      *
+     * @Assert\Expression(
+     *     "this.checkCommitteeStatus()",
+     *     message="ProjectParticipation.committeeStatus.pendedDeadline"
+     * )
+     * @Assert\Choice(callback="getPossibleCommitteeStatus")
+     *
      * @Gedmo\Versioned
      *
      * @Groups({"projectParticipation:sensitive:read", "projectParticipation:participantOwner:write"})
@@ -206,8 +215,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\RangedOfferWithFee")
      *
-     * @Gedmo\Versioned
-     *
      * @Groups({"projectParticipation:admin:read", "projectParticipation:arranger:write", "projectParticipation:create"})
      */
     private $interestRequest;
@@ -216,8 +223,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @var Offer
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
-     *
-     * @Gedmo\Versioned
      *
      * @Groups({"projectParticipation:sensitive:read", "projectParticipation:participantOwner:write"})
      */
@@ -228,18 +233,27 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\OfferWithFee")
      *
-     * @Gedmo\Versioned
-     *
      * @Groups({"projectParticipation:admin:read", "projectParticipation:arranger:write", "projectParticipation:create"})
      */
     private $invitationRequest;
 
     /**
-     * @var Fee
+     * @var string|null
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableFee")
+     * @ORM\Column(length=10, nullable=true)
+     *
+     * @Assert\Choice(callback="getPossibleInvitationReplyMode")
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"projectParticipation:sensitive:read", "projectParticipation:participantOwner:write"})
+     */
+    private $invitationReplyMode;
+
+    /**
+     * @var NullableSimplifiedFee
+     *
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableSimplifiedFee")
      *
      * @Groups({"projectParticipation:sensitive:read", "projectParticipation:arranger:write"})
      */
@@ -249,8 +263,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
-     *
-     * @Gedmo\Versioned
      *
      * @Groups({"projectParticipation:admin:read", "projectParticipation:participantOwner:write"})
      */
@@ -501,9 +513,29 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return Fee
+     * @return string|null
      */
-    public function getAllocationFee(): Fee
+    public function getInvitationReplyMode(): ?string
+    {
+        return $this->invitationReplyMode;
+    }
+
+    /**
+     * @param string|null $invitationReplyMode
+     *
+     * @return ProjectParticipation
+     */
+    public function setInvitationReplyMode(?string $invitationReplyMode): ProjectParticipation
+    {
+        $this->invitationReplyMode = $invitationReplyMode;
+
+        return $this;
+    }
+
+    /**
+     * @return NullableSimplifiedFee
+     */
+    public function getAllocationFee(): NullableSimplifiedFee
     {
         return $this->allocationFee;
     }
@@ -558,5 +590,33 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public function getProjectParticipationTranches()
     {
         return $this->projectParticipationTranches;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getPossibleCommitteeStatus(): array
+    {
+        return static::getConstants('COMMITTEE_STATUS_');
+    }
+
+    /**
+     * @return array
+     */
+    public static function getPossibleInvitationReplyMode(): array
+    {
+        return static::getConstants('INVITATION_REPLY_MODE_');
+    }
+
+    /**
+     * @return bool
+     */
+    public function checkCommitteeStatus(): bool
+    {
+        if (self::COMMITTEE_STATUS_PENDED === $this->getCommitteeStatus()) {
+            return null !== $this->getCommitteeDeadline();
+        }
+
+        return true;
     }
 }

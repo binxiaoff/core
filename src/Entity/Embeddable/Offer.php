@@ -6,6 +6,7 @@ namespace Unilend\Entity\Embeddable;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
@@ -17,6 +18,8 @@ class Offer
      * @var NullableMoney
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
+     *
+     * @Gedmo\Versioned
      *
      * @Groups({"offer:read", "offer:write"})
      */

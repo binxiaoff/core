@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, ProjectParticipationTranche};
+use Unilend\Entity\{Clients, ProjectParticipation, ProjectParticipationStatus, ProjectParticipationTranche};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationTrancheVoter extends AbstractEntityVoter
@@ -45,7 +45,13 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
      */
     public function canEdit(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
     {
-        return $projectParticipationTranche->getProjectParticipation()->getProject()->getSubmitterCompany() === $client->getCompany()
-            || $this->projectParticipationManager->isParticipationOwner($client->getCurrentStaff(), $projectParticipationTranche->getProjectParticipation());
+        $projectParticipation = $projectParticipationTranche->getProjectParticipation();
+
+        return $projectParticipation->getProject()->getSubmitterCompany() === $client->getCompany()
+            || (
+                $this->projectParticipationManager->isParticipationOwner($client->getCurrentStaff(), $projectParticipation)
+                && ProjectParticipationStatus::STATUS_ACTIVE === $projectParticipation->getCurrentStatus()->getStatus()
+                && !in_array($projectParticipation->getCommitteeStatus(), [ProjectParticipation::COMMITTEE_STATUS_ACCEPTED, ProjectParticipation::COMMITTEE_STATUS_REJECTED], true)
+            );
     }
 }

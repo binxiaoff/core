@@ -44,9 +44,9 @@ class ProjectParticipationStatus implements StatusInterface
     use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
 
-    public const STATUS_ACTIVE   = 10;
-    public const STATUS_ARCHIVED = -10;
-    public const STATUS_DECLINED = -20;
+    public const STATUS_ACTIVE                  = 10;
+    public const STATUS_ARCHIVED_BY_ARRANGER    = -10;
+    public const STATUS_ARCHIVED_BY_PARTICIPANT = -20;
 
     /**
      * @var ProjectParticipation

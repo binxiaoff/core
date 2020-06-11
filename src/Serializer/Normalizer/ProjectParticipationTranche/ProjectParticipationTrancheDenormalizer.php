@@ -76,6 +76,11 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
             || $projectParticipationTranche->getProjectParticipation()->getProject()->getSubmitterCompany() === $staff->getCompany()
         ) {
             $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_ARRANGER_WRITE;
+
+            // For the non-client entity, it's the arrange who edit the invitation reply.
+            if ($projectParticipationTranche->getProjectParticipation()->getCompany()->isProspect()) {
+                $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE;
+            }
         }
 
         if (
