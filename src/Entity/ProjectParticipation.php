@@ -175,7 +175,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @ORM\Column(length=30, nullable=true)
      *
      * @Assert\Expression(
-     *     "this.checkCommitteeStatus()",
+     *     "this.canCommitteeBePended()",
      *     message="ProjectParticipation.committeeStatus.pendedDeadline"
      * )
      * @Assert\Choice(callback="getPossibleCommitteeStatus")
@@ -622,9 +622,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
+     * Used in an expression constraints: A pended committee response need a deadline.
+     *
      * @return bool
      */
-    public function checkCommitteeStatus(): bool
+    public function canCommitteeBePended(): bool
     {
         if (self::COMMITTEE_STATUS_PENDED === $this->getCommitteeStatus()) {
             return null !== $this->getCommitteeDeadline();
