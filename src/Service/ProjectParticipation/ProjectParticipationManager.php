@@ -48,7 +48,7 @@ class ProjectParticipationManager
         $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndStaff($project, $staff);
 
         if (null === $projectParticipationContact) {
-            throw new RuntimeException(sprintf('The staff %s is not a participant of project %s', $staff->getPublicId(), $project->getHash()));
+            throw new RuntimeException(sprintf('The staff %s is not a participant of project %s', $staff->getPublicId(), $project->getPublicId()));
         }
 
         return null !== $projectParticipationContact->getConfidentialityAccepted();

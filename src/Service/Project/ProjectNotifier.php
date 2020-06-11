@@ -149,7 +149,7 @@ class ProjectNotifier
                         'project' => [
                             'submitterCompany' => $project->getSubmitterCompany()->getName(),
                             'title'            => $project->getTitle(),
-                            'hash'             => $project->getHash(),
+                            'hash'             => $project->getPublicId(),
                         ],
                     ])->setTo($contact->getClient()->getEmail());
                     $sent += $this->mailer->send($message);

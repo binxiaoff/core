@@ -133,7 +133,7 @@ class FileInputDataTransformer
                 throw new RuntimeException(sprintf(
                     'We cannot find the file (%s) for project (%s) of type (%s). Do you tend to upload a new file (instead of updating it) ?',
                     $file->getPublicId(),
-                    $project->getHash(),
+                    $project->getPublicId(),
                     $fileInput->type
                 ));
             }
@@ -177,7 +177,7 @@ class FileInputDataTransformer
                     throw new RuntimeException(sprintf(
                         'There is already a description file %s on the project %s. You can only update its version',
                         $descriptionDocument->getPublicId(),
-                        $project->getHash()
+                        $project->getPublicId()
                     ));
                 }
                 $file = $descriptionDocument ?? new File();
@@ -190,7 +190,7 @@ class FileInputDataTransformer
                     throw new RuntimeException(sprintf(
                         'There is already a confidentiality disclaimer file %s on the project %s. You can only update its version',
                         $confidentialityDisclaimer->getPublicId(),
-                        $project->getHash()
+                        $project->getPublicId()
                     ));
                 }
                 $file = $confidentialityDisclaimer ?? new File();

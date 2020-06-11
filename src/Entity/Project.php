@@ -11,13 +11,12 @@ use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Ramsey\Uuid\Uuid;
 use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Throwable;
 use Unilend\Entity\{Embeddable\Money,
     Embeddable\NullablePerson,
+    Traits\PublicizeIdentityTrait,
     Traits\TimestampableTrait,
     Traits\TraceableStatusTrait};
 use Unilend\Filter\ArrayFilter;
@@ -106,9 +105,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiFilter(ArrayFilter::class, properties={"organizers.roles"})
  * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId"})
  *
- * @ORM\Table(indexes={
- *     @ORM\Index(name="hash", columns={"hash"})
- * })
+ * @ORM\Table
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectRepository")
  * @ORM\HasLifecycleCallbacks
  *
@@ -120,6 +117,7 @@ class Project
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
+    use PublicizeIdentityTrait;
     use TraceableStatusTrait {
         setCurrentStatus as private baseStatusSetter;
     }
@@ -163,28 +161,6 @@ class Project
 
     public const FUNDING_SPECIFICITY_FSA = 'FSA';
     public const FUNDING_SPECIFICITY_LBO = 'LBO';
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     *
-     * @ApiProperty(identifier=false)
-     */
-    private $id;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(length=36)
-     *
-     * @ApiProperty(identifier=true)
-     *
-     * @Groups({"project:read"})
-     */
-    private $hash;
 
     /**
      * @var string
@@ -615,14 +591,6 @@ class Project
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
 
-        if (null === $this->hash) {
-            try {
-                $this->hash = (string) (Uuid::uuid4());
-            } catch (Throwable $e) {
-                $this->hash = md5(uniqid('', false));
-            }
-        }
-
         $arranger = new ProjectOrganizer($this->submitterCompany, $this, $addedBy, [ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER]);
         $this->organizers->add($arranger);
 
@@ -630,22 +598,6 @@ class Project
         $this->projectParticipations->add($participant);
 
         $this->interestExpressionEnabled = false;
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    /**
-     * @return string
-     */
-    public function getHash(): string
-    {
-        return $this->hash;
     }
 
     /**
