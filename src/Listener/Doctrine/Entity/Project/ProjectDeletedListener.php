@@ -6,6 +6,7 @@ namespace Unilend\Listener\Doctrine\Entity\Project;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
+use Exception;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\Clients;
 use Unilend\Entity\Project;
@@ -30,6 +31,7 @@ class ProjectDeletedListener
      *
      * @throws ORMException
      * @throws StaffNotFoundException
+     * @throws Exception
      */
     public function onFlush(OnFlushEventArgs $args)
     {
@@ -46,7 +48,8 @@ class ProjectDeletedListener
         $projectClassMetadata  = $em->getClassMetadata(Project::class);
         $projectStatusMetadata = $em->getClassMetadata(ProjectStatus::class);
 
-        foreach ($uow->getScheduledEntityDeletions() as $object) {
+        $scheduledDeletetion = $uow->getScheduledEntityDeletions();
+        foreach ($scheduledDeletetion as $object) {
             if ($object instanceof Project && ProjectStatus::STATUS_REQUESTED !== $object->getCurrentStatus()->getStatus()) {
                 if (null === $staff) {
                     throw new StaffNotFoundException('Client is not connected with available staff');
