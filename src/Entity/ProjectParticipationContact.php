@@ -16,8 +16,7 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchived
  *     denormalizationContext={"groups": {"projectParticipationContact:write", "archived:write"}},
  *     itemOperations={
  *         "get": {"security": "object.getClient() == user"},
- *         "patch": {"security_post_denormalize": "previous_object.getClient() == user"},
- *         "delete": {"security_post_denormalize": "is_granted('edit', object.getProjectParticipation())"},
+ *         "patch": {"security_post_denormalize": "previous_object.getClient() == user or is_granted('edit', object.getProjectParticipation())"},
  *     },
  *     collectionOperations={
  *         "post": {
