@@ -272,8 +272,7 @@ class Tranche
      * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\Expression(
-     *     expression="(this.getUnsyndicatedFunderType() === constant('\\Unilend\\Entity\\Tranche::UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY') && this.getThirdPartyFunder())
-     *          || (this.getUnsyndicatedFunderType() !== constant('\\Unilend\\Entity\\Tranche::UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY') && this.getThirdPartyFunder() === null)",
+     *     expression="this.isThirdPartyFunderValid() === true",
      *     message="Tranche.thirdPartyFunder.expression"
      * )
      *
@@ -786,5 +785,16 @@ class Tranche
         $this->color = $color;
 
         return $this;
+    }
+
+    /**
+     * Method created because the expression would be too long to put on one line.
+     *
+     * @return bool
+     */
+    public function isThirdPartyFunderValid(): bool
+    {
+        return ($this->getUnsyndicatedFunderType() === static::UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY && $this->getThirdPartyFunder())
+            || ($this->getUnsyndicatedFunderType() !== static::UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY && null === $this->getThirdPartyFunder());
     }
 }
