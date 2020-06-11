@@ -165,9 +165,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private $currentStatus;
 
     /**
+     * Participant committee status.
+     *
      * @var string
      *
-     * @ORM\Column(length=30)
+     * @ORM\Column(length=30, nullable=true)
      *
      * @Gedmo\Versioned
      *
@@ -176,6 +178,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private $committeeStatus;
 
     /**
+     * Participant committee response deadline if the status = "pended".
+     *
      * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="date_immutable", nullable=true)
@@ -185,6 +189,17 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @Groups({"projectParticipation:sensitive:read", "projectParticipation:participantOwner:write"})
      */
     private $committeeDeadline;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="text", nullable=true)
+     *
+     * @Gedmo\Versioned
+     *
+     * @Groups({"projectParticipation:sensitive:read", "projectParticipation:participantOwner:write"})
+     */
+    private $committeeComment;
 
     /**
      * @var RangedOfferWithFee
@@ -290,7 +305,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         $this->addedBy                      = $addedBy;
         $this->company                      = $company;
         $this->project                      = $project;
-        $this->committeeStatus              = self::COMMITTEE_STATUS_PENDED;
         $this->projectParticipationContacts = new ArrayCollection();
         $this->messages                     = new ArrayCollection();
         $this->statuses                     = new ArrayCollection();
@@ -367,19 +381,19 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getCommitteeStatus(): string
+    public function getCommitteeStatus(): ?string
     {
         return $this->committeeStatus;
     }
 
     /**
-     * @param string $committeeStatus
+     * @param string|null $committeeStatus
      *
      * @return ProjectParticipation
      */
-    public function setCommitteeStatus(string $committeeStatus): ProjectParticipation
+    public function setCommitteeStatus(?string $committeeStatus): ProjectParticipation
     {
         $this->committeeStatus = $committeeStatus;
 
@@ -402,6 +416,26 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public function setCommitteeDeadline(?DateTimeImmutable $committeeDeadline): ProjectParticipation
     {
         $this->committeeDeadline = $committeeDeadline;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCommitteeComment(): ?string
+    {
+        return $this->committeeComment;
+    }
+
+    /**
+     * @param string|null $committeeComment
+     *
+     * @return ProjectParticipation
+     */
+    public function setCommitteeComment(?string $committeeComment): ProjectParticipation
+    {
+        $this->committeeComment = $committeeComment;
 
         return $this;
     }
