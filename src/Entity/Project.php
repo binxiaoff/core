@@ -17,6 +17,7 @@ use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Entity\{Embeddable\Money,
+    Embeddable\NullableMoney,
     Embeddable\NullablePerson,
     Traits\TimestampableTrait,
     Traits\TraceableStatusTrait};
@@ -541,22 +542,18 @@ class Project
     private $interestExpressionEnabled;
 
     /**
-     * @var Money
+     * @var NullableMoney
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
-     *
-     * @Assert\Valid
      *
      * @Groups({"project:read", "project:create"})
      */
     private $targetArrangerParticipationMoney;
 
     /**
-     * @var Money
+     * @var NullableMoney
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
-     *
-     * @Assert\Valid
      *
      * @Groups({"project:admin:read", "project:create"})
      */
@@ -629,7 +626,9 @@ class Project
         $participant = new ProjectParticipation($this->submitterCompany, $this, $addedBy);
         $this->projectParticipations->add($participant);
 
-        $this->interestExpressionEnabled = false;
+        $this->interestExpressionEnabled        = false;
+        $this->targetArrangerParticipationMoney = new NullableMoney();
+        $this->arrangementCommissionMoney       = new NullableMoney();
     }
 
     /**
@@ -1450,19 +1449,19 @@ class Project
     }
 
     /**
-     * @return Money
+     * @return NullableMoney|null
      */
-    public function getTargetArrangerParticipationMoney(): Money
+    public function getTargetArrangerParticipationMoney(): ?NullableMoney
     {
-        return $this->targetArrangerParticipationMoney;
+        return $this->targetArrangerParticipationMoney->isValid() ? $this->targetArrangerParticipationMoney : null;
     }
 
     /**
-     * @param Money $targetArrangerParticipationMoney
+     * @param NullableMoney $targetArrangerParticipationMoney
      *
      * @return Project
      */
-    public function setTargetArrangerParticipationMoney(Money $targetArrangerParticipationMoney): Project
+    public function setTargetArrangerParticipationMoney(NullableMoney $targetArrangerParticipationMoney): Project
     {
         $this->targetArrangerParticipationMoney = $targetArrangerParticipationMoney;
 
@@ -1470,19 +1469,19 @@ class Project
     }
 
     /**
-     * @return Money
+     * @return NullableMoney|null
      */
-    public function getArrangementCommissionMoney(): Money
+    public function getArrangementCommissionMoney(): ?NullableMoney
     {
-        return $this->arrangementCommissionMoney;
+        return $this->arrangementCommissionMoney->isValid() ? $this->arrangementCommissionMoney : null;
     }
 
     /**
-     * @param Money $arrangementCommissionMoney
+     * @param NullableMoney $arrangementCommissionMoney
      *
      * @return Project
      */
-    public function setArrangementCommissionMoney(Money $arrangementCommissionMoney): Project
+    public function setArrangementCommissionMoney(NullableMoney $arrangementCommissionMoney): Project
     {
         $this->arrangementCommissionMoney = $arrangementCommissionMoney;
 
