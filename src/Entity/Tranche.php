@@ -716,7 +716,7 @@ class Tranche
     {
         $this->syndicated = $syndicated;
 
-        if (false === $this->syndicated) {
+        if ($this->syndicated) {
             $this->unsyndicatedFunderType = null;
             $this->thirdPartyFunder       = null;
         }
@@ -740,6 +740,10 @@ class Tranche
     public function setUnsyndicatedFunderType(?string $unsyndicatedFunderType): Tranche
     {
         $this->unsyndicatedFunderType = $unsyndicatedFunderType;
+
+        if ($this->unsyndicatedFunderType !== static::UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY) {
+            $this->thirdPartyFunder = null;
+        }
 
         return $this;
     }
