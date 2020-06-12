@@ -124,7 +124,7 @@ class NotificationDisplayManager
                             '%projectUrl%'     => '', // TODO Create a router
                             '%projectTitle%'   => $project->getTitle(),
                             '%borrowerName%'   => $project->getRiskGroupName(),
-                            '%offerMakerName%' => $projectParticipationTranche->getProjectParticipation()->getCompany(),
+                            '%offerMakerName%' => $projectParticipationTranche->getProjectParticipation()->getParticipant(),
                             '%offerAmount%'    => $this->currencyFormatterNoDecimal
                                 ->formatCurrency(
                                     (float) $projectParticipationTranche->getInvitationReply()->getMoney()->getAmount(),

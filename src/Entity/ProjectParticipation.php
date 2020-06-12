@@ -152,7 +152,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Assert\NotBlank
      */
-    private $company;
+    private $participant;
 
     /**
      * @var ProjectParticipationStatus
@@ -313,17 +313,17 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private $statuses;
 
     /**
-     * @param Company $company
+     * @param Company $participant
      * @param Project $project
      * @param Staff   $addedBy
      *
      * @throws Exception
      */
-    public function __construct(Company $company, Project $project, Staff $addedBy)
+    public function __construct(Company $participant, Project $project, Staff $addedBy)
     {
         $this->added                        = new DateTimeImmutable();
         $this->addedBy                      = $addedBy;
-        $this->company                      = $company;
+        $this->participant                  = $participant;
         $this->project                      = $project;
         $this->projectParticipationContacts = new ArrayCollection();
         $this->messages                     = new ArrayCollection();
@@ -335,7 +335,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
 
         $this->setCurrentStatus(new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_ACTIVE, $addedBy));
 
-        $this->projectParticipationContacts = $company->getStaff()
+        $this->projectParticipationContacts = $participant->getStaff()
             ->filter(static function (Staff $staff) use ($project) {
                 return $staff->isActive() && ($staff->isManager() || $staff->isAuditor()) && $staff->getMarketSegments()->contains($project->getMarketSegment());
             })
@@ -356,9 +356,9 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @return Company
      */
-    public function getCompany(): Company
+    public function getParticipant(): Company
     {
-        return $this->company;
+        return $this->participant;
     }
 
     /**

@@ -96,9 +96,9 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canCreate(ProjectParticipation $subject, Clients $user): bool
     {
-        $company   = $subject->getCompany();
-        $blacklist = array_map('strtolower', ProjectParticipation::BLACKLISTED_COMPANIES);
+        $participant = $subject->getParticipant();
+        $blacklist   = array_map('strtolower', ProjectParticipation::BLACKLISTED_COMPANIES);
 
-        return false === \in_array(mb_strtolower($company->getName()), $blacklist, true) && $this->authorizationChecker->isGranted('edit', $subject->getProject());
+        return false === \in_array(mb_strtolower($participant->getName()), $blacklist, true) && $this->authorizationChecker->isGranted('edit', $subject->getProject());
     }
 }

@@ -50,11 +50,11 @@ class ProjectParticipationContactNotifier
             return;
         }
 
-        $company = $projectParticipation->getCompany();
-        $project = $projectParticipation->getProject();
+        $participation = $projectParticipation->getParticipant();
+        $project       = $projectParticipation->getProject();
 
         $client     = $contact->getClient();
-        $templateId = $this->getTemplateId($project, $company, $client);
+        $templateId = $this->getTemplateId($project, $participation, $client);
 
         $temporaryToken = null;
         if ($client->isInitializationNeeded()) {
