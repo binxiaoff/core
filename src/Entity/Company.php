@@ -29,7 +29,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait, Traceable
  *         "get"
  *     }
  * )
- * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.hash", "projectParticipations.project"})
+ * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project"})
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\CompanyRepository")
  * @ORM\HasLifecycleCallbacks

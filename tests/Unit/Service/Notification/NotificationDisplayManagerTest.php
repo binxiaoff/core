@@ -149,7 +149,7 @@ class NotificationDisplayManagerTest extends TestCase
         /** @var Project|ObjectProphecy $project */
         $project = $this->prophesize(Project::class);
         $project->getId()->willReturn(Base::randomDigitNotNull());
-        $project->getHash()->willReturn(Base::lexify('???????'));
+        $project->getPublicId()->willReturn(Base::lexify('???????'));
         $project->getTitle()->willReturn(Base::lexify('???????'));
         $project->getRiskGroupName()->willReturn('CALS');
         $project->getSubmitterCompany()->willReturn($submitterCompany->reveal());

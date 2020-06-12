@@ -70,7 +70,7 @@ class MailerManager
         $project  = $comment->getProject();
         $keywords = [
             'firstName'   => '',
-            'projectUrl'  => $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL) . '#article-discussions',
+            'projectUrl'  => $this->router->generate('lender_project_details', ['hash' => $project->getPublicId()], RouterInterface::ABSOLUTE_URL) . '#article-discussions',
             'projectName' => $project->getRiskGroupName() . ' / ' . $project->getTitle(),
         ];
 
@@ -97,7 +97,7 @@ class MailerManager
         $project  = $trancheOffer->getTranche()->getProject();
         $keywords = [
             'firstName'              => '',
-            'projectUrl'             => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
+            'projectUrl'             => $this->router->generate('edit_project_details', ['hash' => $project->getPublicId()], RouterInterface::ABSOLUTE_URL),
             'projectName'            => $project->getRiskGroupName() . ' / ' . $project->getTitle(),
             'submitterName'          => $trancheOffer->getAddedBy()->getClient()->getName(),
             'trancheOfferAmount'     => $this->numberFormatter->format($trancheOffer->getMoney()->getAmount()),
@@ -146,7 +146,7 @@ class MailerManager
         return 0; // TODO redo the mails
         $keywords = [
             'firstName'   => '',
-            'projectUrl'  => $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
+            'projectUrl'  => $this->router->generate('lender_project_details', ['hash' => $project->getPublicId()], RouterInterface::ABSOLUTE_URL),
             'projectName' => $project->getRiskGroupName() . ' / ' . $project->getTitle(),
         ];
 

@@ -71,7 +71,7 @@ class ProjectParticipationContactNotifier
             ],
             'project' => [
                 'name' => $project->getTitle(),
-                'hash' => $project->getHash(),
+                'hash' => $project->getPublicId(),
             ],
             'temporaryToken' => [
                 'token' => $temporaryToken ? $temporaryToken->getToken() : '',
