@@ -31,7 +31,7 @@ class ProjectStatus implements StatusInterface
     use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
 
-    public const STATUS_CANCELED            = -99;
+    public const STATUS_CANCELLED           = -99;
     public const STATUS_REQUESTED           = 10;
     public const STATUS_PUBLISHED           = 20;
     public const STATUS_INTERESTS_COLLECTED = 30;

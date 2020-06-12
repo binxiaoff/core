@@ -99,7 +99,7 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canEdit(Project $project, Clients $user): bool
     {
-        if (ProjectStatus::STATUS_CANCELED === $project->getCurrentStatus()->getStatus()) {
+        if (ProjectStatus::STATUS_CANCELLED === $project->getCurrentStatus()->getStatus()) {
             return false;
         }
 
