@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\{Embeddable\Offer, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -39,7 +40,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectParticipationTranche")
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_tranche", "id_project_participation"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationTrancheRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectParticipationTranche
@@ -63,6 +64,11 @@ class ProjectParticipationTranche
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_tranche", nullable=false)
      * })
+     *
+     * @Assert\Expression(
+     *     "this.isOwnTranche(value)",
+     *     message="ProjectParticipationTranche.tranche.notOwn"
+     * )
      *
      * @Groups({"projectParticipationTranche:read", "projectParticipationTranche:create"})
      */
@@ -171,5 +177,17 @@ class ProjectParticipationTranche
         $this->allocation = $allocation;
 
         return $this;
+    }
+
+    /**
+     * Used in an expression constraints: A pended committee response need a deadline.
+     *
+     * @param Tranche $tranche
+     *
+     * @return bool
+     */
+    public function isOwnTranche(Tranche $tranche): bool
+    {
+        return $this->getProjectParticipation()->getProject()->getTranches()->contains($tranche);
     }
 }

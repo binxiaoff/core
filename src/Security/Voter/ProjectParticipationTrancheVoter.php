@@ -34,7 +34,8 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
      */
     public function canCreate(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
     {
-        return $projectParticipationTranche->getProjectParticipation()->getProject()->getSubmitterCompany() === $client->getCompany();
+        return $projectParticipationTranche->getProjectParticipation()->getProject()->getSubmitterCompany() === $client->getCompany()
+            && $projectParticipationTranche->getProjectParticipation()->isActive();
     }
 
     /**
@@ -47,11 +48,6 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
     {
         $projectParticipation = $projectParticipationTranche->getProjectParticipation();
 
-        return $projectParticipation->getProject()->getSubmitterCompany() === $client->getCompany()
-            || (
-                $this->projectParticipationManager->isParticipationOwner($client->getCurrentStaff(), $projectParticipation)
-                && ProjectParticipationStatus::STATUS_ACTIVE === $projectParticipation->getCurrentStatus()->getStatus()
-                && !in_array($projectParticipation->getCommitteeStatus(), [ProjectParticipation::COMMITTEE_STATUS_ACCEPTED, ProjectParticipation::COMMITTEE_STATUS_REJECTED], true)
-            );
+        return $this->projectParticipationManager->isEditable($projectParticipation, $client);
     }
 }

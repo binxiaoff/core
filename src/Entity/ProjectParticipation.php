@@ -14,7 +14,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Embeddable\{Fee, NullableSimplifiedFee, Offer, OfferWithFee, RangedOfferWithFee};
+use Unilend\Entity\Embeddable\{NullableSimplifiedFee, Offer, OfferWithFee, RangedOfferWithFee};
 use Unilend\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
@@ -94,7 +94,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity({"project", "company"})
+ * @UniqueEntity({"project", "participant"})
  */
 class ProjectParticipation implements TraceableStatusAwareInterface
 {
@@ -554,11 +554,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param Fee $allocationFee
+     * @param NullableSimplifiedFee $allocationFee
      *
      * @return ProjectParticipation
      */
-    public function setAllocationFee(Fee $allocationFee): ProjectParticipation
+    public function setAllocationFee(NullableSimplifiedFee $allocationFee): ProjectParticipation
     {
         $this->allocationFee = $allocationFee;
 

@@ -31,3 +31,7 @@ ProjectParticipation:
         unchangeable: La participation est déjà en statut définitive. Vous ne pouvez plus changer son statut.
     committeeStatus:
         pendedDeadline: Merci de saisir une date de réponse du comité si la réponse est en attente.
+
+ProjectParticipationTranche:
+    tranche:
+        notOwn: Merci de choisir une tranche du projet.
