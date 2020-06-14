@@ -116,4 +116,12 @@ class ProjectParticipationStatus implements StatusInterface
     {
         return static::getConstants('STATUS_');
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefinitiveStatuses(): array
+    {
+        return [self::STATUS_ARCHIVED_BY_ARRANGER, self::STATUS_ARCHIVED_BY_PARTICIPANT];
+    }
 }

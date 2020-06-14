@@ -176,4 +176,12 @@ class ProjectStatus implements StatusInterface
     {
         return $this->getProject();
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefinitiveStatuses(): array
+    {
+        return [];
+    }
 }
