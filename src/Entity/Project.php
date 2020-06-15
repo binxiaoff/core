@@ -805,7 +805,10 @@ class Project
         if ($projectStatus->getProject() !== $this) {
             throw new RuntimeException('Attempt to add an incorrect status');
         }
-        $this->currentStatus = $projectStatus;
+
+        $this->baseStatusSetter($projectStatus);
+
+        return $this;
     }
 
     /**
