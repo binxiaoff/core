@@ -16,10 +16,10 @@ final class Version20200611130530 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql("UPDATE project SET target_arranger_participation_money_currency = NULL WHERE target_arranger_participation_money_currency = ''");
-        $this->addSql("UPDATE project SET target_arranger_participation_money_amount = NULL WHERE target_arranger_participation_money_amount = CAST('' AS DECIMAL)");
-        $this->addSql("UPDATE project SET arrangement_commission_money_currency = NULL WHERE arrangement_commission_money_currency = ''");
-        $this->addSql("UPDATE project SET arrangement_commission_money_amount = NULL WHERE arrangement_commission_money_amount = CAST('' AS DECIMAL)");
+        $this->addSql('UPDATE project SET target_arranger_participation_money_currency = NULL WHERE 1 = 1');
+        $this->addSql('UPDATE project SET target_arranger_participation_money_amount = NULL WHERE 1 = 1');
+        $this->addSql('UPDATE project SET arrangement_commission_money_currency = NULL WHERE 1 = 1');
+        $this->addSql('UPDATE project SET arrangement_commission_money_amount = NULL WHERE 1 = 1');
     }
 
     public function down(Schema $schema): void
