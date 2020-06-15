@@ -7,6 +7,7 @@ namespace Unilend\Entity\Embeddable;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Embeddable
@@ -14,31 +15,34 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class OfferWithFee extends Offer
 {
     /**
-     * @var NullableSimplifiedFee
+     * @var string|null
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableSimplifiedFee")
+     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
+     *
+     * @Assert\Type("numeric")
+     * @Assert\NotBlank
      *
      * @Gedmo\Versioned
      *
      * @Groups({"offerWithFee:read", "offerWithFee:write"})
      */
-    protected $fee;
+    protected $feeRate;
 
     /**
-     * @param NullableMoney|null         $money
-     * @param NullableSimplifiedFee|null $fee
+     * @param NullableMoney|null $money
+     * @param string|null        $feeRate
      */
-    public function __construct(?NullableMoney $money = null, ?NullableSimplifiedFee $fee = null)
+    public function __construct(?NullableMoney $money = null, ?string $feeRate = null)
     {
-        $this->fee = $fee ?? new NullableSimplifiedFee();
+        $this->feeRate = $feeRate;
         parent::__construct($money);
     }
 
     /**
-     * @return NullableSimplifiedFee
+     * @return string|null
      */
-    public function getFee(): NullableSimplifiedFee
+    public function getFeeRate(): ?string
     {
-        return $this->fee;
+        return $this->feeRate;
     }
 }

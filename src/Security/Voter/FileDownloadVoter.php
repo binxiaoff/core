@@ -155,7 +155,7 @@ class FileDownloadVoter extends AbstractEntityVoter
     private function hasValidatedOffer(ProjectParticipationContact $contact): bool
     {
         // Todo: the rule of validate offer need to be defined CALS-1702
-        return null !== ($participation = $contact->getProjectParticipation()) && $participation->getAllocationFee();
+        return null !== ($participation = $contact->getProjectParticipation()) && $participation->getAllocationFeeRate();
     }
 
     /**

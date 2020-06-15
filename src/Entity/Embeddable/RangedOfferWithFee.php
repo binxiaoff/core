@@ -25,15 +25,15 @@ class RangedOfferWithFee extends OfferWithFee
     private $minMoney;
 
     /**
-     * @param NullableMoney|null         $money
-     * @param NullableSimplifiedFee|null $fee
-     * @param NullableMoney|null         $minMoney
+     * @param NullableMoney|null $money
+     * @param string|null        $feeRate
+     * @param NullableMoney|null $minMoney
      */
-    public function __construct(?NullableMoney $money = null, ?NullableSimplifiedFee $fee = null, ?NullableMoney $minMoney = null)
+    public function __construct(?NullableMoney $money = null, ?string $feeRate = null, ?NullableMoney $minMoney = null)
     {
         $this->minMoney = $minMoney ?? new NullableMoney();
 
-        parent::__construct($money, $fee);
+        parent::__construct($money, $feeRate);
     }
 
     /**

@@ -14,7 +14,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Embeddable\{NullableSimplifiedFee, Offer, OfferWithFee, RangedOfferWithFee};
+use Unilend\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithFee};
 use Unilend\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
@@ -27,7 +27,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "projectParticipationTranche:read",
  *         "projectParticipationStatus:read",
  *         "company:read",
- *         "nullableSimplifiedFee:read",
  *         "nullableMoney:read",
  *         "rangedOfferWithFee:read",
  *         "offerWithFee:read",
@@ -35,7 +34,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
- *         "nullableSimplifiedFee:write",
  *         "nullableMoney:write",
  *         "rangedOfferWithFee:write",
  *         "offerWithFee:write",
@@ -54,7 +52,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "projectStatus:read",
  *                 "company:read",
  *                 "role:read",
- *                 "nullableSimplifiedFee:read",
  *                 "marketSegment:read",
  *                 "nullableMoney:read",
  *                 "rangedOfferWithFee:read",
@@ -66,7 +63,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "denormalization_context": {"groups": {
  *                 "projectParticipation:create",
  *                 "projectParticipation:write",
- *                 "nullableSimplifiedFee:write",
  *                 "nullableMoney:write",
  *                 "rangedOfferWithFee:write",
  *                 "offerWithFee:write",
@@ -257,15 +253,18 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private $invitationReplyMode;
 
     /**
-     * @var NullableSimplifiedFee
+     * @var string|null
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableSimplifiedFee")
+     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
+     *
+     * @Assert\Type("numeric")
+     * @Assert\NotBlank
      *
      * @Gedmo\Versioned
      *
      * @Groups({"projectParticipation:sensitive:read", "projectParticipation:arranger:write"})
      */
-    private $allocationFee;
+    private $allocationFeeRate;
 
     /**
      * @var DateTimeImmutable|null
@@ -331,7 +330,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         $this->interestRequest              = new RangedOfferWithFee();
         $this->interestReply                = new Offer();
         $this->invitationRequest            = new OfferWithFee();
-        $this->allocationFee                = new NullableSimplifiedFee();
 
         $this->setCurrentStatus(new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_ACTIVE, $addedBy));
 
@@ -546,21 +544,21 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return NullableSimplifiedFee
+     * @return string|null
      */
-    public function getAllocationFee(): NullableSimplifiedFee
+    public function getAllocationFeeRate(): ?string
     {
-        return $this->allocationFee;
+        return $this->allocationFeeRate;
     }
 
     /**
-     * @param NullableSimplifiedFee $allocationFee
+     * @param string|null $allocationFeeRate
      *
      * @return ProjectParticipation
      */
-    public function setAllocationFee(NullableSimplifiedFee $allocationFee): ProjectParticipation
+    public function setAllocationFeeRate(?string $allocationFeeRate): ProjectParticipation
     {
-        $this->allocationFee = $allocationFee;
+        $this->allocationFeeRate = $allocationFeeRate;
 
         return $this;
     }

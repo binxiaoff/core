@@ -21,11 +21,11 @@ class TraceableStatusValidator
         // We check the value only if it has previous status and only when we are adding a new status...
         if ($lastStatus && null === $object->getId()) {
             if ($object->getStatus() === $lastStatus->getStatus()) {
-                $context->buildViolation('ProjectParticipation.status.duplicated')->atPath('status')->addViolation();
+                $context->buildViolation('ProjectParticipationStatus.duplicated')->atPath('status')->addViolation();
             }
 
             if (in_array($lastStatus->getStatus(), $lastStatus->getDefinitiveStatuses(), true)) {
-                $context->buildViolation('ProjectParticipation.status.unchangeable')->atPath('status')->addViolation();
+                $context->buildViolation('ProjectParticipationStatus.unchangeable')->atPath('status')->addViolation();
             }
         }
     }
