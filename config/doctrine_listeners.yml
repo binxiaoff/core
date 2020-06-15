@@ -50,6 +50,7 @@ services:
     Unilend\Listener\Doctrine\Entity\ProjectParticipation\ProjectParticipationUpdatedListener:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\ProjectParticipation, method: archiveOnRejectedByCommittee }
+            - { name: doctrine.orm.entity_listener, event: postUpdate, entity: Unilend\Entity\ProjectParticipation, method: saveTheNewArchivedStatus }
 
     # Message Dispatcher
     Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientUpdatedListener:

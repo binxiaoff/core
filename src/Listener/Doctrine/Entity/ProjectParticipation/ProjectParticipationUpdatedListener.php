@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Listener\Doctrine\Entity\ProjectParticipation;
 
-use Doctrine\ORM\Event\PreUpdateEventArgs;
+use Doctrine\ORM\{Event\PreUpdateEventArgs, ORMException, OptimisticLockException};
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\Security;
@@ -19,6 +19,8 @@ class ProjectParticipationUpdatedListener
     private $logger;
     /** @var ProjectParticipationStatusRepository */
     private $projectParticipationStatusRepository;
+    /** @var ProjectParticipationStatus */
+    private $projectParticipationStatus;
 
     /**
      * @param Security                             $security
@@ -57,8 +59,22 @@ class ProjectParticipationUpdatedListener
             && $args->getNewValue(ProjectParticipation::FIELD_COMMITTEE_STATUS)
             && ProjectParticipation::COMMITTEE_STATUS_REJECTED === $args->getNewValue(ProjectParticipation::FIELD_COMMITTEE_STATUS)
         ) {
-            $projectParticipationStatus = new ProjectParticipationStatus($projectParticipation, ProjectParticipationStatus::STATUS_ARCHIVED_BY_PARTICIPANT, $staff);
-            $this->projectParticipationStatusRepository->save($projectParticipationStatus);
+            $this->projectParticipationStatus = new ProjectParticipationStatus($projectParticipation, ProjectParticipationStatus::STATUS_ARCHIVED_BY_PARTICIPANT, $staff);
+            $this->projectParticipationStatusRepository->persist($this->projectParticipationStatus);
         }
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function saveTheNewArchivedStatus(): void
+    {
+        // We cannot flush in preUpdate, so we flush here in postUpdate
+        if ($this->projectParticipationStatus) {
+            $this->projectParticipationStatusRepository->save($this->projectParticipationStatus);
+        }
+        // important to unset it
+        $this->projectParticipationStatus = null;
     }
 }

@@ -36,4 +36,14 @@ class ProjectParticipationStatusRepository extends ServiceEntityRepository
         $this->getEntityManager()->persist($ProjectParticipationStatus);
         $this->getEntityManager()->flush();
     }
+
+    /**
+     * @param ProjectParticipationStatus $ProjectParticipationStatus
+     *
+     * @throws ORMException
+     */
+    public function persist(ProjectParticipationStatus $ProjectParticipationStatus): void
+    {
+        $this->getEntityManager()->persist($ProjectParticipationStatus);
+    }
 }
