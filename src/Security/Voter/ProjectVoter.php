@@ -20,6 +20,7 @@ class ProjectVoter extends AbstractEntityVoter
     public const ATTRIBUTE_CREATE_TRANCHE_OFFER          = 'create_tranche_offer';
     public const ATTRIBUTE_COMMENT                       = 'comment';
     public const ATTRIBUTE_CREATE                        = 'create';
+    public const ATTRIBUTE_DELETE                        = 'delete';
 
     /** @var ProjectOrganizerRepository */
     private $projectOrganizerRepository;
@@ -51,12 +52,16 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canView(Project $project, Clients $user): bool
     {
-        if ($this->canEdit($project, $user)) {
+        if ($project->getSubmitterClient() === $user) {
             return true;
         }
 
-        return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $project)
-            && (false === $project->isConfidential() || $this->projectParticipationManager->isConfidentialityAccepted($user->getCurrentStaff(), $project));
+        $staff = $user->getCurrentStaff();
+
+        return  $staff
+            && $staff->isActive()
+            && $this->projectParticipationManager->isParticipant($staff, $project)
+            && (false === $project->isConfidential() || $this->projectParticipationManager->isConfidentialityAccepted($staff, $project));
     }
 
     /**
@@ -99,20 +104,12 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canEdit(Project $project, Clients $user): bool
     {
-        if (ProjectStatus::STATUS_CANCELLED === $project->getCurrentStatus()->getStatus()) {
-            return false;
-        }
-
-        if ($project->getSubmitterClient() === $user) {
-            return true;
-        }
-
         $staff = $user->getCurrentStaff();
 
-        return  $staff
-                       && $staff->isActive()
-                       && $staff->getCompany() === $project->getSubmitterCompany()
-                       && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
+        return $staff
+            && $this->canView($project, $user) && $staff->getCompany() === $project->getSubmitterCompany()
+            && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()))
+            && ProjectStatus::STATUS_CANCELLED !== $project->getCurrentStatus()->getStatus();
     }
 
     /**
@@ -169,6 +166,19 @@ class ProjectVoter extends AbstractEntityVoter
     protected function canComment(Project $project, Clients $user): bool
     {
         return $this->canView($project, $user);
+    }
+
+    /**
+     * @param Project $project
+     * @param Clients $user
+     *
+     * @throws Exception
+     *
+     * @return bool
+     */
+    protected function canDelete(Project $project, Clients $user): bool
+    {
+        return $this->canEdit($project, $user) && ProjectStatus::STATUS_REQUESTED === $project->getCurrentStatus()->getStatus();
     }
 
     /**

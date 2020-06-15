@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
@@ -14,6 +15,23 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={"groups": {"projectStatus:read", "timestampable:read"}},
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *             "denormalization_context": {"groups": {"projectStatus:create"}}
+ *         }
+ *     }
+ * )
+ *
  * @ORM\Table(
  *     name="project_status",
  *     indexes={

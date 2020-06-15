@@ -27,7 +27,16 @@ use Unilend\Traits\ConstantsAwareTrait;
 /**
  * @ApiResource(
  *     normalizationContext={
- *         "groups": {"project:read", "company:read", "marketSegment:read", "projectParticipation:read", "projectParticipationOffer:read", "money:read", "nullablePerson:read"}
+ *         "groups": {
+ *             "project:read",
+ *             "company:read",
+ *             "marketSegment:read",
+ *             "projectParticipation:read",
+ *             "projectParticipationOffer:read",
+ *             "money:read",
+ *             "nullablePerson:read",
+ *             "projectStatus:read"
+ *         }
  *     },
  *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "tag:write", "nullablePerson:write"}},
  *     collectionOperations={
@@ -101,7 +110,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             }
  *         },
  *         "delete": {
- *             "security": "is_granted('edit', object)"
+ *             "security": "is_granted('delete', object)"
  *         }
  *     }
  * )
@@ -787,17 +796,16 @@ class Project
     }
 
     /**
-     * TODO its argument should be an int not the object itself.
-     *
      * @param ProjectStatus $projectStatus
      *
      * @return Project
      */
-    public function setCurrentStatus(ProjectStatus $projectStatus): self
+    public function setCurrentStatus(ProjectStatus $projectStatus): Project
     {
-        $projectStatus->setProject($this);
-
-        return $this->baseStatusSetter($projectStatus);
+        if ($projectStatus->getProject() !== $this) {
+            throw new RuntimeException('Attempt to add an incorrect status');
+        }
+        $this->currentStatus = $projectStatus;
     }
 
     /**
