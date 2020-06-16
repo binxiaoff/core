@@ -4,12 +4,30 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use Unilend\Entity\{Clients, ProjectParticipationTranche};
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Unilend\Entity\{Clients, Project, ProjectParticipationTranche};
+use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationTrancheVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_EDIT   = 'edit';
+    public const ATTRIBUTE_CREATE                   = 'create';
+    public const ATTRIBUTE_EDIT                     = 'edit';
+    public const ATTRIBUTE_SENSITIVE_VIEW           = 'sensitive_view';
+    public const ATTRIBUTE_ARRANGER_EDIT            = 'arranger_edit';
+    public const ATTRIBUTE_PARTICIPATION_OWNER_EDIT = 'participation_owner_edit';
+
+    /** @var ProjectParticipationManager */
+    private $projectParticipationManager;
+
+    /**
+     * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param ProjectParticipationManager   $projectParticipationManager
+     */
+    public function __construct(AuthorizationCheckerInterface $authorizationChecker, ProjectParticipationManager $projectParticipationManager)
+    {
+        $this->projectParticipationManager = $projectParticipationManager;
+        parent::__construct($authorizationChecker);
+    }
 
     /**
      * @param ProjectParticipationTranche $projectParticipationTranche
@@ -17,7 +35,7 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    public function canCreate(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
+    protected function canCreate(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
     {
         return $projectParticipationTranche->getProjectParticipation()->getProject()->getSubmitterCompany() === $client->getCompany()
             && $projectParticipationTranche->getProjectParticipation()->isActive();
@@ -29,10 +47,55 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    public function canEdit(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
+    protected function canEdit(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
     {
         $projectParticipation = $projectParticipationTranche->getProjectParticipation();
 
         return $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $projectParticipation);
+    }
+
+    /**
+     * @param ProjectParticipationTranche $projectParticipationTranche
+     * @param Clients                     $client
+     *
+     * @return bool
+     */
+    protected function canArrangerEdit(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
+    {
+        $project = $projectParticipationTranche->getProjectParticipation()->getProject();
+
+        return $project->isInContractNegotiationStep() && $project->getSubmitterCompany() === $client->getCompany();
+    }
+
+    /**
+     * @param ProjectParticipationTranche $projectParticipationTranche
+     * @param Clients                     $client
+     *
+     * @return bool
+     */
+    protected function canParticipantOwnerEdit(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
+    {
+        $project = $projectParticipationTranche->getProjectParticipation()->getProject();
+        // For the non-client entity, it's the arrange who edit the invitation reply.
+        return $project->isInOfferNegotiationStep()
+            && (
+                ($projectParticipationTranche->getProjectParticipation()->getParticipant()->isProspect() && $project->getSubmitterCompany() === $client->getCompany())
+                || $this->projectParticipationManager->isParticipationOwner($client->getCurrentStaff(), $projectParticipationTranche->getProjectParticipation())
+            );
+    }
+
+    /**
+     * @param ProjectParticipationTranche $projectParticipationTranche
+     * @param Clients                     $client
+     *
+     * @return bool
+     */
+    protected function canSensitiveView(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
+    {
+        $project = $projectParticipationTranche->getProjectParticipation()->getProject();
+
+        return Project::OFFER_VISIBILITY_PUBLIC === $project->getOfferVisibility()
+            || $this->projectParticipationManager->isParticipationOwner($client->getCurrentStaff(), $projectParticipationTranche->getProjectParticipation())
+            || $project->getSubmitterCompany() === $client->getCompany();
     }
 }

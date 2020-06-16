@@ -6,8 +6,8 @@ namespace Unilend\Serializer\Normalizer\ProjectParticipationTranche;
 
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{ContextAwareNormalizerInterface, NormalizerAwareInterface, NormalizerAwareTrait};
-use Unilend\Entity\{Clients, Project, ProjectParticipationTranche};
-use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
+use Unilend\Entity\ProjectParticipationTranche;
+use Unilend\Security\Voter\ProjectParticipationTrancheVoter;
 
 class ProjectParticipationTrancheNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
@@ -17,19 +17,13 @@ class ProjectParticipationTrancheNormalizer implements ContextAwareNormalizerInt
 
     /** @var Security */
     private $security;
-    /** @var ProjectParticipationManager */
-    private $projectParticipationManager;
 
     /**
-     * @param Security                    $security
-     * @param ProjectParticipationManager $projectParticipationManager
+     * @param Security $security
      */
-    public function __construct(
-        Security $security,
-        ProjectParticipationManager $projectParticipationManager
-    ) {
-        $this->security                    = $security;
-        $this->projectParticipationManager = $projectParticipationManager;
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
     }
 
     /**
@@ -63,21 +57,7 @@ class ProjectParticipationTrancheNormalizer implements ContextAwareNormalizerInt
      */
     private function getAdditionalNormalizerGroups(ProjectParticipationTranche $projectParticipationTranche): array
     {
-        $client = $this->security->getUser();
-        $staff  = $client instanceof Clients ? $client->getCurrentStaff() : null;
-
-        if (null === $staff) {
-            return [];
-        }
-
-        $project = $projectParticipationTranche->getProjectParticipation()->getProject();
-
-        if (
-            $this->security->isGranted('ROLE_ADMIN')
-            || Project::OFFER_VISIBILITY_PUBLIC === $project->getOfferVisibility()
-            || $this->projectParticipationManager->isParticipationOwner($staff, $projectParticipationTranche->getProjectParticipation())
-            || $project->getSubmitterCompany() === $staff->getCompany()
-        ) {
+        if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_SENSITIVE_VIEW, $projectParticipationTranche)) {
             return [ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ];
         }
 

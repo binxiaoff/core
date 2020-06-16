@@ -6,8 +6,8 @@ namespace Unilend\Serializer\Normalizer\ProjectParticipationTranche;
 
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
-use Unilend\Entity\{Clients, ProjectParticipationTranche};
-use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
+use Unilend\Entity\ProjectParticipationTranche;
+use Unilend\Security\Voter\ProjectParticipationTrancheVoter;
 
 class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -18,17 +18,13 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
 
     /** @var Security */
     private $security;
-    /** @var ProjectParticipationManager */
-    private $projectParticipationManager;
 
     /**
-     * @param Security                    $security
-     * @param ProjectParticipationManager $projectParticipationManager
+     * @param Security $security
      */
-    public function __construct(Security $security, ProjectParticipationManager $projectParticipationManager)
+    public function __construct(Security $security)
     {
-        $this->security                    = $security;
-        $this->projectParticipationManager = $projectParticipationManager;
+        $this->security = $security;
     }
 
     /**
@@ -62,37 +58,14 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
      */
     private function getAdditionalDenormalizerGroups(ProjectParticipationTranche $projectParticipationTranche): array
     {
-        $client = $this->security->getUser();
-        $staff  = $client instanceof Clients ? $client->getCurrentStaff() : null;
-
-        if (null === $staff) {
-            return [];
-        }
-
-        $project = $projectParticipationTranche->getProjectParticipation()->getProject();
-
         $groups = [];
 
-        if ($this->security->isGranted('ROLE_ADMIN')) {
-            return [
-                ProjectParticipationTranche::SERIALIZER_GROUP_ARRANGER_WRITE,
-                ProjectParticipationTranche::SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE,
-            ];
-        }
-
-        if ($project->isInContractNegotiationStep() && $project->getSubmitterCompany() === $staff->getCompany()) {
+        if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_ARRANGER_EDIT, $projectParticipationTranche)) {
             $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_ARRANGER_WRITE;
         }
 
-        // For the non-client entity, it's the arrange who edit the invitation reply.
-        if (
-            $project->isInOfferNegotiationStep()
-            && (
-                $projectParticipationTranche->getProjectParticipation()->getParticipant()->isProspect()
-                || $this->projectParticipationManager->isParticipationOwner($staff, $projectParticipationTranche->getProjectParticipation())
-            )
-        ) {
-            $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE;
+        if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_PARTICIPATION_OWNER_EDIT, $projectParticipationTranche)) {
+            $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE;
         }
 
         return $groups;

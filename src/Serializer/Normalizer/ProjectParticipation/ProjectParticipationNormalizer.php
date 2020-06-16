@@ -6,8 +6,8 @@ namespace Unilend\Serializer\Normalizer\ProjectParticipation;
 
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{ContextAwareNormalizerInterface, NormalizerAwareInterface, NormalizerAwareTrait};
-use Unilend\Entity\{Clients, Project, ProjectParticipation, ProjectParticipationTranche};
-use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
+use Unilend\Entity\{ProjectParticipation, ProjectParticipationTranche};
+use Unilend\Security\Voter\ProjectParticipationVoter;
 
 class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
@@ -17,17 +17,13 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
 
     /** @var Security */
     private $security;
-    /** @var ProjectParticipationManager */
-    private $projectParticipationManager;
 
     /**
-     * @param Security                    $security
-     * @param ProjectParticipationManager $projectParticipationManager
+     * @param Security $security
      */
-    public function __construct(Security $security, ProjectParticipationManager $projectParticipationManager)
+    public function __construct(Security $security)
     {
-        $this->security                    = $security;
-        $this->projectParticipationManager = $projectParticipationManager;
+        $this->security = $security;
     }
 
     /**
@@ -55,39 +51,22 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
     }
 
     /**
-     * @param ProjectParticipation $participation
+     * @param ProjectParticipation $projectParticipation
      *
      * @return array
      */
-    private function getAdditionalNormalizerGroups(ProjectParticipation $participation): array
+    private function getAdditionalNormalizerGroups(ProjectParticipation $projectParticipation): array
     {
-        $client = $this->security->getUser();
-        $staff  = $client instanceof Clients ? $client->getCurrentStaff() : null;
+        $group = [];
 
-        if (null === $staff) {
-            return [];
+        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ADMIN_VIEW, $projectParticipation)) {
+            $group[] = ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ;
         }
 
-        $project = $participation->getProject();
-
-        $clientCurrentCompany = $client->getCompany();
-
-        if (
-            $this->security->isGranted('ROLE_ADMIN')
-            || $this->projectParticipationManager->isParticipationOwner($staff, $participation)
-            || $participation->getProject()->getSubmitterCompany() === $clientCurrentCompany
-        ) {
-            return [
-                ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ,
-                ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
-                ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ,
-            ];
+        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_SENSITIVE_VIEW, $projectParticipation)) {
+            $group = array_merge($group, [ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ]);
         }
 
-        if (Project::OFFER_VISIBILITY_PUBLIC === $project->getOfferVisibility()) {
-            return [ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ];
-        }
-
-        return [];
+        return $group;
     }
 }

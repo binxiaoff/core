@@ -31,7 +31,7 @@ class ProjectParticipationStatusVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    public function canCreate(ProjectParticipationStatus $projectParticipationStatus, Clients $client): bool
+    protected function canCreate(ProjectParticipationStatus $projectParticipationStatus, Clients $client): bool
     {
         $projectParticipation = $projectParticipationStatus->getProjectParticipation();
         $project              = $projectParticipation->getProject();

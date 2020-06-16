@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\Serializer\Normalizer\ProjectParticipation;
 
-use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
-use Unilend\Entity\{Clients, ProjectParticipation};
-use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
+use Unilend\Entity\ProjectParticipation;
+use Unilend\Security\Voter\ProjectParticipationVoter;
 
 class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -19,19 +18,13 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
 
     /** @var Security */
     private $security;
-    /** @var ProjectParticipationManager */
-    private $projectParticipationManager;
 
     /**
-     * @param Security                    $security
-     * @param ProjectParticipationManager $projectParticipationManager
+     * @param Security $security
      */
-    public function __construct(
-        Security $security,
-        ProjectParticipationManager $projectParticipationManager
-    ) {
-        $this->security                    = $security;
-        $this->projectParticipationManager = $projectParticipationManager;
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
     }
 
     /**
@@ -44,8 +37,6 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
 
     /**
      * {@inheritdoc}
-     *
-     * @throws NonUniqueResultException
      */
     public function denormalize($data, $type, $format = null, array $context = [])
     {
@@ -67,56 +58,34 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
      */
     private function getAdditionalDenormalizerGroups(ProjectParticipation $projectParticipation): array
     {
-        $client = $this->security->getUser();
-        $staff  = $client instanceof Clients ? $client->getCurrentStaff() : null;
-
-        if (null === $staff) {
-            return [];
-        }
-
         $groups = [];
 
-        $project = $projectParticipation->getProject();
-
-        if ($this->security->isGranted('ROLE_ADMIN')) {
-            return [
-                ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_INTEREST_COLLECTION_WRITE,
-                ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE,
-                ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_OFFER_NEGOTIATION_WRITE,
-                ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE,
-                ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_CONTRACT_NEGOTIATION_OWNER_WRITE,
-                ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE,
-            ];
+        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_INTEREST_COLLECTION_EDIT, $projectParticipation)) {
+            $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE;
         }
 
-        if ($projectParticipation->getProject()->getSubmitterCompany() === $staff->getCompany()) {
-            if (false === $project->isInterestCollected()) {
-                $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE;
-            }
-
-            if ($project->isInOfferNegotiationStep()) {
-                $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE;
-            }
-
-            if ($project->isInContractNegotiationStep()) {
-                $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE;
-            }
+        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_OFFER_NEGOTIATION_EDIT, $projectParticipation)) {
+            $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE;
         }
 
-        if ($this->projectParticipationManager->isParticipationOwner($staff, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE;
+        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_CONTRACT_NEGOTIATION_EDIT, $projectParticipation)) {
+            $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE;
+        }
 
-            if ($project->isInInterestCollectionStep()) {
-                $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_INTEREST_COLLECTION_WRITE;
-            }
+        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_EDIT, $projectParticipation)) {
+            $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE;
+        }
 
-            if ($project->isInOfferNegotiationStep()) {
-                $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_OFFER_NEGOTIATION_WRITE;
-            }
+        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_INTEREST_COLLECTION_EDIT, $projectParticipation)) {
+            $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_INTEREST_COLLECTION_WRITE;
+        }
 
-            if ($project->isInContractNegotiationStep()) {
-                $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_CONTRACT_NEGOTIATION_OWNER_WRITE;
-            }
+        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_OFFER_NEGOTIATION_EDIT, $projectParticipation)) {
+            $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE;
+        }
+
+        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_CONTRACT_NEGOTIATION_EDIT, $projectParticipation)) {
+            $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_CONTRACT_NEGOTIATION_OWNER_WRITE;
         }
 
         return $groups;
