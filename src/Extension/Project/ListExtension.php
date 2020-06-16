@@ -64,7 +64,7 @@ class ListExtension implements QueryCollectionExtensionInterface
                     'ppc.client = :client'
                 )
             ))
-            ->setParameter('minimumParticipantDisplayableStatus', ProjectStatus::STATUS_PUBLISHED)
+            ->setParameter('minimumParticipantDisplayableStatus', ProjectStatus::STATUS_INTEREST_EXPRESSION)
             ->setParameter('company', $staff->getCompany())
             ->setParameter('client', $user)
             ->setParameter('marketSegments', $staff ? $staff->getMarketSegments() : [])

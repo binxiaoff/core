@@ -98,7 +98,7 @@ class ProjectParticipationContactNotifier
     {
         $templateId = null;
 
-        if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
+        if (ProjectStatus::STATUS_INTEREST_EXPRESSION === $project->getCurrentStatus()->getStatus()) {
             if ($company->isProspect()) {
                 $templateId = 'publication-prospect-company';
             }
@@ -108,7 +108,7 @@ class ProjectParticipationContactNotifier
             }
         }
 
-        if (ProjectStatus::STATUS_INTERESTS_COLLECTED === $project->getCurrentStatus()->getStatus()) {
+        if (ProjectStatus::STATUS_PARTICIPANT_REPLY === $project->getCurrentStatus()->getStatus()) {
             if ($company->isProspect()) {
                 $templateId = 'syndication-prospect-company';
             }

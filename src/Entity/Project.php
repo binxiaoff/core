@@ -591,7 +591,7 @@ class Project
         $this->submitterClient       = $addedBy->getClient();
         $this->submitterCompany      = $addedBy->getCompany();
 
-        $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_REQUESTED, $addedBy));
+        $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_DRAFT, $addedBy));
 
         $this->syndicationType   = static::PROJECT_SYNDICATION_TYPE_PRIMARY;
         $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;
@@ -1063,7 +1063,7 @@ class Project
     public function isEditable(): bool
     {
         if ($this->getCurrentStatus()) {
-            return $this->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_PUBLISHED;
+            return $this->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_INTEREST_EXPRESSION;
         }
 
         return true;
@@ -1076,7 +1076,7 @@ class Project
      */
     public function isOnline(): bool
     {
-        return ProjectStatus::STATUS_PUBLISHED === $this->getCurrentStatus()->getStatus();
+        return ProjectStatus::STATUS_INTEREST_EXPRESSION === $this->getCurrentStatus()->getStatus();
     }
 
     /**

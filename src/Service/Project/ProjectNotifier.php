@@ -105,17 +105,17 @@ class ProjectNotifier
     public function getSlackMessageText(Project $project): string
     {
         switch ($project->getCurrentStatus()->getStatus()) {
-            case ProjectStatus::STATUS_REQUESTED:
+            case ProjectStatus::STATUS_DRAFT:
                 return 'Le dosier « ' . $project->getTitle() . ' » vient d’être créé';
-            case ProjectStatus::STATUS_PUBLISHED:
+            case ProjectStatus::STATUS_INTEREST_EXPRESSION:
                 return 'Les sollicitations des marques d\'intérêt ont été envoyées pour le dossier « ' . $project->getTitle() . ' ».';
-            case ProjectStatus::STATUS_INTERESTS_COLLECTED:
+            case ProjectStatus::STATUS_PARTICIPANT_REPLY:
                 return 'Les demandes de réponse ferme ont été envoyées pour le dossier « ' . $project->getTitle() . ' ».';
-            case ProjectStatus::STATUS_OFFERS_COLLECTED:
+            case ProjectStatus::STATUS_ALLOCATION:
                 return 'Le dossier « ' . $project->getTitle() . ' » vient de passer en phase de contractualisation.';
-            case ProjectStatus::STATUS_CONTRACTS_SIGNED:
+            case ProjectStatus::STATUS_CONTRACTUALISATION:
                 return 'Le dossier « ' . $project->getTitle() . ' » vient d‘être clos.';
-            case ProjectStatus::STATUS_REPAID:
+            case ProjectStatus::STATUS_SYNDICATION_FINISHED:
                 return '';
         }
 
@@ -135,7 +135,7 @@ class ProjectNotifier
     {
         $sent = 0;
 
-        if (ProjectStatus::STATUS_PUBLISHED > $project->getCurrentStatus()->getStatus()) {
+        if (ProjectStatus::STATUS_INTEREST_EXPRESSION > $project->getCurrentStatus()->getStatus()) {
             return $sent;
         }
 

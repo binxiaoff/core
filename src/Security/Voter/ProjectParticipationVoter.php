@@ -50,7 +50,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function fulfillPreconditions($subject, Clients $user): bool
     {
-        return $subject->getProject()->getCurrentStatus()->getStatus() <= ProjectStatus::STATUS_INTERESTS_COLLECTED;
+        return $subject->getProject()->getCurrentStatus()->getStatus() <= ProjectStatus::STATUS_PARTICIPANT_REPLY;
     }
 
     /**
