@@ -26,7 +26,16 @@ use Unilend\Traits\ConstantsAwareTrait;
 /**
  * @ApiResource(
  *     normalizationContext={
- *         "groups": {"project:read", "company:read", "marketSegment:read", "projectParticipation:read", "projectParticipationOffer:read", "money:read", "nullablePerson:read"}
+ *         "groups": {
+ *             "project:read",
+ *             "company:read",
+ *             "marketSegment:read",
+ *             "projectParticipation:read",
+ *             "projectParticipationOffer:read",
+ *             "money:read",
+ *             "nullablePerson:read",
+ *             "projectStatus:read"
+ *         }
  *     },
  *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "tag:write", "nullablePerson:write"}},
  *     collectionOperations={
@@ -98,6 +107,9 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "denormalization_context": {
  *                 "groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "tag:write", "nullablePerson:write"}
  *             }
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)"
  *         }
  *     }
  * )
@@ -417,7 +429,7 @@ class Project
      * @var ProjectStatus
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus")
-     * @ORM\JoinColumn(name="id_current_status", unique=true)
+     * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -736,17 +748,19 @@ class Project
     }
 
     /**
-     * TODO its argument should be an int not the object itself.
-     *
      * @param ProjectStatus $projectStatus
      *
      * @return Project
      */
-    public function setCurrentStatus(ProjectStatus $projectStatus): self
+    public function setCurrentStatus(ProjectStatus $projectStatus): Project
     {
-        $projectStatus->setProject($this);
+        if ($projectStatus->getProject() !== $this) {
+            throw new RuntimeException('Attempt to add an incorrect status');
+        }
 
-        return $this->baseStatusSetter($projectStatus);
+        $this->baseStatusSetter($projectStatus);
+
+        return $this;
     }
 
     /**

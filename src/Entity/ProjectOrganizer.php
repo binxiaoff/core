@@ -68,7 +68,7 @@ class ProjectOrganizer
      * @var Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="organizers")
-     * @ORM\JoinColumn(name="id_project", nullable=false)
+     * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
      *

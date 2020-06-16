@@ -48,7 +48,7 @@ class CompanyModule
      *
      * @ORM\Column(type="string", nullable=false)
      *
-     * @Assert\Choice(callback="getAvailableModulesNames")
+     * @Assert\Choice(callback="getAvailableModuleLabels")
      *
      * @Groups({"module:read"})
      */
