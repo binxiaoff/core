@@ -76,12 +76,47 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
 
         $groups = [];
 
-        if ($this->security->isGranted('ROLE_ADMIN') || $projectParticipation->getProject()->getSubmitterCompany() === $staff->getCompany()) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_WRITE;
+        $project = $projectParticipation->getProject();
+
+        if ($this->security->isGranted('ROLE_ADMIN')) {
+            return [
+                ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_INTEREST_COLLECTION_WRITE,
+                ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE,
+                ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_OFFER_NEGOTIATION_WRITE,
+                ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE,
+                ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_CONTRACT_NEGOTIATION_OWNER_WRITE,
+                ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE,
+            ];
         }
 
-        if ($this->security->isGranted('ROLE_ADMIN') || $this->projectParticipationManager->isParticipationOwner($staff, $projectParticipation)) {
+        if ($projectParticipation->getProject()->getSubmitterCompany() === $staff->getCompany()) {
+            if (false === $project->isInterestCollected()) {
+                $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE;
+            }
+
+            if ($project->isInOfferNegotiationStep()) {
+                $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE;
+            }
+
+            if ($project->isInContractNegotiationStep()) {
+                $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE;
+            }
+        }
+
+        if ($this->projectParticipationManager->isParticipationOwner($staff, $projectParticipation)) {
             $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE;
+
+            if ($project->isInInterestCollectionStep()) {
+                $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_INTEREST_COLLECTION_WRITE;
+            }
+
+            if ($project->isInOfferNegotiationStep()) {
+                $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_OFFER_NEGOTIATION_WRITE;
+            }
+
+            if ($project->isInContractNegotiationStep()) {
+                $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_CONTRACT_NEGOTIATION_OWNER_WRITE;
+            }
         }
 
         return $groups;

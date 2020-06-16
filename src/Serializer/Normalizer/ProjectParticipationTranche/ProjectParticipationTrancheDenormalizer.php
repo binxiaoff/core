@@ -69,23 +69,28 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
             return [];
         }
 
+        $project = $projectParticipationTranche->getProjectParticipation()->getProject();
+
         $groups = [];
 
-        if (
-            $this->security->isGranted('ROLE_ADMIN')
-            || $projectParticipationTranche->getProjectParticipation()->getProject()->getSubmitterCompany() === $staff->getCompany()
-        ) {
-            $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_ARRANGER_WRITE;
-
-            // For the non-client entity, it's the arrange who edit the invitation reply.
-            if ($projectParticipationTranche->getProjectParticipation()->getParticipant()->isProspect()) {
-                $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE;
-            }
+        if ($this->security->isGranted('ROLE_ADMIN')) {
+            return [
+                ProjectParticipationTranche::SERIALIZER_GROUP_ARRANGER_WRITE,
+                ProjectParticipationTranche::SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE,
+            ];
         }
 
+        if ($project->isInContractNegotiationStep() && $project->getSubmitterCompany() === $staff->getCompany()) {
+            $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_ARRANGER_WRITE;
+        }
+
+        // For the non-client entity, it's the arrange who edit the invitation reply.
         if (
-            $this->security->isGranted('ROLE_ADMIN')
-            || $this->projectParticipationManager->isParticipationOwner($staff, $projectParticipationTranche->getProjectParticipation())
+            $project->isInOfferNegotiationStep()
+            && (
+                $projectParticipationTranche->getProjectParticipation()->getParticipant()->isProspect()
+                || $this->projectParticipationManager->isParticipationOwner($staff, $projectParticipationTranche->getProjectParticipation())
+            )
         ) {
             $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE;
         }

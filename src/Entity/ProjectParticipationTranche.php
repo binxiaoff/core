@@ -52,9 +52,9 @@ class ProjectParticipationTranche
 
     // Additional normalizer group that is available for public visibility project. It's also available for the participation owner and arranger
     public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipationTranche:sensitive:read';
-    // Additional denormalizer group that is available for the participation owner
+    // Additional denormalizer group that is available for the participation owner (for now, it's only available in offer negotiation step)
     public const SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE = 'projectParticipationTranche:participantOwner:write';
-    // Additional denormalizer group that is available for the arranger
+    // Additional denormalizer group that is available for the arranger (for now, it's only available in contract negotiation step)
     public const SERIALIZER_GROUP_ARRANGER_WRITE = 'projectParticipationTranche:arranger:write';
 
     /**
@@ -93,7 +93,7 @@ class ProjectParticipationTranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipationTranche:sensitive:read", "projectParticipationTranche:participantOwner:write"})
+     * @Groups({ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipationTranche::SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE})
      */
     private $invitationReply;
 
@@ -104,7 +104,7 @@ class ProjectParticipationTranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipationTranche:sensitive:read", "projectParticipationTranche:arranger:write"})
+     * @Groups({ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipationTranche::SERIALIZER_GROUP_ARRANGER_WRITE})
      */
     private $allocation;
 

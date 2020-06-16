@@ -48,6 +48,6 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
     {
         $projectParticipation = $projectParticipationTranche->getProjectParticipation();
 
-        return $this->projectParticipationManager->isEditable($projectParticipation, $client);
+        return $this->projectParticipationManager->canEdit($projectParticipation, $client);
     }
 }

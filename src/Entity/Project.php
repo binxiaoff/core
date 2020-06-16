@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource, ApiSubresource};
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\{NumericFilter, SearchFilter};
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
@@ -1473,6 +1473,44 @@ class Project
         $this->privilegedContactPerson = $privilegedContactPerson;
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInterestCollected(): bool
+    {
+        return $this->getCurrentStatus()->getStatus() >= ProjectStatus::STATUS_INTERESTS_COLLECTED || false === $this->isInterestExpressionEnabled();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInInterestCollectionStep(): bool
+    {
+        return false === $this->isInterestCollected() && $this->getCurrentStatus()->getStatus() >= ProjectStatus::STATUS_PUBLISHED;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInOfferNegotiationStep(): bool
+    {
+        return $this->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_OFFERS_COLLECTED
+            && (
+                $this->getCurrentStatus()->getStatus() >= ProjectStatus::STATUS_INTERESTS_COLLECTED
+                || (false === $this->isInterestExpressionEnabled() && $this->getCurrentStatus()->getStatus() >= ProjectStatus::STATUS_PUBLISHED)
+            );
+    }
+
+    /**
+     * Used in an expression constraints.
+     *
+     * @return bool
+     */
+    public function isInContractNegotiationStep(): bool
+    {
+        return ProjectStatus::STATUS_OFFERS_COLLECTED === $this->getCurrentStatus()->getStatus();
     }
 
     /**

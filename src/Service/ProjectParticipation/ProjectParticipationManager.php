@@ -6,7 +6,7 @@ namespace Unilend\Service\ProjectParticipation;
 
 use Doctrine\ORM\NonUniqueResultException;
 use RuntimeException;
-use Unilend\Entity\{Project, ProjectParticipation, Staff};
+use Unilend\Entity\{Clients, Project, ProjectParticipation, Staff};
 use Unilend\Repository\ProjectParticipationContactRepository;
 
 class ProjectParticipationManager
@@ -69,14 +69,14 @@ class ProjectParticipationManager
     }
 
     /**
-     * @param $projectParticipation
-     * @param $client
+     * @param ProjectParticipation $projectParticipation
+     * @param Clients              $client
      *
      * @return bool
      */
-    public function isEditable($projectParticipation, $client): bool
+    public function hasEditRight(ProjectParticipation $projectParticipation, Clients $client): bool
     {
-        return $projectParticipation->isActive() && ($projectParticipation->getProject()->getSubmitterCompany() === $client->getCompany()
+        return $projectParticipation->getProject()->getSubmitterCompany() === $client->getCompany()
                 || (
                     $this->isParticipationOwner($client->getCurrentStaff(), $projectParticipation)
                     && !in_array(
@@ -84,6 +84,17 @@ class ProjectParticipationManager
                         [ProjectParticipation::COMMITTEE_STATUS_ACCEPTED, ProjectParticipation::COMMITTEE_STATUS_REJECTED],
                         true
                     )
-                ));
+                );
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     * @param Clients              $client
+     *
+     * @return bool
+     */
+    public function canEdit(ProjectParticipation $projectParticipation, Clients $client): bool
+    {
+        return $projectParticipation->isActive() && $this->hasEditRight($projectParticipation, $client);
     }
 }

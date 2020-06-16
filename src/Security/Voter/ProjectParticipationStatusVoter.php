@@ -33,18 +33,20 @@ class ProjectParticipationStatusVoter extends AbstractEntityVoter
      */
     public function canCreate(ProjectParticipationStatus $projectParticipationStatus, Clients $client): bool
     {
-        $project = $projectParticipationStatus->getProjectParticipation()->getProject();
-        $staff   = $client->getCurrentStaff();
+        $projectParticipation = $projectParticipationStatus->getProjectParticipation();
+        $project              = $projectParticipation->getProject();
+        $staff                = $client->getCurrentStaff();
 
-        return $staff && (
+        return $staff && $this->projectParticipationManager->hasEditRight($projectParticipation, $client) && (
             (
                 ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER === $projectParticipationStatus->getStatus()
                 && $project->getSubmitterCompany() === $staff->getCompany()
             )
             || (
                 ProjectParticipationStatus::STATUS_ARCHIVED_BY_PARTICIPANT === $projectParticipationStatus->getStatus()
-                && $this->projectParticipationManager->isParticipationOwner($staff, $projectParticipationStatus->getProjectParticipation())
+                && $this->projectParticipationManager->isParticipationOwner($staff, $projectParticipation)
             )
-        );
+        )
+        ;
     }
 }

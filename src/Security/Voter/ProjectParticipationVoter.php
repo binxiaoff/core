@@ -78,7 +78,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return $this->projectParticipationManager->isEditable($projectParticipation, $user);
+        return $this->projectParticipationManager->canEdit($projectParticipation, $user);
     }
 
     /**

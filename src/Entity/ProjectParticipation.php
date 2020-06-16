@@ -103,10 +103,24 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public const SERIALIZER_GROUP_ADMIN_READ = 'projectParticipation:admin:read';
     // Additional normalizer group that is available for public visibility project. It's also available for the participation owner and arranger
     public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipation:sensitive:read';
-    // Additional denormalizer group that is available for the participation owner
+
+    // Additional denormalizer group that is available for the participation owner in all steps
     public const SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE = 'projectParticipation:participantOwner:write';
-    // Additional denormalizer group that is available for the arranger
-    public const SERIALIZER_GROUP_ARRANGER_WRITE = 'projectParticipation:arranger:write';
+
+    // Additional denormalizer group that is available for the participation owner in interest collection step
+    public const SERIALIZER_GROUP_PARTICIPANT_OWNER_INTEREST_COLLECTION_WRITE = 'projectParticipation:participantOwner:interestCollection:write';
+    // Additional denormalizer group that is available for the arranger in interest collection step
+    public const SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE = 'projectParticipation:arranger:interestCollection:write';
+
+    // Additional denormalizer group that is available for the participation owner in offer negotiation step
+    public const SERIALIZER_GROUP_PARTICIPANT_OWNER_OFFER_NEGOTIATION_WRITE = 'projectParticipation:participantOwner:offerNegotiation:write';
+    // Additional denormalizer group that is available for the arranger in offer negotiation step
+    public const SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE = 'projectParticipation:arranger:offerNegotiation:write';
+
+    // Additional denormalizer group that is available for the participation owner in contract negotiation step
+    public const SERIALIZER_GROUP_PARTICIPANT_CONTRACT_NEGOTIATION_OWNER_WRITE = 'projectParticipation:participantOwner:contractNegotiation:write';
+    // Additional denormalizer group that is available for the arranger in interest collection step
+    public const SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE = 'projectParticipation:arranger:contractNegotiation:write';
 
     public const BLACKLISTED_COMPANIES = [
         'CA-CIB',
@@ -159,7 +173,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"projectParticipation:admin:read"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
      */
     private $currentStatus;
 
@@ -171,14 +185,14 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @ORM\Column(length=30, nullable=true)
      *
      * @Assert\Expression(
-     *     "this.canCommitteeBePended()",
+     *     "this.isCommitteeStatusValid()",
      *     message="ProjectParticipation.committeeStatus.pendedDeadline"
      * )
      * @Assert\Choice(callback="getPossibleCommitteeStatus")
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipation:sensitive:read", "projectParticipation:participantOwner:write"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_OFFER_NEGOTIATION_WRITE})
      */
     private $committeeStatus;
 
@@ -191,7 +205,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipation:sensitive:read", "projectParticipation:participantOwner:write"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_OFFER_NEGOTIATION_WRITE})
      */
     private $committeeDeadline;
 
@@ -202,7 +216,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipation:sensitive:read", "projectParticipation:participantOwner:write"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_OFFER_NEGOTIATION_WRITE})
      */
     private $committeeComment;
 
@@ -213,7 +227,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipation:admin:read", "projectParticipation:arranger:write", "projectParticipation:create"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE, "projectParticipation:create"})
      */
     private $interestRequest;
 
@@ -224,7 +238,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipation:sensitive:read", "projectParticipation:participantOwner:write"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_INTEREST_COLLECTION_WRITE})
      */
     private $interestReply;
 
@@ -235,7 +249,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipation:admin:read", "projectParticipation:arranger:write", "projectParticipation:create"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE, "projectParticipation:create"})
      */
     private $invitationRequest;
 
@@ -248,7 +262,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipation:sensitive:read", "projectParticipation:participantOwner:write"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_OFFER_NEGOTIATION_WRITE})
      */
     private $invitationReplyMode;
 
@@ -262,7 +276,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"projectParticipation:sensitive:read", "projectParticipation:arranger:write"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE})
      */
     private $allocationFeeRate;
 
@@ -271,7 +285,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"projectParticipation:admin:read", "projectParticipation:participantOwner:write"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_OWNER_WRITE})
      */
     private $participantLastConsulted;
 
@@ -280,7 +294,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationContact", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Groups({"projectParticipation:admin:read"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
      */
     private $projectParticipationContacts;
 
@@ -299,7 +313,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="projectParticipation")
      *
-     * @Groups({"projectParticipation:sensitive:read"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
      */
     private $projectParticipationTranches;
 
@@ -360,7 +374,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @Groups({"projectParticipation:admin:read"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
      *
      * @return ProjectParticipationStatus
      */
@@ -384,7 +398,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @return DateTimeImmutable|null
      *
-     * @Groups({"projectParticipation:admin:read"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
      */
     public function getParticipantLastConsulted(): ?DateTimeImmutable
     {
@@ -624,7 +638,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @return bool
      */
-    public function canCommitteeBePended(): bool
+    public function isCommitteeStatusValid(): bool
     {
         if (self::COMMITTEE_STATUS_PENDED === $this->getCommitteeStatus()) {
             return null !== $this->getCommitteeDeadline();
