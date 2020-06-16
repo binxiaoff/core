@@ -86,15 +86,4 @@ class ProjectParticipationManager
                     )
                 );
     }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $client
-     *
-     * @return bool
-     */
-    public function canEdit(ProjectParticipation $projectParticipation, Clients $client): bool
-    {
-        return $projectParticipation->isActive() && $this->hasEditRight($projectParticipation, $client);
-    }
 }

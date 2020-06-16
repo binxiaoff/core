@@ -33,6 +33,6 @@ ProjectParticipationTranche:
     tranche:
         notOwn: Merci de choisir une tranche du projet.
 
-ProjectParticipationStatus:
+StatusInterface:
     duplicated: Le nouveau statut est en doublons avec le dernier.
-    unchangeable: La participation est déjà en statut définitive. Vous ne pouvez plus changer son statut.
+    unchangeable: L'objet est déjà en statut définitive. Vous ne pouvez plus changer son statut.

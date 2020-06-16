@@ -180,7 +180,7 @@ class ProjectParticipationTranche
     }
 
     /**
-     * Used in an expression constraints: A pended committee response need a deadline.
+     * Used in an expression constraints: we can only add the tranche of the project.
      *
      * @param Tranche $tranche
      *

@@ -35,7 +35,10 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ORM\Entity
  * @ORM\Table(indexes={@ORM\Index(columns={"status", "id_project_parcitipation"})})
  *
- * @Assert\Callback({"Unilend\Validator\Constraints\TraceableStatusValidator", "validate"})
+ * @Assert\Callback(
+ *     callback={"Unilend\Validator\Constraints\TraceableStatusValidator", "validate"},
+ *     payload={ "path": "status" }
+ * )
  */
 class ProjectParticipationStatus implements StatusInterface
 {
