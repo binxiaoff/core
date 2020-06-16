@@ -10,20 +10,20 @@ use Symfony\Component\Serializer\Annotation\Groups;
 trait ArchivableTrait
 {
     /**
-     * @var DateTime
+     * @var \DateTimeImmutable|null
      *
-     * @ORM\Column(type="datetime", nullable=true)
+     * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"archived:read", "archived:write"})
+     * @Groups({"archivable:read", "archivable:write"})
      */
     private $archived;
 
     /**
-     * @param DateTime $archived
+     * @param \DateTimeImmutable $archived
      *
      * @return self
      */
-    public function setArchived(DateTime $archived): self
+    public function setArchived(?\DateTimeImmutable $archived): self
     {
         $this->archived = $archived;
 
@@ -31,9 +31,9 @@ trait ArchivableTrait
     }
 
     /**
-     * @return DateTime
+     * @return \DateTimeImmutable
      */
-    public function getArchived(): ?DateTime
+    public function getArchived(): ?\DateTimeImmutable
     {
         return $this->archived;
     }

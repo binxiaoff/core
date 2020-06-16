@@ -6,7 +6,7 @@ namespace Unilend\Service\ProjectParticipation;
 
 use Doctrine\ORM\NonUniqueResultException;
 use RuntimeException;
-use Unilend\Entity\{Project, ProjectParticipationContact, Staff};
+use Unilend\Entity\{Project, Staff};
 use Unilend\Repository\ProjectParticipationContactRepository;
 
 class ProjectParticipationManager
