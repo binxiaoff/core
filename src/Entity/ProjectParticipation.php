@@ -15,6 +15,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithFee};
+use Unilend\Entity\Interfaces\StatusInterface;
 use Unilend\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
@@ -384,11 +385,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param ProjectParticipationStatus $currentStatus
+     * @param ProjectParticipationStatus|Statusinterface $currentStatus
      *
      * @return ProjectParticipation
      */
-    public function setCurrentStatus($currentStatus): ProjectParticipation
+    public function setCurrentStatus(Statusinterface $currentStatus): ProjectParticipation
     {
         $this->currentStatus = $currentStatus;
 

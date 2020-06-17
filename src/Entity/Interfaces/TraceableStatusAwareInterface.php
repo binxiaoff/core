@@ -23,5 +23,5 @@ interface TraceableStatusAwareInterface
      *
      * @return self
      */
-    public function setCurrentStatus($status);
+    public function setCurrentStatus(Statusinterface $status);
 }

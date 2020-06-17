@@ -43,10 +43,6 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\Project, method: purify }
 
-    Unilend\Listener\Doctrine\Entity\ProjectStatus\ProjectStatusCreatedListener:
-        tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\ProjectStatus, method: setCurrentStatus }
-
     Unilend\Listener\Doctrine\Entity\ProjectParticipation\ProjectParticipationUpdatedListener:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\ProjectParticipation, method: archiveOnRejectedByCommittee }

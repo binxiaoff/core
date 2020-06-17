@@ -14,12 +14,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\{Embeddable\Money,
-    Embeddable\NullableMoney,
-    Embeddable\NullablePerson,
-    Traits\PublicizeIdentityTrait,
-    Traits\TimestampableTrait,
-    Traits\TraceableStatusTrait};
+use Unilend\Entity\{Embeddable\Money, Embeddable\NullableMoney, Embeddable\NullablePerson, Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface,
+    Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Filter\ArrayFilter;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -122,17 +118,12 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ORM\HasLifecycleCallbacks
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProject")
- *
- * @method ProjectStatus getCurrentStatus
  */
-class Project
+class Project implements TraceableStatusAwareInterface
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
     use PublicizeIdentityTrait;
-    use TraceableStatusTrait {
-        setCurrentStatus as private baseStatusSetter;
-    }
 
     public const OFFER_VISIBILITY_PRIVATE     = 'private';
     public const OFFER_VISIBILITY_PARTICIPANT = 'participant';
@@ -747,19 +738,35 @@ class Project
     }
 
     /**
-     * @param ProjectStatus $projectStatus
+     * @return StatusInterface|ProjectStatus
+     */
+    public function getCurrentStatus()
+    {
+        return $this->currentStatus;
+    }
+
+    /**
+     * @param ProjectStatus|Statusinterface $projectStatus
      *
      * @return Project
      */
-    public function setCurrentStatus(ProjectStatus $projectStatus): Project
+    public function setCurrentStatus(Statusinterface $projectStatus): Project
     {
         if ($projectStatus->getProject() !== $this) {
             throw new RuntimeException('Attempt to add an incorrect status');
         }
 
-        $this->baseStatusSetter($projectStatus);
+        $this->currentStatus = $projectStatus;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|StatusInterface[]|void
+     */
+    public function getStatuses(): Collection
+    {
+        return $this->statuses;
     }
 
     /**
