@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Embeddable
@@ -18,6 +19,8 @@ class Offer
      * @var NullableMoney
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
+     *
+     * @Assert\Valid
      *
      * @Gedmo\Versioned
      *
