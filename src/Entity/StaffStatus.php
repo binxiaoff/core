@@ -117,12 +117,4 @@ class StaffStatus implements StatusInterface
     {
         return $this->getStaff();
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getDefinitiveStatuses(): array
-    {
-        return [];
-    }
 }

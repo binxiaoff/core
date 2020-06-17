@@ -35,11 +35,4 @@ interface StatusInterface
      * @return int|null
      */
     public function getId(): ?int;
-
-    /**
-     * The statuses in which the entity can no longer be modified, including changing the status.
-     *
-     * @return array
-     */
-    public function getDefinitiveStatuses(): array;
 }

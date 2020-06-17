@@ -165,7 +165,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private $participant;
 
     /**
-     * @var ProjectParticipationStatus
+     * @var ProjectParticipationStatus|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipationStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true)
@@ -376,9 +376,9 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
      *
-     * @return ProjectParticipationStatus
+     * @return ProjectParticipationStatus|null
      */
-    public function getCurrentStatus(): ProjectParticipationStatus
+    public function getCurrentStatus(): ?ProjectParticipationStatus
     {
         return $this->currentStatus;
     }
@@ -388,7 +388,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @return ProjectParticipation
      */
-    public function setCurrentStatus(ProjectParticipationStatus $currentStatus): ProjectParticipation
+    public function setCurrentStatus($currentStatus): ProjectParticipation
     {
         $this->currentStatus = $currentStatus;
 

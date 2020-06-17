@@ -33,6 +33,9 @@ ProjectParticipationTranche:
     tranche:
         notOwn: Merci de choisir une tranche du projet.
 
+ProjectParticipationStatus:
+    status:
+        invalid: Le status n'est pas valide.
+
 StatusInterface:
     duplicated: Le nouveau statut est en doublons avec le dernier.
-    unchangeable: L'objet est déjà en statut définitive. Vous ne pouvez plus changer son statut.

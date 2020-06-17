@@ -107,12 +107,4 @@ class CompanyStatus implements StatusInterface
     {
         return $this->getCompany();
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getDefinitiveStatuses(): array
-    {
-        return [];
-    }
 }

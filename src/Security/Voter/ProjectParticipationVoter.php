@@ -51,7 +51,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function fulfillPreconditions($subject, Clients $user): bool
     {
-        return $subject->getProject()->getCurrentStatus()->getStatus() <= ProjectStatus::STATUS_ALLOCATION;
+        return $user->getCurrentStaff() && $subject->getProject()->getCurrentStatus()->getStatus() <= ProjectStatus::STATUS_ALLOCATION;
     }
 
     /**
@@ -114,7 +114,18 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return $projectParticipation->isActive() && $this->projectParticipationManager->hasEditRight($projectParticipation, $user);
+        return $projectParticipation->isActive()
+            && (
+                $projectParticipation->getProject()->getSubmitterCompany() === $user->getCompany()
+                || (
+                    $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
+                    && !in_array(
+                        $projectParticipation->getCommitteeStatus(),
+                        [ProjectParticipation::COMMITTEE_STATUS_ACCEPTED, ProjectParticipation::COMMITTEE_STATUS_REJECTED],
+                        true
+                    )
+                )
+            );
     }
 
     /**

@@ -158,12 +158,4 @@ class ClientStatus implements StatusInterface
     {
         return $this->getClient();
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getDefinitiveStatuses(): array
-    {
-        return [];
-    }
 }

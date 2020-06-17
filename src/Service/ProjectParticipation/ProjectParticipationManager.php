@@ -67,23 +67,4 @@ class ProjectParticipationManager
 
         return null !== $projectParticipationContact->getConfidentialityAccepted();
     }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $client
-     *
-     * @return bool
-     */
-    public function hasEditRight(ProjectParticipation $projectParticipation, Clients $client): bool
-    {
-        return $projectParticipation->getProject()->getSubmitterCompany() === $client->getCompany()
-                || (
-                    $this->isParticipationOwner($client->getCurrentStaff(), $projectParticipation)
-                    && !in_array(
-                        $projectParticipation->getCommitteeStatus(),
-                        [ProjectParticipation::COMMITTEE_STATUS_ACCEPTED, ProjectParticipation::COMMITTEE_STATUS_REJECTED],
-                        true
-                    )
-                );
-    }
 }

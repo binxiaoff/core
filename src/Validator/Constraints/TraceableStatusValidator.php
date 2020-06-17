@@ -19,22 +19,12 @@ class TraceableStatusValidator
         /** @var StatusInterface $lastStatus */
         $lastStatus = $object->getAttachedObject()->getStatuses()->last();
         // We check the value only if it has previous status and only when we are adding a new status...
-        if ($lastStatus && null === $object->getId()) {
-            if ($object->getStatus() === $lastStatus->getStatus()) {
-                $builder = $context->buildViolation('StatusInterface.duplicated');
-                if (isset($payload['path'])) {
-                    $builder->atPath('status');
-                }
-                $builder->addViolation();
+        if ($lastStatus && null === $object->getId() && $object->getStatus() === $lastStatus->getStatus()) {
+            $builder = $context->buildViolation('StatusInterface.duplicated');
+            if (isset($payload['path'])) {
+                $builder->atPath('status');
             }
-
-            if (in_array($lastStatus->getStatus(), $lastStatus->getDefinitiveStatuses(), true)) {
-                $builder = $context->buildViolation('StatusInterface.unchangeable');
-                if (isset($payload['path'])) {
-                    $builder->atPath('status');
-                }
-                $builder->addViolation();
-            }
+            $builder->addViolation();
         }
     }
 }

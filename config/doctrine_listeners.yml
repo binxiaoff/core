@@ -85,3 +85,7 @@ services:
     Unilend\Listener\Doctrine\Lifecycle\ArchivedByListener:
         tags:
             - { name: doctrine.event_listener, event: preRemove }
+
+    Unilend\Listener\Doctrine\Lifecycle\StatusCreatedListener:
+        tags:
+            - { name: doctrine.event_listener, event: prePersist }

@@ -67,6 +67,10 @@ class ProjectParticipationStatus implements StatusInterface
      * @ORM\Column(type="smallint")
      *
      * @Assert\Choice(callback="getPossibleStatuses")
+     * @Assert\Expression(
+     *     "this.isStatusValid()",
+     *     message="ProjectParticipationStatus.status.invalid"
+     * )
      *
      * @Groups({"projectParticipationStatus:read", "projectParticipationStatus:create"})
      */
@@ -85,7 +89,6 @@ class ProjectParticipationStatus implements StatusInterface
         $this->status               = $status;
         $this->addedBy              = $addedBy;
         $this->added                = new DateTimeImmutable();
-        $this->projectParticipation->setCurrentStatus($this);
     }
 
     /**
@@ -121,10 +124,36 @@ class ProjectParticipationStatus implements StatusInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Used in an expression constraints: arrangeur can only add STATUS_ARCHIVED_BY_ARRANGER, participant can only add STATUS_ARCHIVED_BY_PARTICIPANT.
+     *
+     * @return bool
      */
-    public function getDefinitiveStatuses(): array
+    public function isStatusValid(): bool
     {
-        return [self::STATUS_ARCHIVED_BY_ARRANGER, self::STATUS_ARCHIVED_BY_PARTICIPANT];
+        if (self::STATUS_ACTIVE === $this->status || $this->getAddedBy()->getClient()->hasRole(Clients::ROLE_ADMIN)) {
+            return true;
+        }
+
+        return (
+            self::STATUS_ARCHIVED_BY_ARRANGER === $this->getStatus()
+            && $this->getAddedBy()->getCompany() === $this->projectParticipation->getProject()->getSubmitterCompany()
+        )
+        || (
+            self::STATUS_ARCHIVED_BY_PARTICIPANT === $this->getStatus() && $this->isParticipationOwner()
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    private function isParticipationOwner(): bool
+    {
+        foreach ($this->getProjectParticipation()->getProjectParticipationContacts() as $projectParticipationContact) {
+            if ($this->getAddedBy()->getClient() === $projectParticipationContact->getClient()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
