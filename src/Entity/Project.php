@@ -521,15 +521,6 @@ class Project implements TraceableStatusAwareInterface
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
      *
-     * @Groups({"project:read", "project:create"})
-     */
-    private $targetArrangerParticipationMoney;
-
-    /**
-     * @var NullableMoney
-     *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
-     *
      * @Groups({"project:admin:read", "project:create"})
      */
     private $arrangementCommissionMoney;
@@ -593,9 +584,8 @@ class Project implements TraceableStatusAwareInterface
         $participant = new ProjectParticipation($this->submitterCompany, $this, $addedBy);
         $this->projectParticipations->add($participant);
 
-        $this->interestExpressionEnabled        = false;
-        $this->targetArrangerParticipationMoney = new NullableMoney();
-        $this->arrangementCommissionMoney       = new NullableMoney();
+        $this->interestExpressionEnabled  = false;
+        $this->arrangementCommissionMoney = new NullableMoney();
     }
 
     /**
@@ -1395,26 +1385,6 @@ class Project implements TraceableStatusAwareInterface
     public function setInterestExpressionEnabled(bool $interestExpressionEnabled): Project
     {
         $this->interestExpressionEnabled = $interestExpressionEnabled;
-
-        return $this;
-    }
-
-    /**
-     * @return NullableMoney|null
-     */
-    public function getTargetArrangerParticipationMoney(): ?NullableMoney
-    {
-        return $this->targetArrangerParticipationMoney->isValid() ? $this->targetArrangerParticipationMoney : null;
-    }
-
-    /**
-     * @param NullableMoney $targetArrangerParticipationMoney
-     *
-     * @return Project
-     */
-    public function setTargetArrangerParticipationMoney(NullableMoney $targetArrangerParticipationMoney): Project
-    {
-        $this->targetArrangerParticipationMoney = $targetArrangerParticipationMoney;
 
         return $this;
     }
