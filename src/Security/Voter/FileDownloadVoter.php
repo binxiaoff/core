@@ -114,12 +114,12 @@ class FileDownloadVoter extends AbstractEntityVoter
         }
 
         switch ($project->getCurrentStatus()->getStatus()) {
-            case ProjectStatus::STATUS_PUBLISHED:
-            case ProjectStatus::STATUS_INTERESTS_COLLECTED:
+            case ProjectStatus::STATUS_INTEREST_EXPRESSION:
+            case ProjectStatus::STATUS_PARTICIPANT_REPLY:
                 return null !== $this->getActiveParticipantParticipation($project, $staff);
-            case ProjectStatus::STATUS_OFFERS_COLLECTED:
-            case ProjectStatus::STATUS_CONTRACTS_SIGNED:
-            case ProjectStatus::STATUS_REPAID:
+            case ProjectStatus::STATUS_ALLOCATION:
+            case ProjectStatus::STATUS_CONTRACTUALISATION:
+            case ProjectStatus::STATUS_SYNDICATION_FINISHED:
                 return
                     null !== ($contact = $this->getActiveParticipantParticipation($project, $staff))
                     && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeOfferCollected($project, $fileDownload->getFileVersion()));
@@ -165,7 +165,7 @@ class FileDownloadVoter extends AbstractEntityVoter
      */
     private function isAddedBeforeOfferCollected(Project $project, FileVersion $fileVersion): bool
     {
-        $offerCollected = $project->getLastSpecificStatus(ProjectStatus::STATUS_OFFERS_COLLECTED);
+        $offerCollected = $project->getLastSpecificStatus(ProjectStatus::STATUS_ALLOCATION);
 
         return null === $offerCollected || $fileVersion->getAdded() <= $offerCollected->getAdded();
     }

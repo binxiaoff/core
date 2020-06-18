@@ -109,7 +109,7 @@ class ProjectVoter extends AbstractEntityVoter
         return $staff
             && $this->canView($project, $user) && $staff->getCompany() === $project->getSubmitterCompany()
             && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()))
-            && ProjectStatus::STATUS_CANCELLED !== $project->getCurrentStatus()->getStatus();
+            && ProjectStatus::STATUS_SYNDICATION_CANCELLED !== $project->getCurrentStatus()->getStatus();
     }
 
     /**
@@ -178,7 +178,7 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canDelete(Project $project, Clients $user): bool
     {
-        return $this->canEdit($project, $user) && ProjectStatus::STATUS_REQUESTED === $project->getCurrentStatus()->getStatus();
+        return $this->canEdit($project, $user) && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus();
     }
 
     /**

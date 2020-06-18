@@ -47,7 +47,7 @@ class NotificationManager
      */
     public function createProjectPublication(Project $project, Clients $client): void
     {
-        if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
+        if (ProjectStatus::STATUS_INTEREST_EXPRESSION === $project->getCurrentStatus()->getStatus()) {
             $notification = $this->buildNotification(Notification::TYPE_PROJECT_PUBLICATION, $client, $project);
 
             $this->notificationRepository->save($notification);

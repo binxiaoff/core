@@ -49,20 +49,20 @@ class ProjectStatus implements StatusInterface
     use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
 
-    public const STATUS_CANCELLED           = -99;
-    public const STATUS_REQUESTED           = 10;
-    public const STATUS_PUBLISHED           = 20;
-    public const STATUS_INTERESTS_COLLECTED = 30;
-    public const STATUS_OFFERS_COLLECTED    = 40;
-    public const STATUS_CONTRACTS_SIGNED    = 50;
-    public const STATUS_REPAID              = 60;
+    public const STATUS_SYNDICATION_CANCELLED = -99;
+    public const STATUS_DRAFT                 = 10;
+    public const STATUS_INTEREST_EXPRESSION   = 20;
+    public const STATUS_PARTICIPANT_REPLY     = 30;
+    public const STATUS_ALLOCATION            = 40;
+    public const STATUS_CONTRACTUALISATION    = 50;
+    public const STATUS_SYNDICATION_FINISHED  = 60;
 
     public const DISPLAYABLE_STATUS = [
-        self::STATUS_PUBLISHED,
-        self::STATUS_INTERESTS_COLLECTED,
-        self::STATUS_OFFERS_COLLECTED,
-        self::STATUS_CONTRACTS_SIGNED,
-        self::STATUS_REPAID,
+        self::STATUS_INTEREST_EXPRESSION,
+        self::STATUS_PARTICIPANT_REPLY,
+        self::STATUS_ALLOCATION,
+        self::STATUS_CONTRACTUALISATION,
+        self::STATUS_SYNDICATION_FINISHED,
     ];
 
     /**
