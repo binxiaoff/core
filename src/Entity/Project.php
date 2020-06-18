@@ -973,26 +973,6 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @throws Exception
-     *
-     * @return ProjectOrganizer|null
-     */
-    public function getLoanOfficer(): ?ProjectOrganizer
-    {
-        return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_LOAN_OFFICER);
-    }
-
-    /**
-     * @throws Exception
-     *
-     * @return ProjectOrganizer|null
-     */
-    public function getSecurityTrustee(): ?ProjectOrganizer
-    {
-        return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_SECURITY_TRUSTEE);
-    }
-
-    /**
      * @return Collection|ProjectOrganizer[]
      *
      * @Groups({"project:read"})
