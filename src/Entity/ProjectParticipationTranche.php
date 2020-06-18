@@ -57,7 +57,7 @@ class ProjectParticipationTranche
     // Additional normalizer group that is available for public visibility project. It's also available for the participation owner and arranger
     public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipationTranche:sensitive:read';
     // Additional denormalizer group that is available for the participation owner (for now, it's only available in offer negotiation step)
-    public const SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE = 'projectParticipationTranche:participantOwner:write';
+    public const SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE = 'projectParticipationTranche:participationOwner:write';
     // Additional denormalizer group that is available for the arranger (for now, it's only available in contract negotiation step)
     public const SERIALIZER_GROUP_ARRANGER_WRITE = 'projectParticipationTranche:arranger:write';
 
@@ -95,6 +95,8 @@ class ProjectParticipationTranche
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
      *
+     * @Assert\Valid
+     *
      * @Gedmo\Versioned
      *
      * @Groups({ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipationTranche::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE})
@@ -105,6 +107,8 @@ class ProjectParticipationTranche
      * @var Offer
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
+     *
+     * @Assert\Valid
      *
      * @Gedmo\Versioned
      *

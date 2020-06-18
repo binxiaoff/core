@@ -20,7 +20,7 @@ class OfferWithFee extends Offer
      * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
-     * @Assert\NotBlank
+     * @Assert\NotBlank(allowNull=true)
      *
      * @Gedmo\Versioned
      *

@@ -106,20 +106,20 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipation:sensitive:read';
 
     // Additional denormalizer group that is available for the participation owner in all steps
-    public const SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE = 'projectParticipation:participantOwner:write';
+    public const SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE = 'projectParticipation:participationOwner:write';
 
     // Additional denormalizer group that is available for the participation owner in interest collection step
-    public const SERIALIZER_GROUP_PARTICIPATION_OWNER_INTEREST_COLLECTION_WRITE = 'projectParticipation:participantOwner:interestCollection:write';
+    public const SERIALIZER_GROUP_PARTICIPATION_OWNER_INTEREST_COLLECTION_WRITE = 'projectParticipation:participationOwner:interestCollection:write';
     // Additional denormalizer group that is available for the arranger in interest collection step
     public const SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE = 'projectParticipation:arranger:interestCollection:write';
 
     // Additional denormalizer group that is available for the participation owner in offer negotiation step
-    public const SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE = 'projectParticipation:participantOwner:offerNegotiation:write';
+    public const SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE = 'projectParticipation:participationOwner:offerNegotiation:write';
     // Additional denormalizer group that is available for the arranger in offer negotiation step
     public const SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE = 'projectParticipation:arranger:offerNegotiation:write';
 
     // Additional denormalizer group that is available for the participation owner in contract negotiation step
-    public const SERIALIZER_GROUP_PARTICIPANT_CONTRACT_NEGOTIATION_OWNER_WRITE = 'projectParticipation:participantOwner:contractNegotiation:write';
+    public const SERIALIZER_GROUP_PARTICIPANT_CONTRACT_NEGOTIATION_OWNER_WRITE = 'projectParticipation:participationOwner:contractNegotiation:write';
     // Additional denormalizer group that is available for the arranger in interest collection step
     public const SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE = 'projectParticipation:arranger:contractNegotiation:write';
 
@@ -160,6 +160,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * })
      *
      * @Groups({"projectParticipation:read", "projectParticipation:create"})
+     *
+     * @Assert\Expression(
+     *     "this.isParticipantValid()",
+     *     message="ProjectParticipation.participant.notValid"
+     * )
      *
      * @Assert\NotBlank
      */
@@ -226,6 +231,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\RangedOfferWithFee")
      *
+     * @Assert\Valid
+     *
      * @Gedmo\Versioned
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE, "projectParticipation:create"})
@@ -237,6 +244,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
      *
+     * @Assert\Valid
+     *
      * @Gedmo\Versioned
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_INTEREST_COLLECTION_WRITE})
@@ -247,6 +256,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @var OfferWithFee
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\OfferWithFee")
+     *
+     * @Assert\Valid
      *
      * @Gedmo\Versioned
      *
@@ -273,7 +284,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
-     * @Assert\NotBlank
+     * @Assert\NotBlank(allowNull=true)
      *
      * @Gedmo\Versioned
      *
@@ -646,5 +657,17 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         }
 
         return true;
+    }
+
+    /**
+     * Used in an expression constraints: if the participant is not blacklisted.
+     *
+     * @return bool
+     */
+    public function isParticipantValid(): bool
+    {
+        $blacklist = array_map('strtolower', ProjectParticipation::BLACKLISTED_COMPANIES);
+
+        return false === \in_array(mb_strtolower($this->getParticipant()->getName()), $blacklist, true);
     }
 }

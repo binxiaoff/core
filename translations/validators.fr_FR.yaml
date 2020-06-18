@@ -28,6 +28,8 @@ Tranche:
 ProjectParticipation:
     committeeStatus:
         pendedDeadline: Merci de saisir une date de réponse du comité si la réponse est en attente.
+    participant:
+        notValid: L'entité que vous avez choisi ne peut pas être un participant du projet.
 
 ProjectParticipationTranche:
     tranche:

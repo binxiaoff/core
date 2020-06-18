@@ -73,7 +73,7 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function canParticipantOwnerEdit(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
+    protected function canParticipationOwnerEdit(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
     {
         $project = $projectParticipationTranche->getProjectParticipation()->getProject();
         // For the non-client entity, it's the arrange who edit the invitation reply.
