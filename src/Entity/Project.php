@@ -1259,25 +1259,6 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return array|string[]
-     *
-     * @Groups({"project:read"})
-     */
-    public function getAvailableOrganiserRoles(): array
-    {
-        return array_values(
-            array_filter(
-                ProjectOrganizer::getAvailableRoles(),
-                function (string $role) {
-                    $isUnique = ProjectOrganizer::isUniqueRole($role);
-
-                    return ($isUnique && (0 === count($this->getOrganizersByRole($role)))) || false === $isUnique;
-                }
-            )
-        );
-    }
-
-    /**
      * @return array
      */
     public static function getProjectFileTypes(): array

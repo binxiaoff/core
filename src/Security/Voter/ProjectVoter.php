@@ -16,7 +16,6 @@ class ProjectVoter extends AbstractEntityVoter
     public const ATTRIBUTE_VIEW_CONFIDENTIALITY_DOCUMENT = 'view_confidentiality_document';
     public const ATTRIBUTE_EDIT                          = 'edit';
     public const ATTRIBUTE_MANAGE_TRANCHE_OFFER          = 'manage_tranche_offer';
-    public const ATTRIBUTE_RATE                          = 'rate'; // TODO Should be deleted ?
     public const ATTRIBUTE_CREATE_TRANCHE_OFFER          = 'create_tranche_offer';
     public const ATTRIBUTE_COMMENT                       = 'comment';
     public const ATTRIBUTE_CREATE                        = 'create';
@@ -123,23 +122,6 @@ class ProjectVoter extends AbstractEntityVoter
     protected function canManageTrancheOffer(Project $project, Clients $user): bool
     {
         return $project->getSubmitterCompany() === $user->getCompany();
-    }
-
-    /**
-     * TODO Should be deleted ?
-     *
-     * @param Project $project
-     * @param Clients $user
-     *
-     * @throws Exception
-     *
-     * @return bool
-     */
-    protected function canRate(Project $project, Clients $user): bool
-    {
-        $projectOrganizer = $this->getProjectOrganizer($project, $user);
-
-        return $projectOrganizer && $projectOrganizer->isRun();
     }
 
     /**

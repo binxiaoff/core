@@ -140,15 +140,8 @@ class ProjectOrganizer
         return \in_array($role, [
             static::DUTY_PROJECT_ORGANIZER_ARRANGER,
             static::DUTY_PROJECT_ORGANIZER_RUN,
+            static::DUTY_PROJECT_ORGANIZER_AGENT,
         ], true);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isRun(): bool
-    {
-        return $this->hasRole(self::DUTY_PROJECT_ORGANIZER_RUN);
     }
 
     /**
