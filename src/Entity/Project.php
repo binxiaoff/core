@@ -550,7 +550,7 @@ class Project
     /**
      * @var string|null
      *
-     * @Groups({"project:read", "project:create"})
+     * @Groups({"project:read", "project:write"})
      *
      * @ORM\Column(type="string", nullable=true, length=10)
      *
