@@ -730,13 +730,13 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param ProjectStatus|Statusinterface $projectStatus
+     * @param ProjectStatus|StatusInterface $projectStatus
      *
      * @return Project
      */
-    public function setCurrentStatus(Statusinterface $projectStatus): Project
+    public function setCurrentStatus(StatusInterface $projectStatus): Project
     {
-        if ($projectStatus->getProject() !== $this) {
+        if ($projectStatus->getAttachedObject() !== $this) {
             throw new RuntimeException('Attempt to add an incorrect status');
         }
 

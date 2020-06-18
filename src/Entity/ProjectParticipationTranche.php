@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -91,6 +92,8 @@ class ProjectParticipationTranche
     private $projectParticipation;
 
     /**
+     * Réponse ferme : Répartition donnée par le participant à l'arrangeur.
+     *
      * @var Offer
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
@@ -120,6 +123,8 @@ class ProjectParticipationTranche
      * @param ProjectParticipation $projectParticipation
      * @param Tranche              $tranche
      * @param Staff                $addedBy
+     *
+     * @throws Exception
      */
     public function __construct(ProjectParticipation $projectParticipation, Tranche $tranche, Staff $addedBy)
     {

@@ -115,15 +115,12 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     protected function canEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
         return $projectParticipation->isActive()
+            && ProjectParticipation::COMMITTEE_STATUS_REJECTED !== $projectParticipation->getCommitteeStatus()
             && (
                 $projectParticipation->getProject()->getSubmitterCompany() === $user->getCompany()
                 || (
                     $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
-                    && !in_array(
-                        $projectParticipation->getCommitteeStatus(),
-                        [ProjectParticipation::COMMITTEE_STATUS_ACCEPTED, ProjectParticipation::COMMITTEE_STATUS_REJECTED],
-                        true
-                    )
+                    && ProjectParticipation::COMMITTEE_STATUS_ACCEPTED !== $projectParticipation->getCommitteeStatus()
                 )
             );
     }

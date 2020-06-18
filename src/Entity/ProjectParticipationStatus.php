@@ -33,7 +33,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * )
  *
  * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(columns={"status", "id_project_parcitipation"})})
+ * @ORM\Table(indexes={@ORM\Index(columns={"status", "id_project_participation"})})
  *
  * @Assert\Callback(
  *     callback={"Unilend\Validator\Constraints\TraceableStatusValidator", "validate"},
@@ -55,7 +55,7 @@ class ProjectParticipationStatus implements StatusInterface
      * @var ProjectParticipation
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="statuses")
-     * @ORM\JoinColumn(name="id_project_parcitipation", nullable=false)
+     * @ORM\JoinColumn(name="id_project_participation", nullable=false)
      *
      * @Groups({"projectParticipationStatus:create"})
      */

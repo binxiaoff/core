@@ -74,9 +74,9 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
- *         "delete": {"security_post_denormalize": "is_granted('edit', previous_object)"},
- *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)"},
- *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"}
+ *         "delete": {"security": "is_granted('edit', object)"},
+ *         "put": {"security": "is_granted('edit', object)"},
+ *         "patch": {"security": "is_granted('edit', object)"}
  *     }
  * )
  *
@@ -227,6 +227,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private $committeeComment;
 
     /**
+     * Marque d'interet sollicitation envoyé par l'arrangeur au participant.
+     *
      * @var RangedOfferWithFee
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\RangedOfferWithFee")
@@ -240,6 +242,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private $interestRequest;
 
     /**
+     * Réponse de la sollicitation de l'arrangeur envoyé au participant.
+     *
      * @var Offer
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
@@ -253,6 +257,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private $interestReply;
 
     /**
+     * Réponse ferme : Invitation envoyé par l'arrangeur au participant.
+     *
      * @var OfferWithFee
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\OfferWithFee")
@@ -396,11 +402,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param ProjectParticipationStatus|Statusinterface $currentStatus
+     * @param ProjectParticipationStatus|StatusInterface $currentStatus
      *
      * @return ProjectParticipation
      */
-    public function setCurrentStatus(Statusinterface $currentStatus): ProjectParticipation
+    public function setCurrentStatus(StatusInterface $currentStatus): ProjectParticipation
     {
         $this->currentStatus = $currentStatus;
 
