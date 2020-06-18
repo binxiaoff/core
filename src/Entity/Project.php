@@ -418,7 +418,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var ProjectStatus
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -430,9 +430,6 @@ class Project implements TraceableStatusAwareInterface
 
     /**
      * @var ArrayCollection|ProjectStatus
-     *
-     * @Assert\Count(min="1")
-     * @Assert\Valid
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      */
