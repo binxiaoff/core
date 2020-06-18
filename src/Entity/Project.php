@@ -581,9 +581,6 @@ class Project implements TraceableStatusAwareInterface
         $arranger = new ProjectOrganizer($this->submitterCompany, $this, $addedBy, [ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER]);
         $this->organizers->add($arranger);
 
-        $participant = new ProjectParticipation($this->submitterCompany, $this, $addedBy);
-        $this->projectParticipations->add($participant);
-
         $this->interestExpressionEnabled  = false;
         $this->arrangementCommissionMoney = new NullableMoney();
     }
