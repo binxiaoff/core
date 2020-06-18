@@ -8,7 +8,6 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\Clients;
 use Unilend\Entity\ProjectParticipationContact;
 use Unilend\Entity\ProjectStatus;
-use Unilend\Repository\ProjectParticipationContactRepository;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationContactVoter extends AbstractEntityVoter
@@ -17,25 +16,20 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_CREATE = 'create';
 
-    /** @var ProjectParticipationContactRepository */
-    private $projectParticipationContactRepository;
     /** @var ProjectParticipationManager */
     private $projectParticipationManager;
 
     /**
-     * @param AuthorizationCheckerInterface         $authorizationChecker
-     * @param ProjectParticipationContactRepository $projectParticipationContactRepository
-     * @param ProjectParticipationManager           $projectParticipationManager
+     * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param ProjectParticipationManager   $projectParticipationManager
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
-        ProjectParticipationContactRepository $projectParticipationContactRepository,
         ProjectParticipationManager $projectParticipationManager
     ) {
         parent::__construct($authorizationChecker);
-        $this->authorizationChecker                  = $authorizationChecker;
-        $this->projectParticipationContactRepository = $projectParticipationContactRepository;
-        $this->projectParticipationManager           = $projectParticipationManager;
+        $this->authorizationChecker        = $authorizationChecker;
+        $this->projectParticipationManager = $projectParticipationManager;
     }
 
     /**
