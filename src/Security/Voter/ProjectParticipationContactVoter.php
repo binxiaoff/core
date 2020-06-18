@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\Clients;
 use Unilend\Entity\ProjectParticipationContact;
@@ -65,8 +64,6 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
      * @param ProjectParticipationContact $subject
      * @param Clients                     $user
      *
-     * @throws NonUniqueResultException
-     *
      * @return bool
      */
     protected function canEdit(ProjectParticipationContact $subject, Clients $user)
@@ -77,8 +74,6 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
     /**
      * @param ProjectParticipationContact $subject
      * @param Clients                     $user
-     *
-     * @throws NonUniqueResultException
      *
      * @return bool
      */
@@ -91,12 +86,10 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
      * @param ProjectParticipationContact $subject
      * @param Clients                     $user
      *
-     * @throws NonUniqueResultException
-     *
      * @return bool
      */
     private function isParticipant(ProjectParticipationContact $subject, Clients $user)
     {
-        return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $subject->getProjectParticipation()->getProject());
+        return $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject->getProjectParticipation());
     }
 }
