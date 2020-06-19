@@ -10,7 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Interfaces\StatusInterface;
+use Unilend\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -40,6 +42,12 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         @ORM\Index(columns={"added_by"}, name="idx_project_status_added_by")
  *     }
  * )
+ *
+ * @Assert\Callback(
+ *     callback={"Unilend\Validator\Constraints\TraceableStatusValidator", "validate"},
+ *     payload={ "path": "status" }
+ * )
+ *
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectStatusRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -123,9 +131,9 @@ class ProjectStatus implements StatusInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -166,5 +174,13 @@ class ProjectStatus implements StatusInterface
         $this->project = $project;
 
         return $this;
+    }
+
+    /**
+     * @return TraceableStatusAwareInterface|Project
+     */
+    public function getAttachedObject()
+    {
+        return $this->getProject();
     }
 }

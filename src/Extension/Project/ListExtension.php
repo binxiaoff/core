@@ -60,11 +60,11 @@ class ListExtension implements QueryCollectionExtensionInterface
                 ),
                 // or you are participant and the project is published
                 $queryBuilder->expr()->andX(
-                    'cs.status >= :minimumParticipantDisplayableStatus',
+                    'cs.status in (:displayableStatus)',
                     'ppc.client = :client'
                 )
             ))
-            ->setParameter('minimumParticipantDisplayableStatus', ProjectStatus::STATUS_INTEREST_EXPRESSION)
+            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUS)
             ->setParameter('company', $staff->getCompany())
             ->setParameter('client', $user)
             ->setParameter('marketSegments', $staff ? $staff->getMarketSegments() : [])

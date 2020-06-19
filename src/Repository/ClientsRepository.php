@@ -115,7 +115,7 @@ class ClientsRepository extends ServiceEntityRepository
             ->where('staff.company = :company')
             ->andWhere(':marketSegment MEMBER OF staff.marketSegments')
             ->setParameters([
-                'company'       => $projectParticipation->getCompany(),
+                'company'       => $projectParticipation->getParticipant(),
                 'marketSegment' => $projectParticipation->getProject()->getMarketSegment(),
             ])
         ;

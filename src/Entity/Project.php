@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource, ApiSubresource};
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\{NumericFilter, SearchFilter};
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
@@ -14,12 +14,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\{Embeddable\Money,
-    Embeddable\NullableMoney,
-    Embeddable\NullablePerson,
-    Traits\PublicizeIdentityTrait,
-    Traits\TimestampableTrait,
-    Traits\TraceableStatusTrait};
+use Unilend\Entity\{Embeddable\Money, Embeddable\NullableMoney, Embeddable\NullablePerson, Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface,
+    Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Filter\ArrayFilter;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -31,7 +27,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "company:read",
  *             "marketSegment:read",
  *             "projectParticipation:read",
- *             "projectParticipationOffer:read",
+ *             "projectParticipationTranche:read",
  *             "money:read",
  *             "nullablePerson:read",
  *             "projectStatus:read"
@@ -47,7 +43,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "company:read",
  *                     "marketSegment:read",
  *                     "projectParticipation:read",
- *                     "projectParticipationOffer:read",
+ *                     "projectParticipationTranche:read",
  *                     "money:read",
  *                     "nullablePerson:read"
  *                 }
@@ -74,13 +70,12 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "project:read",
  *                 "company:read",
  *                 "projectParticipation:read",
- *                 "projectParticipationOffer:read",
+ *                 "projectParticipationTranche:read",
  *                 "money:read",
  *                 "file:read",
  *                 "fileVersion:read",
  *                 "projectStatus:read",
  *                 "projectParticipationContact:read",
- *                 "projectParticipationFee:read",
  *                 "projectOrganizer:read",
  *                 "tranche_project:read",
  *                 "trancheFee:read",
@@ -123,17 +118,12 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ORM\HasLifecycleCallbacks
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProject")
- *
- * @method ProjectStatus getCurrentStatus
  */
-class Project
+class Project implements TraceableStatusAwareInterface
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
     use PublicizeIdentityTrait;
-    use TraceableStatusTrait {
-        setCurrentStatus as private baseStatusSetter;
-    }
 
     public const OFFER_VISIBILITY_PRIVATE     = 'private';
     public const OFFER_VISIBILITY_PARTICIPANT = 'participant';
@@ -428,7 +418,7 @@ class Project
     /**
      * @var ProjectStatus
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -440,9 +430,6 @@ class Project
 
     /**
      * @var ArrayCollection|ProjectStatus
-     *
-     * @Assert\Count(min="1")
-     * @Assert\Valid
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      */
@@ -534,15 +521,6 @@ class Project
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
      *
-     * @Groups({"project:read", "project:create"})
-     */
-    private $targetArrangerParticipationMoney;
-
-    /**
-     * @var NullableMoney
-     *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
-     *
      * @Groups({"project:admin:read", "project:create"})
      */
     private $arrangementCommissionMoney;
@@ -603,12 +581,8 @@ class Project
         $arranger = new ProjectOrganizer($this->submitterCompany, $this, $addedBy, [ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER]);
         $this->organizers->add($arranger);
 
-        $participant = new ProjectParticipation($this->submitterCompany, $this, $addedBy);
-        $this->projectParticipations->add($participant);
-
-        $this->interestExpressionEnabled        = false;
-        $this->targetArrangerParticipationMoney = new NullableMoney();
-        $this->arrangementCommissionMoney       = new NullableMoney();
+        $this->interestExpressionEnabled  = false;
+        $this->arrangementCommissionMoney = new NullableMoney();
     }
 
     /**
@@ -748,19 +722,35 @@ class Project
     }
 
     /**
-     * @param ProjectStatus $projectStatus
+     * @return StatusInterface|ProjectStatus
+     */
+    public function getCurrentStatus()
+    {
+        return $this->currentStatus;
+    }
+
+    /**
+     * @param ProjectStatus|StatusInterface $projectStatus
      *
      * @return Project
      */
-    public function setCurrentStatus(ProjectStatus $projectStatus): Project
+    public function setCurrentStatus(StatusInterface $projectStatus): Project
     {
-        if ($projectStatus->getProject() !== $this) {
+        if ($projectStatus->getAttachedObject() !== $this) {
             throw new RuntimeException('Attempt to add an incorrect status');
         }
 
-        $this->baseStatusSetter($projectStatus);
+        $this->currentStatus = $projectStatus;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|StatusInterface[]|void
+     */
+    public function getStatuses(): Collection
+    {
+        return $this->statuses;
     }
 
     /**
@@ -1058,28 +1048,6 @@ class Project
     }
 
     /**
-     * @return bool
-     */
-    public function isEditable(): bool
-    {
-        if ($this->getCurrentStatus()) {
-            return $this->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_INTEREST_EXPRESSION;
-        }
-
-        return true;
-    }
-
-    /**
-     * @throws Exception
-     *
-     * @return bool
-     */
-    public function isOnline(): bool
-    {
-        return ProjectStatus::STATUS_INTEREST_EXPRESSION === $this->getCurrentStatus()->getStatus();
-    }
-
-    /**
      * @return array|string[]
      */
     public static function getSyndicationTypes(): array
@@ -1310,24 +1278,6 @@ class Project
     }
 
     /**
-     * @throws Exception
-     *
-     * @return Money
-     *
-     * @Groups({"project:read"})
-     */
-    public function getOffersMoney(): Money
-    {
-        $money = new Money($this->getGlobalFundingMoney()->getCurrency());
-
-        foreach ($this->getProjectParticipations() as $projectParticipation) {
-            $money = $projectParticipation->getOfferMoney() ? $money->add($projectParticipation->getOfferMoney()) : $money;
-        }
-
-        return $money;
-    }
-
-    /**
      * @return array|string[]
      *
      * @Groups({"project:read"})
@@ -1417,26 +1367,6 @@ class Project
     /**
      * @return NullableMoney|null
      */
-    public function getTargetArrangerParticipationMoney(): ?NullableMoney
-    {
-        return $this->targetArrangerParticipationMoney->isValid() ? $this->targetArrangerParticipationMoney : null;
-    }
-
-    /**
-     * @param NullableMoney $targetArrangerParticipationMoney
-     *
-     * @return Project
-     */
-    public function setTargetArrangerParticipationMoney(NullableMoney $targetArrangerParticipationMoney): Project
-    {
-        $this->targetArrangerParticipationMoney = $targetArrangerParticipationMoney;
-
-        return $this;
-    }
-
-    /**
-     * @return NullableMoney|null
-     */
     public function getArrangementCommissionMoney(): ?NullableMoney
     {
         return $this->arrangementCommissionMoney->isValid() ? $this->arrangementCommissionMoney : null;
@@ -1492,6 +1422,48 @@ class Project
         $this->privilegedContactPerson = $privilegedContactPerson;
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPublished(): bool
+    {
+        return $this->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_DRAFT;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInterestCollected(): bool
+    {
+        return $this->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_INTEREST_EXPRESSION;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInInterestCollectionStep(): bool
+    {
+        return ProjectStatus::STATUS_INTEREST_EXPRESSION === $this->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInOfferNegotiationStep(): bool
+    {
+        return ProjectStatus::STATUS_PARTICIPANT_REPLY === $this->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * Used in an expression constraints.
+     *
+     * @return bool
+     */
+    public function isInContractNegotiationStep(): bool
+    {
+        return ProjectStatus::STATUS_CONTRACTUALISATION === $this->getCurrentStatus()->getStatus();
     }
 
     /**

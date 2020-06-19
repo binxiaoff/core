@@ -19,7 +19,7 @@ class Money
      *
      * @ORM\Column(type="decimal", precision=15, scale=2)
      *
-     * @Assert\NotBlank
+     * @Assert\NotBlank(allowNull=true)
      * @Assert\Type("numeric")
      * @Assert\Positive
      *
@@ -37,7 +37,7 @@ class Money
      *
      * @ORM\Column(type="string", length=3)
      *
-     * @Assert\NotBlank
+     * @Assert\NotBlank(allowNull=true)
      * @Assert\Currency
      *
      * @Groups({

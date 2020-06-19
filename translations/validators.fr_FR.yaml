@@ -24,3 +24,20 @@ Tranche:
         expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche
     thirdPartyFunder:
         expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche
+
+ProjectParticipation:
+    committeeStatus:
+        pendedDeadline: Merci de saisir une date de réponse du comité si la réponse est en attente.
+    participant:
+        notValid: L'entité que vous avez choisi ne peut pas être un participant du projet.
+
+ProjectParticipationTranche:
+    tranche:
+        notOwn: Merci de choisir une tranche du projet.
+
+ProjectParticipationStatus:
+    status:
+        invalid: Le status n'est pas valide.
+
+StatusInterface:
+    duplicated: Le nouveau statut est en doublons avec le dernier.

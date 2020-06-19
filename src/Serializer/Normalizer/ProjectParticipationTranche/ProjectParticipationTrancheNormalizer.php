@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Serializer\Normalizer\Project;
+namespace Unilend\Serializer\Normalizer\ProjectParticipationTranche;
 
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{ContextAwareNormalizerInterface, NormalizerAwareInterface, NormalizerAwareTrait};
-use Unilend\Entity\{Clients, Project};
-use Unilend\Security\Voter\ProjectVoter;
+use Unilend\Entity\ProjectParticipationTranche;
+use Unilend\Security\Voter\ProjectParticipationTrancheVoter;
 
-class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class ProjectParticipationTrancheNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
-    private const ALREADY_CALLED = 'PROJECT_ATTRIBUTE_NORMALIZER_ALREADY_CALLED';
+    private const ALREADY_CALLED = 'PROJECT_PARTICIPATION_TRANCHE_ATTRIBUTE_NORMALIZER_ALREADY_CALLED';
 
     /** @var Security */
     private $security;
@@ -29,13 +29,13 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
     /**
      * {@inheritdoc}
      */
-    public function supportsNormalization($data, $format = null, array $context = [])
+    public function supportsNormalization($data, $format = null, array $context = []): bool
     {
         if (isset($context[self::ALREADY_CALLED])) {
             return false;
         }
 
-        return $data instanceof Project;
+        return $data instanceof ProjectParticipationTranche;
     }
 
     /**
@@ -51,19 +51,14 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
     }
 
     /**
-     * @param Project $project
+     * @param ProjectParticipationTranche $projectParticipationTranche
      *
      * @return array
      */
-    private function getAdditionalNormalizerGroups(Project $project): array
+    private function getAdditionalNormalizerGroups(ProjectParticipationTranche $projectParticipationTranche): array
     {
-        $client = $this->security->getUser();
-        if (false === $client instanceof Clients) {
-            return [];
-        }
-
-        if ($this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
-            return [Project::SERIALIZER_GROUP_ADMIN_READ];
+        if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_SENSITIVE_VIEW, $projectParticipationTranche)) {
+            return [ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ];
         }
 
         return [];

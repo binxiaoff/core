@@ -98,15 +98,6 @@ class Company
     private $staff;
 
     /**
-     * TODO Is it really necessary ? (I am talking about the reverse association).
-     *
-     * @var ProjectParticipation[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
-     */
-    private $projectParticipations;
-
-    /**
      * @var string|null
      *
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
@@ -156,12 +147,11 @@ class Company
      */
     public function __construct(string $name)
     {
-        $this->name                  = $name;
-        $this->staff                 = new ArrayCollection();
-        $this->projectParticipations = new ArrayCollection();
-        $this->statuses              = new ArrayCollection();
-        $this->added                 = new DateTimeImmutable();
-        $this->modules               = new ArrayCollection();
+        $this->name     = $name;
+        $this->staff    = new ArrayCollection();
+        $this->statuses = new ArrayCollection();
+        $this->added    = new DateTimeImmutable();
+        $this->modules  = new ArrayCollection();
     }
 
     /**
@@ -285,21 +275,6 @@ class Company
         $this->staff->removeElement($staff);
 
         return $this;
-    }
-
-    /**
-     * @param Project|null $project
-     *
-     * @return ArrayCollection|ProjectParticipation[]
-     */
-    public function getProjectParticipations(?Project $project = null): iterable
-    {
-        $criteria = new Criteria();
-        if ($project) {
-            $criteria->where(Criteria::expr()->eq('project', $project));
-        }
-
-        return $this->projectParticipations->matching($criteria);
     }
 
     /**

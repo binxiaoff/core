@@ -43,9 +43,10 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\Project, method: purify }
 
-    Unilend\Listener\Doctrine\Entity\ProjectStatus\ProjectStatusCreatedListener:
+    Unilend\Listener\Doctrine\Entity\ProjectParticipation\ProjectParticipationUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\ProjectStatus, method: setCurrentStatus }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\ProjectParticipation, method: archiveOnRejectedByCommittee }
+            - { name: doctrine.orm.entity_listener, event: postUpdate, entity: Unilend\Entity\ProjectParticipation, method: saveTheNewArchivedStatus }
 
     # Message Dispatcher
     Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientUpdatedListener:
@@ -80,3 +81,7 @@ services:
     Unilend\Listener\Doctrine\Lifecycle\ArchivedByListener:
         tags:
             - { name: doctrine.event_listener, event: preRemove }
+
+    Unilend\Listener\Doctrine\Lifecycle\StatusCreatedListener:
+        tags:
+            - { name: doctrine.event_listener, event: prePersist }

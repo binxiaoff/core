@@ -10,17 +10,14 @@ use Exception;
 use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Interfaces\StatusInterface;
+use Unilend\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Entity\Traits\BlamableAddedTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
- * @ORM\Table(
- *     name="staff_status",
- *     indexes={
- *         @ORM\Index(columns={"status"}, name="idx_staff_status_status"),
- *     }
+ * @ORM\Table(indexes={@ORM\Index(columns={"status"}, name="idx_staff_status_status")}
  * )
  */
 class StaffStatus implements StatusInterface
@@ -82,6 +79,14 @@ class StaffStatus implements StatusInterface
     }
 
     /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
      * @return Staff
      */
     public function getStaff(): Staff
@@ -103,5 +108,13 @@ class StaffStatus implements StatusInterface
     public static function getPossibleStatuses(): array
     {
         return static::getConstants('STATUS_');
+    }
+
+    /**
+     * @return TraceableStatusAwareInterface|Staff
+     */
+    public function getAttachedObject()
+    {
+        return $this->getStaff();
     }
 }
