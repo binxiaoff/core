@@ -49,19 +49,9 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function canView(ProjectParticipationContact $subject, Clients $user)
-    {
-        return $subject->getClient() === $user;
-    }
-
-    /**
-     * @param ProjectParticipationContact $subject
-     * @param Clients                     $user
-     *
-     * @return bool
-     */
     protected function canEdit(ProjectParticipationContact $subject, Clients $user)
     {
+        // arrangeur ou participant
         return $this->isParticipant($subject, $user);
     }
 
@@ -73,6 +63,7 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
      */
     protected function canCreate(ProjectParticipationContact $subject, Clients $user)
     {
+        // arrangeur ou participant
         return $this->isParticipant($subject, $user);
     }
 
