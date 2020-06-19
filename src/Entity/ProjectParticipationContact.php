@@ -13,14 +13,16 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchived
 
 /**
  * @ApiResource(
- *     denormalizationContext={"groups": {"projectParticipationContact:write", "archivable:write"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
  *         },
- *         "patch": {"denormalization_context": {"groups": {}}}
+ *         "patch": {
+ *             "security_post_denormalize": "is_granted('edit', object)",
+ *             "denormalization_context": {"groups": {}}
+ *         }
  *     },
  *     collectionOperations={
  *         "post": {

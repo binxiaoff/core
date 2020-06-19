@@ -15,6 +15,7 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
     public const ATTRIBUTE_CREATE     = 'create';
     public const ATTRIBUTE_ACCEPT_NDA = 'accept_nda';
     public const ATTRIBUTE_ARCHIVE    = 'archive';
+    private const ATTRIBUTE_EDIT      = 'edit';
 
     /** @var ProjectParticipationManager */
     private $projectParticipationManager;
@@ -71,9 +72,21 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
      *
      * @return bool
      */
+    protected function canEdit(ProjectParticipationContact $subject, Clients $user)
+    {
+        return $this->canCreate($subject, $user);
+    }
+
+    /**
+     * @param ProjectParticipationContact $subject
+     * @param Clients                     $user
+     *
+     * @return bool
+     */
     protected function canCreate(ProjectParticipationContact $subject, Clients $user)
     {
-        return $subject->getProjectParticipation()->getProject()->getArranger() === $user || $this->isParticipant($subject, $user);
+        return $subject->getProjectParticipation()->getProject()->getArranger() === $user
+            || $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject->getProjectParticipation());
     }
 
     /**
@@ -84,6 +97,5 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
      */
     private function isParticipant(ProjectParticipationContact $subject, Clients $user)
     {
-        return $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject->getProjectParticipation());
     }
 }
