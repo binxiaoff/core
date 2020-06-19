@@ -15,7 +15,11 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchived
  * @ApiResource(
  *     denormalizationContext={"groups": {"projectParticipationContact:write", "archivable:write"}},
  *     itemOperations={
- *         "get": {"security": "is_granted('view', object)"},
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
  *         "patch": {"security_post_denormalize": "is_granted('edit', object)"},
  *     },
  *     collectionOperations={
@@ -100,18 +104,6 @@ class ProjectParticipationContact
     public function getProjectParticipation(): ProjectParticipation
     {
         return $this->projectParticipation;
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return ProjectParticipationContact
-     */
-    public function setProjectParticipation(ProjectParticipation $projectParticipation): ProjectParticipationContact
-    {
-        $this->projectParticipation = $projectParticipation;
-
-        return $this;
     }
 
     /**

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Entity\Traits;
 
-use DateTime;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 trait ArchivableTrait
