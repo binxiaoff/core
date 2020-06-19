@@ -134,6 +134,10 @@ class ProjectParticipationStatus implements StatusInterface
             return true;
         }
 
+        if ($this->isParticipationOfArranger()) {
+            return false;
+        }
+
         return (
             self::STATUS_ARCHIVED_BY_ARRANGER === $this->getStatus()
             && $this->getAddedBy()->getCompany() === $this->projectParticipation->getProject()->getSubmitterCompany()
@@ -155,5 +159,13 @@ class ProjectParticipationStatus implements StatusInterface
         }
 
         return false;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isParticipationOfArranger(): bool
+    {
+        return $this->getProjectParticipation()->getParticipant() === $this->getProjectParticipation()->getProject()->getSubmitterCompany();
     }
 }
