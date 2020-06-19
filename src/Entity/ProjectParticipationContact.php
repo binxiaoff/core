@@ -20,7 +20,7 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchived
  *             "read": false,
  *             "output": false,
  *         },
- *         "patch": {"security_post_denormalize": "is_granted('edit', object)"},
+ *         "patch": {"denormalization_context": {"groups": {}}}
  *     },
  *     collectionOperations={
  *         "post": {
@@ -40,6 +40,8 @@ class ProjectParticipationContact
     use PublicizeIdentityTrait;
     use ArchivableTrait;
     use BlamableArchivedTrait;
+
+    public const SERIALIZER_GROUP_PROJECT_PARTICIPATION_CONTACT_OWNER_WRITE = 'projectParticipationContact:owner:write';
 
     /**
      * @var ProjectParticipation
@@ -68,13 +70,15 @@ class ProjectParticipationContact
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"projectParticipationContact:read", "projectParticipationContact:write"})
+     * @Groups({"projectParticipationContact:read", "projectParticipationContact:write", "projectParticipationContact:owner:write"})
      */
     private $confidentialityAccepted;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion")
      * @ORM\JoinColumn(name="id_accepted_confidentiality_disclaimer_version")
+     *
+     * @Groups({"projectParticipationContact:owner:write"})
      */
     private $acceptedConfidentialityDisclaimerVersion;
 
