@@ -1048,28 +1048,6 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return bool
-     */
-    public function isEditable(): bool
-    {
-        if ($this->getCurrentStatus()) {
-            return $this->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_INTEREST_EXPRESSION;
-        }
-
-        return true;
-    }
-
-    /**
-     * @throws Exception
-     *
-     * @return bool
-     */
-    public function isOnline(): bool
-    {
-        return ProjectStatus::STATUS_INTEREST_EXPRESSION === $this->getCurrentStatus()->getStatus();
-    }
-
-    /**
      * @return array|string[]
      */
     public static function getSyndicationTypes(): array
@@ -1449,9 +1427,17 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @return bool
      */
+    public function isPublished(): bool
+    {
+        return $this->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_DRAFT;
+    }
+
+    /**
+     * @return bool
+     */
     public function isInterestCollected(): bool
     {
-        return $this->getCurrentStatus()->getStatus() >= ProjectStatus::STATUS_INTERESTS_COLLECTED || false === $this->isInterestExpressionEnabled();
+        return $this->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_INTEREST_EXPRESSION;
     }
 
     /**
@@ -1459,7 +1445,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function isInInterestCollectionStep(): bool
     {
-        return false === $this->isInterestCollected() && $this->getCurrentStatus()->getStatus() >= ProjectStatus::STATUS_PUBLISHED;
+        return ProjectStatus::STATUS_INTEREST_EXPRESSION === $this->getCurrentStatus()->getStatus();
     }
 
     /**
@@ -1467,11 +1453,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function isInOfferNegotiationStep(): bool
     {
-        return $this->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_OFFERS_COLLECTED
-            && (
-                $this->getCurrentStatus()->getStatus() >= ProjectStatus::STATUS_INTERESTS_COLLECTED
-                || (false === $this->isInterestExpressionEnabled() && $this->getCurrentStatus()->getStatus() >= ProjectStatus::STATUS_PUBLISHED)
-            );
+        return ProjectStatus::STATUS_PARTICIPANT_REPLY === $this->getCurrentStatus()->getStatus();
     }
 
     /**
@@ -1481,7 +1463,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function isInContractNegotiationStep(): bool
     {
-        return ProjectStatus::STATUS_OFFERS_COLLECTED === $this->getCurrentStatus()->getStatus();
+        return ProjectStatus::STATUS_CONTRACTUALISATION === $this->getCurrentStatus()->getStatus();
     }
 
     /**

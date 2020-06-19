@@ -185,7 +185,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canParticipationOwnerEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation);
+        return $projectParticipation->getProject()->isPublished()
+        && $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation);
     }
 
     /**
@@ -196,7 +197,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canParticipationOwnerInterestCollectionEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return $this->canParticipationOwnerEdit($projectParticipation, $user) && false === $projectParticipation->getProject()->isInterestCollected();
+        return $this->canParticipationOwnerEdit($projectParticipation, $user) && $projectParticipation->getProject()->isInInterestCollectionStep();
     }
 
     /**

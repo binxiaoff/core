@@ -54,7 +54,7 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->innerJoin('sub_project.currentStatus', 'sub_cs')
             ->innerJoin('sub_project.projectParticipations', 'sub_participation')
             ->innerJoin('sub_participation.projectParticipationContacts', 'sub_contact')
-            ->where('sub_contact.client = :client AND sub_cs.status >= :minimumParticipantDisplayableStatus')
+            ->where('sub_contact.client = :client AND sub_cs.status in (:displayableStatus)')
         ;
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
@@ -81,7 +81,7 @@ class ListExtension implements QueryCollectionExtensionInterface
             )
             ->setParameter('client', $user)
             ->setParameter('private', Project::OFFER_VISIBILITY_PRIVATE)
-            ->setParameter('minimumParticipantDisplayableStatus', ProjectStatus::STATUS_INTEREST_EXPRESSION)
+            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUS)
             ->setParameter('nonPrivate', [Project::OFFER_VISIBILITY_PARTICIPANT, Project::OFFER_VISIBILITY_PUBLIC])
             ->setParameter('company', $user->getCompany())
             ->setParameter('marketSegments', $user->getCurrentStaff()->getMarketSegments())
