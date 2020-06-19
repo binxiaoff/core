@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\Clients;
-use Unilend\Entity\ProjectParticipationContact;
-use Unilend\Entity\ProjectStatus;
+use Unilend\Entity\{Clients, ProjectParticipationContact, ProjectStatus};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationContactVoter extends AbstractEntityVoter
@@ -15,7 +13,7 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
     public const ATTRIBUTE_CREATE     = 'create';
     public const ATTRIBUTE_ACCEPT_NDA = 'accept_nda';
     public const ATTRIBUTE_ARCHIVE    = 'archive';
-    private const ATTRIBUTE_EDIT      = 'edit';
+    public const ATTRIBUTE_EDIT       = 'edit';
 
     /** @var ProjectParticipationManager */
     private $projectParticipationManager;
@@ -50,7 +48,7 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function canAcceptNda(ProjectParticipationContact $subject, Clients $user)
+    protected function canAcceptNda(ProjectParticipationContact $subject, Clients $user): bool
     {
         return $subject->getClient() === $user;
     }
@@ -61,7 +59,7 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function canArchive(ProjectParticipationContact $subject, Clients $user)
+    protected function canArchive(ProjectParticipationContact $subject, Clients $user): bool
     {
         return $this->canCreate($subject, $user);
     }
@@ -72,7 +70,7 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function canEdit(ProjectParticipationContact $subject, Clients $user)
+    protected function canEdit(ProjectParticipationContact $subject, Clients $user): bool
     {
         return $this->canCreate($subject, $user);
     }
@@ -83,19 +81,9 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function canCreate(ProjectParticipationContact $subject, Clients $user)
+    protected function canCreate(ProjectParticipationContact $subject, Clients $user): bool
     {
-        return $subject->getProjectParticipation()->getProject()->getArranger() === $user
+        return $subject->getProjectParticipation()->getProject()->getSubmitterCompany() === $user->getCompany()
             || $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject->getProjectParticipation());
-    }
-
-    /**
-     * @param ProjectParticipationContact $subject
-     * @param Clients                     $user
-     *
-     * @return bool
-     */
-    private function isParticipant(ProjectParticipationContact $subject, Clients $user)
-    {
     }
 }

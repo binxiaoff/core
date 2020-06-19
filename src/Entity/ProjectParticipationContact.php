@@ -20,7 +20,7 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchived
  *             "output": false,
  *         },
  *         "patch": {
- *             "security_post_denormalize": "is_granted('edit', object)",
+ *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {"groups": {}}
  *         }
  *     },

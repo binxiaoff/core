@@ -30,7 +30,7 @@ class ProjectParticipationContactDenormalizer implements ContextAwareDenormalize
     /**
      * {@inheritdoc}
      */
-    public function supportsDenormalization($data, $type, $format = null, array $context = [])
+    public function supportsDenormalization($data, $type, $format = null, array $context = []): bool
     {
         return !isset($context[self::ALREADY_CALLED]) && ProjectParticipationContact::class === $type;
     }
