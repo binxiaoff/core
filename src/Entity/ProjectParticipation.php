@@ -91,7 +91,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity({"project", "participant"})
+ * @UniqueEntity({"participant", "project"})
  */
 class ProjectParticipation implements TraceableStatusAwareInterface
 {
