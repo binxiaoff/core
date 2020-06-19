@@ -122,9 +122,7 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canManageTrancheOffer(Project $project, Clients $user): bool
     {
-        $projectOrganizer = $this->getProjectOrganizer($project, $user);
-
-        return $projectOrganizer && $projectOrganizer->isArranger();
+        return $project->getSubmitterCompany() === $user->getCompany();
     }
 
     /**

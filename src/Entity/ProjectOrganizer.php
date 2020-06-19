@@ -148,14 +148,6 @@ class ProjectOrganizer
     /**
      * @return bool
      */
-    public function isArranger(): bool
-    {
-        return $this->hasRole(self::DUTY_PROJECT_ORGANIZER_ARRANGER);
-    }
-
-    /**
-     * @return bool
-     */
     public function isRun(): bool
     {
         return $this->hasRole(self::DUTY_PROJECT_ORGANIZER_RUN);

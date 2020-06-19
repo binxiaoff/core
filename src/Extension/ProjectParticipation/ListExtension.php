@@ -74,6 +74,7 @@ class ListExtension implements QueryCollectionExtensionInterface
                     ),
                     // Participant condition
                     $expressionBuilder->andX(
+                        'ppc.archived IS NULL',
                         '(p.offerVisibility = :private AND ppc.client = :client) OR p.offerVisibility in (:nonPrivate)',
                         $expressionBuilder->in('p.id', $subQueryBuilder->getDQL())
                     )

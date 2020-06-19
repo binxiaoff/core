@@ -9,19 +9,24 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
+use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 
 /**
  * @ApiResource(
- *     denormalizationContext={"groups": {"projectParticipationContact:write"}},
  *     itemOperations={
- *         "get": {"security": "object.getClient() == user"},
- *         "patch": {"security_post_denormalize": "previous_object.getClient() == user"},
- *         "delete": {"security_post_denormalize": "is_granted('edit', object.getProjectParticipation())"},
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *         "patch": {
+ *             "security": "is_granted('edit', object)",
+ *             "denormalization_context": {"groups": {}}
+ *         }
  *     },
  *     collectionOperations={
  *         "post": {
- *             "security_post_denormalize": "is_granted('edit', object.getProjectParticipation())",
+ *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {"groups": {"projectParticipationContact:create", "projectParticipationContact:write"}}
  *         }
  *     }
@@ -35,6 +40,10 @@ class ProjectParticipationContact
     use TimestampableAddedOnlyTrait;
     use BlamableAddedTrait;
     use PublicizeIdentityTrait;
+    use ArchivableTrait;
+    use BlamableArchivedTrait;
+
+    public const SERIALIZER_GROUP_PROJECT_PARTICIPATION_CONTACT_OWNER_WRITE = 'projectParticipationContact:owner:write';
 
     /**
      * @var ProjectParticipation
@@ -63,13 +72,15 @@ class ProjectParticipationContact
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"projectParticipationContact:read", "projectParticipationContact:write"})
+     * @Groups({"projectParticipationContact:read", "projectParticipationContact:write", "projectParticipationContact:owner:write"})
      */
     private $confidentialityAccepted;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion")
      * @ORM\JoinColumn(name="id_accepted_confidentiality_disclaimer_version")
+     *
+     * @Groups({"projectParticipationContact:owner:write"})
      */
     private $acceptedConfidentialityDisclaimerVersion;
 
@@ -99,18 +110,6 @@ class ProjectParticipationContact
     public function getProjectParticipation(): ProjectParticipation
     {
         return $this->projectParticipation;
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return ProjectParticipationContact
-     */
-    public function setProjectParticipation(ProjectParticipation $projectParticipation): ProjectParticipationContact
-    {
-        $this->projectParticipation = $projectParticipation;
-
-        return $this;
     }
 
     /**
@@ -171,5 +170,13 @@ class ProjectParticipationContact
         $this->acceptedConfidentialityDisclaimerVersion = $acceptedConfidentialityDisclaimerVersion;
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isArchived(): bool
+    {
+        return null !== $this->archived;
     }
 }

@@ -31,7 +31,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "nullableMoney:read",
  *         "rangedOfferWithFee:read",
  *         "offerWithFee:read",
- *         "offer:read"
+ *         "offer:read",
+ *         "archivable:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
@@ -57,7 +58,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "nullableMoney:read",
  *                 "rangedOfferWithFee:read",
  *                 "offerWithFee:read",
- *                 "offer:read"
+ *                 "offer:read",
+ *                 "archivable:read"
  *             }}
  *         },
  *         "post": {
@@ -601,6 +603,16 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public function getProjectParticipationContacts(): iterable
     {
         return $this->projectParticipationContacts;
+    }
+
+    /**
+     * @return ProjectParticipationContact[]|ArrayCollection
+     */
+    public function getActiveProjectParticipationContacts(): iterable
+    {
+        return $this->projectParticipationContacts->filter(function (ProjectParticipationContact $participationContact) {
+            return false === $participationContact->isArchived();
+        });
     }
 
     /**

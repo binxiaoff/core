@@ -60,7 +60,7 @@ class ProjectStatusUpdatedHandler implements MessageHandlerInterface
 
         if (\in_array($projectStatusUpdated->getNewStatus(), [ProjectStatus::STATUS_INTEREST_EXPRESSION, ProjectStatus::STATUS_PARTICIPANT_REPLY], true)) {
             foreach ($project->getProjectParticipations() as $projectParticipation) {
-                foreach ($projectParticipation->getProjectParticipationContacts() as $contact) {
+                foreach ($projectParticipation->getActiveProjectParticipationContacts() as $contact) {
                     $this->projectParticipationContactNotifier->notifyContactAdded($contact);
                 }
             }

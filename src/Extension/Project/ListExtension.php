@@ -58,10 +58,11 @@ class ListExtension implements QueryCollectionExtensionInterface
                         ($staff && $staff->isAdmin() ? '1 = 1' : '0 = 1')
                     )
                 ),
-                // or you are participant and the project is published
+                // or you are non archived participant and the project is published
                 $queryBuilder->expr()->andX(
                     'cs.status in (:displayableStatus)',
-                    'ppc.client = :client'
+                    'ppc.client = :client',
+                    'ppc.archived IS NULL'
                 )
             ))
             ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUS)

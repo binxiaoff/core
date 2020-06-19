@@ -66,8 +66,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     {
         $project = $subject->getProject();
 
-        $projectOrganizer = $subject->getProject()->getArranger();
-        if ($projectOrganizer && $projectOrganizer->isArranger()) {
+        if ($this->isArranger($project, $user)) {
             return true;
         }
 
@@ -91,7 +90,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     protected function canAdminView(ProjectParticipation $projectParticipation, Clients $user): bool
     {
         return $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
-            || $projectParticipation->getProject()->getSubmitterCompany() === $user->getCompany();
+            || $this->isArranger($projectParticipation->getProject(), $user);
     }
 
     /**
@@ -117,7 +116,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
         return $projectParticipation->isActive()
             && ProjectParticipation::COMMITTEE_STATUS_REJECTED !== $projectParticipation->getCommitteeStatus()
             && (
-                $projectParticipation->getProject()->getSubmitterCompany() === $user->getCompany()
+                $this->isArranger($projectParticipation->getProject(), $user)
                 || (
                     $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
                     && ProjectParticipation::COMMITTEE_STATUS_ACCEPTED !== $projectParticipation->getCommitteeStatus()

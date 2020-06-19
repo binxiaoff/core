@@ -51,7 +51,7 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->leftJoin('pp.projectParticipationContacts', 'ppc')
             ->leftJoin('pp.project', 'project')
             ->leftJoin('project.organizers', 'organizer', Join::WITH, "JSON_CONTAINS(organizer.roles, '\"${$arranger}\"') = 1")
-            ->andWhere('ppc.client = :client OR :company = organizer.company')
+            ->andWhere('(ppc.client = :client AND ppc.archived IS NULL) OR :company = organizer.company')
             ->setParameter('client', $user)
             ->setParameter('company', $user->getCompany())
         ;

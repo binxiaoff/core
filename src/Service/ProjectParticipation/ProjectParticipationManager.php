@@ -32,7 +32,9 @@ class ProjectParticipationManager
      */
     public function isParticipant(Staff $staff, Project $project): bool
     {
-        return null !== $this->projectParticipationContactRepository->findByProjectAndStaff($project, $staff);
+        $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndStaff($project, $staff);
+
+        return null !== $projectParticipationContact && false === $projectParticipationContact->isArchived();
     }
 
     /**
@@ -46,6 +48,7 @@ class ProjectParticipationManager
         return null !== $this->projectParticipationContactRepository->findOneBy([
             'projectParticipation' => $projectParticipation,
             'client'               => $staff->getClient(),
+            'archived'             => null,
         ]);
     }
 

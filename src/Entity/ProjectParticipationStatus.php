@@ -148,7 +148,7 @@ class ProjectParticipationStatus implements StatusInterface
      */
     private function isParticipationOwner(): bool
     {
-        foreach ($this->getProjectParticipation()->getProjectParticipationContacts() as $projectParticipationContact) {
+        foreach ($this->getProjectParticipation()->getActiveProjectParticipationContacts() as $projectParticipationContact) {
             if ($this->getAddedBy()->getClient() === $projectParticipationContact->getClient()) {
                 return true;
             }
