@@ -9,6 +9,7 @@ Roleable:
     roles:
         choice: "Un ou plusieurs des rôles donnés sont incorrects"
         count: "Un role est requis"
+        unique: "Les roles doivent être unique"
 
 Clients:
     email:
@@ -41,3 +42,8 @@ ProjectParticipationStatus:
 
 StatusInterface:
     duplicated: Le nouveau statut est en doublons avec le dernier.
+
+
+ProjectOrganizer:
+    roles:
+        duplicatedUniqueRole: Le role {{ value }} est déja assigné à {{ company }}

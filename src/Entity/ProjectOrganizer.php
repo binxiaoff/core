@@ -11,6 +11,7 @@ use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
 
 /**
@@ -39,7 +40,7 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait
  *     }
  * )
  *
- * @UniqueEntity(fields={"project", "company"})
+ * @UniqueEntity(fields={"company", "project"})
  */
 class ProjectOrganizer
 {
@@ -47,11 +48,10 @@ class ProjectOrganizer
     use RoleableTrait;
     use TimestampableTrait;
 
-    public const DUTY_PROJECT_ORGANIZER_ARRANGER         = 'arranger'; // The company who arranges a loan syndication.
-    public const DUTY_PROJECT_ORGANIZER_DEPUTY_ARRANGER  = 'deputy_arranger';
-    public const DUTY_PROJECT_ORGANIZER_RUN              = 'run'; // Responsable Unique de Notation, who gives a note on the borrower.
-    public const DUTY_PROJECT_ORGANIZER_LOAN_OFFICER     = 'loan_officer';
-    public const DUTY_PROJECT_ORGANIZER_SECURITY_TRUSTEE = 'security_trustee';
+    public const DUTY_PROJECT_ORGANIZER_ARRANGER        = 'arranger'; // The company who arranges a loan syndication.
+    public const DUTY_PROJECT_ORGANIZER_DEPUTY_ARRANGER = 'deputy_arranger';
+    public const DUTY_PROJECT_ORGANIZER_RUN             = 'run'; // Responsable Unique de Notation, who gives a note on the borrower.
+    public const DUTY_PROJECT_ORGANIZER_AGENT           = 'agent';
 
     /**
      * @var int
@@ -140,16 +140,38 @@ class ProjectOrganizer
         return \in_array($role, [
             static::DUTY_PROJECT_ORGANIZER_ARRANGER,
             static::DUTY_PROJECT_ORGANIZER_RUN,
-            static::DUTY_PROJECT_ORGANIZER_LOAN_OFFICER,
-            static::DUTY_PROJECT_ORGANIZER_SECURITY_TRUSTEE,
+            static::DUTY_PROJECT_ORGANIZER_AGENT,
         ], true);
     }
 
     /**
-     * @return bool
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
      */
-    public function isRun(): bool
+    public function validateUniqueRoles(ExecutionContextInterface $context): void
     {
-        return $this->hasRole(self::DUTY_PROJECT_ORGANIZER_RUN);
+        /** @var ProjectOrganizer[] $organizers */
+        $organizers = $this->project->getOrganizers()->toArray();
+        foreach ($this->roles as $role) {
+            if (static::isUniqueRole($role)) {
+                $organizer = reset($organizers);
+                // Search for already existing organizers with tested role
+                while ($organizer && (false === $organizer->hasRole($role) || $organizer === $this)) {
+                    $organizer = next($organizers);
+                }
+                if ($organizer) {
+                    $context->buildViolation('ProjectOrganizer.roles.duplicatedUniqueRole')
+                        ->atPath('roles')
+                        ->setInvalidValue($role)
+                        ->setParameters([
+                            '{{ company }}' => $organizer->getCompany()->getName(),
+                            '{{ value }}'   => $role,
+                        ])
+                        ->addViolation()
+                    ;
+                }
+            }
+        }
     }
 }

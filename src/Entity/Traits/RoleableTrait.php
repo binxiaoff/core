@@ -22,6 +22,7 @@ trait RoleableTrait
      *
      * @Assert\Choice(callback="getAvailableRoles", multiple=true, multipleMessage="Roleable.roles.choice")
      * @Assert\Count(min="1", minMessage="Roleable.roles.count")
+     * @Assert\Unique(message="Roleable.roles.unique")
      */
     private $roles = [];
 
@@ -64,7 +65,7 @@ trait RoleableTrait
      */
     public function hasRole(string $role): bool
     {
-        return in_array($role, $this->getRoles(), true);
+        return \in_array($role, $this->getRoles(), true);
     }
 
     /**

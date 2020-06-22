@@ -973,26 +973,6 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @throws Exception
-     *
-     * @return ProjectOrganizer|null
-     */
-    public function getLoanOfficer(): ?ProjectOrganizer
-    {
-        return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_LOAN_OFFICER);
-    }
-
-    /**
-     * @throws Exception
-     *
-     * @return ProjectOrganizer|null
-     */
-    public function getSecurityTrustee(): ?ProjectOrganizer
-    {
-        return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_SECURITY_TRUSTEE);
-    }
-
-    /**
      * @return Collection|ProjectOrganizer[]
      *
      * @Groups({"project:read"})
@@ -1275,25 +1255,6 @@ class Project implements TraceableStatusAwareInterface
                 return $carry->add($item);
             },
             new Money('EUR')
-        );
-    }
-
-    /**
-     * @return array|string[]
-     *
-     * @Groups({"project:read"})
-     */
-    public function getAvailableOrganiserRoles(): array
-    {
-        return array_values(
-            array_filter(
-                ProjectOrganizer::getAvailableRoles(),
-                function (string $role) {
-                    $isUnique = ProjectOrganizer::isUniqueRole($role);
-
-                    return ($isUnique && (0 === count($this->getOrganizersByRole($role)))) || false === $isUnique;
-                }
-            )
         );
     }
 
