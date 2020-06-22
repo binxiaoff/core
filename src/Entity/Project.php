@@ -17,6 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\{Embeddable\Money, Embeddable\NullableMoney, Embeddable\NullablePerson, Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface,
     Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Filter\ArrayFilter;
+use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -1212,7 +1213,7 @@ class Project implements TraceableStatusAwareInterface
         $money = new Money($this->getGlobalFundingMoney()->getCurrency());
 
         foreach ($this->getTranches() as $tranche) {
-            $money = $money->add($tranche->getMoney());
+            $money = MoneyCalculator::add($money, $tranche->getMoney());
         }
 
         return $money;
@@ -1245,17 +1246,15 @@ class Project implements TraceableStatusAwareInterface
      */
     public function getSyndicatedAmount(): Money
     {
-        $trancheAmounts = $this->tranches->map(static function (Tranche $tranche) {
-            return $tranche->getMoney();
-        });
+        $syndicatedMoney = new Money($this->getGlobalFundingMoney()->getCurrency());
 
-        return array_reduce(
-            $trancheAmounts->toArray(),
-            static function (Money $carry, Money $item) {
-                return $carry->add($item);
-            },
-            new Money('EUR')
-        );
+        foreach ($this->getTranches() as $tranche) {
+            if ($tranche->isSyndicated()) {
+                $syndicatedMoney = MoneyCalculator::add($syndicatedMoney, $tranche->getMoney());
+            }
+        }
+
+        return $syndicatedMoney;
     }
 
     /**
