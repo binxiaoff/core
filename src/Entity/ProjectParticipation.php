@@ -14,10 +14,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithFee};
-use Unilend\Entity\Interfaces\StatusInterface;
-use Unilend\Entity\Interfaces\TraceableStatusAwareInterface;
+use Unilend\Entity\Embeddable\{NullableMoney, Offer, OfferWithFee, RangedOfferWithFee};
+use Unilend\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -29,10 +29,12 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "projectParticipationStatus:read",
  *         "company:read",
  *         "nullableMoney:read",
+ *         "money:read",
  *         "rangedOfferWithFee:read",
  *         "offerWithFee:read",
  *         "offer:read",
- *         "archivable:read"
+ *         "archivable:read",
+ *         "timestampable:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
@@ -56,10 +58,12 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "role:read",
  *                 "marketSegment:read",
  *                 "nullableMoney:read",
+ *                 "money:read",
  *                 "rangedOfferWithFee:read",
  *                 "offerWithFee:read",
  *                 "offer:read",
- *                 "archivable:read"
+ *                 "archivable:read",
+ *                 "timestampable:read"
  *             }}
  *         },
  *         "post": {
@@ -645,6 +649,36 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public function getProjectParticipationTranches()
     {
         return $this->projectParticipationTranches;
+    }
+
+    /**
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
+     *
+     * @return MoneyInterface
+     */
+    public function getTotalInvitationReply(): MoneyInterface
+    {
+        $totalInvitationReply = new NullableMoney();
+        foreach ($this->projectParticipationTranches as $projectParticipationTranche) {
+            $totalInvitationReply = MoneyCalculator::add($totalInvitationReply, $projectParticipationTranche->getInvitationReply()->getMoney());
+        }
+
+        return $totalInvitationReply;
+    }
+
+    /**
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
+     *
+     * @return MoneyInterface
+     */
+    public function getTotalAllocation(): MoneyInterface
+    {
+        $totalAllocation = new NullableMoney();
+        foreach ($this->projectParticipationTranches as $projectParticipationTranche) {
+            $totalAllocation = MoneyCalculator::add($totalAllocation, $projectParticipationTranche->getAllocation()->getMoney());
+        }
+
+        return $totalAllocation;
     }
 
     /**

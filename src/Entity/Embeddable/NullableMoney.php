@@ -8,17 +8,19 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Entity\Interfaces\MoneyInterface;
 
 /**
  * @ORM\Embeddable
  */
-class NullableMoney extends Money
+class NullableMoney implements MoneyInterface
 {
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(type="decimal", precision=15, scale=2, nullable=true)
      *
+     * @Assert\NotBlank(allowNull=true)
      * @Assert\Type("numeric")
      * @Assert\Positive
      *
@@ -31,10 +33,11 @@ class NullableMoney extends Money
     /**
      * 3 letter ISO 4217 code (Currency code).
      *
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(type="string", length=3, nullable=true)
      *
+     * @Assert\NotBlank(allowNull=true)
      * @Assert\Currency
      *
      * @Gedmo\Versioned
@@ -51,10 +54,6 @@ class NullableMoney extends Money
     {
         $this->amount   = $amount;
         $this->currency = $currency;
-
-        if ($amount && $currency) {
-            parent::__construct($currency, $amount);
-        }
     }
 
     /**
@@ -63,5 +62,21 @@ class NullableMoney extends Money
     public function isValid(): bool
     {
         return $this->currency && $this->amount;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAmount(): ?string
+    {
+        return $this->amount;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCurrency(): ?string
+    {
+        return $this->currency;
     }
 }
