@@ -78,11 +78,11 @@ class ProjectParticipationContact
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion")
-     * @ORM\JoinColumn(name="id_accepted_confidentiality_disclaimer_version")
+     * @ORM\JoinColumn(name="id_accepted_nda_version")
      *
      * @Groups({"projectParticipationContact:owner:write"})
      */
-    private $acceptedConfidentialityDisclaimerVersion;
+    private $acceptedNdaVersion;
 
     /**
      * ProjectParticipationContact constructor.
@@ -155,19 +155,19 @@ class ProjectParticipationContact
     /**
      * @return FileVersion|null
      */
-    public function getAcceptedConfidentialityDisclaimerVersion(): ?FileVersion
+    public function getAcceptedNdaVersion(): ?FileVersion
     {
-        return $this->acceptedConfidentialityDisclaimerVersion;
+        return $this->acceptedNdaVersion;
     }
 
     /**
-     * @param FileVersion|null $acceptedConfidentialityDisclaimerVersion
+     * @param FileVersion|null $acceptedNdaVersion
      *
      * @return $this
      */
-    public function setAcceptedConfidentialityDisclaimerVersion(?FileVersion $acceptedConfidentialityDisclaimerVersion): ProjectParticipationContact
+    public function setAcceptedNdaVersion(?FileVersion $acceptedNdaVersion): ProjectParticipationContact
     {
-        $this->acceptedConfidentialityDisclaimerVersion = $acceptedConfidentialityDisclaimerVersion;
+        $this->acceptedNdaVersion = $acceptedNdaVersion;
 
         return $this;
     }

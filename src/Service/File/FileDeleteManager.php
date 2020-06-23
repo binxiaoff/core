@@ -71,8 +71,8 @@ class FileDeleteManager
                 $field = 'descriptionDocument';
 
                 break;
-            case Project::PROJECT_FILE_TYPE_CONFIDENTIALITY:
-                $field = 'confidentialityDisclaimer';
+            case Project::PROJECT_FILE_TYPE_NDA:
+                $field = 'nda';
 
                 break;
             default:

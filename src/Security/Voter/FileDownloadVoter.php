@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Doctrine\ORM\NonUniqueResultException;
+use InvalidArgumentException;
 use LogicException;
-use Prophecy\Exception\InvalidArgumentException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, FileDownload, FileVersion, Project, ProjectFile, ProjectParticipationContact, ProjectStatus, Staff};
 use Unilend\Repository\{FileVersionSignatureRepository, ProjectFileRepository, ProjectParticipationContactRepository, ProjectRepository};
@@ -80,7 +80,7 @@ class FileDownloadVoter extends AbstractEntityVoter
             return false;
         }
 
-        if (in_array($type, ProjectFile::getProjectFileTypes(), true)) {
+        if (\in_array($type, ProjectFile::getProjectFileTypes(), true)) {
             $projectFile = $this->projectFileRepository->findOneBy(['file' => $file, 'type' => $type]);
             if (null === $projectFile) {
                 return false;
@@ -88,14 +88,14 @@ class FileDownloadVoter extends AbstractEntityVoter
             $project = $projectFile->getProject();
         }
 
-        if (in_array($type, Project::getProjectFileTypes(), true)) {
+        if (\in_array($type, Project::getProjectFileTypes(), true)) {
             switch ($type) {
                 case Project::PROJECT_FILE_TYPE_DESCRIPTION:
                     $project = $this->projectRepository->findOneBy(['descriptionDocument' => $file]);
 
                     break;
-                case Project::PROJECT_FILE_TYPE_CONFIDENTIALITY:
-                    $project = $this->projectRepository->findOneBy(['confidentialityDisclaimer' => $file]);
+                case Project::PROJECT_FILE_TYPE_NDA:
+                    $project = $this->projectRepository->findOneBy(['nda' => $file]);
 
                     break;
                 default:
@@ -166,8 +166,16 @@ class FileDownloadVoter extends AbstractEntityVoter
      */
     private function isAddedBeforeOfferCollected(Project $project, FileVersion $fileVersion): bool
     {
-        $offerCollected = $project->getLastSpecificStatus(ProjectStatus::STATUS_ALLOCATION);
+        $statuses  = $project->getStatuses();
+        $lastIndex = count($statuses) - 1;
+        /** @var int $i */
+        for ($i = $lastIndex; $i <= 0; --$i) {
+            $status = $statuses[$i];
+            if (ProjectStatus::STATUS_ALLOCATION === $status->getStatus()) {
+                return $fileVersion->getAdded() <= $status->getAdded();
+            }
+        }
 
-        return null === $offerCollected || $fileVersion->getAdded() <= $offerCollected->getAdded();
+        return true;
     }
 }

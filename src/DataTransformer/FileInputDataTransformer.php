@@ -184,17 +184,17 @@ class FileInputDataTransformer
                 $project->setDescriptionDocument($file);
 
                 break;
-            case Project::PROJECT_FILE_TYPE_CONFIDENTIALITY:
-                $confidentialityDisclaimer = $project->getConfidentialityDisclaimer();
-                if (null !== $file && null !== $confidentialityDisclaimer && $file !== $confidentialityDisclaimer) {
+            case Project::PROJECT_FILE_TYPE_NDA:
+                $nda = $project->getNda();
+                if (null !== $file && null !== $nda && $file !== $nda) {
                     throw new RuntimeException(sprintf(
                         'There is already a confidentiality disclaimer file %s on the project %s. You can only update its version',
-                        $confidentialityDisclaimer->getPublicId(),
+                        $nda->getPublicId(),
                         $project->getPublicId()
                     ));
                 }
-                $file = $confidentialityDisclaimer ?? new File();
-                $project->setConfidentialityDisclaimer($file);
+                $file = $nda ?? new File();
+                $project->setNda($file);
 
                 break;
             default:

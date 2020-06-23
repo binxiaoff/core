@@ -161,8 +161,8 @@ class Project implements TraceableStatusAwareInterface
     public const FIELD_CURRENT_STATUS = 'currentStatus';
     public const FIELD_DESCRIPTION    = 'description';
 
-    public const PROJECT_FILE_TYPE_DESCRIPTION     = 'project_file_description';
-    public const PROJECT_FILE_TYPE_CONFIDENTIALITY = 'project_file_confidentiality';
+    public const PROJECT_FILE_TYPE_DESCRIPTION = 'project_file_description';
+    public const PROJECT_FILE_TYPE_NDA         = 'project_file_nda';
 
     public const FUNDING_SPECIFICITY_FSA = 'FSA';
     public const FUNDING_SPECIFICITY_LBO = 'LBO';
@@ -257,11 +257,11 @@ class Project implements TraceableStatusAwareInterface
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Entity\File", orphanRemoval=true)
-     * @ORM\JoinColumn(name="id_confidentiality_disclaimer", unique=true)
+     * @ORM\JoinColumn(name="id_nda", unique=true)
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $confidentialityDisclaimer;
+    private $nda;
 
     /**
      * @var bool
@@ -688,9 +688,9 @@ class Project implements TraceableStatusAwareInterface
      *
      * @return Project
      */
-    public function setConfidentialityDisclaimer(?File $file): self
+    public function setNda(?File $file): self
     {
-        $this->confidentialityDisclaimer = $file;
+        $this->nda = $file;
 
         return $this;
     }
@@ -698,9 +698,9 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @return File|null
      */
-    public function getConfidentialityDisclaimer(): ?File
+    public function getNda(): ?File
     {
-        return $this->confidentialityDisclaimer;
+        return $this->nda;
     }
 
     /**
@@ -748,7 +748,7 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return Collection|StatusInterface[]|void
+     * @return Collection|StatusInterface[]
      */
     public function getStatuses(): Collection
     {
