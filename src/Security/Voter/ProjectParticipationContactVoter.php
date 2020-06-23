@@ -50,7 +50,7 @@ class ProjectParticipationContactVoter extends AbstractEntityVoter
      */
     protected function canAcceptNda(ProjectParticipationContact $subject, Clients $user): bool
     {
-        return $subject->getClient() === $user;
+        return $subject->getStaff() === $user->getCurrentStaff();
     }
 
     /**

@@ -43,11 +43,11 @@ class ProjectParticipationContactRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('ppc')
             ->innerJoin('ppc.projectParticipation', 'pp')
-            ->where('ppc.client = :client')
+            ->where('ppc.staff = :staff')
             ->andWhere('pp.company = :company')
             ->andWhere('pp.project = :project')
             ->setParameters([
-                'client'  => $staff->getClient(),
+                'staff'   => $staff,
                 'project' => $project,
                 'company' => $staff->getCompany(),
             ])

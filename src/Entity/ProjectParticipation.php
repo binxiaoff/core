@@ -372,7 +372,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
                 return $staff->isActive() && ($staff->isManager() || $staff->isAuditor()) && $staff->getMarketSegments()->contains($project->getMarketSegment());
             })
             ->map(function (Staff $staff) use ($addedBy) {
-                return new ProjectParticipationContact($this, $staff->getClient(), $addedBy);
+                return new ProjectParticipationContact($this, $staff, $addedBy);
             })
         ;
     }
