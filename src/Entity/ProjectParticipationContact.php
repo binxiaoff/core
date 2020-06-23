@@ -74,15 +74,15 @@ class ProjectParticipationContact
      *
      * @Groups({"projectParticipationContact:read", "projectParticipationContact:write", "projectParticipationContact:owner:write"})
      */
-    private $confidentialityAccepted;
+    private $ndaAccepted;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion")
-     * @ORM\JoinColumn(name="id_accepted_confidentiality_disclaimer_version")
+     * @ORM\JoinColumn(name="id_accepted_nda_version")
      *
      * @Groups({"projectParticipationContact:owner:write"})
      */
-    private $acceptedConfidentialityDisclaimerVersion;
+    private $acceptedNdaVersion;
 
     /**
      * ProjectParticipationContact constructor.
@@ -135,19 +135,19 @@ class ProjectParticipationContact
     /**
      * @return DateTimeImmutable|null
      */
-    public function getConfidentialityAccepted(): ?DateTimeImmutable
+    public function getNdaAccepted(): ?DateTimeImmutable
     {
-        return $this->confidentialityAccepted;
+        return $this->ndaAccepted;
     }
 
     /**
-     * @param DateTimeImmutable|null $confidentialityAccepted
+     * @param DateTimeImmutable|null $ndaAccepted
      *
      * @return ProjectParticipationContact
      */
-    public function setConfidentialityAccepted(?DateTimeImmutable $confidentialityAccepted): ProjectParticipationContact
+    public function setNdaAccepted(?DateTimeImmutable $ndaAccepted): ProjectParticipationContact
     {
-        $this->confidentialityAccepted = $confidentialityAccepted;
+        $this->ndaAccepted = $ndaAccepted;
 
         return $this;
     }
@@ -155,19 +155,19 @@ class ProjectParticipationContact
     /**
      * @return FileVersion|null
      */
-    public function getAcceptedConfidentialityDisclaimerVersion(): ?FileVersion
+    public function getAcceptedNdaVersion(): ?FileVersion
     {
-        return $this->acceptedConfidentialityDisclaimerVersion;
+        return $this->acceptedNdaVersion;
     }
 
     /**
-     * @param FileVersion|null $acceptedConfidentialityDisclaimerVersion
+     * @param FileVersion|null $acceptedNdaVersion
      *
      * @return $this
      */
-    public function setAcceptedConfidentialityDisclaimerVersion(?FileVersion $acceptedConfidentialityDisclaimerVersion): ProjectParticipationContact
+    public function setAcceptedNdaVersion(?FileVersion $acceptedNdaVersion): ProjectParticipationContact
     {
-        $this->acceptedConfidentialityDisclaimerVersion = $acceptedConfidentialityDisclaimerVersion;
+        $this->acceptedNdaVersion = $acceptedNdaVersion;
 
         return $this;
     }

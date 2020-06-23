@@ -60,7 +60,7 @@ class ProjectParticipationManager
      *
      * @return bool
      */
-    public function isConfidentialityAccepted(Staff $staff, Project $project): bool
+    public function isNdaAccepted(Staff $staff, Project $project): bool
     {
         $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndStaff($project, $staff);
 
@@ -68,6 +68,6 @@ class ProjectParticipationManager
             throw new RuntimeException(sprintf('The staff %s is not a participant of project %s', $staff->getPublicId(), $project->getPublicId()));
         }
 
-        return null !== $projectParticipationContact->getConfidentialityAccepted();
+        return null !== $projectParticipationContact->getNdaAccepted();
     }
 }
