@@ -93,11 +93,11 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "nullablePerson:read"
  *             }}
  *         },
- *         "project_confidentiality": {
+ *         "project_nda": {
  *             "method": "GET",
- *             "security": "is_granted('view_confidentiality_document', object)",
- *             "normalization_context": {"groups": {"project:confidentiality:read", "file:read"}},
- *             "path": "/projects/{id}/confidentiality"
+ *             "security": "is_granted('view_nda', object)",
+ *             "normalization_context": {"groups": {"project:nda:read", "file:read"}},
+ *             "path": "/projects/{id}/nda"
  *         },
  *         "patch": {
  *             "security_post_denormalize": "is_granted('edit', previous_object)",
@@ -262,17 +262,6 @@ class Project implements TraceableStatusAwareInterface
      * @Groups({"project:write", "project:read"})
      */
     private $nda;
-
-    /**
-     * @var bool
-     *
-     * @ORM\Column(type="boolean", options={"default": false})
-     *
-     * @Gedmo\Versioned
-     *
-     * @Groups({"project:write", "project:read"})
-     */
-    private $confidential = false;
 
     /**
      * en front (barre de progression projet) : Signature.
@@ -701,26 +690,6 @@ class Project implements TraceableStatusAwareInterface
     public function getNda(): ?File
     {
         return $this->nda;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isConfidential(): bool
-    {
-        return $this->confidential;
-    }
-
-    /**
-     * @param bool $confidential
-     *
-     * @return Project
-     */
-    public function setConfidential(bool $confidential): Project
-    {
-        $this->confidential = $confidential;
-
-        return $this;
     }
 
     /**

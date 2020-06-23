@@ -74,7 +74,7 @@ class ProjectParticipationContact
      *
      * @Groups({"projectParticipationContact:read", "projectParticipationContact:write", "projectParticipationContact:owner:write"})
      */
-    private $confidentialityAccepted;
+    private $ndaAccepted;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion")
@@ -135,19 +135,19 @@ class ProjectParticipationContact
     /**
      * @return DateTimeImmutable|null
      */
-    public function getConfidentialityAccepted(): ?DateTimeImmutable
+    public function getNdaAccepted(): ?DateTimeImmutable
     {
-        return $this->confidentialityAccepted;
+        return $this->ndaAccepted;
     }
 
     /**
-     * @param DateTimeImmutable|null $confidentialityAccepted
+     * @param DateTimeImmutable|null $ndaAccepted
      *
      * @return ProjectParticipationContact
      */
-    public function setConfidentialityAccepted(?DateTimeImmutable $confidentialityAccepted): ProjectParticipationContact
+    public function setNdaAccepted(?DateTimeImmutable $ndaAccepted): ProjectParticipationContact
     {
-        $this->confidentialityAccepted = $confidentialityAccepted;
+        $this->ndaAccepted = $ndaAccepted;
 
         return $this;
     }

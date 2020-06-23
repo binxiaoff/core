@@ -12,14 +12,14 @@ use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW                          = 'view';
-    public const ATTRIBUTE_VIEW_CONFIDENTIALITY_DOCUMENT = 'view_confidentiality_document';
-    public const ATTRIBUTE_EDIT                          = 'edit';
-    public const ATTRIBUTE_MANAGE_TRANCHE_OFFER          = 'manage_tranche_offer';
-    public const ATTRIBUTE_CREATE_TRANCHE_OFFER          = 'create_tranche_offer';
-    public const ATTRIBUTE_COMMENT                       = 'comment';
-    public const ATTRIBUTE_CREATE                        = 'create';
-    public const ATTRIBUTE_DELETE                        = 'delete';
+    public const ATTRIBUTE_VIEW                 = 'view';
+    public const ATTRIBUTE_VIEW_NDA             = 'view_nda';
+    public const ATTRIBUTE_EDIT                 = 'edit';
+    public const ATTRIBUTE_MANAGE_TRANCHE_OFFER = 'manage_tranche_offer';
+    public const ATTRIBUTE_CREATE_TRANCHE_OFFER = 'create_tranche_offer';
+    public const ATTRIBUTE_COMMENT              = 'comment';
+    public const ATTRIBUTE_CREATE               = 'create';
+    public const ATTRIBUTE_DELETE               = 'delete';
 
     /** @var ProjectOrganizerRepository */
     private $projectOrganizerRepository;
@@ -60,7 +60,7 @@ class ProjectVoter extends AbstractEntityVoter
         return  $staff
             && $staff->isActive()
             && $this->projectParticipationManager->isParticipant($staff, $project)
-            && (false === $project->isConfidential() || $this->projectParticipationManager->isConfidentialityAccepted($staff, $project));
+            && (null === $project->getNda() || $this->projectParticipationManager->isNdaAccepted($staff, $project));
     }
 
     /**
@@ -84,7 +84,7 @@ class ProjectVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function canViewConfidentialityDocument(Project $project, Clients $user): bool
+    protected function canViewNda(Project $project, Clients $user): bool
     {
         if ($this->canEdit($project, $user) || $this->canView($project, $user)) {
             return true;

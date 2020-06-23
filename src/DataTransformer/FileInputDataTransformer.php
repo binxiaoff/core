@@ -188,7 +188,7 @@ class FileInputDataTransformer
                 $nda = $project->getNda();
                 if (null !== $file && null !== $nda && $file !== $nda) {
                     throw new RuntimeException(sprintf(
-                        'There is already a confidentiality disclaimer file %s on the project %s. You can only update its version',
+                        'There is already a nda file %s on the project %s. You can only update its version',
                         $nda->getPublicId(),
                         $project->getPublicId()
                     ));
