@@ -46,14 +46,14 @@ class ProjectParticipationContactNotifier
 
         // We notify only other users than the current user.
         // For the arranger, we should not notify anyone in his entity. But it is not yet the case. We will review this part in V2.
-        if ($contact->getAddedBy() === $contact->getClient()) {
+        if ($contact->getAddedBy() === $contact->getStaff()) {
             return;
         }
 
         $participation = $projectParticipation->getParticipant();
         $project       = $projectParticipation->getProject();
 
-        $client     = $contact->getClient();
+        $client     = $contact->getStaff()->getClient();
         $templateId = $this->getTemplateId($project, $participation, $client);
 
         $temporaryToken = null;

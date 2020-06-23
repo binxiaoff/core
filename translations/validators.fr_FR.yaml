@@ -43,7 +43,10 @@ ProjectParticipationStatus:
 StatusInterface:
     duplicated: Le nouveau statut est en doublons avec le dernier.
 
-
 ProjectOrganizer:
     roles:
         duplicatedUniqueRole: Le role {{ value }} est déja assigné à {{ company }}
+
+ProjectParticipationContact:
+    staff:
+        incorrectCompany: Ce staff et la participation ne sont pas liés à la même entité

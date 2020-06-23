@@ -144,14 +144,14 @@ class ProjectNotifier
                 foreach ($participation->getActiveProjectParticipationContacts() as $contact) {
                     $message = $this->messageProvider->newMessage('project-file-uploaded', [
                         'client' => [
-                            'firstName' => $contact->getClient()->getFirstName(),
+                            'firstName' => $contact->getStaff()->getClient()->getFirstName(),
                         ],
                         'project' => [
                             'submitterCompany' => $project->getSubmitterCompany()->getName(),
                             'title'            => $project->getTitle(),
                             'hash'             => $project->getPublicId(),
                         ],
-                    ])->setTo($contact->getClient()->getEmail());
+                    ])->setTo($contact->getStaff()->getClient()->getEmail());
                     $sent += $this->mailer->send($message);
                 }
             }

@@ -47,7 +47,7 @@ class ProjectParticipationManager
     {
         return null !== $this->projectParticipationContactRepository->findOneBy([
             'projectParticipation' => $projectParticipation,
-            'client'               => $staff->getClient(),
+            'staff'                => $staff,
             'archived'             => null,
         ]);
     }

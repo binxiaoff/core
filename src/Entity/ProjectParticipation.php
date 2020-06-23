@@ -90,7 +90,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status"})
- * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"project.publicId": "exact", "projectParticipationContacts.client.publicId": "exact"})
+ * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"project.publicId": "exact", "projectParticipationContacts.staff.publicId": "exact"})
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"project.submitterCompany.publicId"})
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
@@ -376,7 +376,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
                 return $staff->isActive() && ($staff->isManager() || $staff->isAuditor()) && $staff->getMarketSegments()->contains($project->getMarketSegment());
             })
             ->map(function (Staff $staff) use ($addedBy) {
-                return new ProjectParticipationContact($this, $staff->getClient(), $addedBy);
+                return new ProjectParticipationContact($this, $staff, $addedBy);
             })
         ;
     }

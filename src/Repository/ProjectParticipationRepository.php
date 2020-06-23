@@ -6,9 +6,8 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\Query\Expr\Join;
-use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
-use Unilend\Entity\{Clients, Project, ProjectParticipation, Staff};
+use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Unilend\Entity\ProjectParticipation;
 
 /**
  * @method ProjectParticipation|null find($id, $lockMode = null, $lockVersion = null)
@@ -36,54 +35,5 @@ class ProjectParticipationRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($projectParticipation);
         $this->getEntityManager()->flush();
-    }
-
-    /**
-     * @param Project $project
-     * @param Staff   $staff
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return ProjectParticipation|null
-     */
-    public function findByStaff(Project $project, Staff $staff): ?ProjectParticipation
-    {
-        $queryBuilder = $this->createQueryBuilder('pp')
-            ->innerJoin(Staff::class, 's', Join::WITH, 'pp.company = s.company')
-            ->innerJoin('pp.project', 'p')
-            ->where('pp.project = :project')
-            ->andWhere('pp.company = :company')
-            ->andWhere('p.marketSegment MEMBER OF s.marketSegments')
-            ->andWhere('s.client = :client')
-            ->setParameters([
-                'project' => $project,
-                'company' => $staff->getCompany(),
-                'client'  => $staff->getClient(),
-            ])
-            ->setMaxResults(1)
-        ;
-
-        return $queryBuilder->getQuery()->getOneOrNullResult();
-    }
-
-    /**
-     * @param Project $project
-     * @param Clients $clients
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return ProjectParticipation
-     */
-    public function findByProjectAndClient(Project $project, Clients $clients): ?ProjectParticipation
-    {
-        return
-            $this->createQueryBuilder('pp')
-                ->innerJoin('pp.projectParticipationContacts', 'ppc')
-                ->where('pp.project = :project')
-                ->andWhere('ppc.client = :client')
-                ->setParameters(['project' => $project, 'client' => $clients])
-                ->getQuery()
-                ->getOneOrNullResult()
-        ;
     }
 }

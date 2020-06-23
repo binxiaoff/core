@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\Clients;
 use Unilend\Entity\ProjectMessage;
 use Unilend\Entity\ProjectOrganizer;
+use Unilend\Entity\Staff;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
@@ -43,6 +44,11 @@ class ListExtension implements QueryCollectionExtensionInterface
             return;
         }
 
+        $staff = $user->getCurrentStaff();
+        if (!$staff instanceof Staff) {
+            return;
+        }
+
         $arranger  = ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER;
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
@@ -51,9 +57,9 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->leftJoin('pp.projectParticipationContacts', 'ppc')
             ->leftJoin('pp.project', 'project')
             ->leftJoin('project.organizers', 'organizer', Join::WITH, "JSON_CONTAINS(organizer.roles, '\"${$arranger}\"') = 1")
-            ->andWhere('(ppc.client = :client AND ppc.archived IS NULL) OR :company = organizer.company')
-            ->setParameter('client', $user)
-            ->setParameter('company', $user->getCompany())
+            ->andWhere('(ppc.staff = :staff AND ppc.archived IS NULL) OR :company = organizer.company')
+            ->setParameter('staff', $staff)
+            ->setParameter('company', $staff->getCompany())
         ;
     }
 }

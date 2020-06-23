@@ -8,7 +8,9 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 
 /**
@@ -31,9 +33,11 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchived
  *         }
  *     }
  * )
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "id_project_participation"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_staff", "id_project_participation"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationContactRepository")
  * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity({"staff", "projectParticipation"})
  */
 class ProjectParticipationContact
 {
@@ -52,20 +56,28 @@ class ProjectParticipationContact
      * @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"projectParticipationContact:create"})
+     *
+     * @Assert\NotBlank
      */
     private $projectParticipation;
 
     /**
-     * @var Clients
+     * @var Staff
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_staff", referencedColumnName="id", nullable=false)
      * })
      *
      * @Groups({"projectParticipationContact:read", "projectParticipationContact:create"})
+     *
+     * @Assert\NotBlank
+     * @Assert\Expression(
+     *     expression="this.getStaff().getCompany() === this.getProjectParticipation().getParticipant()",
+     *     message="ProjectParticipationContact.staff.incorrectCompany"
+     * )
      */
-    private $client;
+    private $staff;
 
     /**
      * @var DateTimeImmutable|null
@@ -88,18 +100,18 @@ class ProjectParticipationContact
      * ProjectParticipationContact constructor.
      *
      * @param ProjectParticipation $projectParticipation
-     * @param Clients              $client
+     * @param Staff                $staff
      * @param Staff                $addedBy
      *
      * @throws Exception
      */
     public function __construct(
         ProjectParticipation $projectParticipation,
-        Clients $client,
+        Staff $staff,
         Staff $addedBy
     ) {
         $this->projectParticipation = $projectParticipation;
-        $this->client               = $client;
+        $this->staff                = $staff;
         $this->addedBy              = $addedBy;
         $this->added                = new DateTimeImmutable();
     }
@@ -110,26 +122,6 @@ class ProjectParticipationContact
     public function getProjectParticipation(): ProjectParticipation
     {
         return $this->projectParticipation;
-    }
-
-    /**
-     * @return Clients
-     */
-    public function getClient(): Clients
-    {
-        return $this->client;
-    }
-
-    /**
-     * @param Clients $client
-     *
-     * @return ProjectParticipationContact
-     */
-    public function setClient(Clients $client): ProjectParticipationContact
-    {
-        $this->client = $client;
-
-        return $this;
     }
 
     /**
@@ -178,5 +170,13 @@ class ProjectParticipationContact
     public function isArchived(): bool
     {
         return null !== $this->archived;
+    }
+
+    /**
+     * @return Staff
+     */
+    public function getStaff(): Staff
+    {
+        return $this->staff;
     }
 }

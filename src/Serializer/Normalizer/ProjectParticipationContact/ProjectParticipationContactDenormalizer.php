@@ -40,6 +40,7 @@ class ProjectParticipationContactDenormalizer implements ContextAwareDenormalize
      */
     public function denormalize($data, $type, $format = null, array $context = [])
     {
+        /** @var ProjectParticipationContact $projectParticipationContact */
         $projectParticipationContact = $this->extractObjectToPopulate(ProjectParticipationContact::class, $context);
 
         if ($projectParticipationContact) {
@@ -47,6 +48,8 @@ class ProjectParticipationContactDenormalizer implements ContextAwareDenormalize
         }
 
         $context[self::ALREADY_CALLED] = true;
+
+        return $this->denormalizer->denormalize($data, $type, $format, $context);
     }
 
     /**

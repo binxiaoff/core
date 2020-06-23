@@ -61,13 +61,13 @@ class ListExtension implements QueryCollectionExtensionInterface
                 // or you are non archived participant and the project is published
                 $queryBuilder->expr()->andX(
                     'cs.status in (:displayableStatus)',
-                    'ppc.client = :client',
+                    'ppc.staff = :staff',
                     'ppc.archived IS NULL'
                 )
             ))
             ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUS)
             ->setParameter('company', $staff->getCompany())
-            ->setParameter('client', $user)
+            ->setParameter('staff', $staff)
             ->setParameter('marketSegments', $staff ? $staff->getMarketSegments() : [])
         ;
     }
