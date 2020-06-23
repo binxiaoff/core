@@ -80,7 +80,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "archivable:read",
  *                 "projectOrganizer:read",
  *                 "tranche_project:read",
- *                 "trancheFee:read",
  *                 "tranche:read",
  *                 "role:read",
  *                 "client:read",
