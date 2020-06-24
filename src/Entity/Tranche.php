@@ -19,13 +19,13 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"tranche:read", "trancheFee:read", "fee:read", "lendingRate:read", "money:read"}},
- *     denormalizationContext={"groups": {"tranche:write", "trancheFee:write", "fee:write", "lendingRate:write", "money:write"}},
+ *     normalizationContext={"groups": {"tranche:read", "fee:read", "lendingRate:read", "money:read"}},
+ *     denormalizationContext={"groups": {"tranche:write", "fee:write", "lendingRate:write", "money:write"}},
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('edit', object.getProject())",
  *             "denormalization_context": {
- *                 "groups": {"tranche:create", "tranche:write", "trancheFee:write", "fee:write", "lendingRate:write", "money:write"}
+ *                 "groups": {"tranche:create", "tranche:write", "fee:write", "lendingRate:write", "money:write"}
  *             }
  *         }
  *     },
@@ -67,6 +67,9 @@ class Tranche
 
     public const UNSYNDICATED_FUNDER_TYPE_ARRANGER    = 'arranger';
     public const UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY = 'third_party';
+
+    private const COMMISSION_TYPE_NON_UTILISATION = 'non_utilisation';
+    private const COMMISSION_TYPE_COMMITMENT      = 'commitment';
 
     /**
      * @var Project
@@ -208,13 +211,32 @@ class Tranche
     private $expectedStartingDate;
 
     /**
-     * @var TrancheFee[]|ArrayCollection
+     * @var string|null
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheFee", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\Column(type="string", length=30, nullable=true)
+     *
+     * @Assert\NotBlank(allowNull=true)
+     * @Assert\Choice(callback="getCommissionTypes")
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private $trancheFees;
+    private $commissionType;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
+     *
+     * @Assert\NotBlank(allowNull=true)
+     * @Assert\Type("numeric")
+     * @Assert\Positive
+     * @Assert\Expression(
+     *     "this.getCommissionType() in this.getCommissionTypes() and value or this.getCommissionType() === null and value === null", message="Tranche.commissionRate.expression"
+     * )
+     *
+     * @Groups({"tranche:write", "tranche:read"})
+     */
+    private $commissionRate;
 
     /**
      * @var TrancheAttribute[]|ArrayCollection
@@ -292,7 +314,6 @@ class Tranche
     {
         $this->money             = $money;
         $this->rate              = new NullableLendingRate();
-        $this->trancheFees       = new ArrayCollection();
         $this->trancheAttributes = new ArrayCollection();
         $this->added             = new DateTimeImmutable();
         $this->project           = $project;
@@ -520,44 +541,6 @@ class Tranche
     }
 
     /**
-     * @param TrancheFee $trancheFee
-     *
-     * @return Tranche
-     */
-    public function addTrancheFee(TrancheFee $trancheFee): Tranche
-    {
-        $trancheFee->setTranche($this);
-
-        if (false === $this->trancheFees->contains($trancheFee)) {
-            $this->trancheFees->add($trancheFee);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param TrancheFee $trancheFee
-     *
-     * @return Tranche
-     */
-    public function removeTrancheFee(TrancheFee $trancheFee): Tranche
-    {
-        if ($this->trancheFees->contains($trancheFee)) {
-            $this->trancheFees->removeElement($trancheFee);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return iterable|TrancheFee[]
-     */
-    public function getTrancheFees(): iterable
-    {
-        return $this->trancheFees;
-    }
-
-    /**
      * @return array
      */
     public static function getLoanTypes(): array
@@ -734,5 +717,57 @@ class Tranche
     {
         return ($this->getUnsyndicatedFunderType() === static::UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY && $this->getThirdPartyFunder())
             || ($this->getUnsyndicatedFunderType() !== static::UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY && null === $this->getThirdPartyFunder());
+    }
+
+    /**
+     * @return array
+     */
+    public static function getCommissionTypes()
+    {
+        return static::getConstants('COMMISSION_TYPE_');
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCommissionType(): ?string
+    {
+        return $this->commissionType;
+    }
+
+    /**
+     * @param string|null $commissionType
+     *
+     * @return Tranche
+     */
+    public function setCommissionType(?string $commissionType): Tranche
+    {
+        $this->commissionType = $commissionType;
+
+        if (null === $this->commissionType) {
+            $this->commissionRate = null;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCommissionRate(): ?string
+    {
+        return $this->commissionRate;
+    }
+
+    /**
+     * @param string|null $commissionRate
+     *
+     * @return Tranche
+     */
+    public function setCommissionRate(?string $commissionRate): Tranche
+    {
+        $this->commissionRate = $commissionRate;
+
+        return $this;
     }
 }
