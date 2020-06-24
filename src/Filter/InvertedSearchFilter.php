@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Unilend\Filter;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\HttpFoundation\Request;
 
-class InvertedSearchFilter extends AbstractFilter
+class InvertedSearchFilter extends AbstractContextAwareFilter
 {
     /**
      * {@inheritdoc}
