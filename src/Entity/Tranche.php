@@ -19,13 +19,13 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"tranche:read", "trancheFee:read", "fee:read", "lendingRate:read", "money:read"}},
- *     denormalizationContext={"groups": {"tranche:write", "trancheFee:write", "fee:write", "lendingRate:write", "money:write"}},
+ *     normalizationContext={"groups": {"tranche:read", "fee:read", "lendingRate:read", "money:read"}},
+ *     denormalizationContext={"groups": {"tranche:write", "fee:write", "lendingRate:write", "money:write"}},
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('edit', object.getProject())",
  *             "denormalization_context": {
- *                 "groups": {"tranche:create", "tranche:write", "trancheFee:write", "fee:write", "lendingRate:write", "money:write"}
+ *                 "groups": {"tranche:create", "tranche:write", "fee:write", "lendingRate:write", "money:write"}
  *             }
  *         }
  *     },
