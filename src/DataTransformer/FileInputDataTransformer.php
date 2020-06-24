@@ -11,15 +11,14 @@ use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, IOException};
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use League\Flysystem\FileExistsException;
-use Prophecy\Exception\InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\DTO\FileInput;
-use Unilend\Entity\{Clients, File, Project, ProjectFile, Staff};
+use Unilend\Entity\{Clients, File, Project, ProjectFile, ProjectParticipation, Staff};
 use Unilend\Repository\{ProjectFileRepository, ProjectRepository};
-use Unilend\Security\Voter\{ProjectFileVoter, ProjectVoter};
+use Unilend\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
 use Unilend\Service\File\FileUploadManager;
 
 class FileInputDataTransformer
@@ -90,13 +89,17 @@ class FileInputDataTransformer
         }
 
         if ($targetEntity instanceof Project) {
-            if (in_array($type, ProjectFile::getProjectFileTypes(), true)) {
+            if (\in_array($type, ProjectFile::getProjectFileTypes(), true)) {
                 $file = $this->uploadForProjectFile($targetEntity, $fileInput, $currentStaff, $file);
             }
 
-            if (in_array($type, Project::getProjectFileTypes(), true)) {
+            if (\in_array($type, Project::getProjectFileTypes(), true)) {
                 $file = $this->uploadForProject($targetEntity, $fileInput, $currentStaff, $file);
             }
+        }
+
+        if ($targetEntity instanceof ProjectParticipation) {
+            $file = $this->uploadProjectParticipationNda($targetEntity, $fileInput, $currentStaff, $file);
         }
 
         return $file;
@@ -174,11 +177,7 @@ class FileInputDataTransformer
             case Project::PROJECT_FILE_TYPE_DESCRIPTION:
                 $descriptionDocument = $project->getDescriptionDocument();
                 if (null !== $file && null !== $descriptionDocument && $file !== $descriptionDocument) {
-                    throw new RuntimeException(sprintf(
-                        'There is already a description file %s on the project %s. You can only update its version',
-                        $descriptionDocument->getPublicId(),
-                        $project->getPublicId()
-                    ));
+                    static::denyUploadExistingFile('description', $descriptionDocument->getPublicId(), 'project', $project->getPublicId());
                 }
                 $file = $descriptionDocument ?? new File();
                 $project->setDescriptionDocument($file);
@@ -187,18 +186,14 @@ class FileInputDataTransformer
             case Project::PROJECT_FILE_TYPE_NDA:
                 $nda = $project->getNda();
                 if (null !== $file && null !== $nda && $file !== $nda) {
-                    throw new RuntimeException(sprintf(
-                        'There is already a nda file %s on the project %s. You can only update its version',
-                        $nda->getPublicId(),
-                        $project->getPublicId()
-                    ));
+                    static::denyUploadExistingFile('nda', $nda->getPublicId(), 'project', $project->getPublicId());
                 }
                 $file = $nda ?? new File();
                 $project->setNda($file);
 
                 break;
             default:
-                throw new InvalidArgumentException(sprintf('You cannot upload the file of the type %s.', $fileInput->type));
+                throw new \InvalidArgumentException(sprintf('You cannot upload the file of the type %s.', $fileInput->type));
         }
 
         $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, null, ['projectId' => $project->getId()]);
@@ -206,5 +201,62 @@ class FileInputDataTransformer
         $this->projectRepository->save($project);
 
         return $file;
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     * @param FileInput            $fileInput
+     * @param Staff                $currentStaff
+     * @param File                 $file
+     *
+     * @throws EnvironmentIsBrokenException
+     * @throws FileExistsException
+     * @throws IOException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return File
+     */
+    private function uploadProjectParticipationNda(ProjectParticipation $projectParticipation, FileInput $fileInput, Staff $currentStaff, ?File $file)
+    {
+        $voterAttributes = [
+            ProjectParticipationVoter::ATTRIBUTE_ARRANGER_INTEREST_COLLECTION_EDIT,
+            ProjectParticipationVoter::ATTRIBUTE_ARRANGER_OFFER_NEGOTIATION_EDIT,
+            ProjectParticipationVoter::ATTRIBUTE_ARRANGER_CONTRACT_NEGOTIATION_EDIT,
+        ];
+
+        if (0 === array_sum(array_map([$this->security, 'isGranted'], $voterAttributes, array_fill(0, count($voterAttributes), $projectParticipation)))) {
+            throw new AccessDeniedException();
+        }
+
+        $existingNda = $projectParticipation->getNda();
+        if (null !== $file && null !== $existingNda && $file !== $existingNda) {
+            static::denyUploadExistingFile('nda', $existingNda->getPublicId(), 'project', $projectParticipation->getPublicId());
+        }
+
+        $file = $existingNda ?? new File();
+
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, null, ['projectParticipationId' => $projectParticipation->getId()]);
+
+        $projectParticipation->setNda($file);
+
+        return $file;
+    }
+
+    /**
+     * @param $type
+     * @param $existingFileId
+     * @param $targetEntityClass
+     * @param $targetEntityId
+     */
+    private static function denyUploadExistingFile($type, $existingFileId, $targetEntityClass, $targetEntityId)
+    {
+        throw new RuntimeException(sprintf(
+            'There is already a %s file %s on the %s %s. You can only update its version',
+            $type,
+            $existingFileId,
+            $targetEntityClass,
+            $targetEntityId
+        ));
     }
 }

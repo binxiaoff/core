@@ -6,8 +6,10 @@ namespace Unilend\DTO;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectFile;
+use Unilend\Entity\ProjectParticipation;
 
 class FileInput
 {
@@ -45,7 +47,7 @@ class FileInput
     /**
      * @var string
      *
-     * @Assert\Choice(callback="getProjectFileTypes")
+     * @Assert\Choice(callback="getFileTypes")
      */
     public $type;
 
@@ -62,10 +64,42 @@ class FileInput
     }
 
     /**
-     * @return array
+     * @return array|string[]
      */
-    public static function getProjectFileTypes(): array
+    public static function getFileTypes(): array
     {
-        return array_merge(Project::getProjectFileTypes(), ProjectFile::getProjectFileTypes());
+        return array_merge(...array_values(static::getFileTypesEntityMapping()));
+    }
+
+    /**
+     * @return array|array[]
+     */
+    public static function getFileTypesEntityMapping(): array
+    {
+        return [
+            Project::class              => array_merge(Project::getProjectFileTypes(), ProjectFile::getProjectFileTypes()),
+            ProjectParticipation::class => ProjectParticipation::getFileTypes(),
+        ];
+    }
+
+    /**
+     * @param ExecutionContextInterface $context
+     * @param $payload
+     */
+    public function validateTargetEntity(ExecutionContextInterface $context, $payload)
+    {
+        $fileTypesClassMapping = static::getFileTypesEntityMapping();
+
+        $targetEntityClass = \get_class($this->targetEntity);
+
+        if (false === \in_array($this->type, $fileTypesClassMapping[$targetEntityClass] ?? [], true)) {
+            $context->buildViolation('Upload.targetEntity.incorrect')
+                ->setParameters([
+                    'targetEntityClass' => $targetEntityClass,
+                    'type'              => $this->type,
+                ])
+                ->addViolation()
+            ;
+        }
     }
 }

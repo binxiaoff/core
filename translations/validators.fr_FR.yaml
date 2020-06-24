@@ -52,3 +52,5 @@ ProjectOrganizer:
 ProjectParticipationMember:
     staff:
         incorrectCompany: Ce staff et la participation ne sont pas liés à la même entité
+    acceptedNdaVersion:
+        expression: Cette version de fichier n'est pas une de la lettre de confidentialité acceptable

@@ -94,7 +94,7 @@ class ProjectParticipationMember
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion")
      * @ORM\JoinColumn(name="id_accepted_nda_version")
      *
-     * @Groups({"projectParticipationMember:owner:write"})
+     * @Groups({"projectParticipationMember:read", "projectParticipationContact:owner:write"})
      */
     private ?FileVersion $acceptedNdaVersion;
 
@@ -130,18 +130,6 @@ class ProjectParticipationMember
     }
 
     /**
-     * @param DateTimeImmutable|null $ndaAccepted
-     *
-     * @return ProjectParticipationMember
-     */
-    public function setNdaAccepted(?DateTimeImmutable $ndaAccepted): ProjectParticipationMember
-    {
-        $this->ndaAccepted = $ndaAccepted;
-
-        return $this;
-    }
-
-    /**
      * @return FileVersion|null
      */
     public function getAcceptedNdaVersion(): ?FileVersion
@@ -150,13 +138,19 @@ class ProjectParticipationMember
     }
 
     /**
-     * @param FileVersion|null $acceptedNdaVersion
+     * @param FileVersion $acceptedNdaVersion
+     *
+     * @throws Exception
      *
      * @return $this
      */
-    public function setAcceptedNdaVersion(?FileVersion $acceptedNdaVersion): ProjectParticipationMember
+    public function setAcceptedNdaVersion(FileVersion $acceptedNdaVersion): ProjectParticipationMember
     {
-        $this->acceptedNdaVersion = $acceptedNdaVersion;
+        // acceptedNdaVersion is only settable once
+        if (null === $this->acceptedNdaVersion) {
+            $this->acceptedNdaVersion = $acceptedNdaVersion;
+            $this->ndaAccepted        = new DateTimeImmutable();
+        }
 
         return $this;
     }
@@ -175,5 +169,17 @@ class ProjectParticipationMember
     public function getStaff(): Staff
     {
         return $this->staff;
+    }
+
+    /**
+     * @return FileVersion|null
+     *
+     * @Groups({"projectParticipationContact:read"})
+     */
+    public function getAcceptableNda()
+    {
+        $file = $this->projectParticipation->getNda() ?? $this->getProjectParticipation()->getProject()->getNda();
+
+        return $file ? $file->getCurrentFileVersion() : null;
     }
 }
