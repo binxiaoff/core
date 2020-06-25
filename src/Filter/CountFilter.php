@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Unilend\Filter;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\QueryBuilder;
 
-class CountFilter extends AbstractFilter
+class CountFilter extends AbstractContextAwareFilter
 {
     private const PARAMETER_MAX   = 'max';
     private const PARAMETER_MIN   = 'min';
