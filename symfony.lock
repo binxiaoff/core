@@ -652,12 +652,6 @@
             "config/packages/security_checker.yaml"
         ]
     },
-    "sonata-project/cache": {
-        "version": "2.0.1"
-    },
-    "sonata-project/cache-bundle": {
-        "version": "3.0.1"
-    },
     "squizlabs/php_codesniffer": {
         "version": "3.0",
         "recipe": {
