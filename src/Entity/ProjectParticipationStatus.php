@@ -55,7 +55,7 @@ class ProjectParticipationStatus implements StatusInterface
      * @var ProjectParticipation
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="statuses")
-     * @ORM\JoinColumn(name="id_project_participation", nullable=false)
+     * @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"projectParticipationStatus:create"})
      */

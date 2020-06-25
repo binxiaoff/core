@@ -80,7 +80,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
- *         "delete": {"security": "is_granted('edit', object)"},
+ *         "delete": {"security": "is_granted('delete', object)"},
  *         "put": {"security": "is_granted('edit', object)"},
  *         "patch": {"security": "is_granted('edit', object)"}
  *     }
@@ -180,7 +180,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @var ProjectParticipationStatus|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipationStatus", cascade={"persist"})
-     * @ORM\JoinColumn(name="id_current_status", unique=true)
+     * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
      * @Assert\Valid
