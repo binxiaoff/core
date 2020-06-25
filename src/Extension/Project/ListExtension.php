@@ -68,6 +68,7 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUS)
             ->setParameter('company', $staff->getCompany())
             ->setParameter('staff', $staff)
+            ->setParameter('client', $staff->getClient())
             ->setParameter('marketSegments', $staff ? $staff->getMarketSegments() : [])
         ;
     }
