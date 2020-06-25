@@ -14,7 +14,7 @@ final class Version20200625132620 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'CALS-1699 Add cascade deleting to the tables which has participation as a FK';
     }
 
     public function up(Schema $schema): void

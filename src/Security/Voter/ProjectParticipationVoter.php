@@ -231,7 +231,9 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     {
         $project = $projectParticipation->getProject();
 
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project) && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus();
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)
+            && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus()
+            && $projectParticipation->getParticipant() !== $project->getSubmitterCompany();
     }
 
     /**
