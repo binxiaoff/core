@@ -126,7 +126,7 @@ class FileUploadManagerTest extends TestCase
         static::assertSame($uploaderStaff, $file->getCurrentFileVersion()->getAddedBy());
         static::assertStringContainsString((string) $uploader->getId(), $file->getCurrentFileVersion()->getPath());
         static::assertSame($description, $file->getDescription());
-        static::assertSame('inode/x-empty', $file->getCurrentFileVersion()->getMimeType());
+        static::assertSame('application/x-empty', $file->getCurrentFileVersion()->getMimeType());
         static::assertSame($encryptionKey, $file->getCurrentFileVersion()->getPlainEncryptionKey());
     }
 
