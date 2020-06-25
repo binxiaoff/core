@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Service\Translation;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Sonata\CacheBundle\Adapter\SymfonyCache;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\Translations;
 
@@ -15,22 +14,18 @@ class TranslationManager
     private $entityManager;
     /** @var TranslatorInterface */
     private $translator;
-    /** @var SymfonyCache */
-    private $symfonyCache;
     /** @var string */
     private $defaultLocale;
 
     /**
      * @param EntityManagerInterface $entityManager
      * @param TranslatorInterface    $translator
-     * @param SymfonyCache           $symfonyCache
      * @param string                 $defaultLocale
      */
-    public function __construct(EntityManagerInterface $entityManager, TranslatorInterface $translator, SymfonyCache $symfonyCache, string $defaultLocale)
+    public function __construct(EntityManagerInterface $entityManager, TranslatorInterface $translator, string $defaultLocale)
     {
         $this->entityManager = $entityManager;
         $this->translator    = $translator;
-        $this->symfonyCache  = $symfonyCache;
         $this->defaultLocale = $defaultLocale;
     }
 
@@ -145,8 +140,9 @@ class TranslationManager
         $translationsForSection = [];
         $translationCatalogue   = $this->translator->getCatalogue($locale);
         $allTranslation         = $translationCatalogue->all();
-        $section                = $section . TranslationLoader::SECTION_SEPARATOR;
-        $length                 = mb_strlen($section); // Same length as legacy
+
+        $section .= TranslationLoader::SECTION_SEPARATOR;
+        $length = mb_strlen($section); // Same length as legacy
 
         foreach ($allTranslation as $translations) {
             foreach ($translations as $label => $translation) {
@@ -159,13 +155,5 @@ class TranslationManager
         }
 
         return $translationsForSection;
-    }
-
-    /**
-     * Delete the translations directory in cache.
-     */
-    public function flush()
-    {
-        $this->symfonyCache->flush(['translations']);
     }
 }
