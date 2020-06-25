@@ -47,7 +47,7 @@ class ProjectMessage
      * @var ProjectParticipation
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="messages")
-     * @ORM\JoinColumn(nullable=false, name="id_participation")
+     * @ORM\JoinColumn(nullable=false, name="id_participation", onDelete="CASCADE")
      *
      * @Groups({"message:create"})
      */

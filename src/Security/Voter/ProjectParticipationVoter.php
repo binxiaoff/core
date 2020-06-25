@@ -15,6 +15,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_DELETE = 'delete';
 
     public const ATTRIBUTE_SENSITIVE_VIEW = 'sensitive_view';
     public const ATTRIBUTE_ADMIN_VIEW     = 'admin_view';
@@ -219,6 +220,18 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     protected function canParticipationOwnerContractNegotiationEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
         return $this->canParticipationOwnerEdit($projectParticipation, $user) && $projectParticipation->getProject()->isInContractNegotiationStep();
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     *
+     * @return bool
+     */
+    protected function canDelete(ProjectParticipation $projectParticipation): bool
+    {
+        $project = $projectParticipation->getProject();
+
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project) && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus();
     }
 
     /**

@@ -84,7 +84,7 @@ class ProjectParticipationTranche
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationTranches")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project_participation", nullable=false)
+     *     @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
      * })
      *
      * @Groups({"projectParticipationTranche:create"})
