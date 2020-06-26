@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Unilend\Test\Unit\Service\FileSystem;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Faker\Provider\Base;
 use League\Flysystem\FilesystemInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\Prophecy\ObjectProphecy;
 use RuntimeException;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Unilend\Service\FileSystem\FileCrypto;
 use Unilend\Service\FileSystem\FileSystemHelper;
 
@@ -22,32 +21,31 @@ use Unilend\Service\FileSystem\FileSystemHelper;
 class FileSystemHelperTest extends TestCase
 {
     /** @var string */
-    private $destPath;
+    private string $destPath;
     /** @var string */
-    private $srcPath;
-    /** @var bool|resource */
-    private $testFileResource;
-    /** @var ContainerInterface */
-    private $container;
-    /** @var ManagerRegistry */
-    private $managerRegistry;
-    /** @var FileCrypto */
+    private string $srcPath;
+    /** @var FilesystemInterface|ObjectProphecy */
+    private $userAttachmentFilesystem;
+    /** @var FilesystemInterface|ObjectProphecy */
+    private $generatedDocumentFilesystem;
+    /** @var FileCrypto|ObjectProphecy */
     private $fileCrypto;
     /** @var string */
-    private $encryptedFilePath;
+    private string $encryptedFilePath;
 
     /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
-        $this->srcPath           = sys_get_temp_dir() . DIRECTORY_SEPARATOR . Base::lexify('?????');
-        $this->encryptedFilePath = $this->srcPath . '-encrypted';
-        $this->destPath          = Base::lexify('/????/???');
-        $this->testFileResource  = $this->buildTestFile();
-        $this->container         = $this->prophesize(ContainerInterface::class);
-        $this->managerRegistry   = $this->prophesize(ManagerRegistry::class);
-        $this->fileCrypto        = $this->prophesize(FileCrypto::class);
+        $this->srcPath                     = sys_get_temp_dir() . DIRECTORY_SEPARATOR . Base::lexify('?????');
+        $this->encryptedFilePath           = $this->srcPath . '-encrypted';
+        $this->destPath                    = Base::lexify('/????/???');
+        $this->userAttachmentFilesystem    = $this->prophesize(FilesystemInterface::class);
+        $this->generatedDocumentFilesystem = $this->prophesize(FilesystemInterface::class);
+        $this->fileCrypto                  = $this->prophesize(FileCrypto::class);
+
+        $this->buildTestFile();
     }
 
     /**
@@ -133,8 +131,9 @@ class FileSystemHelperTest extends TestCase
     private function createTestObject(): FileSystemHelper
     {
         return new FileSystemHelper(
-            $this->container->reveal(),
-            $this->fileCrypto->reveal()
+            $this->fileCrypto->reveal(),
+            $this->userAttachmentFilesystem->reveal(),
+            $this->generatedDocumentFilesystem->reveal()
         );
     }
 }
