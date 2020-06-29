@@ -11,19 +11,15 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait, TraceableStatusTrait};
+use Unilend\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
+use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
  *     attributes={"pagination_enabled": false},
- *     normalizationContext={"groups": {"company:read", "staff:read", "client:read", "client_status:read", "role:read"}},
+ *     normalizationContext={"groups": {"company:read", "companyStatus:read", "staff:read", "client:read", "client_status:read", "role:read"}},
  *     collectionOperations={
- *         "get",
- *         "autocomplete": {
- *             "method": "get",
- *             "path": "/companies/autocomplete/{term}",
- *             "controller": "Unilend\Controller\Company\Autocomplete"
- *         }
+ *         "get"
  *     },
  *     itemOperations={
  *         "get"
@@ -31,18 +27,13 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait, Traceable
  * )
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project"})
  *
- * @ORM\Entity(repositoryClass="Unilend\Repository\CompanyRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
- *
- * @method CompanyStatus|null getCurrentStatus()
  */
-class Company
+class Company implements TraceableStatusAwareInterface
 {
     use TimestampableTrait;
     use PublicizeIdentityTrait;
-    use TraceableStatusTrait {
-        setCurrentStatus as baseStatusSetter;
-    }
 
     public const COMPANY_ID_CASA      = 1;
     public const COMPANY_ID_CACIB     = 42;
@@ -62,9 +53,9 @@ class Company
      *
      * @Assert\NotBlank
      *
-     * @Groups({"company:write", "company:read", "company:jwt:read"})
+     * @Groups({"company:write", "company:read", "company:jwt:read", "company:autocomplete:read"})
      */
-    private $name;
+    private string $name;
 
     /**
      * @var string|null
@@ -74,7 +65,7 @@ class Company
      * @Assert\Length(9)
      * @Assert\Luhn
      */
-    private $siren;
+    private ?string $siren;
 
     /**
      * @var Company|null
@@ -86,10 +77,10 @@ class Company
      *
      * @Groups({"company:read"})
      */
-    private $parent;
+    private ?Company $parent;
 
     /**
-     * @var Staff[]
+     * @var ArrayCollection|Staff[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Staff", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
      *
@@ -104,7 +95,7 @@ class Company
      *
      * @Groups({"company:read", "company:jwt:read"})
      */
-    private $emailDomain;
+    private ?string $emailDomain;
 
     /**
      * @var string|null
@@ -113,15 +104,17 @@ class Company
      *
      * @Groups({"company:read", "company:jwt:read"})
      */
-    private $shortCode;
+    private ?string $shortCode;
 
     /**
-     * @var CompanyStatus
+     * @var CompanyStatus|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\CompanyStatus")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\CompanyStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, nullable=true)
+     *
+     * @Groups({"company:read"})
      */
-    private $currentStatus;
+    private ?CompanyStatus $currentStatus;
 
     /**
      * @var ArrayCollection|CompanyStatus[]
@@ -318,15 +311,23 @@ class Company
     }
 
     /**
-     * @param int $status
-     *
-     *@throws Exception
+     * @return CompanyStatus|null
+     */
+    public function getCurrentStatus(): ?CompanyStatus
+    {
+        return $this->currentStatus;
+    }
+
+    /**
+     * @param CompanyStatus|StatusInterface $currentStatus
      *
      * @return Company
      */
-    public function setCurrentStatus(int $status): self
+    public function setCurrentStatus(StatusInterface $currentStatus): Company
     {
-        return $this->baseStatusSetter(new CompanyStatus($this, $status));
+        $this->currentStatus = $currentStatus;
+
+        return $this;
     }
 
     /**
@@ -378,5 +379,13 @@ class Company
     public function getModules(): array
     {
         return $this->modules->toArray();
+    }
+
+    /**
+     * @return Collection|CompanyStatus
+     */
+    public function getStatuses(): Collection
+    {
+        return $this->statuses;
     }
 }
