@@ -37,7 +37,6 @@ services:
             $documentRootDirectory: '%directory.protected%/generated_document/'
             $projectDirectory: '%kernel.project_dir%'
             $userAttachmentFilesystem: '@League\Flysystem\UserAttachmentFilesystem'
-            $publicUserUploadFilesystem: '@League\Flysystem\PublicUserUploadFilesystem'
             $generatedDocumentFilesystem: '@League\Flysystem\GeneratedDocumentFilesystem'
             $securityRecipients: '%security.recipients%'
 

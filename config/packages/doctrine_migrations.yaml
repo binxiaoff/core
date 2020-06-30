@@ -1,7 +1,8 @@
 doctrine_migrations:
-    name: Database Migrations
-    dir_name: '%kernel.project_dir%/src/Migrations'
-    namespace: DoctrineMigrations
+    migrations_paths:
+        'DoctrineMigrations': '%kernel.project_dir%/src/Migrations'
     organize_migrations: BY_YEAR
-    column_length: 30
     all_or_nothing: true
+    storage:
+        table_storage:
+            table_name: 'migration_versions'
