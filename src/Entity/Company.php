@@ -80,13 +80,13 @@ class Company implements TraceableStatusAwareInterface
     private ?Company $parent;
 
     /**
-     * @var ArrayCollection|Staff[]
+     * @var Collection|Staff[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Staff", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
      *
      * @ApiSubresource
      */
-    private $staff;
+    private Collection $staff;
 
     /**
      * @var string|null
@@ -117,21 +117,21 @@ class Company implements TraceableStatusAwareInterface
     private ?CompanyStatus $currentStatus;
 
     /**
-     * @var ArrayCollection|CompanyStatus[]
+     * @var Collection|CompanyStatus[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyStatus", mappedBy="company", cascade={"persist"})
      * @ORM\OrderBy({"added": "ASC"})
      */
-    private $statuses;
+    private Collection $statuses;
 
     /**
-     * @var CompanyModule[]|Collection
+     * @var Collection|CompanyModule[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyModule", mappedBy="company", indexBy="label")
      *
      * @ApiSubresource
      */
-    private $modules;
+    private Collection $modules;
 
     /**
      * @param string $name
@@ -153,24 +153,6 @@ class Company implements TraceableStatusAwareInterface
     public function __toString(): string
     {
         return $this->getName();
-    }
-
-    /**
-     * @return Clients|null
-     *
-     * @deprecated use $this->getStaff() instead
-     *
-     * Get idClientOwner
-     */
-    public function getIdClientOwner(): ?Clients
-    {
-        foreach ($this->getStaff() as $staff) {
-            if ($staff->hasRole(Staff::ROLE_COMPANY_OWNER)) {
-                return $staff->getClient();
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -245,9 +227,9 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @param Clients|null $client
      *
-     * @return Staff[]|Collection
+     * @return Collection|Staff[]
      */
-    public function getStaff(?Clients $client = null): iterable
+    public function getStaff(?Clients $client = null): Collection
     {
         $criteria = new Criteria();
 
@@ -374,15 +356,15 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return array|CompanyModule
+     * @return Collection|CompanyModule[]
      */
-    public function getModules(): array
+    public function getModules(): Collection
     {
-        return $this->modules->toArray();
+        return $this->modules;
     }
 
     /**
-     * @return Collection|CompanyStatus
+     * @return Collection|CompanyStatus[]
      */
     public function getStatuses(): Collection
     {

@@ -67,7 +67,7 @@ class SignCompanyCommand extends Command
                 $this->staffNotifier->notifyClientInitialisation($staff);
             }
 
-            $modules = $company->getModules();
+            $modules = $company->getModules()->toArray();
 
             foreach (CompanyModule::getAvailableModuleLabels() as $moduleName) {
                 if (false === isset($modules[$moduleName])) {

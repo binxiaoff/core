@@ -24,12 +24,12 @@ final class Version20200629153936 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        //$this->addSql('ALTER TABLE company_status ADD public_id VARCHAR(36) NOT NULL');
+        $this->addSql('ALTER TABLE company_status ADD public_id VARCHAR(36) NOT NULL');
 
-        $result    = $this->connection->executeQuery('SELECT id FROM company_status');
-        $companies = $result->fetchAll(FetchMode::ASSOCIATIVE);
+        $result          = $this->connection->executeQuery('SELECT id FROM company_status');
+        $companyStatuses = $result->fetchAll(FetchMode::ASSOCIATIVE);
 
-        foreach ($companies as ['id' => $id]) {
+        foreach ($companyStatuses as ['id' => $id]) {
             $uuid = Uuid::uuid4();
             $this->addSql("UPDATE company_status SET public_id = '{$uuid}' WHERE id = {$id}");
         }

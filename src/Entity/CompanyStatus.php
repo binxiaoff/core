@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
@@ -14,17 +13,6 @@ use Unilend\Entity\{Interfaces\StatusInterface, Interfaces\TraceableStatusAwareI
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * @ApiResource(
- *     normalizationContext={"groups": {"companyStatus:read"}},
- *     itemOperations={
- *         "get": {
- *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
- *             "read": false,
- *             "output": false,
- *         }
- *     }
- * )
- *
  * @ORM\Entity
  *
  * @Assert\Callback(
