@@ -161,7 +161,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     {
         $project = $projectParticipation->getProject();
 
-        return $this->isArranger($project, $user) && $project->isInOfferNegotiationStep();
+        return $this->isArranger($project, $user)
+            && ($project->isInOfferNegotiationStep() || (false === $project->isInterestExpressionEnabled() && false === $project->isPublished()));
     }
 
     /**
