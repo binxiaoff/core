@@ -11,19 +11,15 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait, TraceableStatusTrait};
+use Unilend\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
+use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
  *     attributes={"pagination_enabled": false},
- *     normalizationContext={"groups": {"company:read", "staff:read", "client:read", "client_status:read", "role:read"}},
+ *     normalizationContext={"groups": {"company:read", "companyStatus:read", "staff:read", "client:read", "client_status:read", "role:read"}},
  *     collectionOperations={
- *         "get",
- *         "autocomplete": {
- *             "method": "get",
- *             "path": "/companies/autocomplete/{term}",
- *             "controller": "Unilend\Controller\Company\Autocomplete"
- *         }
+ *         "get"
  *     },
  *     itemOperations={
  *         "get"
@@ -31,27 +27,13 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait, Traceable
  * )
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project"})
  *
- * @ORM\Entity(repositoryClass="Unilend\Repository\CompanyRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
- *
- * @method CompanyStatus|null getCurrentStatus()
  */
-class Company
+class Company implements TraceableStatusAwareInterface
 {
     use TimestampableTrait;
     use PublicizeIdentityTrait;
-    use TraceableStatusTrait {
-        setCurrentStatus as baseStatusSetter;
-    }
-
-    public const COMPANY_ID_CASA      = 1;
-    public const COMPANY_ID_CACIB     = 42;
-    public const COMPANY_ID_UNIFERGIE = 43;
-    public const COMPANY_ID_LCL       = 41;
-
-    public const COMPANY_ELIGIBLE_ARRANGER       = [self::COMPANY_ID_CACIB, self::COMPANY_ID_UNIFERGIE];
-    public const COMPANY_ELIGIBLE_RUN            = [self::COMPANY_ID_LCL];
-    public const COMPANY_SUBSIDIARY_ELIGIBLE_RUN = [self::COMPANY_ID_CASA];
 
     /**
      * TODO Remove project:update group when autocomplete is done.
@@ -62,9 +44,9 @@ class Company
      *
      * @Assert\NotBlank
      *
-     * @Groups({"company:write", "company:read", "company:jwt:read"})
+     * @Groups({"company:write", "company:read", "company:jwt:read", "company:autocomplete:read"})
      */
-    private $name;
+    private string $name;
 
     /**
      * @var string|null
@@ -74,7 +56,7 @@ class Company
      * @Assert\Length(9)
      * @Assert\Luhn
      */
-    private $siren;
+    private ?string $siren;
 
     /**
      * @var Company|null
@@ -86,16 +68,16 @@ class Company
      *
      * @Groups({"company:read"})
      */
-    private $parent;
+    private ?Company $parent;
 
     /**
-     * @var Staff[]
+     * @var Collection|Staff[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Staff", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
      *
      * @ApiSubresource
      */
-    private $staff;
+    private Collection $staff;
 
     /**
      * @var string|null
@@ -104,7 +86,7 @@ class Company
      *
      * @Groups({"company:read", "company:jwt:read"})
      */
-    private $emailDomain;
+    private ?string $emailDomain;
 
     /**
      * @var string|null
@@ -113,32 +95,34 @@ class Company
      *
      * @Groups({"company:read", "company:jwt:read"})
      */
-    private $shortCode;
+    private ?string $shortCode;
 
     /**
-     * @var CompanyStatus
+     * @var CompanyStatus|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\CompanyStatus")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\CompanyStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, nullable=true)
+     *
+     * @Groups({"company:read"})
      */
-    private $currentStatus;
+    private ?CompanyStatus $currentStatus;
 
     /**
-     * @var ArrayCollection|CompanyStatus[]
+     * @var Collection|CompanyStatus[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyStatus", mappedBy="company", cascade={"persist"})
      * @ORM\OrderBy({"added": "ASC"})
      */
-    private $statuses;
+    private Collection $statuses;
 
     /**
-     * @var CompanyModule[]|Collection
+     * @var Collection|CompanyModule[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyModule", mappedBy="company", indexBy="label")
      *
      * @ApiSubresource
      */
-    private $modules;
+    private Collection $modules;
 
     /**
      * @param string $name
@@ -160,24 +144,6 @@ class Company
     public function __toString(): string
     {
         return $this->getName();
-    }
-
-    /**
-     * @return Clients|null
-     *
-     * @deprecated use $this->getStaff() instead
-     *
-     * Get idClientOwner
-     */
-    public function getIdClientOwner(): ?Clients
-    {
-        foreach ($this->getStaff() as $staff) {
-            if ($staff->hasRole(Staff::ROLE_COMPANY_OWNER)) {
-                return $staff->getClient();
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -252,9 +218,9 @@ class Company
     /**
      * @param Clients|null $client
      *
-     * @return Staff[]|Collection
+     * @return Collection|Staff[]
      */
-    public function getStaff(?Clients $client = null): iterable
+    public function getStaff(?Clients $client = null): Collection
     {
         $criteria = new Criteria();
 
@@ -318,15 +284,23 @@ class Company
     }
 
     /**
-     * @param int $status
-     *
-     *@throws Exception
+     * @return CompanyStatus|null
+     */
+    public function getCurrentStatus(): ?CompanyStatus
+    {
+        return $this->currentStatus;
+    }
+
+    /**
+     * @param CompanyStatus|StatusInterface $currentStatus
      *
      * @return Company
      */
-    public function setCurrentStatus(int $status): self
+    public function setCurrentStatus(StatusInterface $currentStatus): Company
     {
-        return $this->baseStatusSetter(new CompanyStatus($this, $status));
+        $this->currentStatus = $currentStatus;
+
+        return $this;
     }
 
     /**
@@ -373,10 +347,18 @@ class Company
     }
 
     /**
-     * @return array|CompanyModule
+     * @return Collection|CompanyModule[]
      */
-    public function getModules(): array
+    public function getModules(): Collection
     {
-        return $this->modules->toArray();
+        return $this->modules;
+    }
+
+    /**
+     * @return Collection|CompanyStatus[]
+     */
+    public function getStatuses(): Collection
+    {
+        return $this->statuses;
     }
 }

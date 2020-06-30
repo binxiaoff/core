@@ -402,8 +402,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
-     *
      * @return ProjectParticipationStatus|null
      */
     public function getCurrentStatus(): ?ProjectParticipationStatus
