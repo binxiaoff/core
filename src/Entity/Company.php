@@ -35,15 +35,6 @@ class Company implements TraceableStatusAwareInterface
     use TimestampableTrait;
     use PublicizeIdentityTrait;
 
-    public const COMPANY_ID_CASA      = 1;
-    public const COMPANY_ID_CACIB     = 42;
-    public const COMPANY_ID_UNIFERGIE = 43;
-    public const COMPANY_ID_LCL       = 41;
-
-    public const COMPANY_ELIGIBLE_ARRANGER       = [self::COMPANY_ID_CACIB, self::COMPANY_ID_UNIFERGIE];
-    public const COMPANY_ELIGIBLE_RUN            = [self::COMPANY_ID_LCL];
-    public const COMPANY_SUBSIDIARY_ELIGIBLE_RUN = [self::COMPANY_ID_CASA];
-
     /**
      * TODO Remove project:update group when autocomplete is done.
      *
