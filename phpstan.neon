@@ -8,7 +8,8 @@ parameters:
     level: 0
     paths:
         - src
+        - tests
     excludes_analyse:
-        - %rootDir%/../../../src/Migrations
+        - src/Migrations
     symfony:
         container_xml_path: %rootDir%/../../../var/cache/dev/Unilend_KernelDevDebugContainer.xml

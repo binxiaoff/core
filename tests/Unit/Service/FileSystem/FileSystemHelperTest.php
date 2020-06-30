@@ -25,11 +25,11 @@ class FileSystemHelperTest extends TestCase
     /** @var string */
     private string $srcPath;
     /** @var FilesystemInterface|ObjectProphecy */
-    private $userAttachmentFilesystem;
+    private ObjectProphecy $userAttachmentFilesystem;
     /** @var FilesystemInterface|ObjectProphecy */
-    private $generatedDocumentFilesystem;
+    private ObjectProphecy $generatedDocumentFilesystem;
     /** @var FileCrypto|ObjectProphecy */
-    private $fileCrypto;
+    private ObjectProphecy $fileCrypto;
     /** @var string */
     private string $encryptedFilePath;
 
