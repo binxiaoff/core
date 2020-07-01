@@ -24,7 +24,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiResource(
  *     normalizationContext={"groups": {
  *         "projectParticipation:read",
- *         "projectParticipationContact:read",
+ *         "projectParticipationMember:read",
  *         "projectParticipationTranche:read",
  *         "projectParticipationStatus:read",
  *         "company:read",
@@ -49,7 +49,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "projectParticipation:list",
  *                 "project:read",
  *                 "projectParticipation:read",
- *                 "projectParticipationContact:read",
+ *                 "projectParticipationMember:read",
  *                 "projectParticipationTranche:read",
  *                 "projectParticipationStatus:read",
  *                 "projectOrganizer:read",
@@ -92,7 +92,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={
  *     "project.publicId": "exact",
- *     "projectParticipationContacts.staff.publicId": "exact",
+ *     "projectParticipationMembers.staff.publicId": "exact",
  *     "participant.publicId": "exact"
  * })
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"project.submitterCompany.publicId"})
@@ -159,15 +159,13 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Assert\NotBlank
      */
-    private $project;
+    private Project $project;
 
     /**
      * @var Company
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      *
      * @Groups({"projectParticipation:read", "projectParticipation:create"})
      *
@@ -178,7 +176,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Assert\NotBlank
      */
-    private $participant;
+    private Company $participant;
 
     /**
      * @var ProjectParticipationStatus|null
@@ -191,12 +189,12 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
      */
-    private $currentStatus;
+    private ?ProjectParticipationStatus $currentStatus;
 
     /**
      * Participant committee status.
      *
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(length=30, nullable=true)
      *
@@ -210,7 +208,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
      */
-    private $committeeStatus;
+    private ?string $committeeStatus;
 
     /**
      * Participant committee response deadline if the status = "pended".
@@ -223,7 +221,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
      */
-    private $committeeDeadline;
+    private ?DateTimeImmutable $committeeDeadline;
 
     /**
      * @var string|null
@@ -234,7 +232,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
      */
-    private $committeeComment;
+    private ?string $committeeComment;
 
     /**
      * Marque d'interet sollicitation envoyé par l'arrangeur au participant.
@@ -249,7 +247,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE, "projectParticipation:create"})
      */
-    private $interestRequest;
+    private RangedOfferWithFee $interestRequest;
 
     /**
      * Réponse de la sollicitation de l'arrangeur envoyé au participant.
@@ -264,7 +262,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_INTEREST_COLLECTION_WRITE})
      */
-    private $interestReply;
+    private Offer $interestReply;
 
     /**
      * Réponse ferme : Invitation envoyé par l'arrangeur au participant.
@@ -279,7 +277,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE, "projectParticipation:create"})
      */
-    private $invitationRequest;
+    private OfferWithFee $invitationRequest;
 
     /**
      * @var string|null
@@ -292,7 +290,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
      */
-    private $invitationReplyMode;
+    private ?string $invitationReplyMode;
 
     /**
      * @var string|null
@@ -306,7 +304,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE})
      */
-    private $allocationFeeRate;
+    private ?string $allocationFeeRate;
 
     /**
      * @var DateTimeImmutable|null
@@ -315,43 +313,43 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE})
      */
-    private $participantLastConsulted;
+    private ?DateTimeImmutable $participantLastConsulted;
 
     /**
-     * @var ProjectParticipationContact[]|ArrayCollection
+     * @var Collection|ProjectParticipationMember[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationContact", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationMember", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
      */
-    private $projectParticipationContacts;
+    private Collection $projectParticipationMembers;
 
     /**
-     * @var ArrayCollection|ProjectMessage[]
+     * @var Collection|ProjectMessage[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectMessage", mappedBy="participation")
      * @ORM\OrderBy({"added": "ASC"})
      *
      * @ApiSubresource
      */
-    private $messages;
+    private Collection $messages;
 
     /**
-     * @var ArrayCollection|ProjectParticipationTranche[]
+     * @var Collection|ProjectParticipationTranche[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="projectParticipation")
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
      */
-    private $projectParticipationTranches;
+    private Collection $projectParticipationTranches;
 
     /**
-     * @var ArrayCollection|ProjectParticipationStatus[]
+     * @var Collection|ProjectParticipationStatus[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationStatus", mappedBy="projectParticipation", cascade={"persist"})
      * @ORM\OrderBy({"added": "ASC"})
      */
-    private $statuses;
+    private Collection $statuses;
 
     /**
      * @param Company $participant
@@ -366,23 +364,15 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         $this->addedBy                      = $addedBy;
         $this->participant                  = $participant;
         $this->project                      = $project;
-        $this->projectParticipationContacts = new ArrayCollection();
+        $this->projectParticipationMembers  = new ArrayCollection();
         $this->messages                     = new ArrayCollection();
         $this->statuses                     = new ArrayCollection();
+        $this->projectParticipationTranches = new ArrayCollection();
         $this->interestRequest              = new RangedOfferWithFee();
         $this->interestReply                = new Offer();
         $this->invitationRequest            = new OfferWithFee();
 
         $this->setCurrentStatus(new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_ACTIVE, $addedBy));
-
-        $this->projectParticipationContacts = $participant->getStaff()
-            ->filter(static function (Staff $staff) use ($project) {
-                return $staff->isActive() && ($staff->isManager() || $staff->isAuditor()) && $staff->getMarketSegments()->contains($project->getMarketSegment());
-            })
-            ->map(function (Staff $staff) use ($addedBy) {
-                return new ProjectParticipationContact($this, $staff, $addedBy);
-            })
-        ;
     }
 
     /**
@@ -604,25 +594,25 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return ProjectParticipationContact[]|ArrayCollection
+     * @return ProjectParticipationMember[]|Collection
      */
-    public function getProjectParticipationContacts(): iterable
+    public function getProjectParticipationMembers(): Collection
     {
-        return $this->projectParticipationContacts;
+        return $this->projectParticipationMembers;
     }
 
     /**
-     * @return ProjectParticipationContact[]|ArrayCollection
+     * @return ProjectParticipationMember[]|Collection
      */
-    public function getActiveProjectParticipationContacts(): iterable
+    public function getActiveProjectParticipationMembers(): Collection
     {
-        return $this->projectParticipationContacts->filter(function (ProjectParticipationContact $participationContact) {
-            return false === $participationContact->isArchived();
+        return $this->projectParticipationMembers->filter(static function (ProjectParticipationMember $projectParticipationMember) {
+            return false === $projectParticipationMember->isArchived();
         });
     }
 
     /**
-     * @return Collection
+     * @return Collection|ProjectMessage[]
      */
     public function getMessages(): Collection
     {
@@ -630,7 +620,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return Collection|ProjectParticipationStatus
+     * @return Collection|ProjectParticipationStatus[]
      */
     public function getStatuses(): Collection
     {

@@ -6,20 +6,20 @@ namespace Unilend\Service\ProjectParticipation;
 
 use Doctrine\ORM\NonUniqueResultException;
 use RuntimeException;
-use Unilend\Entity\{Clients, Project, ProjectParticipation, Staff};
-use Unilend\Repository\ProjectParticipationContactRepository;
+use Unilend\Entity\{Project, ProjectParticipation, Staff};
+use Unilend\Repository\ProjectParticipationMemberRepository;
 
 class ProjectParticipationManager
 {
-    /** @var ProjectParticipationContactRepository */
-    private $projectParticipationContactRepository;
+    /** @var ProjectParticipationMemberRepository */
+    private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
 
     /**
-     * @param ProjectParticipationContactRepository $projectParticipationContactRepository
+     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
      */
-    public function __construct(ProjectParticipationContactRepository $projectParticipationContactRepository)
+    public function __construct(ProjectParticipationMemberRepository $projectParticipationMemberRepository)
     {
-        $this->projectParticipationContactRepository = $projectParticipationContactRepository;
+        $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
     }
 
     /**
@@ -32,9 +32,9 @@ class ProjectParticipationManager
      */
     public function isParticipant(Staff $staff, Project $project): bool
     {
-        $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndStaff($project, $staff);
+        $projectParticipationMember = $this->projectParticipationMemberRepository->findByProjectAndStaff($project, $staff);
 
-        return null !== $projectParticipationContact && false === $projectParticipationContact->isArchived();
+        return null !== $projectParticipationMember && false === $projectParticipationMember->isArchived();
     }
 
     /**
@@ -45,7 +45,7 @@ class ProjectParticipationManager
      */
     public function isParticipationOwner(Staff $staff, ProjectParticipation $projectParticipation): bool
     {
-        return null !== $this->projectParticipationContactRepository->findOneBy([
+        return null !== $this->projectParticipationMemberRepository->findOneBy([
             'projectParticipation' => $projectParticipation,
             'staff'                => $staff,
             'archived'             => null,
@@ -62,12 +62,12 @@ class ProjectParticipationManager
      */
     public function isNdaAccepted(Staff $staff, Project $project): bool
     {
-        $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndStaff($project, $staff);
+        $projectParticipationMember = $this->projectParticipationMemberRepository->findByProjectAndStaff($project, $staff);
 
-        if (null === $projectParticipationContact) {
+        if (null === $projectParticipationMember) {
             throw new RuntimeException(sprintf('The staff %s is not a participant of project %s', $staff->getPublicId(), $project->getPublicId()));
         }
 
-        return null !== $projectParticipationContact->getNdaAccepted();
+        return null !== $projectParticipationMember->getNdaAccepted();
     }
 }

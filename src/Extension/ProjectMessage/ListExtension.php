@@ -54,7 +54,7 @@ class ListExtension implements QueryCollectionExtensionInterface
         $queryBuilder
             ->distinct()
             ->innerJoin($rootAlias . '.participation', 'pp')
-            ->leftJoin('pp.projectParticipationContacts', 'ppc')
+            ->leftJoin('pp.projectParticipationMembers', 'ppc')
             ->leftJoin('pp.project', 'project')
             ->leftJoin('project.organizers', 'organizer', Join::WITH, "JSON_CONTAINS(organizer.roles, '\"${$arranger}\"') = 1")
             ->andWhere('(ppc.staff = :staff AND ppc.archived IS NULL) OR :company = organizer.company')

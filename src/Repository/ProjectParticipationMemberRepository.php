@@ -7,22 +7,22 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
-use Unilend\Entity\{Project, ProjectParticipationContact, Staff};
+use Unilend\Entity\{Project, ProjectParticipationMember, Staff};
 
 /**
- * @method ProjectParticipationContact|null find($id, $lockMode = null, $lockVersion = null)
- * @method ProjectParticipationContact|null findOneBy(array $criteria, array $orderBy = null)
- * @method ProjectParticipationContact[]    findAll()
- * @method ProjectParticipationContact[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method ProjectParticipationMember|null find($id, $lockMode = null, $lockVersion = null)
+ * @method ProjectParticipationMember|null findOneBy(array $criteria, array $orderBy = null)
+ * @method ProjectParticipationMember[]    findAll()
+ * @method ProjectParticipationMember[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ProjectParticipationContactRepository extends ServiceEntityRepository
+class ProjectParticipationMemberRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ProjectParticipationContact::class);
+        parent::__construct($registry, ProjectParticipationMember::class);
     }
 
     /**
@@ -31,9 +31,9 @@ class ProjectParticipationContactRepository extends ServiceEntityRepository
      *
      * @throws NonUniqueResultException
      *
-     * @return ProjectParticipationContact|null
+     * @return ProjectParticipationMember|null
      */
-    public function findByProjectAndStaff(Project $project, Staff $staff): ?ProjectParticipationContact
+    public function findByProjectAndStaff(Project $project, Staff $staff): ?ProjectParticipationMember
     {
         $queryBuilder = $this->createQueryBuilder('ppc')
             ->innerJoin('ppc.projectParticipation', 'pp')

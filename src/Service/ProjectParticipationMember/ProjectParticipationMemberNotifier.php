@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service\ProjectParticipationContact;
+namespace Unilend\Service\ProjectParticipationMember;
 
 use Exception;
 use Swift_Mailer;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{Clients, Company, Project, ProjectParticipationContact, ProjectStatus};
+use Unilend\Entity\{Clients, Company, Project, ProjectParticipationMember, ProjectStatus};
 use Unilend\Service\TemporaryTokenGenerator;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
-class ProjectParticipationContactNotifier
+class ProjectParticipationMemberNotifier
 {
     /** @var Swift_Mailer */
-    private $mailer;
+    private Swift_Mailer $mailer;
     /** @var TemplateMessageProvider */
-    private $templateMessageProvider;
+    private TemplateMessageProvider $templateMessageProvider;
     /** @var TemporaryTokenGenerator */
-    private $temporaryTokenGenerator;
+    private TemporaryTokenGenerator $temporaryTokenGenerator;
 
     /**
      * @param TemplateMessageProvider $templateMessageProvider
@@ -33,27 +33,27 @@ class ProjectParticipationContactNotifier
     }
 
     /**
-     * @param ProjectParticipationContact $contact
+     * @param ProjectParticipationMember $projectParticipationMember
      *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      * @throws Exception
      */
-    public function notifyContactAdded(ProjectParticipationContact $contact): void
+    public function notifyMemberAdded(ProjectParticipationMember $projectParticipationMember): void
     {
-        $projectParticipation = $contact->getProjectParticipation();
+        $projectParticipation = $projectParticipationMember->getProjectParticipation();
 
         // We notify only other users than the current user.
         // For the arranger, we should not notify anyone in his entity. But it is not yet the case. We will review this part in V2.
-        if ($contact->getAddedBy() === $contact->getStaff()) {
+        if ($projectParticipationMember->getAddedBy() === $projectParticipationMember->getStaff()) {
             return;
         }
 
         $participation = $projectParticipation->getParticipant();
         $project       = $projectParticipation->getProject();
 
-        $client     = $contact->getStaff()->getClient();
+        $client     = $projectParticipationMember->getStaff()->getClient();
         $templateId = $this->getTemplateId($project, $participation, $client);
 
         $temporaryToken = null;

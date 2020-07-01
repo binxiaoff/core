@@ -23,23 +23,23 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchived
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {}}
+ *             "denormalization_context": {"groups": {"archivable:write"}}
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"projectParticipationContact:create", "projectParticipationContact:write"}}
+ *             "denormalization_context": {"groups": {"projectParticipationMember:create", "projectParticipationMember:write"}}
  *         }
  *     }
  * )
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_staff", "id_project_participation"})})
- * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationContactRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *
  * @UniqueEntity({"staff", "projectParticipation"})
  */
-class ProjectParticipationContact
+class ProjectParticipationMember
 {
     use TimestampableAddedOnlyTrait;
     use BlamableAddedTrait;
@@ -47,19 +47,19 @@ class ProjectParticipationContact
     use ArchivableTrait;
     use BlamableArchivedTrait;
 
-    public const SERIALIZER_GROUP_PROJECT_PARTICIPATION_CONTACT_OWNER_WRITE = 'projectParticipationContact:owner:write';
+    public const SERIALIZER_GROUP_PROJECT_PARTICIPATION_MEMBER_OWNER_WRITE = 'projectParticipationMember:owner:write';
 
     /**
      * @var ProjectParticipation
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationContacts")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationMembers")
      * @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
      *
-     * @Groups({"projectParticipationContact:create"})
+     * @Groups({"projectParticipationMember:create"})
      *
      * @Assert\NotBlank
      */
-    private $projectParticipation;
+    private ProjectParticipation $projectParticipation;
 
     /**
      * @var Staff
@@ -69,47 +69,44 @@ class ProjectParticipationContact
      *     @ORM\JoinColumn(name="id_staff", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"projectParticipationContact:read", "projectParticipationContact:create"})
+     * @Groups({"projectParticipationMember:read", "projectParticipationMember:create"})
      *
      * @Assert\NotBlank
      * @Assert\Expression(
      *     expression="this.getStaff().getCompany() === this.getProjectParticipation().getParticipant()",
-     *     message="ProjectParticipationContact.staff.incorrectCompany"
+     *     message="ProjectParticipationMember.staff.incorrectCompany"
      * )
      */
-    private $staff;
+    private Staff $staff;
 
     /**
      * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"projectParticipationContact:read", "projectParticipationContact:write", "projectParticipationContact:owner:write"})
+     * @Groups({"projectParticipationMember:read", "projectParticipationMember:write", "projectParticipationMember:owner:write"})
      */
-    private $ndaAccepted;
+    private ?DateTimeImmutable $ndaAccepted;
 
     /**
+     * @var FileVersion|null
+     *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion")
      * @ORM\JoinColumn(name="id_accepted_nda_version")
      *
-     * @Groups({"projectParticipationContact:owner:write"})
+     * @Groups({"projectParticipationMember:owner:write"})
      */
-    private $acceptedNdaVersion;
+    private ?FileVersion $acceptedNdaVersion;
 
     /**
-     * ProjectParticipationContact constructor.
-     *
      * @param ProjectParticipation $projectParticipation
      * @param Staff                $staff
      * @param Staff                $addedBy
      *
      * @throws Exception
      */
-    public function __construct(
-        ProjectParticipation $projectParticipation,
-        Staff $staff,
-        Staff $addedBy
-    ) {
+    public function __construct(ProjectParticipation $projectParticipation, Staff $staff, Staff $addedBy)
+    {
         $this->projectParticipation = $projectParticipation;
         $this->staff                = $staff;
         $this->addedBy              = $addedBy;
@@ -135,9 +132,9 @@ class ProjectParticipationContact
     /**
      * @param DateTimeImmutable|null $ndaAccepted
      *
-     * @return ProjectParticipationContact
+     * @return ProjectParticipationMember
      */
-    public function setNdaAccepted(?DateTimeImmutable $ndaAccepted): ProjectParticipationContact
+    public function setNdaAccepted(?DateTimeImmutable $ndaAccepted): ProjectParticipationMember
     {
         $this->ndaAccepted = $ndaAccepted;
 
@@ -157,7 +154,7 @@ class ProjectParticipationContact
      *
      * @return $this
      */
-    public function setAcceptedNdaVersion(?FileVersion $acceptedNdaVersion): ProjectParticipationContact
+    public function setAcceptedNdaVersion(?FileVersion $acceptedNdaVersion): ProjectParticipationMember
     {
         $this->acceptedNdaVersion = $acceptedNdaVersion;
 

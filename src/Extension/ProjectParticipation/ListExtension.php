@@ -53,13 +53,13 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->from(Project::class, 'sub_project')
             ->innerJoin('sub_project.currentStatus', 'sub_cs')
             ->innerJoin('sub_project.projectParticipations', 'sub_participation')
-            ->innerJoin('sub_participation.projectParticipationContacts', 'sub_contact')
-            ->where('sub_contact.staff = :staff AND sub_cs.status in (:displayableStatus)')
+            ->innerJoin('sub_participation.projectParticipationMembers', 'sub_member')
+            ->where('sub_member.staff = :staff AND sub_cs.status in (:displayableStatus)')
         ;
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
             ->distinct()
-            ->leftJoin("{$rootAlias}.projectParticipationContacts", 'ppc')
+            ->leftJoin("{$rootAlias}.projectParticipationMembers", 'ppc')
             ->innerJoin("{$rootAlias}.project", 'p')
             ->innerJoin('p.organizers', 'organizers')
             ->andWhere(

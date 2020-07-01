@@ -8,46 +8,41 @@ use Doctrine\ORM\NonUniqueResultException;
 use InvalidArgumentException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, FileDownload, FileVersion, Project, ProjectFile, ProjectParticipationContact, ProjectStatus, Staff};
-use Unilend\Repository\{FileVersionSignatureRepository, ProjectFileRepository, ProjectParticipationContactRepository, ProjectRepository};
+use Unilend\Entity\{Clients, FileDownload, FileVersion, Project, ProjectFile, ProjectParticipationMember, ProjectStatus, Staff};
+use Unilend\Repository\{FileVersionSignatureRepository, ProjectFileRepository, ProjectParticipationMemberRepository, ProjectRepository};
 
 class FileDownloadVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
 
     /** @var FileVersionSignatureRepository */
-    private $fileVersionSignatureRepository;
-
-    /** @var ProjectParticipationContactRepository */
-    private $participationContactRepository;
-    /**
-     * @var ProjectFileRepository
-     */
-    private $projectFileRepository;
-    /**
-     * @var ProjectRepository
-     */
-    private $projectRepository;
+    private FileVersionSignatureRepository $fileVersionSignatureRepository;
+    /** @var ProjectParticipationMemberRepository */
+    private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
+    /** @var ProjectFileRepository */
+    private ProjectFileRepository $projectFileRepository;
+    /** @var ProjectRepository */
+    private ProjectRepository $projectRepository;
 
     /**
-     * @param AuthorizationCheckerInterface         $authorizationChecker
-     * @param FileVersionSignatureRepository        $fileVersionSignatureRepository
-     * @param ProjectParticipationContactRepository $participationContactRepository
-     * @param ProjectFileRepository                 $projectFileRepository
-     * @param ProjectRepository                     $projectRepository
+     * @param AuthorizationCheckerInterface        $authorizationChecker
+     * @param FileVersionSignatureRepository       $fileVersionSignatureRepository
+     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
+     * @param ProjectFileRepository                $projectFileRepository
+     * @param ProjectRepository                    $projectRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         FileVersionSignatureRepository $fileVersionSignatureRepository,
-        ProjectParticipationContactRepository $participationContactRepository,
+        ProjectParticipationMemberRepository $projectParticipationMemberRepository,
         ProjectFileRepository $projectFileRepository,
         ProjectRepository $projectRepository
     ) {
         parent::__construct($authorizationChecker);
-        $this->fileVersionSignatureRepository = $fileVersionSignatureRepository;
-        $this->participationContactRepository = $participationContactRepository;
-        $this->projectFileRepository          = $projectFileRepository;
-        $this->projectRepository              = $projectRepository;
+        $this->fileVersionSignatureRepository       = $fileVersionSignatureRepository;
+        $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
+        $this->projectFileRepository                = $projectFileRepository;
+        $this->projectRepository                    = $projectRepository;
     }
 
     /**
@@ -121,8 +116,8 @@ class FileDownloadVoter extends AbstractEntityVoter
             case ProjectStatus::STATUS_CONTRACTUALISATION:
             case ProjectStatus::STATUS_SYNDICATION_FINISHED:
                 return
-                    null !== ($contact = $this->getActiveParticipantParticipation($project, $staff))
-                    && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeOfferCollected($project, $fileDownload->getFileVersion()));
+                    null !== ($projectParticipationMember = $this->getActiveParticipantParticipation($project, $staff))
+                    && ($this->hasValidatedOffer($projectParticipationMember) || $this->isAddedBeforeOfferCollected($project, $fileDownload->getFileVersion()));
             default:
                 throw new LogicException('This code should not be reached');
         }
@@ -136,26 +131,26 @@ class FileDownloadVoter extends AbstractEntityVoter
      *
      * @throws NonUniqueResultException
      *
-     * @return ProjectParticipationContact|null
+     * @return ProjectParticipationMember|null
      */
-    private function getActiveParticipantParticipation(Project $project, Staff $staff): ?ProjectParticipationContact
+    private function getActiveParticipantParticipation(Project $project, Staff $staff): ?ProjectParticipationMember
     {
-        /** @var ProjectParticipationContact $participationContact */
-        $participationContact = $this->participationContactRepository->findByProjectAndStaff($project, $staff);
+        /** @var ProjectParticipationMember $projectParticipationMember */
+        $projectParticipationMember = $this->projectParticipationMemberRepository->findByProjectAndStaff($project, $staff);
 
-        return ($participationContact && $participationContact->getProjectParticipation()->isActive())
-            ? $participationContact : null;
+        return ($projectParticipationMember && $projectParticipationMember->getProjectParticipation()->isActive())
+            ? $projectParticipationMember : null;
     }
 
     /**
-     * @param ProjectParticipationContact $contact
+     * @param ProjectParticipationMember $projectParticipationMember
      *
      * @return bool
      */
-    private function hasValidatedOffer(ProjectParticipationContact $contact): bool
+    private function hasValidatedOffer(ProjectParticipationMember $projectParticipationMember): bool
     {
         // Todo: the rule of validate offer need to be defined CALS-1702
-        return null !== ($participation = $contact->getProjectParticipation()) && $participation->getAllocationFeeRate();
+        return null !== ($participation = $projectParticipationMember->getProjectParticipation()) && $participation->getAllocationFeeRate();
     }
 
     /**
