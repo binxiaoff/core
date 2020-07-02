@@ -72,6 +72,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "company:read",
  *                 "projectParticipation:read",
  *                 "projectParticipationTranche:read",
+ *                 "projectParticipationStatus:read",
  *                 "money:read",
  *                 "file:read",
  *                 "fileVersion:read",
@@ -89,7 +90,12 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "lendingRate:read",
  *                 "fee:read",
  *                 "tag:read",
- *                 "nullablePerson:read"
+ *                 "nullablePerson:read",
+ *                 "nullableMoney:read",
+ *                 "rangedOfferWithFee:read",
+ *                 "offerWithFee:read",
+ *                 "offer:read",
+ *                 "marketSegment:read"
  *             }}
  *         },
  *         "project_nda": {
