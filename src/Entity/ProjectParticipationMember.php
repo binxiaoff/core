@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\ConstraintViolationList;
 use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 
 /**
@@ -148,6 +151,21 @@ class ProjectParticipationMember
     {
         // acceptedNdaVersion is only settable once
         if (null === $this->acceptedNdaVersion) {
+            if ($this->acceptedNdaVersion !== $this->getAcceptableNdaVersion()) {
+                $constraintViolationList = new ConstraintViolationList();
+                $constraintViolationList->add(
+                    new ConstraintViolation(
+                        'ProjectParticipation.nda.unacceptableVersion',
+                        'ProjectParticipation.nda.unacceptableVersion',
+                        [],
+                        $this,
+                        'acceptedNdaVersion',
+                        $acceptedNdaVersion
+                    )
+                );
+
+                throw new ValidationException($constraintViolationList);
+            }
             $this->acceptedNdaVersion = $acceptedNdaVersion;
             $this->ndaAccepted        = new DateTimeImmutable();
         }
@@ -176,7 +194,7 @@ class ProjectParticipationMember
      *
      * @Groups({"projectParticipationContact:read"})
      */
-    public function getAcceptableNda()
+    public function getAcceptableNdaVersion()
     {
         $file = $this->projectParticipation->getNda() ?? $this->getProjectParticipation()->getProject()->getNda();
 

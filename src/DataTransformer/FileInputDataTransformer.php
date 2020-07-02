@@ -177,7 +177,7 @@ class FileInputDataTransformer
             case Project::PROJECT_FILE_TYPE_DESCRIPTION:
                 $descriptionDocument = $project->getDescriptionDocument();
                 if (null !== $file && null !== $descriptionDocument && $file !== $descriptionDocument) {
-                    static::denyUploadExistingFile('description', $descriptionDocument->getPublicId(), 'project', $project->getPublicId());
+                    static::denyUploadExistingFile($fileInput, $descriptionDocument, $project);
                 }
                 $file = $descriptionDocument ?? new File();
                 $project->setDescriptionDocument($file);
@@ -186,7 +186,7 @@ class FileInputDataTransformer
             case Project::PROJECT_FILE_TYPE_NDA:
                 $nda = $project->getNda();
                 if (null !== $file && null !== $nda && $file !== $nda) {
-                    static::denyUploadExistingFile('nda', $nda->getPublicId(), 'project', $project->getPublicId());
+                    static::denyUploadExistingFile($fileInput, $nda, $project);
                 }
                 $file = $nda ?? new File();
                 $project->setNda($file);
@@ -219,19 +219,13 @@ class FileInputDataTransformer
      */
     private function uploadProjectParticipationNda(ProjectParticipation $projectParticipation, FileInput $fileInput, Staff $currentStaff, ?File $file)
     {
-        $voterAttributes = [
-            ProjectParticipationVoter::ATTRIBUTE_ARRANGER_INTEREST_COLLECTION_EDIT,
-            ProjectParticipationVoter::ATTRIBUTE_ARRANGER_OFFER_NEGOTIATION_EDIT,
-            ProjectParticipationVoter::ATTRIBUTE_ARRANGER_CONTRACT_NEGOTIATION_EDIT,
-        ];
-
-        if (0 === array_sum(array_map([$this->security, 'isGranted'], $voterAttributes, array_fill(0, count($voterAttributes), $projectParticipation)))) {
+        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_EDIT, $projectParticipation)) {
             throw new AccessDeniedException();
         }
 
         $existingNda = $projectParticipation->getNda();
         if (null !== $file && null !== $existingNda && $file !== $existingNda) {
-            static::denyUploadExistingFile('nda', $existingNda->getPublicId(), 'project', $projectParticipation->getPublicId());
+            static::denyUploadExistingFile($fileInput, $existingNda, $projectParticipation);
         }
 
         $file = $existingNda ?? new File();
@@ -244,19 +238,18 @@ class FileInputDataTransformer
     }
 
     /**
-     * @param $type
-     * @param $existingFileId
-     * @param $targetEntityClass
-     * @param $targetEntityId
+     * @param FileInput $request
+     * @param File      $existingFile
+     * @param object    $targetEntity
      */
-    private static function denyUploadExistingFile($type, $existingFileId, $targetEntityClass, $targetEntityId)
+    private static function denyUploadExistingFile(FileInput $request, File $existingFile, object $targetEntity)
     {
         throw new RuntimeException(sprintf(
-            'There is already a %s file %s on the %s %s. You can only update its version',
-            $type,
-            $existingFileId,
-            $targetEntityClass,
-            $targetEntityId
+            'There is already a %s with id %s on the %s %s. You can only update its version',
+            $request->type,
+            $existingFile->getPublicId(),
+            \get_class($targetEntity),
+            \method_exists($targetEntity, 'getPublicId') ? $targetEntity->getPublicId() : '',
         ));
     }
 }

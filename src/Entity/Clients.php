@@ -14,7 +14,6 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use InvalidArgumentException;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
-use RuntimeException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -501,15 +500,7 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function getCompany(): ?Company
     {
-        if ($this->getStaff()->isEmpty()) {
-            return null;
-        }
-
-        if (null === $this->getCurrentStaff()) {
-            throw new RuntimeException('Attempt to access company while logged staff is not set');
-        }
-
-        return $this->getCurrentStaff()->getCompany();
+        return $this->getCurrentStaff() ? $this->getCurrentStaff()->getCompany() : null;
     }
 
     /**

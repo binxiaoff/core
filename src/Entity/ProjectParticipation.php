@@ -377,6 +377,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @var File|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\File")
+     * @ORM\JoinColumn(name="id_nda")
      *
      * @Groups({
      *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
@@ -385,7 +386,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE
      * })
      */
-    private $nda;
+    private File $nda;
 
     /**
      * @param Company $participant

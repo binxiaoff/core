@@ -35,21 +35,21 @@ class FileInput
      *
      * @Assert\File(maxSize="250Mi", mimeTypes=Unilend\DTO\FileInput::ACCEPTED_MEDIA_TYPE)
      */
-    public $uploadedFile;
+    public UploadedFile $uploadedFile;
 
     /**
      * @var string
      *
      * @Assert\NotBlank
      */
-    public $targetEntity;
+    public string $targetEntity;
 
     /**
      * @var string
      *
      * @Assert\Choice(callback="getFileTypes")
      */
-    public $type;
+    public string $type;
 
     /**
      * @param UploadedFile $uploadedFile
@@ -72,17 +72,8 @@ class FileInput
     }
 
     /**
-     * @return array|array[]
-     */
-    public static function getFileTypesEntityMapping(): array
-    {
-        return [
-            Project::class              => array_merge(Project::getProjectFileTypes(), ProjectFile::getProjectFileTypes()),
-            ProjectParticipation::class => ProjectParticipation::getFileTypes(),
-        ];
-    }
-
-    /**
+     * @Assert\Callback
+     *
      * @param ExecutionContextInterface $context
      * @param $payload
      */
@@ -101,5 +92,16 @@ class FileInput
                 ->addViolation()
             ;
         }
+    }
+
+    /**
+     * @return array|array[]
+     */
+    private static function getFileTypesEntityMapping(): array
+    {
+        return [
+            Project::class              => array_merge(Project::getProjectFileTypes(), ProjectFile::getProjectFileTypes()),
+            ProjectParticipation::class => ProjectParticipation::getFileTypes(),
+        ];
     }
 }
