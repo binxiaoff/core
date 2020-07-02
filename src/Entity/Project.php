@@ -422,6 +422,9 @@ class Project implements TraceableStatusAwareInterface
      * @var ArrayCollection|ProjectStatus
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     * @ORM\OrderBy({"added": "ASC"})
+     *
+     * @Groups({"project:read"})
      */
     private $statuses;
 

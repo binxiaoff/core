@@ -62,7 +62,7 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
             return [];
         }
 
-        if ($this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
+        if ($this->security->isGranted(ProjectVoter::ATTRIBUTE_ADMIN_VIEW, $project)) {
             return [Project::SERIALIZER_GROUP_ADMIN_READ];
         }
 

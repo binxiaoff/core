@@ -14,6 +14,7 @@ class ProjectVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_VIEW                 = 'view';
     public const ATTRIBUTE_VIEW_NDA             = 'view_nda';
+    public const ATTRIBUTE_ADMIN_VIEW           = 'admin_view';
     public const ATTRIBUTE_EDIT                 = 'edit';
     public const ATTRIBUTE_MANAGE_TRANCHE_OFFER = 'manage_tranche_offer';
     public const ATTRIBUTE_CREATE_TRANCHE_OFFER = 'create_tranche_offer';
@@ -22,9 +23,9 @@ class ProjectVoter extends AbstractEntityVoter
     public const ATTRIBUTE_DELETE               = 'delete';
 
     /** @var ProjectOrganizerRepository */
-    private $projectOrganizerRepository;
+    private ProjectOrganizerRepository $projectOrganizerRepository;
     /** @var ProjectParticipationManager */
-    private $projectParticipationManager;
+    private ProjectParticipationManager $projectParticipationManager;
 
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
@@ -61,6 +62,22 @@ class ProjectVoter extends AbstractEntityVoter
             && $staff->isActive()
             && $this->projectParticipationManager->isParticipant($staff, $project)
             && (null === $project->getNda() || $this->projectParticipationManager->isNdaAccepted($staff, $project));
+    }
+
+    /**
+     * @param Project $project
+     * @param Clients $user
+     *
+     * @return bool
+     */
+    protected function canAdminView(Project $project, Clients $user): bool
+    {
+        $staff = $user->getCurrentStaff();
+
+        return $staff
+            && $this->canView($project, $user)
+            && $staff->getCompany() === $project->getSubmitterCompany()
+            && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
     }
 
     /**
@@ -106,8 +123,7 @@ class ProjectVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff
-            && $this->canView($project, $user) && $staff->getCompany() === $project->getSubmitterCompany()
-            && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()))
+            && $this->canView($project, $user) && $this->canAdminView($project, $user)
             && ProjectStatus::STATUS_SYNDICATION_CANCELLED !== $project->getCurrentStatus()->getStatus();
     }
 
