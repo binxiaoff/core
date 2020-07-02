@@ -230,7 +230,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
      */
-    private ?string $committeeStatus;
+    private ?string $committeeStatus = null;
 
     /**
      * Participant committee response deadline if the status = "pended".
@@ -254,7 +254,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
      */
-    private ?string $committeeComment;
+    private ?string $committeeComment = null;
 
     /**
      * Marque d'interet sollicitation envoyé par l'arrangeur au participant.
@@ -312,7 +312,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
      */
-    private ?string $invitationReplyMode;
+    private ?string $invitationReplyMode = null;
 
     /**
      * @var string|null
@@ -326,7 +326,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE})
      */
-    private ?string $allocationFeeRate;
+    private ?string $allocationFeeRate = null;
 
     /**
      * @var DateTimeImmutable|null
@@ -386,7 +386,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE
      * })
      */
-    private File $nda;
+    private ?File $nda;
 
     /**
      * @param Company $participant

@@ -151,7 +151,7 @@ class ProjectParticipationMember
     {
         // acceptedNdaVersion is only settable once
         if (null === $this->acceptedNdaVersion) {
-            if ($this->acceptedNdaVersion !== $this->getAcceptableNdaVersion()) {
+            if ($acceptedNdaVersion !== $this->getAcceptableNdaVersion()) {
                 $constraintViolationList = new ConstraintViolationList();
                 $constraintViolationList->add(
                     new ConstraintViolation(

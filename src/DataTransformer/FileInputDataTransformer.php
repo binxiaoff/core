@@ -14,7 +14,6 @@ use League\Flysystem\FileExistsException;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\DTO\FileInput;
 use Unilend\Entity\{Clients, File, Project, ProjectFile, ProjectParticipation, Staff};
 use Unilend\Repository\{ProjectFileRepository, ProjectRepository};
@@ -77,8 +76,7 @@ class FileInputDataTransformer
     {
         $this->validator->validate($fileInput);
 
-        // No group, no joint, more performance
-        $targetEntity = $this->iriConverter->getItemFromIri($fileInput->targetEntity, [AbstractNormalizer::GROUPS => []]);
+        $targetEntity = $fileInput->targetEntity;
         $type         = $fileInput->type;
 
         $user         = $this->security->getUser();

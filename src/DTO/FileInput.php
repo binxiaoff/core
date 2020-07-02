@@ -38,11 +38,11 @@ class FileInput
     public UploadedFile $uploadedFile;
 
     /**
-     * @var string
+     * @var object
      *
      * @Assert\NotBlank
      */
-    public string $targetEntity;
+    public object $targetEntity;
 
     /**
      * @var string
@@ -54,9 +54,9 @@ class FileInput
     /**
      * @param UploadedFile $uploadedFile
      * @param string       $type
-     * @param string       $targetEntity
+     * @param object       $targetEntity
      */
-    public function __construct(UploadedFile $uploadedFile, string $type, string $targetEntity)
+    public function __construct(UploadedFile $uploadedFile, string $type, object $targetEntity)
     {
         $this->uploadedFile = $uploadedFile;
         $this->type         = $type;
@@ -83,8 +83,11 @@ class FileInput
 
         $targetEntityClass = \get_class($this->targetEntity);
 
-        if (false === \in_array($this->type, $fileTypesClassMapping[$targetEntityClass] ?? [], true)) {
+        if (
+            \is_string($targetEntityClass) && false === \in_array($this->type, $fileTypesClassMapping[$targetEntityClass] ?? [], true)
+        ) {
             $context->buildViolation('Upload.targetEntity.incorrect')
+                ->atPath('targetEntity')
                 ->setParameters([
                     'targetEntityClass' => $targetEntityClass,
                     'type'              => $this->type,

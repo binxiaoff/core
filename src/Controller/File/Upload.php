@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\File;
 
+use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use League\Flysystem\FileExistsException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\DataTransformer\FileInputDataTransformer;
 use Unilend\DTO\FileInput;
 use Unilend\Entity\{Clients, File};
@@ -17,24 +19,30 @@ use Unilend\Repository\FileRepository;
 class Upload
 {
     /** @var Security */
-    private $security;
+    private Security $security;
     /** @var FileInputDataTransformer */
-    private $fileInputDataTransformer;
-    /**
-     * @var FileRepository
-     */
-    private $fileRepository;
+    private FileInputDataTransformer $fileInputDataTransformer;
+    /** @var FileRepository */
+    private FileRepository $fileRepository;
+    /** @var IriConverterInterface */
+    private IriConverterInterface $iriConverter;
 
     /**
      * @param Security                 $security
      * @param FileInputDataTransformer $fileInputDataTransformer
      * @param FileRepository           $fileRepository
+     * @param IriConverterInterface    $iriConverter
      */
-    public function __construct(Security $security, FileInputDataTransformer $fileInputDataTransformer, FileRepository $fileRepository)
-    {
+    public function __construct(
+        Security $security,
+        FileInputDataTransformer $fileInputDataTransformer,
+        FileRepository $fileRepository,
+        IriConverterInterface $iriConverter
+    ) {
         $this->security                 = $security;
         $this->fileInputDataTransformer = $fileInputDataTransformer;
         $this->fileRepository           = $fileRepository;
+        $this->iriConverter             = $iriConverter;
     }
 
     /**
@@ -58,7 +66,10 @@ class Upload
 
         $file = $id ? $this->fileRepository->findOneBy(['publicId' => $id]) : null;
 
-        $fileInput = new FileInput($request->files->get('file'), $request->request->get('type'), $request->request->get('targetEntity'));
+        // No group, no joint, more performance
+        $targetEntity = $this->iriConverter->getItemFromIri($request->request->get('targetEntity'), [AbstractNormalizer::GROUPS => []]);
+
+        $fileInput = new FileInput($request->files->get('file'), $request->request->get('type'), $targetEntity);
 
         return $this->fileInputDataTransformer->transform($fileInput, $file);
     }
