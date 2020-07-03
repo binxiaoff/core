@@ -323,6 +323,9 @@
             "config/packages/knp_snappy.yaml"
         ]
     },
+    "laminas/laminas-zendframework-bridge": {
+        "version": "1.0.4"
+    },
     "lcobucci/jwt": {
         "version": "3.3.1"
     },
