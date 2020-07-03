@@ -139,7 +139,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
 
             $amortizable = 'N';
             $margin      = 'N/A';
-            if (in_array($tranche->getRepaymentType(), Tranche::REPAYMENT_TYPE_AMORTIZABLE)) {
+            if (in_array($tranche->getRepaymentType(), Tranche::AMORTIZABLE_REPAYMENT_TYPE)) {
                 $amortizable = 'O';
                 $margin      = '';
                 if ($tranche->getRate()->getMargin()) {
