@@ -35,28 +35,69 @@ class Company implements TraceableStatusAwareInterface
     use TimestampableTrait;
     use PublicizeIdentityTrait;
 
+    public const VAT_METROPOLITAN = 'metropolitan'; // Default tva category : 20 %
+    public const VAT_OVERSEAS     = 'overseas'; // Overseas tva category (Guadeloupe, Martinique, Reunion) : 8.5 %
+
     /**
-     * TODO Remove project:update group when autocomplete is done.
-     *
      * @var string
      *
      * @ORM\Column(name="name", type="text", length=16777215)
      *
      * @Assert\NotBlank
      *
-     * @Groups({"company:write", "company:read", "company:jwt:read", "company:autocomplete:read"})
+     * @Groups({"company:read", "company:jwt:read", "company:autocomplete:read"})
      */
     private string $name;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(name="siren", type="string", length=15, nullable=true)
+     * @ORM\Column(name="siren", type="string", length=15, nullable=true, unique=true)
      *
      * @Assert\Length(9)
      * @Assert\Luhn
      */
     private ?string $siren;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", length=12, nullable=true, unique=true)
+     *
+     * @Assert\Bic
+     *
+     * @Groups({"company:read"})
+     */
+    private ?string $bic;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", length=50, nullable=true)
+     *
+     * @Groups({"company:read"})
+     */
+    private ?string $groupName;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", length=16, nullable=true, unique=true)
+     *
+     * @Groups({"company:read"})
+     *
+     * TODO If needed, it is possible to validate VAT numbers with https://github.com/ddeboer/vatin-bundle
+     */
+    private ?string $vatNumber;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", length=20)
+     *
+     * @Groups({"company:read"})
+     */
+    private string $applicableVat;
 
     /**
      * @var Company|null
@@ -131,11 +172,12 @@ class Company implements TraceableStatusAwareInterface
      */
     public function __construct(string $name)
     {
-        $this->name     = $name;
-        $this->staff    = new ArrayCollection();
-        $this->statuses = new ArrayCollection();
-        $this->added    = new DateTimeImmutable();
-        $this->modules  = new ArrayCollection();
+        $this->name          = $name;
+        $this->staff         = new ArrayCollection();
+        $this->statuses      = new ArrayCollection();
+        $this->added         = new DateTimeImmutable();
+        $this->modules       = new ArrayCollection();
+        $this->applicableVat = static::VAT_METROPOLITAN;
     }
 
     /**
@@ -360,5 +402,85 @@ class Company implements TraceableStatusAwareInterface
     public function getStatuses(): Collection
     {
         return $this->statuses;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getBic(): ?string
+    {
+        return $this->bic;
+    }
+
+    /**
+     * @param string|null $bic
+     *
+     * @return Company
+     */
+    public function setBic(?string $bic): Company
+    {
+        $this->bic = $bic;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getGroupName(): ?string
+    {
+        return $this->groupName;
+    }
+
+    /**
+     * @param string|null $groupName
+     *
+     * @return Company
+     */
+    public function setGroupName(?string $groupName): Company
+    {
+        $this->groupName = $groupName;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getVatNumber(): ?string
+    {
+        return $this->vatNumber;
+    }
+
+    /**
+     * @param string|null $vatNumber
+     *
+     * @return Company
+     */
+    public function setVatNumber(?string $vatNumber): Company
+    {
+        $this->vatNumber = $vatNumber;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getApplicableVat(): string
+    {
+        return $this->applicableVat;
+    }
+
+    /**
+     * @param string $applicableVat
+     *
+     * @return Company
+     */
+    public function setApplicableVat(string $applicableVat): Company
+    {
+        $this->applicableVat = $applicableVat;
+
+        return $this;
     }
 }
