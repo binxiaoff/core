@@ -155,8 +155,8 @@ class ProjectParticipationMember
                 $constraintViolationList = new ConstraintViolationList();
                 $constraintViolationList->add(
                     new ConstraintViolation(
-                        'ProjectParticipation.nda.unacceptableVersion',
-                        'ProjectParticipation.nda.unacceptableVersion',
+                        'ProjectParticipationMember.acceptedNdaVersion.unacceptableVersion',
+                        'ProjectParticipationMember.acceptedNdaVersion.unacceptableVersion',
                         [],
                         $this,
                         'acceptedNdaVersion',
