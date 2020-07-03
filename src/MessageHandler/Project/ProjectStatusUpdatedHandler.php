@@ -13,30 +13,30 @@ use Unilend\Entity\ProjectStatus;
 use Unilend\Message\Project\ProjectStatusUpdated;
 use Unilend\Repository\ProjectRepository;
 use Unilend\Service\Project\ProjectNotifier;
-use Unilend\Service\ProjectParticipationContact\ProjectParticipationContactNotifier;
+use Unilend\Service\ProjectParticipationMember\ProjectParticipationMemberNotifier;
 
 class ProjectStatusUpdatedHandler implements MessageHandlerInterface
 {
     /** @var ProjectRepository */
-    private $projectRepository;
-    /** @var ProjectParticipationContactNotifier */
-    private $projectParticipationContactNotifier;
+    private ProjectRepository $projectRepository;
+    /** @var ProjectParticipationMemberNotifier */
+    private ProjectParticipationMemberNotifier $projectParticipationMemberNotifier;
     /** @var ProjectNotifier */
-    private $projectNotifier;
+    private ProjectNotifier $projectNotifier;
 
     /**
-     * @param ProjectRepository                   $projectRepository
-     * @param ProjectNotifier                     $projectNotifier
-     * @param ProjectParticipationContactNotifier $projectParticipationContactNotifier
+     * @param ProjectRepository                  $projectRepository
+     * @param ProjectNotifier                    $projectNotifier
+     * @param ProjectParticipationMemberNotifier $projectParticipationMemberNotifier
      */
     public function __construct(
         ProjectRepository $projectRepository,
         ProjectNotifier $projectNotifier,
-        ProjectParticipationContactNotifier $projectParticipationContactNotifier
+        ProjectParticipationMemberNotifier $projectParticipationMemberNotifier
     ) {
-        $this->projectRepository                   = $projectRepository;
-        $this->projectParticipationContactNotifier = $projectParticipationContactNotifier;
-        $this->projectNotifier                     = $projectNotifier;
+        $this->projectRepository                  = $projectRepository;
+        $this->projectParticipationMemberNotifier = $projectParticipationMemberNotifier;
+        $this->projectNotifier                    = $projectNotifier;
     }
 
     /**
@@ -60,8 +60,8 @@ class ProjectStatusUpdatedHandler implements MessageHandlerInterface
 
         if (\in_array($projectStatusUpdated->getNewStatus(), [ProjectStatus::STATUS_INTEREST_EXPRESSION, ProjectStatus::STATUS_PARTICIPANT_REPLY], true)) {
             foreach ($project->getProjectParticipations() as $projectParticipation) {
-                foreach ($projectParticipation->getActiveProjectParticipationContacts() as $contact) {
-                    $this->projectParticipationContactNotifier->notifyContactAdded($contact);
+                foreach ($projectParticipation->getActiveProjectParticipationMembers() as $activeProjectParticipationMember) {
+                    $this->projectParticipationMemberNotifier->notifyMemberAdded($activeProjectParticipationMember);
                 }
             }
         }

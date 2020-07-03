@@ -92,7 +92,7 @@ class ProjectNotifier
                     ->addField(new AttachmentField('Entité', $project->getSubmitterCompany()->getName(), true))
                     ->addField(new AttachmentField('Entités invitées', (string) count($project->getProjectParticipations()), true))
                     ->addField(new AttachmentField('Utilisateur', $project->getSubmitterClient()->getEmail(), true))
-                    ->addField(new AttachmentField('Utilisateurs invités', (string) $this->projectRepository->countProjectParticipationContact($project), true))
+                    ->addField(new AttachmentField('Utilisateurs invités', (string) $this->projectRepository->countProjectParticipationMembers($project), true))
             )
         ;
     }
@@ -141,17 +141,17 @@ class ProjectNotifier
 
         foreach ($project->getProjectParticipations() as $participation) {
             if ($participation->getParticipant() !== $project->getSubmitterCompany()) {
-                foreach ($participation->getActiveProjectParticipationContacts() as $contact) {
+                foreach ($participation->getActiveProjectParticipationMembers() as $activeProjectParticipationMember) {
                     $message = $this->messageProvider->newMessage('project-file-uploaded', [
                         'client' => [
-                            'firstName' => $contact->getStaff()->getClient()->getFirstName(),
+                            'firstName' => $activeProjectParticipationMember->getStaff()->getClient()->getFirstName(),
                         ],
                         'project' => [
                             'submitterCompany' => $project->getSubmitterCompany()->getName(),
                             'title'            => $project->getTitle(),
                             'hash'             => $project->getPublicId(),
                         ],
-                    ])->setTo($contact->getStaff()->getClient()->getEmail());
+                    ])->setTo($activeProjectParticipationMember->getStaff()->getClient()->getEmail());
                     $sent += $this->mailer->send($message);
                 }
             }

@@ -59,7 +59,7 @@ class ProjectParticipationStatus implements StatusInterface
      *
      * @Groups({"projectParticipationStatus:create"})
      */
-    private $projectParticipation;
+    private ProjectParticipation $projectParticipation;
 
     /**
      * @var int
@@ -74,7 +74,7 @@ class ProjectParticipationStatus implements StatusInterface
      *
      * @Groups({"projectParticipationStatus:read", "projectParticipationStatus:create"})
      */
-    private $status;
+    private int $status;
 
     /**
      * @param ProjectParticipation $projectParticipation
@@ -143,17 +143,17 @@ class ProjectParticipationStatus implements StatusInterface
             && $this->getAddedBy()->getCompany() === $this->projectParticipation->getProject()->getSubmitterCompany()
         )
         || (
-            self::STATUS_ARCHIVED_BY_PARTICIPANT === $this->getStatus() && $this->isParticipationOwner()
+            self::STATUS_ARCHIVED_BY_PARTICIPANT === $this->getStatus() && $this->isParticipationMember()
         );
     }
 
     /**
      * @return bool
      */
-    private function isParticipationOwner(): bool
+    private function isParticipationMember(): bool
     {
-        foreach ($this->getProjectParticipation()->getActiveProjectParticipationContacts() as $projectParticipationContact) {
-            if ($this->getAddedBy() === $projectParticipationContact->getStaff()) {
+        foreach ($this->getProjectParticipation()->getActiveProjectParticipationMembers() as $activeProjectParticipationMember) {
+            if ($this->getAddedBy() === $activeProjectParticipationMember->getStaff()) {
                 return true;
             }
         }

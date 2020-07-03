@@ -45,8 +45,8 @@ class ListExtension implements QueryCollectionExtensionInterface
         $queryBuilder
             ->distinct()
             ->innerJoin($rootAlias . '.currentStatus', 'cs')
-            ->leftJoin($rootAlias . '.projectParticipations', 'p')
-            ->leftJoin('p.projectParticipationContacts', 'ppc')
+            ->leftJoin($rootAlias . '.projectParticipations', 'pp')
+            ->leftJoin('pp.projectParticipationMembers', 'ppc')
             ->andWhere($queryBuilder->expr()->orX(
                 // if you are owner
                 $rootAlias . '.submitterClient = :client',

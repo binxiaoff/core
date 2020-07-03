@@ -60,12 +60,12 @@ class ProjectRepository extends ServiceEntityRepository
      *
      * @return int
      */
-    public function countProjectParticipationContact(Project $project): int
+    public function countProjectParticipationMembers(Project $project): int
     {
         return (int) $this->createQueryBuilder('p')
             ->select('COUNT(ppc)')
             ->innerJoin('p.projectParticipations', 'pp')
-            ->innerJoin('pp.projectParticipationContacts', 'ppc')
+            ->innerJoin('pp.projectParticipationMembers', 'ppc')
             ->where('p = :project')
             ->setParameter('project', $project)
             ->getQuery()
