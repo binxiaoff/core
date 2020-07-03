@@ -1391,7 +1391,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function isInOfferNegotiationStep(): bool
     {
-        return ProjectStatus::STATUS_PARTICIPANT_REPLY === $this->getCurrentStatus()->getStatus();
+        return $this->hasCurrentStatus(ProjectStatus::STATUS_PARTICIPANT_REPLY);
     }
 
     /**
@@ -1401,7 +1401,35 @@ class Project implements TraceableStatusAwareInterface
      */
     public function isInContractNegotiationStep(): bool
     {
-        return ProjectStatus::STATUS_CONTRACTUALISATION === $this->getCurrentStatus()->getStatus();
+        return $this->hasCurrentStatus(ProjectStatus::STATUS_CONTRACTUALISATION);
+    }
+
+    /**
+     * @param int $testedStatus
+     *
+     * @return bool
+     */
+    public function hasCurrentStatus(int $testedStatus): bool
+    {
+        return $testedStatus === $this->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * @param int $testedStatus
+     *
+     * @return bool
+     */
+    public function hasCompletedStatus(int $testedStatus): bool
+    {
+        return $this->getCurrentStatus()->getStatus() > $testedStatus;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasEditableStatus(): bool
+    {
+        return ProjectStatus::STATUS_SYNDICATION_CANCELLED !== $this->getCurrentStatus()->getStatus();
     }
 
     /**

@@ -79,7 +79,27 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         }
  *     },
  *     itemOperations={
- *         "get": {"security": "is_granted('view', object)"},
+ *         "get": {
+ *             "security": "is_granted('view', object)",
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "projectParticipation:read",
+ *                     "projectParticipationContact:read",
+ *                     "projectParticipationTranche:read",
+ *                     "projectParticipationStatus:read",
+ *                     "company:read",
+ *                     "nullableMoney:read",
+ *                     "money:read",
+ *                     "rangedOfferWithFee:read",
+ *                     "offerWithFee:read",
+ *                     "offer:read",
+ *                     "archivable:read",
+ *                     "timestampable:read",
+ *                     "file:read",
+ *                     "fileVersion:read"
+ *                 }
+ *             }
+ *         },
  *         "delete": {"security": "is_granted('delete', object)"},
  *         "put": {"security": "is_granted('edit', object)"},
  *         "patch": {"security": "is_granted('edit', object)"}
@@ -130,7 +150,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
 
     // Additional denormalizer group that is available for the participation owner in contract negotiation step
     public const SERIALIZER_GROUP_PARTICIPANT_CONTRACT_NEGOTIATION_OWNER_WRITE = 'projectParticipation:participationOwner:contractNegotiation:write';
-    // Additional denormalizer group that is available for the arranger in interest collection step
+    // Additional denormalizer group that is available for the arranger in contract negotiation step
     public const SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE = 'projectParticipation:arranger:contractNegotiation:write';
 
     public const BLACKLISTED_COMPANIES = [
@@ -143,6 +163,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public const COMMITTEE_STATUS_REJECTED = 'rejected';
 
     public const FIELD_COMMITTEE_STATUS = 'committeeStatus';
+
+    public const PROJECT_PARTICIPATION_FILE_TYPE_NDA = 'project_participation_nda';
 
     private const INVITATION_REPLY_MODE_PRO_RATA   = 'pro-rata';
     private const INVITATION_REPLY_MODE_CUSTOMIZED = 'customized';
@@ -208,7 +230,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
      */
-    private ?string $committeeStatus;
+    private ?string $committeeStatus = null;
 
     /**
      * Participant committee response deadline if the status = "pended".
@@ -232,7 +254,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
      */
-    private ?string $committeeComment;
+    private ?string $committeeComment = null;
 
     /**
      * Marque d'interet sollicitation envoyé par l'arrangeur au participant.
@@ -290,7 +312,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
      */
-    private ?string $invitationReplyMode;
+    private ?string $invitationReplyMode = null;
 
     /**
      * @var string|null
@@ -304,7 +326,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE})
      */
-    private ?string $allocationFeeRate;
+    private ?string $allocationFeeRate = null;
 
     /**
      * @var DateTimeImmutable|null
@@ -352,6 +374,21 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private Collection $statuses;
 
     /**
+     * @var File|null
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\File")
+     * @ORM\JoinColumn(name="id_nda")
+     *
+     * @Groups({
+     *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
+     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE,
+     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE,
+     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE
+     * })
+     */
+    private ?File $nda;
+
+    /**
      * @param Company $participant
      * @param Project $project
      * @param Staff   $addedBy
@@ -373,6 +410,14 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         $this->invitationRequest            = new OfferWithFee();
 
         $this->setCurrentStatus(new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_ACTIVE, $addedBy));
+    }
+
+    /**
+     * @return array
+     */
+    public static function getFileTypes()
+    {
+        return [static::PROJECT_PARTICIPATION_FILE_TYPE_NDA];
     }
 
     /**
@@ -713,5 +758,25 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         $blacklist = array_map('strtolower', ProjectParticipation::BLACKLISTED_COMPANIES);
 
         return false === \in_array(mb_strtolower($this->getParticipant()->getName()), $blacklist, true);
+    }
+
+    /**
+     * @return File|null
+     */
+    public function getNda(): ?File
+    {
+        return $this->nda;
+    }
+
+    /**
+     * @param File|null $nda
+     *
+     * @return ProjectParticipation
+     */
+    public function setNda(?File $nda): ProjectParticipation
+    {
+        $this->nda = $nda;
+
+        return $this;
     }
 }
