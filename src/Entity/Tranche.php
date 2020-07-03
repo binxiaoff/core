@@ -8,7 +8,6 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -315,10 +314,13 @@ class Tranche
     /**
      * @param Project $project
      * @param Money   $money
-     *
-     * @throws Exception
+     * @param string  $name
+     * @param int     $duration
+     * @param string  $repaymentType
+     * @param string  $loanType
+     * @param string  $color
      */
-    public function __construct(Project $project, Money $money)
+    public function __construct(Project $project, Money $money, string $name, int $duration, string $repaymentType, string $loanType, string $color)
     {
         $this->money             = $money;
         $this->rate              = new NullableLendingRate();
@@ -326,6 +328,11 @@ class Tranche
         $this->added             = new DateTimeImmutable();
         $this->project           = $project;
         $this->syndicated        = true;
+        $this->name              = $name;
+        $this->duration          = $duration;
+        $this->repaymentType     = $repaymentType;
+        $this->loanType          = $loanType;
+        $this->color             = $color;
     }
 
     /**
@@ -349,9 +356,9 @@ class Tranche
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -389,9 +396,9 @@ class Tranche
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getLoanType(): ?string
+    public function getLoanType(): string
     {
         return $this->loanType;
     }
@@ -415,9 +422,9 @@ class Tranche
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getRepaymentType(): ?string
+    public function getRepaymentType(): string
     {
         return $this->repaymentType;
     }
@@ -435,9 +442,9 @@ class Tranche
     }
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getDuration(): ?int
+    public function getDuration(): int
     {
         return $this->duration;
     }

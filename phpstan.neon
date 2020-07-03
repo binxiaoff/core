@@ -9,6 +9,8 @@ parameters:
     paths:
         - src
         - tests
+    bootstrapFiles:
+        - tests/bootstrapPHPUnit.php
     excludes_analyse:
         - src/Migrations
     symfony:
