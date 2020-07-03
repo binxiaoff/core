@@ -6,7 +6,7 @@ namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Criteria};
+use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -32,7 +32,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     itemOperations={
  *         "delete": {"security": "is_granted('edit', object.getProject())"},
  *         "get": {"security": "is_granted('view', object.getProject())"},
- *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())"}
+ *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())"},
+ *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())"}
  *     }
  * )
  *
@@ -49,24 +50,30 @@ class Tranche
     use ConstantsAwareTrait;
     use PublicizeIdentityTrait;
 
-    public const LOAN_TYPE_TERM_LOAN            = 'term_loan';
-    public const LOAN_TYPE_SHORT_TERM           = 'short_term';
-    public const LOAN_TYPE_REVOLVING_CREDIT     = 'revolving_credit';
-    public const LOAN_TYPE_STAND_BY             = 'stand_by';
-    public const LOAN_TYPE_SIGNATURE_COMMITMENT = 'signature_commitment';
-
-    public const REPAYMENT_TYPE_ATYPICAL         = 'atypical';
-    public const REPAYMENT_TYPE_IN_FINE          = 'in_fine';
-    public const REPAYMENT_TYPE_CONSTANT_CAPITAL = 'constant_capital';
-    public const REPAYMENT_TYPE_FIXED            = 'repayment_fixed';
-
-    public const REPAYMENT_TYPE_AMORTIZABLE = [
+    public const AMORTIZABLE_REPAYMENT_TYPE = [
         self::REPAYMENT_TYPE_CONSTANT_CAPITAL,
         self::REPAYMENT_TYPE_FIXED,
     ];
 
-    public const UNSYNDICATED_FUNDER_TYPE_ARRANGER    = 'arranger';
-    public const UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY = 'third_party';
+    private const LOAN_TYPE_TERM_LOAN            = 'term_loan';
+    private const LOAN_TYPE_SHORT_TERM           = 'short_term';
+    private const LOAN_TYPE_REVOLVING_CREDIT     = 'revolving_credit';
+    private const LOAN_TYPE_STAND_BY             = 'stand_by';
+    private const LOAN_TYPE_SIGNATURE_COMMITMENT = 'signature_commitment';
+
+    private const CHARGEABLE_LOAN_TYPE = [
+        self::LOAN_TYPE_SHORT_TERM,
+        self::LOAN_TYPE_REVOLVING_CREDIT,
+        self::LOAN_TYPE_STAND_BY,
+    ];
+
+    private const REPAYMENT_TYPE_ATYPICAL         = 'atypical';
+    private const REPAYMENT_TYPE_IN_FINE          = 'in_fine';
+    private const REPAYMENT_TYPE_CONSTANT_CAPITAL = 'constant_capital';
+    private const REPAYMENT_TYPE_FIXED            = 'repayment_fixed';
+
+    private const UNSYNDICATED_FUNDER_TYPE_ARRANGER    = 'arranger';
+    private const UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY = 'third_party';
 
     private const COMMISSION_TYPE_NON_UTILISATION = 'non_utilisation';
     private const COMMISSION_TYPE_COMMITMENT      = 'commitment';
@@ -79,7 +86,7 @@ class Tranche
      *
      * @Groups({"tranche:create", "tranche:read"})
      */
-    private $project;
+    private Project $project;
 
     /**
      * @var string
@@ -92,7 +99,7 @@ class Tranche
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private $name;
+    private string $name;
 
     /**
      * @var string
@@ -106,7 +113,7 @@ class Tranche
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private $loanType;
+    private string $loanType;
 
     /**
      * @var string
@@ -120,7 +127,7 @@ class Tranche
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private $repaymentType;
+    private string $repaymentType;
 
     /**
      * Duration in month. It is used to calculate the maturity date once the project is funded.
@@ -136,29 +143,29 @@ class Tranche
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private $duration;
+    private int $duration;
 
     /**
      * The capital repayment periodicity in month.
      *
-     * @var int
+     * @var int|null
      *
      * @ORM\Column(type="smallint", nullable=true)
      *
      * @Gedmo\Versioned
      */
-    private $capitalPeriodicity;
+    private ?int $capitalPeriodicity;
 
     /**
      * The interest repayment periodicity in month.
      *
-     * @var int
+     * @var int|null
      *
      * @ORM\Column(type="smallint", nullable=true)
      *
      * @Gedmo\Versioned
      */
-    private $interestPeriodicity;
+    private ?int $interestPeriodicity;
 
     /**
      * @var Money
@@ -172,7 +179,7 @@ class Tranche
      *
      * @Groups({"tranche:read", "tranche:write"})
      */
-    private $money;
+    private Money $money;
 
     /**
      * @var NullableLendingRate
@@ -186,10 +193,10 @@ class Tranche
      *
      * @Groups({"tranche:read", "tranche:write"})
      */
-    private $rate;
+    private NullableLendingRate $rate;
 
     /**
-     * @var DateTimeImmutable
+     * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
@@ -197,10 +204,10 @@ class Tranche
      *
      * @Gedmo\Versioned
      */
-    private $expectedReleasingDate;
+    private ?DateTimeImmutable $expectedReleasingDate;
 
     /**
-     * @var DateTimeImmutable
+     * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
@@ -208,7 +215,7 @@ class Tranche
      *
      * @Gedmo\Versioned
      */
-    private $expectedStartingDate;
+    private ?DateTimeImmutable $expectedStartingDate;
 
     /**
      * @var string|null
@@ -220,7 +227,7 @@ class Tranche
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private $commissionType;
+    private ?string $commissionType;
 
     /**
      * @var string|null
@@ -231,28 +238,29 @@ class Tranche
      * @Assert\Type("numeric")
      * @Assert\Positive
      * @Assert\Expression(
-     *     "this.getCommissionType() in this.getCommissionTypes() and value or this.getCommissionType() === null and value === null", message="Tranche.commissionRate.expression"
+     *     "this.isCommissionRateValid()",
+     *     message="Tranche.commissionRate.expression"
      * )
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private $commissionRate;
+    private ?string $commissionRate;
 
     /**
-     * @var TrancheAttribute[]|ArrayCollection
+     * @var Collection|TrancheAttribute[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheAttribute", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
      */
-    private $trancheAttributes;
+    private Collection $trancheAttributes;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(type="text", nullable=true)
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private $comment;
+    private ?string $comment;
 
     /**
      * @var bool
@@ -261,7 +269,7 @@ class Tranche
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private $syndicated;
+    private bool $syndicated;
 
     /**
      * @var string|null
@@ -272,11 +280,11 @@ class Tranche
      *     expression="(!this.isSyndicated() && this.getUnsyndicatedFunderType()) || this.isSyndicated() && this.getUnsyndicatedFunderType() === null",
      *     message="Tranche.unsyndicatedFunderType.expression"
      * )
-     * @Assert\Choice({Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER, Tranche::UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY})
+     * @Assert\Choice(callback="getUnsyndicatedFunderTypes")
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private $unsyndicatedFunderType;
+    private ?string $unsyndicatedFunderType;
 
     /**
      * @var string|null
@@ -290,7 +298,7 @@ class Tranche
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private $thirdPartyFunder;
+    private ?string $thirdPartyFunder;
 
     /**
      * @var string
@@ -302,7 +310,7 @@ class Tranche
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private $color;
+    private string $color;
 
     /**
      * @param Project $project
@@ -395,6 +403,12 @@ class Tranche
      */
     public function setLoanType(string $loanType): Tranche
     {
+        if (false === in_array($loanType, self::CHARGEABLE_LOAN_TYPE)) {
+            $this->setCommissionRate(null)
+                ->setCommissionType(null)
+            ;
+        }
+
         $this->loanType = $loanType;
 
         return $this;
@@ -728,6 +742,14 @@ class Tranche
     }
 
     /**
+     * @return array
+     */
+    public static function getUnsyndicatedFunderTypes()
+    {
+        return static::getConstants('UNSYNDICATED_FUNDER_TYPE_');
+    }
+
+    /**
      * @return string|null
      */
     public function getCommissionType(): ?string
@@ -769,5 +791,20 @@ class Tranche
         $this->commissionRate = $commissionRate;
 
         return $this;
+    }
+
+    /**
+     * Used in an expression constraints.
+     *
+     * @return bool
+     */
+    public function isCommissionRateValid(): bool
+    {
+        return (null === $this->getCommissionType() && null === $this->getCommissionRate())
+            || (
+                $this->getCommissionRate()
+                && in_array($this->getLoanType(), self::CHARGEABLE_LOAN_TYPE, true)
+                && in_array($this->getCommissionType(), self::getCommissionTypes(), true)
+            );
     }
 }
