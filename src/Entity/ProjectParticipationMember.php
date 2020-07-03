@@ -97,7 +97,7 @@ class ProjectParticipationMember
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion")
      * @ORM\JoinColumn(name="id_accepted_nda_version")
      *
-     * @Groups({"projectParticipationMember:read", "projectParticipationContact:owner:write"})
+     * @Groups({"projectParticipationMember:read", "projectParticipationMember:owner:write"})
      */
     private ?FileVersion $acceptedNdaVersion;
 
