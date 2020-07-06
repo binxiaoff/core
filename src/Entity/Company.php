@@ -41,18 +41,18 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="text", length=16777215)
+     * @ORM\Column(name="name", type="string", length=300)
      *
      * @Assert\NotBlank
      *
-     * @Groups({"company:read", "company:jwt:read", "company:autocomplete:read"})
+     * @Groups({"company:read", "company:jwt:read"})
      */
     private string $name;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(name="siren", type="string", length=15, nullable=true, unique=true)
+     * @ORM\Column(name="siren", type="string", length=9, nullable=true, unique=true)
      *
      * @Assert\Length(9)
      * @Assert\Luhn
@@ -85,8 +85,6 @@ class Company implements TraceableStatusAwareInterface
      * @ORM\Column(type="string", length=16, nullable=true, unique=true)
      *
      * @Groups({"company:read"})
-     *
-     * TODO If needed, it is possible to validate VAT numbers with https://github.com/ddeboer/vatin-bundle
      */
     private ?string $vatNumber;
 
@@ -189,6 +187,17 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
+     * @todo GuaranteeRequestGenerator won't work if the name has special characters
+     * Get name.
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
      * Set name.
      *
      * @param string $name
@@ -203,14 +212,11 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
-     * @todo GuaranteeRequestGenerator won't work if the name has special characters
-     * Get name.
-     *
-     * @return string
+     * @return string|null
      */
-    public function getName(): string
+    public function getSiren(): ?string
     {
-        return $this->name;
+        return $this->siren;
     }
 
     /**
@@ -226,16 +232,14 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return string
+     * @return Company|null
      */
-    public function getSiren(): ?string
+    public function getParent(): ?Company
     {
-        return $this->siren;
+        return $this->parent;
     }
 
     /**
-     * Set idParentCompany.
-     *
      * @param Company $parent
      *
      * @return Company
@@ -245,16 +249,6 @@ class Company implements TraceableStatusAwareInterface
         $this->parent = $parent;
 
         return $this;
-    }
-
-    /**
-     * Get idParentCompany.
-     *
-     * @return Company|null
-     */
-    public function getParent(): ?Company
-    {
-        return $this->parent;
     }
 
     /**
@@ -326,6 +320,17 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
+     * @return bool
+     */
+    public function isProspect(): bool
+    {
+        /** @var CompanyStatus $currentStatus */
+        $currentStatus = $this->getCurrentStatus();
+
+        return $currentStatus && CompanyStatus::STATUS_PROSPECT === $currentStatus->getStatus();
+    }
+
+    /**
      * @return CompanyStatus|null
      */
     public function getCurrentStatus(): ?CompanyStatus
@@ -343,17 +348,6 @@ class Company implements TraceableStatusAwareInterface
         $this->currentStatus = $currentStatus;
 
         return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isProspect(): bool
-    {
-        /** @var CompanyStatus $currentStatus */
-        $currentStatus = $this->getCurrentStatus();
-
-        return $currentStatus && CompanyStatus::STATUS_PROSPECT === $currentStatus->getStatus();
     }
 
     /**
