@@ -56,7 +56,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "projectStatus:read",
  *                 "company:read",
  *                 "role:read",
- *                 "marketSegment:read",
  *                 "nullableMoney:read",
  *                 "money:read",
  *                 "rangedOfferWithFee:read",

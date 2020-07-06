@@ -6,13 +6,11 @@ namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="Unilend\Repository\MarketSegmentRepository")
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"marketSegment:read"}},
  *     collectionOperations={
  *         "get"
  *     },
@@ -32,8 +30,6 @@ class MarketSegment
 
     /**
      * @ORM\Column(type="string", length=30)
-     *
-     * @Groups({"marketSegment:read"})
      */
     private $label;
 

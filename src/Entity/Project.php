@@ -26,7 +26,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "groups": {
  *             "project:read",
  *             "company:read",
- *             "marketSegment:read",
  *             "projectParticipation:read",
  *             "projectParticipationTranche:read",
  *             "money:read",
@@ -42,7 +41,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "project:list",
  *                     "project:read",
  *                     "company:read",
- *                     "marketSegment:read",
  *                     "projectParticipation:read",
  *                     "projectParticipationTranche:read",
  *                     "money:read",
@@ -94,8 +92,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "nullableMoney:read",
  *                 "rangedOfferWithFee:read",
  *                 "offerWithFee:read",
- *                 "offer:read",
- *                 "marketSegment:read"
+ *                 "offer:read"
  *             }}
  *         },
  *         "project_nda": {
