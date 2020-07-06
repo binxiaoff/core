@@ -10,7 +10,6 @@ use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Routing\RouteCollectionBuilder;
-use Unilend\DependencyInjection\Compiler\MakeSonataCacheSymfonyPublicPass;
 
 class Kernel extends BaseKernel
 {
@@ -37,16 +36,6 @@ class Kernel extends BaseKernel
     public function getProjectDir(): string
     {
         return \dirname(__DIR__);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function build(ContainerBuilder $container)
-    {
-        parent::build($container);
-
-        $container->addCompilerPass(new MakeSonataCacheSymfonyPublicPass());
     }
 
     /**

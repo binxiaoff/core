@@ -44,7 +44,9 @@ class ProjectParticipationContactNotifier
     {
         $projectParticipation = $contact->getProjectParticipation();
 
-        if ($contact->getAddedBy() === $contact->getClient() || $contact->getAddedBy()->getCompany() === $projectParticipation->getCompany()) {
+        // We notify only other users than the current user.
+        // For the arranger, we should not notify anyone in his entity. But it is not yet the case. We will review this part in V2.
+        if ($contact->getAddedBy() === $contact->getClient()) {
             return;
         }
 

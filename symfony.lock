@@ -473,7 +473,7 @@
         "version": "2.0.1"
     },
     "php": {
-        "version": "7.3"
+        "version": "7.4"
     },
     "php-cs-fixer/diff": {
         "version": "v1.3.0"
@@ -651,12 +651,6 @@
         "files": [
             "config/packages/security_checker.yaml"
         ]
-    },
-    "sonata-project/cache": {
-        "version": "2.0.1"
-    },
-    "sonata-project/cache-bundle": {
-        "version": "3.0.1"
     },
     "squizlabs/php_codesniffer": {
         "version": "3.0",
