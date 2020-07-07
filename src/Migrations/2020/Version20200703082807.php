@@ -22,10 +22,11 @@ final class Version20200703082807 extends AbstractMigration
      */
     public function up(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE company CHANGE name name VARCHAR(300) NOT NULL, CHANGE siren siren VARCHAR(9) DEFAULT NULL, ADD bic VARCHAR(12) DEFAULT NULL, ADD group_name VARCHAR(50) DEFAULT NULL, ADD vat_number VARCHAR(16) DEFAULT NULL, ADD applicable_vat VARCHAR(20) NOT NULL');
+        $this->addSql('ALTER TABLE company CHANGE name name VARCHAR(300) NOT NULL, CHANGE siren siren VARCHAR(9) DEFAULT NULL, ADD bic VARCHAR(12) NOT NULL, ADD group_name VARCHAR(50) DEFAULT NULL, ADD vat_number VARCHAR(16) DEFAULT NULL, ADD applicable_vat VARCHAR(20) NOT NULL');
 
         $this->addSql("UPDATE company SET siren = '394157085' WHERE email_domain = 'ca-nord-est.fr'");
         $this->addSql("UPDATE company SET siren = '782989206' WHERE email_domain = 'ca-corse.fr'");
+        $this->addSql('UPDATE company SET bic = id');
 
         $this->addSql('CREATE UNIQUE INDEX UNIQ_4FBF094FDB8BBA08 ON company (siren)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_4FBF094FD4962650 ON company (bic)');

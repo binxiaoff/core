@@ -60,15 +60,16 @@ class Company implements TraceableStatusAwareInterface
     private ?string $siren;
 
     /**
-     * @var string|null
+     * @var string
      *
-     * @ORM\Column(type="string", length=12, nullable=true, unique=true)
+     * @ORM\Column(type="string", length=12, unique=true)
      *
      * @Assert\Bic
+     * @Assert\NotBlank
      *
      * @Groups({"company:read"})
      */
-    private ?string $bic;
+    private string $bic;
 
     /**
      * @var string|null
@@ -399,19 +400,19 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getBic(): ?string
+    public function getBic(): string
     {
         return $this->bic;
     }
 
     /**
-     * @param string|null $bic
+     * @param string $bic
      *
      * @return Company
      */
-    public function setBic(?string $bic): Company
+    public function setBic(string $bic): Company
     {
         $this->bic = $bic;
 
