@@ -26,6 +26,7 @@
     "ext-zip": "*",
     "ext-zlib": "*",
     "api-platform/api-pack": "^1.2",
+    "api-platform/core": "2.5.4",
     "azuyalabs/yasumi": "^2.0",
     "beberlei/doctrineextensions": "^1.0",
     "cravler/maxmind-geoip-bundle": "^1.5",
