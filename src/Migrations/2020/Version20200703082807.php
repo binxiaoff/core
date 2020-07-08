@@ -26,7 +26,7 @@ final class Version20200703082807 extends AbstractMigration
 
         $this->addSql("UPDATE company SET siren = '394157085' WHERE email_domain = 'ca-nord-est.fr'");
         $this->addSql("UPDATE company SET siren = '782989206' WHERE email_domain = 'ca-corse.fr'");
-        $this->addSql('UPDATE company SET bic = id');
+        $this->addSql("UPDATE company SET bic = CONCAT('ABCDFR', SUBSTRING(CONCAT('000000', id), -5, 5)) WHERE 1 = 1");
 
         $this->addSql('CREATE UNIQUE INDEX UNIQ_4FBF094FDB8BBA08 ON company (siren)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_4FBF094FD4962650 ON company (bic)');
