@@ -194,7 +194,6 @@ class Project implements TraceableStatusAwareInterface
      * @Groups({"project:read"})
      *
      * @Assert\NotBlank
-     * @Assert\Valid
      */
     private $submitterCompany;
 
