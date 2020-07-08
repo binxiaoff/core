@@ -6,24 +6,18 @@ namespace Unilend\Service;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
+use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 
 class GoogleRecaptchaManager
 {
-    private const ERROR_CODE_MISSING_SECRET        = 'missing-input-secret';
-    private const ERROR_CODE_INVALID_SECRET        = 'invalid-input-secret';
-    private const ERROR_CODE_MISSING_RESPONSE      = 'missing-input-response';
-    private const ERROR_CODE_INVALID_RESPONSE      = 'invalid-input-response';
-    private const ERROR_CODE_BAD_REQUEST           = 'bad-request';
-    private const ERROR_CODE_BAD_TIMEOUT_DUPLICATE = 'timeout-or-duplicate';
-
     /** @var Client */
-    private $client;
+    private Client $client;
     /** @var string */
-    private $secret;
+    private string $secret;
     /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
     /**
      * @param Client          $client
@@ -40,6 +34,8 @@ class GoogleRecaptchaManager
     /**
      * @param string      $captchaResponse
      * @param string|null $remoteIp
+     *
+     * @throws JsonException
      *
      * @return bool
      */
