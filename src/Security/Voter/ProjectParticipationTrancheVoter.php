@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, Project, ProjectParticipationTranche};
+use Unilend\Entity\{Clients, Project, ProjectParticipationStatus, ProjectParticipationTranche};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationTrancheVoter extends AbstractEntityVoter
@@ -17,7 +17,7 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
     public const ATTRIBUTE_PARTICIPATION_OWNER_EDIT = 'participation_owner_edit';
 
     /** @var ProjectParticipationManager */
-    private $projectParticipationManager;
+    private ProjectParticipationManager $projectParticipationManager;
 
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
@@ -38,7 +38,8 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
     protected function canCreate(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
     {
         return $projectParticipationTranche->getProjectParticipation()->getProject()->getSubmitterCompany() === $client->getCompany()
-            && $projectParticipationTranche->getProjectParticipation()->isActive();
+            && $projectParticipationTranche->getProjectParticipation()->isActive()
+            && $projectParticipationTranche->getProjectParticipation()->getCurrentStatus()->getStatus() < ProjectParticipationStatus::STATUS_COMMITTEE_PENDED;
     }
 
     /**

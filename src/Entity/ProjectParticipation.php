@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
+use ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
-use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\{ConstraintViolation, ConstraintViolationList, Constraints as Assert};
 use Unilend\Entity\Embeddable\{NullableMoney, Offer, OfferWithFee, RangedOfferWithFee};
 use Unilend\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
@@ -157,12 +157,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         'Unifergie',
     ];
 
-    public const COMMITTEE_STATUS_PENDED   = 'pended';
-    public const COMMITTEE_STATUS_ACCEPTED = 'accepted';
-    public const COMMITTEE_STATUS_REJECTED = 'rejected';
-
-    public const FIELD_COMMITTEE_STATUS = 'committeeStatus';
-
     public const PROJECT_PARTICIPATION_FILE_TYPE_NDA = 'project_participation_nda';
 
     private const INVITATION_REPLY_MODE_PRO_RATA   = 'pro-rata';
@@ -213,25 +207,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private ?ProjectParticipationStatus $currentStatus;
 
     /**
-     * Participant committee status.
-     *
-     * @var string|null
-     *
-     * @ORM\Column(length=30, nullable=true)
-     *
-     * @Assert\Expression(
-     *     "this.isCommitteeStatusValid()",
-     *     message="ProjectParticipation.committeeStatus.pendedDeadline"
-     * )
-     * @Assert\Choice(callback="getPossibleCommitteeStatus")
-     *
-     * @Gedmo\Versioned
-     *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
-     */
-    private ?string $committeeStatus = null;
-
-    /**
      * Participant committee response deadline if the status = "pended".
      *
      * @var DateTimeImmutable|null
@@ -242,7 +217,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
      */
-    private ?DateTimeImmutable $committeeDeadline;
+    private ?DateTimeImmutable $committeeDeadline = null;
 
     /**
      * @var string|null
@@ -408,7 +383,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         $this->interestReply                = new Offer();
         $this->invitationRequest            = new OfferWithFee();
 
-        $this->setCurrentStatus(new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_ACTIVE, $addedBy));
+        $this->setCurrentStatus(new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_CREATED, $addedBy));
     }
 
     /**
@@ -450,6 +425,22 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      */
     public function setCurrentStatus(StatusInterface $currentStatus): ProjectParticipation
     {
+        if (null === $this->committeeDeadline && ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $currentStatus->getStatus()) {
+            $constraintViolationList = new ConstraintViolationList();
+            $constraintViolationList->add(
+                new ConstraintViolation(
+                    'ProjectParticipation.committeeDeadline.required',
+                    'ProjectParticipation.committeeDeadline.required',
+                    [],
+                    $this,
+                    'committeeDeadline',
+                    $this->committeeDeadline
+                )
+            );
+
+            throw new ValidationException($constraintViolationList);
+        }
+
         $this->currentStatus = $currentStatus;
 
         return $this;
@@ -473,26 +464,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public function setParticipantLastConsulted(?DateTimeImmutable $participantLastConsulted): ProjectParticipation
     {
         $this->participantLastConsulted = $participantLastConsulted;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getCommitteeStatus(): ?string
-    {
-        return $this->committeeStatus;
-    }
-
-    /**
-     * @param string|null $committeeStatus
-     *
-     * @return ProjectParticipation
-     */
-    public function setCommitteeStatus(?string $committeeStatus): ProjectParticipation
-    {
-        $this->committeeStatus = $committeeStatus;
 
         return $this;
     }
@@ -676,7 +647,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      */
     public function isActive(): bool
     {
-        return ProjectParticipationStatus::STATUS_ACTIVE === $this->getCurrentStatus()->getStatus();
+        return 0 < $this->getCurrentStatus()->getStatus();
     }
 
     /**
@@ -720,31 +691,9 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @return array
      */
-    public static function getPossibleCommitteeStatus(): array
-    {
-        return static::getConstants('COMMITTEE_STATUS_');
-    }
-
-    /**
-     * @return array
-     */
     public static function getPossibleInvitationReplyMode(): array
     {
         return static::getConstants('INVITATION_REPLY_MODE_');
-    }
-
-    /**
-     * Used in an expression constraints: A pended committee response need a deadline.
-     *
-     * @return bool
-     */
-    public function isCommitteeStatusValid(): bool
-    {
-        if (self::COMMITTEE_STATUS_PENDED === $this->getCommitteeStatus()) {
-            return null !== $this->getCommitteeDeadline();
-        }
-
-        return true;
     }
 
     /**
