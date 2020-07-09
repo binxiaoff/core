@@ -13,7 +13,9 @@ use Unilend\Service\GoogleRecaptchaManager;
 
 class RecaptchaLoginSubscriber implements EventSubscriberInterface
 {
-    private const CAPTCHA_VALUE_REQUEST_KEY = 'captchaValue';
+    public const BYPASS_CAPTCHA_TOKEN_ATTRIBUTE = 'bypassCaptcha';
+    private const CAPTCHA_VALUE_REQUEST_KEY     = 'captchaValue';
+
     private GoogleRecaptchaManager $recaptchaManager;
 
     /**
@@ -29,6 +31,12 @@ class RecaptchaLoginSubscriber implements EventSubscriberInterface
      */
     public function verifyCaptcha(InteractiveLoginEvent $event): void
     {
+        $authenticationToken = $event->getAuthenticationToken();
+
+        if ($authenticationToken->hasAttribute(static::BYPASS_CAPTCHA_TOKEN_ATTRIBUTE) && $authenticationToken->getAttribute(static::BYPASS_CAPTCHA_TOKEN_ATTRIBUTE)) {
+            return;
+        }
+
         $request      = $event->getRequest();
         $captchaValue = json_decode($request->getContent(), true)[static::CAPTCHA_VALUE_REQUEST_KEY] ?? null;
 
