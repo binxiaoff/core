@@ -62,14 +62,13 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @var string
      *
-     * @ORM\Column(type="string", length=12, unique=true)
+     * @ORM\Column(type="string", length=10, unique=true)
      *
-     * @Assert\Bic
      * @Assert\NotBlank
      *
      * @Groups({"company:read"})
      */
-    private string $bic;
+    private string $bankCode;
 
     /**
      * @var string|null
@@ -402,19 +401,19 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @return string
      */
-    public function getBic(): string
+    public function getBankCode(): string
     {
-        return $this->bic;
+        return $this->bankCode;
     }
 
     /**
-     * @param string $bic
+     * @param string $bankCode
      *
      * @return Company
      */
-    public function setBic(string $bic): Company
+    public function setBankCode(string $bankCode): Company
     {
-        $this->bic = $bic;
+        $this->bankCode = $bankCode;
 
         return $this;
     }
