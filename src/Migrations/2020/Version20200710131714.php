@@ -294,7 +294,7 @@ final class Version20200710131714 extends AbstractMigration
         [
             'name'          => 'Crédit du Maroc',
             'groupName'     => 'Crédit Agricole',
-            'shortCode'     => null,
+            'shortCode'     => 'CDM',
             'bankCode'      => 11778,
             'applicableVat' => 'metropolitan',
         ],
@@ -308,7 +308,7 @@ final class Version20200710131714 extends AbstractMigration
         [
             'name'          => 'Crédit Agricole S.A.',
             'groupName'     => 'Crédit Agricole',
-            'shortCode'     => null,
+            'shortCode'     => 'CASA',
             'bankCode'      => 30006,
             'applicableVat' => 'metropolitan',
         ],
