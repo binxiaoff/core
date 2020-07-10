@@ -152,6 +152,7 @@ class ClientSubscriber implements EventSubscriberInterface
         $payload = $event->getPayload();
         $token   = $event->getToken();
 
+        /** @var Staff $currentStaff */
         $currentStaff = $this->iriConverter->getItemFromIri($payload['staff']);
 
         $token->getUser()->setCurrentStaff($currentStaff);

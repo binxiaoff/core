@@ -130,7 +130,7 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @var string|null
      *
-     * @ORM\Column(type="string", length=4, nullable=true, unique=true)
+     * @ORM\Column(type="string", length=10, nullable=true, unique=true)
      *
      * @Groups({"company:read", "company:jwt:read"})
      */
