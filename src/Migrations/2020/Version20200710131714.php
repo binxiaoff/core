@@ -782,13 +782,22 @@ final class Version20200710131714 extends AbstractMigration
         $this->addSql('ALTER TABLE company CHANGE short_code short_code VARCHAR(10) DEFAULT NULL');
 
         foreach (static::DATA as $datum) {
-            // @var string $name
-            // @var string $groupName
-            // @var string $shortCode
-            // @var string $bankCode
-            // @var string $applicableVat
             extract($datum, EXTR_OVERWRITE);
-
+            /**
+             * @var string $name
+             */
+            /**
+             * @var string $groupName
+             */
+            /**
+             * @var string $shortCode
+             */
+            /**
+             * @var string $bankCode
+             */
+            /**
+             * @var string $applicableVat
+             */
             $id = null;
 
             if ($shortCode) {
