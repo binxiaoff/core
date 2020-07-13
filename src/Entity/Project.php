@@ -516,7 +516,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
      *
-     * @Groups({"project:admin:read", "project:create"})
+     * @Groups({"project:admin:read", "project:write"})
      */
     private $arrangementCommissionMoney;
 
