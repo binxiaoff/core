@@ -29,8 +29,8 @@ Tranche:
         expression: Cette valeur n'est pas cohérente avec celui du type de la commission
 
 ProjectParticipation:
-    committeeStatus:
-        pendedDeadline: Merci de saisir une date de réponse du comité si la réponse est en attente.
+    committeeDeadline:
+        required: Merci de saisir une date de réponse du comité si la réponse est en attente.
     participant:
         notValid: L'entité que vous avez choisi ne peut pas être un participant du projet.
 

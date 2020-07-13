@@ -47,9 +47,13 @@ class ProjectParticipationStatus implements StatusInterface
     use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
 
-    public const STATUS_ACTIVE                  = 10;
+    public const STATUS_CREATED            = 10;
+    public const STATUS_COMMITTEE_PENDED   = 20;
+    public const STATUS_COMMITTEE_ACCEPTED = 30;
+
     public const STATUS_ARCHIVED_BY_ARRANGER    = -10;
     public const STATUS_ARCHIVED_BY_PARTICIPANT = -20;
+    public const STATUS_COMMITTEE_REJECTED      = -30;
 
     /**
      * @var ProjectParticipation
@@ -124,27 +128,42 @@ class ProjectParticipationStatus implements StatusInterface
     }
 
     /**
-     * Used in an expression constraints: arrangeur can only add STATUS_ARCHIVED_BY_ARRANGER, participant can only add STATUS_ARCHIVED_BY_PARTICIPANT.
+     * Used in an expression constraints:
+     *  - only arrangeur can create a participation;
+     *  - arranger can put the status "ARCHIVED_BY_ARRANGER";
+     *  - arranger can put the status "COMMITTEE_*" only for non-client participant;
+     *  - participant can put the status "COMMITTEE_*" and "ARCHIVED_BY_PARTICIPANT"
+     * And after all, the participation of arranger cannot be archived.
      *
      * @return bool
      */
     public function isStatusValid(): bool
     {
-        if (self::STATUS_ACTIVE === $this->status || $this->getAddedBy()->getClient()->hasRole(Clients::ROLE_ADMIN)) {
+        if ($this->getAddedBy()->getClient()->hasRole(Clients::ROLE_ADMIN)) {
             return true;
         }
 
-        if ($this->isParticipationOfArranger()) {
+        if ($this->status < 0 && $this->isParticipationOfArranger()) {
             return false;
         }
 
-        return (
-            self::STATUS_ARCHIVED_BY_ARRANGER === $this->getStatus()
-            && $this->getAddedBy()->getCompany() === $this->projectParticipation->getProject()->getSubmitterCompany()
-        )
-        || (
-            self::STATUS_ARCHIVED_BY_PARTICIPANT === $this->getStatus() && $this->isParticipationMember()
-        );
+        switch ($this->status) {
+            case self::STATUS_CREATED:
+            case self::STATUS_ARCHIVED_BY_ARRANGER:
+                return $this->isArranger();
+            case self::STATUS_COMMITTEE_PENDED:
+            case self::STATUS_COMMITTEE_ACCEPTED:
+            case self::STATUS_COMMITTEE_REJECTED:
+                return $this->isParticipationMember()
+                    || (
+                        $this->isArranger()
+                        && CompanyStatus::STATUS_PROSPECT === $this->getProjectParticipation()->getParticipant()->getCurrentStatus()->getStatus()
+                    );
+            case self::STATUS_ARCHIVED_BY_PARTICIPANT:
+                return $this->isParticipationMember();
+            default:
+                return false;
+        }
     }
 
     /**
@@ -159,6 +178,14 @@ class ProjectParticipationStatus implements StatusInterface
         }
 
         return false;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isArranger(): bool
+    {
+        return $this->getAddedBy()->getCompany() === $this->projectParticipation->getProject()->getSubmitterCompany();
     }
 
     /**
