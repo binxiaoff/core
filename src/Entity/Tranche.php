@@ -199,8 +199,6 @@ class Tranche
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
-     * @Assert\Date
-     *
      * @Gedmo\Versioned
      */
     private ?DateTimeImmutable $expectedReleasingDate;
@@ -209,8 +207,6 @@ class Tranche
      * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="date_immutable", nullable=true)
-     *
-     * @Assert\Date
      *
      * @Gedmo\Versioned
      */
