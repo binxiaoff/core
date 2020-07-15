@@ -505,7 +505,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var bool
      *
-     * @Groups({"project:read", "project:create"})
+     * @Groups({"project:read", "project:write"})
      *
      * @ORM\Column(type="boolean")
      */
@@ -1293,7 +1293,9 @@ class Project implements TraceableStatusAwareInterface
      */
     public function setInterestExpressionEnabled(bool $interestExpressionEnabled): Project
     {
-        $this->interestExpressionEnabled = $interestExpressionEnabled;
+        if (null === $this->getCurrentStatus() || ProjectStatus::STATUS_DRAFT === $this->getCurrentStatus()->getStatus()) {
+            $this->interestExpressionEnabled = $interestExpressionEnabled;
+        }
 
         return $this;
     }
