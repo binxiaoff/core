@@ -13,7 +13,7 @@ use Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Unilend\Entity\TemporaryToken;
 use Unilend\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
-use Unilend\EventSubscriber\Authentication\RecaptchaLoginListener;
+use Unilend\EventSubscriber\Authentication\RecaptchaLoginSubscriber;
 use Unilend\Exception\TemporaryToken\InvalidTemporaryTokenException;
 use Unilend\Repository\TemporaryTokenRepository;
 
@@ -139,7 +139,7 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
     public function createAuthenticatedToken(UserInterface $user, string $providerKey)
     {
         $token = parent::createAuthenticatedToken($user, $providerKey);
-        $token->setAttribute(RecaptchaLoginListener::BYPASS_CAPTCHA_TOKEN_ATTRIBUTE, true);
+        $token->setAttribute(RecaptchaLoginSubscriber::BYPASS_CAPTCHA_TOKEN_ATTRIBUTE, true);
 
         return $token;
     }
