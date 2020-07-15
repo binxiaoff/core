@@ -29,6 +29,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "projectParticipation:read",
  *             "projectParticipationTranche:read",
  *             "money:read",
+ *             "nullableMoney:read",
  *             "nullablePerson:read",
  *             "projectStatus:read"
  *         }
@@ -44,6 +45,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "projectParticipation:read",
  *                     "projectParticipationTranche:read",
  *                     "money:read",
+ *                     "nullableMoney:read",
  *                     "nullablePerson:read"
  *                 }
  *             }
@@ -56,6 +58,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "project:write",
  *                     "company:write",
  *                     "money:write",
+ *                     "nullableMoney:write",
  *                     "tag:write",
  *                     "nullablePerson:write"
  *                 }
@@ -104,7 +107,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "patch": {
  *             "security_post_denormalize": "is_granted('edit', previous_object)",
  *             "denormalization_context": {
- *                 "groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "tag:write", "nullablePerson:write"}
+ *                 "groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "nullableMoney:write", "tag:write", "nullablePerson:write"}
  *             }
  *         },
  *         "delete": {
@@ -271,8 +274,6 @@ class Project implements TraceableStatusAwareInterface
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
-     * @Assert\Date
-     *
      * @Gedmo\Versioned
      *
      * @Groups({"project:write", "project:read"})
@@ -285,8 +286,6 @@ class Project implements TraceableStatusAwareInterface
      * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="date_immutable", nullable=true)
-     *
-     * @Assert\Date
      *
      * @Gedmo\Versioned
      *
@@ -301,8 +300,6 @@ class Project implements TraceableStatusAwareInterface
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
-     * @Assert\Date
-     *
      * @Gedmo\Versioned
      *
      * @Groups({"project:write", "project:read"})
@@ -316,8 +313,6 @@ class Project implements TraceableStatusAwareInterface
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
-     * @Assert\Date
-     *
      * @Gedmo\Versioned
      *
      * @Groups({"project:write", "project:read"})
@@ -330,8 +325,6 @@ class Project implements TraceableStatusAwareInterface
      * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="date_immutable", nullable=true)
-     *
-     * @Assert\Date
      *
      * @Gedmo\Versioned
      *
