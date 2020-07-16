@@ -12,13 +12,16 @@ use Psr\Log\LoggerInterface;
 
 class GoogleRecaptchaManager
 {
+    private const ACTIONS_THRESHOLD = [
+        'connexion'                => 0.5,
+        'forgottenPasswordRequest' => 0.5,
+    ];
     /** @var Client */
     private Client $client;
     /** @var string */
     private string $secret;
     /** @var LoggerInterface */
     private LoggerInterface $logger;
-
     /** @var bool */
     private bool $debug;
 
@@ -75,7 +78,7 @@ class GoogleRecaptchaManager
                 return true;
             }
 
-            return $content['success'];
+            return $content['success'] && isset(static::ACTIONS_THRESHOLD[$content['action']]) && $content['score'] >= static::ACTIONS_THRESHOLD[$content['action']];
         }
 
         return false;

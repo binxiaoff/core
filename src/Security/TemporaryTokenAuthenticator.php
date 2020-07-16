@@ -9,18 +9,20 @@ use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\{Exception\AuthenticationException, User\UserInterface, User\UserProviderInterface};
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
+use Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Unilend\Entity\TemporaryToken;
 use Unilend\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
+use Unilend\EventSubscriber\Authentication\RecaptchaLoginSubscriber;
 use Unilend\Exception\TemporaryToken\InvalidTemporaryTokenException;
 use Unilend\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
 {
     /** @var TemporaryTokenRepository */
-    private $temporaryTokenRepository;
+    private TemporaryTokenRepository $temporaryTokenRepository;
     /** @var EventDispatcherInterface */
-    private $dispatcher;
+    private EventDispatcherInterface $dispatcher;
 
     /**
      * @param TemporaryTokenRepository $temporaryTokenRepository
@@ -126,6 +128,20 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
     public function supportsRememberMe(): bool
     {
         return false;
+    }
+
+    /**
+     * @param UserInterface $user
+     * @param string        $providerKey
+     *
+     * @return PostAuthenticationGuardToken
+     */
+    public function createAuthenticatedToken(UserInterface $user, string $providerKey)
+    {
+        $token = parent::createAuthenticatedToken($user, $providerKey);
+        $token->setAttribute(RecaptchaLoginSubscriber::BYPASS_CAPTCHA_TOKEN_ATTRIBUTE, true);
+
+        return $token;
     }
 
     /**
