@@ -183,14 +183,10 @@ class ProjectOrganizer
     public function validateRunRole(ExecutionContextInterface $context): void
     {
         $groupName = $this->getCompany()->getGroupName();
-        $isRun     = in_array(self::DUTY_PROJECT_ORGANIZER_RUN, $this->roles);
 
-        if ($isRun && Company::GROUPNAME_CA !== $groupName) {
+        if ($this->hasRole(self::DUTY_PROJECT_ORGANIZER_RUN) && Company::GROUPNAME_CA !== $groupName) {
             $context->buildViolation('ProjectOrganizer.roles.runRole')
                 ->atPath('roles')
-                ->setParameters([
-                    '{{ groupName }}' => $groupName,
-                ])
                 ->addViolation()
             ;
         }

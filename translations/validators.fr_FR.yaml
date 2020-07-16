@@ -48,7 +48,7 @@ StatusInterface:
 ProjectOrganizer:
     roles:
         duplicatedUniqueRole: Le rôle {{ value }} est déjà assigné à {{ company }}
-        runRole: Le rôle RUN ne peut être assigné à une banque du groupe {{ groupName }}
+        runRole: Le rôle RUN ne peut être assigné qu'à une banque du Crédit Agricole
 
 ProjectParticipationMember:
     staff:
