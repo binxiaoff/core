@@ -38,6 +38,8 @@ class Company implements TraceableStatusAwareInterface
     public const VAT_METROPOLITAN = 'metropolitan'; // Default tva category : 20 %
     public const VAT_OVERSEAS     = 'overseas'; // Overseas tva category (Guadeloupe, Martinique, Reunion) : 8.5 %
 
+    public const GROUPNAME_CA = 'Crédit Agricole';
+
     /**
      * @var string
      *
