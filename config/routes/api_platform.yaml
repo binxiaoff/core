@@ -2,6 +2,7 @@ api_platform:
     resource: .
     type: api_platform
 
-api_login_check:
+authentication_token:
     path: /authentication_token
     methods: ['POST']
+    controller: Unilend\Controller\JWT\Generate
