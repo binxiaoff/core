@@ -31,7 +31,9 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "money:read",
  *             "nullableMoney:read",
  *             "nullablePerson:read",
- *             "projectStatus:read"
+ *             "projectStatus:read",
+ *             "projectOrganizer:read",
+ *             "role:read"
  *         }
  *     },
  *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "tag:write", "nullablePerson:write"}},
