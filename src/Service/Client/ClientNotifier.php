@@ -42,7 +42,7 @@ class ClientNotifier
      */
     public function notifyPasswordRequest(Clients $client): void
     {
-        if (false === $client->isGrantedLogin()) {
+        if (false === $client->isGrantedLogin() || $client->isInitializationNeeded()) {
             return;
         }
 

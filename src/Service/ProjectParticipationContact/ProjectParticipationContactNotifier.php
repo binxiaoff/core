@@ -53,6 +53,10 @@ class ProjectParticipationContactNotifier
         $company = $projectParticipation->getCompany();
         $project = $projectParticipation->getProject();
 
+        if (false === $company->hasSigned() || ProjectStatus::STATUS_PUBLISHED > $project->getCurrentStatus()->getStatus()) {
+            return;
+        }
+
         $client     = $contact->getClient();
         $templateId = $this->getTemplateId($project, $company, $client);
 

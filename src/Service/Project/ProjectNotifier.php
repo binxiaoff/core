@@ -140,7 +140,7 @@ class ProjectNotifier
         }
 
         foreach ($project->getProjectParticipations() as $participation) {
-            if ($participation->getCompany() !== $project->getSubmitterCompany()) {
+            if ($participation->getCompany() !== $project->getSubmitterCompany() && $participation->getCompany()->hasSigned()) {
                 foreach ($participation->getProjectParticipationContacts() as $contact) {
                     $message = $this->messageProvider->newMessage('project-file-uploaded', [
                         'client' => [
