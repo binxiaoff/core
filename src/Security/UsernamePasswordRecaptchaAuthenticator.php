@@ -28,23 +28,27 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
     private AuthenticationFailureHandlerInterface $authenticationFailureHandler;
 
     private UserPasswordEncoderInterface $passwordEncoder;
+    private string $path;
 
     /**
      * @param GoogleRecaptchaManager                $googleRecaptchaManager
      * @param UserPasswordEncoderInterface          $passwordEncoder
      * @param AuthenticationSuccessHandlerInterface $authenticationSuccessHandler
      * @param AuthenticationFailureHandlerInterface $authenticationFailureHandler
+     * @param string                                $path
      */
     public function __construct(
         GoogleRecaptchaManager $googleRecaptchaManager,
         UserPasswordEncoderInterface $passwordEncoder,
         AuthenticationSuccessHandlerInterface $authenticationSuccessHandler,
-        AuthenticationFailureHandlerInterface $authenticationFailureHandler
+        AuthenticationFailureHandlerInterface $authenticationFailureHandler,
+        string $path = '/authentication_token'
     ) {
         $this->googleRecaptchaManager       = $googleRecaptchaManager;
         $this->authenticationSuccessHandler = $authenticationSuccessHandler;
         $this->authenticationFailureHandler = $authenticationFailureHandler;
         $this->passwordEncoder              = $passwordEncoder;
+        $this->path                         = $path;
     }
 
     /**
@@ -62,6 +66,10 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
      */
     public function supports(Request $request)
     {
+        if ($request->getPathInfo() !== $this->path) {
+            return false;
+        }
+
         if (false === mb_strpos((string) $request->getRequestFormat(), 'json') && false === mb_strpos((string) $request->getContentType(), 'json')) {
             return false;
         }
