@@ -53,6 +53,10 @@ class ProjectParticipationMemberNotifier
         $participation = $projectParticipation->getParticipant();
         $project       = $projectParticipation->getProject();
 
+        if (false === $participation->hasSigned() || false === $project->isPublished()) {
+            return;
+        }
+
         $client     = $projectParticipationMember->getStaff()->getClient();
         $templateId = $this->getTemplateId($project, $participation, $client);
 

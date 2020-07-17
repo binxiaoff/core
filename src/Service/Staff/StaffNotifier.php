@@ -55,7 +55,7 @@ class StaffNotifier
     public function notifyClientInitialisation(Staff $staff): int
     {
         $client = $staff->getClient();
-        if (!$staff->isActive() || false === $client->isInitializationNeeded() || false === $client->isGrantedLogin()) {
+        if (!$staff->isActive() || false === $client->isInitializationNeeded() || false === $client->isGrantedLogin() || false === $staff->getCompany()->hasSigned()) {
             return 0;
         }
 
