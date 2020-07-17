@@ -10,6 +10,8 @@ use League\Flysystem\{FileExistsException, FilesystemInterface};
 use RuntimeException;
 use Unilend\Entity\FileVersion;
 
+use function Symfony\Component\String\s;
+
 class FileSystemHelper
 {
     private const ENCRYPTED_FILE_SUFFIX = '-encrypted';
@@ -133,7 +135,7 @@ class FileSystemHelper
      */
     public function normalizeFileName(string $fileName): string
     {
-        return \URLify::downcode($fileName);
+        return s($fileName)->ascii()->snake()->toString();
     }
 
     /**
