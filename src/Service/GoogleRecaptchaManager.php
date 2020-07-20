@@ -6,7 +6,6 @@ namespace Unilend\Service;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
-use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 
@@ -43,8 +42,6 @@ class GoogleRecaptchaManager
      * @param string|null $captchaResponse
      * @param string|null $remoteIp
      *
-     * @throws JsonException
-     *
      * @return bool
      */
     public function isValid(?string $captchaResponse, ?string $remoteIp = null): bool
@@ -64,7 +61,7 @@ class GoogleRecaptchaManager
             }
 
             $content = $response->getBody()->getContents();
-            $content = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+            $content = json_decode($content, true);
 
             if (null === $content) {
                 $this->logger->warning('Unable to check Google reCAPTCHA - JSON could not be decoded');
