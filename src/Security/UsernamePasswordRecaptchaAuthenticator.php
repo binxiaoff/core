@@ -154,6 +154,6 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
      */
     public function getPassword($credentials): ?string
     {
-        return $credentials['password'];
+        return $credentials['password'] ?? null;
     }
 }
