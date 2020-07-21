@@ -10,94 +10,33 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class SwaggerDecorator implements NormalizerInterface
 {
-    private $decorated;
-    /**
-     * @var RouterInterface
-     */
-    private $router;
+    private NormalizerInterface $decorated;
+
+    private RouterInterface $router;
 
     /**
      * @param NormalizerInterface $decorated
      * @param RouterInterface     $router
      */
-    public function __construct(
-        NormalizerInterface $decorated,
-        RouterInterface $router
-    ) {
+    public function __construct(NormalizerInterface $decorated, RouterInterface $router)
+    {
         $this->decorated = $decorated;
         $this->router    = $router;
     }
 
     /**
-     * @param mixed $object
-     * @param null  $format
-     * @param array $context
+     * @param mixed       $object
+     * @param string|null $format
+     * @param array       $context
      *
      * @throws ExceptionInterface
      *
      * @return array
      */
-    public function normalize($object, $format = null, array $context = []): array
+    public function normalize($object, ?string $format = null, array $context = []): array
     {
         /** @var array $docs */
         $docs = $this->decorated->normalize($object, $format, $context);
-
-        $docs['paths'][$this->router->generate('api_login_check')] = [
-            'post' => [
-                'tags'        => ['Authentication'],
-                'operationId' => 'postAuthenticationToken',
-                'summary'     => 'Log in and get an authentication token',
-                'requestBody' => [
-                    'content' => [
-                        'application/json' => [
-                            'schema' => [
-                                'type'       => 'object',
-                                'properties' => [
-                                    'username' => [
-                                        'description' => 'Username of the user',
-                                        'type'        => 'string',
-                                        'format'      => 'email',
-                                    ],
-                                    'password' => [
-                                        'description' => 'Password of the user',
-                                        'type'        => 'string',
-                                    ],
-                                ],
-                                'required' => ['username', 'password'],
-                            ],
-                        ],
-                    ],
-                ],
-                'responses' => [
-                    '200' => [
-                        'description' => 'Login succeded',
-                        'content'     => [
-                            'application/json' => [
-                                'schema' => [
-                                    'type'       => 'object',
-                                    'properties' => [
-                                        'token' => [
-                                            'description' => 'JWT Token',
-                                            'type'        => 'string',
-                                        ],
-                                        'refresh_token' => [
-                                            'description' => 'Refresh Token',
-                                            'type'        => 'string',
-                                        ],
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                    '401' => [
-                        'description' => 'Bad credentials',
-                        'content'     => [
-                            'application/json' => [],
-                        ],
-                    ],
-                ],
-            ],
-        ];
 
         $docs['paths'][$this->router->generate('gesdinet_jwt_refresh_token')] = [
             'post' => [
@@ -151,12 +90,12 @@ class SwaggerDecorator implements NormalizerInterface
     }
 
     /**
-     * @param mixed $data
-     * @param null  $format
+     * @param mixed       $data
+     * @param string|null $format
      *
      * @return bool
      */
-    public function supportsNormalization($data, $format = null): bool
+    public function supportsNormalization($data, ?string $format = null): bool
     {
         return $this->decorated->supportsNormalization($data, $format);
     }
