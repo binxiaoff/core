@@ -90,8 +90,8 @@ class SwaggerDecorator implements NormalizerInterface
     }
 
     /**
-     * @param mixed $data
-     * @param null  $format
+     * @param mixed       $data
+     * @param string|null $format
      *
      * @return bool
      */
