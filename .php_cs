@@ -4,6 +4,13 @@ $finder = PhpCsFixer\Finder::create()
     ->in(['bin', 'public', 'src', 'tests'])
 ;
 
+$rules = [
+    'ordered_imports' => [
+        'imports_order' => ['class', 'function', 'const'],
+        'sort_algorithm' => 'alpha',
+    ],
+];
+
 return PhpCsFixer\Config::create()
     ->setRules([
         '@Symfony'                               => true,
@@ -33,5 +40,6 @@ return PhpCsFixer\Config::create()
         'random_api_migration'                   => true, //risky
         'declare_strict_types'                   => true, //risky
     ])
+    ->setRules($rules)
     ->setFinder($finder)
     ;
