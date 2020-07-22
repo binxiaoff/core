@@ -99,7 +99,9 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "archivable:read",
  *                     "timestampable:read",
  *                     "file:read",
- *                     "fileVersion:read"
+ *                     "fileVersion:read",
+ *                     "tranche:read",
+ *                     "lendingRate:read"
  *                 }
  *             }
  *         },
