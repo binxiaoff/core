@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
 use DateTimeImmutable;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -16,12 +14,11 @@ use InvalidArgumentException;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
-use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Serializer\Annotation\{Groups, SerializedName};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait, TraceableStatusTrait};
-use Unilend\Validator\Constraints\EmailDomain as AssertEmailDomain;
-use Unilend\Validator\Constraints\Password as AssertPassword;
+use Unilend\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
+use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait};
+use Unilend\Validator\Constraints\{EmailDomain as AssertEmailDomain, Password as AssertPassword};
 use URLify;
 
 /**
@@ -30,15 +27,16 @@ use URLify;
  *         "get"
  *     },
  *     itemOperations={
- *         "get": {"security": "is_granted('view', object)"},
+ *         "get": {
+ *             "security": "is_granted('view', object)",
+ *             "normalization_context": {"groups": {"client:read", "client:owner:read", "staff:read", "company:read"}}
+ *         },
  *         "put": {"security": "is_granted('edit', object)"},
  *         "patch": {"security": "is_granted('edit', object)"}
  *     },
  *     normalizationContext={"groups": {"client:read"}},
  *     denormalizationContext={"groups": {"client:write"}}
  * )
- *
- * @method ClientStatus getCurrentStatus()
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedClients")
  *
@@ -54,13 +52,10 @@ use URLify;
  *
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"email": "exact"})
  */
-class Clients implements UserInterface, EquatableInterface
+class Clients implements UserInterface, EquatableInterface, TraceableStatusAwareInterface
 {
     use TimestampableTrait;
     use RoleableTrait;
-    use TraceableStatusTrait {
-        setCurrentStatus as baseStatusSetter;
-    }
     use PublicizeIdentityTrait;
 
     public const ROLE_USER        = 'ROLE_USER';
@@ -74,19 +69,19 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @ORM\Column(name="id_language", type="string", length=2)
      */
-    private $idLanguage = 'fr';
+    private string $idLanguage = 'fr';
 
     /**
-     * @var string
+     * @var string|null
      *
      * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="title", type="string", nullable=true)
      */
-    private $title;
+    private ?string $title;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @Groups({"client:read", "client:write"})
      *
@@ -95,10 +90,10 @@ class Clients implements UserInterface, EquatableInterface
      * @Assert\Length(min=2)
      * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false)
      */
-    private $lastName;
+    private ?string $lastName;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @Groups({"client:read", "client:write"})
      *
@@ -107,17 +102,17 @@ class Clients implements UserInterface, EquatableInterface
      * @Assert\Length(min=2)
      * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false)
      */
-    private $firstName;
+    private ?string $firstName;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(name="slug", type="string", length=191, nullable=true)
      */
-    private $slug;
+    private ?string $slug;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @Groups({"client:read", "client:write"})
      *
@@ -125,10 +120,10 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @AssertPhoneNumber(defaultRegion="Clients::PHONE_NUMBER_DEFAULT_REGION", type="any")
      */
-    private $phone;
+    private ?string $phone;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @Groups({"client:read", "client:write"})
      *
@@ -136,30 +131,30 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @AssertPhoneNumber(defaultRegion="Clients::PHONE_NUMBER_DEFAULT_REGION", type="mobile")
      */
-    private $mobile;
+    private ?string $mobile;
 
     /**
      * @var string
      *
      * @Groups({"client:read", "client:create"})
      *
-     * @ORM\Column(name="email", type="string", length=191, nullable=false, unique=true)
+     * @ORM\Column(name="email", type="string", length=191, unique=true)
      *
      * @Assert\NotBlank
      * @Assert\Email
      *
      * @AssertEmailDomain(message="Clients.email.emailDomain")
      */
-    private $email;
+    private string $email;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(name="password", type="string", length=191, nullable=true)
      *
      * @Gedmo\Versioned
      */
-    private $password;
+    private string $password;
 
     /**
      * @Groups({"client:write"})
@@ -168,52 +163,45 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @AssertPassword(message="Clients.password.password")
      */
-    private $plainPassword;
+    private ?string $plainPassword;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $jobFunction;
+    private ?string $jobFunction;
 
     /**
      * @var Staff[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Staff", mappedBy="client")
+     *
+     * @Groups({"client:owner:read"})
      */
-    private $staff;
+    private Collection $staff;
 
     /**
-     * @var array
-     *
-     * @ORM\Column(type="json")
-     */
-    private $roles = [];
-
-    /**
-     * @var ClientStatus
-     *
-     * @Groups({"client:read"})
+     * @var ClientStatus|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientStatus")
      * @ORM\JoinColumn(name="id_current_status", unique=true)
      */
-    private $currentStatus;
+    private ?ClientStatus $currentStatus;
 
     /**
-     * @var ArrayCollection|ClientStatus[]
+     * @var Collection|ClientStatus[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ClientStatus", mappedBy="client", orphanRemoval=true, cascade={"persist"})
      */
-    private $statuses;
+    private Collection $statuses;
 
     /**
-     * @var Staff
+     * @var Staff|null
      */
-    private $currentStaff;
+    private ?Staff $currentStaff = null;
 
     /**
      * Clients constructor.
@@ -225,7 +213,7 @@ class Clients implements UserInterface, EquatableInterface
     public function __construct(string $email)
     {
         $this->statuses = new ArrayCollection();
-        $this->setCurrentStatus(ClientStatus::STATUS_INVITED);
+        $this->setCurrentStatus(new ClientStatus($this, ClientStatus::STATUS_INVITED));
 
         $this->added   = new DateTimeImmutable();
         $this->roles[] = self::ROLE_USER;
@@ -581,18 +569,15 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param int         $status
-     * @param string|null $content
-     *
-     * @throws Exception
+     * @param StatusInterface|ClientStatus $currentStatus
      *
      * @return Clients
      */
-    public function setCurrentStatus(int $status, ?string $content = null): self
+    public function setCurrentStatus(StatusInterface $currentStatus): Clients
     {
-        $clientStatus = new ClientStatus($this, $status, $content);
+        $this->currentStatus = $currentStatus;
 
-        return $this->baseStatusSetter($clientStatus);
+        return $this;
     }
 
     /**
@@ -617,6 +602,22 @@ class Clients implements UserInterface, EquatableInterface
     public function setCurrentStaff(Staff $currentStaff): void
     {
         $this->currentStaff = $currentStaff;
+    }
+
+    /**
+     * @return Collection|ClientStatus[]
+     */
+    public function getStatuses(): Collection
+    {
+        return $this->statuses;
+    }
+
+    /**
+     * @return ClientStatus
+     */
+    public function getCurrentStatus(): ClientStatus
+    {
+        return $this->currentStatus;
     }
 
     /**
