@@ -90,7 +90,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      * @Assert\Length(min=2)
      * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false)
      */
-    private ?string $lastName;
+    private ?string $lastName = null;
 
     /**
      * @var string|null
@@ -102,7 +102,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      * @Assert\Length(min=2)
      * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false)
      */
-    private ?string $firstName;
+    private ?string $firstName = null;
 
     /**
      * @var string|null
