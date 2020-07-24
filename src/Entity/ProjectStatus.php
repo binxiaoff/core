@@ -11,6 +11,7 @@ use Exception;
 use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Entity\Interfaces\StatusInterface;
 use Unilend\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
@@ -182,5 +183,29 @@ class ProjectStatus implements StatusInterface
     public function getAttachedObject()
     {
         return $this->getProject();
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     * @param                           $payload
+     */
+    public function validateSyndicationAndParticipationTypes(ExecutionContextInterface $context, $payload)
+    {
+        if ($this->getStatus() > self::STATUS_DRAFT) {
+            if (null === $this->getProject()->getSyndicationType()) {
+                $context->buildViolation('The syndication type of the project must be present to change its status.')
+                    ->atPath('project.syndicationType')
+                    ->addViolation()
+                ;
+            }
+            if (null === $this->getProject()->getParticipationType()) {
+                $context->buildViolation('The participation type of the project must be present to change its status.')
+                    ->atPath('project.participationType')
+                    ->addViolation()
+                ;
+            }
+        }
     }
 }

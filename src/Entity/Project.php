@@ -1076,11 +1076,11 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param string $syndicationType
+     * @param string|null $syndicationType
      *
      * @return Project
      */
-    public function setSyndicationType(string $syndicationType): Project
+    public function setSyndicationType(?string $syndicationType): Project
     {
         $this->syndicationType = $syndicationType;
 
@@ -1096,11 +1096,11 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param string $participationType
+     * @param string|null $participationType
      *
      * @return Project
      */
-    public function setParticipationType(string $participationType): Project
+    public function setParticipationType(?string $participationType): Project
     {
         $this->participationType = $participationType;
 
