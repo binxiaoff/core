@@ -429,9 +429,9 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var string
      *
-     * @ORM\Column(type="string", length=80)
+     * @ORM\Column(type="string", length=80, nullable=true)
      *
-     * @Assert\NotBlank
+     * @Assert\NotBlank(allowNull=true)
      * @Assert\Choice(callback="getSyndicationTypes")
      *
      * @Gedmo\Versioned
@@ -443,9 +443,9 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var string
      *
-     * @ORM\Column(type="string", length=80)
+     * @ORM\Column(type="string", length=80, nullable=true)
      *
-     * @Assert\NotBlank
+     * @Assert\NotBlank(allowNull=true)
      * @Assert\Choice(callback="getParticipationTypes")
      *
      * @Gedmo\Versioned
@@ -562,10 +562,7 @@ class Project implements TraceableStatusAwareInterface
 
         $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_DRAFT, $addedBy));
 
-        $this->syndicationType   = static::PROJECT_SYNDICATION_TYPE_PRIMARY;
-        $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;
-        $this->offerVisibility   = static::OFFER_VISIBILITY_PRIVATE;
-
+        $this->offerVisibility    = static::OFFER_VISIBILITY_PRIVATE;
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
 
@@ -1071,9 +1068,9 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getSyndicationType(): string
+    public function getSyndicationType(): ?string
     {
         return $this->syndicationType;
     }
@@ -1091,9 +1088,9 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getParticipationType(): string
+    public function getParticipationType(): ?string
     {
         return $this->participationType;
     }
