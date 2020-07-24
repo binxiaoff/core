@@ -154,7 +154,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      *
      * @Gedmo\Versioned
      */
-    private string $password;
+    private ?string $password;
 
     /**
      * @Groups({"client:write"})
@@ -380,7 +380,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     }
 
     /**
-     * @param string|null $email
+     * @param string $email
      *
      * @return Clients
      */
@@ -677,7 +677,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     private function onProfileUpdated(): void
     {
         if ($this->isProfileCompleted() && $this->getCurrentStatus()->getStatus() < ClientStatus::STATUS_CREATED) {
-            $this->setCurrentStatus(ClientStatus::STATUS_CREATED);
+            $this->setCurrentStatus(new ClientStatus($this, ClientStatus::STATUS_CREATED));
         }
     }
 }

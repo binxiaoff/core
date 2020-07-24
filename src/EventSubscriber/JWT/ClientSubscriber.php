@@ -41,7 +41,7 @@ class ClientSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            JwtEvents::JWT_CREATED            => ['addUserToPayload'],
+            JwtEvents::JWT_CREATED            => ['addUserPayload'],
             JwtEvents::JWT_DECODED            => ['validateToken'],
             JwtEvents::AUTHENTICATION_SUCCESS => ['createTokens'],
             JwtEvents::JWT_AUTHENTICATED      => ['setCurrentStaff'],
@@ -118,7 +118,7 @@ class ClientSubscriber implements EventSubscriberInterface
     /**
      * @param JWTCreatedEvent $event
      */
-    public function addUserToPayload(JWTCreatedEvent $event): void
+    public function addUserPayload(JWTCreatedEvent $event): void
     {
         $payload = $event->getData();
         $user    = $event->getUser();
