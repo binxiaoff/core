@@ -705,7 +705,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     {
         $blacklist = array_map('strtolower', ProjectParticipation::BLACKLISTED_COMPANIES);
 
-        return false === \in_array(mb_strtolower($this->getParticipant()->getName()), $blacklist, true);
+        return false === \in_array(mb_strtolower($this->getParticipant()->getDisplayName()), $blacklist, true);
     }
 
     /**

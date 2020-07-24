@@ -89,7 +89,7 @@ class ProjectNotifier
             ->setText($this->getSlackMessageText($project))
             ->attach(
                 (new Attachment())
-                    ->addField(new AttachmentField('Entité', $project->getSubmitterCompany()->getName(), true))
+                    ->addField(new AttachmentField('Entité', $project->getSubmitterCompany()->getDisplayName(), true))
                     ->addField(new AttachmentField('Entités invitées', (string) count($project->getProjectParticipations()), true))
                     ->addField(new AttachmentField('Utilisateur', $project->getSubmitterClient()->getEmail(), true))
                     ->addField(new AttachmentField('Utilisateurs invités', (string) $this->projectRepository->countProjectParticipationMembers($project), true))
@@ -147,7 +147,7 @@ class ProjectNotifier
                             'firstName' => $activeProjectParticipationMember->getStaff()->getClient()->getFirstName(),
                         ],
                         'project' => [
-                            'submitterCompany' => $project->getSubmitterCompany()->getName(),
+                            'submitterCompany' => $project->getSubmitterCompany()->getDisplayName(),
                             'title'            => $project->getTitle(),
                             'hash'             => $project->getPublicId(),
                         ],

@@ -43,18 +43,29 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=300)
+     * @ORM\Column(type="string", length=300)
      *
      * @Assert\NotBlank
      *
      * @Groups({"company:read", "company:jwt:read"})
      */
-    private string $name;
+    private string $displayName;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", length=300)
+     *
+     * @Assert\NotBlank
+     *
+     * @Groups({"company:read", "company:jwt:read"})
+     */
+    private string $companyName;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(name="siren", type="string", length=9, nullable=true, unique=true)
+     * @ORM\Column(type="string", length=9, nullable=true, unique=true)
      *
      * @Assert\Length(9)
      * @Assert\Luhn
@@ -172,7 +183,7 @@ class Company implements TraceableStatusAwareInterface
      */
     public function __construct(string $name)
     {
-        $this->name          = $name;
+        $this->displayName          = $name;
         $this->staff         = new ArrayCollection();
         $this->statuses      = new ArrayCollection();
         $this->added         = new DateTimeImmutable();
@@ -185,7 +196,7 @@ class Company implements TraceableStatusAwareInterface
      */
     public function __toString(): string
     {
-        return $this->getName();
+        return $this->getDisplayName();
     }
 
     /**
@@ -194,23 +205,31 @@ class Company implements TraceableStatusAwareInterface
      *
      * @return string
      */
-    public function getName(): string
+    public function getDisplayName(): string
     {
-        return $this->name;
+        return $this->displayName;
     }
 
     /**
      * Set name.
      *
-     * @param string $name
+     * @param string $displayName
      *
      * @return Company
      */
-    public function setName($name): Company
+    public function setDisplayName($displayName): Company
     {
-        $this->name = $name;
+        $this->displayName = $displayName;
 
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCompanyName(): string
+    {
+        return $this->companyName;
     }
 
     /**

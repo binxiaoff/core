@@ -67,7 +67,7 @@ class ProjectParticipationMemberNotifier
                 'hash'      => $client->getPublicId(),
             ],
             'submitterCompany' => [
-                'name' => $project->getSubmitterCompany()->getName(),
+                'name' => $project->getSubmitterCompany()->getDisplayName(),
             ],
             'project' => [
                 'name' => $project->getTitle(),

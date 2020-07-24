@@ -77,7 +77,7 @@ class NotificationDisplayManager
                         '%projectUrl%'    => '', // TODO Create a router
                         '%projectTitle%'  => $project->getTitle(),
                         '%borrowerName%'  => $project->getRiskGroupName(),
-                        '%submitterName%' => $project->getSubmitterCompany()->getName(),
+                        '%submitterName%' => $project->getSubmitterCompany()->getDisplayName(),
                     ]);
 
                     break;
