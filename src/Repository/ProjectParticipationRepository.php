@@ -33,7 +33,26 @@ class ProjectParticipationRepository extends ServiceEntityRepository
      */
     public function save(ProjectParticipation $projectParticipation): void
     {
+        $this->persist($projectParticipation);
+        $this->flush();
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     *
+     * @throws ORMException
+     */
+    public function persist(ProjectParticipation $projectParticipation): void
+    {
         $this->getEntityManager()->persist($projectParticipation);
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function flush(): void
+    {
         $this->getEntityManager()->flush();
     }
 }

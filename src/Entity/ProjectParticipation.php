@@ -315,7 +315,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE})
      */
-    private ?DateTimeImmutable $participantLastConsulted;
+    private ?DateTimeImmutable $participantLastConsulted = null;
 
     /**
      * @var Collection|ProjectParticipationMember[]
@@ -366,7 +366,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE
      * })
      */
-    private ?File $nda;
+    private ?File $nda = null;
 
     /**
      * @param Company $participant
@@ -630,6 +630,25 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         return $this->projectParticipationMembers->filter(static function (ProjectParticipationMember $projectParticipationMember) {
             return false === $projectParticipationMember->isArchived();
         });
+    }
+
+    /**
+     * @param $staff
+     * @param $addedBy
+     *
+     * @throws Exception
+     *
+     * @return ProjectParticipation
+     */
+    public function addProjectParticipationMember($staff, $addedBy): ProjectParticipation
+    {
+        $projectParticipationMember = new ProjectParticipationMember($this, $staff, $addedBy);
+
+        if (false === $this->projectParticipationMembers->contains($projectParticipationMember)) {
+            $this->projectParticipationMembers->add($projectParticipationMember);
+        }
+
+        return $this;
     }
 
     /**

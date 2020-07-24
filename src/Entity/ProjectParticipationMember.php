@@ -89,7 +89,7 @@ class ProjectParticipationMember
      *
      * @Groups({"projectParticipationMember:read", "projectParticipationMember:write", "projectParticipationMember:owner:write"})
      */
-    private ?DateTimeImmutable $ndaAccepted;
+    private ?DateTimeImmutable $ndaAccepted = null;
 
     /**
      * @var FileVersion|null
@@ -99,7 +99,7 @@ class ProjectParticipationMember
      *
      * @Groups({"projectParticipationMember:read", "projectParticipationMember:owner:write"})
      */
-    private ?FileVersion $acceptedNdaVersion;
+    private ?FileVersion $acceptedNdaVersion = null;
 
     /**
      * @param ProjectParticipation $projectParticipation
