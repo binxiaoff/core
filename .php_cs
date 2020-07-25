@@ -2,6 +2,7 @@
 
 $finder = PhpCsFixer\Finder::create()
     ->in(['bin', 'public', 'src', 'tests'])
+    ->exclude(['src/DataFixtures'])
 ;
 
 $rules = [

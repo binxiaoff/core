@@ -831,12 +831,17 @@ class Project implements TraceableStatusAwareInterface
         return $this->internalRatingScore;
     }
 
+
     /**
      * @param string|null $internalRatingScore
+     *
+     * @return $this
      */
-    public function setInternalRatingScore(?string $internalRatingScore): void
+    public function setInternalRatingScore(?string $internalRatingScore): self
     {
         $this->internalRatingScore = $internalRatingScore;
+
+        return $this;
     }
 
     /**
