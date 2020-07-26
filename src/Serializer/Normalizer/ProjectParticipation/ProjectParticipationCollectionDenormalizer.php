@@ -7,6 +7,7 @@ namespace Unilend\Serializer\Normalizer\ProjectParticipation;
 use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
+use RuntimeException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
 use Unilend\Entity\{Clients, ProjectParticipation, ProjectParticipationCollection};
@@ -53,27 +54,36 @@ class ProjectParticipationCollectionDenormalizer implements ContextAwareDenormal
         $connectedStaffIRI = $this->iriConverter->getIriFromItem($connectedStaff);
 
         $participations = new ArrayCollection();
+        $project        = null;
+
         if (false === empty($data['projectParticipations'])) {
             foreach ($data['projectParticipations'] as $projectParticipationData) {
                 $projectParticipationData['addedBy'] = $connectedStaffIRI;
-                /** @var ProjectParticipation $participation */
-                $participation = $this->denormalizer->denormalize($projectParticipationData, ProjectParticipation::class, 'array', $context);
+                /** @var ProjectParticipation $projectParticipation */
+                $projectParticipation = $this->denormalizer->denormalize($projectParticipationData, ProjectParticipation::class, 'array', $context);
+                if (null === $project) {
+                    $project = $projectParticipation->getProject();
+                }
+
+                if ($project && $project !== $projectParticipation->getProject()) {
+                    throw new RuntimeException('You cannot add at a time the participations for different projects.');
+                }
 
                 if (false === empty($projectParticipationData['projectParticipationMembers'])) {
                     foreach ($projectParticipationData['projectParticipationMembers'] as $projectParticipationMemberData) {
                         if ($projectParticipationMemberData['staff']) {
                             $participantStaff = $this->iriConverter->getItemFromIri($projectParticipationMemberData['staff']);
-                            $participation->addProjectParticipationMember($participantStaff, $connectedStaff);
+                            $projectParticipation->addProjectParticipationMember($participantStaff, $connectedStaff);
                         }
                     }
                 }
 
-                $participations->add($participation);
+                $participations->add($projectParticipation);
             }
         }
 
         $context[self::ALREADY_CALLED] = true;
 
-        return new ProjectParticipationCollection($participations);
+        return new ProjectParticipationCollection($participations, $project);
     }
 }

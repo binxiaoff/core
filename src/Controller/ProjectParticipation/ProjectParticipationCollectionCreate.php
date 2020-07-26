@@ -34,7 +34,7 @@ class ProjectParticipationCollectionCreate
             $this->projectParticipationRepository->persist($projectParticipation);
         }
 
-        //$this->projectParticipationRepository->flush();
+        $this->projectParticipationRepository->flush();
 
         return $data;
     }

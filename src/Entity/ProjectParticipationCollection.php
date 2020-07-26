@@ -30,7 +30,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *     collectionOperations={
  *         "post": {
  *             "controller": "Unilend\Controller\ProjectParticipation\ProjectParticipationCollectionCreate",
- *             "path": "/project_participation_collection"
+ *             "path": "/project_participation_collection",
+ *             "security_post_denormalize": "is_granted('create', object)"
  *         }
  *     },
  *     itemOperations={
@@ -52,11 +53,18 @@ class ProjectParticipationCollection
     private ArrayCollection $projectParticipations;
 
     /**
-     * @param ArrayCollection $projectParticipations
+     * @var Project
      */
-    public function __construct(ArrayCollection $projectParticipations)
+    private Project $project;
+
+    /**
+     * @param ArrayCollection $projectParticipations
+     * @param Project         $project
+     */
+    public function __construct(ArrayCollection $projectParticipations, Project $project)
     {
         $this->projectParticipations = $projectParticipations;
+        $this->project = $project;
     }
 
     /**
@@ -65,6 +73,14 @@ class ProjectParticipationCollection
     public function getProjectParticipations(): ArrayCollection
     {
         return $this->projectParticipations;
+    }
+
+    /**
+     * @return Project
+     */
+    public function getProject(): Project
+    {
+        return $this->project;
     }
 
     /**
