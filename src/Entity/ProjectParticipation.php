@@ -27,6 +27,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "projectParticipationMember:read",
  *         "projectParticipationTranche:read",
  *         "projectParticipationStatus:read",
+ *         "projectStatus:read",
+ *         "project:read",
  *         "company:read",
  *         "nullableMoney:read",
  *         "money:read",
@@ -86,6 +88,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "projectParticipationContact:read",
  *                     "projectParticipationTranche:read",
  *                     "projectParticipationStatus:read",
+ *                     "projectStatus:read",
+ *                     "project:read",
  *                     "company:read",
  *                     "nullableMoney:read",
  *                     "money:read",
@@ -95,7 +99,9 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "archivable:read",
  *                     "timestampable:read",
  *                     "file:read",
- *                     "fileVersion:read"
+ *                     "fileVersion:read",
+ *                     "tranche:read",
+ *                     "lendingRate:read"
  *                 }
  *             }
  *         },
