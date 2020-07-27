@@ -177,26 +177,18 @@ class Company implements TraceableStatusAwareInterface
     private Collection $modules;
 
     /**
-     * @param string $name
-     *
-     * @throws Exception
+     * @param string $displayName
+     * @param string $companyName
      */
-    public function __construct(string $name)
+    public function __construct(string $displayName, string $companyName)
     {
-        $this->displayName          = $name;
+        $this->displayName   = $displayName;
+        $this->companyName   = $companyName;
         $this->staff         = new ArrayCollection();
         $this->statuses      = new ArrayCollection();
         $this->added         = new DateTimeImmutable();
         $this->modules       = new ArrayCollection();
         $this->applicableVat = static::VAT_METROPOLITAN;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->getDisplayName();
     }
 
     /**
