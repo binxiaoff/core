@@ -1186,6 +1186,20 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
+     * @return bool
+     */
+    public function isOversubscribed(): bool
+    {
+        $totalInvitationReplyAmount = new NullableMoney();
+
+        foreach ($this->getTranches() as $tranche) {
+            $totalInvitationReplyAmount = MoneyCalculator::add($totalInvitationReplyAmount, $tranche->getTotalInvitationReplyAmount());
+        }
+
+        return $totalInvitationReplyAmount->getAmount() > $this->getTranchesTotalMoney()->getAmount();
+    }
+
+    /**
      * @param Money $globalFundingMoney
      *
      * @return Project
