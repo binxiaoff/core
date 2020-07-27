@@ -27,7 +27,7 @@ class AppFixtures extends Fixture implements FixtureInterface
             $companies[] = $generator->company("Company $i");
         }
 
-        // Ou main user
+        // Our main user
         $client = $generator->user('admin@ca-lendingservices.com');
         $staff = $client->getCurrentStaff()->setMarketSegments($marketSegments);
 
