@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Controller\ProjectParticipation;
 
 use Doctrine\ORM\ORMException;
-use Unilend\Entity\ProjectParticipationCollection;
+use Unilend\Entity\Request\ProjectParticipationCollection;
 use Unilend\Repository\ProjectParticipationRepository;
 
 class ProjectParticipationCollectionCreate

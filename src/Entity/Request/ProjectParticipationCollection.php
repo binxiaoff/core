@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity;
+namespace Unilend\Entity\Request;
 
 use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Unilend\Entity\{Project, ProjectParticipation};
 
 /**
  * @ApiResource(

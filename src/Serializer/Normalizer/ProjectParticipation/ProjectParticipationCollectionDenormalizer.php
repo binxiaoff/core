@@ -7,10 +7,9 @@ namespace Unilend\Serializer\Normalizer\ProjectParticipation;
 use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
-use RuntimeException;
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\{ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
-use Unilend\Entity\{Clients, ProjectParticipation, ProjectParticipationCollection};
+use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer, ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
+use Unilend\Entity\{Clients, ProjectParticipation, Request\ProjectParticipationCollection};
 
 class ProjectParticipationCollectionDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -56,23 +55,20 @@ class ProjectParticipationCollectionDenormalizer implements ContextAwareDenormal
         $participations = new ArrayCollection();
         $project        = null;
 
-        if (false === empty($data['projectParticipations'])) {
+        if (false === empty($data['projectParticipations']) && false === empty($data['project'])) {
             foreach ($data['projectParticipations'] as $projectParticipationData) {
                 $projectParticipationData['addedBy'] = $connectedStaffIRI;
+                $projectParticipationData['project'] = $data['project'];
                 /** @var ProjectParticipation $projectParticipation */
                 $projectParticipation = $this->denormalizer->denormalize($projectParticipationData, ProjectParticipation::class, 'array', $context);
                 if (null === $project) {
                     $project = $projectParticipation->getProject();
                 }
 
-                if ($project && $project !== $projectParticipation->getProject()) {
-                    throw new RuntimeException('You cannot add at a time the participations for different projects.');
-                }
-
                 if (false === empty($projectParticipationData['projectParticipationMembers'])) {
-                    foreach ($projectParticipationData['projectParticipationMembers'] as $projectParticipationMemberData) {
-                        if ($projectParticipationMemberData['staff']) {
-                            $participantStaff = $this->iriConverter->getItemFromIri($projectParticipationMemberData['staff']);
+                    foreach ($projectParticipationData['projectParticipationMembers'] as $staffIRI) {
+                        $participantStaff = $this->iriConverter->getItemFromIri($staffIRI, [AbstractNormalizer::GROUPS => []]);
+                        if ($participantStaff) {
                             $projectParticipation->addProjectParticipationMember($participantStaff, $connectedStaff);
                         }
                     }
