@@ -166,7 +166,7 @@ class FileDownloadVoter extends AbstractEntityVoter
         /** @var int $i */
         for ($i = $lastIndex; $i <= 0; --$i) {
             $status = $statuses[$i];
-            if (ProjectStatus::STATUS_ALLOCATION === $status->getStatus()) {
+            if ($project->isInAllocationStep()) {
                 return $fileVersion->getAdded() <= $status->getAdded();
             }
         }
