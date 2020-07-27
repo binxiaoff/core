@@ -9,10 +9,13 @@ use Unilend\Entity\{Clients, MarketSegment, Staff};
 
 class StaffVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_DELETE = 'delete';
-    public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_VIEW       = 'view';
+    public const ATTRIBUTE_ADMIN_VIEW = 'admin_view';
+    public const ATTRIBUTE_EDIT       = 'edit';
+    public const ATTRIBUTE_ADMIN_EDIT = 'admin_edit';
+    public const ATTRIBUTE_DELETE     = 'delete';
+    public const ATTRIBUTE_CREATE     = 'create';
+
 
     /**
      * @param mixed   $subject
@@ -39,6 +42,17 @@ class StaffVoter extends AbstractEntityVoter
     }
 
     /**
+     * @param Staff   $staff
+     * @param Clients $user
+     *
+     * @return bool
+     */
+    protected function canAdminView(Staff $staff, Clients $user): bool
+    {
+        return $staff->getClient() === $user || $staff->getCompany() === $user->getCompany();
+    }
+
+    /**
      * @param Staff   $subject
      * @param Clients $user
      *
@@ -53,6 +67,18 @@ class StaffVoter extends AbstractEntityVoter
             || $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
                 return $submitterStaff->getMarketSegments()->contains($marketSegment);
             });
+    }
+
+    /**
+     * @param Staff   $staff
+     * @param Clients $user
+     *
+     * @return bool
+     */
+    protected function canAdminEdit(Staff $staff, Clients $user): bool
+    {
+        // or is admin, already in isGrantedAll()
+        return $user->getCurrentStaff() && $user->getCurrentStaff()->isManager() && $staff->getCompany() === $user->getCurrentStaff()->getCompany();
     }
 
     /**
