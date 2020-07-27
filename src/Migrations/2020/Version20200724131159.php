@@ -94,6 +94,7 @@ final class Version20200724131159 extends AbstractMigration
     public function down(Schema $schema) : void
     {
         $this->addSql('ALTER TABLE company RENAME COLUMN display_name TO name');
+        $this->addSql('UPDATE company SET name = company_name WHERE 1 = 1');
         $this->addSql('ALTER TABLE company DROP company_name');
     }
 }
