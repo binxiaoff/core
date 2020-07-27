@@ -1360,7 +1360,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function isPublished(): bool
     {
-        return $this->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_DRAFT;
+        return $this->hasCompletedStatus(ProjectStatus::STATUS_DRAFT);
     }
 
     /**
@@ -1368,7 +1368,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function isInterestCollected(): bool
     {
-        return $this->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_INTEREST_EXPRESSION;
+        return $this->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION);
     }
 
     /**
@@ -1376,7 +1376,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function isInInterestCollectionStep(): bool
     {
-        return ProjectStatus::STATUS_INTEREST_EXPRESSION === $this->getCurrentStatus()->getStatus();
+        return $this->hasCurrentStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION);
     }
 
     /**
@@ -1385,6 +1385,14 @@ class Project implements TraceableStatusAwareInterface
     public function isInOfferNegotiationStep(): bool
     {
         return $this->hasCurrentStatus(ProjectStatus::STATUS_PARTICIPANT_REPLY);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInAllocationStep(): bool
+    {
+        return $this->hasCurrentStatus(ProjectStatus::STATUS_ALLOCATION);
     }
 
     /**

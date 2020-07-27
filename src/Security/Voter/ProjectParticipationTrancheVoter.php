@@ -65,7 +65,7 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
     {
         $project = $projectParticipationTranche->getProjectParticipation()->getProject();
 
-        return $project->isInContractNegotiationStep() && $project->getSubmitterCompany() === $client->getCompany();
+        return $project->isInAllocationStep() && $project->getSubmitterCompany() === $client->getCompany();
     }
 
     /**
