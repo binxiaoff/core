@@ -187,7 +187,7 @@ class Project implements TraceableStatusAwareInterface
      * @Assert\NotBlank
      * @Assert\Length(max="255")
      */
-    private $riskGroupName;
+    private string $riskGroupName;
 
     /**
      * @var Company
@@ -201,7 +201,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Assert\NotBlank
      */
-    private $submitterCompany;
+    private Company $submitterCompany;
 
     /**
      * @var Clients
@@ -213,7 +213,7 @@ class Project implements TraceableStatusAwareInterface
      * @Assert\NotBlank
      * @Assert\Valid
      */
-    private $submitterClient;
+    private Clients $submitterClient;
 
     /**
      * @var string
@@ -226,7 +226,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $title;
+    private string $title;
 
     /**
      * @var MarketSegment
@@ -241,7 +241,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $marketSegment;
+    private MarketSegment $marketSegment;
 
     /**
      * @var string
@@ -252,7 +252,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $description;
+    private string $description;
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Entity\File", orphanRemoval=true)
@@ -260,7 +260,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $descriptionDocument;
+    private File $descriptionDocument;
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Entity\File", orphanRemoval=true)
@@ -268,7 +268,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $nda;
+    private File $nda;
 
     /**
      * en front (barre de progression projet) : Signature.
@@ -281,7 +281,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $signingDeadline;
+    private ?DateTimeImmutable $signingDeadline;
 
     /**
      * en front (barre de progression projet) : Allocation.
@@ -294,7 +294,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $allocationDeadline;
+    private ?DateTimeImmutable $allocationDeadline;
 
     /**
      * en front (barre de progression projet) : Réponse ferme.
@@ -307,7 +307,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $participantReplyDeadline;
+    private ?DateTimeImmutable $participantReplyDeadline;
 
     /**
      * en front (barre de progression projet) : Marque d'interet.
@@ -320,7 +320,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $interestExpressionDeadline;
+    private ?DateTimeImmutable $interestExpressionDeadline;
 
     /**
      * en front (barre de progression projet) : Projet de contrat.
@@ -333,7 +333,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $contractualizationDeadline;
+    private ?DateTimeImmutable $contractualizationDeadline;
 
     /**
      * @var string|null
@@ -346,7 +346,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $internalRatingScore;
+    private ?string $internalRatingScore;
 
     /**
      * @var int
@@ -360,10 +360,10 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $offerVisibility;
+    private int $offerVisibility;
 
     /**
-     * @var ProjectParticipation[]|ArrayCollection
+     * @var ProjectParticipation[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
      *
@@ -373,27 +373,27 @@ class Project implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      */
-    private $projectParticipations;
+    private Collection $projectParticipations;
 
     /**
-     * @var ProjectOrganizer[]|ArrayCollection
+     * @var ProjectOrganizer[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectOrganizer", mappedBy="project", cascade={"persist"})
      */
-    private $organizers;
+    private Collection $organizers;
 
     /**
-     * @var ProjectComment[]|ArrayCollection
+     * @var ProjectComment[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectComment", mappedBy="project")
      * @ORM\OrderBy({"added": "DESC"})
      *
      * @Groups({"project:read"})
      */
-    private $comments;
+    private ProjectComment $comments;
 
     /**
-     * @var Tranche[]|ArrayCollection
+     * @var Tranche[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Tranche", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      *
@@ -401,7 +401,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:read"})
      */
-    private $tranches;
+    private Collection $tranches;
 
     /**
      * @var ProjectStatus
@@ -414,20 +414,20 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:read", "project:update"})
      */
-    private $currentStatus;
+    private ProjectStatus $currentStatus;
 
     /**
-     * @var ArrayCollection|ProjectStatus
+     * @var ProjectStatus|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      * @ORM\OrderBy({"added": "ASC"})
      *
      * @Groups({"project:read"})
      */
-    private $statuses;
+    private Collection $statuses;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(type="string", length=80, nullable=true)
      *
@@ -438,10 +438,10 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $syndicationType;
+    private ?string $syndicationType;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(type="string", length=80, nullable=true)
      *
@@ -452,7 +452,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $participationType;
+    private ?string $participationType;
 
     /**
      * @var string
@@ -466,7 +466,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private $riskType;
+    private string $riskType;
 
     /**
      * @var Collection|Tag[]
@@ -475,7 +475,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:read", "project:write"})
      */
-    private $tags;
+    private Collection $tags;
 
     /**
      * @var Money
@@ -487,16 +487,16 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:read", "project:write"})
      */
-    private $globalFundingMoney;
+    private Money $globalFundingMoney;
 
     /**
-     * @var ProjectFile[]|ArrayCollection
+     * @var ProjectFile[]|Collection
      *
      * @ORM\OneToMany(targetEntity="ProjectFile", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      *
      * @ApiSubresource
      */
-    private $projectFiles;
+    private Collection $projectFiles;
 
     /**
      * @var bool
@@ -505,7 +505,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @ORM\Column(type="boolean")
      */
-    private $interestExpressionEnabled;
+    private bool $interestExpressionEnabled;
 
     /**
      * @var NullableMoney
@@ -514,7 +514,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:admin:read", "project:write"})
      */
-    private $arrangementCommissionMoney;
+    private NullableMoney $arrangementCommissionMoney;
 
     /**
      * @var string|null
@@ -525,7 +525,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Assert\Choice({Project::FUNDING_SPECIFICITY_FSA, Project::FUNDING_SPECIFICITY_LBO})
      */
-    private $fundingSpecificity;
+    private string $fundingSpecificity;
 
     /**
      * @var NullablePerson
@@ -536,7 +536,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:read", "project:write"})
      */
-    private $privilegedContactPerson;
+    private NullablePerson $privilegedContactPerson;
 
     /**
      * @param Staff         $addedBy

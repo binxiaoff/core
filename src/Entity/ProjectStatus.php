@@ -82,7 +82,7 @@ class ProjectStatus implements StatusInterface
      *
      * @Groups({"projectStatus:create"})
      */
-    private $project;
+    private Project $project;
 
     /**
      * @var int
@@ -91,7 +91,7 @@ class ProjectStatus implements StatusInterface
      *
      * @Groups({"projectStatus:read", "projectStatus:create"})
      */
-    private $status;
+    private int $status;
 
     /**
      * @var int
@@ -100,7 +100,7 @@ class ProjectStatus implements StatusInterface
      * @ORM\GeneratedValue(strategy="IDENTITY")
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private int $id;
 
     /**
      * @param Project $project
@@ -195,13 +195,13 @@ class ProjectStatus implements StatusInterface
     {
         if ($this->getStatus() > self::STATUS_DRAFT) {
             if (null === $this->getProject()->getSyndicationType()) {
-                $context->buildViolation('The syndication type of the project must be present to change its status.')
+                $context->buildViolation('ProjectStatus.project.syndicationType.required')
                     ->atPath('project.syndicationType')
                     ->addViolation()
                 ;
             }
             if (null === $this->getProject()->getParticipationType()) {
-                $context->buildViolation('The participation type of the project must be present to change its status.')
+                $context->buildViolation('ProjectStatus.project.participationType.required')
                     ->atPath('project.participationType')
                     ->addViolation()
                 ;

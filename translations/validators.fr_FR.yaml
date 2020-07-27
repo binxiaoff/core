@@ -8,8 +8,8 @@ Staff:
 Roleable:
     roles:
         choice: "Un ou plusieurs des rôles donnés sont incorrects"
-        count: "Un role est requis"
-        unique: "Les roles doivent être unique"
+        count: "Un rôle est requis"
+        unique: "Les rôles doivent être uniques"
 
 Clients:
     email:
@@ -59,3 +59,10 @@ ProjectParticipationMember:
 ProjectParticipationCollection:
     projectParticipations:
         duplicated: Merci de vérifier l'unicité des participants.
+
+ProjectStatus:
+    project:
+        syndicationType:
+            required: Le type de syndication est requis.
+        participationType:
+            required: Le type de participation est requis.
