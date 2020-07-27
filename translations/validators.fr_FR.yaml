@@ -66,3 +66,4 @@ ProjectStatus:
             required: Le type de syndication est requis.
         participationType:
             required: Le type de participation est requis.
+        oversubscribed: Le projet est en sursouscription.

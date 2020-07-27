@@ -218,7 +218,7 @@ class ProjectStatus implements StatusInterface
     public function validateOversubscription(ExecutionContextInterface $context, $payload)
     {
         if ($this->getStatus() > self::STATUS_ALLOCATION && $this->getProject()->isOversubscribed()) {
-            $context->buildViolation('The project is oversubscribed.')
+            $context->buildViolation('ProjectStatus.project.oversubscribed')
                 ->atPath('status')
                 ->addViolation();
         }
