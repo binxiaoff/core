@@ -200,6 +200,7 @@ class FixtureGenerator
     ): ProjectParticipation {
         $participation = (new ProjectParticipation($company, $project, $staff))
             ->setInterestRequest($this->rangedOffer(1000000, 2000000))
+            ->setInterestReply($this->offer(2000000))
             ->setInvitationRequest($this->offerWithFee(1000000))
             ->setAllocationFeeRate($this->faker->randomDigit);
         $status = new ProjectParticipationStatus($participation, $status, $staff);
