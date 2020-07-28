@@ -31,10 +31,24 @@ class AppFixtures extends Fixture implements FixtureInterface
         $client = $generator->user('admin@ca-lendingservices.com');
         $staff = $client->getCurrentStaff()->setMarketSegments($marketSegments);
 
-        // Fake project
+        // Fake project at the allocation phase
         $project = $generator->project('Project allocation', ProjectStatus::STATUS_ALLOCATION, $staff, $marketSegments[0]);
         $tranches = [];
         for ($i = 1; $i <= 5; $i++) {
+            $tranches[] = $generator->tranche($project, "Tranche $i", $i * 1000000);
+        }
+        $generator->participation($project, $staff->getCompany(), $staff);
+        foreach ($companies as $company) {
+            $participation = $generator->participation($project, $company, $staff);
+            foreach ($tranches as $tranche) {
+                $generator->participationTranche($participation, $tranche, $staff, 1000000, 1000000);
+            }
+        }
+
+        // Fake project before the allocation phase
+        $project = $generator->project('Project reply', ProjectStatus::STATUS_PARTICIPANT_REPLY, $staff, $marketSegments[1]);
+        $tranches = [];
+        for ($i = 1; $i <= 2; $i++) {
             $tranches[] = $generator->tranche($project, "Tranche $i", $i * 1000000);
         }
         $generator->participation($project, $staff->getCompany(), $staff);
