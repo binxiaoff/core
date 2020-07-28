@@ -27,8 +27,11 @@ class AppFixtures extends Fixture implements FixtureInterface
             $companies[] = $generator->company("Company $i");
         }
 
-        // Our main user
-        $client = $generator->user('admin@ca-lendingservices.com');
+        // Test new user
+        $generator->user('new@ca-lendingservices.com', [$companies[0]]);
+
+        // Test arraganger
+        $client = $generator->user('admin@ca-lendingservices.com', [$generator->company('KLS Company', 'CALS')]);
         $staff = $client->getCurrentStaff()->setMarketSegments($marketSegments);
 
         // Fake project at the allocation phase

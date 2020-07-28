@@ -154,7 +154,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      *
      * @Gedmo\Versioned
      */
-    private ?string $password;
+    private ?string $password = null;
 
     /**
      * @Groups({"client:write"})

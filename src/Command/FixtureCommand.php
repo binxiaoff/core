@@ -18,6 +18,11 @@ use Symfony\Component\Console\{Command\Command,
     Style\SymfonyStyle};
 use Unilend\DataFixtures\AppFixtures;
 
+/**
+ * Custom command to load fixtures
+ *
+ * This command is necessary since we need to disable foreignKey Constraints to truncate the data without restriction.
+ */
 class FixtureCommand extends Command
 {
 

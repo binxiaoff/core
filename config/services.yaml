@@ -53,9 +53,7 @@ services:
         tags:
             - { name: 'controller.service_arguments' }
 
-    Doctrine\Bundle\FixturesBundle\Loader\SymfonyFixturesLoader:
-        class: Doctrine\Bundle\FixturesBundle\Loader\SymfonyFixturesLoader
-        public: false
+    Doctrine\Bundle\FixturesBundle\Loader\SymfonyFixturesLoader: ~
 
     Unilend\Service\Translation\TranslationLoader:
         tags:

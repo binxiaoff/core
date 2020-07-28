@@ -17,7 +17,7 @@ class StatusCreatedListener
         $entity = $args->getEntity();
 
         if ($entity instanceof StatusInterface) {
-            // $entity->getAttachedObject()->setCurrentStatus($entity);
+            $entity->getAttachedObject()->setCurrentStatus($entity);
         }
     }
 }

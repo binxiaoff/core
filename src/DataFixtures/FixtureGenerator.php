@@ -55,14 +55,15 @@ class FixtureGenerator
     }
 
     /**
-     * @param string $email
+     * @param string    $email
+     * @param Company[] $companies
      *
      * @return Clients
      *
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\ORM\ORMException
      */
-    public function user(string $email): Clients
+    public function user(string $email, array $companies = []): Clients
     {
         // We create one client
         $client = (new Clients($this->faker->company))
@@ -71,20 +72,21 @@ class FixtureGenerator
             ->setFirstName($this->faker->firstName)
             ->setPhone($this->faker->phoneNumber)
             ->setMobile($this->faker->phoneNumber)
-            ->setPlainPassword('0000')
-            ->setCurrentStatus(ClientStatus::STATUS_CREATED)
             ->setJobFunction($this->faker->jobTitle)
-            ->setEmail($email);
-        $this->forcePublicId($client, 'arranger');
+            ->setEmail($email)
+            ->setPlainPassword('0000');
+        $status = new ClientStatus($client, ClientStatus::STATUS_CREATED);
+        $this->persist($status);
+        $client->setCurrentStatus($status);
         $this->em->persist($client);
 
-        // With one company
-        $company = $this->company('KLS Company', 'CALS');
+        // We need to flush things before the next step cause we need the primary keys
         $this->em->flush();
 
         // And we set the client as the manager of this company
-        // TODO : How to insert a staff using the ORM since new Staff need a Staff :( ?
-        $sql = <<<SQL
+        foreach ($companies as $company) {
+            // TODO : How to insert a staff using the ORM since new Staff need a Staff :( ?
+            $sql = <<<SQL
             INSERT INTO `staff` 
                 (id_company, id_client, roles, updated, added, public_id) VALUES 
                 (
@@ -95,14 +97,15 @@ class FixtureGenerator
                     "client{$client->getId()}-company{$company->getId()}-staff"
                 )
         SQL;
-        $this->em->getConnection()->exec($sql);
-        $staffId = $this->em->getConnection()->lastInsertId();
-        /** @var Staff $staff */
-        $staff = $this->em->getReference(Staff::class, $staffId);
-        $staffStatus = new StaffStatus($staff, StaffStatus::STATUS_ACTIVE, $staff);
-        $staff->setCurrentStatus($staffStatus);
-        $this->em->persist($staffStatus);
-        $client->setCurrentStaff($staff);
+            $this->em->getConnection()->exec($sql);
+            $staffId = $this->em->getConnection()->lastInsertId();
+            /** @var Staff $staff */
+            $staff = $this->em->getReference(Staff::class, $staffId);
+            $staffStatus = new StaffStatus($staff, StaffStatus::STATUS_ACTIVE, $staff);
+            $staff->setCurrentStatus($staffStatus);
+            $this->em->persist($staffStatus);
+            $client->setCurrentStaff($staff);
+        }
 
         return $client;
     }
