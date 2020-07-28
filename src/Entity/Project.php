@@ -676,7 +676,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @return Project
      */
-    public function setDescriptionDocument(?File $file): self
+    public function setDescriptionDocument(?File $file): Project
     {
         $this->descriptionDocument = $file;
 
