@@ -7,6 +7,7 @@ namespace Unilend\Entity\Request;
 use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\{Project, ProjectParticipation};
 
 /**
@@ -48,6 +49,9 @@ class ProjectParticipationCollection
 {
     /**
      * @var ArrayCollection|ProjectParticipation[]
+     *
+     * @Assert\Count(min=1)
+     * @Assert\Valid
      *
      * @Groups({"projectParticipationCollection:read"})
      */

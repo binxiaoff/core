@@ -322,6 +322,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationMember", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
+     * @Assert\Valid
+     *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
      */
     private Collection $projectParticipationMembers;
