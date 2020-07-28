@@ -165,7 +165,7 @@ class ProjectOrganizer
                         ->atPath('roles')
                         ->setInvalidValue($role)
                         ->setParameters([
-                            '{{ company }}' => $organizer->getCompany()->getName(),
+                            '{{ company }}' => $organizer->getCompany()->getDisplayName(),
                             '{{ value }}'   => $role,
                         ])
                         ->addViolation()

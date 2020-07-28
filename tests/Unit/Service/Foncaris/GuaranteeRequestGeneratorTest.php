@@ -218,7 +218,7 @@ class GuaranteeRequestGeneratorTest extends TestCase
     {
         /** @var Company|ObjectProphecy $submitterCompany */
         $submitterCompany = $this->prophesize(Company::class);
-        $submitterCompany->getName()->willReturn(Base::randomLetter());
+        $submitterCompany->getDisplayName()->willReturn(Base::randomLetter());
         $submitterCompany->getSiren()->willReturn(Base::numerify(str_repeat('#', 9)));
         $submitterCompany = $submitterCompany->reveal();
 

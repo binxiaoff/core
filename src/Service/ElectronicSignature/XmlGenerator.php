@@ -98,7 +98,7 @@ class XmlGenerator
 
         $donneeEntreprise = $parametresDeSignature->addChild('DONNEEENTREPRISE');
         $donneeEntreprise->addChild('INDICATEURENTREPRISE', 'O');
-        $donneeEntreprise->addChild('LIBELLEENTREPRISE', $signatory->getCompany()->getName());
+        $donneeEntreprise->addChild('LIBELLEENTREPRISE', $signatory->getCompany()->getDisplayName());
 
         $donneePP = $parametresDeSignature->addChild('DONNEEPP');
         $donneePP->addChild('CDTICI', '1'); // todo: ask for the values for other titles

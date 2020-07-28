@@ -109,7 +109,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         //Regional bank
         $currentRow  = $this->localizeCurrentRow($sheet);
         $sectionData = [
-            ['Nom de la CR demandeuse', $project->getSubmitterCompany()->getName()],
+            ['Nom de la CR demandeuse', $project->getSubmitterCompany()->getDisplayName()],
             ['Nom du contact dans la CR demandeuse', $project->getSubmitterClient()->getFirstName() . ' ' . $project->getSubmitterClient()->getLastName()],
             ['Email du contact dans la CR demandeuse', $project->getSubmitterClient()->getEmail()],
         ];
