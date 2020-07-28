@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Entity\{Project, ProjectParticipation};
 
 /**
@@ -30,11 +31,7 @@ use Unilend\Entity\{Project, ProjectParticipation};
  *         "timestampable:read"
  *     }},
  *     collectionOperations={
- *         "post": {
- *             "controller": "Unilend\Controller\ProjectParticipation\ProjectParticipationCollectionCreate",
- *             "path": "/project_participation_collection",
- *             "security_post_denormalize": "is_granted('create', object)"
- *         }
+ *         "post": {"security_post_denormalize": "is_granted('create', object)"}
  *     },
  *     itemOperations={
  *         "get": {
@@ -98,5 +95,25 @@ class ProjectParticipationCollection
     public function getId(): string
     {
         return 'not_an_id';
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function checkParticipationUniqueness(ExecutionContextInterface $context): void
+    {
+        $companyIds = [];
+        foreach ($this->projectParticipations as $participation) {
+            $companyIds[] = $participation->getParticipant()->getId();
+        }
+
+        if (count($companyIds) !== count(array_unique($companyIds))) {
+            $context->buildViolation('ProjectParticipationCollection.projectParticipations.duplicated')
+                ->atPath('projectParticipations')
+                ->addViolation()
+            ;
+        }
     }
 }

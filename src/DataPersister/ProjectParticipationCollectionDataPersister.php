@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Controller\ProjectParticipation;
+namespace Unilend\DataPersister;
 
-use Doctrine\ORM\ORMException;
+use ApiPlatform\Core\DataPersister\DataPersisterInterface;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\Entity\Request\ProjectParticipationCollection;
 use Unilend\Repository\ProjectParticipationRepository;
 
-class ProjectParticipationCollectionCreate
+class ProjectParticipationCollectionDataPersister implements DataPersisterInterface
 {
+
     /** @var ProjectParticipationRepository */
     private ProjectParticipationRepository $projectParticipationRepository;
 
@@ -22,13 +24,22 @@ class ProjectParticipationCollectionCreate
     }
 
     /**
-     * @param ProjectParticipationCollection $data
+     * {@inheritdoc}
      *
-     * @return ProjectParticipationCollection
+     * @return bool
+     */
+    public function supports($data): bool
+    {
+        return $data instanceof ProjectParticipationCollection;
+    }
+
+    /**
+     * {@inheritdoc}
      *
      * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function __invoke(ProjectParticipationCollection $data)
+    public function persist($data): ProjectParticipationCollection
     {
         foreach ($data->getProjectParticipations() as $projectParticipation) {
             $this->projectParticipationRepository->persist($projectParticipation);
@@ -37,5 +48,13 @@ class ProjectParticipationCollectionCreate
         $this->projectParticipationRepository->flush();
 
         return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function remove($data): void
+    {
+        // remove is not supported
     }
 }
