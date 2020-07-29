@@ -6,6 +6,7 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\FixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Unilend\Entity\ProjectStatus;
+use Unilend\Entity\Tranche;
 
 class AppFixtures extends Fixture implements FixtureInterface
 {
@@ -36,15 +37,23 @@ class AppFixtures extends Fixture implements FixtureInterface
 
         // Fake project at the allocation phase
         $project = $generator->project('Project allocation', ProjectStatus::STATUS_ALLOCATION, $staff, $marketSegments[0]);
+        /** @var Tranche[] $tranches */
         $tranches = [];
+        $letters = 'ABCDEFGH';
         for ($i = 1; $i <= 5; $i++) {
-            $tranches[] = $generator->tranche($project, "Tranche $i", $i * 1000000);
+            $tranches[] = $generator->tranche($project, $letters[$i], $i * 1000000);
         }
-        $generator->participation($project, $staff->getCompany(), $staff);
+        // Tranche 3 will be not syndicated
+        $staffParticipation = $generator->participation($project, $staff->getCompany(), $staff);
+        $tranches[3]->setSyndicated(0);
+        $generator->participationTranche($staffParticipation, $tranches[3], $staff, 1000000, 1000000);
+        // Everyone participates to other tranches
         foreach ($companies as $company) {
             $participation = $generator->participation($project, $company, $staff);
-            foreach ($tranches as $tranche) {
-                $generator->participationTranche($participation, $tranche, $staff, 1000000, 1000000);
+            foreach ($tranches as $k => $tranche) {
+                if (3 !== $k) {
+                    $generator->participationTranche($participation, $tranche, $staff, 1000000, 1000000);
+                }
             }
         }
 
