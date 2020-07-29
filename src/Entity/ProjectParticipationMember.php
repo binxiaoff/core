@@ -192,7 +192,7 @@ class ProjectParticipationMember
     /**
      * @return FileVersion|null
      *
-     * @Groups({"projectParticipationContact:read"})
+     * @Groups({"projectParticipationMember:read"})
      */
     public function getAcceptableNdaVersion()
     {
