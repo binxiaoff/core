@@ -56,3 +56,6 @@ ProjectParticipationMember:
     acceptedNdaVersion:
         unacceptableVersion: Cette version de fichier n'est pas une de la lettre de confidentialité acceptable
 
+ProjectParticipationCollection:
+    projectParticipations:
+        duplicated: Merci de vérifier l'unicité des participants.

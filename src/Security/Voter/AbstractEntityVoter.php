@@ -14,10 +14,10 @@ abstract class AbstractEntityVoter extends Voter
 {
     use ConstantsAwareTrait;
 
-    private const UNILEND_ENTITY_NAMESPACE = 'Unilend\\Entity\\';
+    protected const UNILEND_ENTITY_NAMESPACE = 'Unilend\\Entity\\';
 
     /** @var AuthorizationCheckerInterface */
-    protected $authorizationChecker;
+    protected AuthorizationCheckerInterface $authorizationChecker;
 
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
@@ -32,7 +32,7 @@ abstract class AbstractEntityVoter extends Voter
      */
     final protected function supports($attribute, $subject): bool
     {
-        $entityClass = self::UNILEND_ENTITY_NAMESPACE . str_replace(['Unilend\\Security\\Voter\\', 'Voter'], '', static::class);
+        $entityClass = static::UNILEND_ENTITY_NAMESPACE . str_replace(['Unilend\\Security\\Voter\\', 'Voter'], '', static::class);
 
         return $subject instanceof $entityClass && \in_array($attribute, static::getConstants('ATTRIBUTE_'), true);
     }

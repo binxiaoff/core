@@ -43,7 +43,9 @@ class Offer
     public function __construct(?NullableMoney $money = null)
     {
         $this->money = $money ?? new NullableMoney();
-        $this->added = new DateTimeImmutable();
+        if ($this->money->getAmount()) {
+            $this->added = new DateTimeImmutable();
+        }
     }
 
     /**
