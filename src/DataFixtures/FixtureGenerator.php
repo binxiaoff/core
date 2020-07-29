@@ -120,7 +120,7 @@ class FixtureGenerator
      */
     public function company(string $name = null, string $shortcode = null): Company
     {
-        $company = $this->persist(new Company($name ?: $this->faker->company))
+        $company = $this->persist(new Company($name ?: $this->faker->company, $name ?: $this->faker->company))
             ->setBankCode($this->faker->randomNumber(8, true))
             ->setShortCode($shortcode ?: $this->faker->regexify('[A-Za-z0-9]{10}'))
             ->setApplicableVat($this->faker->vat);
