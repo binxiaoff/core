@@ -23,7 +23,6 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_ARRANGER_EDIT                      = 'arranger_edit';
     public const ATTRIBUTE_ARRANGER_INTEREST_COLLECTION_EDIT  = 'arranger_interest_collection_edit';
     public const ATTRIBUTE_ARRANGER_OFFER_NEGOTIATION_EDIT    = 'arranger_offer_negotiation_edit';
-    public const ATTRIBUTE_ARRANGER_ALLOCATION_EDIT           = 'arranger_allocation_edit';
 
     public const ATTRIBUTE_PARTICIPATION_OWNER_EDIT                      = 'participation_owner_edit';
     public const ATTRIBUTE_PARTICIPATION_OWNER_INTEREST_COLLECTION_EDIT  = 'participation_owner_interest_collection_edit';
@@ -67,7 +66,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
 
         return $project->isPublished()
         && $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
-        && false === $projectParticipation->getProject()->hasEditableStatus();
+        && $projectParticipation->getProject()->hasEditableStatus();
     }
 
     /**
@@ -82,7 +81,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
 
         return $this->isProjectArranger($projectParticipation, $user)
             && false === $project->hasCompletedStatus(ProjectStatus::STATUS_ALLOCATION)
-            && false === $project->hasEditableStatus();
+            && $project->hasEditableStatus();
     }
 
     /**
@@ -190,17 +189,6 @@ class ProjectParticipationVoter extends AbstractEntityVoter
 
         return $this->isProjectArranger($projectParticipation, $user)
             && ($projectParticipation->getProject()->isInOfferNegotiationStep() || (false === $project->isInterestExpressionEnabled() && false === $project->isPublished()));
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    protected function canArrangerAllocationEdit(ProjectParticipation $projectParticipation, Clients $user): bool
-    {
-        return $this->isProjectArranger($projectParticipation, $user) && $projectParticipation->getProject()->isInAllocationStep();
     }
 
     /**
