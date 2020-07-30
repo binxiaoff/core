@@ -10,7 +10,6 @@ use Unilend\Entity\{Clients, MarketSegment, Staff};
 class StaffVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_VIEW       = 'view';
-    public const ATTRIBUTE_ADMIN_VIEW = 'admin_view';
     public const ATTRIBUTE_EDIT       = 'edit';
     public const ATTRIBUTE_ADMIN_EDIT = 'admin_edit';
     public const ATTRIBUTE_DELETE     = 'delete';
@@ -25,7 +24,7 @@ class StaffVoter extends AbstractEntityVoter
      */
     protected function fulfillPreconditions($subject, Clients $user): bool
     {
-        return $user->getCurrentStaff() ? true : false;
+        return (bool) $user->getCurrentStaff();
     }
 
     /**
@@ -39,17 +38,6 @@ class StaffVoter extends AbstractEntityVoter
         $submitterStaff = $user->getCurrentStaff();
 
         return $submitterStaff && $submitterStaff->isAdmin() && $subject->getCompany() === $submitterStaff->getCompany();
-    }
-
-    /**
-     * @param Staff   $staff
-     * @param Clients $user
-     *
-     * @return bool
-     */
-    protected function canAdminView(Staff $staff, Clients $user): bool
-    {
-        return $staff->getClient() === $user || $staff->getCompany() === $user->getCompany();
     }
 
     /**
