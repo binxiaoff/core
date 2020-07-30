@@ -36,7 +36,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "offerWithFee:read",
  *         "offer:read",
  *         "archivable:read",
- *         "timestampable:read"
+ *         "timestampable:read",
+ *         "companyStatus:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
@@ -64,7 +65,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "offerWithFee:read",
  *                 "offer:read",
  *                 "archivable:read",
- *                 "timestampable:read"
+ *                 "timestampable:read",
+ *                 "companyStatus:read"
  *             }}
  *         },
  *         "post": {
@@ -101,7 +103,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "file:read",
  *                     "fileVersion:read",
  *                     "tranche:read",
- *                     "lendingRate:read"
+ *                     "lendingRate:read",
+ *                     "companyStatus:read"
  *                 }
  *             }
  *         },

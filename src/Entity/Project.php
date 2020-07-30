@@ -97,7 +97,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "nullableMoney:read",
  *                 "rangedOfferWithFee:read",
  *                 "offerWithFee:read",
- *                 "offer:read"
+ *                 "offer:read",
+ *                 "companyStatus:read"
  *             }}
  *         },
  *         "project_nda": {
