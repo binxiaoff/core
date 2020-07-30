@@ -68,8 +68,8 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
             $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE;
         }
 
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_CONTRACT_NEGOTIATION_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE;
+        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_ALLOCATION_EDIT, $projectParticipation)) {
+            $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE;
         }
 
         if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_EDIT, $projectParticipation)) {
@@ -82,10 +82,6 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
 
         if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_OFFER_NEGOTIATION_EDIT, $projectParticipation)) {
             $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE;
-        }
-
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_CONTRACT_NEGOTIATION_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPANT_CONTRACT_NEGOTIATION_OWNER_WRITE;
         }
 
         return $groups;

@@ -153,10 +153,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     // Additional denormalizer group that is available for the arranger in offer negotiation step
     public const SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE = 'projectParticipation:arranger:offerNegotiation:write';
 
-    // Additional denormalizer group that is available for the participation owner in contract negotiation step
-    public const SERIALIZER_GROUP_PARTICIPANT_CONTRACT_NEGOTIATION_OWNER_WRITE = 'projectParticipation:participationOwner:contractNegotiation:write';
     // Additional denormalizer group that is available for the arranger in contract negotiation step
-    public const SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE = 'projectParticipation:arranger:contractNegotiation:write';
+    public const SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE = 'projectParticipation:arranger:allocation:write';
 
     public const BLACKLISTED_COMPANIES = [
         'CA-CIB',
@@ -304,7 +302,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE})
      */
     private ?string $allocationFeeRate = null;
 
@@ -365,7 +363,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
      *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE,
      *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE,
-     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_CONTRACT_NEGOTIATION_WRITE
+     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE
      * })
      */
     private ?File $nda = null;

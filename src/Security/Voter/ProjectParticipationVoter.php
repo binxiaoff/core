@@ -23,12 +23,11 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_ARRANGER_EDIT                      = 'arranger_edit';
     public const ATTRIBUTE_ARRANGER_INTEREST_COLLECTION_EDIT  = 'arranger_interest_collection_edit';
     public const ATTRIBUTE_ARRANGER_OFFER_NEGOTIATION_EDIT    = 'arranger_offer_negotiation_edit';
-    public const ATTRIBUTE_ARRANGER_CONTRACT_NEGOTIATION_EDIT = 'arranger_contract_negotiation_edit';
+    public const ATTRIBUTE_ARRANGER_ALLOCATION_EDIT           = 'arranger_allocation_edit';
 
     public const ATTRIBUTE_PARTICIPATION_OWNER_EDIT                      = 'participation_owner_edit';
     public const ATTRIBUTE_PARTICIPATION_OWNER_INTEREST_COLLECTION_EDIT  = 'participation_owner_interest_collection_edit';
     public const ATTRIBUTE_PARTICIPATION_OWNER_OFFER_NEGOTIATION_EDIT    = 'participation_owner_offer_negotiation_edit';
-    public const ATTRIBUTE_PARTICIPATION_OWNER_CONTRACT_NEGOTIATION_EDIT = 'participation_owner_contract_negotiation_edit';
 
     /** @var ProjectParticipationManager */
     private ProjectParticipationManager $projectParticipationManager;
@@ -46,12 +45,23 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     }
 
     /**
+     * @param mixed   $subject
+     * @param Clients $user
+     *
+     * @return bool
+     */
+    protected function fulfillPreconditions($subject, Clients $user): bool
+    {
+        return $user->getCurrentStaff() && false === $subject->getProject()->hasCompletedStatus(ProjectStatus::STATUS_ALLOCATION);
+    }
+
+    /**
      * @param ProjectParticipation $projectParticipation
      * @param Clients              $user
      *
      * @return bool
      */
-    public function canParticipationOwnerEdit(ProjectParticipation $projectParticipation, Clients $user): bool
+    protected function canParticipationOwnerEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
         $project = $projectParticipation->getProject();
 
@@ -66,24 +76,13 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    public function canArrangerEdit(ProjectParticipation $projectParticipation, Clients $user): bool
+    protected function canArrangerEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
         $project = $projectParticipation->getProject();
 
         return $this->isProjectArranger($projectParticipation, $user)
             && false === $project->hasCompletedStatus(ProjectStatus::STATUS_ALLOCATION)
             && false === $project->hasEditableStatus();
-    }
-
-    /**
-     * @param mixed   $subject
-     * @param Clients $user
-     *
-     * @return bool
-     */
-    protected function fulfillPreconditions($subject, Clients $user): bool
-    {
-        return $user->getCurrentStaff() && false === $subject->getProject()->hasCompletedStatus(ProjectStatus::STATUS_ALLOCATION);
     }
 
     /**
@@ -199,9 +198,9 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function canArrangerContractNegotiationEdit(ProjectParticipation $projectParticipation, Clients $user): bool
+    protected function canArrangerAllocationEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return $this->isProjectArranger($projectParticipation, $user) && $projectParticipation->getProject()->isInContractNegotiationStep();
+        return $this->isProjectArranger($projectParticipation, $user) && $projectParticipation->getProject()->isInAllocationStep();
     }
 
     /**
@@ -224,17 +223,6 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     protected function canParticipationOwnerOfferNegotiationEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
         return $this->canParticipationOwnerEdit($projectParticipation, $user) && $projectParticipation->getProject()->isInOfferNegotiationStep();
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    protected function canParticipationOwnerContractNegotiationEdit(ProjectParticipation $projectParticipation, Clients $user): bool
-    {
-        return $this->canParticipationOwnerEdit($projectParticipation, $user) && $projectParticipation->getProject()->isInContractNegotiationStep();
     }
 
     /**
