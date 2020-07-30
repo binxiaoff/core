@@ -32,7 +32,7 @@ class AppFixtures extends Fixture implements FixtureInterface
         $generator->user('new@ca-lendingservices.com', [$companies[0]]);
 
         // Test arraganger
-        $client = $generator->user('admin@ca-lendingservices.com', [$generator->company('KLS Company', 'CALS')]);
+        $client = $generator->user('admin@ca-lendingservices.com', [$generator->company('KLS Company', 'CALS')], 'arranger');
         $staff = $client->getCurrentStaff()->setMarketSegments($marketSegments);
 
         // Fake project at the allocation phase
@@ -41,7 +41,7 @@ class AppFixtures extends Fixture implements FixtureInterface
         $tranches = [];
         $letters = 'ABCDEFGH';
         for ($i = 1; $i <= 5; $i++) {
-            $tranches[] = $generator->tranche($project, $letters[$i], $i * 1000000);
+            $tranches[] = $generator->tranche($project, $letters[$i], 5000000);
         }
         // Tranche 3 will be not syndicated
         $staffParticipation = $generator->participation($project, $staff->getCompany(), $staff);

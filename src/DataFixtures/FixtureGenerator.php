@@ -57,13 +57,14 @@ class FixtureGenerator
     /**
      * @param string    $email
      * @param Company[] $companies
+     * @param ?string   $publicId
      *
      * @return Clients
      *
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\ORM\ORMException
      */
-    public function user(string $email, array $companies = []): Clients
+    public function user(string $email, array $companies = [], ?string $publicId = null): Clients
     {
         // We create one client
         $client = (new Clients($this->faker->company))
@@ -75,6 +76,9 @@ class FixtureGenerator
             ->setJobFunction($this->faker->jobTitle)
             ->setEmail($email)
             ->setPlainPassword('0000');
+        if ($publicId) {
+            $this->forcePublicId($client, $publicId);
+        }
         $status = new ClientStatus($client, ClientStatus::STATUS_CREATED);
         $this->persist($status);
         $client->setCurrentStatus($status);
@@ -202,6 +206,7 @@ class FixtureGenerator
             ->setInterestRequest($this->rangedOffer(1000000, 2000000))
             ->setInterestReply($this->offer(2000000))
             ->setInvitationRequest($this->offerWithFee(1000000))
+            ->setInvitationReplyMode('pro-rata')
             ->setAllocationFeeRate($this->faker->randomDigit);
         $status = new ProjectParticipationStatus($participation, $status, $staff);
         $participation->setCurrentStatus($status);
