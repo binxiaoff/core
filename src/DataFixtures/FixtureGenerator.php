@@ -247,13 +247,13 @@ class FixtureGenerator
     }
 
     /**
-     * @param int $min
-     * @param int $max
-     * @param int $rate
+     * @param int   $min
+     * @param int   $max
+     * @param float $rate
      *
      * @return RangedOfferWithFee
      */
-    public function rangedOffer(int $min, int $max, int $rate = 3): RangedOfferWithFee
+    public function rangedOffer(int $min, int $max, float $rate = 0.03): RangedOfferWithFee
     {
         return new RangedOfferWithFee(
             $this->nullableMoney($min),
@@ -263,12 +263,12 @@ class FixtureGenerator
     }
 
     /**
-     * @param int $value
-     * @param int $rate
+     * @param int   $value
+     * @param float $rate
      *
      * @return OfferWithFee
      */
-    public function offerWithFee(int $value, int $rate = 3): OfferWithFee
+    public function offerWithFee(int $value, float $rate = 0.03): OfferWithFee
     {
         return new OfferWithFee($this->nullableMoney($value), $rate);
     }
