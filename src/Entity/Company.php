@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
@@ -26,6 +26,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *     }
  * )
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project"})
+ * @ApiFilter(SearchFilter::class, properties={"groupName"})
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
