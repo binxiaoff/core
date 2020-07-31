@@ -20,7 +20,7 @@ final class Version20200730221112 extends AbstractMigration
 
     public function up(Schema $schema) : void
     {
-        //$this->addSql('ALTER TABLE staff_status ADD public_id VARCHAR(36) NOT NULL');
+        $this->addSql('ALTER TABLE staff_status ADD public_id VARCHAR(36) NOT NULL');
         $statuses = $this->connection->fetchAll('SELECT id FROM staff_status');
         $statuses = array_column($statuses, 'id');
         foreach ($statuses as $statusId) {
