@@ -104,7 +104,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "fileVersion:read",
  *                     "tranche:read",
  *                     "lendingRate:read",
- *                     "staff:read",
  *                     "companyStatus:read"
  *                 }
  *             }
