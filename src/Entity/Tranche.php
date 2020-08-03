@@ -834,9 +834,9 @@ class Tranche
     }
 
     /**
-     * @return NullableMoney|MoneyInterface
+     * @return MoneyInterface
      */
-    public function getTotalInvitationReplyAmount()
+    public function getTotalInvitationReplyMoney(): MoneyInterface
     {
         $totalSyndicatedAmount = new NullableMoney();
 
