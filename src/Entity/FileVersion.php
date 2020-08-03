@@ -308,21 +308,12 @@ class FileVersion
     /**
      * @Groups({"fileVersion:read"})
      *
-     * @return int|null
+     * @return int
      */
-    public function getVersionNumber(): ?int
+    public function getVersionNumber(): int
     {
-        $number       = 0;
         $fileVersions = $this->getFile()->getFileVersions();
 
-        foreach ($fileVersions as $fileVersion) {
-            $number++;
-
-            if ($fileVersion === $this) {
-                return $number;
-            }
-        }
-
-        return null;
+        return $fileVersions->indexOf($this) + 1;
     }
 }

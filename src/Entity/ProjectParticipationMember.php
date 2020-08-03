@@ -201,4 +201,14 @@ class ProjectParticipationMember
 
         return $file ? $file->getCurrentFileVersion() : null;
     }
+
+    /**
+     * @Groups({"projectParticipationMember:read"})
+     *
+     * @return string
+     */
+    public function getMemberName(): string
+    {
+        return $this->staff->getClient()->getFirstName() . ' ' . $this->staff->getClient()->getLastName();
+    }
 }
