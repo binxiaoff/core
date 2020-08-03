@@ -63,7 +63,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setTitle($title)
             ->setInternalRatingScore('B')
             ->setFundingSpecificity('FSA')
-            ->setSyndicationType('')
+            ->setParticipationType(Project::PROJECT_PARTICIPATION_TYPE_DIRECT)
+            ->setSyndicationType(Project::PROJECT_SYNDICATION_TYPE_PRIMARY)
             ->setInterestExpressionEnabled(false) // "Réponse ferme"
             ->setDescription($this->faker->sentence);
         $status = new ProjectStatus($project, $status, $staff);
