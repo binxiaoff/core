@@ -244,7 +244,7 @@ class Project implements TraceableStatusAwareInterface
     private MarketSegment $marketSegment;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(type="text", length=16777215, nullable=true)
      *
@@ -252,23 +252,27 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private string $description;
+    private ?string $description = null;
 
     /**
+     * @var File|null
+     *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\File", orphanRemoval=true)
      * @ORM\JoinColumn(name="id_description_document", unique=true)
      *
      * @Groups({"project:write", "project:read"})
      */
-    private File $descriptionDocument;
+    private ?File $descriptionDocument = null;
 
     /**
+     * @var File|null
+     *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\File", orphanRemoval=true)
      * @ORM\JoinColumn(name="id_nda", unique=true)
      *
      * @Groups({"project:write", "project:read"})
      */
-    private File $nda;
+    private ?File $nda = null;
 
     /**
      * en front (barre de progression projet) : Signature.
@@ -455,7 +459,7 @@ class Project implements TraceableStatusAwareInterface
     private ?string $participationType;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(type="string", nullable=true, length=80)
      *
@@ -466,7 +470,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private string $riskType;
+    private ?string $riskType;
 
     /**
      * @var Collection|Tag[]
@@ -525,7 +529,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Assert\Choice({Project::FUNDING_SPECIFICITY_FSA, Project::FUNDING_SPECIFICITY_LBO})
      */
-    private string $fundingSpecificity;
+    private ?string $fundingSpecificity;
 
     /**
      * @var NullablePerson

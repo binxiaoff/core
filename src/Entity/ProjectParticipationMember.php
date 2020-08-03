@@ -18,6 +18,7 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchived
 
 /**
  * @ApiResource(
+ *     normalizationContext={"groups": {"projectParticipationMember:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -192,12 +193,22 @@ class ProjectParticipationMember
     /**
      * @return FileVersion|null
      *
-     * @Groups({"projectParticipationContact:read"})
+     * @Groups({"projectParticipationMember:read"})
      */
     public function getAcceptableNdaVersion()
     {
         $file = $this->projectParticipation->getNda() ?? $this->getProjectParticipation()->getProject()->getNda();
 
         return $file ? $file->getCurrentFileVersion() : null;
+    }
+
+    /**
+     * @Groups({"projectParticipationMember:read"})
+     *
+     * @return string
+     */
+    public function getMemberName(): string
+    {
+        return $this->staff->getClient()->getFirstName() . ' ' . $this->staff->getClient()->getLastName();
     }
 }

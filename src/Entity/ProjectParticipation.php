@@ -87,7 +87,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "normalization_context": {
  *                 "groups": {
  *                     "projectParticipation:read",
- *                     "projectParticipationContact:read",
+ *                     "projectParticipationMember:read",
  *                     "projectParticipationTranche:read",
  *                     "projectParticipationStatus:read",
  *                     "projectStatus:read",
