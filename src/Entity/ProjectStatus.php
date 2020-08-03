@@ -11,6 +11,7 @@ use Exception;
 use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Entity\Interfaces\StatusInterface;
 use Unilend\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
@@ -81,7 +82,7 @@ class ProjectStatus implements StatusInterface
      *
      * @Groups({"projectStatus:create"})
      */
-    private $project;
+    private Project $project;
 
     /**
      * @var int
@@ -90,7 +91,7 @@ class ProjectStatus implements StatusInterface
      *
      * @Groups({"projectStatus:read", "projectStatus:create"})
      */
-    private $status;
+    private int $status;
 
     /**
      * @var int
@@ -99,7 +100,7 @@ class ProjectStatus implements StatusInterface
      * @ORM\GeneratedValue(strategy="IDENTITY")
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private int $id;
 
     /**
      * @param Project $project
@@ -182,5 +183,29 @@ class ProjectStatus implements StatusInterface
     public function getAttachedObject()
     {
         return $this->getProject();
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     * @param                           $payload
+     */
+    public function validateSyndicationAndParticipationTypes(ExecutionContextInterface $context, $payload)
+    {
+        if ($this->getStatus() > self::STATUS_DRAFT) {
+            if (null === $this->getProject()->getSyndicationType()) {
+                $context->buildViolation('ProjectStatus.project.syndicationType.required')
+                    ->atPath('project.syndicationType')
+                    ->addViolation()
+                ;
+            }
+            if (null === $this->getProject()->getParticipationType()) {
+                $context->buildViolation('ProjectStatus.project.participationType.required')
+                    ->atPath('project.participationType')
+                    ->addViolation()
+                ;
+            }
+        }
     }
 }
