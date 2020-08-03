@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
@@ -29,9 +30,12 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableT
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {"groups": {"role:write", "staff:create", "client:create"}}
- *         }
+ *         },
+ *         "get"
  *     }
  * )
+ *
+ * @ApiFilter(SearchFilter::class, properties={"company.groupName"})
  *
  * @ORM\Entity
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "id_company"})})
