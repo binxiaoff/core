@@ -11,9 +11,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Embeddable\{Money, NullableLendingRate};
+use Unilend\Entity\Embeddable\{Money, NullableLendingRate, NullableMoney};
+use Unilend\Entity\Interfaces\MoneyInterface;
 use Unilend\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -308,6 +310,15 @@ class Tranche
     private string $color;
 
     /**
+     * @var ProjectParticipationTranche[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true, fetch="LAZY")
+     *
+     * @Groups({"tranche:read"})
+     */
+    private $projectParticipationTranches;
+
+    /**
      * @param Project $project
      * @param Money   $money
      * @param string  $name
@@ -315,20 +326,23 @@ class Tranche
      * @param string  $repaymentType
      * @param string  $loanType
      * @param string  $color
+     *
+     * @throws \Exception
      */
     public function __construct(Project $project, Money $money, string $name, int $duration, string $repaymentType, string $loanType, string $color)
     {
-        $this->money             = $money;
-        $this->rate              = new NullableLendingRate();
-        $this->trancheAttributes = new ArrayCollection();
-        $this->added             = new DateTimeImmutable();
-        $this->project           = $project;
-        $this->syndicated        = true;
-        $this->name              = $name;
-        $this->duration          = $duration;
-        $this->repaymentType     = $repaymentType;
-        $this->loanType          = $loanType;
-        $this->color             = $color;
+        $this->money                        = $money;
+        $this->rate                         = new NullableLendingRate();
+        $this->trancheAttributes            = new ArrayCollection();
+        $this->projectParticipationTranches = new ArrayCollection();
+        $this->added                        = new DateTimeImmutable();
+        $this->project                      = $project;
+        $this->syndicated                   = true;
+        $this->name                         = $name;
+        $this->duration                     = $duration;
+        $this->repaymentType                = $repaymentType;
+        $this->loanType                     = $loanType;
+        $this->color                        = $color;
     }
 
     /**
@@ -809,5 +823,27 @@ class Tranche
                 && in_array($this->getLoanType(), self::CHARGEABLE_LOAN_TYPE, true)
                 && in_array($this->getCommissionType(), self::getCommissionTypes(), true)
             );
+    }
+
+    /**
+     * @return ProjectParticipationTranche[]|Collection
+     */
+    public function getProjectParticipationTranches(): Collection
+    {
+        return $this->projectParticipationTranches;
+    }
+
+    /**
+     * @return MoneyInterface
+     */
+    public function getTotalInvitationReplyMoney(): MoneyInterface
+    {
+        $totalSyndicatedAmount = new NullableMoney();
+
+        foreach ($this->projectParticipationTranches as $projectParticipationTranche) {
+            $totalSyndicatedAmount = MoneyCalculator::add($totalSyndicatedAmount, $projectParticipationTranche->getInvitationReply()->getMoney());
+        }
+
+        return $totalSyndicatedAmount;
     }
 }
