@@ -53,8 +53,6 @@ services:
         tags:
             - { name: 'controller.service_arguments' }
 
-    Doctrine\Bundle\FixturesBundle\Loader\SymfonyFixturesLoader: ~
-
     Unilend\Service\Translation\TranslationLoader:
         tags:
             - { name: translation.loader, alias: db }
@@ -177,3 +175,7 @@ services:
         $authenticationSuccessHandler: '@lexik_jwt_authentication.handler.authentication_success'
         $authenticationFailureHandler: '@lexik_jwt_authentication.handler.authentication_failure'
         $path: '/authentication_token'
+
+    Unilend\Command\FixtureCommand:
+        arguments:
+            $fixturesLoader: '@doctrine.fixtures.loader'
