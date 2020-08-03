@@ -133,7 +133,7 @@ class File
      *
      * @Groups({"file:read"})
      */
-    private ?FileVersion $currentFileVersion;
+    private ?FileVersion $currentFileVersion = null;
 
     /**
      * @throws Exception
