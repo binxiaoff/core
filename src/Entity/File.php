@@ -126,14 +126,14 @@ class File
     private Collection $fileVersions;
 
     /**
-     * @var FileVersion
+     * @var FileVersion|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\FileVersion", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_file_version")
      *
      * @Groups({"file:read"})
      */
-    private FileVersion $currentFileVersion;
+    private ?FileVersion $currentFileVersion;
 
     /**
      * @throws Exception
