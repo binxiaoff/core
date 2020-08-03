@@ -51,6 +51,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
             return $this->getReference($segment);
         }, MarketSegmentFixtures::SEGMENTS));
         $manager->persist($staff);
+        $manager->persist($staff->getCurrentStatus());
         $manager->flush();
         $this->addReference(self::ADMIN, $staff);
     }
