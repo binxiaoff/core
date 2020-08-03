@@ -349,7 +349,7 @@ class Project implements TraceableStatusAwareInterface
     private ?string $internalRatingScore;
 
     /**
-     * @var int
+     * @var string
      *
      * @ORM\Column(type="string", nullable=false, length=25)
      *
@@ -360,7 +360,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private int $offerVisibility;
+    private string $offerVisibility;
 
     /**
      * @var ProjectParticipation[]|Collection
@@ -390,7 +390,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:read"})
      */
-    private ProjectComment $comments;
+    private Collection $projectComments;
 
     /**
      * @var Tranche[]|Collection
@@ -417,7 +417,7 @@ class Project implements TraceableStatusAwareInterface
     private ProjectStatus $currentStatus;
 
     /**
-     * @var ProjectStatus|Collection
+     * @var ProjectStatus[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      * @ORM\OrderBy({"added": "ASC"})
@@ -550,7 +550,7 @@ class Project implements TraceableStatusAwareInterface
     {
         $this->projectFiles          = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
-        $this->comments              = new ArrayCollection();
+        $this->projectComments       = new ArrayCollection();
         $this->statuses              = new ArrayCollection();
         $this->tranches              = new ArrayCollection();
         $this->tags                  = new ArrayCollection();
@@ -954,9 +954,9 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @return ProjectComment[]|ArrayCollection
      */
-    public function getComments(): iterable
+    public function getProjectComments(): iterable
     {
-        return $this->comments;
+        return $this->projectComments;
     }
 
     /**
