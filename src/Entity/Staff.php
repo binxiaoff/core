@@ -13,7 +13,8 @@ use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait, TraceableStatusTrait};
+use Unilend\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
+use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
@@ -43,14 +44,13 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableT
  *
  * @UniqueEntity(fields={"company", "client"}, message="Staff.client.unique")
  */
-class Staff
+class Staff implements TraceableStatusAwareInterface
 {
-    use RoleableTrait;
+    use RoleableTrait {
+        getRoles as private baseRolesGetter;
+    }
     use TimestampableTrait;
     use PublicizeIdentityTrait;
-    use TraceableStatusTrait {
-        setCurrentStatus as private baseStatusSetter;
-    }
 
     public const DUTY_STAFF_OPERATOR   = 'DUTY_STAFF_OPERATOR';
     public const DUTY_STAFF_MANAGER    = 'DUTY_STAFF_MANAGER';
@@ -59,7 +59,6 @@ class Staff
     public const DUTY_STAFF_ACCOUNTANT = 'DUTY_STAFF_ACCOUNTANT';
     public const DUTY_STAFF_SIGNATORY  = 'DUTY_STAFF_SIGNATORY';
 
-    public const SERIALIZER_GROUP_ADMIN_READ   = 'staff:admin:read';
     public const SERIALIZER_GROUP_ADMIN_CREATE = 'staff:admin:create';
 
     /**
@@ -76,7 +75,7 @@ class Staff
      *
      * @MaxDepth(2)
      */
-    private $company;
+    private Company $company;
 
     /**
      * @var Clients
@@ -93,19 +92,19 @@ class Staff
      *
      * @MaxDepth(1)
      */
-    private $client;
+    private Clients $client;
 
     /**
      * @var Collection|MarketSegment[]
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\MarketSegment")
      *
-     * @Groups({Staff::SERIALIZER_GROUP_ADMIN_READ, "staff:update", Staff::SERIALIZER_GROUP_ADMIN_CREATE})
+     * @Groups({"staff:read", "staff:update", Staff::SERIALIZER_GROUP_ADMIN_CREATE})
      */
     private $marketSegments;
 
     /**
-     * @var StaffStatus
+     * @var StaffStatus|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\StaffStatus")
      * @ORM\JoinColumn(name="id_current_status", unique=true)
@@ -117,17 +116,17 @@ class Staff
      *
      * @MaxDepth(1)
      */
-    private $currentStatus;
+    private ?StaffStatus $currentStatus;
 
     /**
-     * @var ArrayCollection|StaffStatus[]
+     * @var Collection|StaffStatus[]
      *
      * @Assert\Count(min="1")
      * @Assert\Valid
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\StaffStatus", mappedBy="staff", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      */
-    private $statuses;
+    private Collection $statuses;
 
     /**
      * Staff constructor.
@@ -271,16 +270,15 @@ class Staff
     }
 
     /**
-     * TODO its argument should be an int and the necessary parameters to create it not the object itself.
-     * TODO It might be solved with a DTO.
-     *
-     * @param StaffStatus $staffStatus
+     * @param StatusInterface|StaffStatus $currentStatus
      *
      * @return Staff
      */
-    public function setCurrentStatus(StaffStatus $staffStatus): self
+    public function setCurrentStatus(StatusInterface $currentStatus): Staff
     {
-        return $this->baseStatusSetter($staffStatus);
+        $this->currentStatus = $currentStatus;
+
+        return $this;
     }
 
     /**
@@ -289,5 +287,31 @@ class Staff
     public function isArchived(): bool
     {
         return $this->getCurrentStatus() && StaffStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * @return Collection|StaffStatus[]
+     */
+    public function getStatuses(): Collection
+    {
+        return $this->statuses;
+    }
+
+    /**
+     * @return StaffStatus
+     */
+    public function getCurrentStatus(): StaffStatus
+    {
+        return $this->currentStatus;
+    }
+
+    /**
+     * @Groups({"staff:read"})
+     *
+     * @return array
+     */
+    public function getRoles(): array
+    {
+        return $this->baseRolesGetter();
     }
 }
