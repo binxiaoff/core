@@ -94,13 +94,13 @@ class ProjectStatus implements StatusInterface
     private int $status;
 
     /**
-     * @var int
+     * @var int|null
      *
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      * @ORM\Column(type="integer")
      */
-    private int $id;
+    private ?int $id = null;
 
     /**
      * @param Project $project
