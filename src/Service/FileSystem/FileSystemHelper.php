@@ -135,7 +135,11 @@ class FileSystemHelper
      */
     public function normalizeFileName(string $fileName): string
     {
-        return s($fileName)->ascii()->snake()->toString();
+        $pathInfo  = pathinfo($fileName);
+        $fileName  = s(trim($pathInfo['filename']))->ascii()->snake()->toString();
+        $extension = s(trim($pathInfo['extension'] ?? ''))->ascii()->snake()->toString();
+
+        return $fileName . ($extension ? '.' . $extension : '');
     }
 
     /**
