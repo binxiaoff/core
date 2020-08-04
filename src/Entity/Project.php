@@ -456,7 +456,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private ?string $participationType;
+    private ?string $participationType = null;
 
     /**
      * @var string|null
