@@ -24,10 +24,45 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
      */
     public function load(ObjectManager $manager): void
     {
+        // Create our main user
         /** @var Company $company */
-        $company = $this->getReference(CompanyFixtures::CALS);
+        $adminCompany = $this->getReference(CompanyFixtures::CALS);
         /** @var Clients $user */
         $user = $this->getReference(UserFixtures::ADMIN);
+        $adminStaff = $this->createStaff($user, $adminCompany, $manager);
+        $manager->persist($adminStaff);
+        $manager->persist($adminStaff->getCurrentStatus());
+
+        // Attach other companies to the other user
+        /** @var Company[] $companies */
+        $companies = $this->getReferences(CompanyFixtures::COMPANIES);
+        /** @var Clients $user */
+        $other = $this->getReference(UserFixtures::OTHER);
+        foreach ($companies as $company) {
+            if ($company !== $adminCompany) {
+                $staff = $this->createStaff($other, $company, $manager);
+                $manager->persist($staff);
+                $manager->persist($staff->getCurrentStatus());
+            }
+        }
+
+        $manager->flush();
+        $this->addReference(self::ADMIN, $adminStaff);
+    }
+
+    /**
+     * Creates a new staff attached to the company
+     *
+     * @param Clients       $user
+     * @param Company       $company
+     * @param ObjectManager $manager
+     *
+     * @return Staff
+     *
+     * @throws \Exception
+     */
+    public function createStaff(Clients $user, Company $company, ObjectManager $manager): Staff
+    {
         // We need to use SQL since we cannot instanciate Staff entity
         $sql = <<<SQL
             INSERT INTO `staff` 
@@ -50,10 +85,8 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $staff->setMarketSegments(array_map(function (string $segment) {
             return $this->getReference($segment);
         }, MarketSegmentFixtures::SEGMENTS));
-        $manager->persist($staff);
-        $manager->persist($staff->getCurrentStatus());
-        $manager->flush();
-        $this->addReference(self::ADMIN, $staff);
+
+        return $staff;
     }
 
     /**

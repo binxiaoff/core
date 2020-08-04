@@ -13,6 +13,7 @@ class UserFixtures extends AbstractFixtures
 {
 
     public const ADMIN = 'USER_ADMIN';
+    public const OTHER = 'USER_OTHER';
 
     /**
      * @param ObjectManager $manager
@@ -21,6 +22,29 @@ class UserFixtures extends AbstractFixtures
      */
     public function load(ObjectManager $manager): void
     {
+        $admin = $this->createUser('admin@ca-lendingservices.com', 'arranger');
+        $other = $this->createUser('other@ca-lendingservices.com', 'other');
+        $manager->persist($admin);
+        $manager->persist($admin->getCurrentStatus());
+        $manager->persist($other);
+        $manager->persist($other->getCurrentStatus());
+        $manager->flush();
+        $this->addReference(self::ADMIN, $admin);
+        $this->addReference(self::OTHER, $other);
+    }
+
+    /**
+     * Create a fake user
+     *
+     * @param string $email
+     * @param string $publicId
+     *
+     * @return Clients
+     *
+     * @throws \ReflectionException
+     */
+    public function createUser(string $email, string $publicId): Clients
+    {
         $user = $client = (new Clients($this->faker->company))
             ->setTitle($this->faker->company)
             ->setLastName($this->faker->lastName)
@@ -28,14 +52,12 @@ class UserFixtures extends AbstractFixtures
             ->setPhone($this->faker->phoneNumber)
             ->setMobile($this->faker->phoneNumber)
             ->setJobFunction($this->faker->jobTitle)
-            ->setEmail('admin@ca-lendingservices.com')
+            ->setEmail($email)
             ->setPlainPassword('0000');
         $status = new ClientStatus($user, ClientStatus::STATUS_CREATED);
-        $manager->persist($status);
         $user->setCurrentStatus($status);
-        $this->forcePublicId($user, 'arranger');
-        $manager->persist($user);
-        $manager->flush();
-        $this->addReference(self::ADMIN, $user);
+        $this->forcePublicId($user, $publicId);
+
+        return $user;
     }
 }
