@@ -3,11 +3,13 @@
 namespace Unilend\DataFixtures;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Unilend\Entity\Clients;
 use Unilend\Entity\Company;
 use Unilend\Entity\CompanyStatus;
 
-class CompanyFixtures extends AbstractFixtures
+class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
 
     public const CALS = 'COMPANY_CALS';
@@ -25,7 +27,10 @@ class CompanyFixtures extends AbstractFixtures
     public function load(ObjectManager $manager): void
     {
         // Main company
-        $company = $this->createCompany("CALS Company", "CALS");
+        /** @var Clients $user */
+        $user = $this->getReference(UserFixtures::ADMIN);
+        $domain = explode('@', $user->getEmail())[1];
+        $company = $this->createCompany("CALS Company", "CALS")->setEmailDomain($domain);
         $manager->persist($company);
         $this->addReference(self::CALS, $company);
 
@@ -57,5 +62,13 @@ class CompanyFixtures extends AbstractFixtures
         $company->setCurrentStatus($status);
 
         return $company;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getDependencies(): array
+    {
+        return [UserFixtures::class];
     }
 }

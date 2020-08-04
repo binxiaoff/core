@@ -35,7 +35,7 @@ class ParticipationTrancheFixtures extends AbstractFixtures implements Dependent
     public function load(ObjectManager $manager): void
     {
         /** @var Project[] $projects */
-        $projects = $this->getReferences(ProjectFixtures::PROJECTS);
+        $projects = $this->getReferences(ProjectFixtures::PROJECTS_WITH_PARTICIPATION_TRANCHES);
         /** @var Company[] $companies */
         $companies = $this->getReferences(CompanyFixtures::COMPANIES);
         /** @var Staff $staff */

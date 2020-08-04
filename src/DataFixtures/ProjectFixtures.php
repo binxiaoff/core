@@ -22,7 +22,20 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     public const PROJECT_ALLOCATION = 'PROJECT_ALLOCATION';
     public const PROJECT_REPLY = 'PROJECT_REPLY';
+    public const PROJECT_DRAFT = 'PROJECT_DRAFT';
+    public const PROJECT_DRAFT_PARTICIPATION = 'PROJECT_DRAFT_PARTICIPATION';
     public const PROJECTS = [
+        self::PROJECT_ALLOCATION,
+        self::PROJECT_REPLY,
+        self::PROJECT_DRAFT,
+        self::PROJECT_DRAFT_PARTICIPATION,
+    ];
+    public const PROJECTS_WITH_PARTICIPATION = [
+        self::PROJECT_ALLOCATION,
+        self::PROJECT_REPLY,
+        self::PROJECT_DRAFT_PARTICIPATION,
+    ];
+    public const PROJECTS_WITH_PARTICIPATION_TRANCHES = [
         self::PROJECT_ALLOCATION,
         self::PROJECT_REPLY,
     ];
@@ -34,10 +47,16 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         $projectAllocation = $this->createProject('Project allocation', ProjectStatus::STATUS_ALLOCATION);
         $projectReply = $this->createProject('Project reply', ProjectStatus::STATUS_PARTICIPANT_REPLY);
+        $projectDraft = $this->createProject('Project draft', ProjectStatus::STATUS_DRAFT);
+        $projectDraftParticipation = $this->createProject('Project draft participations', ProjectStatus::STATUS_DRAFT);
+        $manager->persist($projectDraft);
         $manager->persist($projectAllocation);
         $manager->persist($projectReply);
+        $manager->persist($projectDraftParticipation);
         $this->addReference(self::PROJECT_ALLOCATION, $projectAllocation);
         $this->addReference(self::PROJECT_REPLY, $projectReply);
+        $this->addReference(self::PROJECT_DRAFT, $projectDraft);
+        $this->addReference(self::PROJECT_DRAFT_PARTICIPATION, $projectDraftParticipation);
         $manager->flush();
     }
 

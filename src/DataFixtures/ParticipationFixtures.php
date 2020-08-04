@@ -34,7 +34,7 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
         /** @var Company[] $companies */
         $companies = $this->getReferences(CompanyFixtures::COMPANIES);
         /** @var Project[] $projects */
-        $projects = $this->getReferences(ProjectFixtures::PROJECTS);
+        $projects = $this->getReferences(ProjectFixtures::PROJECTS_WITH_PARTICIPATION);
         /** @var Staff $staff */
         $staff = $this->getReference(StaffFixtures::ADMIN);
         foreach ($projects as $project) {
@@ -71,8 +71,13 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
         Project $project,
         Company $company,
         Staff $staff,
-        $status = ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED
+        $status = null
     ): ProjectParticipation {
+        if (null === $status) {
+            $status = $project->getCurrentStatus()->getStatus() === ProjectStatus::STATUS_DRAFT ?
+                ProjectParticipationStatus::STATUS_CREATED :
+                ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED;
+        }
         $participation = (new ProjectParticipation($company, $project, $staff))
             ->setInterestRequest($this->createRangedOffer(1000000, 2000000))
             ->setInterestReply($this->createOffer(2000000))
