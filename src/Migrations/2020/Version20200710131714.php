@@ -811,7 +811,7 @@ final class Version20200710131714 extends AbstractMigration
                             VALUES ({$name}, NOW(), {$shortCode}, '{$companyPublicId}', {$groupName}, '{$applicableVat}', '{$bankCode}' )");
 
                 $statusPublicId = (string) (Uuid::uuid4());
-                $this->addSql("INSERT INTO company_status SELECT NULL as id, (SELECT MAX(id) from company) as id_company, 10 as status, NOW() as added, '{$statusPublicId}' as public_id");
+                $this->addSql("INSERT INTO company_status SELECT NULL as id, (SELECT MAX(id) from company) as id_company, 0 as status, NOW() as added, '{$statusPublicId}' as public_id");
                 $this->addSql("UPDATE company SET id_current_status = (SELECT MAX(id) from company_status) WHERE public_id = '{$companyPublicId}'");
             }
         }
