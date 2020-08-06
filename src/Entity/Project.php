@@ -45,6 +45,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "project:read",
  *                     "company:read",
  *                     "projectParticipation:read",
+ *                     "projectParticipationStatus:read",
  *                     "projectParticipationTranche:read",
  *                     "money:read",
  *                     "nullableMoney:read",
