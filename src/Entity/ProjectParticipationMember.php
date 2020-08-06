@@ -14,6 +14,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 
 /**
@@ -210,5 +211,21 @@ class ProjectParticipationMember
     public function getMemberName(): string
     {
         return $this->staff->getClient()->getFirstName() . ' ' . $this->staff->getClient()->getLastName();
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     * @param                           $payload
+     */
+    public function validateArchived(ExecutionContextInterface $context, $payload)
+    {
+        if ($this->getProjectParticipation()->getActiveProjectParticipationMembers()->count() <= 1 && $this->isArchived()) {
+            $context->buildViolation('ProjectParticipationMember.archived.lastActiveMember')
+                ->atPath('archived')
+                ->addViolation()
+            ;
+        }
     }
 }

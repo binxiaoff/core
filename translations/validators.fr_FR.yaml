@@ -55,6 +55,8 @@ ProjectParticipationMember:
         incorrectCompany: Ce staff et la participation ne sont pas liés à la même entité
     acceptedNdaVersion:
         unacceptableVersion: Cette version de fichier n'est pas une de la lettre de confidentialité acceptable
+    archived:
+        lastActiveMember: Vous ne pouvez pas archiver la dernier membre de la participation
 
 ProjectParticipationCollection:
     projectParticipations:
