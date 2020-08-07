@@ -49,14 +49,12 @@ class ListExtension implements QueryCollectionExtensionInterface
             return;
         }
 
-        $arranger  = ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER;
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
             ->distinct()
             ->innerJoin($rootAlias . '.participation', 'pp')
             ->leftJoin('pp.projectParticipationMembers', 'ppc')
             ->leftJoin('pp.project', 'project')
-            ->leftJoin('project.organizers', 'organizer', Join::WITH, "JSON_CONTAINS(organizer.roles, '\"${$arranger}\"') = 1")
             ->andWhere('(ppc.staff = :staff AND ppc.archived IS NULL) OR :company = organizer.company')
             ->setParameter('staff', $staff)
             ->setParameter('company', $staff->getCompany())

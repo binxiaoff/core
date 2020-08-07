@@ -48,7 +48,6 @@ class ProjectOrganizer
     use RoleableTrait;
     use TimestampableTrait;
 
-    public const DUTY_PROJECT_ORGANIZER_ARRANGER        = 'arranger'; // The company who arranges a loan syndication.
     public const DUTY_PROJECT_ORGANIZER_DEPUTY_ARRANGER = 'deputy_arranger';
     public const DUTY_PROJECT_ORGANIZER_RUN             = 'run'; // Responsable Unique de Notation, who gives a note on the borrower.
     public const DUTY_PROJECT_ORGANIZER_AGENT           = 'agent';
@@ -138,7 +137,6 @@ class ProjectOrganizer
     public static function isUniqueRole(string $role): bool
     {
         return \in_array($role, [
-            static::DUTY_PROJECT_ORGANIZER_ARRANGER,
             static::DUTY_PROJECT_ORGANIZER_RUN,
             static::DUTY_PROJECT_ORGANIZER_AGENT,
         ], true);

@@ -570,9 +570,6 @@ class Project implements TraceableStatusAwareInterface
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
 
-        $arranger = new ProjectOrganizer($this->submitterCompany, $this, $addedBy, [ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER]);
-        $this->organizers->add($arranger);
-
         $this->interestExpressionEnabled  = false;
         $this->arrangementCommissionMoney = new NullableMoney();
     }
@@ -912,15 +909,15 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return ProjectOrganizer|null
+     * @return Company|null
      *
      * @Groups({"project:read"})
      *
      * @MaxDepth(1)
      */
-    public function getArranger(): ?ProjectOrganizer
+    public function getArranger(): ?Company
     {
-        return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_ARRANGER);
+        return $this->getSubmitterCompany();
     }
 
     /**
