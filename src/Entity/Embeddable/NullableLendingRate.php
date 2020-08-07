@@ -32,8 +32,6 @@ class NullableLendingRate extends LendingRate
      *
      * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
      *
-     * @Assert\Range(min="0", max="0.9999")
-     *
      * @Groups({"nullableLendingRate:read"})
      */
     protected $margin;

@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\{Embeddable\Offer, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
@@ -47,6 +48,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_tranche", "id_project_participation"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationTrancheRepository")
  * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity({"tranche", "projectParticipation"})
  */
 class ProjectParticipationTranche
 {

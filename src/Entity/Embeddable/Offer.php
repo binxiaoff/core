@@ -42,8 +42,10 @@ class Offer
      */
     public function __construct(?NullableMoney $money = null)
     {
-        $this->money = $money ?? new NullableMoney();
-        if ($this->money->getAmount()) {
+        $this->money = new NullableMoney();
+
+        if ($money && $money->isValid()) {
+            $this->money = $money;
             $this->added = new DateTimeImmutable();
         }
     }
@@ -62,5 +64,13 @@ class Offer
     public function getAdded(): ?DateTimeImmutable
     {
         return $this->added;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValid(): bool
+    {
+        return $this->money->isValid();
     }
 }
