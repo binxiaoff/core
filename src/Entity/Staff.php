@@ -19,6 +19,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableT
 /**
  * @ApiResource(
  *     normalizationContext={"groups": {"staff:read", "client:read", "client_status:read", "staffStatus:read", "timestampable:read", "traceableStatus:read"}},
+ *     attributes={"pagination_client_enabled"=true},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
