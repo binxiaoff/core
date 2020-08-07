@@ -11,6 +11,7 @@ use Unilend\Entity\Clients;
 use Unilend\Entity\ClientStatus;
 use Unilend\Entity\Company;
 use Unilend\Entity\Embeddable\Money;
+use Unilend\Entity\Embeddable\NullableLendingRate;
 use Unilend\Entity\MarketSegment;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectStatus;
@@ -40,6 +41,8 @@ class TrancheFixtures extends AbstractFixtures implements DependentFixtureInterf
                     'stand_by',
                     $this->faker->hexColor
                 ))
+                ->setDuration(1)
+                ->setRate(new NullableLendingRate('EONIA', '0.0200', null, 'none'))
                 ->setSyndicated($i !== 2);
                 $project->addTranche($tranche);
                 $manager->persist($tranche);

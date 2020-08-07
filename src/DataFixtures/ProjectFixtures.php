@@ -2,6 +2,7 @@
 
 namespace Unilend\DataFixtures;
 
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -85,6 +86,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setParticipationType(Project::PROJECT_PARTICIPATION_TYPE_DIRECT)
             ->setSyndicationType(Project::PROJECT_SYNDICATION_TYPE_PRIMARY)
             ->setInterestExpressionEnabled(false) // "Réponse ferme"
+            ->setParticipantReplyDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+70 days', '+1 year')))
+            ->setAllocationDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+1 year', '+2 year')))
             ->setDescription($this->faker->sentence);
         $status = new ProjectStatus($project, $status, $staff);
         $project->setCurrentStatus($status);

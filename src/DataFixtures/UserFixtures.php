@@ -49,8 +49,8 @@ class UserFixtures extends AbstractFixtures
             ->setTitle($this->faker->company)
             ->setLastName($this->faker->lastName)
             ->setFirstName($this->faker->firstName)
-            ->setPhone($this->faker->phoneNumber)
-            ->setMobile($this->faker->phoneNumber)
+            ->setPhone('+33600000000')
+            ->setMobile('+33600000000')
             ->setJobFunction($this->faker->jobTitle)
             ->setEmail($email)
             ->setPlainPassword('0000');
