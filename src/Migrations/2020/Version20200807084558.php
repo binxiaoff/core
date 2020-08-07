@@ -37,5 +37,20 @@ final class Version20200807084558 extends AbstractMigration
 
     public function down(Schema $schema) : void
     {
+        $projects = $this->connection->executeQuery('SELECT * FROM project')->fetchAll();
+
+        foreach ($projects as $project) {
+            $arrangerOrganizer = $this->connection->executeQuery("SELECT * FROM project_organizer WHERE id_project = {$project['id']} AND id_company = {$project['id_company_submitter']}")->fetch();
+
+            if ($arrangerOrganizer) {
+                $roles = json_decode($arrangerOrganizer['roles']);
+                $roles[] = 'arranger';
+                $roles = $this->connection->quote(json_encode($roles));
+
+                $this->addSql("UPDATE project_organizer SET roles = $roles WHERE id = ${arrangerOrganizer['id']}");
+            } else {
+                $this->addSql('INSERT INTO project_organizer (roles, id_project, id_company, added_by, added) VALUES ("["arranger"]", ${project[id}, ${project["id_company_submitter"]}, ${project["id_company_submitter"]}, NOW())');
+            }
+        }
     }
 }
