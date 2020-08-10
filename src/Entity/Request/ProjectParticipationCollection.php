@@ -22,6 +22,7 @@ use Unilend\Entity\{Project, ProjectParticipation};
  *         "projectParticipationTranche:read",
  *         "projectParticipationStatus:read",
  *         "company:read",
+ *         "companyStatus:read",
  *         "nullableMoney:read",
  *         "money:read",
  *         "rangedOfferWithFee:read",
