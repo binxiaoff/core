@@ -46,10 +46,10 @@ final class Version20200807084558 extends AbstractMigration
                 $roles = json_decode($arrangerOrganizer['roles']);
                 $roles[] = 'arranger';
                 $roles = $this->connection->quote(json_encode($roles));
-
                 $this->addSql("UPDATE project_organizer SET roles = $roles WHERE id = ${arrangerOrganizer['id']}");
             } else {
-                $this->addSql('INSERT INTO project_organizer (roles, id_project, id_company, added_by, added) VALUES ("["arranger"]", ${project[id}, ${project["id_company_submitter"]}, ${project["id_company_submitter"]}, NOW())');
+                $role = "'[\"arranger\"]'";
+                $this->addSql("INSERT INTO project_organizer (roles, id_project, id_company, added_by, added) VALUES ($role, ${project["id"]}, ${project["id_company_submitter"]}, ${project["id_company_submitter"]}, NOW())");
             }
         }
     }
