@@ -210,6 +210,10 @@ class ProjectParticipationMember
      */
     public function getMemberName(): string
     {
+        if (!$this->staff->getClient()->getFirstName() || !$this->staff->getClient()->getLastName()) {
+            return $this->staff->getClient()->getEmail();
+        }
+
         return $this->staff->getClient()->getFirstName() . ' ' . $this->staff->getClient()->getLastName();
     }
 
