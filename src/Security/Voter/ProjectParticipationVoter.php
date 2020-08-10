@@ -51,7 +51,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function fulfillPreconditions($subject, Clients $user): bool
     {
-        return $user->getCurrentStaff() && false === $subject->getProject()->hasCompletedStatus(ProjectStatus::STATUS_SYNDICATION_FINISHED);
+        return null !== $user->getCurrentStaff();
     }
 
     /**
@@ -144,6 +144,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     protected function canEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
         return $projectParticipation->isActive()
+            && $projectParticipation->getProject()->hasEditableStatus()
             && (
                 $this->isProjectArranger($projectParticipation, $user)
                 || (

@@ -74,6 +74,11 @@ class ProjectStatus implements StatusInterface
         self::STATUS_SYNDICATION_FINISHED,
     ];
 
+    public const NON_EDITABLE_STATUS = [
+        self::STATUS_SYNDICATION_CANCELLED,
+        self::STATUS_SYNDICATION_FINISHED,
+    ];
+
     /**
      * @var Project
      *
