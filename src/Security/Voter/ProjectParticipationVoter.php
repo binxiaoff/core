@@ -20,7 +20,6 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_SENSITIVE_VIEW = 'sensitive_view';
     public const ATTRIBUTE_ADMIN_VIEW     = 'admin_view';
 
-    public const ATTRIBUTE_ARRANGER_EDIT                      = 'arranger_edit';
     public const ATTRIBUTE_ARRANGER_INTEREST_COLLECTION_EDIT  = 'arranger_interest_collection_edit';
     public const ATTRIBUTE_ARRANGER_OFFER_NEGOTIATION_EDIT    = 'arranger_offer_negotiation_edit';
 
@@ -67,21 +66,6 @@ class ProjectParticipationVoter extends AbstractEntityVoter
         return $project->isPublished()
         && $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
         && $projectParticipation->getProject()->hasEditableStatus();
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    protected function canArrangerEdit(ProjectParticipation $projectParticipation, Clients $user): bool
-    {
-        $project = $projectParticipation->getProject();
-
-        return $this->isProjectArranger($projectParticipation, $user)
-            && false === $project->hasCompletedStatus(ProjectStatus::STATUS_ALLOCATION)
-            && $project->hasEditableStatus();
     }
 
     /**
