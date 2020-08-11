@@ -7,6 +7,7 @@ namespace Unilend\Listener\Doctrine\Entity\ProjectStatus;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Exception;
 use Unilend\Entity\Embeddable\Offer;
 use Unilend\Entity\ProjectStatus;
 
@@ -18,8 +19,9 @@ class ProjectStatusCreatedListener
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws Exception
      */
-    public function transferInterestReply(ProjectStatus $projectStatus, LifecycleEventArgs $args)
+    public function transferInvitationReply(ProjectStatus $projectStatus, LifecycleEventArgs $args)
     {
         if ($projectStatus->getStatus() !== ProjectStatus::STATUS_ALLOCATION) {
             return;
@@ -31,7 +33,7 @@ class ProjectStatusCreatedListener
 
         $previousStatus = $statuses->last();
         // Ensure to have the correct previous status (in case current status have been added to statuses array)
-        $previousStatus = $previousStatus === $projectStatus ? $statuses[$statuses->count() - 2] : $previousStatus;
+        // $previousStatus = $previousStatus === $projectStatus ? $statuses[$statuses->count() - 2] : $previousStatus;
 
         if (null === $previousStatus || $previousStatus->getStatus() !== ProjectStatus::STATUS_PARTICIPANT_REPLY) {
             return;
@@ -41,11 +43,11 @@ class ProjectStatusCreatedListener
         $em = $args->getEntityManager();
         foreach ($projectParticipations as $projectParticipation) {
             foreach ($projectParticipation->getProjectParticipationTranches() as $projectParticipationTranche) {
-                $interestReplyOffer = $projectParticipationTranche->getInvitationReply();
+                $invitationReply = $projectParticipationTranche->getInvitationReply();
                 $allocationOffer = $projectParticipationTranche->getAllocation();
 
-                if ($interestReplyOffer->isValid() && false === $allocationOffer->isValid()) {
-                    $projectParticipationTranche->setAllocation(new Offer($interestReplyOffer->getMoney()));
+                if ($invitationReply->isValid() && false === $allocationOffer->isValid()) {
+                    $projectParticipationTranche->setAllocation(new Offer($invitationReply->getMoney()));
                     $em->persist($projectParticipationTranche);
                 }
             }
