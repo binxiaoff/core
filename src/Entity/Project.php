@@ -16,6 +16,7 @@ use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\{Embeddable\Money, Embeddable\NullableMoney, Embeddable\NullablePerson, Interfaces\MoneyInterface, Interfaces\StatusInterface,
     Interfaces\TraceableStatusAwareInterface, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Controller\Project\StatusAllocation;
 use Unilend\Filter\ArrayFilter;
 use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
@@ -116,7 +117,12 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)"
- *         }
+ *         },
+ *         "sendInvitations": {
+ *             "method":"PATCH",
+ *             "path":"/projects/{id}/sendInvitations",
+ *             "controller":StatusAllocation::class
+ *          }
  *     }
  * )
  *
