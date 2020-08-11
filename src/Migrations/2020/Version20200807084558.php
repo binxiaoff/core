@@ -28,7 +28,7 @@ final class Version20200807084558 extends AbstractMigration
             if (empty ($roles)) {
                 $this->addSql("DELETE FROM project_organizer WHERE id = $organizerId");
             } else {
-                $roles = $this->connection->quote(json_encode($roles));
+                $roles = $this->connection->quote(json_encode(array_values($roles)));
 
                 $this->addSql("UPDATE project_organizer SET roles = $roles WHERE id = $organizerId");
             }
