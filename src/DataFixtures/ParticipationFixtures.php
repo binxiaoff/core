@@ -81,6 +81,7 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
             ->setInvitationRequest($this->createOfferWithFee(1000000))
             ->setInvitationReplyMode('pro-rata')
             ->setAllocationFeeRate($this->faker->randomDigit);
+        $this->forcePublicId($participation, "p-{$project->getPublicId()}-" . uniqid());
         $status = new ProjectParticipationStatus($participation, $status, $staff);
         $this->forcePublicId($status, "pps-$publicId");
         $participation->setCurrentStatus($status);
