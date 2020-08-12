@@ -11,9 +11,22 @@ use Http\Client\Common\Exception\BatchException;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Unilend\Entity\Clients;
+use Unilend\Entity\Embeddable\NullableMoney;
+use Unilend\Entity\Embeddable\OfferWithFee;
 use Unilend\Entity\Project;
+use Unilend\Entity\ProjectParticipation;
+use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Entity\ProjectStatus;
+use Unilend\Entity\Tranche;
 use Unilend\Exception\Staff\StaffNotFoundException;
 
 class StatusAllocation
@@ -27,9 +40,17 @@ class StatusAllocation
      */
     private Security $security;
     /**
-     * @var ObjectManager
+     * @var EntityManagerInterface
      */
-    private ObjectManager $manager;
+    private EntityManagerInterface $manager;
+    /**
+     * @var SerializerInterface
+     */
+    private SerializerInterface $serializer;
+    /**
+     * @var ValidatorInterface
+     */
+    private ValidatorInterface $validator;
 
     /**
      * StatusAllocation constructor.
@@ -37,12 +58,15 @@ class StatusAllocation
      * @param IriConverterInterface  $iriConverter
      * @param Security               $security
      * @param EntityManagerInterface $manager
+     * @param SerializerInterface    $serializer
      */
-    public function __construct(IriConverterInterface $iriConverter, Security $security, EntityManagerInterface $manager)
+    public function __construct(IriConverterInterface $iriConverter, Security $security, EntityManagerInterface $manager, SerializerInterface $serializer, ValidatorInterface $validator, DenormalizerInterface $denormalizer)
     {
         $this->iriConverter = $iriConverter;
         $this->security = $security;
         $this->manager = $manager;
+        $this->serializer = new Serializer([$denormalizer]);
+        $this->validator = $validator;
     }
 
     public function __invoke(Project $data, Request $request) {
@@ -53,7 +77,7 @@ class StatusAllocation
 
         $client = $this->security->getUser();
 
-        if (false === $client instanceof Clients || null === $staff = $client->getCurrentStaff()) {
+        if (false === $client instanceof Clients || null === $client->getCurrentStaff()) {
             throw new StaffNotFoundException();
         }
 
@@ -63,35 +87,62 @@ class StatusAllocation
 
         $content = json_decode($request->getContent(),true);
 
-        $projectParticipations = $content['projectParticipations'];
 
-        if (count($projectParticipations) !== $data->getProjectParticipations()->count()) {
-            throw new BadRequestException();
+        $projectParticipations = $content['projectParticipations'] ?? null;
+
+        if (!$projectParticipations || false === is_array($projectParticipations)) {
+            throw new BadRequestException('Invalide projectParticipations');
         }
 
-        // @todo non testé, voir si les PP sont correctement update, les PPTranches correctement créées
-        // + validation: 1. assurer que toutes les données soient presentes + valider $content['projectParticipations'], $projectParticipationArray['invitationRequest'], $invitationRequest['money']), $invitationRequest['feeRate'] = DTO?
-//        foreach ($projectParticipations as $projectParticipationArray) {
-//            /** @var ProjectParticipation $projectParticipation */
-//            $projectParticipation = $this->iriConverter->getItemFromIri($projectParticipationArray['@id'], [AbstractNormalizer::GROUPS => []]);
-//
-//            // set invitation request
-//            $invitationRequest = $projectParticipationArray['invitationRequest'];
-//            $offerWithFee = new OfferWithFee(new NullableMoney($data->getGlobalFundingMoney()->getCurrency(), $invitationRequest['money']), $invitationRequest['feeRate']);
-//            $projectParticipation->setInvitationRequest($offerWithFee);
-//
-//            // create ProjectParticipationTranches
-//            $tranches = $projectParticipationArray['tranches'];
-//            foreach ($tranches as $tranche) {
-//                $projectParticipationTranche = new ProjectParticipationTranche($projectParticipation, $this->iriConverter->getItemFromIri($tranche, [AbstractNormalizer::GROUPS => []]), $this->security->getUser());
-//                $this->manager->persist($projectParticipationTranche);
-//            }
-//        }
+        //@todo denormalization array of existing objects impossible
+//        $participations = $this->serializer->denormalize($content['projectParticipations'], ProjectParticipation::class . '[]', 'array', [AbstractNormalizer::OBJECT_TO_POPULATE => $data->getProjectParticipations()]);
+//        dump('after deserializer', $participations);
 
-        $projectStatus = new ProjectStatus($data, ProjectStatus::STATUS_ALLOCATION, $staff);
-        $this->manager->persist($projectStatus);
+        if (count($projectParticipations) !== $data->getProjectParticipations()->count()) {
+            throw new BadRequestException('La requête ne contient pas tous les participants sur le projet.');
+        }
 
-        $this->manager->flush();
+        foreach ($projectParticipations as $projectParticipationArray) {
+            if (false === isset($projectParticipationArray['@id']) || false === is_string($projectParticipationArray['@id'])) {
+                throw new BadRequestException('Invalid @id participant');
+            }
+
+            /** @var ProjectParticipation $projectParticipation */
+            $projectParticipation = $this->iriConverter->getItemFromIri($projectParticipationArray['@id'], [AbstractNormalizer::GROUPS => []]);
+
+            if (false === $data->getProjectParticipations()->contains($projectParticipation)) {
+                throw new BadRequestException('La participant est invalide ou ne fait pas parti du projet.');
+            }
+
+            if (false === isset($projectParticipationArray['invitationRequest']) || false === is_array($projectParticipationArray['invitationRequest'])) {
+                throw new BadRequestException('Invalid invitationRequest participant');
+            }
+            $invitationRequest = $projectParticipationArray['invitationRequest'];
+
+            // validation manuelle identique pour money et feeRate =/
+
+            $offerWithFee = $this->serializer->denormalize(['money' => $invitationRequest['money'], 'feeRate' => $invitationRequest['feeRate']], OfferWithFee::class,'array');
+            $projectParticipation->setInvitationRequest($offerWithFee);
+
+            foreach ($projectParticipationArray['tranches'] as $tranche) {
+                $tranche = $this->iriConverter->getItemFromIri($tranche, [AbstractNormalizer::GROUPS => []]);
+
+                if (false === $data->getTranches()->contains($tranche)) {
+                    throw new BadRequestException("Une des tranches sélectionnée est invalide ou ne fait pas parti du projet.");
+                }
+
+                $projectParticipationTranche = new ProjectParticipationTranche($projectParticipation, $tranche, $client->getCurrentStaff());
+
+                // valide que dalle
+                $this->validator->validate($projectParticipationTranche);
+                $this->manager->persist($projectParticipationTranche);
+            }
+        }
+
+//        $projectStatus = new ProjectStatus($data, ProjectStatus::STATUS_ALLOCATION, $staff);
+//        $this->manager->persist($projectStatus);
+
+//        $this->manager->flush();
 
         return $data;
     }
