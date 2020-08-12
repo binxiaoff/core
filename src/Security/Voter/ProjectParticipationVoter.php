@@ -51,7 +51,18 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function fulfillPreconditions($subject, Clients $user): bool
     {
-        return $user->getCurrentStaff() && false === $subject->getProject()->hasCompletedStatus(ProjectStatus::STATUS_ALLOCATION);
+        return null !== $user->getCurrentStaff();
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     * @param Clients              $user
+     *
+     * @return bool
+     */
+    protected function canArrangerEdit(ProjectParticipation $projectParticipation, Clients $user): bool
+    {
+        return $this->canEdit($projectParticipation, $user) && $this->isProjectArranger($projectParticipation, $user);
     }
 
     /**
@@ -67,21 +78,6 @@ class ProjectParticipationVoter extends AbstractEntityVoter
         return $project->isPublished()
         && $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
         && $projectParticipation->getProject()->hasEditableStatus();
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    protected function canArrangerEdit(ProjectParticipation $projectParticipation, Clients $user): bool
-    {
-        $project = $projectParticipation->getProject();
-
-        return $this->isProjectArranger($projectParticipation, $user)
-            && false === $project->hasCompletedStatus(ProjectStatus::STATUS_ALLOCATION)
-            && $project->hasEditableStatus();
     }
 
     /**
@@ -144,6 +140,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     protected function canEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
         return $projectParticipation->isActive()
+            && $projectParticipation->getProject()->hasEditableStatus()
             && (
                 $this->isProjectArranger($projectParticipation, $user)
                 || (

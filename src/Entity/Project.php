@@ -1454,7 +1454,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function hasEditableStatus(): bool
     {
-        return ProjectStatus::STATUS_SYNDICATION_CANCELLED !== $this->getCurrentStatus()->getStatus();
+        return false === in_array($this->getCurrentStatus()->getStatus(), ProjectStatus::NON_EDITABLE_STATUS);
     }
 
     /**
