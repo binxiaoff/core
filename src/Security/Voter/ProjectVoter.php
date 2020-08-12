@@ -22,6 +22,8 @@ class ProjectVoter extends AbstractEntityVoter
     public const ATTRIBUTE_CREATE               = 'create';
     public const ATTRIBUTE_DELETE               = 'delete';
 
+    public const ATTRIBUTE_SEND_ALLOCATION      = 'send_allocation';
+
     /** @var ProjectOrganizerRepository */
     private ProjectOrganizerRepository $projectOrganizerRepository;
     /** @var ProjectParticipationManager */
@@ -40,6 +42,19 @@ class ProjectVoter extends AbstractEntityVoter
         parent::__construct($authorizationChecker);
         $this->projectParticipationManager = $projectParticipationManager;
         $this->projectOrganizerRepository  = $projectOrganizerRepository;
+    }
+
+    /**
+     * @param Project $project
+     * @param Clients $user
+     *
+     * @return bool
+     *
+     * @throws Exception
+     */
+    public function canSendAllocation(Project $project, Clients $user): bool
+    {
+        return $this->canEdit($project, $user) && ($project->isDraft() || $project->isInInterestCollectionStep());
     }
 
     /**
@@ -69,6 +84,8 @@ class ProjectVoter extends AbstractEntityVoter
      * @param Clients $user
      *
      * @return bool
+     *
+     * @throws Exception
      */
     protected function canAdminView(Project $project, Clients $user): bool
     {

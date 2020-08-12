@@ -9,15 +9,16 @@ use ApiPlatform\Core\Validator\ValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
-use Unilend\Entity\Clients;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Entity\ProjectStatus;
 use Unilend\Exception\Staff\StaffNotFoundException;
+use Unilend\Security\Voter\ProjectVoter;
 
 class StatusAllocation
 {
@@ -70,20 +71,14 @@ class StatusAllocation
      * @return Project
      *
      * @throws StaffNotFoundException
+     * @throws \Exception
      */
     public function __invoke(Project $data, Request $request)
     {
+        if ($this->security->isGranted(ProjectVoter::ATTRIBUTE_SEND_ALLOCATION, $data)) {
+            throw new AccessDeniedException();
+        }
         $staff = $this->security->getUser()->getCurrentStaff();
-        $client = $this->security->getUser();
-
-        // @todo mettre ca dans voter
-        if (false === $client instanceof Clients || null === $staff = $client->getCurrentStaff()) {
-            throw new StaffNotFoundException('not found');
-        }
-
-        if ($data->getCurrentStatus()->getStatus() !== ProjectStatus::STATUS_DRAFT) {
-            throw new BadRequestException('Status incorrect');
-        }
 
         $content = json_decode($request->getContent(), true);
 
@@ -132,8 +127,6 @@ class StatusAllocation
         // @todo ensure participantReplyDeadline is filled
 
         $data->setCurrentStatus(new ProjectStatus($data, ProjectStatus::STATUS_ALLOCATION, $staff));
-
-//        $this->manager->persist($data);
 
         return $data;
     }

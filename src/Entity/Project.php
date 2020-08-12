@@ -14,9 +14,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Controller\Project\StatusAllocation;
 use Unilend\Entity\{Embeddable\Money, Embeddable\NullableMoney, Embeddable\NullablePerson, Interfaces\MoneyInterface, Interfaces\StatusInterface,
     Interfaces\TraceableStatusAwareInterface, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
-use Unilend\Controller\Project\StatusAllocation;
 use Unilend\Filter\ArrayFilter;
 use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
@@ -1387,6 +1387,14 @@ class Project implements TraceableStatusAwareInterface
     public function isPublished(): bool
     {
         return $this->hasCompletedStatus(ProjectStatus::STATUS_DRAFT);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDraft(): bool
+    {
+        return $this->hasCurrentStatus(ProjectStatus::STATUS_DRAFT);
     }
 
     /**
