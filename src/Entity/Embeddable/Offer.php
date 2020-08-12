@@ -36,7 +36,7 @@ class Offer
      *
      * @Groups({"offer:read"})
      */
-    protected ?DateTimeImmutable $added;
+    protected ?DateTimeImmutable $added = null;
 
     /**
      * @param NullableMoney|null $money
