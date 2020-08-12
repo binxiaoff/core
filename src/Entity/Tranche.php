@@ -73,8 +73,8 @@ class Tranche
     protected const REPAYMENT_TYPE_CONSTANT_CAPITAL = 'constant_capital';
     protected const REPAYMENT_TYPE_FIXED            = 'repayment_fixed';
 
-    protected const UNSYNDICATED_FUNDER_TYPE_ARRANGER    = 'arranger';
-    protected const UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY = 'third_party';
+    public const UNSYNDICATED_FUNDER_TYPE_ARRANGER    = 'arranger';
+    public const UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY = 'third_party';
 
     protected const COMMISSION_TYPE_NON_UTILISATION = 'non_utilisation';
     protected const COMMISSION_TYPE_COMMITMENT      = 'commitment';

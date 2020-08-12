@@ -48,8 +48,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         $projectAllocation = $this->createProject('Project allocation', ProjectStatus::STATUS_ALLOCATION);
         $projectReply = $this->createProject('Project reply', ProjectStatus::STATUS_PARTICIPANT_REPLY);
-        $projectDraft = $this->createProject('Project draft', ProjectStatus::STATUS_DRAFT);
-        $projectDraftParticipation = $this->createProject('Project draft participations', ProjectStatus::STATUS_DRAFT);
+        $projectDraft = $this->createProject('Project created', ProjectStatus::STATUS_DRAFT);
+        $projectDraftParticipation = $this->createProject('Project draft', ProjectStatus::STATUS_DRAFT);
         $manager->persist($projectDraft);
         $manager->persist($projectAllocation);
         $manager->persist($projectReply);

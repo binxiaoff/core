@@ -43,7 +43,9 @@ class TrancheFixtures extends AbstractFixtures implements DependentFixtureInterf
                 ))
                 ->setDuration(1)
                 ->setRate(new NullableLendingRate('EONIA', '0.0200', null, 'none'))
+                ->setUnsyndicatedFunderType($i === 2 ? Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER : null)
                 ->setSyndicated($i !== 2);
+                $this->forcePublicId($tranche, "tranche-{$project->getPublicId()}-{$i}");
                 $project->addTranche($tranche);
                 $manager->persist($tranche);
             }
