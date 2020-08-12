@@ -6,6 +6,7 @@ namespace Unilend\Entity\Embeddable;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -26,7 +27,7 @@ class Offer
      *
      * @Groups({"offer:read", "offer:write"})
      */
-    protected $money;
+    protected NullableMoney $money;
 
     /**
      * @var DateTimeImmutable|null
@@ -35,15 +36,19 @@ class Offer
      *
      * @Groups({"offer:read"})
      */
-    protected $added;
+    protected ?DateTimeImmutable $added;
 
     /**
      * @param NullableMoney|null $money
+     *
+     * @throws Exception
      */
     public function __construct(?NullableMoney $money = null)
     {
-        $this->money = $money ?? new NullableMoney();
-        if ($this->money->getAmount()) {
+        $this->money = new NullableMoney();
+
+        if ($money && $money->isValid()) {
+            $this->money = $money;
             $this->added = new DateTimeImmutable();
         }
     }
@@ -62,5 +67,13 @@ class Offer
     public function getAdded(): ?DateTimeImmutable
     {
         return $this->added;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValid(): bool
+    {
+        return $this->money->isValid();
     }
 }

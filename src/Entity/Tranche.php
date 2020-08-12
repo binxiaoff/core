@@ -224,7 +224,7 @@ class Tranche
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private ?string $commissionType;
+    private ?string $commissionType = null;
 
     /**
      * @var string|null
@@ -241,7 +241,7 @@ class Tranche
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
-    private ?string $commissionRate;
+    private ?string $commissionRate = null;
 
     /**
      * @var Collection|TrancheAttribute[]
