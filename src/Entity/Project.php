@@ -1128,10 +1128,6 @@ class Project implements TraceableStatusAwareInterface
      */
     public function setRiskType(?string $riskType): Project
     {
-        if (false === $this->isSubParticipation()) {
-            $riskType = null;
-        }
-
         $this->riskType = $riskType;
 
         return $this;
