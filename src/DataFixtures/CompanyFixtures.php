@@ -19,12 +19,14 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
     public const COMPANY4 = 'COMPANY4';
     public const COMPANY5 = 'COMPANY5';
     public const COMPANY_NOT_SIGNED = 'COMPANY_NOT_SIGNED';
+    public const COMPANY_EXTERNAL = 'COMPANY_EXTERNAL';
     public const COMPANIES = [
         self::COMPANY1,
         self::COMPANY2,
         self::COMPANY3,
         self::COMPANY4,
         self::COMPANY5,
+        self::COMPANY_EXTERNAL,
         self::COMPANY_NOT_SIGNED,
     ];
 
@@ -41,15 +43,19 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         $manager->persist($company);
         $this->addReference(self::CALS, $company);
 
-        // Fake companies
+        // Fake bank
         for ($i = 1; $i <= 5; $i++) {
-            $company = $this->createCompany("Company $i");
+            $company = $this->createCompany("CA Bank $i")->setGroupName('Crédit Agricole');
             $manager->persist($company);
             $this->addReference(self::COMPANIES[$i - 1], $company);
         }
 
-        /** @var Company $company */
-        $company = $this->createCompany('Company not signed', 'C', CompanyStatus::STATUS_PROSPECT);
+        // External bank
+        $company = $this->createCompany("External Bank");
+        $manager->persist($company);
+        $this->addReference(self::COMPANY_EXTERNAL, $company);
+
+        $company = $this->createCompany('Not signed Bank', 'C', CompanyStatus::STATUS_PROSPECT);
         $manager->persist($company);
         $this->addReference(self::COMPANY_NOT_SIGNED, $company);
 
@@ -69,7 +75,6 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         $company = (new Company($name ?: $this->faker->company, $name ?: $this->faker->company))
             ->setBankCode($this->faker->randomNumber(8, true))
-            ->setGroupName('Crédit Agricole')
             ->setShortCode($shortcode ?: $this->faker->regexify('[A-Za-z0-9]{10}'))
             ->setApplicableVat($this->faker->vat);
         $status = (new CompanyStatus($company, $status));
