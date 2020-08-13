@@ -95,8 +95,6 @@ class StatusAllocation
                     AbstractNormalizer::GROUPS => ["projectParticipation:create", "offerWithFee:write", "nullableMoney:write", "offer:write"],
                 ]);
 
-                $this->validator->validate($participation);
-
                 $requestTranches = $requestParticipation['tranches'] ?? [];
 
                 if (false === is_array($requestTranches) || empty($requestTranches)) {
