@@ -87,7 +87,8 @@ class StatusAllocation
         foreach ($data->getProjectParticipations() as $participation) {
             $key = array_search($this->iriConverter->getIriFromItem($participation), array_column($projectParticipations, '@id'));
 
-            if ($requestParticipation = $projectParticipations[$key]) {
+            if (false !== $key) {
+                $requestParticipation = $projectParticipations[$key];
                 /** @var ProjectParticipation $participation */
                 $participation = $this->serializer->denormalize($requestParticipation, ProjectParticipation::class, 'array', [
                     AbstractNormalizer::OBJECT_TO_POPULATE => $participation,
@@ -104,8 +105,7 @@ class StatusAllocation
 
                 foreach ($data->getTranches() as $tranche) {
                     $trancheIri = $this->iriConverter->getIriFromItem($tranche);
-                    $key = array_search($trancheIri, $requestTranches);
-                    if (false !== $key) {
+                    if (false !== $key = array_search($trancheIri, $requestTranches)) {
                         /** @var ProjectParticipationTranche $projectParticipationTranche */
                         $projectParticipationTranche = $this->serializer->denormalize([
                             'projectParticipation' => $requestParticipation['@id'],
