@@ -35,7 +35,7 @@ class TrancheFixtures extends AbstractFixtures implements DependentFixtureInterf
                 $tranche = (new Tranche(
                     $project,
                     new Money('EUR', '5000000'),
-                    $letters[$i],
+                    "Tranche {$letters[$i]}",
                     $this->faker->randomDigit,
                     'constant_capital',
                     'stand_by',
