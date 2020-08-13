@@ -8,8 +8,8 @@ use Doctrine\ORM\NonUniqueResultException;
 use InvalidArgumentException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, FileDownload, FileVersion, Project, ProjectFile, ProjectParticipationMember, ProjectStatus, Staff};
-use Unilend\Repository\{FileVersionSignatureRepository, ProjectFileRepository, ProjectParticipationMemberRepository, ProjectRepository};
+use Unilend\Entity\{Clients, FileDownload, FileVersion, Project, ProjectFile, ProjectParticipation, ProjectParticipationMember, ProjectStatus, Staff};
+use Unilend\Repository\{FileVersionSignatureRepository, ProjectFileRepository, ProjectParticipationMemberRepository, ProjectParticipationRepository, ProjectRepository};
 
 class FileDownloadVoter extends AbstractEntityVoter
 {
@@ -23,6 +23,8 @@ class FileDownloadVoter extends AbstractEntityVoter
     private ProjectFileRepository $projectFileRepository;
     /** @var ProjectRepository */
     private ProjectRepository $projectRepository;
+    /** @var ProjectParticipationRepository */
+    private ProjectParticipationRepository $projectParticipationRepository;
 
     /**
      * @param AuthorizationCheckerInterface        $authorizationChecker
@@ -30,19 +32,22 @@ class FileDownloadVoter extends AbstractEntityVoter
      * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
      * @param ProjectFileRepository                $projectFileRepository
      * @param ProjectRepository                    $projectRepository
+     * @param ProjectParticipationRepository       $projectParticipationRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         FileVersionSignatureRepository $fileVersionSignatureRepository,
         ProjectParticipationMemberRepository $projectParticipationMemberRepository,
         ProjectFileRepository $projectFileRepository,
-        ProjectRepository $projectRepository
+        ProjectRepository $projectRepository,
+        ProjectParticipationRepository $projectParticipationRepository
     ) {
         parent::__construct($authorizationChecker);
         $this->fileVersionSignatureRepository       = $fileVersionSignatureRepository;
         $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
         $this->projectFileRepository                = $projectFileRepository;
         $this->projectRepository                    = $projectRepository;
+        $this->projectParticipationRepository = $projectParticipationRepository;
     }
 
     /**
@@ -96,6 +101,11 @@ class FileDownloadVoter extends AbstractEntityVoter
                 default:
                     throw new InvalidArgumentException(sprintf('The type %s is not supported.', $type));
             }
+        }
+
+        if (ProjectParticipation::PROJECT_PARTICIPATION_FILE_TYPE_NDA === $type) {
+            $projectParticipation = $this->projectParticipationRepository->findOneBy(['nda' => $file]);
+            $project = $projectParticipation ? $projectParticipation->getProject() : null;
         }
 
         if (null === $project) {
