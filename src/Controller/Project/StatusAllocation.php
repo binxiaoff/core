@@ -118,9 +118,8 @@ class StatusAllocation
                     }
                 }
 
-                if ($participation->getProjectParticipationTranches()->isEmpty()) {
-                    throw new BadRequestException('Il faut indiquer au minimum une tranche par participant.');
-                }
+                // validate to ensure there is at least one ProjectParticipationTranche
+                $this->validator->validate($participation);
             }
         }
 

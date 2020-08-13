@@ -35,6 +35,8 @@ ProjectParticipation:
         invalid: L'entité que vous avez choisi ne peut pas être un participant du projet.
     invitationRequest:
         invalid: L'invitation en réponse ferme est invalide.
+    projectParticipationTranches:
+        required: Il faut indiquer au minimum une tranche par participant.
 
 ProjectParticipationTranche:
     tranche:

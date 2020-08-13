@@ -772,15 +772,22 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @param ExecutionContextInterface $context
      * @param                           $payload
      */
-    public function validateInvitationRequest(ExecutionContextInterface $context, $payload)
+    public function validateAfterDraft(ExecutionContextInterface $context, $payload)
     {
         if (
-            $this->getProject()->hasCompletedStatus(ProjectStatus::STATUS_DRAFT) &&
-            (null === $this->getInvitationRequest() || false === $this->invitationRequest->isValid())
+            $this->getProject()->hasCompletedStatus(ProjectStatus::STATUS_DRAFT)
         ) {
-            $context->buildViolation('ProjectParticipation.invitationRequest.invalid')
-                ->atPath('invitationRequest')
-                ->addViolation();
+            if ((null === $this->getInvitationRequest() || false === $this->invitationRequest->isValid())) {
+                $context->buildViolation('ProjectParticipation.invitationRequest.invalid')
+                    ->atPath('invitationRequest')
+                    ->addViolation();
+            }
+
+            if ($this->projectParticipationTranches->isEmpty()) {
+                $context->buildViolation('ProjectParticipation.projectParticipationTranches.required')
+                    ->atPath('projectParticipationTranches')
+                    ->addViolation();
+            }
         }
     }
 }
