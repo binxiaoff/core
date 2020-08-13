@@ -190,7 +190,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Assert\Expression(
      *     "this.isParticipantValid()",
-     *     message="ProjectParticipation.participant.notValid"
+     *     message="ProjectParticipation.participant.invalid"
      * )
      *
      * @Assert\NotBlank
@@ -778,7 +778,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
             $this->getProject()->hasCompletedStatus(ProjectStatus::STATUS_DRAFT) &&
             (null === $this->getInvitationRequest() || false === $this->invitationRequest->isValid())
         ) {
-            $context->buildViolation('Le champs invitationRequest est invalide.')
+            $context->buildViolation('ProjectParticipation.invitationRequest.invalid')
                 ->atPath('invitationRequest')
                 ->addViolation();
         }

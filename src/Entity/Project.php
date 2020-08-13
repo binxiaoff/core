@@ -1477,7 +1477,7 @@ class Project implements TraceableStatusAwareInterface
     public function validateParticipantReplyDeadline(ExecutionContextInterface $context, $payload)
     {
         if ($this->hasCompletedStatus(ProjectStatus::STATUS_DRAFT) && null === $this->getParticipantReplyDeadline()) {
-            $context->buildViolation('Il faut indiquer une date de limite pour la réponse aux invitations.')
+            $context->buildViolation('Project.participantReplyDeadline.required')
                 ->atPath('participantReplyDeadline')
                 ->addViolation();
         }

@@ -99,7 +99,7 @@ class StatusAllocation
                 $requestTranches = $requestParticipation['tranches'] ?? [];
 
                 if (false === is_array($requestTranches) || empty($requestTranches)) {
-                    throw new BadRequestException('Il manque les tranches cibles pour une participation');
+                    throw new BadRequestException('Un tableau de tranche doit être indiqué pour chacun des participants.');
                 }
 
                 foreach ($data->getTranches() as $tranche) {
@@ -119,7 +119,7 @@ class StatusAllocation
                 }
 
                 if ($participation->getProjectParticipationTranches()->isEmpty()) {
-                    throw new BadRequestException('Il faut ajouter des tranches valides');
+                    throw new BadRequestException('Il faut indiquer au minimum une tranche par participant.');
                 }
             }
         }
