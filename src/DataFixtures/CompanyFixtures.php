@@ -55,7 +55,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         $manager->persist($company);
         $this->addReference(self::COMPANY_EXTERNAL, $company);
 
-        $company = $this->createCompany('Not signed Bank', 'C', CompanyStatus::STATUS_PROSPECT);
+        $company = $this->createCompany('Not signed Bank', 'C', CompanyStatus::STATUS_PROSPECT)->setGroupName('Crédit Agricole');
         $manager->persist($company);
         $this->addReference(self::COMPANY_NOT_SIGNED, $company);
 
