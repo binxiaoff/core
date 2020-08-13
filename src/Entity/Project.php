@@ -14,6 +14,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Controller\Project\StatusAllocation;
 use Unilend\Entity\{Embeddable\Money, Embeddable\NullableMoney, Embeddable\NullablePerson, Interfaces\MoneyInterface, Interfaces\StatusInterface,
     Interfaces\TraceableStatusAwareInterface, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
@@ -1465,6 +1466,21 @@ class Project implements TraceableStatusAwareInterface
     public function hasEditableStatus(): bool
     {
         return false === in_array($this->getCurrentStatus()->getStatus(), ProjectStatus::NON_EDITABLE_STATUS);
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     * @param                           $payload
+     */
+    public function validateParticipantReplyDeadline(ExecutionContextInterface $context, $payload)
+    {
+        if ($this->hasCompletedStatus(ProjectStatus::STATUS_DRAFT) && null === $this->getParticipantReplyDeadline()) {
+            $context->buildViolation('Il faut indiquer une date de limite pour la réponse aux invitations.')
+                ->atPath('participantReplyDeadline')
+                ->addViolation();
+        }
     }
 
     /**

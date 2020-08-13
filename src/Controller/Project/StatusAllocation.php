@@ -70,16 +70,14 @@ class StatusAllocation
      *
      * @return Project
      *
-     * @throws StaffNotFoundException
      * @throws \Exception
      */
     public function __invoke(Project $data, Request $request)
     {
-        if ($this->security->isGranted(ProjectVoter::ATTRIBUTE_SEND_ALLOCATION, $data)) {
+        if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_SEND_ALLOCATION, $data)) {
             throw new AccessDeniedException();
         }
-        $staff = $this->security->getUser()->getCurrentStaff();
-
+        $staff   = $this->security->getUser()->getCurrentStaff();
         $content = json_decode($request->getContent(), true);
 
         $projectParticipations = $content['projectParticipations'] ?? [];
@@ -124,7 +122,6 @@ class StatusAllocation
                 }
             }
         }
-        // @todo ensure participantReplyDeadline is filled
 
         $data->setCurrentStatus(new ProjectStatus($data, ProjectStatus::STATUS_ALLOCATION, $staff));
 
