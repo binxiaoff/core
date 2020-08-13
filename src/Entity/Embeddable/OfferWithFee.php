@@ -52,7 +52,7 @@ class OfferWithFee extends Offer
     /**
      * @return bool
      */
-    public function isValid()
+    public function isValid(): bool
     {
         return parent::isValid() && $this->feeRate !== null;
     }
