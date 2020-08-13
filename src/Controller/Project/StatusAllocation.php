@@ -80,6 +80,8 @@ class StatusAllocation
         $staff   = $this->security->getUser()->getCurrentStaff();
         $content = json_decode($request->getContent(), true);
 
+        $data->setCurrentStatus(new ProjectStatus($data, ProjectStatus::STATUS_ALLOCATION, $staff));
+
         $projectParticipations = $content['projectParticipations'] ?? [];
 
         foreach ($data->getProjectParticipations() as $participation) {
@@ -92,7 +94,6 @@ class StatusAllocation
                     AbstractNormalizer::GROUPS => ["projectParticipation:create", "offerWithFee:write", "nullableMoney:write", "offer:write"],
                 ]);
 
-                // @todo ensure invitationRequest is filled
                 $this->validator->validate($participation);
 
                 $requestTranches = $requestParticipation['tranches'] ?? [];
@@ -122,8 +123,6 @@ class StatusAllocation
                 }
             }
         }
-
-        $data->setCurrentStatus(new ProjectStatus($data, ProjectStatus::STATUS_ALLOCATION, $staff));
 
         return $data;
     }

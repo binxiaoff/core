@@ -13,7 +13,7 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
-use Symfony\Component\Validator\{ConstraintViolation, ConstraintViolationList, Constraints as Assert};
+use Symfony\Component\Validator\{ConstraintViolation, ConstraintViolationList, Constraints as Assert, Context\ExecutionContextInterface};
 use Unilend\Entity\Embeddable\{NullableMoney, Offer, OfferWithFee, RangedOfferWithFee};
 use Unilend\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
@@ -764,5 +764,23 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @Assert\Callback()
+     *
+     * @param ExecutionContextInterface $context
+     * @param                           $payload
+     */
+    public function validateInvitationRequest(ExecutionContextInterface $context, $payload)
+    {
+        if (
+            $this->getProject()->hasCompletedStatus(ProjectStatus::STATUS_DRAFT) &&
+            (null === $this->getInvitationRequest() || false === $this->invitationRequest->isValid())
+        ) {
+            $context->buildViolation('Le champs invitationRequest est invalide.')
+                ->atPath('invitationRequest')
+                ->addViolation();
+        }
     }
 }
