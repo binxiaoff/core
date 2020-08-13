@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Serializer\Normalizer\ProjectParticipation;
 
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
 use Unilend\Entity\Project;
-use Unilend\Entity\ProjectParticipation;
-use Unilend\Security\Voter\ProjectParticipationVoter;
 
 class ProjectDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -16,17 +13,6 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
     use ObjectToPopulateTrait;
 
     private const ALREADY_CALLED = 'PROJECT_DENORMALIZER_ALREADY_CALLED';
-
-    /** @var Security */
-    private $security;
-
-    /**
-     * @param Security $security
-     */
-    public function __construct(Security $security)
-    {
-        $this->security = $security;
-    }
 
     /**
      * {@inheritdoc}
