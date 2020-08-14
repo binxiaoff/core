@@ -43,6 +43,7 @@ class FileDownloadManager
         $contentDisposition = $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $fileName, $fileNameFallback);
         $response->headers->set('Content-Disposition', $contentDisposition);
         $response->headers->set('Content-Type', $fileVersion->getMimetype() ?: 'application/octet-stream');
+        $response->headers->set('Content-Length', $fileVersion->getSize());
 
         return $response;
     }
