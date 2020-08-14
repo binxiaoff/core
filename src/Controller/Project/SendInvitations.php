@@ -63,9 +63,6 @@ class SendInvitations
      */
     public function __invoke(Project $data, Request $request)
     {
-        if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_SEND_INVITATIONS, $data)) {
-            throw new AccessDeniedException();
-        }
         $staff   = $this->security->getUser()->getCurrentStaff();
         $content = json_decode($request->getContent(), true);
 
