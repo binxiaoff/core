@@ -1479,7 +1479,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function hasEditableStatus(): bool
     {
-        return false === in_array($this->getCurrentStatus()->getStatus(), ProjectStatus::NON_EDITABLE_STATUS);
+        return false === in_array($this->getCurrentStatus()->getStatus(), ProjectStatus::NON_EDITABLE_STATUSES);
     }
 
     /**
