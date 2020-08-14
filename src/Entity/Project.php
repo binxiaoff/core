@@ -15,7 +15,7 @@ use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Controller\Project\StatusAllocation;
+use Unilend\Controller\Project\SendInvitations;
 use Unilend\Entity\{Embeddable\Money, Embeddable\NullableMoney, Embeddable\NullablePerson, Interfaces\MoneyInterface, Interfaces\StatusInterface,
     Interfaces\TraceableStatusAwareInterface, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Filter\ArrayFilter;
@@ -122,7 +122,21 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "sendInvitations": {
  *             "method":"PATCH",
  *             "path":"/projects/{id}/sendInvitations",
- *             "controller":StatusAllocation::class
+ *             "controller": SendInvitations::class,
+ *             "security_post_denormalize": "is_granted('send_invitations', object)",
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "project:list",
+ *                     "project:read",
+ *                     "company:read",
+ *                     "projectParticipation:read",
+ *                     "projectParticipationStatus:read",
+ *                     "projectParticipationTranche:read",
+ *                     "money:read",
+ *                     "nullableMoney:read",
+ *                     "nullablePerson:read"
+ *                 }
+ *             }
  *          }
  *     }
  * )
@@ -1476,7 +1490,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function validateParticipantReplyDeadline(ExecutionContextInterface $context, $payload)
     {
-        if ($this->hasCompletedStatus(ProjectStatus::STATUS_DRAFT) && null === $this->getParticipantReplyDeadline()) {
+        if ($this->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION) && null === $this->getParticipantReplyDeadline()) {
             $context->buildViolation('Project.participantReplyDeadline.required')
                 ->atPath('participantReplyDeadline')
                 ->addViolation();

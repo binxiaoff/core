@@ -17,30 +17,19 @@ use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Entity\ProjectStatus;
-use Unilend\Exception\Staff\StaffNotFoundException;
 use Unilend\Security\Voter\ProjectVoter;
 
-class StatusAllocation
+class SendInvitations
 {
-    /**
-     * @var IriConverterInterface
-     */
+    /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
-    /**
-     * @var Security
-     */
+    /** @var Security */
     private Security $security;
-    /**
-     * @var EntityManagerInterface
-     */
+    /** @var EntityManagerInterface */
     private EntityManagerInterface $manager;
-    /**
-     * @var SerializerInterface
-     */
+    /** @var SerializerInterface */
     private SerializerInterface $serializer;
-    /**
-     * @var ValidatorInterface
-     */
+    /** @var ValidatorInterface */
     private ValidatorInterface $validator;
 
     /**
@@ -58,10 +47,10 @@ class StatusAllocation
         ValidatorInterface $validator
     ) {
         $this->iriConverter = $iriConverter;
-        $this->security = $security;
-        $this->manager = $manager;
-        $this->validator = $validator;
-        $this->serializer = $serializer;
+        $this->security     = $security;
+        $this->manager      = $manager;
+        $this->validator    = $validator;
+        $this->serializer   = $serializer;
     }
 
     /**
@@ -74,13 +63,13 @@ class StatusAllocation
      */
     public function __invoke(Project $data, Request $request)
     {
-        if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_SEND_ALLOCATION, $data)) {
+        if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_SEND_INVITATIONS, $data)) {
             throw new AccessDeniedException();
         }
         $staff   = $this->security->getUser()->getCurrentStaff();
         $content = json_decode($request->getContent(), true);
 
-        $data->setCurrentStatus(new ProjectStatus($data, ProjectStatus::STATUS_ALLOCATION, $staff));
+        $data->setCurrentStatus(new ProjectStatus($data, ProjectStatus::STATUS_PARTICIPANT_REPLY, $staff));
 
         $projectParticipations = $content['projectParticipations'] ?? [];
 
@@ -104,20 +93,9 @@ class StatusAllocation
                 foreach ($data->getTranches() as $tranche) {
                     $trancheIri = $this->iriConverter->getIriFromItem($tranche);
                     if (false !== $key = array_search($trancheIri, $requestTranches)) {
-                        /** @var ProjectParticipationTranche $projectParticipationTranche */
-                        $projectParticipationTranche = $this->serializer->denormalize([
-                            'projectParticipation' => $requestParticipation['@id'],
-                            'tranche' => $requestTranches[$key],
-                            'addedBy' => $this->iriConverter->getIriFromItem($staff),
-                        ], ProjectParticipationTranche::class, 'array', [ AbstractNormalizer::GROUPS => ['projectParticipationTranche:create', 'blameable:read']]);
-                        $this->validator->validate($projectParticipationTranche);
-                        $this->manager->persist($projectParticipationTranche);
-                        $participation->addProjectParticipationTranche($projectParticipationTranche);
+                        $participation->addProjectParticipationTranche($tranche, $staff);
                     }
                 }
-
-                // validate to ensure there is at least one ProjectParticipationTranche
-                $this->validator->validate($participation);
             }
         }
 

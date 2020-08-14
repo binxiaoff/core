@@ -339,7 +339,9 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Collection|ProjectParticipationTranche[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="projectParticipation")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="projectParticipation", cascade={"persist"})
+     *
+     * @Assert\Valid()
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
      */
@@ -753,15 +755,18 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param ProjectParticipationTranche $projectParticipationTranche
+     * @param Tranche $tranche
+     * @param Staff   $addedBy
      *
      * @return ProjectParticipation
+     *
+     * @throws Exception
      */
-    public function addProjectParticipationTranche(ProjectParticipationTranche $projectParticipationTranche): ProjectParticipation
+    public function addProjectParticipationTranche(Tranche $tranche, Staff $addedBy): ProjectParticipation
     {
-        if ($projectParticipationTranche->getProjectParticipation() === $this && !$this->projectParticipationTranches->contains($projectParticipationTranche)) {
-            $this->projectParticipationTranches->add($projectParticipationTranche);
-        }
+        $projectParticipationTranche = new ProjectParticipationTranche($this, $tranche, $addedBy);
+
+        $this->projectParticipationTranches->add($projectParticipationTranche);
 
         return $this;
     }
@@ -772,11 +777,9 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @param ExecutionContextInterface $context
      * @param                           $payload
      */
-    public function validateAfterDraft(ExecutionContextInterface $context, $payload)
+    public function validateSendingInvitation(ExecutionContextInterface $context, $payload)
     {
-        if (
-            $this->getProject()->hasCompletedStatus(ProjectStatus::STATUS_DRAFT)
-        ) {
+        if ($this->getProject()->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION)) {
             if ((null === $this->getInvitationRequest() || false === $this->invitationRequest->isValid())) {
                 $context->buildViolation('ProjectParticipation.invitationRequest.invalid')
                     ->atPath('invitationRequest')

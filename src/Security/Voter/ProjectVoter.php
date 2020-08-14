@@ -21,8 +21,7 @@ class ProjectVoter extends AbstractEntityVoter
     public const ATTRIBUTE_COMMENT              = 'comment';
     public const ATTRIBUTE_CREATE               = 'create';
     public const ATTRIBUTE_DELETE               = 'delete';
-
-    public const ATTRIBUTE_SEND_ALLOCATION      = 'send_allocation';
+    public const ATTRIBUTE_SEND_INVITATIONS     = 'send_invitations';
 
     /** @var ProjectOrganizerRepository */
     private ProjectOrganizerRepository $projectOrganizerRepository;
@@ -52,7 +51,7 @@ class ProjectVoter extends AbstractEntityVoter
      *
      * @throws Exception
      */
-    public function canSendAllocation(Project $project, Clients $user): bool
+    public function canSendInvitations(Project $project, Clients $user): bool
     {
         return $this->canEdit($project, $user) && ($project->isDraft() || $project->isInInterestCollectionStep());
     }
