@@ -143,7 +143,7 @@ class ProjectParticipationStatus implements StatusInterface
             return true;
         }
 
-        if ($this->status < 0 && $this->isParticipationOfArranger()) {
+        if ($this->status < 0 && $this->isArrangerParticipation()) {
             return false;
         }
 
@@ -191,7 +191,7 @@ class ProjectParticipationStatus implements StatusInterface
     /**
      * @return bool
      */
-    private function isParticipationOfArranger(): bool
+    private function isArrangerParticipation(): bool
     {
         return $this->getProjectParticipation()->getParticipant() === $this->getProjectParticipation()->getProject()->getSubmitterCompany();
     }

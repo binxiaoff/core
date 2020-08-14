@@ -50,6 +50,7 @@ services:
     Unilend\Listener\Doctrine\Entity\ProjectStatus\ProjectStatusCreatedListener:
         tags:
             - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\ProjectStatus, method: transferInvitationReply }
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\ProjectStatus, method: acceptArrangerCommittee }
 
     # Message Dispatcher
     Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientUpdatedListener:

@@ -8,11 +8,28 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
+use Symfony\Component\Security\Core\Security;
+use Unilend\Entity\Clients;
 use Unilend\Entity\Embeddable\Offer;
+use Unilend\Entity\ProjectParticipation;
+use Unilend\Entity\ProjectParticipationStatus;
 use Unilend\Entity\ProjectStatus;
 
 class ProjectStatusCreatedListener
 {
+    /**
+     * @var Security
+     */
+    private Security $security;
+
+    /**
+     * @param Security $security
+     */
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
+    }
+
     /**
      * @param ProjectStatus      $projectStatus
      * @param LifecycleEventArgs $args
@@ -23,7 +40,7 @@ class ProjectStatusCreatedListener
      */
     public function transferInvitationReply(ProjectStatus $projectStatus, LifecycleEventArgs $args)
     {
-        if ($projectStatus->getStatus() !== ProjectStatus::STATUS_ALLOCATION) {
+        if (ProjectStatus::STATUS_ALLOCATION !== $projectStatus->getStatus()) {
             return;
         }
 
@@ -54,5 +71,42 @@ class ProjectStatusCreatedListener
         }
 
         $em->flush();
+    }
+
+    /**
+     * @param ProjectStatus      $projectStatus
+     * @param LifecycleEventArgs $args
+     *
+     * @throws Exception
+     */
+    public function acceptArrangerCommittee(ProjectStatus $projectStatus, LifecycleEventArgs $args)
+    {
+        if (ProjectStatus::STATUS_SYNDICATION_FINISHED !== $projectStatus->getStatus()) {
+            return;
+        }
+
+        $user = $this->security->getUser();
+
+        if (false === $user instanceof Clients) {
+            return;
+        }
+
+        $staff = $user->getCurrentStaff();
+
+        if (null === $staff) {
+            return;
+        }
+
+        $participation = $projectStatus->getProject()->getArrangerProjectParticipation();
+        $currentStatus = $participation->getCurrentStatus();
+        if (null === $currentStatus || $currentStatus->getStatus() === ProjectParticipationStatus::STATUS_CREATED) {
+            $em = $args->getEntityManager();
+
+            $nextStatus = new ProjectParticipationStatus($participation, ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED, $staff);
+            $participation->setCurrentStatus($nextStatus);
+
+            $em->persist($participation);
+            $em->flush();
+        }
     }
 }
