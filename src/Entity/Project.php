@@ -554,12 +554,12 @@ class Project implements TraceableStatusAwareInterface
     public function __construct(Staff $addedBy, string $riskGroupName, Money $globalFundingMoney, MarketSegment $marketSegment)
     {
         $this->projectFiles          = new ArrayCollection();
-        $this->projectParticipations = new ArrayCollection();
+        $this->projectParticipations = new ArrayCollection([new ProjectParticipation($addedBy->getCompany(), $this, $addedBy)]);
         $this->projectComments       = new ArrayCollection();
         $this->statuses              = new ArrayCollection();
         $this->tranches              = new ArrayCollection();
         $this->tags                  = new ArrayCollection();
-        $this->organizers            = new ArrayCollection();
+        $this->organizers            = new ArrayCollection([new ProjectOrganizer($addedBy->getCompany(), $this, $addedBy)]);
         $this->added                 = new DateTimeImmutable();
         $this->marketSegment         = $marketSegment;
         $this->submitterClient       = $addedBy->getClient();
