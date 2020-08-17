@@ -51,6 +51,6 @@ class ProjectOrganizerVoter extends AbstractEntityVoter
      */
     protected function canEdit(ProjectOrganizer $subject): bool
     {
-        return $subject->getCompany() !== $subject->getProject()->getSubmitterCompany();
+        return true;
     }
 }
