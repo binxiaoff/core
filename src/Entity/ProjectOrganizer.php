@@ -88,6 +88,20 @@ class ProjectOrganizer
     private $company;
 
     /**
+     * Overriden here to disabled validation on role count
+     *
+     * @var array
+     *
+     * @ORM\Column(type="json")
+     *
+     * @Groups({"role:read", "role:write"})
+     *
+     * @Assert\Choice(callback="getAvailableRoles", multiple=true, multipleMessage="Roleable.roles.choice")
+     * @Assert\Unique(message="Roleable.roles.unique")
+     */
+    private $roles = [];
+
+    /**
      * @param Company               $company
      * @param Project               $project
      * @param Staff                 $addedBy
