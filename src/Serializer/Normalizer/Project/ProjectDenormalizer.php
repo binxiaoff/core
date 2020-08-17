@@ -18,7 +18,7 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
 {
     use DenormalizerAwareTrait;
 
-    private const ALREADY_CALLED = 'PROJECT_ATTRIBUTE_DENORMALIZER_ALREADY_CALLED';
+    private const ALREADY_CALLED = 'PROJECT_DENORMALIZER_ALREADY_CALLED';
 
     /** @var Security */
     private Security $security;
@@ -57,7 +57,7 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
     public function denormalize($data, $type, $format = null, array $context = [])
     {
         /** @var Project $project */
-        $project = $context['object_to_populate'];
+        $project = $this->denormalizer->denormalize($data, $type, $format, $context);
         $user = $this->security->getUser();
 
         $context[self::ALREADY_CALLED] = true;
@@ -111,8 +111,11 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
             }
         }
 
+        if (false === $project->isSubParticipation() && $project->getRiskType() !== null) {
+            $project->setRiskType(null);
+        }
 
-        return $this->denormalizer->denormalize($data, $type, $format, $context);
+        return $project;
     }
 
     /**
