@@ -26,6 +26,8 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
 {
     use OfferFixtureTrait;
 
+    public static $id = 0; // Auto increment public ids
+
     /**
      * @param ObjectManager $manager
      */
@@ -78,14 +80,17 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
                 ProjectParticipationStatus::STATUS_CREATED :
                 ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED;
         }
+        self::$id++;
+        $publicId = "p-{$project->getPublicId()}-" . self::$id;
         $participation = (new ProjectParticipation($company, $project, $staff))
             ->setInterestRequest($this->createRangedOffer(1000000, 2000000))
             ->setInterestReply($this->createOffer(2000000))
             ->setInvitationRequest($this->createOfferWithFee(1000000))
             ->setInvitationReplyMode('pro-rata')
             ->setAllocationFeeRate($this->faker->randomDigit);
-        $this->forcePublicId($participation, "p-{$project->getPublicId()}-" . uniqid());
+        $this->forcePublicId($participation, $publicId);
         $status = new ProjectParticipationStatus($participation, $status, $staff);
+        $this->forcePublicId($status, "pps-$publicId");
         $participation->setCurrentStatus($status);
 
         return $participation;

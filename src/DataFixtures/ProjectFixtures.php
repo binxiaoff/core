@@ -25,6 +25,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     public const PROJECT_REPLY = 'PROJECT_REPLY';
     public const PROJECT_DRAFT = 'PROJECT_DRAFT';
     public const PROJECT_DRAFT_PARTICIPATION = 'PROJECT_DRAFT_PARTICIPATION';
+    public const PROJECT_OTHER_USER = 'PROJECT_OTHER_USER';
     public const PROJECTS = [
         self::PROJECT_ALLOCATION,
         self::PROJECT_REPLY,
@@ -46,34 +47,40 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     public function load(ObjectManager $manager): void
     {
+        /** @var Clients $otherUser */
+        $otherUser = $this->getReference(UserFixtures::OTHER);
         $projectAllocation = $this->createProject('Project allocation', ProjectStatus::STATUS_ALLOCATION);
         $projectReply = $this->createProject('Project reply', ProjectStatus::STATUS_PARTICIPANT_REPLY);
         $projectDraft = $this->createProject('Project created', ProjectStatus::STATUS_DRAFT);
         $projectDraftParticipation = $this->createProject('Project draft', ProjectStatus::STATUS_DRAFT);
+        $projectDraftOtherUser = $this->createProject('Project other user', ProjectStatus::STATUS_DRAFT, $otherUser->getCurrentStaff());
         $manager->persist($projectDraft);
         $manager->persist($projectAllocation);
         $manager->persist($projectReply);
         $manager->persist($projectDraftParticipation);
+        $manager->persist($projectDraftOtherUser);
         $this->addReference(self::PROJECT_ALLOCATION, $projectAllocation);
         $this->addReference(self::PROJECT_REPLY, $projectReply);
         $this->addReference(self::PROJECT_DRAFT, $projectDraft);
         $this->addReference(self::PROJECT_DRAFT_PARTICIPATION, $projectDraftParticipation);
+        $this->addReference(self::PROJECT_OTHER_USER, $projectDraftOtherUser);
         $manager->flush();
     }
 
     /**
-     * @param string $title
-     * @param int    $status
+     * @param string     $title
+     * @param int        $status
+     * @param Staff|null $staff
      *
      * @return Project
      *
      * @throws \ReflectionException
      */
-    public function createProject(string $title, int $status): Project
+    public function createProject(string $title, int $status, ?Staff $staff = null): Project
     {
         $money = new Money('EUR', '5000000');
         /** @var Staff $staff */
-        $staff = $this->getReference(StaffFixtures::ADMIN);
+        $staff = $staff ?: $this->getReference(StaffFixtures::ADMIN);
         $project = (new Project(
             $staff,
             'RISK-GROUP-1',

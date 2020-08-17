@@ -34,7 +34,7 @@ class TrancheFixtures extends AbstractFixtures implements DependentFixtureInterf
             for ($i = 0; $i <= 4; $i++) {
                 $tranche = (new Tranche(
                     $project,
-                    new Money('EUR', '5000000'),
+                    new Money('EUR', 1000000 * count(CompanyFixtures::COMPANIES)),
                     "Tranche {$letters[$i]}",
                     $this->faker->randomDigit,
                     'constant_capital',
