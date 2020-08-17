@@ -1189,6 +1189,20 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
+     * @param ProjectParticipation $projectParticipation
+     *
+     * @return Project
+     */
+    public function addProjectParticipation(ProjectParticipation $projectParticipation): Project
+    {
+        if (false === $this->projectParticipations->contains($projectParticipation)) {
+            $this->projectParticipations->add($projectParticipation);
+        }
+
+        return $this;
+    }
+
+    /**
      * @return Money
      *
      * @Groups({"project:read"})
