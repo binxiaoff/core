@@ -61,7 +61,6 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->distinct()
             ->leftJoin("{$rootAlias}.projectParticipationMembers", 'ppc')
             ->innerJoin("{$rootAlias}.project", 'p')
-            ->innerJoin('p.organizers', 'organizers')
             ->andWhere(
                 $expressionBuilder->orX(
                     // Submitter condition
