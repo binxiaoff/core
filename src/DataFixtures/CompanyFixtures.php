@@ -50,6 +50,11 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
             $this->addReference(self::COMPANIES[$i - 1], $company);
         }
 
+        for ($i = 6; $i <= 100; $i++) {
+            $company = $this->createCompany("CA Bank $i")->setGroupName('Crédit Agricole');
+            $manager->persist($company);
+        }
+
         // External bank
         $company = $this->createCompany("External Bank");
         $manager->persist($company);
