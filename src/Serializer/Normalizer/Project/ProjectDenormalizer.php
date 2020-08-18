@@ -70,8 +70,8 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
             $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['project'] = $project;
         }
 
-        /** @var Project $project */
-        $project = $this->denormalizer->denormalize($data, $type, $format, $context);
+        /** @var Project $denormalized */
+        $denormalized = $this->denormalizer->denormalize($data, $type, $format, $context);
 
         $dataProjectParticipations = $data['projectParticipations'] ?? [];
 
@@ -82,15 +82,15 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
             if (isset($dataProjectParticipation['@id'])) {
                 $this->updateProjectParticipation($dataProjectParticipation);
             } else {
-                $this->createProjectParticipation($dataProjectParticipation, $project);
+                $this->createProjectParticipation($dataProjectParticipation, $denormalized);
             }
         }
 
-        if (false === $project->isSubParticipation() && null !== $project->getRiskType()) {
-            $project->setRiskType(null);
+        if (false === $denormalized->isSubParticipation() && null !== $denormalized->getRiskType()) {
+            $denormalized->setRiskType(null);
         }
 
-        return $project;
+        return $denormalized;
     }
 
     /**
