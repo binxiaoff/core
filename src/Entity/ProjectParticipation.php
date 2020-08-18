@@ -13,7 +13,7 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
-use Symfony\Component\Validator\{ConstraintViolation, ConstraintViolationList, Constraints as Assert};
+use Symfony\Component\Validator\{ConstraintViolation, ConstraintViolationList, Constraints as Assert, Context\ExecutionContextInterface};
 use Unilend\Entity\Embeddable\{NullableMoney, Offer, OfferWithFee, RangedOfferWithFee};
 use Unilend\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
@@ -190,7 +190,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Assert\Expression(
      *     "this.isParticipantValid()",
-     *     message="ProjectParticipation.participant.notValid"
+     *     message="ProjectParticipation.participant.invalid"
      * )
      *
      * @Assert\NotBlank
@@ -339,7 +339,9 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Collection|ProjectParticipationTranche[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="projectParticipation")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="projectParticipation", cascade={"persist"})
+     *
+     * @Assert\Valid()
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
      */
@@ -750,5 +752,51 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         $this->nda = $nda;
 
         return $this;
+    }
+
+    /**
+     * @param Tranche $tranche
+     * @param Staff   $addedBy
+     *
+     * @return ProjectParticipation
+     *
+     * @throws Exception
+     */
+    public function addProjectParticipationTranche(Tranche $tranche, Staff $addedBy): ProjectParticipation
+    {
+        foreach ($this->getProjectParticipationTranches() as $projectParticipationTranche) {
+            if ($projectParticipationTranche->getTranche()->getPublicId() === $tranche->getPublicId()) {
+                return $this;
+            }
+        }
+
+        $projectParticipationTranche = new ProjectParticipationTranche($this, $tranche, $addedBy);
+
+        $this->projectParticipationTranches->add($projectParticipationTranche);
+
+        return $this;
+    }
+
+    /**
+     * @Assert\Callback()
+     *
+     * @param ExecutionContextInterface $context
+     * @param                           $payload
+     */
+    public function validateSendingInvitation(ExecutionContextInterface $context, $payload)
+    {
+        if ($this->getProject()->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION)) {
+            if ((null === $this->getInvitationRequest() || false === $this->invitationRequest->isValid())) {
+                $context->buildViolation('ProjectParticipation.invitationRequest.invalid')
+                    ->atPath('invitationRequest')
+                    ->addViolation();
+            }
+
+            if ($this->projectParticipationTranches->isEmpty()) {
+                $context->buildViolation('ProjectParticipation.projectParticipationTranches.required')
+                    ->atPath('projectParticipationTranches')
+                    ->addViolation();
+            }
+        }
     }
 }

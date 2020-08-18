@@ -65,7 +65,7 @@ class ListExtension implements QueryCollectionExtensionInterface
                     'ppc.archived IS NULL'
                 )
             ))
-            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUS)
+            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
             ->setParameter('company', $staff->getCompany())
             ->setParameter('staff', $staff)
             ->setParameter('client', $staff->getClient())

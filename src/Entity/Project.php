@@ -14,6 +14,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Controller\Project\SendInvitations;
 use Unilend\Entity\{Embeddable\Money, Embeddable\NullableMoney, Embeddable\NullablePerson, Interfaces\MoneyInterface, Interfaces\StatusInterface,
     Interfaces\TraceableStatusAwareInterface, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Filter\ArrayFilter;
@@ -1188,6 +1190,20 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
+     * @param ProjectParticipation $projectParticipation
+     *
+     * @return Project
+     */
+    public function addProjectParticipation(ProjectParticipation $projectParticipation): Project
+    {
+        if (false === $this->projectParticipations->contains($projectParticipation)) {
+            $this->projectParticipations->add($projectParticipation);
+        }
+
+        return $this;
+    }
+
+    /**
      * @return Money
      *
      * @Groups({"project:read"})
@@ -1406,6 +1422,14 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @return bool
      */
+    public function isDraft(): bool
+    {
+        return $this->hasCurrentStatus(ProjectStatus::STATUS_DRAFT);
+    }
+
+    /**
+     * @return bool
+     */
     public function isInterestCollected(): bool
     {
         return $this->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION);
@@ -1470,7 +1494,22 @@ class Project implements TraceableStatusAwareInterface
      */
     public function hasEditableStatus(): bool
     {
-        return false === in_array($this->getCurrentStatus()->getStatus(), ProjectStatus::NON_EDITABLE_STATUS);
+        return false === in_array($this->getCurrentStatus()->getStatus(), ProjectStatus::NON_EDITABLE_STATUSES);
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     * @param                           $payload
+     */
+    public function validateParticipantReplyDeadline(ExecutionContextInterface $context, $payload)
+    {
+        if ($this->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION) && null === $this->getParticipantReplyDeadline()) {
+            $context->buildViolation('Project.participantReplyDeadline.required')
+                ->atPath('participantReplyDeadline')
+                ->addViolation();
+        }
     }
 
     /**

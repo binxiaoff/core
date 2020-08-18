@@ -66,7 +66,7 @@ class ProjectStatus implements StatusInterface
     public const STATUS_CONTRACTUALISATION    = 50;
     public const STATUS_SYNDICATION_FINISHED  = 60;
 
-    public const DISPLAYABLE_STATUS = [
+    public const DISPLAYABLE_STATUSES = [
         self::STATUS_INTEREST_EXPRESSION,
         self::STATUS_PARTICIPANT_REPLY,
         self::STATUS_ALLOCATION,
@@ -74,7 +74,7 @@ class ProjectStatus implements StatusInterface
         self::STATUS_SYNDICATION_FINISHED,
     ];
 
-    public const NON_EDITABLE_STATUS = [
+    public const NON_EDITABLE_STATUSES = [
         self::STATUS_SYNDICATION_CANCELLED,
         self::STATUS_SYNDICATION_FINISHED,
     ];

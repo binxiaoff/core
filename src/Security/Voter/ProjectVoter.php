@@ -69,6 +69,8 @@ class ProjectVoter extends AbstractEntityVoter
      * @param Clients $user
      *
      * @return bool
+     *
+     * @throws Exception
      */
     protected function canAdminView(Project $project, Clients $user): bool
     {

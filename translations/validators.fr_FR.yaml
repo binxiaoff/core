@@ -32,7 +32,11 @@ ProjectParticipation:
     committeeDeadline:
         required: Merci de saisir une date de réponse du comité si la réponse est en attente.
     participant:
-        notValid: L'entité que vous avez choisi ne peut pas être un participant du projet.
+        invalid: L'entité que vous avez choisi ne peut pas être un participant du projet.
+    invitationRequest:
+        invalid: L'invitation en réponse ferme est invalide.
+    projectParticipationTranches:
+        required: Il faut indiquer au minimum une tranche par participant.
 
 ProjectParticipationTranche:
     tranche:
@@ -69,3 +73,7 @@ ProjectStatus:
         participationType:
             required: Le type de participation est requis.
         oversubscribed: Le projet est en sursouscription.
+
+Project:
+    participantReplyDeadline:
+        required: La date limite de réponse aux invitations est requise.
