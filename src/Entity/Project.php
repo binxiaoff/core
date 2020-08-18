@@ -471,7 +471,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Groups({"project:write", "project:read"})
      */
-    private ?string $riskType;
+    private ?string $riskType = null;
 
     /**
      * @var Collection|Tag[]
@@ -910,15 +910,35 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return Company|null
+     * @return Company
      *
      * @Groups({"project:read"})
      *
      * @MaxDepth(1)
      */
-    public function getArranger(): ?Company
+    public function getArranger(): Company
     {
         return $this->getSubmitterCompany();
+    }
+
+    /**
+     * @return ProjectParticipation
+     */
+    public function getArrangerProjectParticipation(): ProjectParticipation
+    {
+        $filtered = $this->projectParticipations->filter(function (ProjectParticipation $projectParticipation) {
+            return $projectParticipation->getParticipant() === $this->getArranger();
+        });
+
+        if (1 > $filtered->count()) {
+            throw new \DomainException('There are more than one participations for arranger');
+        }
+
+        if (0 === $filtered->count()) {
+            throw new \DomainException('There is no participation for arranger');
+        }
+
+        return $filtered->first();
     }
 
     /**
