@@ -5,6 +5,7 @@ namespace Unilend\DataFixtures;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Gedmo\Sluggable\Util\Urlizer;
 use Unilend\Entity\Clients;
 use Unilend\Entity\Company;
 use Unilend\Entity\CompanyStatus;
@@ -78,10 +79,12 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     public function createCompany(string $name = null, string $shortcode = null, string $status = CompanyStatus::STATUS_SIGNED): Company
     {
-        $company = (new Company($name ?: $this->faker->company, $name ?: $this->faker->company))
+        $companyName = $name ?: $this->faker->company;
+        $company = (new Company($companyName, $companyName))
             ->setBankCode($this->faker->randomNumber(8, true))
             ->setShortCode($shortcode ?: $this->faker->regexify('[A-Za-z0-9]{10}'))
             ->setApplicableVat($this->faker->vat);
+        $this->forcePublicId($company, Urlizer::urlize($companyName));
         $status = (new CompanyStatus($company, $status));
         $company->setCurrentStatus($status);
 
