@@ -48,7 +48,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     public function load(ObjectManager $manager): void
     {
         /** @var Clients $otherUser */
-        $otherUser = $this->getReference(UserFixtures::OTHER);
+        $otherUser = $this->getReference(UserFixtures::PARTICIPANT);
         $projectAllocation = $this->createProject('Project allocation', ProjectStatus::STATUS_ALLOCATION);
         $projectReply = $this->createProject('Project reply', ProjectStatus::STATUS_PARTICIPANT_REPLY);
         $projectDraft = $this->createProject('Project created', ProjectStatus::STATUS_DRAFT);

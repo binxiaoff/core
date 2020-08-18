@@ -37,7 +37,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         /** @var Company[] $companies */
         $companies = $this->getReferences(CompanyFixtures::COMPANIES);
         /** @var Clients $user */
-        $other = $this->getReference(UserFixtures::OTHER);
+        $other = $this->getReference(UserFixtures::PARTICIPANT);
         foreach ($companies as $company) {
             if ($company !== $adminCompany) {
                 $staff = $this->createStaff($other, $company, $manager);

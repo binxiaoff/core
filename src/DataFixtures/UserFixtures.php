@@ -13,7 +13,7 @@ class UserFixtures extends AbstractFixtures
 {
 
     public const ADMIN = 'USER_ADMIN';
-    public const OTHER = 'USER_OTHER';
+    public const PARTICIPANT = 'USER_PARTICIPANT';
 
     /**
      * @param ObjectManager $manager
@@ -23,14 +23,14 @@ class UserFixtures extends AbstractFixtures
     public function load(ObjectManager $manager): void
     {
         $admin = $this->createUser('admin@ca-lendingservices.com', 'arranger');
-        $other = $this->createUser('other@ca-lendingservices.com', 'other');
+        $other = $this->createUser('participant@ca-lendingservices.com', 'other');
         $manager->persist($admin);
         $manager->persist($admin->getCurrentStatus());
         $manager->persist($other);
         $manager->persist($other->getCurrentStatus());
         $manager->flush();
         $this->addReference(self::ADMIN, $admin);
-        $this->addReference(self::OTHER, $other);
+        $this->addReference(self::PARTICIPANT, $other);
     }
 
     /**
