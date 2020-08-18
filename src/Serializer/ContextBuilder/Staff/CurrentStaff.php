@@ -85,6 +85,7 @@ class CurrentStaff implements SerializerContextBuilderInterface
             }
 
             // Needed for ProjectStatus because we patch project to change status
+            // Put here because there is no need for more advance customisation of their denormalisation
             $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['addedBy'] = $staff;
             $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][StaffStatus::class]['addedBy']   = $staff;
         }

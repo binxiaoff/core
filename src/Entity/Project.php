@@ -111,7 +111,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "path": "/projects/{id}/nda"
  *         },
  *         "patch": {
- *             "security_post_denormalize": "is_granted('edit', previous_object)",
+ *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
  *                 "groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "nullableMoney:write", "tag:write", "nullablePerson:write"}
  *             }

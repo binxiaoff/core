@@ -634,17 +634,12 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param $staff
-     * @param $addedBy
-     *
-     * @throws Exception
+     * @param ProjectParticipationMember $projectParticipationMember
      *
      * @return ProjectParticipation
      */
-    public function addProjectParticipationMember($staff, $addedBy): ProjectParticipation
+    public function addProjectParticipationMember(ProjectParticipationMember $projectParticipationMember): ProjectParticipation
     {
-        $projectParticipationMember = new ProjectParticipationMember($this, $staff, $addedBy);
-
         if (false === $this->projectParticipationMembers->contains($projectParticipationMember)) {
             $this->projectParticipationMembers->add($projectParticipationMember);
         }
@@ -755,24 +750,13 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param Tranche $tranche
-     * @param Staff   $addedBy
+     * @param ProjectParticipationTranche $participationTranche
      *
      * @return ProjectParticipation
-     *
-     * @throws Exception
      */
-    public function addProjectParticipationTranche(Tranche $tranche, Staff $addedBy): ProjectParticipation
+    public function addProjectParticipationTranche(ProjectParticipationTranche $participationTranche): ProjectParticipation
     {
-        foreach ($this->getProjectParticipationTranches() as $projectParticipationTranche) {
-            if ($projectParticipationTranche->getTranche()->getPublicId() === $tranche->getPublicId()) {
-                return $this;
-            }
-        }
-
-        $projectParticipationTranche = new ProjectParticipationTranche($this, $tranche, $addedBy);
-
-        $this->projectParticipationTranches->add($projectParticipationTranche);
+        $this->projectParticipationTranches->add($participationTranche);
 
         return $this;
     }
@@ -795,6 +779,38 @@ class ProjectParticipation implements TraceableStatusAwareInterface
             if ($this->projectParticipationTranches->isEmpty()) {
                 $context->buildViolation('ProjectParticipation.projectParticipationTranches.required')
                     ->atPath('projectParticipationTranches')
+                    ->addViolation();
+            }
+        }
+    }
+
+    /**
+     * @Assert\Callback()
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateProjectParticipationTranches(ExecutionContextInterface $context)
+    {
+        foreach ($this->projectParticipationTranches as $index => $participationTranche) {
+            if ($participationTranche->getProjectParticipation() !== $this) {
+                $context->buildViolation('ProjectParticipation.projectParticipationTranches.incorrectParticipation')
+                    ->atPath("projectParticipationTranches[$index]")
+                    ->addViolation();
+            }
+        }
+    }
+
+    /**
+     * @Assert\Callback()
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateProjectParticipationMembers(ExecutionContextInterface $context)
+    {
+        foreach ($this->projectParticipationMembers as $index => $participationMember) {
+            if ($participationMember->getProjectParticipation() !== $this) {
+                $context->buildViolation('ProjectParticipation.projectParticipationMember.incorrectParticipation')
+                    ->atPath("projectParticipationMembers[$index]")
                     ->addViolation();
             }
         }

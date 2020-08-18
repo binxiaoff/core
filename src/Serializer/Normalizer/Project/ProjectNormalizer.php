@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Unilend\Serializer\Normalizer\Project;
 
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\{ContextAwareNormalizerInterface, NormalizerAwareInterface, NormalizerAwareTrait};
+use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
+    ContextAwareNormalizerInterface,
+    NormalizerAwareInterface,
+    NormalizerAwareTrait};
 use Unilend\Entity\{Clients, Project};
 use Unilend\Security\Voter\ProjectVoter;
 
@@ -16,7 +19,7 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
     private const ALREADY_CALLED = 'PROJECT_ATTRIBUTE_NORMALIZER_ALREADY_CALLED';
 
     /** @var Security */
-    private $security;
+    private Security $security;
 
     /**
      * @param Security $security
@@ -29,7 +32,7 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
     /**
      * {@inheritdoc}
      */
-    public function supportsNormalization($data, $format = null, array $context = [])
+    public function supportsNormalization($data, string $format = null, array $context = [])
     {
         if (isset($context[self::ALREADY_CALLED])) {
             return false;
@@ -41,9 +44,9 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
     /**
      * {@inheritdoc}
      */
-    public function normalize($object, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
-        $context['groups'] = array_merge($context['groups'] ?? [], $this->getAdditionalNormalizerGroups($object));
+        $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalNormalizerGroups($object));
 
         $context[self::ALREADY_CALLED] = true;
 

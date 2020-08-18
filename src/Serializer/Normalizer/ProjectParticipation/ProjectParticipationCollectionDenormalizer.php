@@ -9,7 +9,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer, ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
-use Unilend\Entity\{Clients, ProjectParticipation, Request\ProjectParticipationCollection};
+use Unilend\Entity\{Clients,
+    ProjectParticipation,
+    ProjectParticipationMember,
+    Request\ProjectParticipationCollection,
+    Staff};
 
 class ProjectParticipationCollectionDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -67,9 +71,11 @@ class ProjectParticipationCollectionDenormalizer implements ContextAwareDenormal
 
                 if (false === empty($projectParticipationData['projectParticipationMembers'])) {
                     foreach ($projectParticipationData['projectParticipationMembers'] as $staffIRI) {
+                        /** @var Staff $participantStaff */
                         $participantStaff = $this->iriConverter->getItemFromIri($staffIRI, [AbstractNormalizer::GROUPS => []]);
                         if ($participantStaff) {
-                            $projectParticipation->addProjectParticipationMember($participantStaff, $connectedStaff);
+                            $projectParticipationMember = new ProjectParticipationMember($projectParticipation, $participantStaff, $connectedStaff);
+                            $projectParticipation->addProjectParticipationMember($projectParticipationMember);
                         }
                     }
                 }
