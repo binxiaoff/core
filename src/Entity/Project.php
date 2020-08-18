@@ -118,26 +118,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)"
- *         },
- *         "sendInvitations": {
- *             "method":"PATCH",
- *             "path":"/projects/{id}/sendInvitations",
- *             "controller": SendInvitations::class,
- *             "security_post_denormalize": "is_granted('send_invitations', object)",
- *             "normalization_context": {
- *                 "groups": {
- *                     "project:list",
- *                     "project:read",
- *                     "company:read",
- *                     "projectParticipation:read",
- *                     "projectParticipationStatus:read",
- *                     "projectParticipationTranche:read",
- *                     "money:read",
- *                     "nullableMoney:read",
- *                     "nullablePerson:read"
- *                 }
- *             }
- *          }
+ *         }
  *     }
  * )
  *
