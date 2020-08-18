@@ -16,6 +16,7 @@ use Unilend\Entity\Clients;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationMember;
 use Unilend\Entity\ProjectParticipationTranche;
+use Unilend\Entity\ProjectStatus;
 use Unilend\Security\Voter\ProjectParticipationVoter;
 
 class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
@@ -68,22 +69,34 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         /** @var Clients $user */
         $user = $this->security->getUser();
 
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationTranche::class]['addedBy'] = $user->getCurrentStaff();
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipation::class]['addedBy'] = $user->getCurrentStaff();
 
         $projectParticipation = $this->denormalizer->denormalize($data, $type, $format, $context);
 
         $projectParticipationTranches = $data['projectParticipationTranches'] ?? [];
 
         foreach ($projectParticipationTranches as $projectParticipationTranche) {
-            $projectParticipationTranche['projectParticipation'] = $this->iriConverter->getItemFromIri($projectParticipationTranche);
+            if (false === isset($projectParticipationTranche['@id'])) {
+                $projectParticipationTranche['projectParticipation'] = $this->iriConverter->getIriFromItem($projectParticipation);
+            }
+
+            // Disable creation after projectStatus allocation
+            // TODO See if there is a better way to do this
+            if (isset($projectParticipationTranche['@id']) && $projectParticipation->getProject()->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION) {
+                continue;
+            }
 
             /** @var ProjectParticipationTranche $denormalized */
-            $denormalized = $this->denormalizer->denormalize($projectParticipationTranches, ProjectParticipationTranche::class, 'array', [
+            $denormalized = $this->denormalizer->denormalize($projectParticipationTranche, ProjectParticipationTranche::class, 'array', [
                 AbstractNormalizer::OBJECT_TO_POPULATE =>
-                    isset($projectParticipationTranche['@id']) ? $this->iriConverter->getIriFromItem($projectParticipationTranches['@id']) : null,
+                    isset($projectParticipationTranche['@id']) ? $this->iriConverter->getItemFromIri($projectParticipationTranche['@id']) : null,
                 // @todo set group according to project status ?
+                // These group should be analog to ProjectParticipationTranche::post operation and ProjectParticipationTranche:patch operation
                  AbstractNormalizer::GROUPS => isset($projectParticipationTranche['@id']) ? ['offer:write', 'nullableMoney:write'] : ['projectParticipationTranche:create'],
             ]);
+            // It is odd to add an updated participationTranche
+            // but the method check if the object is already in the ProjectParticipation::projectParticipationTranches arrayCollection
+            // TODO See if indexed association would be more proper
             $projectParticipation->addProjectParticipationTranche($denormalized);
         }
 
@@ -91,19 +104,23 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         $projectParticipationMembers = $data['projectParticipationMembers'] ?? [];
 
         foreach ($projectParticipationMembers as $projectParticipationMember) {
-            $projectParticipationMember['projectParticipation'] = $this->iriConverter->getItemFromIri($projectParticipationMember);
+            if (false === isset($projectParticipationTranche['@id'])) {
+                $projectParticipationMember['projectParticipation'] = $this->iriConverter->getIriFromItem($projectParticipation);
+            }
 
             /** @var ProjectParticipationMember $denormalized */
-            $denormalized = $this->denormalizer->denormalize($projectParticipationMembers, ProjectParticipationMember::class, 'array', [
+            $denormalized = $this->denormalizer->denormalize($projectParticipationMember, ProjectParticipationMember::class, 'array', [
                 AbstractNormalizer::OBJECT_TO_POPULATE =>
-                    isset($projectParticipationMember['@id']) ? $this->iriConverter->getIriFromItem($projectParticipationMembers['@id']) : null,
+                    isset($projectParticipationMember['@id']) ? $this->iriConverter->getItemFromIri($projectParticipationMember['@id']) : null,
                 AbstractNormalizer::GROUPS =>
+                    // These group should be analog to ProjectParticipationMember::post operation and ProjectParticipationMember:patch operation
                     isset($projectParticipationMember['@id']) ? ['projectParticipationMember:create'] : ['projectParticipationMember:create', 'projectParticipationMember:write'],
             ]);
+            // It is odd to add an updated participationMember
+            // but the method check if the object is already in the ProjectParticipation::projectParticipationMembers arrayCollection
+            // TODO See if indexed association would be more proper
             $projectParticipation->addProjectParticipationMember($denormalized);
         }
-
-        $this->validator->validate($projectParticipation);
 
         return $projectParticipation;
     }

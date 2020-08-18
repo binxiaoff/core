@@ -60,9 +60,6 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
     {
         $context[self::ALREADY_CALLED] = true;
 
-        /** @var Clients $user */
-        $user = $this->security->getUser();
-
         $project = $this->extractObjectToPopulate(Project::class, $context);
 
         if ($project && isset($data['currentStatus']) && \is_array($data['currentStatus'])) {
@@ -73,16 +70,19 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
         /** @var Project $denormalized */
         $denormalized = $this->denormalizer->denormalize($data, $type, $format, $context);
 
-        $dataProjectParticipations = $data['projectParticipations'] ?? [];
+        $projectParticipations = $data['projectParticipations'] ?? [];
 
-        // Put here because the class CurrentStaff already do it for
-        $defaultContext[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipation::class]['addedBy'] = $user->getCurrentStaff();
-
-        foreach ($dataProjectParticipations as $dataProjectParticipation) {
-            if (isset($dataProjectParticipation['@id'])) {
-                $this->updateProjectParticipation($dataProjectParticipation);
-            } else {
-                $this->createProjectParticipation($dataProjectParticipation, $denormalized);
+        foreach ($projectParticipations as $projectParticipation) {
+            if (isset($projectParticipation['@id'])) {
+                $projectParticipation = $this->updateProjectParticipation($projectParticipation);
+                // Avoid projectParticipation creation after allocation
+            } elseif ($denormalized->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION) {
+                $projectParticipation = $this->createProjectParticipation($projectParticipation, $denormalized);
+            }
+            // It is odd to add an updated participation but the method check if the object is already in the Project::projectParticipations arrayCollection
+            // TODO See if indexed association would be more proper
+            if ($projectParticipation) {
+                $denormalized->addProjectParticipation($projectParticipation);
             }
         }
 
@@ -131,8 +131,9 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
         $data['project'] = $this->iriConverter->getIriFromItem($project);
         /** @var ProjectParticipation $participation */
         $participation = $this->denormalizer->denormalize($data, ProjectParticipation::class, 'array', array_merge($context, [
-            AbstractNormalizer::GROUPS => ['projectParticipation:create', 'blameable:read'],
+            AbstractNormalizer::GROUPS => ['projectParticipation:create'],
         ]));
+        // TODO See if we can use a @Assert\Valid instead (this would permit to have more explicit validation errors)
         $this->validator->validate($participation);
 
         return $participation;
