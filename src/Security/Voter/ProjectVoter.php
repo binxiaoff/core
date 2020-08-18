@@ -21,7 +21,6 @@ class ProjectVoter extends AbstractEntityVoter
     public const ATTRIBUTE_COMMENT              = 'comment';
     public const ATTRIBUTE_CREATE               = 'create';
     public const ATTRIBUTE_DELETE               = 'delete';
-    public const ATTRIBUTE_SEND_INVITATIONS     = 'send_invitations';
 
     /** @var ProjectOrganizerRepository */
     private ProjectOrganizerRepository $projectOrganizerRepository;
@@ -41,19 +40,6 @@ class ProjectVoter extends AbstractEntityVoter
         parent::__construct($authorizationChecker);
         $this->projectParticipationManager = $projectParticipationManager;
         $this->projectOrganizerRepository  = $projectOrganizerRepository;
-    }
-
-    /**
-     * @param Project $project
-     * @param Clients $user
-     *
-     * @return bool
-     *
-     * @throws Exception
-     */
-    public function canSendInvitations(Project $project, Clients $user): bool
-    {
-        return $this->canEdit($project, $user) && ($project->isDraft() || $project->isInInterestCollectionStep());
     }
 
     /**

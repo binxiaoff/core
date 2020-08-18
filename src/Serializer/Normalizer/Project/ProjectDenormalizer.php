@@ -10,14 +10,19 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
-use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer, ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait};
-use Unilend\Entity\{Clients, Project, ProjectParticipation};
+use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
+    ContextAwareDenormalizerInterface,
+    DenormalizerAwareInterface,
+    DenormalizerAwareTrait,
+    ObjectToPopulateTrait};
+use Unilend\Entity\{Clients, Project, ProjectParticipation, ProjectStatus};
 use Unilend\Security\Voter\ProjectParticipationVoter;
 use Unilend\Security\Voter\ProjectVoter;
 
 class ProjectDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
     use DenormalizerAwareTrait;
+    use ObjectToPopulateTrait;
 
     private const ALREADY_CALLED = 'PROJECT_DENORMALIZER_ALREADY_CALLED';
 
@@ -58,10 +63,17 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
     public function denormalize($data, $type, string $format = null, array $context = [])
     {
         $context[self::ALREADY_CALLED] = true;
+        $user = $this->security->getUser();
+
+        $project = $this->extractObjectToPopulate(Project::class, $context);
+
+        if ($project && isset($data['currentStatus']) && \is_array($data['currentStatus'])) {
+            unset($data['currentStatus']['project']);
+            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['project'] = $project;
+        }
 
         /** @var Project $project */
         $project = $this->denormalizer->denormalize($data, $type, $format, $context);
-        $user = $this->security->getUser();
 
         $dataProjectParticipations = $data['projectParticipations'] ?? [];
 

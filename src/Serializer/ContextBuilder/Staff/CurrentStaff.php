@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Entity\Clients;
+use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectStatus;
 use Unilend\Entity\Staff;
 use Unilend\Entity\StaffStatus;
@@ -66,6 +67,8 @@ class CurrentStaff implements SerializerContextBuilderInterface
         }
 
         if ($user && $user instanceof Clients) {
+            $staff = $user->getCurrentStaff();
+
             if ($resourceClass) {
                 $reflection  = new ReflectionClass($resourceClass);
                 $constructor = $reflection->getConstructor();
@@ -75,15 +78,15 @@ class CurrentStaff implements SerializerContextBuilderInterface
                     foreach ($parameters as $parameter) {
                         $type = $parameter->getType();
                         if ($type && 'addedBy' === $parameter->getName() && $user->getCurrentStaff() && (Staff::class === $type->getName())) {
-                            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $user->getCurrentStaff();
+                            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $staff;
                         }
                     }
                 }
             }
 
             // Needed for ProjectStatus because we patch project to change status
-            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['addedBy'] = $user->getCurrentStaff();
-            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][StaffStatus::class]['addedBy']   = $user->getCurrentStaff();
+            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['addedBy'] = $staff;
+            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][StaffStatus::class]['addedBy']   = $staff;
         }
 
         return $context;

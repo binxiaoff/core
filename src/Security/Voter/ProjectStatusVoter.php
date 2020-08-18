@@ -19,7 +19,6 @@ class ProjectStatusVoter extends AbstractEntityVoter
      */
     protected function isGrantedAll($projectStatus, Clients $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $projectStatus->getProject())
-            && $projectStatus->getStatus() !== ProjectStatus::STATUS_PARTICIPANT_REPLY;
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $projectStatus->getProject());
     }
 }
