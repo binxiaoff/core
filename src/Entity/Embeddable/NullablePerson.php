@@ -220,4 +220,12 @@ class NullablePerson
 
         return $this;
     }
+
+    /**
+     * @return bool
+     */
+    public function isComplete(): bool
+    {
+        return $this->firstName && $this->lastName && $this->parentUnit && $this->occupation && $this->email  && $this->phone;
+    }
 }
