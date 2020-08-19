@@ -13,6 +13,7 @@ use Unilend\Entity\Company;
 use Unilend\Entity\Embeddable\Money;
 use Unilend\Entity\Embeddable\NullableMoney;
 use Unilend\Entity\Embeddable\RangedOfferWithFee;
+use Unilend\Entity\File;
 use Unilend\Entity\MarketSegment;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipation;
@@ -92,7 +93,6 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
             ->setInvitationRequest($this->createOfferWithFee(1000000))
             ->setInvitationReplyMode('pro-rata')
             ->setAllocationFeeRate($this->faker->randomDigit);
-        $this->forcePublicId($participation, $publicId);
         $status = new ProjectParticipationStatus($participation, $status, $staff);
         $this->forcePublicId($status, "pps-$publicId");
         $participation->setCurrentStatus($status);
