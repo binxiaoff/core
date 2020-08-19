@@ -1552,7 +1552,7 @@ class Project implements TraceableStatusAwareInterface
     public function isComplete(): bool
     {
         return $this->syndicationType
-            && $this->description || $this->descriptionDocument
+            && ($this->description || $this->descriptionDocument)
             && $this->getTranches()->count() > 0
             && $this->getArrangerProjectParticipation()->getInvitationRequest()->isValid()
             && $this->getPrivilegedContactPerson()->isComplete()
