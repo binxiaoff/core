@@ -56,28 +56,28 @@ class Tranche
         self::REPAYMENT_TYPE_FIXED,
     ];
 
-    private const LOAN_TYPE_TERM_LOAN            = 'term_loan';
-    private const LOAN_TYPE_SHORT_TERM           = 'short_term';
-    private const LOAN_TYPE_REVOLVING_CREDIT     = 'revolving_credit';
-    private const LOAN_TYPE_STAND_BY             = 'stand_by';
-    private const LOAN_TYPE_SIGNATURE_COMMITMENT = 'signature_commitment';
+    protected const LOAN_TYPE_TERM_LOAN            = 'term_loan';
+    protected const LOAN_TYPE_SHORT_TERM           = 'short_term';
+    protected const LOAN_TYPE_REVOLVING_CREDIT     = 'revolving_credit';
+    protected const LOAN_TYPE_STAND_BY             = 'stand_by';
+    protected const LOAN_TYPE_SIGNATURE_COMMITMENT = 'signature_commitment';
 
-    private const CHARGEABLE_LOAN_TYPE = [
+    protected const CHARGEABLE_LOAN_TYPE = [
         self::LOAN_TYPE_SHORT_TERM,
         self::LOAN_TYPE_REVOLVING_CREDIT,
         self::LOAN_TYPE_STAND_BY,
     ];
 
-    private const REPAYMENT_TYPE_ATYPICAL         = 'atypical';
-    private const REPAYMENT_TYPE_IN_FINE          = 'in_fine';
-    private const REPAYMENT_TYPE_CONSTANT_CAPITAL = 'constant_capital';
-    private const REPAYMENT_TYPE_FIXED            = 'repayment_fixed';
+    protected const REPAYMENT_TYPE_ATYPICAL         = 'atypical';
+    protected const REPAYMENT_TYPE_IN_FINE          = 'in_fine';
+    protected const REPAYMENT_TYPE_CONSTANT_CAPITAL = 'constant_capital';
+    protected const REPAYMENT_TYPE_FIXED            = 'repayment_fixed';
 
-    private const UNSYNDICATED_FUNDER_TYPE_ARRANGER    = 'arranger';
-    private const UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY = 'third_party';
+    protected const UNSYNDICATED_FUNDER_TYPE_ARRANGER    = 'arranger';
+    protected const UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY = 'third_party';
 
-    private const COMMISSION_TYPE_NON_UTILISATION = 'non_utilisation';
-    private const COMMISSION_TYPE_COMMITMENT      = 'commitment';
+    protected const COMMISSION_TYPE_NON_UTILISATION = 'non_utilisation';
+    protected const COMMISSION_TYPE_COMMITMENT      = 'commitment';
 
     /**
      * @var Project

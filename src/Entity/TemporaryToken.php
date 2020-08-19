@@ -20,8 +20,8 @@ class TemporaryToken
 {
     use TimestampableTrait;
 
-    private const LIFETIME_MEDIUM     = '1 day';
-    private const LIFETIME_ULTRA_LONG = '1 month';
+    protected const LIFETIME_MEDIUM     = '1 day';
+    protected const LIFETIME_ULTRA_LONG = '1 month';
 
     /**
      * @var DateTimeImmutable|null
