@@ -2,26 +2,14 @@
 
 namespace Unilend\DataFixtures;
 
-use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Gedmo\Sluggable\Util\Urlizer;
-use Unilend\Entity\Clients;
-use Unilend\Entity\ClientStatus;
 use Unilend\Entity\Company;
-use Unilend\Entity\Embeddable\Money;
-use Unilend\Entity\Embeddable\NullableMoney;
-use Unilend\Entity\Embeddable\RangedOfferWithFee;
-use Unilend\Entity\File;
-use Unilend\Entity\MarketSegment;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationStatus;
 use Unilend\Entity\ProjectStatus;
 use Unilend\Entity\Staff;
-use Unilend\Entity\StaffStatus;
-use Unilend\Entity\Tranche;
 
 class ParticipationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
