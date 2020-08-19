@@ -103,9 +103,14 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
      */
     public function getCollectionIris(Collection $collection): array
     {
+        // Some items may not be persisted yet (for instance a new project has a non persisted ProjectParticipation for the organizer)
+        $persistedItems = array_filter($collection->toArray(), function ($item) {
+            return $item->getId();
+        });
+
         return array_map(function ($item) {
             return $this->iriConverter->getIriFromItem($item);
-        }, $collection->toArray());
+        }, $persistedItems);
     }
 
     /**
