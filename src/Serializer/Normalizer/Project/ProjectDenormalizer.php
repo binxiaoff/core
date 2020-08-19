@@ -6,8 +6,6 @@ namespace Unilend\Serializer\Normalizer\Project;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
@@ -15,9 +13,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
-use Unilend\Entity\{Clients, Project, ProjectParticipation, ProjectStatus, Staff};
-use Unilend\Security\Voter\ProjectParticipationVoter;
-use Unilend\Security\Voter\ProjectVoter;
+use Unilend\Entity\{Project, ProjectParticipation, ProjectStatus};
 
 class ProjectDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -34,13 +30,11 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
     private ValidatorInterface $validator;
 
     /**
-     * @param Security              $security
      * @param IriConverterInterface $iriConverter
      * @param ValidatorInterface    $validator
      */
-    public function __construct(Security $security, IriConverterInterface $iriConverter, ValidatorInterface $validator)
+    public function __construct(IriConverterInterface $iriConverter, ValidatorInterface $validator)
     {
-        $this->security = $security;
         $this->iriConverter = $iriConverter;
         $this->validator = $validator;
     }
@@ -62,7 +56,7 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
 
         $project = $this->extractObjectToPopulate(Project::class, $context);
 
-        if ($project && isset($data['currentStatus']) && \is_array($data['currentStatus'])) {
+        if ($project && isset($data['currentStatus']) && is_array($data['currentStatus'])) {
             unset($data['currentStatus']['project']);
             $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['project'] = $project;
         }
@@ -105,12 +99,18 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
         $participation = $this->iriConverter->getItemFromIri($projectParticipation['@id'], [AbstractNormalizer::GROUPS => []]);
 
         /** @var ProjectParticipation $participation */
-        $participation = $this->denormalizer->denormalize($projectParticipation, ProjectParticipation::class, 'array', [
-            AbstractNormalizer::OBJECT_TO_POPULATE => $participation,
-            // @todo set group according to project status ?
-            AbstractNormalizer::GROUPS => ['projectParticipation:create', 'offerWithFee:write', 'nullableMoney:write', 'offer:write'],
-        ]);
+        $participation = $this->denormalizer->denormalize(
+            $projectParticipation,
+            ProjectParticipation::class,
+            'array',
+            [
+                AbstractNormalizer::OBJECT_TO_POPULATE => $participation,
+                // @todo set group according to project status ?
+                AbstractNormalizer::GROUPS => ['projectParticipation:create', 'offerWithFee:write', 'nullableMoney:write', 'offer:write'],
+            ]
+        );
 
+        // TODO See if we can use a @Assert\Valid instead (this would permit to have more explicit validation errors)
         $this->validator->validate($participation);
 
         return $participation;
@@ -120,19 +120,27 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
      * @param array   $data
      * @param Project $project
      *
-     * @param array   $context
-     *
      * @return ProjectParticipation
      *
      * @throws ExceptionInterface
      */
-    private function createProjectParticipation(array $data, Project $project, array $context = []): ProjectParticipation
+    private function createProjectParticipation(array $data, Project $project): ProjectParticipation
     {
-        $data['project'] = $this->iriConverter->getIriFromItem($project);
+        unset($data['project']);
         /** @var ProjectParticipation $participation */
-        $participation = $this->denormalizer->denormalize($data, ProjectParticipation::class, 'array', array_merge($context, [
-            AbstractNormalizer::GROUPS => ['projectParticipation:create'],
-        ]));
+        $participation = $this->denormalizer->denormalize(
+            $data,
+            ProjectParticipation::class,
+            'array',
+            [
+                AbstractNormalizer::GROUPS => ['projectParticipation:create'],
+                AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
+                    ProjectParticipation::class => [
+                        'project' => $project,
+                    ],
+                ],
+            ]
+        );
         // TODO See if we can use a @Assert\Valid instead (this would permit to have more explicit validation errors)
         $this->validator->validate($participation);
 

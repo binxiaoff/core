@@ -30,19 +30,15 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
     private Security $security;
     /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
-    /** @var ValidatorInterface */
-    private ValidatorInterface $validator;
 
     /**
      * @param Security              $security
      * @param IriConverterInterface $iriConverter
-     * @param ValidatorInterface    $validator
      */
-    public function __construct(Security $security, IriConverterInterface $iriConverter, ValidatorInterface $validator)
+    public function __construct(Security $security, IriConverterInterface $iriConverter)
     {
         $this->security = $security;
         $this->iriConverter = $iriConverter;
-        $this->validator = $validator;
     }
 
     /**
@@ -82,7 +78,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
 
             // Disable creation after projectStatus allocation
             // TODO See if there is a better way to do this
-            if (isset($projectParticipationTranche['@id']) && $projectParticipation->getProject()->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION) {
+            if (false === isset($projectParticipationTranche['@id']) && $projectParticipation->getProject()->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION) {
                 continue;
             }
 

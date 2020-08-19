@@ -1501,14 +1501,29 @@ class Project implements TraceableStatusAwareInterface
      * @Assert\Callback
      *
      * @param ExecutionContextInterface $context
-     * @param                           $payload
      */
-    public function validateParticipantReplyDeadline(ExecutionContextInterface $context, $payload)
+    public function validateParticipantReplyDeadline(ExecutionContextInterface $context)
     {
         if ($this->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION) && null === $this->getParticipantReplyDeadline()) {
             $context->buildViolation('Project.participantReplyDeadline.required')
                 ->atPath('participantReplyDeadline')
                 ->addViolation();
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateProjectParticipations(ExecutionContextInterface $context)
+    {
+        foreach ($this->projectParticipations as $index => $projectParticipation) {
+            if ($projectParticipation->getProject() !== $this) {
+                $context->buildViolation('Project.projectParticipations.incorrectProject')
+                    ->atPath("projectParticipation[$index]")
+                    ->addViolation();
+            }
         }
     }
 

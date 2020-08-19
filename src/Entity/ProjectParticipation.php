@@ -809,7 +809,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     {
         foreach ($this->projectParticipationMembers as $index => $participationMember) {
             if ($participationMember->getProjectParticipation() !== $this) {
-                $context->buildViolation('ProjectParticipation.projectParticipationMember.incorrectParticipation')
+                $context->buildViolation('ProjectParticipation.projectParticipationMembers.incorrectParticipation')
                     ->atPath("projectParticipationMembers[$index]")
                     ->addViolation();
             }

@@ -20,17 +20,12 @@ use Unilend\Repository\ClientsRepository;
 
 class CurrentStaff implements SerializerContextBuilderInterface
 {
-    /**
-     * @var SerializerContextBuilderInterface
-     */
-    private $decorated;
-
-    /**
-     * @var Security
-     */
-    private $security;
+    /**  @var SerializerContextBuilderInterface */
+    private SerializerContextBuilderInterface $decorated;
+    /** @var Security */
+    private Security $security;
     /** @var ClientsRepository */
-    private $clientsRepository;
+    private ClientsRepository $clientsRepository;
 
     /**
      * @param SerializerContextBuilderInterface $decorated
