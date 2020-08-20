@@ -224,7 +224,7 @@ class NullablePerson
     /**
      * @return bool
      */
-    public function isComplete(): bool
+    public function isValid(): bool
     {
         return $this->firstName && $this->lastName && $this->parentUnit && $this->occupation && $this->email  && $this->phone;
     }

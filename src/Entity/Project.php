@@ -1549,13 +1549,13 @@ class Project implements TraceableStatusAwareInterface
      *
      * @return bool
      */
-    public function isValid(): bool
+    public function isMandatoryInformationComplete(): bool
     {
         return $this->syndicationType
             && ($this->description || $this->descriptionDocument)
             && $this->getTranches()->count() > 0
             && $this->getArrangerProjectParticipation()->getInvitationRequest()->isValid()
-            && $this->getPrivilegedContactPerson()->isComplete()
+            && $this->getPrivilegedContactPerson()->isValid()
             && $this->allocationDeadline
             && $this->participantReplyDeadline
             // ensure interestExpressionDeadline is present only if interest expression is enabled
