@@ -1549,7 +1549,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @return bool
      */
-    public function isComplete(): bool
+    public function isValid(): bool
     {
         return $this->syndicationType
             && ($this->description || $this->descriptionDocument)
@@ -1558,7 +1558,8 @@ class Project implements TraceableStatusAwareInterface
             && $this->getPrivilegedContactPerson()->isComplete()
             && $this->allocationDeadline
             && $this->participantReplyDeadline
-            && false === $this->interestExpressionEnabled ?: null !== $this->interestExpressionDeadline
+            // ensure interestExpressionDeadline is present only if interest expression is enabled
+            && false === $this->interestExpressionEnabled xor null !== $this->interestExpressionDeadline
             && $this->nda
         ;
     }
