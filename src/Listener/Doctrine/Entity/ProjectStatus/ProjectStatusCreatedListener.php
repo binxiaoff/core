@@ -67,7 +67,7 @@ class ProjectStatusCreatedListener
         // Ensure to have the correct previous status (in case current status have been added to statuses array)
         // $previousStatus = $previousStatus === $projectStatus ? $statuses[$statuses->count() - 2] : $previousStatus;
 
-        if (null === $previousStatus || $previousStatus->getStatus() !== ProjectStatus::STATUS_PARTICIPANT_REPLY) {
+        if (false === $previousStatus || $previousStatus->getStatus() !== ProjectStatus::STATUS_PARTICIPANT_REPLY) {
             return;
         }
 

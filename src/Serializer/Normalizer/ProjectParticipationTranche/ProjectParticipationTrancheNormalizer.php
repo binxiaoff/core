@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Unilend\Serializer\Normalizer\ProjectParticipationTranche;
 
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\{ContextAwareNormalizerInterface, NormalizerAwareInterface, NormalizerAwareTrait};
+use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
+    ContextAwareNormalizerInterface,
+    NormalizerAwareInterface,
+    NormalizerAwareTrait};
 use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Security\Voter\ProjectParticipationTrancheVoter;
 
@@ -29,7 +32,7 @@ class ProjectParticipationTrancheNormalizer implements ContextAwareNormalizerInt
     /**
      * {@inheritdoc}
      */
-    public function supportsNormalization($data, $format = null, array $context = []): bool
+    public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         if (isset($context[self::ALREADY_CALLED])) {
             return false;
@@ -41,9 +44,9 @@ class ProjectParticipationTrancheNormalizer implements ContextAwareNormalizerInt
     /**
      * {@inheritdoc}
      */
-    public function normalize($object, $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = [])
     {
-        $context['groups'] = array_merge($context['groups'] ?? [], $this->getAdditionalNormalizerGroups($object));
+        $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalNormalizerGroups($object));
 
         $context[self::ALREADY_CALLED] = true;
 

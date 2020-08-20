@@ -37,6 +37,9 @@ ProjectParticipation:
         invalid: L'invitation en réponse ferme est invalide.
     projectParticipationTranches:
         required: Il faut indiquer au minimum une tranche par participant.
+        incorrectParticipation: La participation de ce projectParticipationTranche est incorrect
+    projectParticipationMembers:
+        incorrectParticipation: La participation de ce projectParticipationMember est incorrect
 
 ProjectParticipationTranche:
     tranche:
@@ -77,3 +80,5 @@ ProjectStatus:
 Project:
     participantReplyDeadline:
         required: La date limite de réponse aux invitations est requise.
+    projectParticipations:
+        incorrectProject: La participation ne fait pas partie du projet

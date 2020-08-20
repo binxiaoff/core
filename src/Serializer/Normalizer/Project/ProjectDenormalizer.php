@@ -6,8 +6,6 @@ namespace Unilend\Serializer\Normalizer\Project;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
@@ -15,9 +13,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
-use Unilend\Entity\{Clients, Project, ProjectParticipation, ProjectStatus};
-use Unilend\Security\Voter\ProjectParticipationVoter;
-use Unilend\Security\Voter\ProjectVoter;
+use Unilend\Entity\{Project, ProjectParticipation, ProjectStatus};
 
 class ProjectDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -30,22 +26,16 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
     private Security $security;
     /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
-    /** @var EntityManagerInterface */
-    private EntityManagerInterface $entityManager;
     /** @var ValidatorInterface */
     private ValidatorInterface $validator;
 
     /**
-     * @param Security               $security
-     * @param IriConverterInterface  $iriConverter
-     * @param EntityManagerInterface $entityManager
-     * @param ValidatorInterface     $validator
+     * @param IriConverterInterface $iriConverter
+     * @param ValidatorInterface    $validator
      */
-    public function __construct(Security $security, IriConverterInterface $iriConverter, EntityManagerInterface $entityManager, ValidatorInterface $validator)
+    public function __construct(IriConverterInterface $iriConverter, ValidatorInterface $validator)
     {
-        $this->security = $security;
         $this->iriConverter = $iriConverter;
-        $this->entityManager = $entityManager;
         $this->validator = $validator;
     }
 
@@ -63,110 +53,97 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
     public function denormalize($data, $type, string $format = null, array $context = [])
     {
         $context[self::ALREADY_CALLED] = true;
-        $user = $this->security->getUser();
 
         $project = $this->extractObjectToPopulate(Project::class, $context);
 
-        if ($project && isset($data['currentStatus']) && \is_array($data['currentStatus'])) {
+        if ($project && isset($data['currentStatus']) && is_array($data['currentStatus'])) {
             unset($data['currentStatus']['project']);
             $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['project'] = $project;
         }
 
-        /** @var Project $project */
-        $project = $this->denormalizer->denormalize($data, $type, $format, $context);
+        /** @var Project $denormalized */
+        $denormalized = $this->denormalizer->denormalize($data, $type, $format, $context);
 
-        $dataProjectParticipations = $data['projectParticipations'] ?? [];
+        $projectParticipations = $data['projectParticipations'] ?? [];
 
-        $projectParticipationsIris = $this->getCollectionIris($project->getProjectParticipations());
-
-        foreach ($dataProjectParticipations as $dataProjectParticipation) {
-            if (isset($dataProjectParticipation['@id'])) {
-                if (in_array($dataProjectParticipation['@id'], $projectParticipationsIris)) {
-                    $this->updateProjectParticipation($dataProjectParticipation, $user, $project);
-                }
-            } elseif (isset($dataProjectParticipation['participant']) && $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
-                $this->createProjectParticipation($dataProjectParticipation, $user, $project);
+        foreach ($projectParticipations as $projectParticipation) {
+            if (isset($projectParticipation['@id'])) {
+                $projectParticipation = $this->updateProjectParticipation($projectParticipation);
+                // Avoid projectParticipation creation after allocation
+            } elseif ($denormalized->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION) {
+                $projectParticipation = $this->createProjectParticipation($projectParticipation, $denormalized);
+            }
+            // It is odd to add an updated participation but the method check if the object is already in the Project::projectParticipations arrayCollection
+            // TODO See if indexed association would be more proper
+            if ($projectParticipation) {
+                $denormalized->addProjectParticipation($projectParticipation);
             }
         }
 
-        if (false === $project->isSubParticipation() && $project->getRiskType() !== null) {
-            $project->setRiskType(null);
+        if (false === $denormalized->isSubParticipation() && null !== $denormalized->getRiskType()) {
+            $denormalized->setRiskType(null);
         }
 
-        return $project;
+        return $denormalized;
     }
 
     /**
-     * @param Collection $collection
+     * @param array $projectParticipation
      *
-     * @return array
-     */
-    public function getCollectionIris(Collection $collection): array
-    {
-        // Some items may not be persisted yet (for instance a new project has a non persisted ProjectParticipation for the organizer)
-        $persistedItems = array_filter($collection->toArray(), function ($item) {
-            return $item->getId();
-        });
-
-        return array_map(function ($item) {
-            return $this->iriConverter->getIriFromItem($item);
-        }, $persistedItems);
-    }
-
-    /**
-     * @param array   $dataProjectParticipation
-     * @param Clients $user
-     * @param Project $project
+     * @return ProjectParticipation
      *
      * @throws ExceptionInterface
      */
-    private function updateProjectParticipation(array $dataProjectParticipation, Clients $user, Project $project): void
+    private function updateProjectParticipation(array $projectParticipation): ProjectParticipation
     {
-        $participation = $this->iriConverter->getItemFromIri($dataProjectParticipation['@id'], [AbstractNormalizer::GROUPS => []]);
+        $participation = $this->iriConverter->getItemFromIri($projectParticipation['@id'], [AbstractNormalizer::GROUPS => []]);
 
         /** @var ProjectParticipation $participation */
-        $participation = $this->denormalizer->denormalize($dataProjectParticipation, ProjectParticipation::class, 'array', [
-            AbstractNormalizer::OBJECT_TO_POPULATE => $participation,
-            // @todo set group according to project status ?
-            AbstractNormalizer::GROUPS => ["projectParticipation:create", "offerWithFee:write", "nullableMoney:write", "offer:write"],
-        ]);
+        $participation = $this->denormalizer->denormalize(
+            $projectParticipation,
+            ProjectParticipation::class,
+            'array',
+            [
+                AbstractNormalizer::OBJECT_TO_POPULATE => $participation,
+                // @todo set group according to project status ?
+                AbstractNormalizer::GROUPS => ['projectParticipation:create', 'offerWithFee:write', 'nullableMoney:write', 'offer:write'],
+            ]
+        );
 
-        // how to better check permissions for PP ?
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_EDIT, $participation)) {
-            $dataprojectParticipationTranches = $dataProjectParticipation['projectParticipationTranches'] ?? [];
-            $tranchesIris = $this->getCollectionIris($project->getTranches());
-
-            foreach ($dataprojectParticipationTranches as $dataprojectParticipationTranche) {
-                if (isset($dataprojectParticipationTranche['tranche']) && in_array($dataprojectParticipationTranche['tranche'], $tranchesIris)) {
-                    $participation->addProjectParticipationTranche(
-                        $this->iriConverter->getItemFromIri($dataprojectParticipationTranche['tranche'], [AbstractNormalizer::GROUPS => []]),
-                        $user->getCurrentStaff()
-                    );
-                }
-            }
-
-            $this->validator->validate($participation);
-            $this->entityManager->persist($participation);
-        }
-    }
-
-    /**
-     * @param array   $dataProjectParticipation
-     * @param Clients $user
-     * @param Project $project
-     *
-     * @throws ExceptionInterface
-     */
-    private function createProjectParticipation(array $dataProjectParticipation, Clients $user, Project $project): void
-    {
-        $dataProjectParticipation['project'] = $this->iriConverter->getIriFromItem($project);
-        $dataProjectParticipation['addedBy'] = $this->iriConverter->getIriFromItem($user->getCurrentStaff());
-        /** @var ProjectParticipation $participation */
-        $participation = $this->denormalizer->denormalize($dataProjectParticipation, ProjectParticipation::class, 'array', [
-            AbstractNormalizer::GROUPS => ["projectParticipation:create", "blameable:read"],
-        ]);
+        // TODO See if we can use a @Assert\Valid instead (this would permit to have more explicit validation errors)
         $this->validator->validate($participation);
-        $this->entityManager->persist($participation);
-        $project->addProjectParticipation($participation);
+
+        return $participation;
+    }
+
+    /**
+     * @param array   $data
+     * @param Project $project
+     *
+     * @return ProjectParticipation
+     *
+     * @throws ExceptionInterface
+     */
+    private function createProjectParticipation(array $data, Project $project): ProjectParticipation
+    {
+        unset($data['project']);
+        /** @var ProjectParticipation $participation */
+        $participation = $this->denormalizer->denormalize(
+            $data,
+            ProjectParticipation::class,
+            'array',
+            [
+                AbstractNormalizer::GROUPS => ['projectParticipation:create', 'offerWithFee:write', 'nullableMoney:write', 'offer:write'],
+                AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
+                    ProjectParticipation::class => [
+                        'project' => $project,
+                    ],
+                ],
+            ]
+        );
+        // TODO See if we can use a @Assert\Valid instead (this would permit to have more explicit validation errors)
+        $this->validator->validate($participation);
+
+        return $participation;
     }
 }

@@ -5,7 +5,13 @@ declare(strict_types=1);
 namespace Unilend\Serializer\Normalizer\ProjectParticipationTranche;
 
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\{ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
+use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
+    ContextAwareDenormalizerInterface,
+    DenormalizerAwareInterface,
+    DenormalizerAwareTrait,
+    ObjectToPopulateTrait};
+use Unilend\Entity\Clients;
+use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Security\Voter\ProjectParticipationTrancheVoter;
 
@@ -30,7 +36,7 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
     /**
      * {@inheritdoc}
      */
-    public function supportsDenormalization($data, $type, $format = null, array $context = []): bool
+    public function supportsDenormalization($data, $type, string $format = null, array $context = []): bool
     {
         return !isset($context[self::ALREADY_CALLED]) && ProjectParticipationTranche::class === $type;
     }
@@ -38,15 +44,20 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
     /**
      * {@inheritdoc}
      */
-    public function denormalize($data, $type, $format = null, array $context = [])
+    public function denormalize($data, $type, string $format = null, array $context = [])
     {
         /** @var ProjectParticipationTranche $projectParticipationTranche */
         $projectParticipationTranche = $this->extractObjectToPopulate(ProjectParticipationTranche::class, $context);
         if ($projectParticipationTranche) {
-            $context['groups'] = array_merge($context['groups'] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipationTranche));
+            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipationTranche));
         }
 
         $context[self::ALREADY_CALLED] = true;
+
+        /** @var Clients $user */
+        $user = $this->security->getUser();
+
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationTranche::class]['addedBy'] = $user->getCurrentStaff();
 
         return $this->denormalizer->denormalize($data, $type, $format, $context);
     }

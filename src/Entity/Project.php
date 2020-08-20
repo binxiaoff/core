@@ -111,9 +111,26 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "path": "/projects/{id}/nda"
  *         },
  *         "patch": {
- *             "security_post_denormalize": "is_granted('edit', previous_object)",
+ *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
  *                 "groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "nullableMoney:write", "tag:write", "nullablePerson:write"}
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "project:list",
+ *                     "project:read",
+ *                     "company:read",
+ *                     "projectParticipation:read",
+ *                     "projectParticipationStatus:read",
+ *                     "projectParticipationTranche:read",
+ *                     "money:read",
+ *                     "nullableMoney:read",
+ *                     "nullablePerson:read",
+ *                     "rangedOfferWithFee:read",
+ *                     "offerWithFee:read",
+ *                     "offer:read",
+ *                     "companyStatus:read"
+ *                 }
  *             }
  *         },
  *         "delete": {
@@ -1501,14 +1518,29 @@ class Project implements TraceableStatusAwareInterface
      * @Assert\Callback
      *
      * @param ExecutionContextInterface $context
-     * @param                           $payload
      */
-    public function validateParticipantReplyDeadline(ExecutionContextInterface $context, $payload)
+    public function validateParticipantReplyDeadline(ExecutionContextInterface $context)
     {
         if ($this->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION) && null === $this->getParticipantReplyDeadline()) {
             $context->buildViolation('Project.participantReplyDeadline.required')
                 ->atPath('participantReplyDeadline')
                 ->addViolation();
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateProjectParticipations(ExecutionContextInterface $context)
+    {
+        foreach ($this->projectParticipations as $index => $projectParticipation) {
+            if ($projectParticipation->getProject() !== $this) {
+                $context->buildViolation('Project.projectParticipations.incorrectProject')
+                    ->atPath("projectParticipation[$index]")
+                    ->addViolation();
+            }
         }
     }
 

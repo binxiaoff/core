@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Unilend\Serializer\Normalizer\Staff;
 
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\{ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait,
+use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
+    ContextAwareDenormalizerInterface,
+    DenormalizerAwareInterface,
+    DenormalizerAwareTrait,
     ObjectToPopulateTrait};
 use Unilend\Entity\Staff;
 use Unilend\Security\Voter\StaffVoter;
@@ -39,7 +42,7 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             $staff = $this->extractObjectToPopulate(Staff::class, $context);
 
             if ($staff) {
-                $context['groups'] = array_merge($context['groups'] ?? [], $this->getAdditionalGroups($staff));
+                $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalGroups($staff));
             }
         }
 

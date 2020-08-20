@@ -5,8 +5,14 @@ declare(strict_types=1);
 namespace Unilend\Serializer\Normalizer\ProjectParticipationMember;
 
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\{ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
+use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
+    ContextAwareDenormalizerInterface,
+    DenormalizerAwareInterface,
+    DenormalizerAwareTrait,
+    ObjectToPopulateTrait};
+use Unilend\Entity\Clients;
 use Unilend\Entity\ProjectParticipationMember;
+use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 
 class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
@@ -44,10 +50,15 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
         $projectParticipationMember = $this->extractObjectToPopulate(ProjectParticipationMember::class, $context);
 
         if ($projectParticipationMember) {
-            $context['groups'] = array_merge($context['groups'] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipationMember));
+            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipationMember));
         }
 
         $context[self::ALREADY_CALLED] = true;
+
+        /** @var Clients $user */
+        $user = $this->security->getUser();
+
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationMember::class]['addedBy'] = $user->getCurrentStaff();
 
         return $this->denormalizer->denormalize($data, $type, $format, $context);
     }
