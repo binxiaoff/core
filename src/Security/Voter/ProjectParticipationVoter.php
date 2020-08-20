@@ -98,7 +98,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
 
         switch ($project->getOfferVisibility()) {
             case Project::OFFER_VISIBILITY_PRIVATE:
-                return null !== $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject);
+                return $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject);
             case Project::OFFER_VISIBILITY_PARTICIPANT:
             case Project::OFFER_VISIBILITY_PUBLIC:
                 return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $project);
