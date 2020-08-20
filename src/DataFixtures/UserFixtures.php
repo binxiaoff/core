@@ -23,14 +23,14 @@ class UserFixtures extends AbstractFixtures
     public function load(ObjectManager $manager): void
     {
         $admin = $this->createUser('admin@ca-lendingservices.com', 'arranger');
-        $other = $this->createUser('participant@ca-lendingservices.com', 'other');
+        $participant = $this->createUser('participant@ca-lendingservices.com', 'participant');
         $manager->persist($admin);
         $manager->persist($admin->getCurrentStatus());
-        $manager->persist($other);
-        $manager->persist($other->getCurrentStatus());
+        $manager->persist($participant);
+        $manager->persist($participant->getCurrentStatus());
         $manager->flush();
         $this->addReference(self::ADMIN, $admin);
-        $this->addReference(self::PARTICIPANT, $other);
+        $this->addReference(self::PARTICIPANT, $participant);
     }
 
     /**
