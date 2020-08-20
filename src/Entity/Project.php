@@ -1545,6 +1545,26 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
+     * @Groups({"project:read"})
+     *
+     * @return bool
+     */
+    public function isMandatoryInformationComplete(): bool
+    {
+        return $this->syndicationType
+            && ($this->description || $this->descriptionDocument)
+            && $this->getTranches()->count() > 0
+            && $this->getArrangerProjectParticipation()->getInvitationRequest()->isValid()
+            && $this->getPrivilegedContactPerson()->isValid()
+            && $this->allocationDeadline
+            && $this->participantReplyDeadline
+            // ensure interestExpressionDeadline is present only if interest expression is enabled
+            && false === $this->interestExpressionEnabled xor null !== $this->interestExpressionDeadline
+            && $this->nda
+        ;
+    }
+
+    /**
      * @param string $role
      *
      * @return ProjectOrganizer[]|Collection
