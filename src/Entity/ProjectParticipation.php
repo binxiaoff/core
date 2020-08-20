@@ -756,7 +756,9 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      */
     public function addProjectParticipationTranche(ProjectParticipationTranche $participationTranche): ProjectParticipation
     {
-        $this->projectParticipationTranches->add($participationTranche);
+        if (false === $this->projectParticipationTranches->contains($participationTranche)) {
+            $this->projectParticipationTranches->add($participationTranche);
+        }
 
         return $this;
     }

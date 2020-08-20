@@ -72,13 +72,12 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         $projectParticipationTranches = $data['projectParticipationTranches'] ?? [];
 
         foreach ($projectParticipationTranches as $projectParticipationTranche) {
-            if (false === isset($projectParticipationTranche['@id'])) {
-                $projectParticipationTranche['projectParticipation'] = $this->iriConverter->getIriFromItem($projectParticipation);
-            }
+            // Disallow requestData to set projectParticipation
+            unset($projectParticipationTranche['projectParticipation']);
 
             // Disable creation after projectStatus allocation
             // TODO See if there is a better way to do this
-            if (false === isset($projectParticipationTranche['@id']) && $projectParticipation->getProject()->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION) {
+            if (false === isset($projectParticipationTranche['@id']) && $projectParticipation->getProject()->getCurrentStatus()->getStatus() >= ProjectStatus::STATUS_ALLOCATION) {
                 continue;
             }
 
@@ -89,6 +88,11 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                 // @todo set group according to project status ?
                 // These group should be analog to ProjectParticipationTranche::post operation and ProjectParticipationTranche:patch operation
                  AbstractNormalizer::GROUPS => isset($projectParticipationTranche['@id']) ? ['offer:write', 'nullableMoney:write'] : ['projectParticipationTranche:create'],
+                AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
+                    ProjectParticipationTranche::class => [
+                        'projectParticipation' => $projectParticipation,
+                    ],
+                ],
             ]);
             // It is odd to add an updated participationTranche
             // but the method check if the object is already in the ProjectParticipation::projectParticipationTranches arrayCollection
@@ -100,9 +104,8 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         $projectParticipationMembers = $data['projectParticipationMembers'] ?? [];
 
         foreach ($projectParticipationMembers as $projectParticipationMember) {
-            if (false === isset($projectParticipationTranche['@id'])) {
-                $projectParticipationMember['projectParticipation'] = $this->iriConverter->getIriFromItem($projectParticipation);
-            }
+            // Disallow requestData to set projectParticipation
+            unset($projectParticipationMember['projectParticipation']);
 
             /** @var ProjectParticipationMember $denormalized */
             $denormalized = $this->denormalizer->denormalize($projectParticipationMember, ProjectParticipationMember::class, 'array', [
@@ -111,6 +114,11 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                 AbstractNormalizer::GROUPS =>
                     // These group should be analog to ProjectParticipationMember::post operation and ProjectParticipationMember:patch operation
                     isset($projectParticipationMember['@id']) ? ['projectParticipationMember:create'] : ['projectParticipationMember:create', 'projectParticipationMember:write'],
+                AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
+                    ProjectParticipationMember::class => [
+                        'projectParticipation' => $projectParticipation,
+                    ],
+                ],
             ]);
             // It is odd to add an updated participationMember
             // but the method check if the object is already in the ProjectParticipation::projectParticipationMembers arrayCollection

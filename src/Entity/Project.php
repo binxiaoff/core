@@ -114,6 +114,23 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
  *                 "groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "nullableMoney:write", "tag:write", "nullablePerson:write"}
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "project:list",
+ *                     "project:read",
+ *                     "company:read",
+ *                     "projectParticipation:read",
+ *                     "projectParticipationStatus:read",
+ *                     "projectParticipationTranche:read",
+ *                     "money:read",
+ *                     "nullableMoney:read",
+ *                     "nullablePerson:read",
+ *                     "rangedOfferWithFee:read",
+ *                     "offerWithFee:read",
+ *                     "offer:read",
+ *                     "companyStatus:read"
+ *                 }
  *             }
  *         },
  *         "delete": {

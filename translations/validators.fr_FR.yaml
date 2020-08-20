@@ -81,4 +81,4 @@ Project:
     participantReplyDeadline:
         required: La date limite de réponse aux invitations est requise.
     projectParticipations:
-        incorrectProject: La participation n'est liée au bon projet
+        incorrectProject: La participation ne fait pas partie du projet
