@@ -12,6 +12,8 @@ use Unilend\Entity\Clients;
 use Unilend\Entity\ClientStatus;
 use Unilend\Entity\Company;
 use Unilend\Entity\Embeddable\Money;
+use Unilend\Entity\File;
+use Unilend\Entity\FileVersion;
 use Unilend\Entity\MarketSegment;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectStatus;
@@ -50,12 +52,18 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     ];
 
     /**
+     * @var ObjectManager
+     */
+    private ObjectManager $manager;
+
+    /**
      * @param ObjectManager $manager
      */
     public function load(ObjectManager $manager): void
     {
         /** @var Clients $otherUser */
         $otherUser = $this->getReference(UserFixtures::PARTICIPANT);
+        $this->manager = $manager;
         $projectDraftParticipation = $this->createProject('Project draft', ProjectStatus::STATUS_DRAFT);
         $projectDraft = $this->createProject('Project created', ProjectStatus::STATUS_DRAFT);
         $projectReply = $this->createProject('Project reply', ProjectStatus::STATUS_PARTICIPANT_REPLY);
@@ -63,13 +71,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $projectFinished = $this->createProject('Project finished', ProjectStatus::STATUS_SYNDICATION_FINISHED);
         $projectArchived = $this->createProject('Project archived', ProjectStatus::STATUS_SYNDICATION_CANCELLED);
         $projectDraftOtherUser = $this->createProject('Project other user', ProjectStatus::STATUS_DRAFT, $otherUser->getCurrentStaff());
-        $manager->persist($projectDraft);
-        $manager->persist($projectAllocation);
-        $manager->persist($projectReply);
-        $manager->persist($projectDraftParticipation);
-        $manager->persist($projectDraftOtherUser);
-        $manager->persist($projectFinished);
-        $manager->persist($projectArchived);
         $this->addReference(self::PROJECT_ALLOCATION, $projectAllocation);
         $this->addReference(self::PROJECT_REPLY, $projectReply);
         $this->addReference(self::PROJECT_DRAFT, $projectDraft);
@@ -91,16 +92,23 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     public function createProject(string $title, int $status, ?Staff $staff = null): Project
     {
-        $money = new Money('EUR', '5000000');
         /** @var Staff $staff */
         $staff = $staff ?: $this->getReference(StaffFixtures::ADMIN);
+
+        // NDA File
+        $ndaFile = (new File());
+        $ndaFileVersion = (new FileVersion('/fake.pdf', $staff, $ndaFile, 'user_attachment', '', 'application/pdf'))->setOriginalName($title . ' NDA.pdf');
+        $ndaFile->setCurrentFileVersion($ndaFileVersion);
+
+        // Project
         $project = (new Project(
             $staff,
             'RISK-GROUP-1',
-            $money,
+            new Money('EUR', '5000000'),
             $this->getReference(MarketSegmentFixtures::SEGMENT1)
         ))
             ->setTitle($title)
+            ->setNda($ndaFile)
             ->setInternalRatingScore('B')
             ->setFundingSpecificity('FSA')
             ->setParticipationType(Project::PROJECT_PARTICIPATION_TYPE_DIRECT)
@@ -109,9 +117,15 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setParticipantReplyDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+70 days', '+1 year')))
             ->setAllocationDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+1 year', '+2 year')))
             ->setDescription($this->faker->sentence);
+        $this->forcePublicId($project, Urlizer::urlize($title));
+
+        // Project Status
         $status = new ProjectStatus($project, $status, $staff);
         $project->setCurrentStatus($status);
-        $this->forcePublicId($project, Urlizer::urlize($title));
+
+        // Persist
+        $this->manager->persist($ndaFile);
+        $this->manager->persist($project);
 
         return $project;
     }

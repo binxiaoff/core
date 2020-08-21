@@ -28,7 +28,12 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
         $projectsWithParticipations = $this->getReferences(ProjectFixtures::PROJECTS_WITH_PARTICIPATION);
         /** @var Staff $staff */
         $staff = $this->getReference(StaffFixtures::ADMIN);
+        /** @var Project $project */
         foreach ($projectsWithParticipations as $project) {
+            // Updates the participation for the arranger
+            foreach ($project->getProjectParticipations() as $participation) {
+                $participation->setInvitationRequest($this->createOfferWithFee(1000000));
+            }
             foreach ($companies as $company) {
                 $manager->persist($this->createParticipation($project, $company, $staff));
             }
