@@ -51,7 +51,7 @@ class UserFixtures extends AbstractFixtures
             ->setFirstName($this->faker->firstName)
             ->setPhone('+33600000000')
             ->setMobile('+33600000000')
-            ->setJobFunction($this->faker->jobTitle)
+            ->setJobFunction('Job function')
             ->setEmail($email)
             ->setPlainPassword('0000');
         $status = new ClientStatus($user, ClientStatus::STATUS_CREATED);
