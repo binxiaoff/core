@@ -39,10 +39,6 @@ class StaffLogListener
 
         $user = $this->security->getUser();
 
-        if (null === $user) {
-            return; // TODO : Voir ce qu'il faut faire dans ce cas
-        }
-
         $addedBy  = $user->getCurrentStaff();
         $logEntry = new StaffLog($staff, $addedBy);
         $this->manager->persist($logEntry);

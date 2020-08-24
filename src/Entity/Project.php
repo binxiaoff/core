@@ -696,7 +696,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @return Project
      */
-    public function setNda(?File $file): self
+    public function setNda(?File $file): Project
     {
         $this->nda = $file;
 
@@ -837,7 +837,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @return $this
      */
-    public function setInternalRatingScore(?string $internalRatingScore): self
+    public function setInternalRatingScore(?string $internalRatingScore): Project
     {
         $this->internalRatingScore = $internalRatingScore;
 
