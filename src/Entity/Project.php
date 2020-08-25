@@ -185,6 +185,7 @@ class Project implements TraceableStatusAwareInterface
     public const PROJECT_RISK_TYPE_TREASURY = 'risk_treasury';
 
     public const SERIALIZER_GROUP_ADMIN_READ = 'project:admin:read'; // Additional group that is available for admin (admin user or arranger)
+    public const SERIALIZER_GROUP_GCA_READ = 'project:gca:read'; // Additional group that is available for gca (crédit agricole group) staff member
 
     public const FIELD_CURRENT_STATUS = 'currentStatus';
     public const FIELD_DESCRIPTION    = 'description';
@@ -368,7 +369,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", "project:read"})
+     * @Groups({"project:write", Project::SERIALIZER_GROUP_GCA_READ})
      */
     private ?string $internalRatingScore;
 

@@ -491,4 +491,14 @@ class Company implements TraceableStatusAwareInterface
 
         return $this;
     }
+
+    /**
+     * CAG means Crédit Agricole Group
+     *
+     * @return bool
+     */
+    public function isCAGMember()
+    {
+        return $this->groupName === static::GROUPNAME_CA;
+    }
 }
