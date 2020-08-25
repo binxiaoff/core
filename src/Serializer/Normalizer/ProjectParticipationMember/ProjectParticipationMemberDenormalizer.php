@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Serializer\Normalizer\ProjectParticipationMember;
 
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ContextAwareDenormalizerInterface,
@@ -12,7 +13,6 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ObjectToPopulateTrait};
 use Unilend\Entity\Clients;
 use Unilend\Entity\ProjectParticipationMember;
-use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 
 class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
@@ -60,7 +60,16 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
 
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationMember::class]['addedBy'] = $user->getCurrentStaff();
 
-        return $this->denormalizer->denormalize($data, $type, $format, $context);
+        $denormalized = $this->denormalizer->denormalize($data, $type, $format, $context);
+
+        // Forbid creation in case voter returns false
+        // TODO See if tis possible to factor this with ApiPlatform metadata
+        // TODO Duplicate with ProjectParticipationMember post operation security attribute making this lines
+        if (false === isset($data['@id']) && false === $this->security->isGranted(ProjectParticipationMemberVoter::ATTRIBUTE_CREATE, $denormalized)) {
+            throw new AccessDeniedException();
+        }
+
+        return $denormalized;
     }
 
     /**

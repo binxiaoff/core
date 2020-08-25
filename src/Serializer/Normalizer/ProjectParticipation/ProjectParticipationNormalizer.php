@@ -19,7 +19,7 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
     private const ALREADY_CALLED = 'PROJECT_PARTICIPATION_ATTRIBUTE_NORMALIZER_ALREADY_CALLED';
 
     /** @var Security */
-    private $security;
+    private Security $security;
 
     /**
      * @param Security $security

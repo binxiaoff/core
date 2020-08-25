@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Serializer\Normalizer\ProjectParticipation;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
-use ApiPlatform\Core\Validator\ValidatorInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ContextAwareDenormalizerInterface,
@@ -75,8 +74,9 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
             // Disallow requestData to set projectParticipation
             unset($projectParticipationTranche['projectParticipation']);
 
-            // Disable creation after projectStatus allocation
+            // Ignore creation after projectStatus allocation
             // TODO See if there is a better way to do this
+            // TODO Move this condition to ProjectParticipationTranche
             if (false === isset($projectParticipationTranche['@id']) && $projectParticipation->getProject()->getCurrentStatus()->getStatus() >= ProjectStatus::STATUS_ALLOCATION) {
                 continue;
             }
