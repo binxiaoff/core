@@ -122,7 +122,6 @@ class Staff implements TraceableStatusAwareInterface
     /**
      * @var Collection|StaffStatus[]
      *
-     * @Assert\Count(min="1")
      * @Assert\Valid
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\StaffStatus", mappedBy="staff", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
