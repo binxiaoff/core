@@ -15,7 +15,13 @@ use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
 use Unilend\DTO\FileInput;
-use Unilend\Entity\{Clients, File, Project, ProjectFile, ProjectParticipation, Staff};
+use Unilend\Entity\{Clients,
+    File,
+    Project,
+    ProjectFile,
+    ProjectParticipation,
+    ProjectStatus,
+    Staff};
 use Unilend\Repository\{ProjectFileRepository, ProjectRepository};
 use Unilend\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
 use Unilend\Service\File\FileUploadManager;
@@ -171,24 +177,26 @@ class FileInputDataTransformer
             throw new AccessDeniedException();
         }
 
+        $isPublished = $project->isPublished();
+
         switch ($fileInput->type) {
             case Project::PROJECT_FILE_TYPE_DESCRIPTION:
                 $descriptionDocument = $project->getDescriptionDocument();
-                if (null !== $file && null !== $descriptionDocument && $file !== $descriptionDocument) {
+                if ($isPublished && null !== $file && null !== $descriptionDocument && $file !== $descriptionDocument) {
                     static::denyUploadExistingFile($fileInput, $descriptionDocument, $project);
                 }
-                $file = $descriptionDocument ?? new File();
+                $file = $isPublished && $descriptionDocument ? $descriptionDocument : new File();
                 $project->setDescriptionDocument($file);
-
+                // Orphan removal takes care to remove unused file
                 break;
             case Project::PROJECT_FILE_TYPE_NDA:
                 $nda = $project->getNda();
-                if (null !== $file && null !== $nda && $file !== $nda) {
+                if ($isPublished && null !== $file && null !== $nda && $file !== $nda) {
                     static::denyUploadExistingFile($fileInput, $nda, $project);
                 }
-                $file = $nda ?? new File();
+                $file = $isPublished && $nda ? $nda : new File();
                 $project->setNda($file);
-
+                // Orphan removal takes care to remove unused file
                 break;
             default:
                 throw new \InvalidArgumentException(sprintf('You cannot upload the file of the type %s.', $fileInput->type));
