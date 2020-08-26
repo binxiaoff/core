@@ -14,6 +14,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
 use Unilend\Entity\Company;
 use Unilend\Entity\Staff;
 use Unilend\Repository\ClientsRepository;
+use Unilend\Repository\StaffRepository;
 use Unilend\Security\Voter\StaffVoter;
 
 class StaffDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
@@ -29,17 +30,21 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     private ClientsRepository $clientsRepository;
     /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
+    /** @var StaffRepository */
+    private StaffRepository $staffRepository;
 
     /**
      * @param Security              $security
      * @param ClientsRepository     $clientsRepository
+     * @param StaffRepository       $staffRepository
      * @param IriConverterInterface $iriConverter
      */
-    public function __construct(Security $security, ClientsRepository $clientsRepository, IriConverterInterface $iriConverter)
+    public function __construct(Security $security, ClientsRepository $clientsRepository, StaffRepository $staffRepository, IriConverterInterface $iriConverter)
     {
-        $this->security = $security;
+        $this->security          = $security;
         $this->clientsRepository = $clientsRepository;
-        $this->iriConverter = $iriConverter;
+        $this->iriConverter      = $iriConverter;
+        $this->staffRepository   = $staffRepository;
     }
 
     /**
@@ -56,18 +61,26 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalGroups($staff));
         }
 
-        $emailClient = $data['client']['email'] ?? null;
-
-        // add existing client found by his email or create him
-        if ($emailClient && $client = $this->clientsRepository->findOneBy(['email' => $emailClient])) {
-            $data['client'] = $this->iriConverter->getIriFromItem($client);
-        }
 
         /** @var Company $company */
-        $company = $this->iriConverter->getItemFromIri($data['company']);
+        $company     = $this->iriConverter->getItemFromIri($data['company']);
+        $emailClient = $data['client']['email'] ?? null;
 
-        if (false === $company->isCAGMember()) {
+        unset($data['client']['email']);
+
+        if (null === $staff && false === $company->isCAGMember()) {
             $data['roles'] = [Staff::DUTY_STAFF_OPERATOR];
+            $client        = null;
+
+            if ($staff = $this->staffRepository->findOneByClientEmailAndCompany((string) $emailClient, $company)) {
+                $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $staff;
+                $client                                          = $staff->getClient();
+            } else {
+                $client = $this->clientsRepository->findOneBy(['email' => $emailClient]);
+            }
+
+            // retrieve client from his email or create it
+            $data['client'] = $client ? $this->iriConverter->getIriFromItem($client) : ['email' => $emailClient];
         }
 
         return $this->denormalizer->denormalize($data, $type, $format, $context);

@@ -115,12 +115,6 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
             unset($projectParticipationMember['projectParticipation']);
             $projectParticipationMember['staff']['company'] = $this->iriConverter->getIriFromItem($projectParticipation->getParticipant());
 
-            $staffEmail = $projectParticipationMember['staff']['client']['email'] ?? null;
-
-            if ($staffEmail && $staff = $this->staffRepository->findOneByClientEmailAndCompany((string) $staffEmail, $projectParticipation->getParticipant())) {
-                $projectParticipationMember['staff'] = $this->iriConverter->getIriFromItem($staff);
-            }
-
             /** @var ProjectParticipationMember $denormalized */
             $denormalized = $this->denormalizer->denormalize($projectParticipationMember, ProjectParticipationMember::class, 'array', [
                 AbstractNormalizer::OBJECT_TO_POPULATE =>
