@@ -676,7 +676,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @return Project
      */
-    public function setDescriptionDocument(?File $file): self
+    public function setDescriptionDocument(?File $file): Project
     {
         $this->descriptionDocument = $file;
 
@@ -696,7 +696,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @return Project
      */
-    public function setNda(?File $file): self
+    public function setNda(?File $file): Project
     {
         $this->nda = $file;
 
@@ -831,12 +831,17 @@ class Project implements TraceableStatusAwareInterface
         return $this->internalRatingScore;
     }
 
+
     /**
      * @param string|null $internalRatingScore
+     *
+     * @return $this
      */
-    public function setInternalRatingScore(?string $internalRatingScore): void
+    public function setInternalRatingScore(?string $internalRatingScore): Project
     {
         $this->internalRatingScore = $internalRatingScore;
+
+        return $this;
     }
 
     /**
