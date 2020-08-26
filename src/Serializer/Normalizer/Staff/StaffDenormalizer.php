@@ -49,14 +49,11 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     {
         $context[self::ALREADY_CALLED] = true;
 
-        // In patch is only allowed for manager and coordinator so we don't need to check
-        if ('post' === ($context['collection_operation_name'] ?? '')) {
-            /** @var Staff $staff */
-            $staff = $this->extractObjectToPopulate(Staff::class, $context);
+        /** @var Staff $staff */
+        $staff = $this->extractObjectToPopulate(Staff::class, $context);
 
-            if ($staff) {
-                $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalGroups($staff));
-            }
+        if ($staff) {
+            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalGroups($staff));
         }
 
         $emailClient = $data['client']['email'] ?? null;
