@@ -12,12 +12,8 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
-use Unilend\Entity\Clients;
-use Unilend\Entity\ProjectParticipation;
-use Unilend\Entity\ProjectParticipationMember;
-use Unilend\Entity\ProjectParticipationStatus;
-use Unilend\Entity\ProjectParticipationTranche;
-use Unilend\Entity\ProjectStatus;
+use Unilend\Entity\{Clients, ProjectParticipation, ProjectParticipationMember, ProjectParticipationStatus, ProjectParticipationTranche, ProjectStatus, Staff};
+use Unilend\Repository\StaffRepository;
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 use Unilend\Security\Voter\ProjectParticipationVoter;
 
@@ -32,15 +28,19 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
     private Security $security;
     /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
+    /** @var StaffRepository */
+    private StaffRepository $staffRepository;
 
     /**
      * @param Security              $security
      * @param IriConverterInterface $iriConverter
+     * @param StaffRepository       $staffRepository
      */
-    public function __construct(Security $security, IriConverterInterface $iriConverter)
+    public function __construct(Security $security, IriConverterInterface $iriConverter, StaffRepository $staffRepository)
     {
         $this->security = $security;
         $this->iriConverter = $iriConverter;
+        $this->staffRepository = $staffRepository;
     }
 
     /**
@@ -113,17 +113,29 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         foreach ($projectParticipationMembers as $projectParticipationMember) {
             // Disallow requestData to set projectParticipation
             unset($projectParticipationMember['projectParticipation']);
+            $projectParticipationMember['staff']['company'] = $this->iriConverter->getIriFromItem($projectParticipation->getParticipant());
+
+            $staffEmail = $projectParticipationMember['staff']['client']['email'] ?? null;
+
+            if ($staffEmail && $staff = $this->staffRepository->findOneByClientEmailAndCompany((string) $staffEmail, $projectParticipation->getParticipant())) {
+                $projectParticipationMember['staff'] = $this->iriConverter->getIriFromItem($staff);
+            }
 
             /** @var ProjectParticipationMember $denormalized */
             $denormalized = $this->denormalizer->denormalize($projectParticipationMember, ProjectParticipationMember::class, 'array', [
                 AbstractNormalizer::OBJECT_TO_POPULATE =>
                     isset($projectParticipationMember['@id']) ? $this->iriConverter->getItemFromIri($projectParticipationMember['@id']) : null,
                 AbstractNormalizer::GROUPS =>
-                    // These group should be analog to ProjectParticipationMember::post operation and ProjectParticipationMember:patch operation
-                    isset($projectParticipationMember['@id']) ? ['projectParticipationMember:create', 'projectParticipationMember:write'] : ['projectParticipationMember:create'],
+                    // These group should be analog to ProjectParticipationMember::post operation and ProjectParticipationMember:patch operation and Staff::post operation
+                    isset($projectParticipationMember['@id']) ?
+                        ['projectParticipationMember:create']
+                        : ['projectParticipationMember:create', 'projectParticipationMember:write', "role:write", "staff:create", "client:create"],
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     ProjectParticipationMember::class => [
                         'projectParticipation' => $projectParticipation,
+                    ],
+                    Staff::class => [
+                        'addedBy' => $user->getCurrentStaff(),
                     ],
                 ],
             ]);
