@@ -69,7 +69,11 @@ class ProjectParticipationMemberVoter extends AbstractEntityVoter
      */
     protected function canCreate(ProjectParticipationMember $subject, Clients $user): bool
     {
-        return $subject->getProjectParticipation()->getProject()->getSubmitterCompany() === $user->getCompany()
-            || $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject->getProjectParticipation());
+        $currentCompany = $user->getCompany();
+
+        return $currentCompany && (
+            $subject->getProjectParticipation()->getProject()->getSubmitterCompany() === $currentCompany // You are connected as a staff of the arranger
+            || ($this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject->getProjectParticipation()) &&
+                $currentCompany->isCAGMember())); // You are connected as a staff of the participation
     }
 }
