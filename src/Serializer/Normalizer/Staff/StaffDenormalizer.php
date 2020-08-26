@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Serializer\Normalizer\Staff;
 
+use ApiPlatform\Core\Api\IriConverterInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ContextAwareDenormalizerInterface,
@@ -11,6 +12,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
 use Unilend\Entity\Staff;
+use Unilend\Repository\ClientsRepository;
 use Unilend\Security\Voter\StaffVoter;
 
 class StaffDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
@@ -22,13 +24,21 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
 
     /** @var Security */
     private Security $security;
+    /** @var ClientsRepository */
+    private ClientsRepository $clientsRepository;
+    /** @var IriConverterInterface */
+    private IriConverterInterface $iriConverter;
 
     /**
-     * @param Security $security
+     * @param Security              $security
+     * @param ClientsRepository     $clientsRepository
+     * @param IriConverterInterface $iriConverter
      */
-    public function __construct(Security $security)
+    public function __construct(Security $security, ClientsRepository $clientsRepository, IriConverterInterface $iriConverter)
     {
         $this->security = $security;
+        $this->clientsRepository = $clientsRepository;
+        $this->iriConverter = $iriConverter;
     }
 
     /**
@@ -36,6 +46,8 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
      */
     public function denormalize($data, $type, ?string $format = null, array $context = [])
     {
+        $context[self::ALREADY_CALLED] = true;
+
         // In patch is only allowed for manager and coordinator so we don't need to check
         if ('post' === ($context['collection_operation_name'] ?? '')) {
             /** @var Staff $staff */
@@ -46,7 +58,12 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             }
         }
 
-        $context[self::ALREADY_CALLED] = true;
+        $emailClient = $data['client']['email'] ?? null;
+
+        if ($emailClient && $client = $this->clientsRepository->findOneBy(['email' => $emailClient])) {
+            $data['client'] = $this->iriConverter->getIriFromItem($client);
+        }
+
 
         return $this->denormalizer->denormalize($data, $type, $format, $context);
     }
