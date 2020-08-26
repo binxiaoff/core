@@ -4,7 +4,9 @@ namespace Unilend\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\FixtureInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use ReflectionClass;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Entity\Clients;
 
 abstract class AbstractFixtures extends Fixture implements FixtureInterface
@@ -12,11 +14,15 @@ abstract class AbstractFixtures extends Fixture implements FixtureInterface
 
     protected \Faker\Generator $faker;
 
+    private TokenStorageInterface $tokenStorage;
+
     /**
+     * @param TokenStorageInterface $tokenStorage
      */
-    public function __construct()
+    public function __construct(TokenStorageInterface $tokenStorage)
     {
         $this->faker = \Faker\Factory::create('fr_FR');
+        $this->tokenStorage = $tokenStorage;
     }
 
     /**
@@ -40,10 +46,21 @@ abstract class AbstractFixtures extends Fixture implements FixtureInterface
      *
      * @return object[]
      */
-    protected function getReferences(array $names)
+    protected function getReferences(array $names): array
     {
         return array_map(function (string $name) {
             return $this->getReference($name);
         }, $names);
+    }
+
+    /**
+     * @param User|string $user
+     */
+    protected function login($user): void
+    {
+        if (is_string($user)) {
+            $user = $this->getReference($user);
+        }
+        $this->tokenStorage->setToken(new JWTUserToken($user->getRoles(), $user));
     }
 }

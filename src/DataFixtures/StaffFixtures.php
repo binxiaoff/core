@@ -6,6 +6,9 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\Clients;
 use Unilend\Entity\ClientStatus;
 use Unilend\Entity\Company;
@@ -30,6 +33,8 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         /** @var Clients $user */
         $user = $this->getReference(UserFixtures::ADMIN);
         $adminStaff = $this->createStaff($user, $adminCompany, $manager);
+        // We set the user in the tokenStorage to avoid conflict with StaffLogListener
+        $this->login($user);
         $manager->persist($adminStaff);
         $manager->persist($adminStaff->getCurrentStatus());
 

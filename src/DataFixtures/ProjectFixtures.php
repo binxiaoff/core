@@ -63,6 +63,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         /** @var Clients $otherUser */
         $otherUser = $this->getReference(UserFixtures::PARTICIPANT);
+        // We set the user in the tokenStorage to avoid conflict with ProjectStatusCreatedListener
+        $this->login(UserFixtures::ADMIN);
         $this->manager = $manager;
         $projectDraftParticipation = $this->createProject('Project draft', ProjectStatus::STATUS_DRAFT);
         $projectDraft = $this->createProject('Project created', ProjectStatus::STATUS_DRAFT);
