@@ -113,7 +113,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         foreach ($projectParticipationMembers as $projectParticipationMember) {
             // Disallow requestData to set projectParticipation
             unset($projectParticipationMember['projectParticipation']);
-            $projectParticipationMember['staff']['company'] = $this->iriConverter->getIriFromItem($projectParticipation->getParticipant());
+            unset($projectParticipationMember['company']);
 
             /** @var ProjectParticipationMember $denormalized */
             $denormalized = $this->denormalizer->denormalize($projectParticipationMember, ProjectParticipationMember::class, 'array', [
@@ -130,6 +130,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                     ],
                     Staff::class => [
                         'addedBy' => $user->getCurrentStaff(),
+                        'company' => $projectParticipation->getParticipant(),
                     ],
                 ],
             ]);

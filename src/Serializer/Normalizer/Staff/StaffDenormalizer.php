@@ -61,13 +61,20 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalGroups($staff));
         }
 
-
+        // get constructor company if provided (when create staff from ProjectParticipationMemberDenormalizer)
         /** @var Company $company */
-        $company     = $this->iriConverter->getItemFromIri($data['company']);
+        $company = $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'] ?? null;
+
+        // else, get from request
+        if (!$company) {
+            $company = isset($data['company']) ? $this->iriConverter->getItemFromIri($data['company']) : null;
+        }
+
         $emailClient = $data['client']['email'] ?? null;
 
-        unset($data['client']['email']);
+        unset($data['client']);
 
+        // permit staff creation for external banks from client email
         if (null === $staff && false === $company->isCAGMember()) {
             $data['roles'] = [Staff::DUTY_STAFF_OPERATOR];
             $client        = null;

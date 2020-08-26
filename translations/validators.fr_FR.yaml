@@ -49,7 +49,7 @@ ProjectParticipationTranche:
 
 ProjectParticipationStatus:
     status:
-        invalid: Le status n'est pas valide.
+        invalid: Le statut n'est pas valide.
 
 StatusInterface:
     duplicated: Le nouveau statut est en doublons avec le dernier.
