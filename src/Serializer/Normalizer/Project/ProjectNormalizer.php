@@ -9,7 +9,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ContextAwareNormalizerInterface,
     NormalizerAwareInterface,
     NormalizerAwareTrait};
-use Unilend\Entity\{Clients, Project};
+use Unilend\Entity\{Clients, Project, Staff};
 use Unilend\Security\Voter\ProjectVoter;
 
 class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
@@ -65,10 +65,22 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
             return [];
         }
 
-        if ($this->security->isGranted(ProjectVoter::ATTRIBUTE_ADMIN_VIEW, $project)) {
-            return [Project::SERIALIZER_GROUP_ADMIN_READ];
+        $staff = $client->getCurrentStaff();
+
+        if (false === $staff instanceof Staff) {
+            return [];
         }
 
-        return [];
+        $additionalGroups = [];
+
+        if ($this->security->isGranted(ProjectVoter::ATTRIBUTE_ADMIN_VIEW, $project)) {
+            $additionalGroups[] = Project::SERIALIZER_GROUP_ADMIN_READ;
+        }
+
+        if ($staff->getCompany()->isCAGMember()) {
+            $additionalGroups[] = Project::SERIALIZER_GROUP_GCA_READ;
+        }
+
+        return $additionalGroups;
     }
 }
