@@ -177,24 +177,24 @@ class FileInputDataTransformer
             throw new AccessDeniedException();
         }
 
-        $isDraft = $project->getCurrentStatus()->getStatus() === ProjectStatus::STATUS_DRAFT;
+        $isPublished = $project->isPublished();
 
         switch ($fileInput->type) {
             case Project::PROJECT_FILE_TYPE_DESCRIPTION:
                 $descriptionDocument = $project->getDescriptionDocument();
-                if (false === $isDraft && null !== $file && null !== $descriptionDocument && $file !== $descriptionDocument) {
+                if ($isPublished && null !== $file && null !== $descriptionDocument && $file !== $descriptionDocument) {
                     static::denyUploadExistingFile($fileInput, $descriptionDocument, $project);
                 }
-                $file = false === $isDraft && $descriptionDocument ? $descriptionDocument : new File();
+                $file = $isPublished && $descriptionDocument ? $descriptionDocument : new File();
                 $project->setDescriptionDocument($file);
                 // Orphan removal takes care to remove unused file
                 break;
             case Project::PROJECT_FILE_TYPE_NDA:
                 $nda = $project->getNda();
-                if (false === $isDraft && null !== $file && null !== $nda && $file !== $nda) {
+                if ($isPublished && null !== $file && null !== $nda && $file !== $nda) {
                     static::denyUploadExistingFile($fileInput, $nda, $project);
                 }
-                $file = false === $isDraft && $nda ? $nda : new File();
+                $file = $isPublished && $nda ? $nda : new File();
                 $project->setNda($file);
                 // Orphan removal takes care to remove unused file
                 break;
