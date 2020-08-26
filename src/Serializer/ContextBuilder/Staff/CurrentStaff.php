@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Entity\Clients;
-use Unilend\Entity\ProjectParticipation;
+use Unilend\Entity\ProjectParticipationStatus;
 use Unilend\Entity\ProjectStatus;
 use Unilend\Entity\Staff;
 use Unilend\Entity\StaffStatus;
@@ -83,6 +83,7 @@ class CurrentStaff implements SerializerContextBuilderInterface
             // Put here because there is no need for more advance customisation of their denormalisation
             $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['addedBy'] = $staff;
             $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][StaffStatus::class]['addedBy']   = $staff;
+            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationStatus::class]['addedBy']   = $staff;
         }
 
         return $context;

@@ -14,6 +14,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
 use Unilend\Entity\Clients;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationMember;
+use Unilend\Entity\ProjectParticipationStatus;
 use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Entity\ProjectStatus;
 use Unilend\Security\Voter\ProjectParticipationVoter;
@@ -59,6 +60,10 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         $projectParticipation = $this->extractObjectToPopulate(ProjectParticipation::class, $context);
         if ($projectParticipation) {
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipation));
+            if (isset($data['currentStatus']) && \is_array($data['currentStatus'])) {
+                unset($data['currentStatus']['projectParticipation']);
+                $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationStatus::class]['projectParticipation'] = $projectParticipation;
+            }
         }
 
         /** @var Clients $user */
@@ -113,7 +118,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                     isset($projectParticipationMember['@id']) ? $this->iriConverter->getItemFromIri($projectParticipationMember['@id']) : null,
                 AbstractNormalizer::GROUPS =>
                     // These group should be analog to ProjectParticipationMember::post operation and ProjectParticipationMember:patch operation
-                    isset($projectParticipationMember['@id']) ? ['projectParticipationMember:create'] : ['projectParticipationMember:create', 'projectParticipationMember:write'],
+                    isset($projectParticipationMember['@id']) ? ['projectParticipationMember:create', 'projectParticipationMember:write'] : ['projectParticipationMember:create'],
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     ProjectParticipationMember::class => [
                         'projectParticipation' => $projectParticipation,

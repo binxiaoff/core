@@ -110,7 +110,19 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         },
  *         "delete": {"security": "is_granted('delete', object)"},
  *         "put": {"security": "is_granted('edit', object)"},
- *         "patch": {"security": "is_granted('edit', object)"}
+ *         "patch": {
+ *            "security": "is_granted('edit', object)",
+ *            "denormalization_context": {"groups": {
+ *                 "projectParticipationTranche:write",
+ *                 "projectParticipationMember:write",
+ *                 "projectParticipationStatus:create",
+ *                 "projectParticipation:write",
+ *                 "nullableMoney:write",
+ *                 "rangedOfferWithFee:write",
+ *                 "offerWithFee:write",
+ *                 "offer:write"
+ *             }},
+ *         }
  *     }
  * )
  *
@@ -206,7 +218,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE})
      */
     private ?ProjectParticipationStatus $currentStatus;
 
