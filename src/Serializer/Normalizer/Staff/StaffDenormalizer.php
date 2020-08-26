@@ -11,6 +11,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
+use Unilend\Entity\Company;
 use Unilend\Entity\Staff;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Security\Voter\StaffVoter;
@@ -60,10 +61,17 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
 
         $emailClient = $data['client']['email'] ?? null;
 
+        // add existing client found by his email or create him
         if ($emailClient && $client = $this->clientsRepository->findOneBy(['email' => $emailClient])) {
             $data['client'] = $this->iriConverter->getIriFromItem($client);
         }
 
+        /** @var Company $company */
+        $company = $this->iriConverter->getItemFromIri($data['company']);
+
+        if (false === $company->isCAGMember()) {
+            $data['roles'] = [Staff::DUTY_STAFF_OPERATOR];
+        }
 
         return $this->denormalizer->denormalize($data, $type, $format, $context);
     }
