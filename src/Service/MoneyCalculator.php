@@ -110,6 +110,21 @@ class MoneyCalculator
     }
 
     /**
+     * @param MoneyInterface $a
+     * @param MoneyInterface $b
+     *
+     * @return int 1 if a > b | 0 if a === b | -1 if a < b
+     */
+    public static function compare(MoneyInterface $a, MoneyInterface $b): int
+    {
+        if (static::isDifferentCurrency($a, $b)) {
+            throw new DifferentCurrencyException($a, $b);
+        }
+
+        return bccomp($a->getAmount(), $b->getAmount(), 2);
+    }
+
+    /**
      * @param string $number
      *
      * @return string

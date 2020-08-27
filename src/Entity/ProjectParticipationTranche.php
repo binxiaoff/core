@@ -12,7 +12,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextFactoryInterface;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Entity\{Embeddable\Offer, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -80,7 +83,7 @@ class ProjectParticipationTranche
      *
      * @Groups({"projectParticipationTranche:read", "projectParticipationTranche:create"})
      */
-    private $tranche;
+    private Tranche $tranche;
 
     /**
      * @var ProjectParticipation
@@ -92,7 +95,7 @@ class ProjectParticipationTranche
      *
      * @Groups({"projectParticipationTranche:create"})
      */
-    private $projectParticipation;
+    private ProjectParticipation $projectParticipation;
 
     /**
      * Réponse ferme : Répartition donnée par le participant à l'arrangeur.
@@ -107,7 +110,7 @@ class ProjectParticipationTranche
      *
      * @Groups({ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipationTranche::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE})
      */
-    private $invitationReply;
+    private Offer $invitationReply;
 
     /**
      * @var Offer
@@ -120,7 +123,7 @@ class ProjectParticipationTranche
      *
      * @Groups({ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipationTranche::SERIALIZER_GROUP_ARRANGER_WRITE})
      */
-    private $allocation;
+    private Offer $allocation;
 
     /**
      * @param ProjectParticipation $projectParticipation
@@ -205,5 +208,32 @@ class ProjectParticipationTranche
     public function isOwnTranche(Tranche $tranche): bool
     {
         return $this->getProjectParticipation()->getProject()->getTranches()->contains($tranche);
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     *
+     * @return void
+     */
+    public function validateAllocation(ExecutionContextInterface $context): void
+    {
+        $arrangerParticipation =  $this->getProjectParticipation()->getProject()->getArrangerProjectParticipation();
+
+        if (
+            $this->getProjectParticipation() !== $arrangerParticipation &&
+            $this->getAllocation()->isValid() &&
+            $this->getInvitationReply()->isValid() &&
+            MoneyCalculator::compare($this->getInvitationReply()->getMoney(), $this->getAllocation()->getMoney()) < 0
+        ) {
+            $context->buildViolation('ProjectParticipationTranche.allocation.aboveInvitationReply')
+                ->atPath('allocation')
+                ->setParameters([
+                    'invitationReplyAmount' => $this->getInvitationReply()->getMoney()->getAmount(),
+                    'allocationAmount' => $this->getAllocation()->getMoney()->getAmount(),
+                ])
+                ->addViolation();
+        }
     }
 }

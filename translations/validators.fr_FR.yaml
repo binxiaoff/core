@@ -44,6 +44,8 @@ ProjectParticipation:
 ProjectParticipationTranche:
     tranche:
         notOwn: Merci de choisir une tranche du projet.
+    allocation:
+        aboveInvitationReply: Le montant de l'allocation est au-dessus du montant de réponse du participant
 
 ProjectParticipationStatus:
     status:
