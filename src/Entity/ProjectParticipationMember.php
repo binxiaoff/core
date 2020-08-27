@@ -225,7 +225,7 @@ class ProjectParticipationMember
      */
     public function validateArchived(ExecutionContextInterface $context, $payload)
     {
-        if ($this->getProjectParticipation()->getActiveProjectParticipationMembers()->count() <= 1 && $this->isArchived()) {
+        if ($this->getProjectParticipation()->getActiveProjectParticipationMembers()->count() < 1) {
             $context->buildViolation('ProjectParticipationMember.archived.lastActiveMember')
                 ->atPath('archived')
                 ->addViolation()
