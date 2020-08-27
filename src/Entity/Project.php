@@ -9,13 +9,13 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\{NumericFilter, SearchFilter};
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
+use DomainException;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Controller\Project\SendInvitations;
 use Unilend\Entity\{Embeddable\Money, Embeddable\NullableMoney, Embeddable\NullablePerson, Interfaces\MoneyInterface, Interfaces\StatusInterface,
     Interfaces\TraceableStatusAwareInterface, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Filter\ArrayFilter;
@@ -652,7 +652,7 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param string $description
+     * @param string|null $description
      *
      * @return Project
      */
@@ -956,14 +956,26 @@ class Project implements TraceableStatusAwareInterface
         });
 
         if (1 > $filtered->count()) {
-            throw new \DomainException('There are more than one participations for arranger');
+            throw new DomainException('There are more than one participations for arranger');
         }
 
         if (0 === $filtered->count()) {
-            throw new \DomainException('There is no participation for arranger');
+            throw new DomainException('There is no participation for arranger');
         }
 
         return $filtered->first();
+    }
+
+    /**
+     * @return Embeddable\Offer|null
+     *
+     * @Groups({"project:read"})
+     */
+    public function getArrangerTargetParticipationOffer(): ?Embeddable\Offer
+    {
+        $invitationRequest = $this->getArrangerProjectParticipation()->getInvitationRequest();
+
+        return $invitationRequest->isValid() ? $invitationRequest : null;
     }
 
     /**
@@ -1513,11 +1525,31 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
+     * @Groups({"project:read"})
+     *
+     * @return bool
+     */
+    public function isMandatoryInformationComplete(): bool
+    {
+        return $this->syndicationType
+            && ($this->description || $this->descriptionDocument)
+            && $this->getTranches()->count() > 0
+            && $this->getArrangerProjectParticipation()->getInvitationRequest()->isValid()
+            && $this->getPrivilegedContactPerson()->isValid()
+            && $this->allocationDeadline
+            && $this->participantReplyDeadline
+            // ensure interestExpressionDeadline is present only if interest expression is enabled
+            && false === $this->interestExpressionEnabled xor null !== $this->interestExpressionDeadline
+            && $this->nda
+            ;
+    }
+
+    /**
      * @return bool
      */
     public function hasEditableStatus(): bool
     {
-        return false === in_array($this->getCurrentStatus()->getStatus(), ProjectStatus::NON_EDITABLE_STATUSES);
+        return false === \in_array($this->getCurrentStatus()->getStatus(), ProjectStatus::NON_EDITABLE_STATUSES, true);
     }
 
     /**
@@ -1550,25 +1582,6 @@ class Project implements TraceableStatusAwareInterface
         }
     }
 
-    /**
-     * @Groups({"project:read"})
-     *
-     * @return bool
-     */
-    public function isMandatoryInformationComplete(): bool
-    {
-        return $this->syndicationType
-            && ($this->description || $this->descriptionDocument)
-            && $this->getTranches()->count() > 0
-            && $this->getArrangerProjectParticipation()->getInvitationRequest()->isValid()
-            && $this->getPrivilegedContactPerson()->isValid()
-            && $this->allocationDeadline
-            && $this->participantReplyDeadline
-            // ensure interestExpressionDeadline is present only if interest expression is enabled
-            && false === $this->interestExpressionEnabled xor null !== $this->interestExpressionDeadline
-            && $this->nda
-        ;
-    }
 
     /**
      * @param string $role
