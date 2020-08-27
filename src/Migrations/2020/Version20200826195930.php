@@ -6,6 +6,8 @@ namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
+use Exception;
+use Ramsey\Uuid\Uuid;
 
 final class Version20200826195930 extends AbstractMigration
 {
@@ -38,14 +40,20 @@ final class Version20200826195930 extends AbstractMigration
 
     /**
      * @param Schema $schema
+     *
+     * @throws Exception
      */
     public function down(Schema $schema) : void
     {
+        $companyUuid = '5846b3dd-3079-11ea-a36c-0226455cbcaf';
+        $companyStatusUuid = Uuid::uuid4();
         $this->addSql(
             <<<SQL
-INSERT INTO company (id, id_parent_company, display_name, email_domain, siren, added, updated, short_code, public_id, id_current_status, group_name, vat_number, applicable_vat, bank_code, company_name) VALUES (NULL, 1, 'Unifergie', null, '326367620', '2019-08-14 15:43:41', null, 'UNFG', '5846b3dd-3079-11ea-a36c-0226455cbcaf', 2, null, null, 'metropolitan', '3', 'Unifergie');
+INSERT INTO company (display_name, email_domain, siren, added, updated, short_code, public_id, group_name, vat_number, applicable_vat, bank_code, company_name) VALUES ('Unifergie', null, '326367620', NOW(), null, 'UNFG', '$companyUuid', null, null, 'metropolitan', '3', 'Unifergie');
 SQL
 );
+        $this->addSql("INSERT INTO company_status (id_company, status, added, public_id) VALUES ((SELECT id FROM company WHERE public_id = '$companyUuid'), 10, NOW(), '$companyStatusUuid')");
+        $this->addSql("UPDATE company SET id_current_status = (SELECT MAX(id) FROM company_status) WHERE public_id = '$companyUuid'");
         $this->addSql("UPDATE company SET display_name = 'Crédit agricole leasing' WHERE display_name = 'CALF / Unifergie'");
     }
 }
