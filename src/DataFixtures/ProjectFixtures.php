@@ -7,7 +7,9 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
+use ReflectionException;
 use Unilend\Entity\Clients;
 use Unilend\Entity\ClientStatus;
 use Unilend\Entity\Company;
@@ -50,6 +52,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         self::PROJECT_REPLY,
         self::PROJECT_FINISHED,
     ];
+    public const PREVIOUS_STATUSES = [
+        ProjectStatus::STATUS_PARTICIPANT_REPLY => [ProjectStatus::STATUS_DRAFT],
+        ProjectStatus::STATUS_ALLOCATION => [ProjectStatus::STATUS_DRAFT, ProjectStatus::STATUS_PARTICIPANT_REPLY],
+        ProjectStatus::STATUS_SYNDICATION_FINISHED => [ProjectStatus::STATUS_DRAFT, ProjectStatus::STATUS_PARTICIPANT_REPLY, ProjectStatus::STATUS_ALLOCATION],
+        ProjectStatus::STATUS_SYNDICATION_CANCELLED => [ProjectStatus::STATUS_DRAFT, ProjectStatus::STATUS_PARTICIPANT_REPLY],
+    ];
 
     /**
      * @var ObjectManager
@@ -58,6 +66,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     /**
      * @param ObjectManager $manager
+     *
+     * @throws ReflectionException
      */
     public function load(ObjectManager $manager): void
     {
@@ -90,7 +100,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      *
      * @return Project
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
+     * @throws Exception
      */
     public function createProject(string $title, int $status, ?Staff $staff = null): Project
     {
@@ -122,10 +133,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $this->forcePublicId($project, Urlizer::urlize($title));
 
         // Project Status
-        $status = new ProjectStatus($project, $status, $staff);
-        $project->setCurrentStatus($status);
+        $projectStatus = new ProjectStatus($project, $status, $staff);
+        $project->setCurrentStatus($projectStatus);
+        $this->createPreviousStatuses($project, $staff);
 
         // Persist
+        $this->manager->persist($projectStatus);
         $this->manager->persist($ndaFile);
         $this->manager->persist($project);
 
@@ -141,5 +154,18 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             StaffFixtures::class,
             MarketSegmentFixtures::class,
         ];
+    }
+
+    /**
+     * @param Project $project
+     * @param Staff   $addedBy
+     *
+     * @throws Exception
+     */
+    private function createPreviousStatuses(Project $project, Staff $addedBy)
+    {
+        foreach (static::PREVIOUS_STATUSES[$project->getCurrentStatus()->getStatus()] ?? [] as $index => $previousStatus) {
+            $this->manager->persist(new ProjectStatus($project, $previousStatus, $addedBy));
+        }
     }
 }
