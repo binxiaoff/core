@@ -444,22 +444,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      */
     public function setCurrentStatus(StatusInterface $currentStatus): ProjectParticipation
     {
-        if (null === $this->committeeDeadline && ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $currentStatus->getStatus()) {
-            $constraintViolationList = new ConstraintViolationList();
-            $constraintViolationList->add(
-                new ConstraintViolation(
-                    'ProjectParticipation.committeeDeadline.required',
-                    'ProjectParticipation.committeeDeadline.required',
-                    [],
-                    $this,
-                    'committeeDeadline',
-                    $this->committeeDeadline
-                )
-            );
-
-            throw new ValidationException($constraintViolationList);
-        }
-
         $this->currentStatus = $currentStatus;
 
         return $this;
@@ -790,7 +774,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
                     ->addViolation();
             }
 
-            if ($this->projectParticipationTranches->isEmpty()) {
+            if ($this->projectParticipationTranches->isEmpty() && $this->getCurrentStatus()->getStatus() > 0) {
                 $context->buildViolation('ProjectParticipation.projectParticipationTranches.required')
                     ->atPath('projectParticipationTranches')
                     ->addViolation();
@@ -827,6 +811,20 @@ class ProjectParticipation implements TraceableStatusAwareInterface
                     ->atPath("projectParticipationMembers[$index]")
                     ->addViolation();
             }
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateCommitteeDeadline(ExecutionContextInterface $context)
+    {
+        if (null === $this->committeeDeadline && ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $this->currentStatus->getStatus()) {
+            $context->buildViolation('ProjectParticipation.committeeDeadline.required')
+                ->atPath('committeeDeadline')
+                ->addViolation();
         }
     }
 }
