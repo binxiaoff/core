@@ -225,17 +225,19 @@ class ProjectParticipationMember
      */
     public function validateArchived(ExecutionContextInterface $context, $payload)
     {
-        if ($this->getProjectParticipation()->getActiveProjectParticipationMembers()->count() < 1) {
-            $context->buildViolation('ProjectParticipationMember.archived.lastActiveMember')
-                ->atPath('archived')
-                ->addViolation()
-            ;
-        }
-        if ($this->getStaff()->isManager() && $this->isArchived()) {
-            $context->buildViolation('ProjectParticipationMember.archived.isManager')
-                ->atPath('archived')
-                ->addViolation()
-            ;
+        if ($this->isArchived()) {
+            if ($this->getProjectParticipation()->getActiveProjectParticipationMembers()->count() < 1) {
+                $context->buildViolation('ProjectParticipationMember.archived.lastActiveMember')
+                    ->atPath('archived')
+                    ->addViolation()
+                ;
+            }
+            if ($this->getStaff()->isManager()) {
+                $context->buildViolation('ProjectParticipationMember.archived.isManager')
+                    ->atPath('archived')
+                    ->addViolation()
+                ;
+            }
         }
     }
 }
