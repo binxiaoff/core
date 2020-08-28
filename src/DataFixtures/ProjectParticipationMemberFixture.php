@@ -4,6 +4,7 @@ namespace Unilend\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipationMember;
 
@@ -11,10 +12,12 @@ class ProjectParticipationMemberFixture extends AbstractFixtures implements Depe
 {
     use OfferFixtureTrait;
 
-    public static $id = 0; // Auto increment public ids
+    public static int $id = 0; // Auto increment public ids
 
     /**
      * @param ObjectManager $manager
+     *
+     * @throws Exception
      */
     public function load(ObjectManager $manager): void
     {
