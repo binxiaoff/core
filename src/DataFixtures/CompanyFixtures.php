@@ -2,12 +2,14 @@
 
 namespace Unilend\DataFixtures;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
+use ReflectionException;
 use Unilend\Entity\Clients;
 use Unilend\Entity\Company;
+use Unilend\Entity\CompanyModule;
 use Unilend\Entity\CompanyStatus;
 
 class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -33,6 +35,9 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     /**
      * @param ObjectManager $manager
+     *
+     * @throws ReflectionException
+     * @throws Exception
      */
     public function load(ObjectManager $manager): void
     {
@@ -49,23 +54,35 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
             $company = $this->createCompany("CA Bank $i")->setGroupName('Crédit Agricole');
             $manager->persist($company);
             $this->addReference(self::COMPANIES[$i - 1], $company);
+            $this->createCompanyModule($manager, $company);
         }
 
         for ($i = 6; $i <= 50; $i++) {
             $company = $this->createCompany("CA Bank $i")->setGroupName('Crédit Agricole');
             $manager->persist($company);
+            $this->createCompanyModule($manager, $company);
         }
 
         // External bank
         $company = $this->createCompany("External Bank");
         $manager->persist($company);
         $this->addReference(self::COMPANY_EXTERNAL, $company);
+        $this->createCompanyModule($manager, $company);
 
         $company = $this->createCompany('Not signed Bank', 'C', CompanyStatus::STATUS_PROSPECT)->setGroupName('Crédit Agricole');
         $manager->persist($company);
         $this->addReference(self::COMPANY_NOT_SIGNED, $company);
+        $this->createCompanyModule($manager, $company);
 
         $manager->flush();
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getDependencies(): array
+    {
+        return [UserFixtures::class];
     }
 
     /**
@@ -75,9 +92,10 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
      *
      * @return Company
      *
-     * @throws \Exception
+     * @throws ReflectionException
+     * @throws Exception
      */
-    public function createCompany(string $name = null, string $shortcode = null, string $status = CompanyStatus::STATUS_SIGNED): Company
+    private function createCompany(string $name = null, string $shortcode = null, int $status = CompanyStatus::STATUS_SIGNED): Company
     {
         $companyName = $name ?: $this->faker->company;
         $company = (new Company($companyName, $companyName))
@@ -85,17 +103,27 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setShortCode($shortcode ?: $this->faker->regexify('[A-Za-z0-9]{10}'))
             ->setApplicableVat($this->faker->vat);
         $this->forcePublicId($company, Urlizer::urlize($companyName));
-        $status = (new CompanyStatus($company, $status));
-        $company->setCurrentStatus($status);
+        $companyStatus = new CompanyStatus($company, $status);
+        $company->setCurrentStatus($companyStatus);
 
         return $company;
     }
 
     /**
-     * @return string[]
+     * @param ObjectManager $manager
+     * @param Company       $company
+     * @param array         $moduleConfigurations
+     *
+     * @throws Exception
      */
-    public function getDependencies(): array
-    {
-        return [UserFixtures::class];
+    private function createCompanyModule(
+        ObjectManager $manager,
+        Company $company,
+        array $moduleConfigurations = [CompanyModule::MODULE_ARRANGEMENT => false, CompanyModule::MODULE_PARTICIPATION => false, CompanyModule::MODULE_AGENCY => false]
+    ): void {
+        foreach ($moduleConfigurations as $module => $value) {
+            $companyModule = new CompanyModule($module, $company, $value);
+            $manager->persist($companyModule);
+        }
     }
 }
