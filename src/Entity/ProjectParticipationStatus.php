@@ -16,7 +16,7 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectParticipationStatus:read"}},
+ *     normalizationContext={"groups": {"projectParticipationStatus:read", "timestampable:read"}},
  *     collectionOperations={
  *         "post": {
  *             "denormalization_context": {"groups": {"projectParticipationStatus:create"}},
