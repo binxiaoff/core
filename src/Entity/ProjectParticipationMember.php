@@ -231,5 +231,11 @@ class ProjectParticipationMember
                 ->addViolation()
             ;
         }
+        if ($this->getStaff()->isManager() && $this->isArchived()) {
+            $context->buildViolation('ProjectParticipationMember.archived.isManager')
+                ->atPath('archived')
+                ->addViolation()
+            ;
+        }
     }
 }
