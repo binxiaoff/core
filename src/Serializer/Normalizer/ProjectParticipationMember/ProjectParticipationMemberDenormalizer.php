@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Serializer\Normalizer\ProjectParticipationMember;
 
+use ApiPlatform\Core\Api\IriConverterInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
@@ -12,7 +13,9 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
 use Unilend\Entity\Clients;
+use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationMember;
+use Unilend\Entity\Staff;
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 
 class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
@@ -24,13 +27,17 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
 
     /** @var Security */
     private Security $security;
+    /** @var IriConverterInterface */
+    private IriConverterInterface $iriConverter;
 
     /**
-     * @param Security $security
+     * @param Security              $security
+     * @param IriConverterInterface $iriConverter
      */
-    public function __construct(Security $security)
+    public function __construct(Security $security, IriConverterInterface $iriConverter)
     {
         $this->security = $security;
+        $this->iriConverter = $iriConverter;
     }
 
     /**
@@ -58,7 +65,18 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
         /** @var Clients $user */
         $user = $this->security->getUser();
 
+        /** @var ProjectParticipation $participation */
+        $participation = $projectParticipationMember
+            ? $projectParticipationMember->getProjectParticipation()
+            : $this->iriConverter->getItemFromIri($data['projectParticipation'], [AbstractNormalizer::GROUPS => []]);
+
+        // permit to create staff if POST method and for an external bank
+        if (null === $projectParticipationMember && false === $participation->getParticipant()->isCAGMember()) {
+            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ["role:write", "staff:create", "client:create"]);
+        }
+
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationMember::class]['addedBy'] = $user->getCurrentStaff();
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'] = $participation->getParticipant();
 
         return $this->denormalizer->denormalize($data, $type, $format, $context);
     }
