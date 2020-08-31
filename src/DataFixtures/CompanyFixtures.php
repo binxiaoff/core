@@ -2,17 +2,17 @@
 
 namespace Unilend\DataFixtures;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
-use Unilend\Entity\Clients;
-use Unilend\Entity\Company;
-use Unilend\Entity\CompanyStatus;
+use ReflectionException;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Unilend\Entity\{Clients, Company, CompanyModule, CompanyStatus};
 
 class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-
     public const CALS = 'COMPANY_CALS';
     public const COMPANY1 = 'COMPANY1';
     public const COMPANY2 = 'COMPANY2';
@@ -31,41 +31,61 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         self::COMPANY_NOT_SIGNED,
     ];
 
+    /** @var EntityManagerInterface */
+    private EntityManagerInterface $entityManager;
+
+    /**
+     * @param TokenStorageInterface  $tokenStorage
+     * @param EntityManagerInterface $entityManager
+     */
+    public function __construct(TokenStorageInterface $tokenStorage, EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+
+        parent::__construct($tokenStorage);
+    }
+
     /**
      * @param ObjectManager $manager
+     *
+     * @throws ReflectionException
+     * @throws Exception
      */
     public function load(ObjectManager $manager): void
     {
         // Main company
         /** @var Clients $user */
-        $user = $this->getReference(UserFixtures::ADMIN);
-        $domain = explode('@', $user->getEmail())[1];
+        $user    = $this->getReference(UserFixtures::ADMIN);
+        $domain  = explode('@', $user->getEmail())[1];
         $company = $this->createCompany("CALS Company", "CALS")->setEmailDomain($domain);
-        $manager->persist($company);
         $this->addReference(self::CALS, $company);
 
         // Fake bank
         for ($i = 1; $i <= 5; $i++) {
             $company = $this->createCompany("CA Bank $i")->setGroupName('Crédit Agricole');
-            $manager->persist($company);
             $this->addReference(self::COMPANIES[$i - 1], $company);
         }
 
         for ($i = 6; $i <= 50; $i++) {
             $company = $this->createCompany("CA Bank $i")->setGroupName('Crédit Agricole');
-            $manager->persist($company);
         }
 
         // External bank
         $company = $this->createCompany("External Bank");
-        $manager->persist($company);
         $this->addReference(self::COMPANY_EXTERNAL, $company);
 
         $company = $this->createCompany('Not signed Bank', 'C', CompanyStatus::STATUS_PROSPECT)->setGroupName('Crédit Agricole');
-        $manager->persist($company);
         $this->addReference(self::COMPANY_NOT_SIGNED, $company);
 
         $manager->flush();
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getDependencies(): array
+    {
+        return [UserFixtures::class];
     }
 
     /**
@@ -75,27 +95,40 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
      *
      * @return Company
      *
-     * @throws \Exception
+     * @throws ReflectionException
+     * @throws Exception
      */
-    public function createCompany(string $name = null, string $shortcode = null, string $status = CompanyStatus::STATUS_SIGNED): Company
+    private function createCompany(string $name = null, string $shortcode = null, int $status = CompanyStatus::STATUS_SIGNED): Company
     {
         $companyName = $name ?: $this->faker->company;
-        $company = (new Company($companyName, $companyName))
+        $company     = (new Company($companyName, $companyName))
             ->setBankCode($this->faker->randomNumber(8, true))
             ->setShortCode($shortcode ?: $this->faker->regexify('[A-Za-z0-9]{10}'))
             ->setApplicableVat($this->faker->vat);
         $this->forcePublicId($company, Urlizer::urlize($companyName));
-        $status = (new CompanyStatus($company, $status));
-        $company->setCurrentStatus($status);
+        $companyStatus = new CompanyStatus($company, $status);
+        $company->setCurrentStatus($companyStatus);
+
+        $this->createCompanyModule($company);
+
+        $this->entityManager->persist($company);
 
         return $company;
     }
 
     /**
-     * @return string[]
+     * @param Company $company
+     * @param array   $moduleConfigurations
+     *
+     * @throws Exception
      */
-    public function getDependencies(): array
-    {
-        return [UserFixtures::class];
+    private function createCompanyModule(
+        Company $company,
+        array $moduleConfigurations = [CompanyModule::MODULE_ARRANGEMENT => false, CompanyModule::MODULE_PARTICIPATION => false, CompanyModule::MODULE_AGENCY => false]
+    ): void {
+        foreach ($moduleConfigurations as $module => $value) {
+            $companyModule = new CompanyModule($module, $company, $value);
+            $this->entityManager->persist($companyModule);
+        }
     }
 }
