@@ -65,9 +65,6 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
         // Disallow creating staff with other company than the participation
         unset($data['staff']['company']);
 
-        if ($projectParticipationMember) {
-            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipationMember));
-        }
         $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipationMember));
 
         /** @var Clients $user */
@@ -76,7 +73,11 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
         /** @var ProjectParticipation $participation */
         $participation = $projectParticipationMember
             ? $projectParticipationMember->getProjectParticipation()
-            : $this->iriConverter->getItemFromIri($data['projectParticipation'], [AbstractNormalizer::GROUPS => []]);
+            : $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationMember::class]['projectParticipation'];
+
+        if (null === $participation && isset($data['projectParticipation'])) {
+            $participation = $this->iriConverter->getItemFromIri($data['projectParticipation'], [AbstractNormalizer::GROUPS => []]);
+        }
 
         // permit to create staff if POST method and for an external bank
         if (null === $projectParticipationMember && false === $participation->getParticipant()->isCAGMember()) {
@@ -90,7 +91,7 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
     }
 
     /**
-     * @param ProjectParticipationMember $projectParticipationMember
+     * @param ProjectParticipationMember|null $projectParticipationMember
      *
      * @return array
      */
