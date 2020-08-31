@@ -18,6 +18,10 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
     use OfferFixtureTrait;
 
     public static int $id = 0; // Auto increment public ids
+    /**
+     * @var ObjectManager
+     */
+    private ObjectManager $manager;
 
     /**
      * @param ObjectManager $manager
@@ -26,6 +30,7 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
      */
     public function load(ObjectManager $manager): void
     {
+        $this->manager = $manager;
         /** @var Company[] $companies */
         $companies = $this->getReferences(CompanyFixtures::COMPANIES);
         /** @var Project[] $projects */
@@ -41,16 +46,7 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
             $projectParticipationStatus = $this->getParticipationStatus($project, $reference);
 
             foreach ($companies as $company) {
-                $participation = $this->createParticipation($project, $company, $staff, $projectParticipationStatus);
-                $correctStatus = $participation->getCurrentStatus();
-                // Needed because we do not record the current status in the statuses array and this array is not persisted
-                if (ProjectParticipationStatus::STATUS_CREATED !== $projectParticipationStatus) {
-                    $manager->persist(new ProjectParticipationStatus($participation, ProjectParticipationStatus::STATUS_CREATED, $staff));
-                }
-                $manager->persist($participation);
-
-                // Need to repersist the correct status because of listener  Unilend\Listener\Doctrine\Lifecycle\StatusCreatedListener
-                $manager->persist($correctStatus);
+                $manager->persist($this->createParticipation($project, $company, $staff, $projectParticipationStatus));
             }
         }
 
@@ -98,6 +94,12 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
         if (ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $status) {
             $participation->setCommitteeDeadline(new DateTimeImmutable());
         }
+        // Needed because we do not record the current status in the statuses array and this array is not persisted
+        if (ProjectParticipationStatus::STATUS_CREATED !== $status) {
+            $this->manager->persist(new ProjectParticipationStatus($participation, ProjectParticipationStatus::STATUS_CREATED, $staff));
+        }
+
+        // Need to set the status after because of StatusCreatedListener
         $participation->setCurrentStatus($participationStatus);
 
         return $participation;
