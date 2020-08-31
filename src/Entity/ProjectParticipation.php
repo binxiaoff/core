@@ -169,11 +169,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     // Additional denormalizer group that is available for the arranger in offer negotiation step
     public const SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE = 'projectParticipation:arranger:offerNegotiation:write';
 
-    public const BLACKLISTED_COMPANIES = [
-        'CA-CIB',
-        'Unifergie',
-    ];
-
     public const PROJECT_PARTICIPATION_FILE_TYPE_NDA = 'project_participation_nda';
 
     protected const INVITATION_REPLY_MODE_PRO_RATA   = 'pro-rata';
@@ -200,11 +195,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      *
      * @Groups({"projectParticipation:read", "projectParticipation:create"})
-     *
-     * @Assert\Expression(
-     *     "this.isParticipantValid()",
-     *     message="ProjectParticipation.participant.invalid"
-     * )
      *
      * @Assert\NotBlank
      */
@@ -728,18 +718,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public static function getPossibleInvitationReplyMode(): array
     {
         return static::getConstants('INVITATION_REPLY_MODE_');
-    }
-
-    /**
-     * Used in an expression constraints: if the participant is not blacklisted.
-     *
-     * @return bool
-     */
-    public function isParticipantValid(): bool
-    {
-        $blacklist = array_map('strtolower', ProjectParticipation::BLACKLISTED_COMPANIES);
-
-        return false === \in_array(mb_strtolower($this->getParticipant()->getDisplayName()), $blacklist, true);
     }
 
     /**
