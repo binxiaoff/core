@@ -64,6 +64,7 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         // get constructor company if provided (when create staff from ProjectParticipationMemberDenormalizer)
         /** @var Company $company */
         $company = $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'] ?? null;
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['addedBy'] = $this->security->getUser()->getCurrentStaff();
 
         // else, get from request
         if (!$company) {

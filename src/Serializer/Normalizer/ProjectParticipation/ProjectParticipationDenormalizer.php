@@ -129,7 +129,6 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                         'projectParticipation' => $projectParticipation,
                     ],
                     Staff::class => [
-                        'addedBy' => $user->getCurrentStaff(),
                         'company' => $projectParticipation->getParticipant(),
                     ],
                 ],
