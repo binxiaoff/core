@@ -19,7 +19,7 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchived
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectParticipationMember:read"}},
+ *     normalizationContext={"groups": {"projectParticipationMember:read", "role:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
