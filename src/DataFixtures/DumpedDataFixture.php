@@ -36,7 +36,5 @@ class DumpedDataFixture extends AbstractFixtures
             $statement = $manager->getConnection()->prepare($content);
             $statement->execute();
         }
-
-        $manager->flush();
     }
 }
