@@ -113,7 +113,6 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         foreach ($projectParticipationMembers as $projectParticipationMember) {
             // Disallow requestData to set projectParticipation
             unset($projectParticipationMember['projectParticipation']);
-            unset($projectParticipationMember['company']);
 
             /** @var ProjectParticipationMember $denormalized */
             $denormalized = $this->denormalizer->denormalize($projectParticipationMember, ProjectParticipationMember::class, 'array', [
@@ -121,9 +120,9 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                     isset($projectParticipationMember['@id']) ? $this->iriConverter->getItemFromIri($projectParticipationMember['@id']) : null,
                 AbstractNormalizer::GROUPS =>
                     // These group should be analog to ProjectParticipationMember::post operation and ProjectParticipationMember:patch operation and Staff::post operation
-                    isset($projectParticipationMember['@id']) ?
-                        ['projectParticipationMember:create']
-                        : ['projectParticipationMember:create', 'projectParticipationMember:write', "role:write", "staff:create", "client:create"],
+                    isset($projectParticipationMember['@id'])
+                        ? ['projectParticipationMember:create', 'projectParticipationMember:write', "role:write", "staff:create", "client:create"]
+                        : ['projectParticipationMember:create'],
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     ProjectParticipationMember::class => [
                         'projectParticipation' => $projectParticipation,

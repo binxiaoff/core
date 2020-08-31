@@ -53,6 +53,8 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
      */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
+        $context[self::ALREADY_CALLED] = true;
+
         /** @var ProjectParticipationMember $projectParticipationMember */
         $projectParticipationMember = $this->extractObjectToPopulate(ProjectParticipationMember::class, $context);
 
@@ -60,7 +62,13 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipationMember));
         }
 
-        $context[self::ALREADY_CALLED] = true;
+        // Disallow creating staff with other company than the participation
+        unset($data['staff']['company']);
+
+        if ($projectParticipationMember) {
+            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipationMember));
+        }
+        $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipationMember));
 
         /** @var Clients $user */
         $user = $this->security->getUser();

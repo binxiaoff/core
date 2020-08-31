@@ -61,6 +61,8 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalGroups($staff));
         }
 
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['addedBy'] = $this->security->getUser()->getCurrentStaff();
+
         // get constructor company if provided (when create staff from ProjectParticipationMemberDenormalizer)
         /** @var Company $company */
         $company = $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'] ?? null;
@@ -73,22 +75,20 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
 
         $emailClient = $data['client']['email'] ?? null;
 
-        unset($data['client']);
-
         // permit staff creation for external banks from client email
-        if (null === $staff && false === $company->isCAGMember()) {
+        if (null === $staff && $emailClient && false === $company->isCAGMember()) {
             $data['roles'] = [Staff::DUTY_STAFF_OPERATOR];
             $client        = null;
+            $staff         = $this->staffRepository->findOneByClientEmailAndCompany((string) $emailClient, $company);
 
-            if ($staff = $this->staffRepository->findOneByClientEmailAndCompany((string) $emailClient, $company)) {
+            if ($staff) {
                 $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $staff;
-                $client                                          = $staff->getClient();
             } else {
+                // retrieve client from his email or create it
+                $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['client:create']);
                 $client = $this->clientsRepository->findOneBy(['email' => $emailClient]);
+                $data['client'] = $client ? $this->iriConverter->getIriFromItem($client) : ['email' => $emailClient];
             }
-
-            // retrieve client from his email or create it
-            $data['client'] = $client ? $this->iriConverter->getIriFromItem($client) : ['email' => $emailClient];
         }
 
         return $this->denormalizer->denormalize($data, $type, $format, $context);

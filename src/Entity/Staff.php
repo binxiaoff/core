@@ -31,7 +31,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableT
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"role:write", "staff:create", "client:create"}}
+ *             "denormalization_context": {"groups": {"role:write", "staff:create"}}
  *         },
  *         "get"
  *     }
