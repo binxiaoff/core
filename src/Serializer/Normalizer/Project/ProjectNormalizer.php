@@ -9,7 +9,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ContextAwareNormalizerInterface,
     NormalizerAwareInterface,
     NormalizerAwareTrait};
-use Unilend\Entity\{Clients, Project, Staff};
+use Unilend\Entity\{Clients, Company, Project, Staff};
 use Unilend\Security\Voter\ProjectVoter;
 
 class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
@@ -46,38 +46,42 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
      */
     public function normalize($object, string $format = null, array $context = [])
     {
-        $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalNormalizerGroups($object));
-
         $context[self::ALREADY_CALLED] = true;
 
-        return $this->normalizer->normalize($object, $format, $context);
+        $client = $this->security->getUser();
+
+        $currentStaff = $client instanceof Clients ? $client->getCurrentStaff() : null;
+
+        $currentCompany = $currentStaff instanceof Staff ? $currentStaff->getCompany() : null;
+
+        $isCAGMember = $currentCompany instanceof Company ? $currentCompany->isCAGMember() : false;
+
+        $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalNormalizerGroups($object, $currentCompany));
+
+        $normalized = $this->normalizer->normalize($object, $format, $context);
+
+        if (\is_array($normalized) && false === $isCAGMember && $normalized['participationType'] === Project::PROJECT_PARTICIPATION_TYPE_SUB_PARTICIPATION) {
+            unset($normalized['participationType']);
+        }
+
+        return $normalized;
     }
 
     /**
-     * @param Project $project
+     * @param Project      $project
+     * @param Company|null $connectedCompany
      *
      * @return array
      */
-    private function getAdditionalNormalizerGroups(Project $project): array
+    private function getAdditionalNormalizerGroups(Project $project, ?Company $connectedCompany): array
     {
-        $client = $this->security->getUser();
-        if (false === $client instanceof Clients) {
-            return [];
-        }
-
-        $staff = $client->getCurrentStaff();
-
-        if (false === $staff instanceof Staff) {
-            return [];
-        }
-
         $additionalGroups = [];
 
         if ($this->security->isGranted(ProjectVoter::ATTRIBUTE_ADMIN_VIEW, $project)) {
             $additionalGroups[] = Project::SERIALIZER_GROUP_ADMIN_READ;
         }
 
-        if ($staff->getCompany()->isCAGMember()) {
+        if ($connectedCompany && $connectedCompany->isCAGMember()) {
             $additionalGroups[] = Project::SERIALIZER_GROUP_GCA_READ;
         }
 
