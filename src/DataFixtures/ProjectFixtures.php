@@ -1,55 +1,65 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\DataFixtures;
 
 use DateTimeImmutable;
-use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
 use Unilend\Entity\Clients;
-use Unilend\Entity\ClientStatus;
-use Unilend\Entity\Company;
 use Unilend\Entity\Embeddable\Money;
 use Unilend\Entity\File;
 use Unilend\Entity\FileVersion;
-use Unilend\Entity\MarketSegment;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectStatus;
 use Unilend\Entity\Staff;
-use Unilend\Entity\StaffStatus;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
 
-    public const PROJECT_ALLOCATION = 'PROJECT_ALLOCATION';
-    public const PROJECT_REPLY = 'PROJECT_REPLY';
     public const PROJECT_DRAFT = 'PROJECT_DRAFT';
     public const PROJECT_DRAFT_PARTICIPATION = 'PROJECT_DRAFT_PARTICIPATION';
+    public const PROJECT_REPLY = 'PROJECT_REPLY';
+    public const PROJECT_REPLY_COMMITTEE_ACCEPTED = 'PROJECT_REPLY_COMMITTEE_ACCEPTED';
+    public const PROJECT_REPLY_COMMITTEE_REFUSED = 'PROJECT_REPLY_COMMITTEE_REFUSED';
+    public const PROJECT_REPLY_COMMITTEE_PENDING = 'PROJECT_REPLY_COMMITTEE_PENDING';
+    public const PROJECT_ALLOCATION = 'PROJECT_ALLOCATION';
     public const PROJECT_FINISHED = 'PROJECT_FINISHED';
     public const PROJECT_ARCHIVED = 'PROJECT_ARCHIVED';
     public const PROJECT_OTHER_USER = 'PROJECT_OTHER_USER';
+
     public const PROJECTS = [
-        self::PROJECT_ALLOCATION,
-        self::PROJECT_REPLY,
         self::PROJECT_DRAFT,
         self::PROJECT_DRAFT_PARTICIPATION,
+        self::PROJECT_REPLY,
+        self::PROJECT_REPLY_COMMITTEE_ACCEPTED,
+        self::PROJECT_REPLY_COMMITTEE_REFUSED,
+        self::PROJECT_REPLY_COMMITTEE_PENDING,
+        self::PROJECT_ALLOCATION,
         self::PROJECT_FINISHED,
         self::PROJECT_ARCHIVED,
     ];
+
     public const PROJECTS_WITH_PARTICIPATION = [
-        self::PROJECT_ALLOCATION,
-        self::PROJECT_REPLY,
         self::PROJECT_DRAFT_PARTICIPATION,
+        self::PROJECT_REPLY,
+        self::PROJECT_REPLY_COMMITTEE_ACCEPTED,
+        self::PROJECT_REPLY_COMMITTEE_REFUSED,
+        self::PROJECT_REPLY_COMMITTEE_PENDING,
+        self::PROJECT_ALLOCATION,
         self::PROJECT_FINISHED,
         self::PROJECT_ARCHIVED,
     ];
+
     public const PROJECTS_WITH_PARTICIPATION_TRANCHES = [
-        self::PROJECT_ALLOCATION,
         self::PROJECT_REPLY,
+        self::PROJECT_REPLY_COMMITTEE_ACCEPTED,
+        self::PROJECT_REPLY_COMMITTEE_PENDING,
+        self::PROJECT_ALLOCATION,
         self::PROJECT_FINISHED,
     ];
     public const PREVIOUS_STATUSES = [
@@ -76,15 +86,21 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         // We set the user in the tokenStorage to avoid conflict with ProjectStatusCreatedListener
         $this->login(UserFixtures::ADMIN);
         $this->manager = $manager;
-        $projectDraftParticipation = $this->createProject('Project draft', ProjectStatus::STATUS_DRAFT);
         $projectDraft = $this->createProject('Project created', ProjectStatus::STATUS_DRAFT);
+        $projectDraftParticipation = $this->createProject('Project draft', ProjectStatus::STATUS_DRAFT);
         $projectReply = $this->createProject('Project reply', ProjectStatus::STATUS_PARTICIPANT_REPLY);
+        $projectReplyCommitteeAccepted = $this->createProject('Project reply c acc', ProjectStatus::STATUS_PARTICIPANT_REPLY);
+        $projectReplyCommitteeRefused = $this->createProject('Project reply c ref', ProjectStatus::STATUS_PARTICIPANT_REPLY);
+        $projectReplyCommitteePending = $this->createProject('Project reply c pen', ProjectStatus::STATUS_PARTICIPANT_REPLY);
         $projectAllocation = $this->createProject('Project allocation', ProjectStatus::STATUS_ALLOCATION);
         $projectFinished = $this->createProject('Project finished', ProjectStatus::STATUS_SYNDICATION_FINISHED);
         $projectArchived = $this->createProject('Project archived', ProjectStatus::STATUS_SYNDICATION_CANCELLED);
         $projectDraftOtherUser = $this->createProject('Project other user', ProjectStatus::STATUS_DRAFT, $otherUser->getCurrentStaff());
         $this->addReference(self::PROJECT_ALLOCATION, $projectAllocation);
         $this->addReference(self::PROJECT_REPLY, $projectReply);
+        $this->addReference(self::PROJECT_REPLY_COMMITTEE_ACCEPTED, $projectReplyCommitteeAccepted);
+        $this->addReference(self::PROJECT_REPLY_COMMITTEE_REFUSED, $projectReplyCommitteeRefused);
+        $this->addReference(self::PROJECT_REPLY_COMMITTEE_PENDING, $projectReplyCommitteePending);
         $this->addReference(self::PROJECT_DRAFT, $projectDraft);
         $this->addReference(self::PROJECT_DRAFT_PARTICIPATION, $projectDraftParticipation);
         $this->addReference(self::PROJECT_OTHER_USER, $projectDraftOtherUser);
@@ -133,11 +149,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $this->forcePublicId($project, Urlizer::urlize($title));
 
         // Project Status
+        $this->createPreviousStatuses($project, $staff);
         $projectStatus = new ProjectStatus($project, $status, $staff);
         $project->setCurrentStatus($projectStatus);
-        $this->createPreviousStatuses($project, $staff);
 
         // Persist
+        // Need to repersist the correct status because of listener  Unilend\Listener\Doctrine\Lifecycle\StatusCreatedListener
         $this->manager->persist($projectStatus);
         $this->manager->persist($ndaFile);
         $this->manager->persist($project);
@@ -157,6 +174,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
+     * Needed because we do not record the current status in the statuses array and this array is not persisted
+     *
      * @param Project $project
      * @param Staff   $addedBy
      *

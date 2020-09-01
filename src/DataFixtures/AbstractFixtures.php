@@ -7,6 +7,7 @@ use Doctrine\Common\DataFixtures\FixtureInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use ReflectionClass;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\User\User;
 use Unilend\Entity\Clients;
 
 abstract class AbstractFixtures extends Fixture implements FixtureInterface
@@ -50,7 +51,7 @@ abstract class AbstractFixtures extends Fixture implements FixtureInterface
     {
         return array_map(function (string $name) {
             return $this->getReference($name);
-        }, $names);
+        }, array_combine($names, $names));
     }
 
     /**
