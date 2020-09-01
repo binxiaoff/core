@@ -28,19 +28,15 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
     private Security $security;
     /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
-    /** @var StaffRepository */
-    private StaffRepository $staffRepository;
 
     /**
      * @param Security              $security
      * @param IriConverterInterface $iriConverter
-     * @param StaffRepository       $staffRepository
      */
-    public function __construct(Security $security, IriConverterInterface $iriConverter, StaffRepository $staffRepository)
+    public function __construct(Security $security, IriConverterInterface $iriConverter)
     {
         $this->security = $security;
         $this->iriConverter = $iriConverter;
-        $this->staffRepository = $staffRepository;
     }
 
     /**

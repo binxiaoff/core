@@ -24,8 +24,7 @@ class ProjectParticipationMemberDataPersister implements ContextAwareDataPersist
      */
     public function supports($data, array $context = []): bool
     {
-        return $data instanceof ProjectParticipationMember;
-//        return $this->decorated->supports($data, $context);
+        return $this->decorated->supports($data, $context);
     }
 
     /**
@@ -33,11 +32,8 @@ class ProjectParticipationMemberDataPersister implements ContextAwareDataPersist
      */
     public function persist($data, array $context = [])
     {
-        /** @var ProjectParticipationMember $projectParticipationMember */
-        $projectParticipationMember = $data;
-
-        if (isset($context['collection_operation_name']) && $context['collection_operation_name'] === 'post') {
-            $this->decorated->persist($projectParticipationMember->getStaff());
+        if ($data instanceof ProjectParticipationMember && isset($context['collection_operation_name']) && $context['collection_operation_name'] === 'post') {
+            $this->decorated->persist($data->getStaff());
         }
 
         return $this->decorated->persist($data, $context);

@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace Unilend\Serializer\Normalizer\Staff;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
+use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ContextAwareDenormalizerInterface,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
+use Unilend\Entity\Clients;
 use Unilend\Entity\Company;
 use Unilend\Entity\Staff;
+use Unilend\Exception\Staff\StaffNotFoundException;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Repository\StaffRepository;
 use Unilend\Security\Voter\StaffVoter;
@@ -51,6 +54,7 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
 
     /**
      * {@inheritdoc}
+     * @throws NonUniqueResultException
      */
     public function denormalize($data, $type, ?string $format = null, array $context = [])
     {
@@ -63,12 +67,13 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalGroups($staff));
         }
 
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['addedBy'] = $this->security->getUser()->getCurrentStaff();
+        $user = $this->security->getUser();
+
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['addedBy'] = $user instanceof Clients ? $user->getCurrentStaff() : null;
 
         // get constructor company if provided (when create staff from ProjectParticipationMemberDenormalizer)
         /** @var Company $company */
         $company = $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'] ?? null;
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['addedBy'] = $this->security->getUser()->getCurrentStaff();
 
         // else, get from request
         if (!$company) {
@@ -78,7 +83,7 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         $emailClient = $data['client']['email'] ?? null;
 
         // permit staff creation for external banks from client email
-        if (null === $staff && $emailClient && false === $company->isCAGMember()) {
+        if (null === $staff && $emailClient && $company && false === $company->isCAGMember()) {
             unset($data['client']);
             $data['roles'] = [Staff::DUTY_STAFF_OPERATOR];
             $client        = null;
@@ -87,9 +92,8 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             if ($staff) {
                 $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $staff;
             } else {
-                $registeredEmails = self::$registeredEmails;
-                if (isset($registeredEmails[$emailClient])) {
-                    $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['client'] = $registeredEmails[$emailClient];
+                if (isset(self::$registeredEmails[$emailClient])) {
+                    $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['client'] = self::$registeredEmails[$emailClient];
                 } else {
                     // retrieve client from his email or create it
                     $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['client:create']);
