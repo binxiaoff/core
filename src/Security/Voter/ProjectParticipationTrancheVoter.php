@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, Project, ProjectParticipationStatus, ProjectParticipationTranche};
+use Unilend\Entity\{Clients, CompanyModule, Project, ProjectParticipationStatus, ProjectParticipationTranche};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationTrancheVoter extends AbstractEntityVoter
@@ -37,9 +37,11 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
      */
     protected function canCreate(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
     {
-        return $projectParticipationTranche->getProjectParticipation()->getProject()->getSubmitterCompany() === $client->getCompany()
-            && $projectParticipationTranche->getProjectParticipation()->isActive()
-            && $projectParticipationTranche->getProjectParticipation()->getCurrentStatus()->getStatus() < ProjectParticipationStatus::STATUS_COMMITTEE_PENDED;
+        $projectParticipation = $projectParticipationTranche->getProjectParticipation();
+
+        return $projectParticipation->getProject()->getSubmitterCompany() === $client->getCompany()
+            && $projectParticipation->isActive()
+            && $projectParticipation->getCurrentStatus()->getStatus() < ProjectParticipationStatus::STATUS_COMMITTEE_PENDED;
     }
 
     /**
@@ -76,12 +78,19 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
      */
     protected function canParticipationOwnerEdit(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
     {
-        $project = $projectParticipationTranche->getProjectParticipation()->getProject();
+        $project     = $projectParticipationTranche->getProjectParticipation()->getProject();
+        $participant = $projectParticipationTranche->getProjectParticipation()->getParticipant();
+
         // For the non-client entity, it's the arrange who edit the invitation reply.
         return $project->isInOfferNegotiationStep()
             && (
-                ($projectParticipationTranche->getProjectParticipation()->getParticipant()->isProspect() && $project->getSubmitterCompany() === $client->getCompany())
-                || $this->projectParticipationManager->isParticipationOwner($client->getCurrentStaff(), $projectParticipationTranche->getProjectParticipation())
+                (
+                    $participant->isProspect()
+                    && $project->getSubmitterCompany() === $client->getCompany()
+                ) || (
+                    $participant->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
+                    && $this->projectParticipationManager->isParticipationOwner($client->getCurrentStaff(), $projectParticipationTranche->getProjectParticipation())
+                )
             );
     }
 
