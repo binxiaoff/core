@@ -65,15 +65,13 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
         // Disallow creating staff with other company than the participation
         unset($data['staff']['company']);
 
-        $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipationMember));
-
         /** @var Clients $user */
         $user = $this->security->getUser();
 
         /** @var ProjectParticipation $participation */
         $participation = $projectParticipationMember
             ? $projectParticipationMember->getProjectParticipation()
-            : $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationMember::class]['projectParticipation'];
+            : $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationMember::class]['projectParticipation'] ?? null;
 
         if (null === $participation && isset($data['projectParticipation'])) {
             $participation = $this->iriConverter->getItemFromIri($data['projectParticipation'], [AbstractNormalizer::GROUPS => []]);

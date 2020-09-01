@@ -69,7 +69,7 @@ class ProjectParticipationMember
     /**
      * @var Staff
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_staff", referencedColumnName="id", nullable=false)
      * })

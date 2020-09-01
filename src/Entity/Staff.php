@@ -107,7 +107,7 @@ class Staff implements TraceableStatusAwareInterface
     /**
      * @var StaffStatus|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\StaffStatus")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\StaffStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
