@@ -12,6 +12,7 @@ use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
 use Unilend\Entity\Clients;
 use Unilend\Entity\Embeddable\Money;
+use Unilend\Entity\Embeddable\NullablePerson;
 use Unilend\Entity\File;
 use Unilend\Entity\FileVersion;
 use Unilend\Entity\Project;
@@ -145,6 +146,15 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setInterestExpressionEnabled(false) // "Réponse ferme"
             ->setParticipantReplyDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+70 days', '+1 year')))
             ->setAllocationDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+1 year', '+2 year')))
+            ->setPrivilegedContactPerson(
+                (new NullablePerson())
+                    ->setEmail($staff->getClient()->getEmail())
+                    ->setFirstName($staff->getClient()->getFirstName())
+                    ->setLastName($staff->getClient()->getLastName())
+                    ->setPhone($staff->getClient()->getPhone())
+                    ->setOccupation($staff->getClient()->getJobFunction())
+                    ->setParentUnit('Unit')
+            )
             ->setDescription($this->faker->sentence);
         $this->forcePublicId($project, Urlizer::urlize($title));
 
