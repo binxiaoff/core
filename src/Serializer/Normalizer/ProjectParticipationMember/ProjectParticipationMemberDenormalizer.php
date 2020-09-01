@@ -60,16 +60,7 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
 
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationMember::class]['addedBy'] = $user->getCurrentStaff();
 
-        $denormalized = $this->denormalizer->denormalize($data, $type, $format, $context);
-
-        // Forbid creation in case voter returns false
-        // TODO See if tis possible to factor this with ApiPlatform metadata
-        // TODO Duplicate with ProjectParticipationMember post operation security attribute making this lines
-        if (false === isset($data['@id']) && false === $this->security->isGranted(ProjectParticipationMemberVoter::ATTRIBUTE_CREATE, $denormalized)) {
-            throw new AccessDeniedException();
-        }
-
-        return $denormalized;
+        return $this->denormalizer->denormalize($data, $type, $format, $context);
     }
 
     /**

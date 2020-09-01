@@ -58,7 +58,7 @@ class ProjectParticipationMemberVoter extends AbstractEntityVoter
      */
     protected function canEdit(ProjectParticipationMember $subject, Clients $user): bool
     {
-        return $this->canCreate($subject, $user);
+        return $this->canCreate($subject, $user) || $this->canAcceptNda($subject, $user);
     }
 
     /**
