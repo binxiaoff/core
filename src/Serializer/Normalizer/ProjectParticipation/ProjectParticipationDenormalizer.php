@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Serializer\Normalizer\ProjectParticipation;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ContextAwareDenormalizerInterface,
@@ -17,6 +18,7 @@ use Unilend\Entity\ProjectParticipationMember;
 use Unilend\Entity\ProjectParticipationStatus;
 use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Entity\ProjectStatus;
+use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 use Unilend\Security\Voter\ProjectParticipationVoter;
 
 class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
@@ -125,6 +127,14 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                     ],
                 ],
             ]);
+
+            // Forbid creation in case voter returns false
+            // TODO See if tis possible to factor this with ApiPlatform metadata
+            // TODO Duplicate with ProjectParticipationMember post operation security attribute making this lines
+            if (false === isset($data['@id']) && false === $this->security->isGranted(ProjectParticipationMemberVoter::ATTRIBUTE_CREATE, $denormalized)) {
+                throw new AccessDeniedException();
+            }
+
             // It is odd to add an updated participationMember
             // but the method check if the object is already in the ProjectParticipation::projectParticipationMembers arrayCollection
             // TODO See if indexed association would be more proper
