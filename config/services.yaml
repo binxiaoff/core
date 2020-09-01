@@ -177,5 +177,4 @@ services:
         $path: '/authentication_token'
 
     Unilend\Command\FixtureCommand:
-        arguments:
-            $fixturesLoader: '@doctrine.fixtures.loader'
+        parent: 'doctrine.fixtures_load_command'
