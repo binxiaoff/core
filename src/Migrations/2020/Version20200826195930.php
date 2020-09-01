@@ -33,6 +33,7 @@ final class Version20200826195930 extends AbstractMigration
         $this->addSql("DELETE FROM company_module WHERE id_company = (SELECT id FROM company WHERE short_code = 'UNFG')");
         $this->addSql("UPDATE company SET id_current_status = NULL WHERE short_code = 'UNFG'");
         $this->addSql("DELETE FROM company_status  WHERE id_company = (SELECT id FROM company WHERE short_code = 'UNFG')");
+        $this->addSql("DELETE FROM project_organizer  WHERE id_company = (SELECT id FROM company WHERE short_code = 'UNFG')");
         $this->addSql("DELETE FROM company WHERE short_code = 'UNFG'");
 
         $this->addSql("UPDATE company SET display_name = 'CALF / Unifergie' WHERE display_name = 'Crédit agricole leasing'");
