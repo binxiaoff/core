@@ -31,7 +31,6 @@
     "beberlei/doctrineextensions": "^1.0",
     "cravler/maxmind-geoip-bundle": "^1.5",
     "defuse/php-encryption": "^2.2",
-    "doctrine/doctrine-fixtures-bundle": "^3.3",
     "doctrine/orm": "^2.7",
     "docusign/esign-client": "^3.0",
     "eightpoints/guzzle-bundle": "^8.1",
@@ -101,6 +100,7 @@
   },
   "require-dev": {
     "dg/bypass-finals": "^1.1",
+    "doctrine/doctrine-fixtures-bundle": "^3.3",
     "escapestudios/symfony2-coding-standard": "^3.5",
     "friendsofphp/php-cs-fixer": "^2.14",
     "fzaninotto/faker": "^1.9",
