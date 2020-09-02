@@ -956,11 +956,11 @@ class Project implements TraceableStatusAwareInterface
         });
 
         if (1 < $filtered->count()) {
-            throw new DomainException('There are more than one participations for arranger');
+            throw new DomainException(sprintf('There are more than one participations for arranger (id: %d) on project (id: %s)', $this->getArranger()->getId(), $this->getId()));
         }
 
         if (0 === $filtered->count()) {
-            throw new DomainException('There is no participation for arranger');
+            throw new DomainException(sprintf('There is no participation for arranger (id: %d) on project (id: %s)', $this->getArranger()->getId(), $this->getId()));
         }
 
         return $filtered->first();
