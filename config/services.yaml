@@ -175,6 +175,3 @@ services:
         $authenticationSuccessHandler: '@lexik_jwt_authentication.handler.authentication_success'
         $authenticationFailureHandler: '@lexik_jwt_authentication.handler.authentication_failure'
         $path: '/authentication_token'
-
-    Unilend\Command\FixtureCommand:
-        parent: 'doctrine.fixtures_load_command'
