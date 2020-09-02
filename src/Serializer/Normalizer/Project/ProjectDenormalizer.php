@@ -106,7 +106,7 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
             [
                 AbstractNormalizer::OBJECT_TO_POPULATE => $participation,
                 // @todo set group according to project status ?
-                AbstractNormalizer::GROUPS => ['projectParticipation:create', 'offerWithFee:write', 'nullableMoney:write', 'offer:write', 'staff:create'],
+                AbstractNormalizer::GROUPS => ['projectParticipation:create', 'offerWithFee:write', 'nullableMoney:write', 'offer:write'],
             ]
         );
 

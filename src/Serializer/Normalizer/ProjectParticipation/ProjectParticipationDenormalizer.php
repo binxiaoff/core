@@ -89,7 +89,9 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                     isset($projectParticipationTranche['@id']) ? $this->iriConverter->getItemFromIri($projectParticipationTranche['@id']) : null,
                 // @todo set group according to project status ?
                 // These group should be analog to ProjectParticipationTranche::post operation and ProjectParticipationTranche:patch operation
-                 AbstractNormalizer::GROUPS => isset($projectParticipationTranche['@id']) ? ['offer:write', 'nullableMoney:write'] : ['projectParticipationTranche:create'],
+                 AbstractNormalizer::GROUPS => isset($projectParticipationTranche['@id']) ?
+                     ['offer:write', 'nullableMoney:write'] : // PATCH
+                     ['projectParticipationTranche:create'], // POST
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     ProjectParticipationTranche::class => [
                         'projectParticipation' => $projectParticipation,
