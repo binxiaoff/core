@@ -100,7 +100,7 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
                 if (null === $existingClient) {
                     // retrieve client from his email or create it
                     $context[AbstractNormalizer::GROUPS] = $context[AbstractNormalizer::GROUPS] ?? [];
-                    $context[AbstractNormalizer::GROUPS][] = ['client:create'];
+                    $context[AbstractNormalizer::GROUPS][] = 'client:create';
                     $data['client']['email'] = $emailClient;
                 }
             }
