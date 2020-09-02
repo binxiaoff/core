@@ -142,8 +142,6 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      *
      * @Assert\NotBlank
      * @Assert\Email
-     *
-     * @AssertEmailDomain(message="Clients.email.emailDomain")
      */
     private string $email;
 
