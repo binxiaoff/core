@@ -76,7 +76,7 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         $company = $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'] ?? null;
 
         // else, get from request
-        if (null === $company && \is_string($data['company'])) {
+        if (null === $company && isset($data['company']) && \is_string($data['company'])) {
             $company = isset($data['company']) ? $this->iriConverter->getItemFromIri($data['company']) : null;
         }
 
