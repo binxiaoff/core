@@ -76,16 +76,20 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         $company = $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'] ?? null;
 
         // else, get from request
-        if (!$company) {
+        if (null === $company && \is_string($data['company'])) {
             $company = isset($data['company']) ? $this->iriConverter->getItemFromIri($data['company']) : null;
         }
 
         $emailClient = $data['client']['email'] ?? null;
 
-        // permit staff creation for external banks from client email
-        if (null === $staff && $emailClient && $company && false === $company->isCAGMember()) {
-            unset($data['client']);
+        // External bank mandatory role and
+        if (false === $company->isCAGMember()) {
             $data['roles'] = [Staff::DUTY_STAFF_OPERATOR];
+            $data['marketSegment'] = [];
+        }
+
+        if (null === $staff && $emailClient && $company) {
+            unset($data['client']);
             $staff         = $this->staffRepository->findOneByClientEmailAndCompany((string) $emailClient, $company);
             $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $staff;
 

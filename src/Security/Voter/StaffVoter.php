@@ -50,11 +50,16 @@ class StaffVoter extends AbstractEntityVoter
     {
         $submitterStaff = $user->getCurrentStaff();
 
-        // A manager cannot create a staff with markets other than is own. But we can create a staff without market segment (used for invitation via email)
-        return 0 === $subject->getMarketSegments()->count()
+        return
+            // You can only create a staff for a the connected company or is the company is not par of Crédit Agricole
+            (false === $subject->getCompany()->isCAGMember() || ($submitterStaff && $submitterStaff->getCompany() === $subject->getCompany() && $submitterStaff->isAdmin())) &&
+            // You must be connected with a crédit agricole group bank
+            $submitterStaff->getCompany()->isCAGMember() &&
+            // An admin cannot create a staff with markets other than is own. But we can create a staff without market segment (used for invitation via email)
+            (0 === $subject->getMarketSegments()->count()
             || $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
                 return $submitterStaff->getMarketSegments()->contains($marketSegment);
-            });
+            }));
     }
 
     /**
@@ -91,6 +96,11 @@ class StaffVoter extends AbstractEntityVoter
     protected function canEdit(Staff $subject, Clients $user): bool
     {
         $submitterStaff = $user->getCurrentStaff();
+
+        if (null === $submitterStaff) {
+            return false;
+        }
+
         if (false === $this->ableToManage($subject, $user)) {
             return false;
         }
