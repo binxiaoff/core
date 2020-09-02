@@ -4,27 +4,31 @@ declare(strict_types=1);
 
 namespace Unilend\DataPersister;
 
-use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
+use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use Unilend\Entity\ProjectParticipationMember;
+use Unilend\Repository\ProjectParticipationMemberRepository;
 
-class ProjectParticipationMemberDataPersister implements ContextAwareDataPersisterInterface
+class ProjectParticipationMemberDataPersister implements DataPersisterInterface
 {
-    private $decorated;
+    /** @var ProjectParticipationMemberRepository */
+    private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
 
     /**
-     * @param ContextAwareDataPersisterInterface $decorated
+     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
      */
-    public function __construct(ContextAwareDataPersisterInterface $decorated)
+    public function __construct(ProjectParticipationMemberRepository $projectParticipationMemberRepository)
     {
-        $this->decorated = $decorated;
+        $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
+     *
+     * @return bool
      */
-    public function supports($data, array $context = []): bool
+    public function supports($data): bool
     {
-        return $this->decorated->supports($data, $context);
+        return $data instanceof ProjectParticipationMember;
     }
 
     /**
@@ -32,11 +36,11 @@ class ProjectParticipationMemberDataPersister implements ContextAwareDataPersist
      */
     public function persist($data, array $context = [])
     {
-        if ($data instanceof ProjectParticipationMember && isset($context['collection_operation_name']) && $context['collection_operation_name'] === 'post') {
-            $this->decorated->persist($data->getStaff());
+        if (isset($context['collection_operation_name']) && $context['collection_operation_name'] === 'post') {
+            $this->projectParticipationMemberRepository->persist($data->getStaff());
         }
 
-        return $this->decorated->persist($data, $context);
+        return $data;
     }
 
     /**
@@ -44,6 +48,6 @@ class ProjectParticipationMemberDataPersister implements ContextAwareDataPersist
      */
     public function remove($data, array $context = [])
     {
-        return $this->decorated->remove($data, $context);
+        return $data;
     }
 }

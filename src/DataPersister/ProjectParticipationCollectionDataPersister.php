@@ -11,7 +11,6 @@ use Unilend\Repository\ProjectParticipationRepository;
 
 class ProjectParticipationCollectionDataPersister implements DataPersisterInterface
 {
-
     /** @var ProjectParticipationRepository */
     private ProjectParticipationRepository $projectParticipationRepository;
 

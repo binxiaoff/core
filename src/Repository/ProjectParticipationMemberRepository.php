@@ -7,6 +7,8 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Unilend\Entity\{Project, ProjectParticipationMember, Staff};
 
 /**
@@ -48,5 +50,17 @@ class ProjectParticipationMemberRepository extends ServiceEntityRepository
         ;
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param ProjectParticipationMember $projectParticipationMember
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function save(ProjectParticipationMember $projectParticipationMember): void
+    {
+        $this->getEntityManager()->persist($projectParticipationMember);
+        $this->getEntityManager()->flush();
     }
 }
