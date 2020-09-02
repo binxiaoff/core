@@ -63,7 +63,9 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
         }
 
         // Disallow creating staff with other company than the participation
-        unset($data['staff']['company']);
+        if (\is_array($data['staff'])) {
+            unset($data['staff']['company']);
+        }
 
         /** @var Clients $user */
         $user = $this->security->getUser();

@@ -86,19 +86,18 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         if (null === $staff && $emailClient && $company && false === $company->isCAGMember()) {
             unset($data['client']);
             $data['roles'] = [Staff::DUTY_STAFF_OPERATOR];
-            $client        = null;
             $staff         = $this->staffRepository->findOneByClientEmailAndCompany((string) $emailClient, $company);
+            $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $staff;
 
-            if ($staff) {
-                $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $staff;
-            } else {
-                if (isset(self::$registeredEmails[$emailClient])) {
-                    $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['client'] = self::$registeredEmails[$emailClient];
-                } else {
+            if (null === $staff) {
+                $existingClient  = self::$registeredEmails[$emailClient] ?? $this->clientsRepository->findOneBy(['email' => $emailClient]);
+                $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['client'] = $existingClient;
+
+                if (null === $existingClient) {
                     // retrieve client from his email or create it
-                    $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['client:create']);
-                    $client = $this->clientsRepository->findOneBy(['email' => $emailClient]);
-                    $data['client'] = $client ? $this->iriConverter->getIriFromItem($client) : ['email' => $emailClient];
+                    $context[AbstractNormalizer::GROUPS] = $context[AbstractNormalizer::GROUPS] ?? [];
+                    $context[AbstractNormalizer::GROUPS][] = ['client:create'];
+                    $data['client']['email'] = $emailClient;
                 }
             }
         }
@@ -106,9 +105,7 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         /** @var Staff $denormalized */
         $denormalized = $this->denormalizer->denormalize($data, $type, $format, $context);
 
-        if ($emailClient && false === $company->isCAGMember()) {
-            self::$registeredEmails[$emailClient] = $denormalized->getClient();
-        }
+        self::$registeredEmails[$emailClient] = $denormalized->getClient();
 
         return $denormalized;
     }

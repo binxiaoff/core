@@ -51,16 +51,4 @@ class ProjectParticipationMemberRepository extends ServiceEntityRepository
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
-
-    /**
-     * @param ProjectParticipationMember $projectParticipationMember
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function save(ProjectParticipationMember $projectParticipationMember): void
-    {
-        $this->getEntityManager()->persist($projectParticipationMember);
-        $this->getEntityManager()->flush();
-    }
 }
