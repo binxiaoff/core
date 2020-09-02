@@ -21,7 +21,6 @@ final class Version20200213135717 extends AbstractMigration
     {
         $this->addSql('RENAME TABLE companies TO company');
 
-        $this->addSql('ALTER TABLE company RENAME INDEX uniq_8244aa3ada33cdfb TO UNIQ_4FBF094FDA33CDFB');
         $this->addSql('ALTER TABLE company RENAME INDEX uniq_8244aa3a17d2fe0d TO UNIQ_4FBF094F17D2FE0D');
         $this->addSql('ALTER TABLE company RENAME INDEX uniq_8244aa3ab5b48b91 TO UNIQ_4FBF094FB5B48B91');
         $this->addSql('ALTER TABLE company RENAME INDEX idx_8244aa3a91c00f TO IDX_4FBF094F91C00F');

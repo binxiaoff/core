@@ -49,7 +49,7 @@ final class Version20200710131714 extends AbstractMigration
         [
             'name'          => 'Caisse régionale de crédit agricole mutuel Charente-Maritime Deux-Sèvres',
             'groupName'     => 'Crédit Agricole',
-            'shortCode'     => 'CMSE',
+            'shortCode'     => 'CM2SE',
             'bankCode'      => 11706,
             'applicableVat' => 'metropolitan',
         ],
