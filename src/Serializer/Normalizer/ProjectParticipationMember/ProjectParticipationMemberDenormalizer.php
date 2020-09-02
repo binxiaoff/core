@@ -81,7 +81,7 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
 
         // permit to create staff if POST method and for an external bank
         if (null === $projectParticipationMember && false === $participation->getParticipant()->isCAGMember()) {
-            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ["role:write", "staff:create", "client:create"]);
+            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['role:write', 'staff:create', 'client:create']);
         }
 
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationMember::class]['addedBy'] = $user->getCurrentStaff();

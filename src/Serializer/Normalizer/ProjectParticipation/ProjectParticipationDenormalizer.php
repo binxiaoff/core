@@ -13,7 +13,6 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
 use Unilend\Entity\{Clients, ProjectParticipation, ProjectParticipationMember, ProjectParticipationStatus, ProjectParticipationTranche, ProjectStatus, Staff};
-use Unilend\Repository\StaffRepository;
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 use Unilend\Security\Voter\ProjectParticipationVoter;
 
@@ -108,8 +107,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
 
         foreach ($projectParticipationMembers as $projectParticipationMember) {
             // Disallow requestData to set projectParticipation
-            unset($projectParticipationMember['projectParticipation']);
-            unset($projectParticipationMember['staff']['company']);
+            unset($projectParticipationMember['projectParticipation'], $projectParticipationMember['staff']['company']);
 
             /** @var ProjectParticipationMember $denormalized */
             $denormalized = $this->denormalizer->denormalize($projectParticipationMember, ProjectParticipationMember::class, 'array', [
@@ -118,8 +116,8 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                 AbstractNormalizer::GROUPS =>
                     // These group should be analog to ProjectParticipationMember::post operation and ProjectParticipationMember:patch operation and Staff::post operation
                     isset($projectParticipationMember['@id'])
-                        ? ['projectParticipationMember:create', 'projectParticipationMember:write', "role:write", "staff:create", "client:create"]
-                        : ['projectParticipationMember:create'],
+                        ? ['archivable:write'] // PATCH
+                        : ['projectParticipationMember:create', 'projectParticipationMember:write'], // POST
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     ProjectParticipationMember::class => [
                         'projectParticipation' => $projectParticipation,

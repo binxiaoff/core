@@ -13,9 +13,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
 use Unilend\Entity\Clients;
-use Unilend\Entity\Company;
 use Unilend\Entity\Staff;
-use Unilend\Exception\Staff\StaffNotFoundException;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Repository\StaffRepository;
 use Unilend\Security\Voter\StaffVoter;
@@ -60,6 +58,9 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     {
         $context[self::ALREADY_CALLED] = true;
 
+        /** @var Clients $user */
+        $user = $this->security->getUser();
+
         /** @var Staff $staff */
         $staff = $this->extractObjectToPopulate(Staff::class, $context);
 
@@ -67,49 +68,55 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalGroups($staff));
         }
 
-        $user = $this->security->getUser();
-
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['addedBy'] = $user instanceof Clients ? $user->getCurrentStaff() : null;
 
-        // get constructor company if provided (when create staff from ProjectParticipationMemberDenormalizer)
-        /** @var Company $company */
-        $company = $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'] ?? null;
+        $company = null;
+
+        // Try to get from staff
+        if ($staff) {
+            $company = $staff->getCompany();
+        }
+
+        // OR get constructor company if provided (when create staff from ProjectParticipationMemberDenormalizer)
+        if (null === $company && isset($context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'])) {
+            $company = $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'];
+        }
 
         // else, get from request
-        if (null === $company && isset($data['company']) && \is_string($data['company'])) {
-            $company = isset($data['company']) ? $this->iriConverter->getItemFromIri($data['company']) : null;
+        if (null === $company && (isset($data['company']) && \is_string($data['company']))) {
+            $company = $this->iriConverter->getItemFromIri($data['company']);
         }
 
-        $emailClient = $data['client']['email'] ?? null;
+        $email = $data['client']['email'] ?? null;
 
-        // External bank mandatory role and
-        if (false === $company->isCAGMember()) {
-            $data['roles'] = [Staff::DUTY_STAFF_OPERATOR];
-            $data['marketSegment'] = [];
-        }
-
-        if (null === $staff && $emailClient && $company) {
+        if (null === $staff && $email && $company) {
             unset($data['client']);
-            $staff         = $this->staffRepository->findOneByClientEmailAndCompany((string) $emailClient, $company);
+            $staff         = $this->staffRepository->findOneByClientEmailAndCompany((string) $email, $company);
             $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $staff;
 
             if (null === $staff) {
-                $existingClient  = self::$registeredEmails[$emailClient] ?? $this->clientsRepository->findOneBy(['email' => $emailClient]);
+                $existingClient  = self::$registeredEmails[$email] ?? $this->clientsRepository->findOneBy(['email' => $email]);
                 $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['client'] = $existingClient;
 
                 if (null === $existingClient) {
                     // retrieve client from his email or create it
                     $context[AbstractNormalizer::GROUPS] = $context[AbstractNormalizer::GROUPS] ?? [];
                     $context[AbstractNormalizer::GROUPS][] = 'client:create';
-                    $data['client']['email'] = $emailClient;
+                    $data['client']['email'] = $email;
                 }
             }
+        }
+
+        // External bank mandatory role and marketSegment
+        if (false === $company->isCAGMember()) {
+            $data['roles'] = [Staff::DUTY_STAFF_OPERATOR];
+            $data['marketSegment'] = [];
         }
 
         /** @var Staff $denormalized */
         $denormalized = $this->denormalizer->denormalize($data, $type, $format, $context);
 
-        self::$registeredEmails[$emailClient] = $denormalized->getClient();
+        self::$registeredEmails[$email] = $denormalized->getClient();
 
         return $denormalized;
     }
