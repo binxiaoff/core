@@ -32,11 +32,26 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $adminCompany = $this->getReference(CompanyFixtures::CALS);
         /** @var Clients $user */
         $user = $this->getReference(UserFixtures::ADMIN);
-        $adminStaff = $this->createStaff($user, $adminCompany, $manager);
+        $adminStaff = $this->createStaff($user, $adminCompany, $manager, [Staff::DUTY_STAFF_ADMIN]);
         // We set the user in the tokenStorage to avoid conflict with StaffLogListener
         $this->login($user);
         $manager->persist($adminStaff);
         $manager->persist($adminStaff->getCurrentStatus());
+
+        $auditor = $this->getReference(UserFixtures::AUDITOR);
+        $auditorStaff = $this->createStaff($auditor, $adminCompany, $manager, [Staff::DUTY_STAFF_AUDITOR, Staff::DUTY_STAFF_ACCOUNTANT]);
+        $manager->persist($auditorStaff);
+        $manager->persist($auditorStaff->getCurrentStatus());
+
+        $invited = $this->getReference(UserFixtures::INVITED);
+        $invitedStaff = $this->createStaff($invited, $adminCompany, $manager, [Staff::DUTY_STAFF_OPERATOR]);
+        $manager->persist($invitedStaff);
+        $manager->persist($invitedStaff->getCurrentStatus());
+
+        $userManager = $this->getReference(UserFixtures::MANAGER);
+        $managerStaff = $this->createStaff($userManager, $adminCompany, $manager, [Staff::DUTY_STAFF_MANAGER]);
+        $manager->persist($managerStaff);
+        $manager->persist($managerStaff->getCurrentStatus());
 
         // Attach other companies to the other user
         /** @var Company[] $companies */
@@ -45,7 +60,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $other = $this->getReference(UserFixtures::PARTICIPANT);
         foreach ($companies as $company) {
             if ($company !== $adminCompany) {
-                $staff = $this->createStaff($other, $company, $manager);
+                $staff = $this->createStaff($other, $company, $manager, [Staff::DUTY_STAFF_ADMIN]);
                 $manager->persist($staff);
                 $manager->persist($staff->getCurrentStatus());
             }
@@ -58,24 +73,25 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
     /**
      * Creates a new staff attached to the company
      *
-     * @param Clients       $user
-     * @param Company       $company
+     * @param Clients $user
+     * @param Company $company
      * @param ObjectManager $manager
      *
      * @return Staff
      *
      * @throws \Exception
      */
-    public function createStaff(Clients $user, Company $company, ObjectManager $manager): Staff
+    public function createStaff(Clients $user, Company $company, ObjectManager $manager, array $roles): Staff
     {
         // We need to use SQL since we cannot instanciate Staff entity
+        $rolesEncoded = json_encode($roles);
         $sql = <<<SQL
             INSERT INTO `staff` 
                 (id_company, id_client, roles, updated, added, public_id) VALUES 
                 (
                     "{$company->getId()}", 
                     "{$user->getId()}", 
-                    '[\"DUTY_STAFF_ADMIN\"]', 
+                    '{$rolesEncoded}', 
                     '2020-01-01', '2020-01-01', 
                     "client{$user->getId()}-company{$company->getId()}-staff"
                 )
