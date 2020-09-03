@@ -184,6 +184,8 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @var ClientStatus|null
      *
+     * @Groups({"client:read"})
+     *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true)
      */
