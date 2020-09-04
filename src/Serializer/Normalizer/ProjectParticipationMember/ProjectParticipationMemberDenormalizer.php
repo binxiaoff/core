@@ -79,7 +79,7 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
         }
 
         // permit to create staff if POST method and for an external bank
-        // Remove false === $participation->getParticipant()->isCAGMember()  when you need to authorize it for all banks
+        // Remove false === $participation->getParticipant()->isCAGMember() when you need to authorize it for all banks
         if (null === $projectParticipationMember && false === $participation->getParticipant()->isCAGMember()) {
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['role:write', 'staff:create', 'client:create']);
         }
