@@ -61,6 +61,8 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         /** @var Clients $user */
         $user = $this->security->getUser();
 
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['addedBy'] = $user instanceof Clients ? $user->getCurrentStaff() : null;
+
         /** @var Staff $staff */
         $staff = $this->extractObjectToPopulate(Staff::class, $context);
 
@@ -68,7 +70,6 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalGroups($staff));
         }
 
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['addedBy'] = $user instanceof Clients ? $user->getCurrentStaff() : null;
 
         $company = null;
 
@@ -110,7 +111,7 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         // External bank mandatory role and marketSegment
         if (false === $company->isCAGMember()) {
             $data['roles'] = [Staff::DUTY_STAFF_OPERATOR];
-            $data['marketSegment'] = [];
+            $data['marketSegments'] = [];
         }
 
         /** @var Staff $denormalized */

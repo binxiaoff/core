@@ -102,7 +102,7 @@ class Staff implements TraceableStatusAwareInterface
      *
      * @Groups({"staff:read", "staff:create", "staff:update", Staff::SERIALIZER_GROUP_ADMIN_CREATE})
      */
-    private $marketSegments;
+    private Collection $marketSegments;
 
     /**
      * @var StaffStatus|null
