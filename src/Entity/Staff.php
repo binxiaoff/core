@@ -31,7 +31,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableT
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"role:write", "staff:create", "client:create"}}
+ *             "denormalization_context": {"groups": {"role:write", "staff:create"}}
  *         },
  *         "get"
  *     }
@@ -100,14 +100,14 @@ class Staff implements TraceableStatusAwareInterface
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\MarketSegment")
      *
-     * @Groups({"staff:read", "staff:update", Staff::SERIALIZER_GROUP_ADMIN_CREATE})
+     * @Groups({"staff:read", "staff:create", "staff:update", Staff::SERIALIZER_GROUP_ADMIN_CREATE})
      */
-    private $marketSegments;
+    private Collection $marketSegments;
 
     /**
      * @var StaffStatus|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\StaffStatus")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\StaffStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -122,7 +122,6 @@ class Staff implements TraceableStatusAwareInterface
     /**
      * @var Collection|StaffStatus[]
      *
-     * @Assert\Count(min="1")
      * @Assert\Valid
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\StaffStatus", mappedBy="staff", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")

@@ -78,7 +78,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      *
      * @ORM\Column(name="title", type="string", nullable=true)
      */
-    private ?string $title;
+    private ?string $title = null;
 
     /**
      * @var string|null
@@ -109,7 +109,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      *
      * @ORM\Column(name="slug", type="string", length=191, nullable=true)
      */
-    private ?string $slug;
+    private ?string $slug = null;
 
     /**
      * @var string|null
@@ -120,7 +120,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      *
      * @AssertPhoneNumber(defaultRegion="Clients::PHONE_NUMBER_DEFAULT_REGION", type="any")
      */
-    private ?string $phone;
+    private ?string $phone = null;
 
     /**
      * @var string|null
@@ -131,7 +131,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      *
      * @AssertPhoneNumber(defaultRegion="Clients::PHONE_NUMBER_DEFAULT_REGION", type="mobile")
      */
-    private ?string $mobile;
+    private ?string $mobile = null;
 
     /**
      * @var string
@@ -142,8 +142,6 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      *
      * @Assert\NotBlank
      * @Assert\Email
-     *
-     * @AssertEmailDomain(message="Clients.email.emailDomain")
      */
     private string $email;
 
@@ -163,7 +161,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      *
      * @AssertPassword(message="Clients.password.password")
      */
-    private ?string $plainPassword;
+    private ?string $plainPassword = null;
 
     /**
      * @var string|null
@@ -172,7 +170,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      *
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $jobFunction;
+    private ?string $jobFunction = null;
 
     /**
      * @var Staff[]|Collection
@@ -186,10 +184,12 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @var ClientStatus|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientStatus")
+     * @Groups({"client:read"})
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true)
      */
-    private ?ClientStatus $currentStatus;
+    private ?ClientStatus $currentStatus = null;
 
     /**
      * @var Collection|ClientStatus[]

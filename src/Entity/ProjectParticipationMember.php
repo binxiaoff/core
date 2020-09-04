@@ -19,7 +19,7 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchived
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectParticipationMember:read"}},
+ *     normalizationContext={"groups": {"projectParticipationMember:read", "role:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -69,7 +69,7 @@ class ProjectParticipationMember
     /**
      * @var Staff
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff", cascade={"persist"})
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_staff", referencedColumnName="id", nullable=false)
      * })
