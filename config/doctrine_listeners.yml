@@ -14,10 +14,6 @@ services:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\Clients, method: encodePlainPassword }
             - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\Clients, method: encodePlainPassword }
 
-    Unilend\Listener\Doctrine\Entity\StaffLogListener:
-        tags:
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\Staff, method: logStaff }
-            - { name: doctrine.orm.entity_listener, event: postUpdate, entity: Unilend\Entity\Staff, method: logStaff }
 
     Unilend\Listener\Doctrine\Entity\FileVersion\FileVersionCreatedListener:
         tags:
@@ -47,13 +43,17 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\ProjectParticipationMember, method: setArchivedBy }
 
-    Unilend\Listener\Doctrine\Entity\CompanyModule\CompanyModuleUpdatedListener:
+    Unilend\Listener\Doctrine\Entity\CompanyModule\CompanyModuleListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush}
 
     Unilend\Listener\Doctrine\Entity\ProjectStatus\ProjectStatusListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush}
+
+    Unilend\Listener\Doctrine\Entity\Staff\StaffListener:
+        tags:
+            - { name: doctrine.event_listener, event: onFlush }
 
     # Message Dispatcher
     Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientUpdatedListener:

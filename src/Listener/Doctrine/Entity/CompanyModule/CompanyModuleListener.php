@@ -11,7 +11,7 @@ use Unilend\Entity\Clients;
 use Unilend\Entity\CompanyModule;
 use Unilend\Entity\CompanyModuleLog;
 
-class CompanyModuleUpdatedListener
+class CompanyModuleListener
 {
 
     /** @var Security */

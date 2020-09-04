@@ -150,16 +150,8 @@ class CompanyModule
      */
     public function getLastActivationDate(): ?DateTimeImmutable
     {
-        $lastActivationDate = null;
-
-        /** @var CompanyModuleLog $log */
-        foreach ($this->logs as $log) {
-            if ($log->isActivated() && (null === $lastActivationDate || $log->getAdded() > $lastActivationDate)) {
-                $lastActivationDate = $log->getAdded();
-            }
-        }
-
-        return $lastActivationDate;
+        // Work for now because there is no user module deactivation
+        return $this->getUpdated();
     }
 
     /**
