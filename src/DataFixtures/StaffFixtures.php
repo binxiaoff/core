@@ -36,7 +36,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $user = $this->getReference(UserFixtures::ADMIN);
         $adminStaff = $this->createStaff($user, $adminCompany, $manager, [Staff::DUTY_STAFF_ADMIN]);
         // We set the user in the tokenStorage to avoid conflict with StaffLogListener
-        $this->login($user);
+        $this->login($adminStaff);
         $manager->persist($adminStaff);
         $manager->persist($adminStaff->getCurrentStatus());
 

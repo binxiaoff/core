@@ -20,17 +20,17 @@ class CompanyModuleLog
     /**
      * @var CompanyModule
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\CompanyModule")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\CompanyModule", inversedBy="logs")
      * @ORM\JoinColumn(nullable=false, name="id_module")
      */
-    private $companyModule;
+    private CompanyModule $companyModule;
 
     /**
      * @var bool
      *
      * @ORM\Column(type="boolean")
      */
-    private $activated;
+    private bool $activated;
 
     /**
      * @var int
@@ -39,7 +39,7 @@ class CompanyModuleLog
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private int $id;
 
     /**
      * @param CompanyModule $module

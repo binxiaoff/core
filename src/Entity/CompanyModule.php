@@ -6,6 +6,8 @@ namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -15,11 +17,11 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_company", "label"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_company", "code"})})
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"module:read"}},
- *     denormalizationContext={"groups": {"module:write"}},
+ *     normalizationContext={"groups": {"companyModule:read"}},
+ *     denormalizationContext={"groups": {"companyModule:write"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -50,9 +52,9 @@ class CompanyModule
      *
      * @Assert\Choice(callback="getAvailableModuleLabels")
      *
-     * @Groups({"module:read"})
+     * @Groups({"companyModule:read"})
      */
-    private $label;
+    private string $code;
 
     /**
      * @var Company
@@ -61,41 +63,48 @@ class CompanyModule
      * @ORM\JoinColumn(nullable=false, name="id_company")
      *
      * @Assert\NotBlank
-     *
-     * @Groups({"module:read"})
      */
-    private $company;
+    private Company $company;
 
     /**
      * @var bool
      *
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"module:read", "module:write"})
+     * @Groups({"companyModule:read", "companyModule:write"})
      */
-    private $activated;
+    private bool $activated;
 
     /**
-     * @param string  $name
+     * @var Collection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyModuleLog", mappedBy="companyModule")
+     * @ORM\OrderBy({"added": "ASC"})
+     */
+    private Collection $logs;
+
+    /**
+     * @param string  $code
      * @param Company $company
      * @param bool    $activated
      *
      * @throws Exception
      */
-    public function __construct(string $name, Company $company, bool $activated = false)
+    public function __construct(string $code, Company $company, bool $activated = false)
     {
-        $this->label     = $name;
+        $this->code     = $code;
         $this->company   = $company;
         $this->activated = $activated;
         $this->added     = new DateTimeImmutable();
+        $this->logs = new ArrayCollection();
     }
 
     /**
      * @return string
      */
-    public function getLabel(): string
+    public function getCode(): string
     {
-        return $this->label;
+        return $this->code;
     }
 
     /**
@@ -127,9 +136,36 @@ class CompanyModule
     }
 
     /**
+     * @return Collection
+     */
+    public function getLogs(): Collection
+    {
+        return $this->logs;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     *
+     * @Groups({"companyModule:read"})
+     */
+    public function getLastActivationDate(): ?DateTimeImmutable
+    {
+        $lastActivationDate = null;
+
+        /** @var CompanyModuleLog $log */
+        foreach ($this->logs as $log) {
+            if ($log->isActivated() && (null === $lastActivationDate || $log->getAdded() > $lastActivationDate)) {
+                $lastActivationDate = $log->getAdded();
+            }
+        }
+
+        return $lastActivationDate;
+    }
+
+    /**
      * @return array|string[]
      */
-    public static function getAvailableModuleLabels(): array
+    public static function getAvailableModuleCodes(): array
     {
         return static::getConstants('MODULE_');
     }

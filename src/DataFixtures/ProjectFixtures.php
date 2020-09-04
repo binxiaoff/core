@@ -85,7 +85,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         /** @var Clients $otherUser */
         $otherUser = $this->getReference(UserFixtures::PARTICIPANT);
         // We set the user in the tokenStorage to avoid conflict with ProjectStatusCreatedListener
-        $this->login(UserFixtures::ADMIN);
+        $this->login(StaffFixtures::ADMIN);
         $this->manager = $manager;
         $projectDraft = $this->createProject('Project created', ProjectStatus::STATUS_DRAFT);
         $projectDraftParticipation = $this->createProject('Project draft', ProjectStatus::STATUS_DRAFT);
@@ -139,8 +139,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         ))
             ->setTitle($title)
             ->setNda($ndaFile)
-            ->setInternalRatingScore('B')
-            ->setFundingSpecificity('FSA')
+            ->setInternalRatingScore(Project::INTERNAL_RATING_SCORE_B)
+            ->setFundingSpecificity(Project::FUNDING_SPECIFICITY_FSA)
             ->setParticipationType(Project::PROJECT_PARTICIPATION_TYPE_DIRECT)
             ->setSyndicationType(Project::PROJECT_SYNDICATION_TYPE_PRIMARY)
             ->setInterestExpressionEnabled(false) // "Réponse ferme"

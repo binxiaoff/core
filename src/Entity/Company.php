@@ -9,6 +9,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
@@ -17,7 +18,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 /**
  * @ApiResource(
  *     attributes={"pagination_enabled": false},
- *     normalizationContext={"groups": {"company:read", "companyStatus:read", "staff:read", "client:read", "client_status:read", "role:read"}},
+ *     normalizationContext={"groups": {"company:read", "companyStatus:read", "companyModule:read", "staff:read", "client:read", "client_status:read", "role:read"}},
  *     collectionOperations={
  *         "get"
  *     },
@@ -28,7 +29,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"})
  * @ApiFilter(SearchFilter::class, properties={"groupName"})
  *
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Repository\CompanyRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Company implements TraceableStatusAwareInterface
@@ -40,6 +41,10 @@ class Company implements TraceableStatusAwareInterface
     public const VAT_OVERSEAS     = 'overseas'; // Overseas tva category (Guadeloupe, Martinique, Reunion) : 8.5 %
 
     public const GROUPNAME_CA = 'Crédit Agricole';
+
+    public const SERIALIZER_GROUP_COMPANY_STAFF_READ = 'company:staff:read';
+
+    public const SERIALIZER_GROUP_COMPANY_ADMIN_READ = 'company:admin:read';
 
     /**
      * @var string
@@ -171,15 +176,17 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @var Collection|CompanyModule[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyModule", mappedBy="company", indexBy="label")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyModule", mappedBy="company", indexBy="code", cascade={"persist"})
      *
-     * @ApiSubresource
+     * @Groups({Company::SERIALIZER_GROUP_COMPANY_ADMIN_READ})
      */
     private Collection $modules;
 
     /**
      * @param string $displayName
      * @param string $companyName
+     *
+     * @throws Exception
      */
     public function __construct(string $displayName, string $companyName)
     {
@@ -188,8 +195,11 @@ class Company implements TraceableStatusAwareInterface
         $this->staff         = new ArrayCollection();
         $this->statuses      = new ArrayCollection();
         $this->added         = new DateTimeImmutable();
-        $this->modules       = new ArrayCollection();
+        $this->modules       = new ArrayCollection(array_map(function ($module) {
+            return new CompanyModule($module, $this);
+        }, CompanyModule::getAvailableModuleCodes()));
         $this->applicableVat = static::VAT_METROPOLITAN;
+        $this->setCurrentStatus(new CompanyStatus($this, CompanyStatus::STATUS_PROSPECT));
     }
 
     /**
@@ -234,7 +244,7 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param string $siren
+     * @param string|null $siren
      *
      * @return Company
      */
@@ -254,7 +264,7 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param Company $parent
+     * @param Company|null $parent
      *
      * @return Company
      */
@@ -389,6 +399,16 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @param string $module
      *
+     * @return CompanyModule
+     */
+    public function getModule(string $module): CompanyModule
+    {
+        return $this->modules[$module];
+    }
+
+    /**
+     * @param string $module
+     *
      * @return bool
      */
     public function hasModuleActivated(string $module): bool
@@ -396,6 +416,23 @@ class Company implements TraceableStatusAwareInterface
         return isset($this->modules[$module]) && $this->modules[$module]->isActivated();
     }
 
+    /**
+     * @return array
+     *
+     * @Groups({Company::SERIALIZER_GROUP_COMPANY_STAFF_READ})
+     */
+    public function getActivatedModules()
+    {
+        $activatedModules = $this->modules->filter(static function (CompanyModule $module) {
+            return $module->isActivated();
+        });
+
+        $activatedModuleCodes = $activatedModules->map(static function (CompanyModule $module) {
+            return $module->getCode();
+        });
+
+        return array_values($activatedModuleCodes->toArray());
+    }
     /**
      * @return Collection|CompanyModule[]
      */

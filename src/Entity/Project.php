@@ -955,7 +955,7 @@ class Project implements TraceableStatusAwareInterface
             return $projectParticipation->getParticipant() === $this->getArranger();
         });
 
-        if (1 < $filtered->count()) {
+        if (1 > $filtered->count()) {
             throw new DomainException(sprintf('There are more than one participations for arranger (id: %d) on project (id: %s)', $this->getArranger()->getId(), $this->getId()));
         }
 

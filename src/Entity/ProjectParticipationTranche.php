@@ -219,7 +219,7 @@ class ProjectParticipationTranche
      */
     public function validateAllocation(ExecutionContextInterface $context): void
     {
-        $arrangerParticipation =  $this->getProjectParticipation()->getProject()->getArrangerProjectParticipation();
+        $arrangerParticipation = $this->getProjectParticipation()->getProject()->getArrangerProjectParticipation();
 
         if (
             $this->getProjectParticipation() !== $arrangerParticipation &&

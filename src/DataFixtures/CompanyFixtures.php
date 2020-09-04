@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -9,7 +11,7 @@ use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Entity\{Clients, Company, CompanyModule, CompanyStatus};
+use Unilend\Entity\{Clients, Company, CompanyStatus};
 
 class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -107,33 +109,15 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         $companyName = $name ?: $this->faker->company;
         $company     = (new Company($companyName, $companyName))
-            ->setBankCode($this->faker->randomNumber(8, true))
+            ->setBankCode((string) $this->faker->randomNumber(8, true))
             ->setShortCode($shortcode ?: $this->faker->regexify('[A-Za-z0-9]{10}'))
             ->setApplicableVat($this->faker->vat);
         $this->forcePublicId($company, Urlizer::urlize($companyName));
         $companyStatus = new CompanyStatus($company, $status);
         $company->setCurrentStatus($companyStatus);
 
-        $this->createCompanyModule($company);
-
         $this->entityManager->persist($company);
 
         return $company;
-    }
-
-    /**
-     * @param Company $company
-     * @param array   $moduleConfigurations
-     *
-     * @throws Exception
-     */
-    private function createCompanyModule(
-        Company $company,
-        array $moduleConfigurations = [CompanyModule::MODULE_ARRANGEMENT => false, CompanyModule::MODULE_PARTICIPATION => false, CompanyModule::MODULE_AGENCY => false]
-    ): void {
-        foreach ($moduleConfigurations as $module => $value) {
-            $companyModule = new CompanyModule($module, $company, $value);
-            $this->entityManager->persist($companyModule);
-        }
     }
 }

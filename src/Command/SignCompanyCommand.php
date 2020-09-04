@@ -15,11 +15,11 @@ class SignCompanyCommand extends Command
     /** @var string */
     protected static $defaultName = 'kls:company:sign';
     /** @var CompanyRepository */
-    private $companyRepository;
+    private CompanyRepository $companyRepository;
     /** @var StaffNotifier */
-    private $staffNotifier;
+    private StaffNotifier $staffNotifier;
     /** @var CompanyModuleRepository */
-    private $moduleRepository;
+    private CompanyModuleRepository $moduleRepository;
 
     /**
      * @param CompanyRepository       $companyRepository
@@ -60,7 +60,7 @@ class SignCompanyCommand extends Command
             if (null === $company) {
                 continue;
             }
-            $company->setCurrentStatus(CompanyStatus::STATUS_SIGNED);
+            $company->setCurrentStatus(new CompanyStatus($company, CompanyStatus::STATUS_SIGNED));
             $this->companyRepository->save($company);
 
             foreach ($company->getStaff() as $staff) {
@@ -69,7 +69,7 @@ class SignCompanyCommand extends Command
 
             $modules = $company->getModules()->toArray();
 
-            foreach (CompanyModule::getAvailableModuleLabels() as $moduleName) {
+            foreach (CompanyModule::getAvailableModuleCodes() as $moduleName) {
                 if (false === isset($modules[$moduleName])) {
                     $this->moduleRepository->save(new CompanyModule($moduleName, $company));
                 }

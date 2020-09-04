@@ -47,9 +47,13 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\ProjectParticipationMember, method: setArchivedBy }
 
-    Unilend\Listener\Doctrine\Entity\ProjectStatus\ProjectStatusCreatedListener:
+    Unilend\Listener\Doctrine\Entity\CompanyModule\CompanyModuleUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\ProjectStatus }
+            - { name: doctrine.event_listener, event: onFlush}
+
+    Unilend\Listener\Doctrine\Entity\ProjectStatus\ProjectStatusListener:
+        tags:
+            - { name: doctrine.event_listener, event: onFlush}
 
     # Message Dispatcher
     Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientUpdatedListener:
@@ -66,7 +70,7 @@ services:
 
     Unilend\Listener\Doctrine\Entity\MessageDispatcher\Staff\StaffCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\Staff }
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\Staff}
 
     Unilend\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectUpdatedListener:
         tags:
