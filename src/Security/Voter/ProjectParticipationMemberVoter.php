@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, ProjectParticipationMember, ProjectStatus};
+use Unilend\Entity\{Clients, CompanyModule, ProjectParticipationMember, ProjectStatus};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationMemberVoter extends AbstractEntityVoter
@@ -47,7 +47,7 @@ class ProjectParticipationMemberVoter extends AbstractEntityVoter
      */
     protected function canAcceptNda(ProjectParticipationMember $subject, Clients $user): bool
     {
-        return $subject->getStaff() === $user->getCurrentStaff();
+        return $subject->getProjectParticipation()->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION) && $subject->getStaff() === $user->getCurrentStaff();
     }
 
     /**
@@ -73,7 +73,8 @@ class ProjectParticipationMemberVoter extends AbstractEntityVoter
 
         return $currentCompany && (
             $subject->getProjectParticipation()->getProject()->getSubmitterCompany() === $currentCompany // You are connected as a staff of the arranger
-            || ($this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject->getProjectParticipation()) &&
+            || ($subject->getProjectParticipation()->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION) &&
+                $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject->getProjectParticipation()) &&
                 $currentCompany->isCAGMember())); // You are connected as a staff of the participation
     }
 }

@@ -7,7 +7,7 @@ namespace Unilend\Security\Voter;
 use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, Project, ProjectParticipation, ProjectParticipationStatus, ProjectStatus};
+use Unilend\Entity\{Clients, CompanyModule, Project, ProjectParticipation, ProjectParticipationStatus, ProjectStatus};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationVoter extends AbstractEntityVoter
@@ -76,6 +76,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
         $project = $projectParticipation->getProject();
 
         return $project->isPublished()
+        && $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
         && $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
         && $projectParticipation->getProject()->hasEditableStatus();
     }
@@ -144,7 +145,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             && (
                 $this->isProjectArranger($projectParticipation, $user)
                 || (
-                    $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
+                    $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
+                    && $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
                     && ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED !== $projectParticipation->getCurrentStatus()->getStatus()
                 )
             );
@@ -196,7 +198,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canParticipationOwnerInterestCollectionEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return $this->canParticipationOwnerEdit($projectParticipation, $user) && $projectParticipation->getProject()->isInInterestCollectionStep();
+        return $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
+            && $this->canParticipationOwnerEdit($projectParticipation, $user) && $projectParticipation->getProject()->isInInterestCollectionStep();
     }
 
     /**
@@ -207,7 +210,9 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canParticipationOwnerOfferNegotiationEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return $this->canParticipationOwnerEdit($projectParticipation, $user) && $projectParticipation->getProject()->isInOfferNegotiationStep();
+        return $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
+            && $this->canParticipationOwnerEdit($projectParticipation, $user)
+            && $projectParticipation->getProject()->isInOfferNegotiationStep();
     }
 
     /**
