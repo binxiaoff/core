@@ -8,14 +8,14 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Exception;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\Clients;
 use Unilend\Entity\Embeddable\Offer;
 use Unilend\Entity\Project;
-use Unilend\Entity\ProjectParticipation;
-use Unilend\Entity\ProjectParticipationStatus;
 use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Entity\ProjectStatus;
 
+/**
+ * TODO Refactor because we should not use doctrine for automatic status action
+ */
 class ProjectStatusListener
 {
     /**

@@ -56,7 +56,7 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
 
         $project = $this->extractObjectToPopulate(Project::class, $context);
 
-        if ($project && isset($data['currentStatus']) && is_array($data['currentStatus'])) {
+        if ($project && isset($data['currentStatus']) && \is_array($data['currentStatus'])) {
             unset($data['currentStatus']['project']);
             $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['project'] = $project;
         }

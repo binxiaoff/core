@@ -9,6 +9,10 @@ use Exception;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\{Clients, Staff, StaffLog};
 
+/**
+ * TODO Refactor because we should not use doctrine for automatic insert of log
+ * This one could be done with messenger
+ */
 class StaffListener
 {
     /** @var Security */

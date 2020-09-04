@@ -11,9 +11,11 @@ use Unilend\Entity\Clients;
 use Unilend\Entity\CompanyModule;
 use Unilend\Entity\CompanyModuleLog;
 
+/**
+ * TODO Refactor because we should not use doctrine for automatic insert of log
+ **/
 class CompanyModuleListener
 {
-
     /** @var Security */
     private Security $security;
 
@@ -33,6 +35,7 @@ class CompanyModuleListener
     public function onFlush(OnFlushEventArgs $args)
     {
         // Necessary to refetch updatedBy Here because preUpdate is after onFlush
+        // TODO This code should be delete in CALS-2359
         $user = $this->security->getUser();
         $currentStaff = $user instanceof Clients ? $user->getCurrentStaff() : null;
         $em = $args->getEntityManager();

@@ -731,6 +731,7 @@ class Project implements TraceableStatusAwareInterface
         }
 
         $this->currentStatus = $projectStatus;
+        $this->currentStatus->setProject($this);
 
         return $this;
     }
