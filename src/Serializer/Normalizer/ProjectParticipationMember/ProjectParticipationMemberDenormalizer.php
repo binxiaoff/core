@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Serializer\Normalizer\ProjectParticipationMember;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ContextAwareDenormalizerInterface,
