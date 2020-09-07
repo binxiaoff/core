@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\DataFixtures;
 
-use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
-use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
+use ReflectionException;
 use Unilend\Entity\Clients;
 use Unilend\Entity\ClientStatus;
 
@@ -21,7 +22,7 @@ class UserFixtures extends AbstractFixtures
     /**
      * @param ObjectManager $manager
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function load(ObjectManager $manager): void
     {
@@ -37,20 +38,21 @@ class UserFixtures extends AbstractFixtures
     /**
      * Create a fake user
      *
-     * @param string $email
-     * @param string $publicId
-     * @param string $reference
+     * @param string        $email
+     * @param string        $publicId
+     * @param string        $reference
      * @param ObjectManager $manager
-     * @param boolean $invited
+     * @param boolean       $initialized
      *
      * @return Clients
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
+     * @throws Exception
      */
-    public function createAndPersistUser(string $email, string $publicId, string $reference, ObjectManager $manager, bool $invited): Clients
+    public function createAndPersistUser(string $email, string $publicId, string $reference, ObjectManager $manager, bool $initialized): Clients
     {
         $user = new Clients($email);
-        if (!$invited) {
+        if (!$initialized) {
             $user
                 ->setTitle($this->faker->company)
                 ->setLastName($this->faker->lastName)
@@ -61,7 +63,7 @@ class UserFixtures extends AbstractFixtures
                 ->setEmail($email)
                 ->setPlainPassword('0000');
         }
-        $status = new ClientStatus($user, $invited ? ClientStatus::STATUS_INVITED : ClientStatus::STATUS_CREATED);
+        $status = new ClientStatus($user, $initialized ? ClientStatus::STATUS_INVITED : ClientStatus::STATUS_CREATED);
         $user->setCurrentStatus($status);
         $this->forcePublicId($user, $publicId);
 
@@ -71,5 +73,4 @@ class UserFixtures extends AbstractFixtures
 
         return $user;
     }
-
 }
