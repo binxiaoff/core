@@ -10,6 +10,7 @@ parameters:
     directory.temporary: '%directory.shared%tmp/'
     directory.protected: '%directory.shared%protected/'
     front.host: '%env(HOST_APP_URL)%'
+    maintenance: '%env(MAINTENANCE_MODE)%'
     slack.webhook.support: '%env(SLACK_WEBHOOK_URL)%'
     slack.webhook.security: https://hooks.slack.com/services/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
     security.recipients: ['tech@ca-lendingservices.com']
@@ -175,3 +176,8 @@ services:
         $authenticationSuccessHandler: '@lexik_jwt_authentication.handler.authentication_success'
         $authenticationFailureHandler: '@lexik_jwt_authentication.handler.authentication_failure'
         $path: '/authentication_token'
+
+    Unilend\Listener\MaintenanceListener:
+        arguments: ["%maintenance%"]
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
