@@ -6,7 +6,7 @@ namespace Unilend\Security\Voter;
 
 use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, Project, ProjectOrganizer, ProjectStatus};
+use Unilend\Entity\{Clients, CompanyModule, Project, ProjectOrganizer, ProjectStatus};
 use Unilend\Repository\ProjectOrganizerRepository;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
@@ -92,7 +92,12 @@ class ProjectVoter extends AbstractEntityVoter
     {
         $staff = $user->getCurrentStaff();
 
-        return  $staff && $staff->isActive() && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
+        return $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT)
+            && $staff && $staff->isActive()
+            && (
+                $staff->isAdmin()
+                || $staff->getMarketSegments()->contains($project->getMarketSegment())
+            );
     }
 
     /**
