@@ -24,7 +24,7 @@ final class Version20200724131159 extends AbstractMigration
         'CA Centre Loire' => 'CENL',
         'CA Centre Ouest' => 'COUE',
         'CA Champagne-Bourgogne' => 'CHBO',
-        'CA Charente Maritime Deux-Sèvres' => 'CMSE',
+        'CA Charente Maritime Deux-Sèvres' => 'CM2SE',
         'CA Charente-Périgord' => 'CHPE',
         'CA Corse' => 'CORS',
         'CA Côtes d’Armor' => 'CODA',
@@ -76,13 +76,6 @@ final class Version20200724131159 extends AbstractMigration
         foreach (static::DATA as $name => $shortCode) {
             $this->addSql("UPDATE company SET name = '$name' where short_code = '$shortCode'");
         }
-
-        $this->addSql("UPDATE company SET siren = '824339097', business_name = 'Caisse régionale de crédit agricole mutuel Charente-Maritime Deux-Sèvres', bank_code = '11706' WHERE short_code = 'CMSE'");
-        $this->addSql("UPDATE company SET short_code = 'CM2SE' WHERE short_code ='CMSE'");
-
-        $uuid = Uuid::uuid4();
-        $this->addSql("INSERT INTO company(name, siren, added, short_code, public_id, id_current_status, group_name, applicable_vat, bank_code, business_name)
-                            VALUES ('Crédit Mutuel Sud-Est', '778147454', NOW(), 'CMSE', '$uuid', null, 'Crédit Mutuel', 'metropolitan', '10278-12', 'Crédit Mutuel Sud-Est')");
 
         $this->addSql('ALTER TABLE company RENAME COLUMN name TO display_name');
         $this->addSql('ALTER TABLE company RENAME COLUMN business_name TO company_name');

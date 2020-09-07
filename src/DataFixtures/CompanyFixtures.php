@@ -57,22 +57,27 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         /** @var Clients $user */
         $user    = $this->getReference(UserFixtures::ADMIN);
         $domain  = explode('@', $user->getEmail())[1];
-        $company = $this->createCompany("CALS Company", "CALS")->setEmailDomain($domain)->setGroupName('Crédit Agricole');
+        $company = $this->createCompany('CALS Company', 'CALS')->setEmailDomain($domain)->setGroupName('Crédit Agricole');
         $this->addReference(self::CALS, $company);
 
         // Fake bank
         for ($i = 1; $i <= 5; $i++) {
-            $company = $this->createCompany("CA Bank $i")->setGroupName('Crédit Agricole');
+            $company = $this->createCompany("CA Bank $i", 'CABANK' . $i)->setGroupName('Crédit Agricole');
             $this->addReference(self::COMPANIES[$i - 1], $company);
         }
 
         for ($i = 6; $i <= 50; $i++) {
-            $company = $this->createCompany("CA Bank $i")->setGroupName('Crédit Agricole');
+            $this->createCompany("CA Bank $i", 'CABANK' . $i)->setGroupName('Crédit Agricole');
         }
 
         // External bank
-        $company = $this->createCompany("External Bank");
+        $company = $this->createCompany('External Bank')->setShortCode('EXTBANK');
         $this->addReference(self::COMPANY_EXTERNAL, $company);
+
+        // Fake bank
+        for ($i = 1; $i <= 5; $i++) {
+            $this->createCompany("External Bank $i")->setShortCode('EXTBANK' . $i);
+        }
 
         $company = $this->createCompany('Not signed Bank', 'C', CompanyStatus::STATUS_PROSPECT)->setGroupName('Crédit Agricole');
         $this->addReference(self::COMPANY_NOT_SIGNED, $company);
