@@ -29,7 +29,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "output": false,
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object)"
+ *             "security": "is_granted('edit', object)",
+ *             "security_post_denormalize": "is_granted('edit', object) && object.isActivated() === true"
  *         }
  *     }
  * )
@@ -50,7 +51,7 @@ class CompanyModule
      *
      * @ORM\Column(type="string", nullable=false)
      *
-     * @Assert\Choice(callback="getAvailableModuleLabels")
+     * @Assert\Choice(callback="getAvailableModuleCodes")
      *
      * @Groups({"companyModule:read"})
      */
