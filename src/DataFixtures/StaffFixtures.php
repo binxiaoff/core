@@ -6,6 +6,8 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
+use http\Client;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Security;
@@ -23,29 +25,47 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
     /**
      * @param ObjectManager $manager
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function load(ObjectManager $manager): void
     {
         // Create our main user
-        /** @var Company $company */
+        /** @var Company $adminCompany */
         $adminCompany = $this->getReference(CompanyFixtures::CALS);
         /** @var Clients $user */
         $user = $this->getReference(UserFixtures::ADMIN);
-        $adminStaff = $this->createStaff($user, $adminCompany, $manager);
+        $adminStaff = $this->createStaff($user, $adminCompany, $manager, [Staff::DUTY_STAFF_ADMIN]);
         // We set the user in the tokenStorage to avoid conflict with StaffLogListener
         $this->login($user);
         $manager->persist($adminStaff);
         $manager->persist($adminStaff->getCurrentStatus());
 
+        /** @var Clients $auditor */
+        $auditor = $this->getReference(UserFixtures::AUDITOR);
+        $auditorStaff = $this->createStaff($auditor, $adminCompany, $manager, [Staff::DUTY_STAFF_AUDITOR, Staff::DUTY_STAFF_ACCOUNTANT]);
+        $manager->persist($auditorStaff);
+        $manager->persist($auditorStaff->getCurrentStatus());
+
+        /** @var Clients $invited */
+        $invited = $this->getReference(UserFixtures::INVITED);
+        $invitedStaff = $this->createStaff($invited, $adminCompany, $manager, [Staff::DUTY_STAFF_OPERATOR]);
+        $manager->persist($invitedStaff);
+        $manager->persist($invitedStaff->getCurrentStatus());
+
+        /** @var Clients $userManager */
+        $userManager = $this->getReference(UserFixtures::MANAGER);
+        $managerStaff = $this->createStaff($userManager, $adminCompany, $manager, [Staff::DUTY_STAFF_MANAGER]);
+        $manager->persist($managerStaff);
+        $manager->persist($managerStaff->getCurrentStatus());
+
         // Attach other companies to the other user
         /** @var Company[] $companies */
         $companies = $this->getReferences(CompanyFixtures::COMPANIES);
-        /** @var Clients $user */
+        /** @var Clients $other */
         $other = $this->getReference(UserFixtures::PARTICIPANT);
         foreach ($companies as $company) {
             if ($company !== $adminCompany) {
-                $staff = $this->createStaff($other, $company, $manager);
+                $staff = $this->createStaff($other, $company, $manager, [Staff::DUTY_STAFF_ADMIN]);
                 $manager->persist($staff);
                 $manager->persist($staff->getCurrentStatus());
             }
@@ -61,21 +81,23 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
      * @param Clients       $user
      * @param Company       $company
      * @param ObjectManager $manager
+     * @param array         $roles
      *
      * @return Staff
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function createStaff(Clients $user, Company $company, ObjectManager $manager): Staff
+    public function createStaff(Clients $user, Company $company, ObjectManager $manager, array $roles): Staff
     {
-        // We need to use SQL since we cannot instanciate Staff entity
+        // We need to use SQL since we cannot instantiate Staff entity
+        $rolesEncoded = json_encode($roles);
         $sql = <<<SQL
             INSERT INTO `staff` 
                 (id_company, id_client, roles, updated, added, public_id) VALUES 
                 (
                     "{$company->getId()}", 
                     "{$user->getId()}", 
-                    '[\"DUTY_STAFF_ADMIN\"]', 
+                    '{$rolesEncoded}', 
                     '2020-01-01', '2020-01-01', 
                     "client{$user->getId()}-company{$company->getId()}-staff"
                 )

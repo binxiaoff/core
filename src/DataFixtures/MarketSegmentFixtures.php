@@ -19,8 +19,7 @@ class MarketSegmentFixtures extends AbstractFixtures
     public const SEGMENT6 = "SEGMENT6";
     public const SEGMENT7 = "SEGMENT7";
     public const SEGMENT8 = "SEGMENT8";
-    public const SEGMENT9 = "SEGMENT9";
-    public const SEGMENT10 = "SEGMENT10";
+
     public const SEGMENTS = [
         self::SEGMENT1,
         self::SEGMENT2,
@@ -29,9 +28,7 @@ class MarketSegmentFixtures extends AbstractFixtures
         self::SEGMENT5,
         self::SEGMENT6,
         self::SEGMENT7,
-        self::SEGMENT8,
-        self::SEGMENT9,
-        self::SEGMENT10,
+        self::SEGMENT8
     ];
 
     /**
@@ -43,7 +40,7 @@ class MarketSegmentFixtures extends AbstractFixtures
     {
         // We need to reset auto increment cause ID are important for the front :(
         $manager->getConnection()->exec('ALTER TABLE market_segment AUTO_INCREMENT = 1;');
-        for ($i = 1; $i < 11; $i++) {
+        for ($i = 1; $i <= 8; $i++) {
             $segment = (new MarketSegment())->setLabel("Segment #$i");
             $manager->persist($segment);
             $this->addReference(self::SEGMENTS[$i - 1], $segment);
