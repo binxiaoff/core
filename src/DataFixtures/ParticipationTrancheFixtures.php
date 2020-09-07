@@ -32,7 +32,7 @@ class ParticipationTrancheFixtures extends AbstractFixtures implements Dependent
         $staff = $this->getReference(StaffFixtures::ADMIN);
 
         foreach ($projects as $project) {
-            if ($project->hasCompletedStatus(ProjectStatus::STATUS_PARTICIPANT_REPLY)) {
+            if ($project->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION)) {
                 foreach ($project->getProjectParticipations() as $participation) {
                     foreach ($project->getTranches() as $tranche) {
                         if (
@@ -45,7 +45,7 @@ class ParticipationTrancheFixtures extends AbstractFixtures implements Dependent
                             $participationTranche = (new ProjectParticipationTranche($participation, $tranche, $staff));
 
                             $repliedStatuses =  [ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED, ProjectParticipationStatus::STATUS_COMMITTEE_PENDED];
-                            if (\in_array($participation->getCurrentStatus(), $repliedStatuses, true)) {
+                            if (\in_array($participation->getCurrentStatus()->getStatus(), $repliedStatuses, true)) {
                                 $participationTranche->setInvitationReply($this->createOffer(1000000));
                                 if ($project === $this->getReference(ProjectFixtures::PROJECT_ALLOCATION)) {
                                     $participationTranche->setAllocation($this->createOffer(1000000));

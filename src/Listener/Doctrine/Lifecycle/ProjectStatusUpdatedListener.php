@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Entity\ProjectStatus;
+namespace Unilend\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Event\OnFlushEventArgs;
@@ -16,21 +16,8 @@ use Unilend\Entity\ProjectStatus;
 /**
  * TODO Refactor because we should not use doctrine for automatic status action
  */
-class ProjectStatusListener
+class ProjectStatusUpdatedListener
 {
-    /**
-     * @var Security
-     */
-    private Security $security;
-
-    /**
-     * @param Security $security
-     */
-    public function __construct(Security $security)
-    {
-        $this->security = $security;
-    }
-
     /**
      * @param OnFlushEventArgs $args
      *

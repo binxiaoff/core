@@ -29,7 +29,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"})
  * @ApiFilter(SearchFilter::class, properties={"groupName"})
  *
- * @ORM\Entity(repositoryClass="Unilend\Repository\CompanyRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
 class Company implements TraceableStatusAwareInterface

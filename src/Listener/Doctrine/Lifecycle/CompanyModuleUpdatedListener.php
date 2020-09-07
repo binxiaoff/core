@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Entity\CompanyModule;
+namespace Unilend\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Exception;
@@ -13,8 +13,8 @@ use Unilend\Entity\CompanyModuleLog;
 
 /**
  * TODO Refactor because we should not use doctrine for automatic insert of log
- **/
-class CompanyModuleListener
+ */
+class CompanyModuleUpdatedListener
 {
     /** @var Security */
     private Security $security;
