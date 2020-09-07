@@ -42,9 +42,10 @@ class CompanyModule
     use BlamableUpdatedTrait;
     use ConstantsAwareTrait;
 
-    public const MODULE_ARRANGEMENT   = 'arrangement';
-    public const MODULE_PARTICIPATION = 'participation';
-    public const MODULE_AGENCY        = 'agency';
+    public const MODULE_ARRANGEMENT    = 'arrangement';
+    public const MODULE_PARTICIPATION  = 'participation';
+    public const MODULE_AGENCY         = 'agency';
+    public const MODULE_EXTERNAL_BANKS = 'external_bank';
 
     /**
      * @var string
