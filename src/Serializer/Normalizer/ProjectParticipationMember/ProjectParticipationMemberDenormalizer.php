@@ -62,7 +62,7 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
         }
 
         // Disallow creating staff with other company than the participation
-        if (\is_array($data['staff'])) {
+        if (isset($data['staff']) && \is_array($data['staff'])) {
             unset($data['staff']['company']);
         }
 
