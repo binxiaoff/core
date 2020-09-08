@@ -60,6 +60,10 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\Project}
 
+    Unilend\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipation\ProjectParticipationUpdatedListener:
+        tags:
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\ProjectParticipation}
+
 # Doctrine Lifecycle Event Listener
     Unilend\Listener\Doctrine\Lifecycle\UuidListener:
         tags:
