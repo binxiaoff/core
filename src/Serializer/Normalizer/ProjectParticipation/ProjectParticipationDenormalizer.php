@@ -109,7 +109,12 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
 
         foreach ($projectParticipationMembers as $projectParticipationMember) {
             // Disallow requestData to set projectParticipation
-            unset($projectParticipationMember['projectParticipation'], $projectParticipationMember['staff']['company']);
+            unset($projectParticipationMember['projectParticipation']);
+
+            // Disallow requestData to set staff company when its an array
+            if (isset($projectParticipationMember['staff']) && \is_array($projectParticipationMember['staff'])) {
+                unset($projectParticipationMember['staff']['company']);
+            }
 
             /** @var ProjectParticipationMember $denormalized */
             $denormalized = $this->denormalizer->denormalize($projectParticipationMember, ProjectParticipationMember::class, 'array', [
