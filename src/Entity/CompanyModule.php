@@ -45,7 +45,7 @@ class CompanyModule
     public const MODULE_ARRANGEMENT    = 'arrangement';
     public const MODULE_PARTICIPATION  = 'participation';
     public const MODULE_AGENCY         = 'agency';
-    public const MODULE_EXTERNAL_BANKS = 'external_bank';
+    public const MODULE_ARRANGEMENT_EXTERNAL_BANK = 'arrangement_external_bank';
 
     /**
      * @var string

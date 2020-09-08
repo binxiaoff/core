@@ -30,7 +30,7 @@ final class Version20200907141426 extends AbstractMigration
         $companyIds = array_column($companyIds, 'id');
         foreach ($companyIds as $companyId) {
             $uuid = (Uuid::uuid4())->toString();
-            $this->addSql("INSERT IGNORE INTO company_module VALUES (NULL, '{$companyId}', NULL, 'external_bank', 0, NULL, NOW(), '{$uuid}')");
+            $this->addSql("INSERT IGNORE INTO company_module(id_company, code, added, public_id, activated) VALUES ('{$companyId}',  'arrangement_external_bank', NOW(), '{$uuid}', 0)");
         }
     }
 
@@ -39,6 +39,8 @@ final class Version20200907141426 extends AbstractMigration
      */
     public function down(Schema $schema) : void
     {
+        $this->addSql("DELETE FROM company_module_log WHERE id_module IN (SELECT id FROM company_module WHERE code IN ('external_bank', 'arrangement_external_bank'))");
+        $this->addSql("DELETE FROM company_module WHERE code = 'arrangement_external_bank'");
         $this->addSql("DELETE FROM company_module WHERE code = 'external_bank'");
     }
 }
