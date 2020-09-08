@@ -6,8 +6,10 @@ namespace Unilend\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use phpDocumentor\Reflection\Types\Nullable;
 use Unilend\Entity\Company;
 use Unilend\Entity\CompanyModule;
+use Unilend\Entity\Embeddable\NullableMoney;
 
 class CompanyModuleFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -54,6 +56,12 @@ class CompanyModuleFixtures extends AbstractFixtures implements DependentFixture
                 if (!\in_array($moduleCode, $excludeModules, true)) {
                     $module = $company->getModule($moduleCode);
                     $module->setActivated(true);
+
+                    if ($module->getCode() === CompanyModule::MODULE_ARRANGEMENT) {
+                        $module->setArrangementAnnualLicenseMoney(
+                            $this->faker->boolean ? new NullableMoney('EUR', (string) $this->faker->randomNumber()) : null
+                        );
+                    }
                     $this->manager->persist($module);
                 }
             }
