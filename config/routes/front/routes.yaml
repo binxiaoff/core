@@ -1,41 +1,37 @@
 home:
   path: /
+projectForm:
+  path: /arrangement/dossier-de-financement/{projectPublicId}
+  defaults:
+    projectPublicId: ''
+manageParticipant:
+  path: /arrangement/syndication/participant/{projectParticipationPublicId}
+manageSyndication:
+  path: /arrangement/syndication/{projectPublicId}
+viewParticipation:
+  path: /participation/{projectParticipationPublicId}
+arrangementIndex:
+  path: /arrangement
+participationIndex:
+  path: /participation
+habilitations:
+  path: /admin/habilitations
+logout:
+  path: /logout
 login:
   path: /login
-privacy:                               
+resetPassword:
+  path: /mot-de-passe-oublie/{temporaryTokenPublicId}/{clientPublicId}
+requestResetPassword:
+  path: /mot-de-passe-oublie
+initialAccount:
+  path: /finalisation-inscription/{temporaryTokenPublicId}/{clientPublicId}/{projectPublicId}
+privacyPolicy:
   path: /politique-de-confidentialite
-legal_notice:                          
+legalNotice:
   path: /mentions-legales
-inscription_finalisation:
-  path: /finalisation-inscription/{temporaryTokenHash}/{clientHash}
-tos:                                   
+cgu:
   path: /cgu
-404:
-  path: /404
-403:
-  path: /403
-password_change:                       
-  path: /password/change/{temporaryTokenHash}/{clientHash}
-password_request:                      
-  path: /password/request
-participation_index:                   
-  path: /participation
-participation_project_view:            
-  path: /participation/project/{projectHash}
-participation_project_confidentiality: 
-  path: /participation/project/{projectHash}/confidentiality
-habilitation:                          
-  path: /habilitations
-arrangement_kanban:                    
-  path: /arrangement
-arrangement_project_view:              
-  path: /arrangement/project/{projectHash}
-arrangement_project_publish:           
-  path: /arrangement/project/{projectHash}/publication
-arrangement_project_syndicate:         
-  path: /arrangement/project/{projectHash}/syndication
-arrangement_project_create:            
-  path: /arrangement/project
 image:
   path: /images/{imageFileName}
   requirements:
