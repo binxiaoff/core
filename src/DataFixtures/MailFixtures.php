@@ -272,7 +272,7 @@ Nous vous invitons à consulter l’invitation en cliquant sur le bouton ci-dess
   border-radius="4px" 
   font-weight="500"
   inner-padding="7px 30px"
-  href="{{ temporaryToken.token ? url("front_initialAccount", {temporaryTokenPublicId : temporaryToken.token, clientPublicId: client.publicId, projectPublicId: project.publicId}) : url("front_viewParticipation", {projectParticipationPublicId: projectParticipation.publicId}) }}"
+  href="{{ temporaryToken.token ? url("front_initialAccount", {temporaryTokenPublicId : temporaryToken.token, clientPublicId: client.publicId, projectParticipationPublicId: project.publicId}) : url("front_viewParticipation", {projectParticipationPublicId: projectParticipation.publicId}) }}"
 >
     {% if temporaryToken.token %} Créer mon compte sur KLS {% else %} Consulter l’invitation {% endif %}
 </mj-button>
