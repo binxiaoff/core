@@ -70,6 +70,7 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
                     'lastName' => $user->getLastName(),
                     'email' => $user->getEmail(),
                     'occupation' => $user->getJobFunction(),
+                    'phone' => $user->getPhone(),
                 ];
             }
         }
