@@ -13,7 +13,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
-use Unilend\Entity\{Project, ProjectParticipation, ProjectStatus};
+use Unilend\Entity\{Clients, Project, ProjectParticipation, ProjectStatus};
 
 class ProjectDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -32,11 +32,13 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
     /**
      * @param IriConverterInterface $iriConverter
      * @param ValidatorInterface    $validator
+     * @param Security              $security
      */
-    public function __construct(IriConverterInterface $iriConverter, ValidatorInterface $validator)
+    public function __construct(IriConverterInterface $iriConverter, ValidatorInterface $validator, Security $security)
     {
         $this->iriConverter = $iriConverter;
         $this->validator = $validator;
+        $this->security = $security;
     }
 
     /**
@@ -53,6 +55,24 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
     public function denormalize($data, $type, string $format = null, array $context = [])
     {
         $context[self::ALREADY_CALLED] = true;
+        $isCreateRequest = (
+            isset($context['collection_operation_name'], $context['resource_class']) &&
+            $context['collection_operation_name'] === 'post' &&
+            $context['resource_class'] === Project::class
+        );
+
+        // Hydrates the privileged contact from the authenticated https://lafabriquebyca.atlassian.net/browse/CALS-2354
+        if ($isCreateRequest) {
+            $user = $this->security->getUser();
+            if ($user instanceof Clients) {
+                $data['privilegedContactPerson'] = [
+                    'firstName' => $user->getFirstName(),
+                    'lastName' => $user->getLastName(),
+                    'email' => $user->getEmail(),
+                    'occupation' => $user->getJobFunction(),
+                ];
+            }
+        }
 
         $project = $this->extractObjectToPopulate(Project::class, $context);
 
