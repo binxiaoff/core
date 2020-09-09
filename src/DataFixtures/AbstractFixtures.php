@@ -1,16 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Common\DataFixtures\FixtureInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use ReflectionClass;
+use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\User\User;
-use Unilend\Entity\Clients;
+use Unilend\Entity\Staff;
 
-abstract class AbstractFixtures extends Fixture implements FixtureInterface
+abstract class AbstractFixtures extends Fixture
 {
 
     protected \Faker\Generator $faker;
@@ -28,16 +29,16 @@ abstract class AbstractFixtures extends Fixture implements FixtureInterface
 
     /**
      * @param $entity
-     * @param string $name
+     * @param string $value
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
-    protected function forcePublicId($entity, string $name): void
+    protected function forcePublicId($entity, string $value): void
     {
-        $ref = new ReflectionClass(get_class($entity));
-        $property = $ref->getProperty("publicId");
+        $ref = new ReflectionClass(\get_class($entity));
+        $property = $ref->getProperty('publicId');
         $property->setAccessible(true);
-        $property->setValue($entity, $name);
+        $property->setValue($entity, $value);
     }
 
     /**
@@ -55,13 +56,18 @@ abstract class AbstractFixtures extends Fixture implements FixtureInterface
     }
 
     /**
-     * @param User|string $user
+     * @param Staff|string $staff
      */
-    protected function login($user): void
+    protected function login($staff): void
     {
-        if (is_string($user)) {
-            $user = $this->getReference($user);
+        if (\is_string($staff)) {
+            $staff = $this->getReference($staff);
         }
+
+        $user = $staff->getClient();
+
+        $user->setCurrentStaff($staff);
+
         $this->tokenStorage->setToken(new JWTUserToken($user->getRoles(), $user));
     }
 }

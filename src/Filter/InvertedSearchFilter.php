@@ -17,7 +17,7 @@ class InvertedSearchFilter extends AbstractContextAwareFilter
      */
     public function getDescription(string $resourceClass): array
     {
-        //TODO not the priority
+        //TODO we should add the description for this filter for swagger
         return [];
     }
 
@@ -88,7 +88,7 @@ class InvertedSearchFilter extends AbstractContextAwareFilter
             [$alias, $field] = $this->addJoinsForNestedProperty($property, $alias, $queryBuilder, $queryNameGenerator, $resourceClass, Join::LEFT_JOIN);
         }
 
-        // TODO to discuss
+        // TODO Discuss the way the inverted filter remove unwanted data
         $queryBuilder->andWhere("{$alias}.{$field} NOT IN (:{$parameterName}) OR {$alias}.{$field} IS NULL")
             ->setParameter($parameterName, (array) $value)
         ;

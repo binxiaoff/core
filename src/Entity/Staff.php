@@ -62,6 +62,8 @@ class Staff implements TraceableStatusAwareInterface
 
     public const SERIALIZER_GROUP_ADMIN_CREATE = 'staff:admin:create';
 
+    public const SERIALIZER_GROUP_OWNER_READ = 'staff:owner:read';
+
     /**
      * @var Company
      *
@@ -313,5 +315,15 @@ class Staff implements TraceableStatusAwareInterface
     public function getRoles(): array
     {
         return $this->baseRolesGetter();
+    }
+
+    /**
+     * @Groups({Staff::SERIALIZER_GROUP_OWNER_READ})
+     *
+     * @return array
+     */
+    public function getActivatedModules()
+    {
+        return $this->company->getActivatedModules();
     }
 }

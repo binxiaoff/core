@@ -6,17 +6,12 @@ namespace Unilend\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\Clients;
-use Unilend\Repository\ClientsRepository;
 
 class UpdatedByListener
 {
     /** @var Security */
-    private $security;
-
-    /** @var ClientsRepository $clientsRepository */
-    private $clientsRepository;
+    private Security $security;
 
     /**
      * @param Security $security
@@ -35,12 +30,10 @@ class UpdatedByListener
         /** @var Clients $user */
         $user = $this->security->getUser();
 
-        if ($user instanceof UserInterface && false === $user instanceof Clients) {
-            $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
-        }
+        $currentStaff = $user instanceof Clients ? $user->getCurrentStaff() : null;
 
         if (method_exists($entity, 'setUpdatedBy')) {
-            $entity->setUpdatedBy($user->getCurrentStaff());
+            $entity->setUpdatedBy($currentStaff);
         }
     }
 }

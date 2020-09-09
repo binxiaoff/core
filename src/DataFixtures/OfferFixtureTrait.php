@@ -2,6 +2,7 @@
 
 namespace Unilend\DataFixtures;
 
+use Exception;
 use Unilend\Entity\Embeddable\Money;
 use Unilend\Entity\Embeddable\NullableMoney;
 use Unilend\Entity\Embeddable\Offer;
@@ -18,6 +19,8 @@ trait OfferFixtureTrait
      * @param int|null $value
      *
      * @return Offer
+     *
+     * @throws Exception
      */
     public function createOffer(?int $value = null): Offer
     {
@@ -45,6 +48,8 @@ trait OfferFixtureTrait
      * @param float $rate
      *
      * @return OfferWithFee
+     *
+     * @throws Exception
      */
     public function createOfferWithFee(int $value, float $rate = 0.03): OfferWithFee
     {
