@@ -18,7 +18,18 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 /**
  * @ApiResource(
  *     attributes={"pagination_enabled": false},
- *     normalizationContext={"groups": {"company:read", "companyStatus:read", "companyModule:read", "staff:read", "client:read", "client_status:read", "role:read"}},
+ *     normalizationContext={
+ *         "groups": {
+ *              "company:read",
+ *              "companyStatus:read",
+ *              "companyModule:read",
+ *              "staff:read",
+ *              "client:read",
+ *              "client_status:read",
+ *              "role:read",
+ *              "nullableMoney:read"
+ *         }
+ *     },
  *     collectionOperations={
  *         "get"
  *     },

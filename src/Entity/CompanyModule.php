@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Entity\Embeddable\NullableMoney;
 use Unilend\Entity\Traits\{BlamableUpdatedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -20,7 +21,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_company", "code"})})
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"companyModule:read"}},
+ *     normalizationContext={"groups": {"companyModule:read", "nullableMoney:read"}},
  *     denormalizationContext={"groups": {"companyModule:write"}},
  *     itemOperations={
  *         "get": {
@@ -86,6 +87,17 @@ class CompanyModule
     private Collection $logs;
 
     /**
+     * TODO This is temporary. Remove when facturation is handled by the platform
+     *
+     * @var NullableMoney|null
+     *
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"companyModule:read"})
+     */
+    private ?NullableMoney $arrangementAnnualLicenseMoney;
+
+    /**
      * @param string  $code
      * @param Company $company
      * @param bool    $activated
@@ -94,11 +106,12 @@ class CompanyModule
      */
     public function __construct(string $code, Company $company, bool $activated = false)
     {
-        $this->code     = $code;
+        $this->code      = $code;
         $this->company   = $company;
         $this->activated = $activated;
         $this->added     = new DateTimeImmutable();
-        $this->logs = new ArrayCollection();
+        $this->logs      = new ArrayCollection();
+        $this->arrangementAnnualLicenseMoney = new NullableMoney();
     }
 
     /**
@@ -162,5 +175,25 @@ class CompanyModule
     public static function getAvailableModuleCodes(): array
     {
         return static::getConstants('MODULE_');
+    }
+
+    /**
+     * @return NullableMoney|null
+     */
+    public function getArrangementAnnualLicenseMoney(): ?NullableMoney
+    {
+        return $this->arrangementAnnualLicenseMoney->isValid() ? $this->arrangementAnnualLicenseMoney : null;
+    }
+
+    /**
+     * @param NullableMoney|null $arrangementAnnualLicenseMoney
+     *
+     * @return CompanyModule
+     */
+    public function setArrangementAnnualLicenseMoney(?NullableMoney $arrangementAnnualLicenseMoney): CompanyModule
+    {
+        $this->arrangementAnnualLicenseMoney = $arrangementAnnualLicenseMoney;
+
+        return $this;
     }
 }
