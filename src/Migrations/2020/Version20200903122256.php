@@ -8,9 +8,6 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 use Ramsey\Uuid\Uuid;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
 final class Version20200903122256 extends AbstractMigration
 {
     public function getDescription() : string
@@ -29,7 +26,7 @@ final class Version20200903122256 extends AbstractMigration
         foreach (['arrangement', 'participation', 'agency'] as $module) {
             foreach ($companyIds as $companyId) {
                 $uuid = (Uuid::uuid4())->toString();
-                $this->addSql("INSERT IGNORE INTO company_module VALUES (NULL, '{$companyId}', NULL, '{$module}', 0, NULL, NOW(), '{$uuid}')");
+                $this->addSql("INSERT IGNORE INTO company_module(id_company, code, added, public_id, activated) VALUES ('{$companyId}', '{$module}', NOW(), '{$uuid}, 0')");
             }
         }
     }

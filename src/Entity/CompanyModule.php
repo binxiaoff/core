@@ -21,7 +21,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_company", "code"})})
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"companyModule:read"}},
+ *     normalizationContext={"groups": {"companyModule:read", "nullableMoney:read"}},
  *     denormalizationContext={"groups": {"companyModule:write"}},
  *     itemOperations={
  *         "get": {
