@@ -32,7 +32,7 @@ class ProjectParticipationNotifier
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function notifyParticipantReply(ProjectParticipation $projectParticipation)
+    public function notifyParticipantReply(ProjectParticipation $projectParticipation): void
     {
         $project = $projectParticipation->getProject();
 
