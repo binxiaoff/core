@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Twig\Source;
 use Unilend\Entity\Interfaces\TwigTemplateInterface;
@@ -26,26 +27,27 @@ class MailTemplate implements TwigTemplateInterface
      * @ORM\GeneratedValue(strategy="IDENTITY")
      * @ORM\Column(name="id", type="integer")
      */
-    private $id;
+    private int $id;
+
     /**
-     * @var MailHeader
+     * @var MailHeader|null
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\MailHeader", fetch="EAGER")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_header")
      * })
      */
-    private $header;
+    private ?MailHeader $header;
 
     /**
-     * @var MailFooter
+     * @var MailFooter|null
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\MailFooter", fetch="EAGER")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_footer")
      * })
      */
-    private $footer;
+    private ?MailFooter $footer;
 
     /**
      * @var MailLayout
@@ -55,28 +57,28 @@ class MailTemplate implements TwigTemplateInterface
      *     @ORM\JoinColumn(name="id_layout")
      * })
      */
-    private $layout;
+    private MailLayout $layout;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(name="subject", type="string", length=191, nullable=true)
      */
-    private $subject;
+    private ?string $subject;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(name="sender_name", type="string", length=191, nullable=true)
      */
-    private $senderName;
+    private ?string $senderName;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(name="sender_email", type="string", length=191, nullable=true)
      */
-    private $senderEmail;
+    private ?string $senderEmail;
 
     /**
      * @param string     $name
@@ -88,6 +90,7 @@ class MailTemplate implements TwigTemplateInterface
         $this->name   = $name;
         $this->locale = $locale;
         $this->layout = $layout;
+        $this->added = new DateTimeImmutable();
     }
 
     /**
