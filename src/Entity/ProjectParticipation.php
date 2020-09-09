@@ -160,15 +160,17 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     // Additional denormalizer group that is available for the participation owner in all steps
     public const SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE = 'projectParticipation:participationOwner:write';
 
-    // Additional denormalizer group that is available for the participation owner in interest collection step
+    // Additional denormalizer group that is available for the participation owner in interest collection step (marque d'intérêt)
     public const SERIALIZER_GROUP_PARTICIPATION_OWNER_INTEREST_COLLECTION_WRITE = 'projectParticipation:participationOwner:interestCollection:write';
-    // Additional denormalizer group that is available for the arranger in interest collection step
+    // Additional denormalizer group that is available for the arranger in interest collection step (marque d'intérêt)
     public const SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE = 'projectParticipation:arranger:interestCollection:write';
 
-    // Additional denormalizer group that is available for the participation owner in offer negotiation step
+    // Additional denormalizer group that is available for the participation owner in offer negotiation step (réponse ferme)
     public const SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE = 'projectParticipation:participationOwner:offerNegotiation:write';
-    // Additional denormalizer group that is available for the arranger in offer negotiation step
+    // Additional denormalizer group that is available for the arranger in offer negotiation step (réponse ferme)
     public const SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE = 'projectParticipation:arranger:offerNegotiation:write';
+    // Additional denormalizer group that is available for the arranger in allocation step
+    public const SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE = 'projectParticipation:arranger:allocation:write';
 
     public const PROJECT_PARTICIPATION_FILE_TYPE_NDA = 'project_participation_nda';
 
@@ -223,7 +225,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
+     * @Groups({
+     *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
+     *     ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE,
+     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE
+     * })
      */
     private ?DateTimeImmutable $committeeDeadline = null;
 
