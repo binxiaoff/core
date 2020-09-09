@@ -172,8 +172,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
 
     public const PROJECT_PARTICIPATION_FILE_TYPE_NDA = 'project_participation_nda';
 
-    protected const INVITATION_REPLY_MODE_PRO_RATA   = 'pro-rata';
-    protected const INVITATION_REPLY_MODE_CUSTOMIZED = 'customized';
+    public const INVITATION_REPLY_MODE_PRO_RATA   = 'pro-rata';
+    public const INVITATION_REPLY_MODE_CUSTOMIZED = 'customized';
 
     /**
      * @var Project
