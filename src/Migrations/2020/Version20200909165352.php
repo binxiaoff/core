@@ -18,7 +18,7 @@ final class Version20200909165352 extends AbstractMigration
             'content' => <<<CONTENT
 <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour{{ client.firstName ? " " ~ client.firstName : "" }},</mj-text>
 <mj-text color="#3F2865" font-size="14px" align="justify" line-height="1.5">
-{{ arranger.displayName }} vous invite à participer au financement du dossier ({{ project.title }} – {{ project.riskGroupName }}){% if temporaryToken.token is defined %} sur la plateforme KLS <a href="https://www.kls-platform.com">www.kls-platform.com</a> l’outil d’aide à la syndication {% endif %}.
+{{ arranger.displayName }} vous invite à participer au financement du dossier ({{ project.title }} – {{ project.riskGroupName }}){% if temporaryToken.token %} sur la plateforme KLS <a href="https://www.kls-platform.com">www.kls-platform.com</a> l’outil d’aide à la syndication {% endif %}.
 </mj-text>
 <mj-text color="#3F2865" font-size="14px" align="justify" line-height="1.5">
 {% if temporaryToken.token %}
@@ -32,7 +32,7 @@ Nous vous invitons à consulter l’invitation en cliquant sur le bouton ci-dess
   border-radius="4px" 
   font-weight="500"
   inner-padding="7px 30px"
-  href="{{ temporaryToken.token ? url("front_initialAccount", {temporaryTokenPublicId : temporaryToken.token, clientPublicId: client.publicId, projectPublicId: project.publicId}) : url("front_viewParticipation", {projectHash: projectParticipation.publicId}) }}"
+  href="{{ temporaryToken.token ? url("front_initialAccount", {temporaryTokenPublicId : temporaryToken.token, clientPublicId: client.publicId, projectPublicId: project.publicId}) : url("front_viewParticipation", {projectParticipationPublicId: projectParticipation.publicId}) }}"
 >
     {% if temporaryToken.token %} Créer mon compte sur KLS {% else %} Consulter l’invitation {% endif %}
 </mj-button>
@@ -49,12 +49,28 @@ CONTENT
 
     public function up(Schema $schema) : void
     {
-
+        foreach (static::MAILS as $mail) {
+            $this->addSql(<<<SQL
+INSERT INTO mail_template(id_header, id_footer, id_layout, name, locale, content, subject, sender_name, sender_email, added)  
+VALUES ((SELECT id FROM mail_header LIMIT 1),
+        (SELECT id FROM mail_footer LIMIT 1), 
+        (SELECT id FROM mail_layout LIMIT 1),
+        '{$mail['name']}',
+        'fr_FR',
+        '{$mail['content']}',
+        '{$mail['subject']}',
+        'KLS',
+        'support@kls-platform.com',
+        NOW())
+SQL
+);
+        }
     }
 
     public function down(Schema $schema) : void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-
+        foreach (static::MAILS as $mail) {
+            $this->addSql("DELETE FROM mail_template WHERE name = '{$mail['name']}'");
+        }
     }
 }

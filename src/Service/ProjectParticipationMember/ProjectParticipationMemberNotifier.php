@@ -74,7 +74,8 @@ class ProjectParticipationMemberNotifier
                 'displayName' => $project->getSubmitterCompany()->getDisplayName(),
             ],
             'project' => [
-                'name' => $project->getTitle(),
+                'title' => $project->getTitle(),
+                'riskGroupName' => $project->getRiskGroupName(),
                 'publicId' => $project->getPublicId(),
             ],
             'projectParticipation' => [
