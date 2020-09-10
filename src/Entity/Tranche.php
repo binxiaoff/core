@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Embeddable\{Money, NullableLendingRate, NullableMoney};
+use Unilend\Entity\Embeddable\{LendingRate, Money, NullableMoney};
 use Unilend\Entity\Interfaces\MoneyInterface;
 use Unilend\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
@@ -183,9 +183,9 @@ class Tranche
     private Money $money;
 
     /**
-     * @var NullableLendingRate
+     * @var LendingRate
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableLendingRate")
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\LendingRate")
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -194,7 +194,7 @@ class Tranche
      *
      * @Groups({"tranche:read", "tranche:write"})
      */
-    private NullableLendingRate $rate;
+    private LendingRate $rate;
 
     /**
      * @var DateTimeImmutable|null
@@ -332,7 +332,7 @@ class Tranche
     public function __construct(Project $project, Money $money, string $name, int $duration, string $repaymentType, string $loanType, string $color)
     {
         $this->money                        = $money;
-        $this->rate                         = new NullableLendingRate();
+        $this->rate                         = new LendingRate();
         $this->trancheAttributes            = new ArrayCollection();
         $this->projectParticipationTranches = new ArrayCollection();
         $this->added                        = new DateTimeImmutable();
@@ -512,19 +512,19 @@ class Tranche
     }
 
     /**
-     * @return NullableLendingRate
+     * @return LendingRate
      */
-    public function getRate(): NullableLendingRate
+    public function getRate(): LendingRate
     {
         return $this->rate;
     }
 
     /**
-     * @param NullableLendingRate $rate
+     * @param LendingRate $rate
      *
      * @return Tranche
      */
-    public function setRate(NullableLendingRate $rate): Tranche
+    public function setRate(LendingRate $rate): Tranche
     {
         $this->rate = $rate;
 

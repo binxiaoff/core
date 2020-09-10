@@ -85,3 +85,14 @@ Project:
         required: La date limite de réponse aux invitations est requise.
     projectParticipations:
         incorrectProject: La participation ne fait pas partie du projet
+
+
+LendingRate:
+    indexType:
+        empty: L'indexType est requis.
+    floor:
+        illegal: Vous ne pouvez pas définir une valeur pour le floor quand l'indexType est vide ou est "fixé".
+        empty: Le floor est requis.
+    floorType:
+        illegal: Vous ne pouvez pas définir une valeur pour le floorType quand l'indexType est vide ou est "fixé".
+        empty: Le floorType est requis.

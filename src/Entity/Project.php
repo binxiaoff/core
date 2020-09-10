@@ -92,7 +92,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                 "client:read",
  *                 "timestampable:read",
  *                 "traceableStatus:read",
- *                 "nullableLendingRate:read",
  *                 "lendingRate:read",
  *                 "fee:read",
  *                 "tag:read",
