@@ -12,7 +12,6 @@ use Unilend\Entity\Company;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationStatus;
-use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Entity\ProjectStatus;
 use Unilend\Entity\Staff;
 

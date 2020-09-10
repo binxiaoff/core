@@ -7,6 +7,7 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use Unilend\Entity\ProjectParticipation;
+use Unilend\Entity\ProjectParticipationStatus;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ProjectParticipationNotifier
@@ -35,6 +36,17 @@ class ProjectParticipationNotifier
     public function notifyParticipantReply(ProjectParticipation $projectParticipation): void
     {
         $project = $projectParticipation->getProject();
+
+        if (
+            $projectParticipation->getParticipant() === $project->getSubmitterCompany() ||
+            \in_array(
+                $projectParticipation->getCurrentStatus()->getStatus(),
+                [ProjectParticipationStatus::STATUS_CREATED, ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER],
+                true
+            )
+        ) {
+            return;
+        }
 
         $submitterClient = $project->getSubmitterClient();
 

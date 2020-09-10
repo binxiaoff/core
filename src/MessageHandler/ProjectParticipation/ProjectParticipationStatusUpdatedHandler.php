@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\MessageHandler\ProjectParticipation;
 
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
-use Http\Client\Exception;
-use Nexy\Slack\Exception\SlackApiException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationStatus;
 use Unilend\Message\ProjectParticipation\ProjectParticipationStatusUpdated;
 use Unilend\Repository\ProjectParticipationRepository;
