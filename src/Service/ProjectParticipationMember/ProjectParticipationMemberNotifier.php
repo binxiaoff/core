@@ -50,15 +50,15 @@ class ProjectParticipationMemberNotifier
             return;
         }
 
-        $participation = $projectParticipation->getParticipant();
+        $participant = $projectParticipation->getParticipant();
         $project       = $projectParticipation->getProject();
 
-        if (false === $participation->hasSigned() || false === $project->isPublished()) {
+        if (false === $participant->hasSigned() || false === $project->isPublished()) {
             return;
         }
 
         $client     = $projectParticipationMember->getStaff()->getClient();
-        $templateId = $this->getTemplateId($project, $participation, $client);
+        $templateId = $this->getTemplateId($project, $participant, $client);
 
         $temporaryToken = null;
         if ($client->isInitializationNeeded()) {
@@ -68,17 +68,20 @@ class ProjectParticipationMemberNotifier
         $context = [
             'client' => [
                 'firstName' => $client->getFirstName(),
-                'hash'      => $client->getPublicId(),
+                'publicId'   => $client->getPublicId(),
             ],
-            'submitterCompany' => [
-                'name' => $project->getSubmitterCompany()->getDisplayName(),
+            'arranger' => [
+                'displayName' => $project->getSubmitterCompany()->getDisplayName(),
             ],
             'project' => [
                 'name' => $project->getTitle(),
-                'hash' => $project->getPublicId(),
+                'publicId' => $project->getPublicId(),
+            ],
+            'projectParticipation' => [
+                'publicId' => $projectParticipation->getPublicId(),
             ],
             'temporaryToken' => [
-                'token' => $temporaryToken ? $temporaryToken->getToken() : '',
+                'token' => $temporaryToken ? $temporaryToken->getToken() : false,
             ],
         ];
 
@@ -93,32 +96,36 @@ class ProjectParticipationMemberNotifier
 
     /**
      * @param Project $project
-     * @param Company $company
+     * @param Company $participant
      * @param Clients $client
      *
      * @return string|null
      */
-    private function getTemplateId(Project $project, Company $company, Clients $client): ?string
+    private function getTemplateId(Project $project, Company $participant, Clients $client): ?string
     {
         $templateId = null;
 
         if (ProjectStatus::STATUS_INTEREST_EXPRESSION === $project->getCurrentStatus()->getStatus()) {
-            if ($company->isProspect()) {
+            if ($participant->isProspect()) {
                 $templateId = 'publication-prospect-company';
             }
 
-            if ($company->hasSigned()) {
+            if ($participant->hasSigned()) {
                 $templateId = $client->isInitializationNeeded() ? 'publication-uninitialized-user' : 'publication';
             }
         }
 
         if (ProjectStatus::STATUS_PARTICIPANT_REPLY === $project->getCurrentStatus()->getStatus()) {
-            if ($company->isProspect()) {
-                $templateId = 'syndication-prospect-company';
-            }
+            if ($participant->isCAGMember()) {
+                if ($participant->isProspect()) {
+                    $templateId = 'syndication-prospect-company';
+                }
 
-            if ($company->hasSigned()) {
-                $templateId = $client->isInitializationNeeded() ? 'syndication-uninitialized-user' : 'syndication';
+                if ($participant->hasSigned()) {
+                    $templateId = $client->isInitializationNeeded() ? 'syndication-uninitialized-user' : 'syndication';
+                }
+            } else {
+                $templateId = 'arranger-invitation-external-bank';
             }
         }
 
