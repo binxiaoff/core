@@ -26,7 +26,7 @@ final class Version20200903122256 extends AbstractMigration
         foreach (['arrangement', 'participation', 'agency'] as $module) {
             foreach ($companyIds as $companyId) {
                 $uuid = (Uuid::uuid4())->toString();
-                $this->addSql("INSERT IGNORE INTO company_module(id_company, code, added, public_id, activated) VALUES ('{$companyId}', '{$module}', NOW(), '{$uuid}, 0')");
+                $this->addSql("INSERT IGNORE INTO company_module(id_company, code, added, public_id, activated) VALUES ({$companyId}, '{$module}', NOW(), '{$uuid}', 0)");
             }
         }
     }
