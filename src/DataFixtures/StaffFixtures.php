@@ -2,18 +2,11 @@
 
 namespace Unilend\DataFixtures;
 
-use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use http\Client;
-use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\Clients;
-use Unilend\Entity\ClientStatus;
 use Unilend\Entity\Company;
 use Unilend\Entity\Staff;
 use Unilend\Entity\StaffStatus;
@@ -141,7 +134,6 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
     {
         // We need to use SQL since we cannot instantiate Staff entity
         $rolesEncoded = json_encode($roles, JSON_THROW_ON_ERROR);
-        $staffActiveCode = StaffStatus::STATUS_ACTIVE;
         $sql = <<<SQL
             INSERT INTO `staff` 
                 (id_company, id_client, roles, updated, added, public_id) VALUES 

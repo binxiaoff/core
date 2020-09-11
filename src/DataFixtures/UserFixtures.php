@@ -60,7 +60,7 @@ class UserFixtures extends AbstractFixtures
      */
     public function load(ObjectManager $manager): void
     {
-        $users = array_filter($this->getClassConstants(), 'is_string');
+        $users = array_filter(static::getConstants(), 'is_string');
         $users = array_flip($users);
 
         foreach (array_keys($users) as $value) {

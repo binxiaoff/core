@@ -5,16 +5,22 @@ declare(strict_types=1);
 namespace Unilend\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Faker\{Factory, Generator};
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Entity\Staff;
+use Unilend\Traits\ConstantsAwareTrait;
+
+use function get_class;
+use function is_string;
 
 abstract class AbstractFixtures extends Fixture
 {
+    use ConstantsAwareTrait;
 
-    protected \Faker\Generator $faker;
+    protected Generator $faker;
 
     private TokenStorageInterface $tokenStorage;
 
@@ -23,7 +29,7 @@ abstract class AbstractFixtures extends Fixture
      */
     public function __construct(TokenStorageInterface $tokenStorage)
     {
-        $this->faker = \Faker\Factory::create('fr_FR');
+        $this->faker = Factory::create('fr_FR');
         $this->tokenStorage = $tokenStorage;
     }
 
@@ -35,7 +41,7 @@ abstract class AbstractFixtures extends Fixture
      */
     protected function forcePublicId($entity, string $value): void
     {
-        $ref = new ReflectionClass(\get_class($entity));
+        $ref = new ReflectionClass(get_class($entity));
         $property = $ref->getProperty('publicId');
         $property->setAccessible(true);
         $property->setValue($entity, $value);
@@ -60,7 +66,7 @@ abstract class AbstractFixtures extends Fixture
      */
     protected function login($staff): void
     {
-        if (\is_string($staff)) {
+        if (is_string($staff)) {
             $staff = $this->getReference($staff);
         }
 
@@ -69,15 +75,5 @@ abstract class AbstractFixtures extends Fixture
         $user->setCurrentStaff($staff);
 
         $this->tokenStorage->setToken(new JWTUserToken($user->getRoles(), $user));
-    }
-
-    /**
-     * @return array
-     */
-    protected function getClassConstants()
-    {
-        $reflect = new ReflectionClass(static::class);
-
-        return $reflect->getConstants();
     }
 }
