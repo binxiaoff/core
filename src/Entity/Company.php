@@ -315,6 +315,18 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
+     * @param Staff $staff
+     *
+     * @return Company
+     */
+    public function addStaff(Staff $staff): Company
+    {
+        $this->staff->add($staff);
+
+        return $this;
+    }
+
+    /**
      * @return string|null
      */
     public function getEmailDomain(): ?string
