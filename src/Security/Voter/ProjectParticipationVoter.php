@@ -199,7 +199,9 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canArrangerAllocationEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return $this->isProjectArranger($projectParticipation, $user) && $projectParticipation->getProject()->isInAllocationStep();
+        return $this->isProjectArranger($projectParticipation, $user)
+            && $projectParticipation->getProject()->isInAllocationStep()
+            && $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation);
     }
 
     /**
