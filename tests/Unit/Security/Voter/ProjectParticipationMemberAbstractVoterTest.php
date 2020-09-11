@@ -14,7 +14,7 @@ use Unilend\Entity\ProjectParticipationMember;
 use Unilend\Entity\Staff;
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
-use Unilend\Test\Unit\AbstractVoterTestCase;
+use Unilend\Test\Unit\Security\Voter\AbstractVoterTestCase;
 
 class ProjectParticipationMemberAbstractVoterTest extends AbstractVoterTestCase
 {
@@ -22,12 +22,7 @@ class ProjectParticipationMemberAbstractVoterTest extends AbstractVoterTestCase
     /**
      * @var ProjectParticipation
      */
-    private $participation;
-
-    /**
-     * @var MockObject|ProjectParticipationManager
-     */
-    private MockObject $projectParticipationManager;
+    private ProjectParticipation $participation;
 
     /**
      * Setup the participation used for the test
@@ -37,7 +32,6 @@ class ProjectParticipationMemberAbstractVoterTest extends AbstractVoterTestCase
     public function setUp(): void
     {
         // Prepare the data
-        $this->participation =
         $company = new Company('A', 'a');
         $arrangerStaff = $this->getMockBuilder(Staff::class)
             ->disableOriginalConstructor()
@@ -51,10 +45,10 @@ class ProjectParticipationMemberAbstractVoterTest extends AbstractVoterTestCase
 
         // Creates the voter
         $authorizationChecker = $this->getMockBuilder(AuthorizationCheckerInterface::class)->disableOriginalConstructor()->getMock();
-        $this->projectParticipationManager = $this->getMockBuilder(ProjectParticipationManager::class)->disableOriginalConstructor()->getMock();
+        $projectParticipationManager = $this->getMockBuilder(ProjectParticipationManager::class)->disableOriginalConstructor()->getMock();
         $this->voter = new ProjectParticipationMemberVoter(
             $authorizationChecker,
-            $this->projectParticipationManager
+            $projectParticipationManager
         );
     }
 

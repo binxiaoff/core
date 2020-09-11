@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Test\Unit;
+namespace Unilend\Test\Unit\Security\Voter;
 
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use PHPUnit\Framework\TestCase;
