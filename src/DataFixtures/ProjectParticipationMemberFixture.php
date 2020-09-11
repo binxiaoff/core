@@ -7,6 +7,7 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipationMember;
+use Unilend\Entity\Staff;
 
 class ProjectParticipationMemberFixture extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -21,16 +22,22 @@ class ProjectParticipationMemberFixture extends AbstractFixtures implements Depe
      */
     public function load(ObjectManager $manager): void
     {
+        /** @var Staff $adminStaff */
+        $adminStaff = $this->getReference(StaffFixtures::ADMIN);
         /** @var Project[] $projects */
         $projects = $this->getReferences(ProjectFixtures::PROJECTS);
         foreach ($projects as $project) {
             foreach ($project->getProjectParticipations() as $participation) {
-                $member = new ProjectParticipationMember(
-                    $participation,
-                    $participation->getParticipant()->getStaff()[0],
-                    $project->getProjectParticipations()[0]->getParticipant()->getStaff()[0]
-                );
-                $manager->persist($member);
+                foreach ($participation->getParticipant()->getStaff() as $staff) {
+                    if ($staff !== $adminStaff && $this->faker->boolean) {
+                        $member = new ProjectParticipationMember(
+                            $participation,
+                            $staff,
+                            $adminStaff
+                        );
+                        $manager->persist($member);
+                    }
+                }
             }
         }
         $manager->flush();
