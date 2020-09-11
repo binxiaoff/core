@@ -22,8 +22,6 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
 
     private const ALREADY_CALLED = 'PROJECT_DENORMALIZER_ALREADY_CALLED';
 
-    /** @var Security */
-    private Security $security;
     /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
     /** @var ValidatorInterface */
@@ -32,13 +30,11 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
     /**
      * @param IriConverterInterface $iriConverter
      * @param ValidatorInterface    $validator
-     * @param Security              $security
      */
-    public function __construct(IriConverterInterface $iriConverter, ValidatorInterface $validator, Security $security)
+    public function __construct(IriConverterInterface $iriConverter, ValidatorInterface $validator)
     {
         $this->iriConverter = $iriConverter;
         $this->validator = $validator;
-        $this->security = $security;
     }
 
     /**
@@ -55,11 +51,6 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
     public function denormalize($data, $type, string $format = null, array $context = [])
     {
         $context[self::ALREADY_CALLED] = true;
-        $isCreateRequest = (
-            isset($context['collection_operation_name'], $context['resource_class']) &&
-            $context['collection_operation_name'] === 'post' &&
-            $context['resource_class'] === Project::class
-        );
 
         $project = $this->extractObjectToPopulate(Project::class, $context);
 
