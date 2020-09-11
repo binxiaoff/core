@@ -70,4 +70,14 @@ abstract class AbstractFixtures extends Fixture
 
         $this->tokenStorage->setToken(new JWTUserToken($user->getRoles(), $user));
     }
+
+    /**
+     * @return array
+     */
+    protected function getClassConstants()
+    {
+        $reflect = new ReflectionClass(static::class);
+
+        return $reflect->getConstants();
+    }
 }

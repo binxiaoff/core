@@ -7,70 +7,105 @@ namespace Unilend\DataFixtures;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use ReflectionException;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Unilend\Entity\Clients;
-use Unilend\Entity\ClientStatus;
 
 class UserFixtures extends AbstractFixtures
 {
+    /**
+     * @var UserPasswordEncoderInterface
+     */
+    private UserPasswordEncoderInterface $passwordEncoder;
 
-    public const ADMIN = 'USER_ADMIN';
-    public const PARTICIPANT = 'USER_PARTICIPANT';
-    public const AUDITOR = 'AUDITOR';
-    public const INVITED = 'INVITED';
-    public const MANAGER = 'MANAGER';
+    /**
+     * @param TokenStorageInterface        $tokenStorage
+     * @param UserPasswordEncoderInterface $passwordEncoder
+     */
+    public function __construct(TokenStorageInterface $tokenStorage, UserPasswordEncoderInterface $passwordEncoder)
+    {
+        parent::__construct($tokenStorage);
+        $this->passwordEncoder = $passwordEncoder;
+    }
+
+    public const ADMIN = 'admin';
+    public const PARTICIPANT = 'participant';
+    public const AUDITOR = 'auditor';
+    public const ACCOUNTANT = 'accountant';
+    public const OPERATOR = 'operator';
+    public const MANAGER = 'manager';
+    public const UNITIALIZED = 'unitialized';
+    public const NO_STAFF = 'no_staff';
+    public const INACTIVE = 'inactive';
+    public const EXTBANK_INVITED = 'extbank_invited';
+    public const EXTBANK_INITIALIZED = 'extbank_initialized';
+
+    private const INITIALIZED_USERS = [
+        self::ADMIN,
+        self::PARTICIPANT,
+        self::AUDITOR,
+        self::ACCOUNTANT,
+        self::OPERATOR,
+        self::MANAGER,
+        self::EXTBANK_INITIALIZED,
+        self::NO_STAFF,
+        self::INACTIVE,
+    ];
 
     /**
      * @param ObjectManager $manager
      *
      * @throws ReflectionException
+     * @throws Exception
      */
     public function load(ObjectManager $manager): void
     {
-        $this->createAndPersistUser('admin@ca-lendingservices.com', 'arranger', self::ADMIN, $manager, false);
-        $this->createAndPersistUser('participant@ca-lendingservices.com', 'participant', self::PARTICIPANT, $manager, false);
-        $this->createAndPersistUser('auditor@ca-lendingservices.com', 'auditor', self::AUDITOR, $manager, false);
-        $this->createAndPersistUser('invited@ca-lendingservices.com', 'invited', self::INVITED, $manager, true);
-        $this->createAndPersistUser('manager@ca-lendingservices.com', 'manager', self::MANAGER, $manager, false);
+        $users = array_filter($this->getClassConstants(), 'is_string');
+        $users = array_flip($users);
+
+        foreach (array_keys($users) as $value) {
+            $user = new Clients($value . '@' . $this->getEmailDomain($value));
+            $this->forcePublicId($user, $value);
+            $manager->persist($user);
+            $this->addReference($value, $user);
+            $users[$value] = $user;
+        }
+
+        $manager->flush();
+
+        foreach (static::INITIALIZED_USERS as $value) {
+            $user = $users[$value];
+            $this->initialize($user);
+            $manager->persist($user);
+        }
 
         $manager->flush();
     }
 
     /**
-     * Create a fake user
+     * @param Clients $user
      *
-     * @param string        $email
-     * @param string        $publicId
-     * @param string        $reference
-     * @param ObjectManager $manager
-     * @param boolean       $initialized
-     *
-     * @return Clients
-     *
-     * @throws ReflectionException
      * @throws Exception
      */
-    public function createAndPersistUser(string $email, string $publicId, string $reference, ObjectManager $manager, bool $initialized): Clients
+    public function initialize(Clients $user): void
     {
-        $user = new Clients($email);
-        if (!$initialized) {
-            $user
-                ->setTitle($this->faker->company)
-                ->setLastName($this->faker->lastName)
-                ->setFirstName($this->faker->firstName)
-                ->setPhone('+33600000000')
-                ->setMobile('+33600000000')
-                ->setJobFunction('Job function')
-                ->setEmail($email)
-                ->setPlainPassword('0000');
-        }
-        $status = new ClientStatus($user, $initialized ? ClientStatus::STATUS_INVITED : ClientStatus::STATUS_CREATED);
-        $user->setCurrentStatus($status);
-        $this->forcePublicId($user, $publicId);
+         $user->setTitle($this->faker->company);
+         $user->setLastName($this->faker->lastName);
+         $user->setFirstName($this->faker->firstName);
+         $user->setPhone('+33600000000');
+         $user->setMobile('+33600000000');
+         $user->setJobFunction('Job function');
+         $user->setPlainPassword('0000');
+        $user->setPassword($this->passwordEncoder->encodePassword($user, $user->getPlainPassword()));
+    }
 
-        $manager->persist($user);
-        $manager->persist($user->getCurrentStatus());
-        $this->addReference($reference, $user);
-
-        return $user;
+    /**
+     * @param string $username
+     *
+     * @return string
+     */
+    private function getEmailDomain(string $username): string
+    {
+        return false !== strpos($username, 'extbank') ? 'extbank.com' : 'ca-lendingservices.com';
     }
 }
