@@ -6,7 +6,6 @@ namespace Unilend\Serializer\Normalizer\Project;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ContextAwareDenormalizerInterface,
@@ -22,8 +21,6 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
 
     private const ALREADY_CALLED = 'PROJECT_DENORMALIZER_ALREADY_CALLED';
 
-    /** @var Security */
-    private Security $security;
     /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
     /** @var ValidatorInterface */
