@@ -2,22 +2,9 @@
 
 namespace Unilend\DataFixtures;
 
-use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Gedmo\Sluggable\Util\Urlizer;
-use Unilend\Entity\Clients;
-use Unilend\Entity\ClientStatus;
-use Unilend\Entity\Company;
-use Unilend\Entity\Embeddable\Money;
-use Unilend\Entity\Embeddable\NullableLendingRate;
-use Unilend\Entity\MarketSegment;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectStatus;
-use Unilend\Entity\Staff;
-use Unilend\Entity\StaffStatus;
-use Unilend\Entity\Tranche;
+use Unilend\Entity\{Embeddable\LendingRate, Embeddable\Money, Project, Tranche};
 
 class TrancheFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -42,7 +29,7 @@ class TrancheFixtures extends AbstractFixtures implements DependentFixtureInterf
                     $this->faker->hexColor
                 ))
                 ->setDuration(1)
-                ->setRate(new NullableLendingRate('EONIA', '0.0200', null, 'none'))
+                ->setRate(new LendingRate('EONIA', '0.0200', null, 'none'))
                 ->setUnsyndicatedFunderType($i === 2 ? Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER : null)
                 ->setSyndicated($i !== 2);
                 $this->forcePublicId($tranche, "tranche-{$project->getPublicId()}-{$i}");

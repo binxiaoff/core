@@ -7,6 +7,7 @@ namespace Unilend\Entity\Embeddable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -34,37 +35,35 @@ class LendingRate
     public const FLOOR_TYPE_INDEX      = 'index';
     public const FLOOR_TYPE_INDEX_RATE = 'index+rate';
     /**
-     * @var string
+     * @var string|null
      *
-     * @ORM\Column(length=20)
+     * @ORM\Column(length=20, nullable=true)
      *
-     * @Assert\NotBlank
      * @Assert\Choice(callback="getIndexes")
      *
      * @Groups({"lendingRate:read", "lendingRate:write"})
      */
-    protected $indexType;
+    protected ?string $indexType = null;
 
     /**
      * The margin to be added on the indexed rate.
      *
-     * @var string
+     * @var string|null
      *
-     * @ORM\Column(type="decimal", precision=4, scale=4)
+     * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
      *
-     * @Assert\NotBlank
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      * @Assert\Range(min="0", max="0.9999")
      *
      * @Groups({"lendingRate:read", "lendingRate:write"})
      */
-    protected $margin;
+    protected ?string $margin = null;
 
     /**
      * Have floor = X. Floor the indexed rate + margin to X if it's lower than X.
      *
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
      *
@@ -73,29 +72,27 @@ class LendingRate
      *
      * @Groups({"lendingRate:read", "lendingRate:write"})
      */
-    protected $floor;
+    protected ?string $floor = null;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(length=20, nullable=true)
      *
+     * @Assert\Choice(callback="getFloorTypes")
+     *
      * @Groups({"lendingRate:read", "lendingRate:write"})
      */
-    protected $floorType;
+    protected ?string $floorType = null;
 
     /**
-     * @param string      $indexType
-     * @param string      $margin
+     * @param string|null $indexType
+     * @param string|null $margin
      * @param string|null $floor
      * @param string|null $floorType
      */
-    public function __construct(
-        string $indexType,
-        string $margin,
-        string $floor = null,
-        string $floorType = self::FLOOR_TYPE_NONE
-    ) {
+    public function __construct(?string $indexType = null, ?string $margin = null, ?string $floor = null, ?string $floorType = null)
+    {
         $this->indexType = $indexType;
         $this->margin    = $margin;
         $this->floor     = $floor;
@@ -111,13 +108,17 @@ class LendingRate
     }
 
     /**
-     * @param string $indexType
+     * @param string|null $indexType
      *
      * @return self
      */
-    public function setIndexType(string $indexType)
+    public function setIndexType(?string $indexType): self
     {
         $this->indexType = $indexType;
+        if (self::INDEX_FIXED === $this->indexType) {
+            $this->floor     = null;
+            $this->floorType = null;
+        }
 
         return $this;
     }
@@ -131,11 +132,11 @@ class LendingRate
     }
 
     /**
-     * @param string $margin
+     * @param string|null $margin
      *
      * @return self
      */
-    public function setMargin(string $margin)
+    public function setMargin(?string $margin): self
     {
         $this->margin = $margin;
 
@@ -184,5 +185,46 @@ class LendingRate
     public function setFloorType(?string $floorType): void
     {
         $this->floorType = $floorType;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getFloorTypes(): array
+    {
+        return self::getConstants('FLOOR_TYPE_');
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validate(ExecutionContextInterface $context): void
+    {
+        switch ($this->getIndexType()) {
+            case null:
+                if ($this->getMargin() || $this->getFloor() || $this->getFloorType()) {
+                    $context->buildViolation('LendingRate.indexType.empty')->atPath('indexType')->addViolation();
+                }
+                break;
+            case self::INDEX_FIXED:
+                if ($this->getFloor() !== null) {
+                    $context->buildViolation('LendingRate.floor.illegal')->atPath('floor')->addViolation();
+                }
+
+                if ($this->getFloorType() !== null) {
+                    $context->buildViolation('LendingRate.floorType.illegal')->atPath('floorType')->addViolation();
+                }
+                break;
+            default:
+                if ($this->getFloorType() !== null && null === $this->getFloor()) {
+                    $context->buildViolation('LendingRate.floor.empty')->atPath('floor')->addViolation();
+                }
+
+                if ($this->getFloor() !== null && null === $this->getFloorType()) {
+                    $context->buildViolation('LendingRate.floorType.empty')->atPath('floorType')->addViolation();
+                }
+        }
     }
 }
