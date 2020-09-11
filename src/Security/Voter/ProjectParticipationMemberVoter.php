@@ -47,7 +47,7 @@ class ProjectParticipationMemberVoter extends AbstractEntityVoter
      */
     protected function canAcceptNda(ProjectParticipationMember $subject, Clients $user): bool
     {
-        return $subject->getProjectParticipation()->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION) && $subject->getStaff() === $user->getCurrentStaff();
+        return $subject->getStaff() === $user->getCurrentStaff();
     }
 
     /**
