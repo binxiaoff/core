@@ -116,7 +116,7 @@ class LendingRate
     {
         $this->indexType = $indexType;
         if (self::INDEX_FIXED === $this->indexType) {
-            $this->floor = null;
+            $this->floor     = null;
             $this->floorType = null;
         }
 
@@ -200,7 +200,7 @@ class LendingRate
      *
      * @param ExecutionContextInterface $context
      */
-    public function checkAllFields(ExecutionContextInterface $context): void
+    public function validate(ExecutionContextInterface $context): void
     {
         switch ($this->getIndexType()) {
             case null:
