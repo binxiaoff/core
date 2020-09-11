@@ -2,6 +2,7 @@
 
 namespace Unilend\Test\Unit\Service\File;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
 use Unilend\Entity\Clients;
 use Unilend\Entity\Company;
@@ -14,7 +15,7 @@ class ProjectTest extends TestCase
 {
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testPrivilegedContactPersonConstruct()
     {
@@ -27,14 +28,16 @@ class ProjectTest extends TestCase
         $client->setJobFunction('JobFunction');
         $client->setPhone('05000000');
         $staff = new Staff($company, $client, $mockedStaff);
+
         $project = new Project($staff, 'risk1', new Money('EUR', '100'), new MarketSegment());
 
         // Contact should be hydrated
         $contact = $project->getPrivilegedContactPerson();
-        $this->assertEquals('Firstname', $contact->getFirstName());
-        $this->assertEquals('Lastname', $contact->getLastName());
-        $this->assertEquals('contact@demo.fr', $contact->getEmail());
-        $this->assertEquals('JobFunction', $contact->getOccupation());
-        $this->assertEquals('05000000', $contact->getPhone());
+
+        static::assertEquals('Firstname', $contact->getFirstName());
+        static::assertEquals('Lastname', $contact->getLastName());
+        static::assertEquals('contact@demo.fr', $contact->getEmail());
+        static::assertEquals('JobFunction', $contact->getOccupation());
+        static::assertEquals('05000000', $contact->getPhone());
     }
 }
