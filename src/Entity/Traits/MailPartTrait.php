@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity\Traits;
 
 use DateTimeImmutable;
+use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups; // Necessary @see https://github.com/doctrine/annotations/issues/81
@@ -54,16 +55,16 @@ trait MailPartTrait
     private $archived;
 
     /**
-     * @param string $type
+     * @param string $name
      * @param string $locale
      *
      * @throws Exception
      */
     public function __construct(
-        string $type,
+        string $name,
         string $locale = 'fr_FR'
     ) {
-        $this->name   = $type;
+        $this->name   = $name;
         $this->locale = $locale;
         $this->added  = new DateTimeImmutable();
     }

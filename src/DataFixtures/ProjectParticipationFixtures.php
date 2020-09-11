@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\DataFixtures;
 
 use DateTimeImmutable;
@@ -13,15 +15,11 @@ use Unilend\Entity\ProjectParticipationStatus;
 use Unilend\Entity\ProjectStatus;
 use Unilend\Entity\Staff;
 
-class ParticipationFixtures extends AbstractFixtures implements DependentFixtureInterface
+class ProjectParticipationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     use OfferFixtureTrait;
 
     public static int $id = 0; // Auto increment public ids
-    /**
-     * @var ObjectManager
-     */
-    private ObjectManager $manager;
 
     /**
      * @param ObjectManager $manager
@@ -30,23 +28,42 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
      */
     public function load(ObjectManager $manager): void
     {
-        $this->manager = $manager;
         /** @var Company[] $companies */
         $companies = $this->getReferences(CompanyFixtures::COMPANIES);
         /** @var Project[] $projects */
         $projectsWithParticipations = $this->getReferences(ProjectFixtures::PROJECTS_WITH_PARTICIPATION);
         /** @var Staff $staff */
         $staff = $this->getReference(StaffFixtures::ADMIN);
+
         /** @var Project $project */
         foreach ($projectsWithParticipations as $reference => $project) {
             // Updates the participation for the arranger
             foreach ($project->getProjectParticipations() as $participation) {
                 $participation->setInvitationRequest($this->createOfferWithFee(1000000));
             }
-            $projectParticipationStatus = $this->getParticipationStatus($project, $reference);
 
             foreach ($companies as $company) {
-                $manager->persist($this->createParticipation($project, $company, $staff, $projectParticipationStatus));
+                $participation = $this->createParticipation($project, $company, $staff);
+                $project->addProjectParticipation($participation);
+                $manager->persist($participation);
+            }
+        }
+
+        $manager->flush();
+
+
+        /** @var Project $project */
+        foreach ($projectsWithParticipations as $reference => $project) {
+            foreach ($project->getProjectParticipations() as $index => $participation) {
+                $statusCode = $this->getParticipationStatus($project, $reference);
+                $participationStatus = new ProjectParticipationStatus($participation, $statusCode, $staff);
+                $this->forcePublicId($participationStatus, 'pps-' . uniqid() . '-' . $statusCode);
+                if (ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $statusCode) {
+                    $participation->setCommitteeDeadline(new DateTimeImmutable());
+                }
+                $participation->setCurrentStatus($participationStatus);
+                $manager->persist($participation);
+                $manager->persist($participationStatus);
             }
         }
 
@@ -65,10 +82,9 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
     }
 
     /**
-     * @param Project  $project
-     * @param Company  $company
-     * @param Staff    $staff
-     * @param int|null $status
+     * @param Project $project
+     * @param Company $company
+     * @param Staff   $staff
      *
      * @return ProjectParticipation
      *
@@ -77,8 +93,7 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
     private function createParticipation(
         Project $project,
         Company $company,
-        Staff $staff,
-        int $status
+        Staff $staff
     ): ProjectParticipation {
         self::$id++;
         $publicId = "p-{$project->getPublicId()}-" . self::$id;
@@ -86,21 +101,9 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
             ->setInterestRequest($this->createRangedOffer(1000000, 2000000))
             ->setInterestReply($this->createOffer(2000000))
             ->setInvitationRequest($this->createOfferWithFee(1000000))
-            ->setInvitationReplyMode('pro-rata')
-            ->setAllocationFeeRate($this->faker->randomDigit);
-        $this->forcePublicId($participation, "p-{$project->getPublicId()}-" . uniqid());
-        $participationStatus = new ProjectParticipationStatus($participation, $status, $staff);
-        $this->forcePublicId($participationStatus, "pps-$publicId");
-        if (ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $status) {
-            $participation->setCommitteeDeadline(new DateTimeImmutable());
-        }
-        // Needed because we do not record the current status in the statuses array and this array is not persisted
-        if (ProjectParticipationStatus::STATUS_CREATED !== $status) {
-            $this->manager->persist(new ProjectParticipationStatus($participation, ProjectParticipationStatus::STATUS_CREATED, $staff));
-        }
-
-        // Need to set the status after because of StatusCreatedListener
-        $participation->setCurrentStatus($participationStatus);
+            ->setInvitationReplyMode(ProjectParticipation::INVITATION_REPLY_MODE_PRO_RATA)
+            ->setAllocationFeeRate((string) $this->faker->randomDigit);
+        $this->forcePublicId($participation, $publicId);
 
         return $participation;
     }

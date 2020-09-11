@@ -42,7 +42,7 @@ class ProjectParticipationMemberFixture extends AbstractFixtures implements Depe
     public function getDependencies(): array
     {
         return [
-            ParticipationFixtures::class,
+            ProjectParticipationFixtures::class,
         ];
     }
 }

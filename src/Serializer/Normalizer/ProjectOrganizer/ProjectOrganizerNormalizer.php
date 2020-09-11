@@ -55,7 +55,7 @@ class ProjectOrganizerNormalizer implements ContextAwareNormalizerInterface, Nor
         $isCAG = null !== $company ? $company->isCAGMember() : false;
 
         if (\is_array($normalized) && false === $isCAG) {
-            $index = array_search(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_RUN, $normalized['roles'], true);
+            $index = array_search(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_RUN, $normalized['roles'] ?? [], true);
 
             if (false !== $index) {
                 unset($normalized['roles'][$index]);
