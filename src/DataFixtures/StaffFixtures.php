@@ -38,6 +38,8 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $adminStaff = $this->insertStaff($admin, $adminCompany, $manager, [Staff::DUTY_STAFF_ADMIN], MarketSegmentFixtures::SEGMENTS);
 
         $this->addReference(self::ADMIN, $adminStaff);
+        $this->addStaffReference($adminStaff);
+
         // We set the user in the tokenStorage to avoid conflict with StaffLogListener
         $this->login($adminStaff);
 
@@ -68,6 +70,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
             $user = $this->getReference($userReference);
             $company = $datum['company'] ?? $adminCompany;
             $staff = $this->createStaff($user, $company, $datum['roles'] ?? null, $datum['marketSegments'] ?? null);
+            $this->addStaffReference($staff);
             $manager->persist($staff);
         }
 
@@ -78,7 +81,9 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $participant = $this->getReference(UserFixtures::PARTICIPANT);
         foreach ($companies as $company) {
             if ($company !== $adminCompany) {
-                $manager->persist($this->createStaff($participant, $company));
+                $staff = $this->createStaff($participant, $company);
+                $this->addStaffReference($staff);
+                $manager->persist($staff);
             }
         }
 
@@ -105,6 +110,17 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
             CompanyFixtures::class,
             UserFixtures::class,
         ];
+    }
+
+    /**
+     * @param Clients $client
+     * @param Company $company
+     *
+     * @return string
+     */
+    public static function getStaffReferenceName(Clients $client, Company $company)
+    {
+        return 'staff_' . $client->getId() . '_' . $company->getId();
     }
 
     /**
@@ -197,5 +213,13 @@ SQL;
         $staff->setMarketSegments($markerSegments);
 
         return $staff;
+    }
+
+    /**
+     * @param Staff $staff
+     */
+    private function addStaffReference(Staff $staff)
+    {
+        $this->addReference(static::getStaffReferenceName($staff->getClient(), $staff->getCompany()), $staff);
     }
 }
