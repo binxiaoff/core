@@ -61,20 +61,6 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
             $context['resource_class'] === Project::class
         );
 
-        // Hydrates the privileged contact from the authenticated https://lafabriquebyca.atlassian.net/browse/CALS-2354
-        if ($isCreateRequest) {
-            $user = $this->security->getUser();
-            if ($user instanceof Clients) {
-                $data['privilegedContactPerson'] = [
-                    'firstName' => $user->getFirstName(),
-                    'lastName' => $user->getLastName(),
-                    'email' => $user->getEmail(),
-                    'occupation' => $user->getJobFunction(),
-                    'phone' => $user->getPhone(),
-                ];
-            }
-        }
-
         $project = $this->extractObjectToPopulate(Project::class, $context);
 
         if ($project && isset($data['currentStatus']) && \is_array($data['currentStatus'])) {

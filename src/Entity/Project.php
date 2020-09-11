@@ -586,6 +586,13 @@ class Project implements TraceableStatusAwareInterface
         $this->submitterCompany      = $addedBy->getCompany();
 
         $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_DRAFT, $addedBy));
+        $contact = (new NullablePerson())
+            ->setFirstName($addedBy->getClient()->getFirstName())
+            ->setLastName($addedBy->getClient()->getLastName())
+            ->setEmail($addedBy->getClient()->getEmail())
+            ->setPhone($addedBy->getClient()->getPhone())
+            ->setOccupation($addedBy->getClient()->getJobFunction());
+        $this->setPrivilegedContactPerson($contact);
 
         $this->offerVisibility    = static::OFFER_VISIBILITY_PRIVATE;
         $this->riskGroupName      = $riskGroupName;
