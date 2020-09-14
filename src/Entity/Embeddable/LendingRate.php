@@ -33,7 +33,7 @@ class LendingRate
 
     public const FLOOR_TYPE_NONE       = 'none';
     public const FLOOR_TYPE_INDEX      = 'index';
-    public const FLOOR_TYPE_INDEX_RATE = 'index+rate';
+    public const FLOOR_TYPE_INDEX_RATE = 'index_rate';
     /**
      * @var string|null
      *
