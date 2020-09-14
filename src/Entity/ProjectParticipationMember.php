@@ -196,7 +196,7 @@ class ProjectParticipationMember
      *
      * @Groups({"projectParticipationMember:read"})
      */
-    public function getAcceptableNdaVersion()
+    public function getAcceptableNdaVersion(): ?FileVersion
     {
         $file = $this->projectParticipation->getNda() ?? $this->getProjectParticipation()->getProject()->getNda();
 
