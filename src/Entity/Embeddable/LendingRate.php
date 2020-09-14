@@ -218,7 +218,7 @@ class LendingRate
                 }
                 break;
             default:
-                if ($this->getFloorType() !== null && null === $this->getFloor()) {
+                if ($this->getFloorType() !== null && $this->getFloorType() !== self::FLOOR_TYPE_NONE && null === $this->getFloor()) {
                     $context->buildViolation('LendingRate.floor.empty')->atPath('floor')->addViolation();
                 }
 
