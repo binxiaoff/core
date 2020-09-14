@@ -8,7 +8,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use InvalidArgumentException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, FileDownload, FileVersion, Project, ProjectFile, ProjectParticipation, ProjectParticipationMember, ProjectStatus, Staff};
+use Unilend\Entity\{Clients, Company, File, FileDownload, FileVersion, Project, ProjectFile, ProjectParticipation, ProjectParticipationMember, ProjectStatus, Staff};
 use Unilend\Repository\{FileVersionSignatureRepository, ProjectFileRepository, ProjectParticipationMemberRepository, ProjectParticipationRepository, ProjectRepository};
 
 class FileDownloadVoter extends AbstractEntityVoter
@@ -47,7 +47,7 @@ class FileDownloadVoter extends AbstractEntityVoter
         $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
         $this->projectFileRepository                = $projectFileRepository;
         $this->projectRepository                    = $projectRepository;
-        $this->projectParticipationRepository = $projectParticipationRepository;
+        $this->projectParticipationRepository       = $projectParticipationRepository;
     }
 
     /**
@@ -99,8 +99,7 @@ class FileDownloadVoter extends AbstractEntityVoter
                     if (null === $project) {
                         // Try to find the NDA in the participation,
                         // since the front may not know it's a specific NDA in case of getting it from ProjectParticipationMember::getAcceptableNdaVersion()
-                        $projectParticipation = $this->projectParticipationRepository->findOneBy(['nda' => $file]);
-                        $project = $projectParticipation ? $projectParticipation->getProject() : null;
+                        $project = $this->findProjectByNDAFile($file, $staff->getCompany());
                     }
 
                     break;
@@ -110,8 +109,7 @@ class FileDownloadVoter extends AbstractEntityVoter
         }
 
         if (ProjectParticipation::PROJECT_PARTICIPATION_FILE_TYPE_NDA === $type) {
-            $projectParticipation = $this->projectParticipationRepository->findOneBy(['nda' => $file]);
-            $project = $projectParticipation ? $projectParticipation->getProject() : null;
+            $project = $this->findProjectByNDAFile($file, $staff->getCompany());
         }
 
         if (null === $project) {
@@ -188,5 +186,20 @@ class FileDownloadVoter extends AbstractEntityVoter
         }
 
         return true;
+    }
+
+    /**
+     * @param File    $nda
+     * @param Company $currentStaffCompany
+     *
+     * @return Project|null
+     */
+    private function findProjectByNDAFile(File $nda, Company $currentStaffCompany): ?Project
+    {
+        $projectParticipation = $this->projectParticipationRepository->findOneBy(['nda' => $nda]);
+        $project = $projectParticipation ? $projectParticipation->getProject() : null;
+
+        // Only the arranger or the participant of the participation can download the specific NDA
+        return $project && ($project->getArranger() === $currentStaffCompany || $projectParticipation->getParticipant() === $currentStaffCompany) ? $project : null;
     }
 }
