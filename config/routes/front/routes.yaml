@@ -25,7 +25,7 @@ resetPassword:
 requestResetPassword:
   path: /mot-de-passe-oublie
 initialAccount:
-  path: /finalisation-inscription/{temporaryTokenPublicId}/{clientPublicId}/{projectPublicId}
+  path: /finalisation-inscription/{temporaryTokenPublicId}/{clientPublicId}
 privacyPolicy:
   path: /politique-de-confidentialite
 legalNotice:
