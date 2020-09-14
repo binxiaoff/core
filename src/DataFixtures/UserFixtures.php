@@ -10,9 +10,12 @@ use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Unilend\Entity\Clients;
+use Unilend\Traits\ConstantsAwareTrait;
 
 class UserFixtures extends AbstractFixtures
 {
+    use ConstantsAwareTrait;
+
     /**
      * @var UserPasswordEncoderInterface
      */

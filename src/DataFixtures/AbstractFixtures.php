@@ -11,15 +11,12 @@ use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Entity\Staff;
-use Unilend\Traits\ConstantsAwareTrait;
 
 use function get_class;
 use function is_string;
 
 abstract class AbstractFixtures extends Fixture
 {
-    use ConstantsAwareTrait;
-
     protected Generator $faker;
 
     private TokenStorageInterface $tokenStorage;

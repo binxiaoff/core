@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\Annotation\{Groups, SerializedName};
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait};
-use Unilend\Validator\Constraints\{EmailDomain as AssertEmailDomain, Password as AssertPassword};
+use Unilend\Validator\Constraints\{Password as AssertPassword};
 use URLify;
 
 /**
@@ -514,8 +514,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
 
                 return $staff->isActive();
             }
-        )
-            ;
+        );
     }
 
     /**

@@ -14,7 +14,7 @@ trait ConstantsAwareTrait
      *
      * @return array
      */
-    protected static function getConstants(?string $prefix = null): array
+    private static function getConstants(?string $prefix = null): array
     {
         try {
             $self = new ReflectionClass(static::class);
