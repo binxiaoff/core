@@ -202,27 +202,30 @@ class LendingRate
      */
     public function validate(ExecutionContextInterface $context): void
     {
+        // Transfer the "none" to null to simplify the validation conditions, because they are equivalent in this context.
+        $floorType = self::FLOOR_TYPE_NONE === $this->getFloorType() ? null : $this->getFloorType();
+
         switch ($this->getIndexType()) {
             case null:
-                if ($this->getMargin() || $this->getFloor() || $this->getFloorType()) {
+                if ($this->getMargin() || $this->getFloor() || $floorType) {
                     $context->buildViolation('LendingRate.indexType.empty')->atPath('indexType')->addViolation();
                 }
                 break;
             case self::INDEX_FIXED:
-                if ($this->getFloor() !== null) {
+                if (null !== $this->getFloor()) {
                     $context->buildViolation('LendingRate.floor.illegal')->atPath('floor')->addViolation();
                 }
 
-                if ($this->getFloorType() !== null) {
+                if (null !== $floorType) {
                     $context->buildViolation('LendingRate.floorType.illegal')->atPath('floorType')->addViolation();
                 }
                 break;
             default:
-                if ($this->getFloorType() !== null && $this->getFloorType() !== self::FLOOR_TYPE_NONE && null === $this->getFloor()) {
+                if (null !== $floorType && null === $this->getFloor()) {
                     $context->buildViolation('LendingRate.floor.empty')->atPath('floor')->addViolation();
                 }
 
-                if ($this->getFloor() !== null && null === $this->getFloorType()) {
+                if (null !== $this->getFloor() && null === $floorType) {
                     $context->buildViolation('LendingRate.floorType.empty')->atPath('floorType')->addViolation();
                 }
         }
