@@ -96,6 +96,12 @@ class FileDownloadVoter extends AbstractEntityVoter
                     break;
                 case Project::PROJECT_FILE_TYPE_NDA:
                     $project = $this->projectRepository->findOneBy(['nda' => $file]);
+                    if (null === $project) {
+                        // Try to find the NDA in the participation,
+                        // since the front may not know it's a specific NDA in case of getting it from ProjectParticipationMember::getAcceptableNdaVersion()
+                        $projectParticipation = $this->projectParticipationRepository->findOneBy(['nda' => $file]);
+                        $project = $projectParticipation ? $projectParticipation->getProject() : null;
+                    }
 
                     break;
                 default:
