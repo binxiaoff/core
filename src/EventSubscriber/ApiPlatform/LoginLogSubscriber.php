@@ -10,6 +10,8 @@ use Gesdinet\JWTRefreshTokenBundle\Event\RefreshEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\{AuthenticationFailureEvent, JWTCreatedEvent};
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Security\Core\Exception\AccountStatusException;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Unilend\Entity\{ClientSuccessfulLogin, Clients};
 use Unilend\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
 use Unilend\Repository\{ClientFailedLoginRepository, ClientSuccessfulLoginRepository, ClientsRepository};
@@ -123,10 +125,9 @@ class LoginLogSubscriber implements EventSubscriberInterface
     {
         $authenticationException = $event->getException();
 
-        $username = ($token = $authenticationException->getToken()) ? $token->getUsername() : null;
         $message  = $authenticationException->getMessage();
 
-        $failedLogin = $this->clientLoginHistoryFactory->createClientLoginFailure($message, $username);
+        $failedLogin = $this->clientLoginHistoryFactory->createClientLoginFailure($message, $this->getFailedLoginUsername($authenticationException));
         $this->clientFailedLoginRepository->save($failedLogin);
     }
 
@@ -157,10 +158,27 @@ class LoginLogSubscriber implements EventSubscriberInterface
     {
         $authenticationException = $event->getException();
 
-        $username = ($token = $authenticationException->getToken()) ? $token->getUsername() : null;
         $message  = $authenticationException->getMessage();
 
-        $failedLogin = $this->clientLoginHistoryFactory->createClientLoginFailure($message, $username);
+        $failedLogin = $this->clientLoginHistoryFactory->createClientLoginFailure($message, $this->getFailedLoginUsername($authenticationException));
         $this->clientFailedLoginRepository->save($failedLogin);
+    }
+
+    /**
+     * @param AuthenticationException $authenticationException
+     *
+     * @return string|null
+     */
+    private function getFailedLoginUsername(AuthenticationException $authenticationException): ?string
+    {
+        if ($authenticationException instanceof AccountStatusException) {
+            return $authenticationException->getUser()->getUsername();
+        }
+
+        $token = $authenticationException->getToken();
+
+        $user = $token ? $token->getUser() : null;
+
+        return $user ? $user->getUsername() : null;
     }
 }

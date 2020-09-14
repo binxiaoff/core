@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
+use ReflectionException;
 use Unilend\Entity\Company;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipation;
@@ -19,7 +20,10 @@ class ProjectParticipationFixtures extends AbstractFixtures implements Dependent
 {
     use OfferFixtureTrait;
 
-    public static int $id = 0; // Auto increment public ids
+    /**
+     * @var ObjectManager
+     */
+    private ObjectManager $manager;
 
     /**
      * @param ObjectManager $manager
@@ -43,27 +47,19 @@ class ProjectParticipationFixtures extends AbstractFixtures implements Dependent
             }
 
             foreach ($companies as $company) {
-                $participation = $this->createParticipation($project, $company, $staff);
-                $project->addProjectParticipation($participation);
-                $manager->persist($participation);
+                $manager->persist($this->createParticipation($project, $company, $staff));
             }
         }
 
         $manager->flush();
 
-
-        /** @var Project $project */
         foreach ($projectsWithParticipations as $reference => $project) {
-            foreach ($project->getProjectParticipations() as $index => $participation) {
-                $statusCode = $this->getParticipationStatus($project, $reference);
-                $participationStatus = new ProjectParticipationStatus($participation, $statusCode, $staff);
-                $this->forcePublicId($participationStatus, 'pps-' . uniqid() . '-' . $statusCode);
-                if (ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $statusCode) {
-                    $participation->setCommitteeDeadline(new DateTimeImmutable());
+            $projectParticipationStatus = $this->getParticipationStatus($project, $reference);
+            foreach ($project->getProjectParticipations() as $participation) {
+                if (ProjectParticipationStatus::STATUS_CREATED !== $projectParticipationStatus) {
+                    $this->applyProjectParticipationStatus($participation, $projectParticipationStatus);
+                    $manager->persist($participation);
                 }
-                $participation->setCurrentStatus($participationStatus);
-                $manager->persist($participation);
-                $manager->persist($participationStatus);
             }
         }
 
@@ -95,15 +91,13 @@ class ProjectParticipationFixtures extends AbstractFixtures implements Dependent
         Company $company,
         Staff $staff
     ): ProjectParticipation {
-        self::$id++;
-        $publicId = "p-{$project->getPublicId()}-" . self::$id;
         $participation = (new ProjectParticipation($company, $project, $staff))
             ->setInterestRequest($this->createRangedOffer(1000000, 2000000))
             ->setInterestReply($this->createOffer(2000000))
             ->setInvitationRequest($this->createOfferWithFee(1000000))
             ->setInvitationReplyMode(ProjectParticipation::INVITATION_REPLY_MODE_PRO_RATA)
             ->setAllocationFeeRate((string) $this->faker->randomDigit);
-        $this->forcePublicId($participation, $publicId);
+        $this->forcePublicId($participation, "p-{$project->getPublicId()}-" . uniqid());
 
         return $participation;
     }
@@ -133,5 +127,28 @@ class ProjectParticipationFixtures extends AbstractFixtures implements Dependent
         }
 
         return ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED;
+    }
+
+    /**
+     * @param ProjectParticipation $participation
+     * @param int                  $status
+     *
+     * @throws ReflectionException
+     * @throws Exception
+     */
+    private function applyProjectParticipationStatus(ProjectParticipation $participation, int $status): void
+    {
+        /** @var Staff $addedBy */
+        $addedBy = $this->getReference(StaffFixtures::ADMIN);
+
+        $participationStatus = new ProjectParticipationStatus($participation, $status, $addedBy);
+        $id = uniqid();
+        $this->forcePublicId($participationStatus, "pps-{$id}-" . $status);
+
+        if (ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $status) {
+            $participation->setCommitteeDeadline(new DateTimeImmutable());
+        }
+
+        $participation->setCurrentStatus($participationStatus);
     }
 }
