@@ -37,7 +37,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *         "get"
  *     }
  * )
- * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName", "companyName"})
+ * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"})
  * @ApiFilter(SearchFilter::class, properties={"groupName"})
  *
  * @ORM\Entity
@@ -52,6 +52,8 @@ class Company implements TraceableStatusAwareInterface
     public const VAT_OVERSEAS     = 'overseas'; // Overseas tva category (Guadeloupe, Martinique, Reunion) : 8.5 %
 
     public const GROUPNAME_CA = 'Crédit Agricole';
+
+    public const COMPANY_NAME_CALS = 'CA Lending Services';
 
     public const SERIALIZER_GROUP_COMPANY_STAFF_READ = 'company:staff:read';
 
