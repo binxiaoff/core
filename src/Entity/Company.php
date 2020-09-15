@@ -53,6 +53,8 @@ class Company implements TraceableStatusAwareInterface
 
     public const GROUPNAME_CA = 'Crédit Agricole';
 
+    public const COMPANY_NAME_CALS = 'CA Lending Services';
+
     public const SERIALIZER_GROUP_COMPANY_STAFF_READ = 'company:staff:read';
 
     public const SERIALIZER_GROUP_COMPANY_ADMIN_READ = 'company:admin:read';
