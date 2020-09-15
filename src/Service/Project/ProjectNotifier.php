@@ -147,7 +147,7 @@ class ProjectNotifier
                             'firstName' => $activeProjectParticipationMember->getStaff()->getClient()->getFirstName(),
                         ],
                         'project' => [
-                            'submitterCompany' => $project->getSubmitterCompany()->getDisplayName(),
+                            'arranger' => $project->getSubmitterCompany()->getDisplayName(),
                             'title'            => $project->getTitle(),
                             'hash'             => $project->getPublicId(),
                         ],
