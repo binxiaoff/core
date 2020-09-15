@@ -37,7 +37,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *         "get"
  *     }
  * )
- * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"})
+ * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName", "companyName"})
  * @ApiFilter(SearchFilter::class, properties={"groupName"})
  *
  * @ORM\Entity
