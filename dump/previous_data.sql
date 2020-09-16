@@ -18,11 +18,12 @@ INSERT INTO translations (locale, section, name, translation, added) VALUES
 ('fr_FR', 'market-segment', 'energy', 'EnR', NOW()),
 ('fr_FR', 'market-segment', 'patrimonial', 'Patrimonial', NOW()),
 ('fr_FR', 'market-segment', 'pro', 'Pro', NOW()),
-('fr_FR', 'staff-roles', 'DUTY_STAFF_OPERATOR', 'opérationnel', NOW()),
-('fr_FR', 'staff-roles', 'DUTY_STAFF_MANAGER', 'coordinateur', NOW()),
-('fr_FR', 'staff-roles', 'DUTY_STAFF_ADMIN', 'administrateur', NOW()),
-('fr_FR', 'staff-roles', 'DUTY_STAFF_ACCOUNTANT', 'contact de facturation', NOW()),
-('fr_FR', 'staff-roles', 'DUTY_STAFF_SIGNATORY', 'signataire', NOW());
+('fr_FR', 'staff-roles', 'duty_staff_operator', 'opérationnel', NOW()),
+('fr_FR', 'staff-roles', 'duty_staff_manager', 'coordinateur', NOW()),
+('fr_FR', 'staff-roles', 'duty_staff_admin', 'administrateur', NOW()),
+('fr_FR', 'staff-roles', 'duty_staff_accountant', 'contact de facturation', NOW()),
+('fr_FR', 'staff-roles', 'duty_staff_signatory', 'signataire', NOW()),
+('fr_FR', 'staff-roles', 'duty_staff_auditor', 'Auditeur', NOW());
 
 INSERT INTO foncaris_funding_type (id, category, description) VALUES
 (1, 1, 'Garantie à 1ère Demande'),
