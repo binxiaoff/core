@@ -61,7 +61,7 @@ class StaffNotifier
 
         $message = $this->templateMessageProvider->newMessage('staff-client-initialisation', [
             'client' => [
-                'publicId'      => $client->getPublicId(),
+                'publicId'  => $client->getPublicId(),
                 'firstName' => $client->getFirstName(),
             ],
             'temporaryToken' => [

@@ -191,7 +191,7 @@ CONTENT;
     {
         //staff-client-initialisation
         $content = <<<CONTENT
-{% set inscriptionFinalisationUrl = url("front_initialAccount", {temporaryTokenPublicId: temporaryToken.token, clientPublicId: client.publicId }) %}
+{% set inscriptionFinalisationUrl = url("front_inscription_finalisation", {temporaryTokenHash: temporaryToken.token, clientHash: client.hash }) %}
 <mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ url("front_image", {imageFileName: "emails/fireworks.png"}) }}"/>
 <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour,</mj-text>
 <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
