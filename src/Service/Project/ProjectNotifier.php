@@ -147,9 +147,9 @@ class ProjectNotifier
                             'firstName' => $activeProjectParticipationMember->getStaff()->getClient()->getFirstName(),
                         ],
                         'project' => [
-                            'submitterCompany' => $project->getSubmitterCompany()->getDisplayName(),
-                            'title'            => $project->getTitle(),
-                            'hash'             => $project->getPublicId(),
+                            'arranger' => $project->getSubmitterCompany()->getDisplayName(),
+                            'title'    => $project->getTitle(),
+                            'hash'     => $project->getPublicId(),
                         ],
                     ])->setTo($activeProjectParticipationMember->getStaff()->getClient()->getEmail());
                     $sent += $this->mailer->send($message);
