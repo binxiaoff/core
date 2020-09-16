@@ -119,6 +119,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "project:list",
  *                     "project:read",
  *                     "company:read",
+ *                     "timestampable:read",
  *                     "projectParticipation:read",
  *                     "projectParticipationStatus:read",
  *                     "projectParticipationTranche:read",
