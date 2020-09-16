@@ -7,7 +7,7 @@ namespace Unilend\Service\ProjectParticipationMember;
 use Exception;
 use Swift_Mailer;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{Clients, Company, Project, ProjectParticipationMember, ProjectStatus};
+use Unilend\Entity\{Project, ProjectParticipationMember, ProjectStatus, Staff};
 use Unilend\Service\TemporaryTokenGenerator;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
@@ -50,15 +50,14 @@ class ProjectParticipationMemberNotifier
             return;
         }
 
-        $participant = $projectParticipation->getParticipant();
-        $project       = $projectParticipation->getProject();
+        $project = $projectParticipation->getProject();
 
-        if (false === $participant->hasSigned() || false === $project->isPublished()) {
+        if (false === $project->isPublished() || false === $projectParticipation->getParticipant()->hasSigned()) {
             return;
         }
 
         $client     = $projectParticipationMember->getStaff()->getClient();
-        $templateId = $this->getTemplateId($project, $participant, $client);
+        $templateId = $this->getTemplateId($project, $projectParticipationMember->getStaff());
 
         $temporaryToken = null;
         if ($client->isInitializationNeeded()) {
@@ -68,7 +67,7 @@ class ProjectParticipationMemberNotifier
         $context = [
             'client' => [
                 'firstName' => $client->getFirstName(),
-                'publicId'   => $client->getPublicId(),
+                'publicId'  => $client->getPublicId(),
             ],
             'arranger' => [
                 'displayName' => $project->getSubmitterCompany()->getDisplayName(),
@@ -97,14 +96,16 @@ class ProjectParticipationMemberNotifier
 
     /**
      * @param Project $project
-     * @param Company $participant
-     * @param Clients $client
+     * @param Staff   $staff
      *
      * @return string|null
      */
-    private function getTemplateId(Project $project, Company $participant, Clients $client): ?string
+    private function getTemplateId(Project $project, Staff $staff): ?string
     {
-        $templateId = null;
+        $templateId  = null;
+        // In the actual habilitation context, the staff company is the same as the participant company
+        $participant = $staff->getCompany();
+        $client      = $staff->getClient();
 
         if (ProjectStatus::STATUS_INTEREST_EXPRESSION === $project->getCurrentStatus()->getStatus()) {
             if ($participant->isProspect()) {
