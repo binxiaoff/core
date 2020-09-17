@@ -21,7 +21,7 @@ class MailFixtures extends AbstractFixtures
 <mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ url("front_image", {imageFileName: "emails/fireworks.png"}) }}"/>
 <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour,</mj-text>
 <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
-   Votre compte, {{ staff.roles ? "en tant que " ~ staff.roles|join(", ") }} {{ staff.marketSegments ? "sur le(s) marché(s) " ~ staff.marketSegments|join(", ") }} sur la plateforme KLS, a été créé.
+   Votre compte, pour {{ staff.company.displayName }} {{ staff.roles ? "en tant que " ~ staff.roles|join(", ") }} {{ staff.marketSegments ? "sur le(s) marché(s) " ~ staff.marketSegments|join(", ") }} sur la plateforme KLS, a été créé.
 </mj-text>
 <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
     Nous vous invitons à aller compléter votre profil directement sur <a href="{{ inscriptionFinalisationUrl }}">{{ "kls-platform.com" }}</a>.
@@ -67,7 +67,7 @@ CONTENT
 <mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ url("front_image", {imageFileName: "emails/book.png"}) }}"/>
 <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour{{ client.firstName ? " " ~ client.firstName }},</mj-text>
 <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
-    {{ arranger.displayName }} vous invite à marquer votre intérêt sur la participation de votre Établissement au financement du dossier {{ project.title }} – {{ project.riskGroupName }}, sur la plateforme KLS, l’outil d’aide à la syndication, accessible sur <a href="{{ url("front_home") }}">www.kls-platform.com</a>.
+    {{ arranger.displayName }} vous invite à marquer votre intérêt sur la participation de votre établissement, {{ projectParticipation.participant.displayName }}, au financement du dossier {{ project.title }} – {{ project.riskGroupName }}, sur la plateforme KLS, l’outil d’aide à la syndication, accessible sur <a href="{{ url("front_home") }}">www.kls-platform.com</a>.
 </mj-text>
 <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
     Votre Établissement n’étant pas encore adhérent à la plateforme, nous vous invitons à prendre contact auprès de <a href="mailto:cecile.joly@ca-lendingservices.com">cecile.joly@ca-lendingservices.com</a> ou de <a href="mailto:support@kls-platform.com">support@kls-platform.com</a> afin de pouvoir rapidement formaliser votre adhésion et avoir accès au dossier.
@@ -83,7 +83,7 @@ CONTENT
 <mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ url("front_image", {imageFileName: "emails/book.png"}) }}"/>
 <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour{{ client.firstName ? " " ~ client.firstName }},</mj-text>
 <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
-    {{ arranger.displayName }} vous invite à marquer votre intérêt sur la participation de votre Établissement au financement du dossier {{ project.title }} – {{ project.riskGroupName }}.
+    {{ arranger.displayName }} vous invite à marquer votre intérêt sur la participation de votre établissement, {{ projectParticipation.participant.displayName }}, au financement du dossier {{ project.title }} – {{ project.riskGroupName }}.
 </mj-text>
 <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
     Votre compte n’étant pas encore créé sur la plateforme d’aide à la syndication, KLS.
@@ -107,7 +107,7 @@ CONTENT
 <mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ url("front_image", {imageFileName: "emails/book.png"}) }}"/>
 <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour{{ client.firstName ? " " ~ client.firstName }},</mj-text>
 <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
-    {{ arranger.displayName }} vous invite à marquer votre intérêt sur la participation de votre Établissement au financement du dossier {{ project.title }} – {{ project.riskGroupName }}.
+    {{ arranger.displayName }} vous invite à marquer votre intérêt sur la participation de votre établissement, {{ projectParticipation.participant.displayName }}, au financement du dossier {{ project.title }} – {{ project.riskGroupName }}.
 </mj-text>
 <mj-button background-color="#F9B13B" border-radius="99px" font-weight="500" inner-padding="7px 30px"
 href="{{ url("front_viewParticipation", {projectParticipationPublicId: projectParticipation.publicId}) }}">
@@ -127,7 +127,7 @@ CONTENT
 <mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ url("front_image", {imageFileName: "emails/plant.png"}) }}"/>
 <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour{{ client.firstName ? " " ~ client.firstName }},</mj-text>
 <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
-    {{ arranger.displayName }} vous invite à participer au financement du dossier {{ project.title }} – {{ project.riskGroupName }}, sur la plateforme KLS, l’outil d’aide à la syndication, accessible sur <a href="{{ url("front_home") }}">www.kls-platform.com</a>.
+    {{ arranger.displayName }} vous invite à participer sur la participation de votre établissement, {{ projectParticipation.participant.displayName }}, au financement du dossier {{ project.title }} – {{ project.riskGroupName }}, sur la plateforme KLS, l’outil d’aide à la syndication, accessible sur <a href="{{ url("front_home") }}">www.kls-platform.com</a>.
 </mj-text>
 <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
     Votre Établissement n’étant pas encore adhérent à la plateforme, nous vous invitons à prendre contact auprès de <a href="mailto:cecile.joly@ca-lendingservices.com">cecile.joly@ca-lendingservices.com</a> ou de <a href="mailto:support@kls-platform.com">support@kls-platform.com</a> afin de pouvoir rapidement formaliser votre adhésion et avoir accès au dossier.
@@ -143,7 +143,7 @@ CONTENT
 <mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ url("front_image", {imageFileName: "emails/plant.png"}) }}"/>
 <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour{{ client.firstName ? " " ~ client.firstName }},</mj-text>
 <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
-    {{ arranger.displayName }} vous invite à participer au financement sur la participation de votre Établissement au financement du dossier {{ project.title }} – {{ project.riskGroupName }}.
+    {{ arranger.displayName }} vous invite à participer sur la participation de votre établissement, {{ projectParticipation.participant.displayName }}, au financement du dossier {{ project.title }} – {{ project.riskGroupName }}.
 </mj-text>
 <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
     Votre compte n’étant pas encore créé sur la plateforme d’aide à la syndication, KLS.
@@ -167,7 +167,7 @@ CONTENT
 <mj-image align="right" padding="0 0 0 0 " width="60px" src="{{ url("front_image", {imageFileName: "emails/plant.png"}) }}"/>
 <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour{{ client.firstName ? " " ~ client.firstName }},</mj-text>
 <mj-text color="#3F2865" font-size="14px" font-weight="100" align="justify" line-height="1.5">
-    {{ arranger.displayName }} vous invite à participer au financement du dossier {{ project.title }} – {{ project.riskGroupName }}.
+    {{ arranger.displayName }} vous invite à participer sur la participation de votre établissement, {{ projectParticipation.participant.displayName }}, au financement du dossier {{ project.title }} – {{ project.riskGroupName }}.
 </mj-text>
 <mj-button background-color="#F9B13B" border-radius="99px" font-weight="500" inner-padding="7px 30px" href="{{ url("front_viewParticipation", {projectParticipationPublicId : projectParticipation.publicId}) }}">
     Consultez l’invitation
@@ -254,7 +254,7 @@ MJML,
             'content' => <<<CONTENT
 <mj-text color="#3F2865" font-size="22px" font-weight="700">Bonjour{{ client.firstName ? " " ~ client.firstName : "" }},</mj-text>
 <mj-text color="#3F2865" font-size="14px" align="justify" line-height="1.5">
-{{ arranger.displayName }} vous invite à participer au financement du dossier ({{ project.title }} – {{ project.riskGroupName }}){% if temporaryToken.token %} sur la plateforme KLS <a href="https://www.kls-platform.com">www.kls-platform.com</a> l’outil d’aide à la syndication {% endif %}.
+{{ arranger.displayName }} vous invite à participer sur la participation de votre établissement, {{ projectParticipation.participant.displayName }}, au financement du dossier ({{ project.title }} – {{ project.riskGroupName }}){% if temporaryToken.token %} sur la plateforme KLS <a href="https://www.kls-platform.com">www.kls-platform.com</a> l’outil d’aide à la syndication {% endif %}.
 </mj-text>
 <mj-text color="#3F2865" font-size="14px" align="justify" line-height="1.5">
 {% if temporaryToken.token %}

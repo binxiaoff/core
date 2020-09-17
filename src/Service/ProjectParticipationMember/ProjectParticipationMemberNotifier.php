@@ -78,7 +78,8 @@ class ProjectParticipationMemberNotifier
                 'publicId' => $project->getPublicId(),
             ],
             'projectParticipation' => [
-                'publicId' => $projectParticipation->getPublicId(),
+                'publicId'    => $projectParticipation->getPublicId(),
+                'participant' => ['displayName' => $participant->getDisplayName()],
             ],
             'temporaryToken' => [
                 'token' => $temporaryToken ? $temporaryToken->getToken() : false,
