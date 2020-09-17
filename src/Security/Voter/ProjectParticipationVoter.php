@@ -77,9 +77,19 @@ class ProjectParticipationVoter extends AbstractEntityVoter
         $project = $projectParticipation->getProject();
 
         return $project->isPublished()
-        && $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
-        && $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
-        && $projectParticipation->getProject()->hasEditableStatus();
+            && $projectParticipation->getProject()->hasEditableStatus()
+            && (
+                (
+                    // The arranger can act as an owner for a prospect
+                    $this->isProjectArranger($projectParticipation, $user)
+                    && $projectParticipation->getParticipant()->isProspect()
+                )
+                ||
+                (
+                    $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
+                    && $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
+                )
+            );
     }
 
     /**
