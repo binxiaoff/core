@@ -208,9 +208,10 @@ class Company implements TraceableStatusAwareInterface
         $this->staff         = new ArrayCollection();
         $this->statuses      = new ArrayCollection();
         $this->added         = new DateTimeImmutable();
+        $moduleCodes = CompanyModule::getAvailableModuleCodes();
         $this->modules       = new ArrayCollection(array_map(function ($module) {
             return new CompanyModule($module, $this);
-        }, CompanyModule::getAvailableModuleCodes()));
+        }, array_combine($moduleCodes, $moduleCodes)));
         $this->applicableVat = static::VAT_METROPOLITAN;
         $this->setCurrentStatus(new CompanyStatus($this, CompanyStatus::STATUS_PROSPECT));
     }
