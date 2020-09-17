@@ -52,7 +52,7 @@ class ProjectParticipationMemberNotifier
 
         $project = $projectParticipation->getProject();
 
-        if (false === $project->isPublished() || false === $projectParticipation->getParticipant()->hasSigned()) {
+        if (false === $project->isPublished() || $projectParticipation->getParticipant()->hasRefused()) {
             return;
         }
 
@@ -79,7 +79,9 @@ class ProjectParticipationMemberNotifier
             ],
             'projectParticipation' => [
                 'publicId'    => $projectParticipation->getPublicId(),
-                'participant' => ['displayName' => $participant->getDisplayName()],
+                'participant' => [
+                    'displayName' => $projectParticipation->getParticipant()->getDisplayName(),
+                ],
             ],
             'temporaryToken' => [
                 'token' => $temporaryToken ? $temporaryToken->getToken() : false,

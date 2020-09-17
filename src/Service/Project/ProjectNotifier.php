@@ -151,6 +151,9 @@ class ProjectNotifier
                             'title'         => $project->getTitle(),
                             'riskGroupName' => $project->getRiskGroupName(),
                         ],
+                        'projectParticipation' => [
+                            'publicId' => $participation->getPublicId(),
+                        ],
                     ])->setTo($activeProjectParticipationMember->getStaff()->getClient()->getEmail());
                     $sent += $this->mailer->send($message);
                 }
