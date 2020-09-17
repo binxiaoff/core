@@ -2,7 +2,6 @@
 
 namespace Unilend\Test\Unit\Security\Voter;
 
-use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\Clients;
 use Unilend\Entity\Company;
@@ -14,9 +13,8 @@ use Unilend\Entity\ProjectParticipationMember;
 use Unilend\Entity\Staff;
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
-use Unilend\Test\Unit\Security\Voter\AbstractVoterTestCase;
 
-class ProjectParticipationMemberAbstractVoterTest extends AbstractVoterTestCase
+class ProjectParticipationMemberVoterTest extends AbstractVoterTestCase
 {
 
     /**
