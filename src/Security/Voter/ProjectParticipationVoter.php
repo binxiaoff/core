@@ -154,16 +154,14 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     }
 
     /**
-     * @see https://lafabriquebyca.atlassian.net/browse/CALS-759
-     *
      * @param ProjectParticipation $subject
-     * @param Clients              $user
      *
      * @return bool
      */
-    protected function canCreate(ProjectParticipation $subject, Clients $user): bool
+    protected function canCreate(ProjectParticipation $subject): bool
     {
-        return $this->authorizationChecker->isGranted('edit', $subject->getProject());
+        return $this->authorizationChecker->isGranted('edit', $subject->getProject())
+            && ($subject->getParticipant()->isCAGMember() || $subject->getProject()->getArranger()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT_EXTERNAL_BANK));
     }
 
     /**
