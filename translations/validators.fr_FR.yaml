@@ -96,3 +96,7 @@ LendingRate:
     floorType:
         illegal: Vous ne pouvez pas définir une valeur pour le floorType quand l'indexType est vide ou est "fixé".
         empty: Le floorType est requis.
+
+AcceptationsLegalDocs:
+    legalDoc:
+        unique: Vous ne pouvez pas signé 2 fois les mêmes CGU.
