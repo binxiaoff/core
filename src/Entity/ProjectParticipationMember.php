@@ -113,7 +113,7 @@ class ProjectParticipationMember
     /**
      * @var array
      */
-    private array $violations;
+    private array $violations = [];
 
     /**
      * @param ProjectParticipation $projectParticipation
@@ -165,7 +165,22 @@ class ProjectParticipationMember
      */
     public function setAcceptedNda(AcceptedNDA $acceptedNDA): ProjectParticipationMember
     {
-        // acceptedNdaVersion is only settable once
+        // Save the violation in $this->violations temporarily, so that it can be translated later in @Assert\Callback
+        if ($this->acceptedNdaVersion) {
+            // acceptedNdaVersion is only settable once
+            $this->violations[] = ['path' => 'acceptableNdaVersion', 'message' => 'ProjectParticipationMember.acceptedNdaVersion.accepted'];
+        }
+
+        if (null === $this->getAcceptableNdaVersion()) {
+            // The acceptable version is not available
+            $this->violations[] = ['path' => 'acceptableNdaVersion', 'message' => 'ProjectParticipationMember.acceptableNdaVersion.empty'];
+        }
+
+        if ($acceptedNDA->getFileVersionId() !== $this->getAcceptableNdaVersion()->getPublicId()) {
+            // We can only accept the acceptable version
+            $this->violations[] = ['path' => 'acceptedNdaVersion', 'message' => 'ProjectParticipationMember.acceptedNdaVersion.unacceptableVersion'];
+        }
+
         if (
             null === $this->acceptedNdaVersion
             && null !== $this->getAcceptableNdaVersion()
@@ -174,19 +189,6 @@ class ProjectParticipationMember
             $this->acceptedNdaVersion = $this->getAcceptableNdaVersion();
             $this->acceptedNdaTerm    = $acceptedNDA->getTerm();
             $this->ndaAccepted        = new DateTimeImmutable();
-        }
-
-        // Save the violation in $this->violations temporarily, so that it can be translated later in @Assert\Callback
-        if ($this->acceptedNdaVersion) {
-            $this->violations[] = ['path' => 'acceptableNdaVersion', 'message' => 'ProjectParticipationMember.acceptedNdaVersion.accepted'];
-        }
-
-        if (null === $this->getAcceptableNdaVersion()) {
-            $this->violations[] = ['path' => 'acceptableNdaVersion', 'message' => 'ProjectParticipationMember.acceptableNdaVersion.empty'];
-        }
-
-        if ($acceptedNDA->getFileVersionId() !== $this->getAcceptableNdaVersion()->getPublicId()) {
-            $this->violations[] = ['path' => 'acceptedNdaVersion', 'message' => 'ProjectParticipationMember.acceptedNdaVersion.unacceptableVersion'];
         }
 
         return $this;
