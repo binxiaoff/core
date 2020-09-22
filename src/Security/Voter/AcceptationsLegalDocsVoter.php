@@ -22,8 +22,6 @@ class AcceptationsLegalDocsVoter extends AbstractEntityVoter
     {
         $staff = $submitter->getCurrentStaff();
 
-        return $staff
-            && $acceptationsLegalDocs->getAddedBy() === $staff
-            && $acceptationsLegalDocs->getLegalDoc()->getid() === LegalDocument::CURRENT_SERVICE_TERMS;
+        return $staff && $acceptationsLegalDocs->getAddedBy() === $staff;
     }
 }

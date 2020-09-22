@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 use Unilend\Filter\CountFilter;
 
@@ -52,6 +53,11 @@ class AcceptationsLegalDocs
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_legal_doc", nullable=false)
      * })
+     *
+     * @Assert\Expression(
+     *     "this.getLegalDoc().getId() === constant('Unilend\\Entity\\LegalDocument::CURRENT_SERVICE_TERMS')",
+     *     message="AcceptationsLegalDocs.legalDoc.notCurrent"
+     * )
      *
      * @Groups({"acceptationsLegalDocs:read", "acceptationsLegalDocs:write"})
      */
