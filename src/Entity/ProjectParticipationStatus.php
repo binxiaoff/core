@@ -143,7 +143,8 @@ class ProjectParticipationStatus implements StatusInterface
             return true;
         }
 
-        if ($this->status < 0 && $this->isArrangerParticipation()) {
+        // Arranger participation is not archivable
+        if (in_array($this->status, [self::STATUS_ARCHIVED_BY_ARRANGER, self::STATUS_ARCHIVED_BY_PARTICIPANT]) && $this->isArrangerParticipation()) {
             return false;
         }
 
