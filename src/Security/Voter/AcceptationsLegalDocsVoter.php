@@ -6,7 +6,6 @@ namespace Unilend\Security\Voter;
 
 use Unilend\Entity\AcceptationsLegalDocs;
 use Unilend\Entity\Clients;
-use Unilend\Entity\LegalDocument;
 
 class AcceptationsLegalDocsVoter extends AbstractEntityVoter
 {
