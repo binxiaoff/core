@@ -5,16 +5,14 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\ConstraintViolation;
-use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\DTO\AcceptedNDA;
 use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 
 /**
@@ -89,7 +87,7 @@ class ProjectParticipationMember
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"projectParticipationMember:read", "projectParticipationMember:write", "projectParticipationMember:owner:write"})
+     * @Groups({"projectParticipationMember:read"})
      */
     private ?DateTimeImmutable $ndaAccepted = null;
 
@@ -99,9 +97,23 @@ class ProjectParticipationMember
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion")
      * @ORM\JoinColumn(name="id_accepted_nda_version")
      *
-     * @Groups({"projectParticipationMember:read", "projectParticipationMember:owner:write"})
+     * @Groups({"projectParticipationMember:read"})
      */
     private ?FileVersion $acceptedNdaVersion = null;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="text", length=65535, nullable=true)
+     *
+     * @Groups({"projectParticipationMember:read"})
+     */
+    private ?string $acceptedNdaTerm = null;
+
+    /**
+     * @var array
+     */
+    private array $violations = [];
 
     /**
      * @param ProjectParticipation $projectParticipation
@@ -143,32 +155,39 @@ class ProjectParticipationMember
     }
 
     /**
-     * @param FileVersion $acceptedNdaVersion
+     * @param AcceptedNDA $acceptedNDA
      *
      * @throws Exception
      *
-     * @return $this
+     * @return ProjectParticipationMember
+     *
+     * @Groups({"projectParticipationMember:owner:write"})
      */
-    public function setAcceptedNdaVersion(FileVersion $acceptedNdaVersion): ProjectParticipationMember
+    public function setAcceptedNda(AcceptedNDA $acceptedNDA): ProjectParticipationMember
     {
-        // acceptedNdaVersion is only settable once
-        if (null === $this->acceptedNdaVersion) {
-            if ($acceptedNdaVersion !== $this->getAcceptableNdaVersion()) {
-                $constraintViolationList = new ConstraintViolationList();
-                $constraintViolationList->add(
-                    new ConstraintViolation(
-                        'ProjectParticipationMember.acceptedNdaVersion.unacceptableVersion',
-                        'ProjectParticipationMember.acceptedNdaVersion.unacceptableVersion',
-                        [],
-                        $this,
-                        'acceptedNdaVersion',
-                        $acceptedNdaVersion
-                    )
-                );
+        // Save the violation in $this->violations temporarily, so that it can be translated later in @Assert\Callback
+        if ($this->acceptedNdaVersion) {
+            // acceptedNdaVersion is only settable once
+            $this->violations[] = ['path' => 'acceptableNdaVersion', 'message' => 'ProjectParticipationMember.acceptedNdaVersion.accepted'];
+        }
 
-                throw new ValidationException($constraintViolationList);
-            }
-            $this->acceptedNdaVersion = $acceptedNdaVersion;
+        if (null === $this->getAcceptableNdaVersion()) {
+            // The acceptable version is not available
+            $this->violations[] = ['path' => 'acceptableNdaVersion', 'message' => 'ProjectParticipationMember.acceptableNdaVersion.empty'];
+        }
+
+        if ($acceptedNDA->getFileVersionId() !== $this->getAcceptableNdaVersion()->getPublicId()) {
+            // We can only accept the acceptable version
+            $this->violations[] = ['path' => 'acceptedNdaVersion', 'message' => 'ProjectParticipationMember.acceptedNdaVersion.unacceptableVersion'];
+        }
+
+        if (
+            null === $this->acceptedNdaVersion
+            && null !== $this->getAcceptableNdaVersion()
+            && $acceptedNDA->getFileVersionId() === $this->getAcceptableNdaVersion()->getPublicId()
+        ) {
+            $this->acceptedNdaVersion = $this->getAcceptableNdaVersion();
+            $this->acceptedNdaTerm    = $acceptedNDA->getTerm();
             $this->ndaAccepted        = new DateTimeImmutable();
         }
 
@@ -189,6 +208,14 @@ class ProjectParticipationMember
     public function getStaff(): Staff
     {
         return $this->staff;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAcceptedNdaTerm(): ?string
+    {
+        return $this->acceptedNdaTerm;
     }
 
     /**
@@ -221,9 +248,8 @@ class ProjectParticipationMember
      * @Assert\Callback
      *
      * @param ExecutionContextInterface $context
-     * @param                           $payload
      */
-    public function validateArchived(ExecutionContextInterface $context, $payload)
+    public function validateArchived(ExecutionContextInterface $context): void
     {
         if ($this->isArchived()) {
             if ($this->getProjectParticipation()->getActiveProjectParticipationMembers()->count() < 1) {
@@ -238,6 +264,19 @@ class ProjectParticipationMember
                     ->addViolation()
                 ;
             }
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validate(ExecutionContextInterface $context): void
+    {
+        foreach ($this->violations as $violation) {
+            $context->buildViolation($violation['message'])->atPath($violation['path'])->addViolation()
+            ;
         }
     }
 }

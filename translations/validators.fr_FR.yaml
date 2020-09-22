@@ -64,6 +64,9 @@ ProjectParticipationMember:
         incorrectCompany: Ce staff et la participation ne sont pas liés à la même entité
     acceptedNdaVersion:
         unacceptableVersion: Cette version de fichier n'est pas une de la lettre de confidentialité acceptable
+        accepted: Ce staff a déjà acception la lettre de confidentialité.
+    acceptableNdaVersion:
+        empty: La lettre de confidentialité acceptable n'est pas définie.
     archived:
         lastActiveMember: Vous ne pouvez pas archiver la dernier membre de la participation
         isManager: Vous ne pouvez pas archiver un coordinateur
