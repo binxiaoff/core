@@ -7,6 +7,9 @@ use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Kernel;
 
+// With this mask default directory permissions are 775 and default file permissions are 664.
+umask(0002);
+
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 setlocale(LC_TIME, 'fr_FR.utf8');
