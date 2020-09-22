@@ -17,8 +17,6 @@ class Settings
 {
     use TimestampableTrait;
 
-    public const TYPE_SERVICE_TERMS_PAGE_ID = 'SERVICE_TERMS_PAGE_ID';
-
     /**
      * @var string
      *

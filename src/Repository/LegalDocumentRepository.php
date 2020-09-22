@@ -8,7 +8,6 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\Entity\LegalDocument;
-use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 /**
  * @method LegalDocument|null find($id, $lockMode = null, $lockVersion = null)
@@ -18,9 +17,6 @@ use Unilend\Service\ServiceTerms\ServiceTermsManager;
  */
 class LegalDocumentRepository extends ServiceEntityRepository
 {
-    /** @var ServiceTermsManager */
-    private $serviceTermsManager;
-
     /**
      * @param ManagerRegistry $registry
      */

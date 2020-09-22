@@ -4,19 +4,47 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Interfaces\FileStorageInterface;
-use Unilend\Entity\Traits\TimestampableTrait;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
+use Unilend\Filter\CountFilter;
 
 /**
- * @ORM\Table(name="acceptations_legal_docs")
+ * @ApiResource(
+ *     normalizationContext={"groups": {"acceptationsLegalDocs:read", "timestampable:read"}},
+ *     denormalizationContext={"groups": {"acceptationsLegalDocs:write"}},
+ *     collectionOperations={
+ *         "get",
+ *         "post": {
+ *            "security_post_denormalize": "is_granted('create', object)"
+ *         }
+ *     },
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *     }
+ * )
+ *
+ * @ApiFilter(CountFilter::class)
+ *
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_legal_doc", "added_by"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\AcceptationLegalDocsRepository")
  * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity(fields={"legalDoc", "addedBy"}, message="AcceptationsLegalDocs.legalDoc.unique")
  */
-class AcceptationsLegalDocs implements FileStorageInterface
+class AcceptationsLegalDocs
 {
-    use TimestampableTrait;
+    use TimestampableAddedOnlyTrait;
+    use PublicizeIdentityTrait;
+    use BlamableAddedTrait;
 
     /**
      * @var LegalDocument
@@ -25,55 +53,25 @@ class AcceptationsLegalDocs implements FileStorageInterface
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_legal_doc", nullable=false)
      * })
-     */
-    private $legalDoc;
-
-    /**
-     * @var Clients
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
-     * })
-     */
-    private $client;
-
-    /**
-     * @var int
+     * @Assert\Expression(
+     *     "this.getLegalDoc().getId() === constant('Unilend\\Entity\\LegalDocument::CURRENT_SERVICE_TERMS')",
+     *     message="AcceptationsLegalDocs.legalDoc.notCurrent"
+     * )
      *
-     * @ORM\Column(name="id_acceptation", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @Groups({"acceptationsLegalDocs:read", "acceptationsLegalDocs:write"})
      */
-    private $idAcceptation;
+    private LegalDocument $legalDoc;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=191, nullable=true)
-     */
-    private $relativeFilePath;
-
-    /**
-     * AcceptationsLegalDocs constructor.
-     *
-     * @throws \Exception
-     */
-    public function __construct()
-    {
-        $this->added = new DateTimeImmutable();
-    }
-
-    /**
+     * @param Staff         $addedBy
      * @param LegalDocument $legalDoc
-     *
-     * @return AcceptationsLegalDocs
      */
-    public function setLegalDoc(LegalDocument $legalDoc): AcceptationsLegalDocs
+    public function __construct(Staff $addedBy, LegalDocument $legalDoc)
     {
         $this->legalDoc = $legalDoc;
-
-        return $this;
+        $this->addedBy  = $addedBy;
+        $this->added    = new DateTimeImmutable();
     }
 
     /**
@@ -82,53 +80,5 @@ class AcceptationsLegalDocs implements FileStorageInterface
     public function getLegalDoc(): LegalDocument
     {
         return $this->legalDoc;
-    }
-
-    /**
-     * @param Clients $client
-     *
-     * @return AcceptationsLegalDocs
-     */
-    public function setClient(Clients $client): AcceptationsLegalDocs
-    {
-        $this->client = $client;
-
-        return $this;
-    }
-
-    /**
-     * @return Clients
-     */
-    public function getClient(): Clients
-    {
-        return $this->client;
-    }
-
-    /**
-     * @return int
-     */
-    public function getIdAcceptation(): int
-    {
-        return $this->idAcceptation;
-    }
-
-    /**
-     * @param string|null $relativeFilePath
-     *
-     * @return self
-     */
-    public function setRelativeFilePath(?string $relativeFilePath): AcceptationsLegalDocs
-    {
-        $this->relativeFilePath = $relativeFilePath;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRelativeFilePath(): ?string
-    {
-        return $this->relativeFilePath;
     }
 }
