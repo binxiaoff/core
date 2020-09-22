@@ -26,7 +26,7 @@ class LegalDocument
 
     public const TYPE_SERVICE_TERMS = 1;
 
-    public const CURRENT_SERVICE_TERMS = 1;
+    public const CURRENT_SERVICE_TERMS = 2;
 
     /**
      * @var int
