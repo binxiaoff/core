@@ -73,6 +73,10 @@ class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
             if ($currentStaff->isAdmin()) {
                 $context[AbstractNormalizer::GROUPS][] = Company::SERIALIZER_GROUP_COMPANY_ADMIN_READ;
             }
+
+            if ($currentStaff->isAccountant()) {
+                $context[AbstractNormalizer::GROUPS][] = Company::SERIALIZER_GROUP_COMPANY_ACCOUNTANT_READ;
+            }
         }
 
         return $this->normalizer->normalize($object, $format, $context);
