@@ -258,6 +258,14 @@ class Staff implements TraceableStatusAwareInterface
     /**
      * @return bool
      */
+    public function isOperator(): bool
+    {
+        return $this->hasRole(static::DUTY_STAFF_OPERATOR);
+    }
+
+    /**
+     * @return bool
+     */
     public function isAuditor(): bool
     {
         return $this->hasRole(static::DUTY_STAFF_AUDITOR);
