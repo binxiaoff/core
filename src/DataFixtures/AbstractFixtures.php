@@ -49,13 +49,15 @@ abstract class AbstractFixtures extends Fixture
     }
 
     /**
-     * @param $entity
-     * @param int $value
+     * @param ObjectManager $manager
+     * @param object        $entity
+     * @param int           $value
      *
      * @throws ReflectionException
      */
-    protected function forceId($entity, int $value): void
+    protected function forceId(ObjectManager $manager, object $entity, int $value): void
     {
+        $this->disableAutoIncrement($manager, $entity);
         $ref = new ReflectionClass(get_class($entity));
         $property = $ref->getProperty('id');
         $property->setAccessible(true);
@@ -96,22 +98,6 @@ abstract class AbstractFixtures extends Fixture
      * @param object        $entity
      * @param ObjectManager $manager
      */
-    protected function disableAutoIncrement(object $entity, ObjectManager $manager): void
-    {
-        $entity = get_class($entity);
-        /** @var ClassMetadata $metadata */
-        $metadata = $manager->getClassMetaData($entity);
-        if (!isset($this->idGenerator[$entity])) {
-            $this->idGenerator[$entity] = [$metadata->generatorType, $metadata->idGenerator];
-        }
-        $metadata->setIdGeneratorType(ClassMetadata::GENERATOR_TYPE_NONE);
-        $metadata->setIdGenerator(new AssignedGenerator());
-    }
-
-    /**
-     * @param object        $entity
-     * @param ObjectManager $manager
-     */
     protected function restoreAutoIncrement($entity, ObjectManager $manager): void
     {
         if (!is_string($entity)) {
@@ -122,5 +108,21 @@ abstract class AbstractFixtures extends Fixture
         $metadata = $manager->getClassMetaData($entity);
         $metadata->setIdGeneratorType($type);
         $metadata->setIdGenerator($generator);
+    }
+
+    /**
+     * @param ObjectManager $manager
+     * @param object        $entity
+     */
+    private function disableAutoIncrement(ObjectManager $manager, object $entity): void
+    {
+        $entity = get_class($entity);
+        /** @var ClassMetadata $metadata */
+        $metadata = $manager->getClassMetaData($entity);
+        if (!isset($this->idGenerator[$entity])) {
+            $this->idGenerator[$entity] = [$metadata->generatorType, $metadata->idGenerator];
+        }
+        $metadata->setIdGeneratorType(ClassMetadata::GENERATOR_TYPE_NONE);
+        $metadata->setIdGenerator(new AssignedGenerator());
     }
 }

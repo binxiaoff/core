@@ -19,10 +19,10 @@ class LegalDocumentFixtures extends AbstractFixtures
             ->setTitle('Service Document')
             ->setContent(nl2br($this->faker->paragraphs(50, true)))
             ->setType(LegalDocument::CURRENT_SERVICE_TERMS);
-        $this->disableAutoIncrement($serviceDoc, $manager);
         $this->forcePublicId($serviceDoc, '3ac531f2-14e9-11ea-8b64-0226455cbcab');
-        $this->forceId($serviceDoc, 2);
+        $this->forceId($manager, $serviceDoc, 2);
         $manager->persist($serviceDoc);
         $manager->flush();
+        $this->restoreAutoIncrement($serviceDoc, $manager);
     }
 }
