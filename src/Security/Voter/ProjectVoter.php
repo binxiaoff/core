@@ -43,15 +43,9 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canView(Project $project, Clients $user): bool
     {
-        if ($this->canAdminView($project, $user)) {
-            return true;
-        }
+        $staff = $user->getCurrentStaff();
 
-        if ($this->canParticipantView($project, $user)) {
-            return true;
-        }
-
-        return false;
+        return $staff && ($this->hasArrangerReadAccess($project, $staff) || $this->hasParticipantReadAccess($project, $staff));
     }
 
     /**
@@ -66,9 +60,7 @@ class ProjectVoter extends AbstractEntityVoter
     {
         $staff = $user->getCurrentStaff();
 
-        return $staff && $staff->isActive()
-            && $staff->getCompany() === $project->getSubmitterCompany()
-            && ($this->hasAccess($project, $staff) || $project->getSubmitterClient() === $user);
+        return $staff && $this->hasArrangerReadAccess($project, $staff);
     }
 
     /**
@@ -81,9 +73,7 @@ class ProjectVoter extends AbstractEntityVoter
     {
         $staff = $user->getCurrentStaff();
 
-        return $staff
-            && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT)
-            && $this->hasAccess($project, $staff) ;
+        return $staff && $this->hasArrangerWriteAccess($project, $staff) ;
     }
 
     /**
@@ -116,7 +106,7 @@ class ProjectVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff
-            && $this->canAdminView($project, $user)
+            && $this->hasArrangerWriteAccess($project, $staff)
             && ProjectStatus::STATUS_SYNDICATION_CANCELLED !== $project->getCurrentStatus()->getStatus();
     }
 
@@ -143,24 +133,25 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canDelete(Project $project, Clients $user): bool
     {
-        return $this->canEdit($project, $user) && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus();
+        $staff = $user->getCurrentStaff();
+
+        return $staff
+            && $this->hasArrangerWriteAccess($project, $staff)
+            && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus();
     }
 
     /**
      * @param Project $project
-     * @param Clients $user
+     * @param Staff   $staff
      *
      * @throws NonUniqueResultException
      *
      * @return bool
-     *
      */
-    private function canParticipantView(Project $project, Clients $user): bool
+    private function hasParticipantReadAccess(Project $project, Staff $staff): bool
     {
-        $staff = $user->getCurrentStaff();
-
-        return $staff
-            && $staff->isActive()
+        // The participant doesn't need the participation module for the read access (CALS-2379)
+        return $staff->isActive()
             && $this->projectParticipationManager->isParticipant($staff, $project)
             && (null === $project->getNda() || $this->projectParticipationManager->isNdaAccepted($staff, $project));
     }
@@ -171,8 +162,22 @@ class ProjectVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    private function hasAccess(Project $project, Staff $staff): bool
+    private function hasArrangerReadAccess(Project $project, Staff $staff): bool
     {
-        return $staff->isActive() && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
+        return $staff->isActive()
+            && $staff->getCompany() === $project->getSubmitterCompany()
+            && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()) || $project->getSubmitterClient() === $staff->getClient())
+            && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT);
+    }
+
+    /**
+     * @param Project $project
+     * @param Staff   $staff
+     *
+     * @return bool
+     */
+    private function hasArrangerWriteAccess(Project $project, Staff $staff): bool
+    {
+        return $this->hasArrangerReadAccess($project, $staff) && ($staff->isAdmin() || $staff->isManager() || $staff->isOperator());
     }
 }
