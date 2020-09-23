@@ -55,9 +55,9 @@ class Company implements TraceableStatusAwareInterface
 
     public const COMPANY_NAME_CALS = 'CA Lending Services';
 
-    public const SERIALIZER_GROUP_COMPANY_STAFF_READ = 'company:staff:read';
-
-    public const SERIALIZER_GROUP_COMPANY_ADMIN_READ = 'company:admin:read';
+    public const SERIALIZER_GROUP_COMPANY_STAFF_READ      = 'company:staff:read';
+    public const SERIALIZER_GROUP_COMPANY_ADMIN_READ      = 'company:admin:read';
+    public const SERIALIZER_GROUP_COMPANY_ACCOUNTANT_READ = 'company:accountant:read';
 
     /**
      * @var string
@@ -191,7 +191,7 @@ class Company implements TraceableStatusAwareInterface
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyModule", mappedBy="company", indexBy="code", cascade={"persist"})
      *
-     * @Groups({Company::SERIALIZER_GROUP_COMPANY_ADMIN_READ})
+     * @Groups({Company::SERIALIZER_GROUP_COMPANY_ADMIN_READ, Company::SERIALIZER_GROUP_COMPANY_ACCOUNTANT_READ})
      */
     private Collection $modules;
 
@@ -447,7 +447,7 @@ class Company implements TraceableStatusAwareInterface
      *
      * @Groups({Company::SERIALIZER_GROUP_COMPANY_STAFF_READ})
      */
-    public function getActivatedModules()
+    public function getActivatedModules(): array
     {
         $activatedModules = $this->modules->filter(static function (CompanyModule $module) {
             return $module->isActivated();

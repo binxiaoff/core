@@ -274,6 +274,14 @@ class Staff implements TraceableStatusAwareInterface
     /**
      * @return bool
      */
+    public function isAccountant(): bool
+    {
+        return $this->hasRole(static::DUTY_STAFF_ACCOUNTANT);
+    }
+
+    /**
+     * @return bool
+     */
     public function isActive(): bool
     {
         return $this->getCurrentStatus() && StaffStatus::STATUS_ACTIVE === $this->getCurrentStatus()->getStatus();
@@ -330,7 +338,7 @@ class Staff implements TraceableStatusAwareInterface
      *
      * @return array
      */
-    public function getActivatedModules()
+    public function getActivatedModules(): array
     {
         return $this->company->getActivatedModules();
     }
