@@ -54,14 +54,14 @@ class LegalDocument
      *
      * @ORM\Column(type="text", length=16777215)
      */
-    private $firstTimeInstruction;
+    private $firstTimeInstruction = '';
 
     /**
      * @var string
      *
      * @ORM\Column(type="text", length=16777215)
      */
-    private $differentialInstruction;
+    private $differentialInstruction = '';
 
     /**
      * LegalDocument constructor.
