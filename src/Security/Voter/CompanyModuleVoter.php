@@ -19,6 +19,8 @@ class CompanyModuleVoter extends AbstractEntityVoter
      */
     public function canEdit(CompanyModule $companyModule, Clients $submitter): bool
     {
-        return $companyModule->getCompany() === $submitter->getCompany();
+        $staff = $submitter->getCurrentStaff();
+
+        return $staff && ($staff->isAdmin() || $staff->isAccountant()) && $companyModule->getCompany() === $staff->getCompany();
     }
 }
