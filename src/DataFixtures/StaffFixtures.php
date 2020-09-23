@@ -74,7 +74,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $participant = $this->getReference(UserFixtures::PARTICIPANT);
         foreach ($companies as $company) {
             if ($company !== $adminCompany) {
-                $staff = $this->createStaff($participant, $company);
+                $staff = $this->createStaff($participant, $company, [Staff::DUTY_STAFF_ADMIN]);
                 $this->addStaffReference($staff);
                 $manager->persist($staff);
             }
@@ -199,7 +199,7 @@ SQL;
         $company = $company ?? $this->getReference(CompanyFixtures::CALS);
         $addedBy = $addedBy ?? $this->getReference(self::ADMIN);
         $roles = $roles ?? [Staff::DUTY_STAFF_OPERATOR];
-        $markerSegments = $markerSegments ?? new ArrayCollection();
+        $markerSegments = $markerSegments ?? new ArrayCollection($this->getReferences(MarketSegmentFixtures::SEGMENTS));
         $staff = new Staff($company, $user, $addedBy);
         $staff->setRoles($roles);
         $staff->setMarketSegments($markerSegments);

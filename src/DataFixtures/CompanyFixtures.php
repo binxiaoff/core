@@ -22,6 +22,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
     public const COMPANY4 = 'COMPANY4';
     public const COMPANY5 = 'COMPANY5';
     public const COMPANY_NOT_SIGNED = 'COMPANY_NOT_SIGNED';
+    public const COMPANY_NOT_SIGNED_NO_MEMBERS = 'COMPANY_NOT_SIGNED_NO_MEMBERS';
     public const COMPANY_EXTERNAL = 'COMPANY_EXTERNAL';
     public const COMPANIES = [
         self::COMPANY1,
@@ -81,8 +82,14 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
             $this->createCompany("External Bank $i")->setShortCode('EXTBANK' . $i);
         }
 
-        $company = $this->createCompany('Not signed Bank', 'UNSIGNED', CompanyStatus::STATUS_PROSPECT)->setGroupName('Crédit Agricole');
-        $this->addReference(self::COMPANY_NOT_SIGNED, $company);
+        $this->addReference(
+            self::COMPANY_NOT_SIGNED,
+            $this->createCompany('Not signed Bank', 'UNSIGNED', CompanyStatus::STATUS_PROSPECT)->setGroupName('Crédit Agricole')
+        );
+        $this->addReference(
+            self::COMPANY_NOT_SIGNED_NO_MEMBERS,
+            $this->createCompany('Not signed no member Bank', 'NOMEMBER', CompanyStatus::STATUS_PROSPECT)->setGroupName('Crédit Agricole')
+        );
 
         $manager->flush();
     }
