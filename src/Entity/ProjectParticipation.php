@@ -228,7 +228,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @Groups({
      *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
      *     ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE,
-     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE
+     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE,
+     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE,
      * })
      */
     private ?DateTimeImmutable $committeeDeadline = null;
@@ -240,7 +241,12 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
+     * @Groups({
+     *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
+     *     ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE,
+     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE,
+     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE,
+     * })
      */
     private ?string $committeeComment = null;
 
