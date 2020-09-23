@@ -35,6 +35,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         }
  *     }
  * )
+ *
+ * @ORM\HasLifecycleCallbacks
  */
 class CompanyModule
 {
