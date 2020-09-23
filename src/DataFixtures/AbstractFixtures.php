@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Unilend\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\ORM\Id\AssignedGenerator;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\Persistence\ObjectManager;
 use Faker\{Factory, Generator};
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use ReflectionClass;
@@ -20,6 +23,7 @@ abstract class AbstractFixtures extends Fixture
     protected Generator $faker;
 
     private TokenStorageInterface $tokenStorage;
+    private array $idGenerator = [];
 
     /**
      * @param TokenStorageInterface $tokenStorage
@@ -40,6 +44,20 @@ abstract class AbstractFixtures extends Fixture
     {
         $ref = new ReflectionClass(get_class($entity));
         $property = $ref->getProperty('publicId');
+        $property->setAccessible(true);
+        $property->setValue($entity, $value);
+    }
+
+    /**
+     * @param $entity
+     * @param int $value
+     *
+     * @throws ReflectionException
+     */
+    protected function forceId($entity, int $value): void
+    {
+        $ref = new ReflectionClass(get_class($entity));
+        $property = $ref->getProperty('id');
         $property->setAccessible(true);
         $property->setValue($entity, $value);
     }
@@ -72,5 +90,37 @@ abstract class AbstractFixtures extends Fixture
         $user->setCurrentStaff($staff);
 
         $this->tokenStorage->setToken(new JWTUserToken($user->getRoles(), $user));
+    }
+
+    /**
+     * @param object        $entity
+     * @param ObjectManager $manager
+     */
+    protected function disableAutoIncrement(object $entity, ObjectManager $manager): void
+    {
+        $entity = get_class($entity);
+        /** @var ClassMetadata $metadata */
+        $metadata = $manager->getClassMetaData($entity);
+        if (!isset($this->idGenerator[$entity])) {
+            $this->idGenerator[$entity] = [$metadata->generatorType, $metadata->idGenerator];
+        }
+        $metadata->setIdGeneratorType(ClassMetadata::GENERATOR_TYPE_NONE);
+        $metadata->setIdGenerator(new AssignedGenerator());
+    }
+
+    /**
+     * @param object        $entity
+     * @param ObjectManager $manager
+     */
+    protected function restoreAutoIncrement($entity, ObjectManager $manager): void
+    {
+        if (!is_string($entity)) {
+            $entity = get_class($entity);
+        }
+        [$type, $generator] = $this->idGenerator[$entity];
+        unset($this->idGenerator[$entity]);
+        $metadata = $manager->getClassMetaData($entity);
+        $metadata->setIdGeneratorType($type);
+        $metadata->setIdGenerator($generator);
     }
 }
