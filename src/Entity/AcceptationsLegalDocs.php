@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
+use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 use Unilend\Filter\CountFilter;
 
 /**
@@ -34,25 +34,22 @@ use Unilend\Filter\CountFilter;
  *
  * @ApiFilter(CountFilter::class)
  *
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_legal_doc", "added_by"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_legal_doc", "accepted_by"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\AcceptationLegalDocsRepository")
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity(fields={"legalDoc", "addedBy"}, message="AcceptationsLegalDocs.legalDoc.unique")
+ * @UniqueEntity(fields={"legalDoc", "acceptedBy"}, message="AcceptationsLegalDocs.legalDoc.unique")
  */
 class AcceptationsLegalDocs
 {
     use TimestampableAddedOnlyTrait;
     use PublicizeIdentityTrait;
-    use BlamableAddedTrait;
 
     /**
      * @var LegalDocument
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\LegalDocument")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_legal_doc", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_legal_doc", nullable=false)
      *
      * @Assert\Expression(
      *     "this.getLegalDoc().getId() === constant('Unilend\\Entity\\LegalDocument::CURRENT_SERVICE_TERMS')",
@@ -64,14 +61,23 @@ class AcceptationsLegalDocs
     private LegalDocument $legalDoc;
 
     /**
-     * @param Staff         $addedBy
+     * @var Clients
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
+     * @ORM\JoinColumn(name="accepted_by", nullable=false)
+     *
+     */
+    private Clients $acceptedBy;
+
+    /**
+     * @param Clients       $acceptedBy
      * @param LegalDocument $legalDoc
      */
-    public function __construct(Staff $addedBy, LegalDocument $legalDoc)
+    public function __construct(Clients $acceptedBy, LegalDocument $legalDoc)
     {
-        $this->legalDoc = $legalDoc;
-        $this->addedBy  = $addedBy;
-        $this->added    = new DateTimeImmutable();
+        $this->legalDoc   = $legalDoc;
+        $this->acceptedBy = $acceptedBy;
+        $this->added      = new DateTimeImmutable();
     }
 
     /**
@@ -80,5 +86,13 @@ class AcceptationsLegalDocs
     public function getLegalDoc(): LegalDocument
     {
         return $this->legalDoc;
+    }
+
+    /**
+     * @return Clients
+     */
+    public function getAcceptedBy(): Clients
+    {
+        return $this->acceptedBy;
     }
 }

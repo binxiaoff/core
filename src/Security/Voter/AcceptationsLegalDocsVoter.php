@@ -19,8 +19,6 @@ class AcceptationsLegalDocsVoter extends AbstractEntityVoter
      */
     public function canCreate(AcceptationsLegalDocs $acceptationsLegalDocs, Clients $submitter): bool
     {
-        $staff = $submitter->getCurrentStaff();
-
-        return $staff && $acceptationsLegalDocs->getAddedBy() === $staff;
+        return $acceptationsLegalDocs->getAcceptedBy() === $submitter;
     }
 }
