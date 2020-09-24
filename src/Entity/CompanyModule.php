@@ -19,6 +19,7 @@ use Unilend\Traits\ConstantsAwareTrait;
 /**
  * @ORM\Entity
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_company", "code"})})
+ * @ORM\HasLifecycleCallbacks
  *
  * @ApiResource(
  *     normalizationContext={"groups": {"companyModule:read", "nullableMoney:read"}},
