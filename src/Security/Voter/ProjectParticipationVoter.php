@@ -232,7 +232,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canParticipationOwnerOfferNegotiationEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
+        return ($projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
+                || ($this->isProjectArranger($projectParticipation, $user) && $projectParticipation->getParticipant()->isProspect()))
             && $this->canParticipationOwnerEdit($projectParticipation, $user)
             && $projectParticipation->getProject()->isInOfferNegotiationStep();
     }
