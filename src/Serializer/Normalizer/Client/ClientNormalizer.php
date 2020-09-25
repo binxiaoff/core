@@ -59,7 +59,7 @@ class ClientNormalizer implements ContextAwareNormalizerInterface, NormalizerAwa
 
         $currentServiceTerms = $this->serviceTermsManager->getCurrentVersion();
         if (false === $this->serviceTermsManager->hasAccepted($object, $currentServiceTerms)) {
-            $object->setServiceTermsToSigne($currentServiceTerms);
+            $object->setServiceTermsToSign($currentServiceTerms);
         }
 
         return $this->normalizer->normalize($object, $format, $context);

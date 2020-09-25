@@ -194,7 +194,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      *
      * @Groups({"client:item:read"})
      */
-    private ?LegalDocument $serviceTermsToSigne = null;
+    private ?LegalDocument $serviceTermsToSign = null;
 
     /**
      * @var Collection|ClientStatus[]
@@ -633,19 +633,19 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @return LegalDocument|null
      */
-    public function getServiceTermsToSigne(): ?LegalDocument
+    public function getServiceTermsToSign(): ?LegalDocument
     {
-        return $this->serviceTermsToSigne;
+        return $this->serviceTermsToSign;
     }
 
     /**
-     * @param LegalDocument $serviceTermsToSigne
+     * @param LegalDocument $serviceTermsToSign
      *
      * @return Clients
      */
-    public function setServiceTermsToSigne(LegalDocument $serviceTermsToSigne): Clients
+    public function setServiceTermsToSign(LegalDocument $serviceTermsToSign): Clients
     {
-        $this->serviceTermsToSigne = $serviceTermsToSigne;
+        $this->serviceTermsToSign = $serviceTermsToSign;
 
         return $this;
     }
