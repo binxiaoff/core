@@ -8,12 +8,27 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
- *     itemOperations={"get"}
+ *     normalizationContext={"groups": {"legalDocument:read", "timestampable:read"}},
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "current_service_terms": {
+ *             "method": "GET",
+ *             "controller": "Unilend\Controller\LegalDocument\CurrentServiceTerms",
+ *             "path": "/legal_documents/current_service_terms",
+ *         }
+ *     }
  * )
  *
  * @ORM\Entity
@@ -39,6 +54,8 @@ class LegalDocument
      * @var string
      *
      * @ORM\Column(length=191)
+     *
+     * @Groups({"legalDocument:read"})
      */
     private $title;
 
@@ -46,6 +63,8 @@ class LegalDocument
      * @var string
      *
      * @ORM\Column(type="text")
+     *
+     * @Groups({"legalDocument:read"})
      */
     private $content;
 
@@ -53,6 +72,8 @@ class LegalDocument
      * @var string
      *
      * @ORM\Column(type="text", length=16777215)
+     *
+     * @Groups({"legalDocument:read"})
      */
     private $firstTimeInstruction = '';
 
@@ -60,6 +81,8 @@ class LegalDocument
      * @var string
      *
      * @ORM\Column(type="text", length=16777215)
+     *
+     * @Groups({"legalDocument:read"})
      */
     private $differentialInstruction = '';
 

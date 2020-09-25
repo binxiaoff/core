@@ -29,7 +29,7 @@ use URLify;
  *     itemOperations={
  *         "get": {
  *             "security": "is_granted('view', object)",
- *             "normalization_context": {"groups": {"client:read", "client:owner:read", "staff:read", "company:read"}}
+ *             "normalization_context": {"groups": {"client:read", "client:item:read", "staff:read", "company:read", "legalDocument:read"}}
  *         },
  *         "put": {"security": "is_granted('edit', object)"},
  *         "patch": {"security": "is_granted('edit', object)"}
@@ -40,11 +40,7 @@ use URLify;
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedClients")
  *
- * @ORM\Table(name="clients", indexes={
- *     @ORM\Index(columns={"public_id"}),
- *     @ORM\Index(columns={"email"}),
- *     @ORM\Index(columns={"last_name"})
- * })
+ * @ORM\Table(name="clients", indexes={@ORM\Index(columns={"last_name"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
  *
@@ -177,7 +173,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Staff", mappedBy="client")
      *
-     * @Groups({"client:owner:read"})
+     * @Groups({"client:item:read"})
      */
     private Collection $staff;
 
@@ -190,6 +186,15 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      * @ORM\JoinColumn(name="id_current_status", unique=true)
      */
     private ?ClientStatus $currentStatus = null;
+
+    /**
+     * Property initialised only in ClientNormalizer
+     *
+     * @var LegalDocument|null
+     *
+     * @Groups({"client:item:read"})
+     */
+    private ?LegalDocument $serviceTermsToSign = null;
 
     /**
      * @var Collection|ClientStatus[]
@@ -623,6 +628,26 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     public function getCurrentStatus(): ClientStatus
     {
         return $this->currentStatus;
+    }
+
+    /**
+     * @return LegalDocument|null
+     */
+    public function getServiceTermsToSign(): ?LegalDocument
+    {
+        return $this->serviceTermsToSign;
+    }
+
+    /**
+     * @param LegalDocument $serviceTermsToSign
+     *
+     * @return Clients
+     */
+    public function setServiceTermsToSign(LegalDocument $serviceTermsToSign): Clients
+    {
+        $this->serviceTermsToSign = $serviceTermsToSign;
+
+        return $this;
     }
 
     /**
