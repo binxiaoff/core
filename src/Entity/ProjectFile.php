@@ -35,10 +35,10 @@ class ProjectFile
     use ConstantsAwareTrait;
     use PublicizeIdentityTrait;
 
-    protected const PROJECT_FILE_TYPE_GENERAL              = 'project_file_general';
-    protected const PROJECT_FILE_TYPE_ACCOUNTING_FINANCIAL = 'project_file_accounting_financial';
-    protected const PROJECT_FILE_TYPE_LEGAL                = 'project_file_legal';
-    protected const PROJECT_FILE_TYPE_KYC                  = 'project_file_kyc';
+    public const PROJECT_FILE_TYPE_GENERAL              = 'project_file_general';
+    public const PROJECT_FILE_TYPE_ACCOUNTING_FINANCIAL = 'project_file_accounting_financial';
+    public const PROJECT_FILE_TYPE_LEGAL                = 'project_file_legal';
+    public const PROJECT_FILE_TYPE_KYC                  = 'project_file_kyc';
 
     /**
      * @var string
