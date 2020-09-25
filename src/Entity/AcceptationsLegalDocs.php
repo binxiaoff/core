@@ -18,7 +18,6 @@ use Unilend\Filter\CountFilter;
  *     normalizationContext={"groups": {"acceptationsLegalDocs:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"acceptationsLegalDocs:write"}},
  *     collectionOperations={
- *         "get",
  *         "post": {
  *            "security_post_denormalize": "is_granted('create', object)"
  *         }

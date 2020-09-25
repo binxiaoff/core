@@ -14,7 +14,21 @@ use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
- *     itemOperations={"get"}
+ *     normalizationContext={"groups": {"legalDocument:read", "timestampable:read"}},
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "current_service_terms": {
+ *             "method": "GET",
+ *             "controller": "Unilend\Controller\LegalDocument\CurrentServiceTerms",
+ *             "path": "/legal_documents/current_service_terms",
+ *         }
+ *     }
  * )
  *
  * @ORM\Entity
