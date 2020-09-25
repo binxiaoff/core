@@ -43,8 +43,8 @@ class ListExtension implements QueryCollectionExtensionInterface
         if (!$staff->getCompany()->isCAGMember()) {
             $rootAlias = $queryBuilder->getRootAliases()[0];
             $queryBuilder
-                ->andWhere($rootAlias . '.type != :file_type')
-                ->setParameter('file_type', ProjectFile::PROJECT_FILE_TYPE_KYC);
+                ->andWhere($rootAlias . '.type != :kyc')
+                ->setParameter('kyc', ProjectFile::PROJECT_FILE_TYPE_KYC);
         }
     }
 }
