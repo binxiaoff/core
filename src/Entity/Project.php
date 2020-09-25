@@ -979,18 +979,6 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return Embeddable\Offer|null
-     *
-     * @Groups({"project:read"})
-     */
-    public function getArrangerTargetParticipationOffer(): ?Embeddable\Offer
-    {
-        $invitationRequest = $this->getArrangerProjectParticipation()->getInvitationRequest();
-
-        return $invitationRequest->isValid() ? $invitationRequest : null;
-    }
-
-    /**
      * @throws Exception
      *
      * @return Collection|ProjectOrganizer[]
