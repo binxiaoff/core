@@ -86,6 +86,29 @@ class SwaggerDecorator implements NormalizerInterface
             ],
         ];
 
+        // Remove unused routes (ItemOperations are necessary for APIPlatform but we don't expose those endpoints)
+        $removedGetRoutes = [
+            '/acceptations_legal_docs/{id}',
+            '/company_modules/{id}',
+            '/files/{id}',
+            '/file_versions/{id}',
+            '/legal_documents/{id}',
+            '/project_files/{id}',
+            '/project_messages/{id}',
+            '/project_organizers/{id}',
+            '/project_statuses/{id}',
+            '/project_participation_collections/{id}',
+            '/project_participation_members/{id}',
+            '/project_participation_statuses/{id}',
+            '/project_participation_tranches/{id}',
+            '/staff_statuses/{id}',
+        ];
+        foreach ($removedGetRoutes as $route) {
+            if (isset($docs['paths'][$route]['get'])) {
+                unset($docs['paths'][$route]['get']);
+            }
+        }
+
         return $docs;
     }
 
