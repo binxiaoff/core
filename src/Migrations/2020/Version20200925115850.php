@@ -228,7 +228,7 @@ EOT;
 
     public function up(Schema $schema): void
     {
-        $this->addSql("INSERT INTO legal_document (type, title, content, public_id, first_time_instruction, differential_instruction, added) VALUES (1, 'Conditions générales d‘utilisation', :content, :uuid, '', '', '2020-09-25 12:00:00');", [
+        $this->addSql("INSERT INTO legal_document (id, type, title, content, public_id, first_time_instruction, differential_instruction, added) VALUES (2, 1, 'Conditions générales d‘utilisation', :content, :uuid, '', '', '2020-09-25 12:00:00');", [
             'content'=> $this->content,
             'uuid' => (Uuid::uuid4())->toString()
         ]);
