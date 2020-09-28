@@ -13,8 +13,10 @@ class GoogleRecaptchaManager
 {
     private const ACTIONS_THRESHOLD = [
         'connexion'                => 0.5,
+        'initialization'           => 0.5,
         'forgottenPasswordRequest' => 0.5,
     ];
+
     /** @var Client */
     private Client $client;
     /** @var string */
