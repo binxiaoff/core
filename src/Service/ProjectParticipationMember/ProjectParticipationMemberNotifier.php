@@ -56,6 +56,10 @@ class ProjectParticipationMemberNotifier
             return;
         }
 
+        if ($project->getArranger() === $projectParticipation->getParticipant()) {
+            return;
+        }
+
         $client     = $projectParticipationMember->getStaff()->getClient();
         $templateId = $this->getTemplateId($project, $projectParticipationMember->getStaff());
 

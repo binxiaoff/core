@@ -342,4 +342,18 @@ class Staff implements TraceableStatusAwareInterface
     {
         return $this->company->getActivatedModules();
     }
+
+    /**
+     * @return bool
+     */
+    public function isGrantedLogin(): bool
+    {
+        $company = $this->getCompany();
+
+        if ($company->isCAGMember() && false === $company->hasSigned()) {
+            return false;
+        }
+
+        return $this->isActive();
+    }
 }

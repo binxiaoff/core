@@ -511,13 +511,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     {
         return $this->isInStatus(ClientStatus::GRANTED_LOGIN) && $this->getStaff()->exists(
             static function (int $key, Staff $staff) {
-                $company = $staff->getCompany();
-
-                if ($company->isCAGMember() && false === $company->hasSigned()) {
-                    return false;
-                }
-
-                return $staff->isActive();
+                return $staff->isGrantedLogin();
             }
         );
     }

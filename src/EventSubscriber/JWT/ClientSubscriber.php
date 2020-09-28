@@ -92,7 +92,7 @@ class ClientSubscriber implements EventSubscriberInterface
 
         /** @var Staff $staffEntry */
         foreach ($staffCollection as $staffEntry) {
-            if ($staffEntry->isActive() && $staffEntry->getCompany()->hasSigned()) {
+            if ($staffEntry->isGrantedLogin()) {
                 $user->setCurrentStaff($staffEntry);
                 $data['tokens'][] = $this->jwtManager->create($user);
             }
