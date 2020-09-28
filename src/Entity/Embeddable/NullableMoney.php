@@ -22,7 +22,7 @@ class NullableMoney implements MoneyInterface
      *
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Type("numeric")
-     * @Assert\Positive
+     * @Assert\PositiveOrZero
      *
      * @Gedmo\Versioned
      *
