@@ -21,7 +21,7 @@ class Money implements MoneyInterface
      *
      * @Assert\NotBlank
      * @Assert\Type("numeric")
-     * @Assert\Positive
+     * @Assert\PositiveOrZero
      *
      * @Groups({"money:read", "money:write"})
      */
