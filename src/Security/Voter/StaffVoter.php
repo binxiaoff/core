@@ -55,8 +55,10 @@ class StaffVoter extends AbstractEntityVoter
                 // You can create a staff for external banks
                 false === $subject->getCompany()->isCAGMember()
                 || (
-                    // Or You, as an admin or a manager, can create a staff for a the your own bank
-                    $submitterStaff && $submitterStaff->getCompany() === $subject->getCompany() && ($submitterStaff->isAdmin() || $submitterStaff->isManager())
+                    // Or You can, as an admin, create a staff; or as a manager, create a non-admin staff for your own bank
+                    $submitterStaff
+                    && $submitterStaff->getCompany() === $subject->getCompany()
+                    && ($submitterStaff->isAdmin() || ($submitterStaff->isManager() && false === $subject->isAdmin()))
                 )
             )
             // You must be connected with a crédit agricole group bank
