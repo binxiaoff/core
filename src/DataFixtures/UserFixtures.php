@@ -63,7 +63,7 @@ class UserFixtures extends AbstractFixtures
      */
     public function load(ObjectManager $manager): void
     {
-        $users = array_filter(static::getConstants(), 'is_string');
+        $users = array_filter(static::getConstants(), '\is_string');
         $users = array_flip($users);
 
         foreach (array_keys($users) as $value) {
@@ -99,7 +99,7 @@ class UserFixtures extends AbstractFixtures
          $user->setMobile('+33600000000');
          $user->setJobFunction('Job function');
          $user->setPlainPassword('0000');
-        $user->setPassword($this->passwordEncoder->encodePassword($user, $user->getPlainPassword()));
+         $user->setPassword($this->passwordEncoder->encodePassword($user, $user->getPlainPassword()));
     }
 
     /**
