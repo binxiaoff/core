@@ -836,14 +836,14 @@ class Tranche
     /**
      * @return MoneyInterface
      */
-    public function getTotalInvitationReplyMoney(): MoneyInterface
+    public function getTotalAllocationMoney(): MoneyInterface
     {
-        $totalSyndicatedAmount = new NullableMoney();
+        $totalAllocation = new NullableMoney();
 
         foreach ($this->projectParticipationTranches as $projectParticipationTranche) {
-            $totalSyndicatedAmount = MoneyCalculator::add($totalSyndicatedAmount, $projectParticipationTranche->getInvitationReply()->getMoney());
+            $totalAllocation = MoneyCalculator::add($totalAllocation, $projectParticipationTranche->getAllocation()->getMoney());
         }
 
-        return $totalSyndicatedAmount;
+        return $totalAllocation;
     }
 }
