@@ -62,12 +62,7 @@ class StaffVoter extends AbstractEntityVoter
                 )
             )
             // You must be connected with a crédit agricole group bank
-            && $submitterStaff->getCompany()->isCAGMember()
-            // You cannot create a staff with markets other than is own. But we can create a staff without market segment (used for invitation via email)
-            && (0 === $subject->getMarketSegments()->count()
-            || $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
-                return $submitterStaff->getMarketSegments()->contains($marketSegment);
-            }));
+            && $submitterStaff->getCompany()->isCAGMember();
     }
 
     /**
