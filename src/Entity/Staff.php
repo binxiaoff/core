@@ -19,7 +19,7 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableT
 /**
  * @ApiResource(
  *     normalizationContext={"groups": {"staff:read", "client:read", "client_status:read", "staffStatus:read", "timestampable:read", "traceableStatus:read"}},
- *     attributes={"pagination_client_enabled"=true},
+ *     attributes={"pagination_client_enabled": true},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -33,7 +33,10 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableT
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {"groups": {"role:write", "staff:create"}}
  *         },
- *         "get"
+ *         "get",
+ *         "api_companies_staff_get_subresource": {
+ *            "pagination_enabled":false
+ *         }
  *     }
  * )
  *

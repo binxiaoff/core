@@ -91,6 +91,20 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         }
 
         $manager->flush();
+
+        /** @var Company $manyStaffCompany */
+        $manyStaffCompany = $this->getReference(CompanyFixtures::COMPANY_MANY_STAFF);
+
+        $manyStaffAdminStaff = $this->createStaff($admin, $manyStaffCompany, [Staff::DUTY_STAFF_ADMIN]);
+        $manager->persist($manyStaffAdminStaff);
+
+        foreach (range(0, 50) as $i) {
+            $user = new Clients($this->faker->email);
+            $manager->persist($user);
+            $manager->persist($this->createStaff($user, $manyStaffCompany, [Staff::DUTY_STAFF_OPERATOR], null, $manyStaffAdminStaff));
+        }
+
+        $manager->flush();
     }
 
     /**
