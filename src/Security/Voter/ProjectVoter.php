@@ -73,7 +73,9 @@ class ProjectVoter extends AbstractEntityVoter
     {
         $staff = $user->getCurrentStaff();
 
-        return $staff && $this->hasArrangerWriteAccess($project, $staff) ;
+        return $staff
+            && $this->hasArrangerWriteAccess($project, $staff)
+            && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT);
     }
 
     /**
@@ -166,8 +168,7 @@ class ProjectVoter extends AbstractEntityVoter
     {
         return $staff->isActive()
             && $staff->getCompany() === $project->getSubmitterCompany()
-            && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()) || $project->getSubmitterClient() === $staff->getClient())
-            && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT);
+            && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()) || $project->getSubmitterClient() === $staff->getClient());
     }
 
     /**
