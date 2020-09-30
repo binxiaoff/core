@@ -73,7 +73,9 @@ class ProjectVoter extends AbstractEntityVoter
     {
         $staff = $user->getCurrentStaff();
 
-        return $staff && $this->hasArrangerWriteAccess($project, $staff) ;
+        return $staff
+            && $this->hasArrangerWriteAccess($project, $staff)
+            && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT);
     }
 
     /**
@@ -177,8 +179,6 @@ class ProjectVoter extends AbstractEntityVoter
      */
     private function hasArrangerWriteAccess(Project $project, Staff $staff): bool
     {
-        return $this->hasArrangerReadAccess($project, $staff)
-            && ($staff->isAdmin() || $staff->isManager() || $staff->isOperator())
-            && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT);
+        return $this->hasArrangerReadAccess($project, $staff) && ($staff->isAdmin() || $staff->isManager() || $staff->isOperator());
     }
 }
