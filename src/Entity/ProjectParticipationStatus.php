@@ -172,8 +172,10 @@ class ProjectParticipationStatus implements StatusInterface
      */
     private function isParticipationMember(): bool
     {
-        foreach ($this->getProjectParticipation()->getActiveProjectParticipationMembers() as $activeProjectParticipationMember) {
-            if ($this->getAddedBy() === $activeProjectParticipationMember->getStaff()) {
+        // Include the archived member in the check, because the member can be archived after he/she had made the status change.
+        // Checking if a member is archived or not is the job of the voter.
+        foreach ($this->getProjectParticipation()->getProjectParticipationMembers() as $projectParticipationMember) {
+            if ($this->getAddedBy() === $projectParticipationMember->getStaff()) {
                 return true;
             }
         }
