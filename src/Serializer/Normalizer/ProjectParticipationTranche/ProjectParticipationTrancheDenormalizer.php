@@ -69,10 +69,20 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
      */
     private function getAdditionalDenormalizerGroups(ProjectParticipationTranche $projectParticipationTranche): array
     {
+        $projectParticipation = $projectParticipationTranche->getProjectParticipation();
+        $participant = $projectParticipation->getParticipant();
+        $project = $projectParticipation->getProject();
+        $arranger = $project->getSubmitterCompany();
+
         $groups = [];
 
         if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_ARRANGER_EDIT, $projectParticipationTranche)) {
+            // The voter currently assert that we are in allocation step and the connected user entity is the arranger entity of the project
             $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_ARRANGER_WRITE;
+
+            if ($arranger === $participant) {
+                $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_INVITATION_REPLY_WRITE;
+            }
         }
 
         if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_PARTICIPATION_OWNER_EDIT, $projectParticipationTranche)) {
