@@ -29,17 +29,6 @@ class ProjectParticipationMemberVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param mixed   $subject
-     * @param Clients $user
-     *
-     * @return bool
-     */
-    protected function fulfillPreconditions($subject, Clients $user): bool
-    {
-        return $subject->getProjectParticipation()->getProject()->getCurrentStatus()->getStatus() <= ProjectStatus::STATUS_PARTICIPANT_REPLY;
-    }
-
-    /**
      * @param ProjectParticipationMember $subject
      * @param Clients                    $user
      *
@@ -47,7 +36,7 @@ class ProjectParticipationMemberVoter extends AbstractEntityVoter
      */
     protected function canAcceptNda(ProjectParticipationMember $subject, Clients $user): bool
     {
-        return $subject->getStaff() === $user->getCurrentStaff();
+        return $subject->getStaff() === $user->getCurrentStaff() && $subject->getAcceptedNdaTerm() === null ;
     }
 
     /**
