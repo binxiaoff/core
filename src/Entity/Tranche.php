@@ -233,7 +233,7 @@ class Tranche
      *
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Type("numeric")
-     * @Assert\Positive
+     * @Assert\PositiveOrZero
      * @Assert\Expression(
      *     "this.isCommissionRateValid()",
      *     message="Tranche.commissionRate.expression"
@@ -420,7 +420,7 @@ class Tranche
      */
     public function setLoanType(string $loanType): Tranche
     {
-        if (false === in_array($loanType, self::CHARGEABLE_LOAN_TYPE)) {
+        if (false === \in_array($loanType, self::CHARGEABLE_LOAN_TYPE)) {
             $this->setCommissionRate(null)
                 ->setCommissionType(null)
             ;
@@ -714,7 +714,7 @@ class Tranche
      */
     public function setThirdPartyFunder(?string $thirdPartyFunder): Tranche
     {
-        $this->thirdPartyFunder = $thirdPartyFunder;
+        $this->thirdPartyFunder = $thirdPartyFunder ?: null;
 
         return $this;
     }
@@ -805,7 +805,7 @@ class Tranche
      */
     public function setCommissionRate(?string $commissionRate): Tranche
     {
-        $this->commissionRate = $commissionRate;
+        $this->commissionRate = '' === $commissionRate ? null : $commissionRate;
 
         return $this;
     }
@@ -819,9 +819,9 @@ class Tranche
     {
         return (null === $this->getCommissionType() && null === $this->getCommissionRate())
             || (
-                $this->getCommissionRate()
-                && in_array($this->getLoanType(), self::CHARGEABLE_LOAN_TYPE, true)
-                && in_array($this->getCommissionType(), self::getCommissionTypes(), true)
+                ($this->getCommissionRate() || '0' === $this->getCommissionRate())
+                && \in_array($this->getLoanType(), self::CHARGEABLE_LOAN_TYPE, true)
+                && \in_array($this->getCommissionType(), self::getCommissionTypes(), true)
             );
     }
 

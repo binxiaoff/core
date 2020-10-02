@@ -93,10 +93,10 @@ class LendingRate
      */
     public function __construct(?string $indexType = null, ?string $margin = null, ?string $floor = null, ?string $floorType = null)
     {
-        $this->indexType = $indexType;
-        $this->margin    = $margin;
-        $this->floor     = $floor;
-        $this->floorType = $floorType;
+        $this->setIndexType($indexType);
+        $this->setMargin($margin);
+        $this->setFloor($floor);
+        $this->setFloorType($floorType);
     }
 
     /**
@@ -138,7 +138,7 @@ class LendingRate
      */
     public function setMargin(?string $margin): self
     {
-        $this->margin = $margin;
+        $this->margin = '' === $margin ? null : $margin;
 
         return $this;
     }
@@ -158,7 +158,7 @@ class LendingRate
      */
     public function setFloor(?string $floor): self
     {
-        $this->floor = $floor;
+        $this->floor = '' === $floor ? null : $floor;
 
         return $this;
     }
@@ -207,7 +207,7 @@ class LendingRate
 
         switch ($this->getIndexType()) {
             case null:
-                if ($this->getMargin() || $this->getFloor() || $floorType) {
+                if ($floorType || $this->getMargin() || $this->getFloor()) {
                     $context->buildViolation('LendingRate.indexType.empty')->atPath('indexType')->addViolation();
                 }
                 break;
@@ -225,7 +225,7 @@ class LendingRate
                     $context->buildViolation('LendingRate.floor.empty')->atPath('floor')->addViolation();
                 }
 
-                if (null !== $this->getFloor() && null === $floorType) {
+                if (null === $floorType && null !== $this->getFloor()) {
                     $context->buildViolation('LendingRate.floorType.empty')->atPath('floorType')->addViolation();
                 }
         }
