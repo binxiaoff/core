@@ -1,3 +1,6 @@
+## 3.0.0 (30/09/2020)
+[Release note](https://lafabriquebyca.atlassian.net/browse/CALS/fixforversion/10028)
+
 ## 2.6.1 (03/08/2020)
 [Release note](https://lafabriquebyca.atlassian.net/browse/CALS/fixforversion/10035)
 
