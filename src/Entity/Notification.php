@@ -65,21 +65,19 @@ class Notification
      * @var Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project", referencedColumnName="id")
-     * })
+     * @ORM\JoinColumn(name="id_project", referencedColumnName="id", onDelete="CASCADE")
      */
     private $project;
 
     /**
-     * @var TrancheOffer
+     * @var ProjectParticipationTranche
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\TrancheOffer")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipationTranche")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_tranche_offer")
+     *     @ORM\JoinColumn(name="id_project_participation_tranche")
      * })
      */
-    private $trancheOffer;
+    private $projectParticipationTranche;
 
     /**
      * Notification constructor.
@@ -180,22 +178,22 @@ class Notification
     }
 
     /**
-     * @param TrancheOffer|null $trancheOffer
+     * @param ProjectParticipationTranche|null $projectParticipationTranche
      *
      * @return Notification
      */
-    public function setTrancheOffer(?TrancheOffer $trancheOffer): Notification
+    public function setProjectParticipationTranche(?ProjectParticipationTranche $projectParticipationTranche): Notification
     {
-        $this->trancheOffer = $trancheOffer;
+        $this->projectParticipationTranche = $projectParticipationTranche;
 
         return $this;
     }
 
     /**
-     * @return TrancheOffer|null
+     * @return ProjectParticipationTranche|null
      */
-    public function getTrancheOffer(): ?TrancheOffer
+    public function getProjectParticipationTranche(): ?ProjectParticipationTranche
     {
-        return $this->trancheOffer;
+        return $this->projectParticipationTranche;
     }
 }

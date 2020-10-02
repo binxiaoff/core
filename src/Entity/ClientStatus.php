@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Interfaces\StatusInterface;
+use Unilend\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -127,9 +128,9 @@ class ClientStatus implements StatusInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -148,5 +149,13 @@ class ClientStatus implements StatusInterface
     public static function getPossibleStatuses(): array
     {
         return static::getConstants('STATUS_');
+    }
+
+    /**
+     * @return Clients|TraceableStatusAwareInterface
+     */
+    public function getAttachedObject()
+    {
+        return $this->getClient();
     }
 }

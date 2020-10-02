@@ -35,10 +35,10 @@ class ProjectFile
     use ConstantsAwareTrait;
     use PublicizeIdentityTrait;
 
-    private const PROJECT_FILE_TYPE_GENERAL              = 'project_file_general';
-    private const PROJECT_FILE_TYPE_ACCOUNTING_FINANCIAL = 'project_file_accounting_financial';
-    private const PROJECT_FILE_TYPE_LEGAL                = 'project_file_legal';
-    private const PROJECT_FILE_TYPE_KYC                  = 'project_file_kyc';
+    public const PROJECT_FILE_TYPE_GENERAL              = 'project_file_general';
+    public const PROJECT_FILE_TYPE_ACCOUNTING_FINANCIAL = 'project_file_accounting_financial';
+    public const PROJECT_FILE_TYPE_LEGAL                = 'project_file_legal';
+    public const PROJECT_FILE_TYPE_KYC                  = 'project_file_kyc';
 
     /**
      * @var string
@@ -63,7 +63,7 @@ class ProjectFile
      * @var Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectFiles")
-     * @ORM\JoinColumn(name="id_project", nullable=false)
+     * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      */
     private $project;
 

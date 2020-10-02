@@ -45,8 +45,8 @@ class ListExtension implements QueryCollectionExtensionInterface
         $queryBuilder
             ->distinct()
             ->innerJoin($rootAlias . '.currentStatus', 'cs')
-            ->leftJoin($rootAlias . '.projectParticipations', 'p')
-            ->leftJoin('p.projectParticipationContacts', 'ppc')
+            ->leftJoin($rootAlias . '.projectParticipations', 'pp')
+            ->leftJoin('pp.projectParticipationMembers', 'ppc')
             ->andWhere($queryBuilder->expr()->orX(
                 // if you are owner
                 $rootAlias . '.submitterClient = :client',
@@ -58,15 +58,17 @@ class ListExtension implements QueryCollectionExtensionInterface
                         ($staff && $staff->isAdmin() ? '1 = 1' : '0 = 1')
                     )
                 ),
-                // or you are participant and the project is published
+                // or you are non archived participant and the project is published
                 $queryBuilder->expr()->andX(
-                    'cs.status >= :minimumParticipantDisplayableStatus',
-                    'ppc.client = :client'
+                    'cs.status in (:displayableStatus)',
+                    'ppc.staff = :staff',
+                    'ppc.archived IS NULL'
                 )
             ))
-            ->setParameter('minimumParticipantDisplayableStatus', ProjectStatus::STATUS_PUBLISHED)
+            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
             ->setParameter('company', $staff->getCompany())
-            ->setParameter('client', $user)
+            ->setParameter('staff', $staff)
+            ->setParameter('client', $staff->getClient())
             ->setParameter('marketSegments', $staff ? $staff->getMarketSegments() : [])
         ;
     }

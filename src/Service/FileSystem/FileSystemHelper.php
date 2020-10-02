@@ -8,26 +8,31 @@ use Defuse\Crypto\Exception\{BadFormatException, EnvironmentIsBrokenException, I
 use Exception;
 use League\Flysystem\{FileExistsException, FilesystemInterface};
 use RuntimeException;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Unilend\Entity\{AcceptationsLegalDocs, FileVersion};
+use Unilend\Entity\FileVersion;
+
+use function Symfony\Component\String\s;
 
 class FileSystemHelper
 {
     private const ENCRYPTED_FILE_SUFFIX = '-encrypted';
 
-    /** @var ContainerInterface */
-    private $container;
     /** @var FileCrypto */
-    private $fileCrypto;
+    private FileCrypto $fileCrypto;
+    /** @var FilesystemInterface */
+    private FilesystemInterface $userAttachmentFilesystem;
+    /** @var FilesystemInterface */
+    private FilesystemInterface $generatedDocumentFilesystem;
 
     /**
-     * @param ContainerInterface $container
-     * @param FileCrypto         $fileCrypto
+     * @param FileCrypto          $fileCrypto
+     * @param FilesystemInterface $userAttachmentFilesystem
+     * @param FilesystemInterface $generatedDocumentFilesystem
      */
-    public function __construct(ContainerInterface $container, FileCrypto $fileCrypto)
+    public function __construct(FileCrypto $fileCrypto, FilesystemInterface $userAttachmentFilesystem, FilesystemInterface $generatedDocumentFilesystem)
     {
-        $this->container  = $container;
-        $this->fileCrypto = $fileCrypto;
+        $this->fileCrypto                  = $fileCrypto;
+        $this->userAttachmentFilesystem    = $userAttachmentFilesystem;
+        $this->generatedDocumentFilesystem = $generatedDocumentFilesystem;
     }
 
     /**
@@ -85,25 +90,18 @@ class FileSystemHelper
         $filesystem = null;
         switch ($fileVersion->getFileSystem()) {
             case FileVersion::FILE_SYSTEM_USER_ATTACHMENT:
-                $serviceId = 'League\Flysystem\UserAttachmentFilesystem';
+                $filesystem = $this->userAttachmentFilesystem;
 
                 break;
             case FileVersion::FILE_SYSTEM_GENERATED_DOCUMENT:
-                $serviceId = 'League\Flysystem\GeneratedDocumentFilesystem';
+                $filesystem = $this->generatedDocumentFilesystem;
 
                 break;
             default:
                 throw new RuntimeException(sprintf('The filesystem %s is not be supported', $fileVersion->getFileSystem()));
         }
 
-        $filesystem = $this->getService($serviceId);
-
-        if ($filesystem instanceof FilesystemInterface) {
-            // Do like this, so that the IDE can analyse easier the code.
-            return $filesystem;
-        }
-
-        throw new RuntimeException(sprintf('Cannot find the filesystem for %s. Please check the services configurations', $fileVersion->getFileSystem()));
+        return $filesystem;
     }
 
     /**
@@ -137,7 +135,11 @@ class FileSystemHelper
      */
     public function normalizeFileName(string $fileName): string
     {
-        return \URLify::downcode($fileName);
+        $pathInfo  = pathinfo($fileName);
+        $fileName  = s(trim($pathInfo['filename']))->ascii()->snake()->toString();
+        $extension = s(trim($pathInfo['extension'] ?? ''))->ascii()->snake()->toString();
+
+        return $fileName . ($extension ? '.' . $extension : '');
     }
 
     /**
@@ -158,17 +160,5 @@ class FileSystemHelper
 
         // Re-open the file to change the resource mode, so that the mode is the same as FilesystemInterface::readStream
         return fopen(stream_get_meta_data($outputFileResource)['uri'], 'rb');
-    }
-
-    /**
-     * @param string $name
-     *
-     * @throws Exception
-     *
-     * @return object|null
-     */
-    private function getService(string $name)
-    {
-        return $this->container->get($name);
     }
 }

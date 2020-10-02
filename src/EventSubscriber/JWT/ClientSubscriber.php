@@ -5,45 +5,34 @@ declare(strict_types=1);
 namespace Unilend\EventSubscriber\JWT;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
-use ApiPlatform\Core\Bridge\Symfony\Routing\IriConverter;
-use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
-use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTAuthenticatedEvent;
-use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
-use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
-use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\{Event\AuthenticationSuccessEvent, Event\JWTAuthenticatedEvent, Event\JWTCreatedEvent, Event\JWTDecodedEvent, Events as JwtEvents,
+    Services\JWTTokenManagerInterface};
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\Clients;
-use Unilend\Entity\MarketSegment;
-use Unilend\Entity\Staff;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Unilend\Entity\{Clients, Staff};
 use Unilend\Repository\ClientsRepository;
 
 class ClientSubscriber implements EventSubscriberInterface
 {
     /** @var ClientsRepository */
-    private $clientsRepository;
-    /** @var IriConverter */
-    private $iriConverter;
+    private ClientsRepository $clientsRepository;
+    /** @var IriConverterInterface */
+    private IriConverterInterface $iriConverter;
     /** @var JWTTokenManagerInterface */
-    private $jwtManager;
-    /** @var EntityManagerInterface */
-    private $em;
+    private JWTTokenManagerInterface $jwtManager;
 
     /**
-     * @param EntityManagerInterface   $em
      * @param ClientsRepository        $clientsRepository
      * @param IriConverterInterface    $iriConverter
      * @param JWTTokenManagerInterface $JWTManager
      */
-    public function __construct(EntityManagerInterface $em, ClientsRepository $clientsRepository, IriConverterInterface $iriConverter, JWTTokenManagerInterface $JWTManager)
+    public function __construct(ClientsRepository $clientsRepository, IriConverterInterface $iriConverter, JWTTokenManagerInterface $JWTManager)
     {
         $this->clientsRepository = $clientsRepository;
         $this->iriConverter      = $iriConverter;
         $this->jwtManager        = $JWTManager;
-        $this->em                = $em;
     }
 
     /**
@@ -52,10 +41,10 @@ class ClientSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            JwtEvents::JWT_CREATED            => [['addStaffPayload'], ['addClientPayload']],
+            JwtEvents::JWT_CREATED            => ['addUserPayload'],
             JwtEvents::JWT_DECODED            => ['validateToken'],
             JwtEvents::AUTHENTICATION_SUCCESS => ['createTokens'],
-            JwtEvents::JWT_AUTHENTICATED      => ['addSecurityTokenData'],
+            JwtEvents::JWT_AUTHENTICATED      => ['setCurrentStaff'],
         ];
     }
 
@@ -75,7 +64,7 @@ class ClientSubscriber implements EventSubscriberInterface
 
         try {
             /** @var Staff $staff */
-            $staff = $this->iriConverter->getItemFromIri($payload['staff']);
+            $staff = $this->iriConverter->getItemFromIri($payload['staff'], [AbstractNormalizer::GROUPS => []]);
         } catch (Exception $exception) {
             $staff = null;
         }
@@ -103,7 +92,7 @@ class ClientSubscriber implements EventSubscriberInterface
 
         /** @var Staff $staffEntry */
         foreach ($staffCollection as $staffEntry) {
-            if ($staffEntry->isActive() && $staffEntry->getCompany()->hasSigned()) {
+            if ($staffEntry->isGrantedLogin()) {
                 $user->setCurrentStaff($staffEntry);
                 $data['tokens'][] = $this->jwtManager->create($user);
             }
@@ -113,46 +102,15 @@ class ClientSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param JWTCreatedEvent $event
-     */
-    public function addStaffPayload(JWTCreatedEvent $event): void
-    {
-        $payload = $event->getData();
-        $user    = $event->getUser();
-
-        if ($user instanceof UserInterface && false === $user instanceof Clients) {
-            $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
-        }
-
-        if ($user instanceof Clients) {
-            $currentStaff = $user->getCurrentStaff();
-            if ($currentStaff) {
-                $payload['staff'] = $this->iriConverter->getIriFromItem($currentStaff);
-
-                $payload['marketSegments'] = $currentStaff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
-                    return $this->iriConverter->getIriFromItem($marketSegment);
-                })->toArray();
-                $payload['roles']                  = $currentStaff->getRoles();
-                $company                           = $currentStaff->getCompany();
-                $payload['company']['@id']         = $this->iriConverter->getIriFromItem($company);
-                $payload['company']['publicId']    = $company->getPublicId();
-                $payload['company']['name']        = $company->getName();
-                $payload['company']['shortCode']   = $company->getShortCode();
-                $payload['company']['emailDomain'] = $company->getEmailDomain();
-            }
-            $event->setData($payload);
-        }
-    }
-
-    /**
      * @param JWTAuthenticatedEvent $event
      */
-    public function addSecurityTokenData(JWTAuthenticatedEvent $event): void
+    public function setCurrentStaff(JWTAuthenticatedEvent $event): void
     {
         $payload = $event->getPayload();
         $token   = $event->getToken();
 
-        $currentStaff = $this->iriConverter->getItemFromIri($payload['staff']);
+        /** @var Staff $currentStaff */
+        $currentStaff = $this->iriConverter->getItemFromIri($payload['staff'], [AbstractNormalizer::GROUPS => []]);
 
         $token->getUser()->setCurrentStaff($currentStaff);
     }
@@ -160,7 +118,7 @@ class ClientSubscriber implements EventSubscriberInterface
     /**
      * @param JWTCreatedEvent $event
      */
-    public function addClientPayload(JWTCreatedEvent $event): void
+    public function addUserPayload(JWTCreatedEvent $event): void
     {
         $payload = $event->getData();
         $user    = $event->getUser();
@@ -170,10 +128,11 @@ class ClientSubscriber implements EventSubscriberInterface
         }
 
         if ($user instanceof Clients) {
-            $payload['@id']       = $this->iriConverter->getIriFromItem($user);
-            $payload['publicId']  = $user->getPublicId();
-            $payload['firstName'] = $user->getFirstName();
-            $payload['lastName']  = $user->getLastName();
+            $payload['user'] = $this->iriConverter->getIriFromItem($user);
+            $currentStaff = $user->getCurrentStaff();
+            if ($currentStaff) {
+                $payload['staff'] = $this->iriConverter->getIriFromItem($currentStaff);
+            }
         }
 
         $event->setData($payload);

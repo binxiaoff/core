@@ -9,10 +9,9 @@ parameters:
     paths:
         - src
         - tests
-    bootstrap: %rootDir%/../../../vendor/autoload.php
-    autoload_files:
-        - %rootDir%/../../../bin/.phpunit/phpunit-8.1/vendor/autoload.php
+    bootstrapFiles:
+        - tests/bootstrapPHPUnit.php
     excludes_analyse:
-        - %rootDir%/../../../src/Migrations
+        - src/Migrations
     symfony:
-        container_xml_path: %rootDir%/../../../var/cache/dev/srcUnilend_KernelDevDebugContainer.xml
+        container_xml_path: %rootDir%/../../../var/cache/dev/Unilend_KernelDevDebugContainer.xml

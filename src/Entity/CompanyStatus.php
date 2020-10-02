@@ -7,19 +7,24 @@ namespace Unilend\Entity;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use InvalidArgumentException;
-use Unilend\Entity\Interfaces\StatusInterface;
-use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Entity\{Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface, Traits\PublicizeIdentityTrait, Traits\TimestampableAddedOnlyTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * @ORM\Table(name="company_status")
  * @ORM\Entity
+ *
+ * @Assert\Callback(
+ *     callback={"Unilend\Validator\Constraints\TraceableStatusValidator", "validate"},
+ *     payload={ "path": "status" }
+ * )
  */
 class CompanyStatus implements StatusInterface
 {
     use ConstantsAwareTrait;
     use TimestampableAddedOnlyTrait;
+    use PublicizeIdentityTrait;
 
     public const STATUS_REFUSED  = -10;
     public const STATUS_PROSPECT = 0;
@@ -30,24 +35,19 @@ class CompanyStatus implements StatusInterface
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company", inversedBy="statuses")
      * @ORM\JoinColumn(name="id_company", nullable=false)
+     *
+     * @Groups({"companyStatus:create"})
      */
-    private $company;
+    private Company $company;
 
     /**
      * @var int
      *
      * @ORM\Column(type="smallint")
-     */
-    private $status;
-
-    /**
-     * @var int
      *
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     * @ORM\Column(type="integer")
+     * @Groups({"companyStatus:read", "companyStatus:create"})
      */
-    private $id;
+    private int $status;
 
     /**
      * @param Company $company
@@ -57,11 +57,6 @@ class CompanyStatus implements StatusInterface
      */
     public function __construct(Company $company, int $status)
     {
-        if (!\in_array($status, static::getPossibleStatuses(), true)) {
-            throw new InvalidArgumentException(
-                sprintf('%s is not a possible status for %s', $status, __CLASS__)
-            );
-        }
         $this->status  = $status;
         $this->company = $company;
         $this->added   = new DateTimeImmutable();
@@ -78,14 +73,6 @@ class CompanyStatus implements StatusInterface
     /**
      * @return int
      */
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    /**
-     * @return int
-     */
     public function getStatus(): int
     {
         return $this->status;
@@ -97,5 +84,13 @@ class CompanyStatus implements StatusInterface
     public static function getPossibleStatuses(): array
     {
         return static::getConstants('STATUS_');
+    }
+
+    /**
+     * @return Company|TraceableStatusAwareInterface
+     */
+    public function getAttachedObject()
+    {
+        return $this->getCompany();
     }
 }

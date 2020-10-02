@@ -4,23 +4,40 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\Interfaces\StatusInterface;
-use Unilend\Entity\Traits\BlamableAddedTrait;
-use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
+use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
+use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * @ORM\Entity
- * @ORM\Table(
- *     name="staff_status",
- *     indexes={
- *         @ORM\Index(columns={"status"}, name="idx_staff_status_status"),
+ * @ApiResource(
+ *     normalizationContext={"groups": {"staffStatus:read"}},
+ *     collectionOperations={
+ *         "post": {
+ *             "denormalization_context": {"groups": {"staffStatus:create"}},
+ *             "security_post_denormalize": "is_granted('create', object)"
+ *         }
+ *     },
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
  *     }
+ * )
+ *
+ * @ORM\Entity
+ * @ORM\Table(indexes={@ORM\Index(columns={"status"}, name="idx_staff_status_status")})
+ *
+ * @Assert\Callback(
+ *     callback={"Unilend\Validator\Constraints\TraceableStatusValidator", "validate"},
+ *     payload={ "path": "status" }
  * )
  */
 class StaffStatus implements StatusInterface
@@ -28,6 +45,7 @@ class StaffStatus implements StatusInterface
     use ConstantsAwareTrait;
     use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
+    use PublicizeIdentityTrait;
 
     public const STATUS_ACTIVE   = 10;
     public const STATUS_INACTIVE = -10;
@@ -41,25 +59,18 @@ class StaffStatus implements StatusInterface
      *
      * @Groups({"staffStatus:create"})
      */
-    private $staff;
+    private Staff $staff;
 
     /**
      * @var int
      *
      * @ORM\Column(type="smallint")
      *
+     * @Assert\Choice(callback="getPossibleStatuses")
+     *
      * @Groups({"staffStatus:read", "staffStatus:create"})
      */
-    private $status;
-
-    /**
-     * @var int
-     *
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    private int $status;
 
     /**
      * @param Staff $staff
@@ -70,11 +81,6 @@ class StaffStatus implements StatusInterface
      */
     public function __construct(Staff $staff, int $status, Staff $addedBy)
     {
-        if (!\in_array($status, static::getPossibleStatuses(), true)) {
-            throw new InvalidArgumentException(
-                sprintf('%s is not a possible status for %s', $status, __CLASS__)
-            );
-        }
         $this->staff   = $staff;
         $this->status  = $status;
         $this->addedBy = $addedBy;
@@ -103,5 +109,13 @@ class StaffStatus implements StatusInterface
     public static function getPossibleStatuses(): array
     {
         return static::getConstants('STATUS_');
+    }
+
+    /**
+     * @return TraceableStatusAwareInterface|Staff
+     */
+    public function getAttachedObject()
+    {
+        return $this->getStaff();
     }
 }

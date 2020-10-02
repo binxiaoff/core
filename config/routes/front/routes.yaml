@@ -1,0 +1,38 @@
+home:
+  path: /
+projectForm:
+  path: /arrangement/dossier-de-financement/{projectPublicId}
+  defaults:
+    projectPublicId: ''
+manageParticipant:
+  path: /arrangement/syndication/participant/{projectParticipationPublicId}
+manageSyndication:
+  path: /arrangement/syndication/{projectPublicId}
+viewParticipation:
+  path: /participation/{projectParticipationPublicId}
+arrangementIndex:
+  path: /arrangement
+participationIndex:
+  path: /participation
+habilitations:
+  path: /admin/habilitations
+logout:
+  path: /logout
+login:
+  path: /login
+resetPassword:
+  path: /mot-de-passe-oublie/{temporaryTokenPublicId}/{clientPublicId}
+requestResetPassword:
+  path: /mot-de-passe-oublie
+initialAccount:
+  path: /finalisation-inscription/{temporaryTokenPublicId}/{clientPublicId}
+privacyPolicy:
+  path: /politique-de-confidentialite
+legalNotice:
+  path: /mentions-legales
+cgu:
+  path: /cgu
+image:
+  path: /images/{imageFileName}
+  requirements:
+    imageFileName: .+

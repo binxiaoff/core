@@ -74,7 +74,7 @@ class FileUploadManagerTest extends TestCase
         $uploader   = new Clients('test@' . Internet::safeEmailDomain());
         $uploaderId = Base::randomDigitNotNull() + 1;
         $idClientsReflectionProperty->setValue($uploader, $uploaderId);
-        $uploaderStaff = new Staff(new Company('test'), $uploader, $this->prophesize(Staff::class)->reveal());
+        $uploaderStaff = new Staff(new Company('test', 'test'), $uploader, $this->prophesize(Staff::class)->reveal());
 
         $filePath         = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';
         $originalFileName = Base::asciify(str_repeat('*', 20));

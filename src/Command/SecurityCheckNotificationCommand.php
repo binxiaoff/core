@@ -14,11 +14,11 @@ use Symfony\Component\Console\{Command\Command,
 class SecurityCheckNotificationCommand extends Command
 {
     /** @var string */
-    private $composerlockPath;
+    private string $composerlockPath;
     /** @var SecurityChecker */
-    private $securityChecker;
+    private SecurityChecker $securityChecker;
     /** @var LoggerInterface */
-    private $securityLogger;
+    private LoggerInterface $securityLogger;
 
     /**
      * @param string          $projectDirectory
@@ -55,7 +55,7 @@ class SecurityCheckNotificationCommand extends Command
         if (0 === $result->count()) {
             $io->success('No vulnerability detected');
 
-            return;
+            return 0;
         }
 
         $lockFile     = file_get_contents($this->composerlockPath);
@@ -84,5 +84,7 @@ class SecurityCheckNotificationCommand extends Command
         );
 
         $io->error('Vulnerabilities detected. See Slack or email for more details.');
+
+        return 0;
     }
 }

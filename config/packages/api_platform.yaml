@@ -1,4 +1,5 @@
 api_platform:
+    show_webby: false
     title: 'KLS'
     description: 'Backend API of KLS'
     version: '1.0.0'

@@ -19,21 +19,18 @@ security:
             stateless: true
             anonymous: true
             user_checker: Unilend\Security\UserChecker
-            json_login:
-                check_path: /authentication_token
-                success_handler: lexik_jwt_authentication.handler.authentication_success
-                failure_handler: lexik_jwt_authentication.handler.authentication_failure
-                require_previous_session: false
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
                     - Unilend\Security\TemporaryTokenAuthenticator
+                    - Unilend\Security\UsernamePasswordRecaptchaAuthenticator
                 entry_point: lexik_jwt_authentication.jwt_token_authenticator
 
     access_control:
         - { path: '^/captcha_checks', allow_if: "is_anonymous()" }
         - { path: '^/reset_passwords$', allow_if: "is_anonymous()" }
         - { path: '^/temporary_tokens', allow_if: "is_anonymous()" }
+        - { path: '^/authentication_token', allow_if: "is_anonymous()" }
         - { path: '^/pulse$', allow_if: "is_anonymous()" }
         - { path: '^/legal_documents', allow_if: "is_authenticated() or is_anonymous()" }
         - { path: '^/docs', allow_if: "is_authenticated() or is_anonymous()" }

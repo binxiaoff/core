@@ -10,12 +10,12 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class VersionSubscriber implements EventSubscriberInterface
 {
-    public const JWT_VERSION = '2020-03-18';
+    public const JWT_VERSION = '2020-07-23';
 
     /**
      * {@inheritdoc}
      */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             JwtEvents::JWT_DECODED => 'validateVersion',
@@ -26,7 +26,7 @@ class VersionSubscriber implements EventSubscriberInterface
     /**
      * @param JWTCreatedEvent $event
      */
-    public function addVersion(JWTCreatedEvent $event)
+    public function addVersion(JWTCreatedEvent $event): void
     {
         $payload = $event->getData();
 
@@ -38,7 +38,7 @@ class VersionSubscriber implements EventSubscriberInterface
     /**
      * @param JWTDecodedEvent $event
      */
-    public function validateVersion(JWTDecodedEvent $event)
+    public function validateVersion(JWTDecodedEvent $event): void
     {
         $payload = $event->getPayload();
 

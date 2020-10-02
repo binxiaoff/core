@@ -42,8 +42,7 @@ class ProjectMessageVoter extends AbstractEntityVoter
     {
         return $subject->getParticipation()->getProject()->getSubmitterCompany() === $user->getCompany()
             || (
-                $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $subject->getParticipation()->getProject())
-                && $subject->getParticipation()->getCompany() === $user->getCompany() // TODO See if it should be here or in the validation layer
+                $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject->getParticipation())
             );
     }
 

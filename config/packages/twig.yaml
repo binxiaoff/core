@@ -5,4 +5,4 @@ twig:
     form_themes:
         - 'layouts/form/form_layout.html.twig'
         - 'layouts/form/collections.html.twig'
-        - '@MisdPhoneNumber/Form/tel.html.twig'
+    exception_controller: null

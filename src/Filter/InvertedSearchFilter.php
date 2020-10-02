@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Unilend\Filter;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\HttpFoundation\Request;
 
-class InvertedSearchFilter extends AbstractFilter
+class InvertedSearchFilter extends AbstractContextAwareFilter
 {
     /**
      * {@inheritdoc}
      */
     public function getDescription(string $resourceClass): array
     {
-        //TODO not the priority
+        //TODO we should add the description for this filter for swagger
         return [];
     }
 
@@ -88,7 +88,7 @@ class InvertedSearchFilter extends AbstractFilter
             [$alias, $field] = $this->addJoinsForNestedProperty($property, $alias, $queryBuilder, $queryNameGenerator, $resourceClass, Join::LEFT_JOIN);
         }
 
-        // TODO to discuss
+        // TODO Discuss the way the inverted filter remove unwanted data
         $queryBuilder->andWhere("{$alias}.{$field} NOT IN (:{$parameterName}) OR {$alias}.{$field} IS NULL")
             ->setParameter($parameterName, (array) $value)
         ;

@@ -5,119 +5,183 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
+use ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
-use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Embeddable\{Fee, Money, NullableMoney};
+use Symfony\Component\Validator\{ConstraintViolation, ConstraintViolationList, Constraints as Assert, Context\ExecutionContextInterface};
+use Unilend\Entity\Embeddable\{NullableMoney, Offer, OfferWithFee, RangedOfferWithFee};
+use Unilend\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
  *     normalizationContext={"groups": {
  *         "projectParticipation:read",
- *         "projectParticipationContact:read",
- *         "projectParticipationFee:read",
- *         "projectParticipationOffer:read",
- *         "projectOrganizer:read",
+ *         "projectParticipationMember:read",
+ *         "projectParticipationTranche:read",
+ *         "projectParticipationStatus:read",
+ *         "projectStatus:read",
+ *         "project:read",
  *         "company:read",
- *         "fee:read",
  *         "nullableMoney:read",
- *         "trancheOffer:read",
  *         "money:read",
- *         "lendingRate:read",
- *         "marketSegment:read"
+ *         "rangedOfferWithFee:read",
+ *         "offerWithFee:read",
+ *         "offer:read",
+ *         "archivable:read",
+ *         "timestampable:read",
+ *         "companyStatus:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
- *         "fee:write",
- *         "projectParticipationFee:write",
- *         "nullableMoney:write"
+ *         "nullableMoney:write",
+ *         "rangedOfferWithFee:write",
+ *         "offerWithFee:write",
+ *         "offer:write"
  *     }},
  *     collectionOperations={
- *         "get": {"normalization_context": {"groups": {
- *             "projectParticipation:list",
- *             "project:read",
- *             "projectParticipation:read",
- *             "projectParticipationContact:read",
- *             "projectParticipationFee:read",
- *             "projectParticipationOffer:read",
- *             "projectOrganizer:read",
- *             "projectStatus:read",
- *             "company:read",
- *             "projectStatus:read",
- *             "traceableStatus:read",
- *             "role:read",
- *             "fee:read",
- *             "marketSegment:read",
- *             "nullableMoney:read"
- *         }}},
+ *         "get": {
+ *             "normalization_context": {"groups": {
+ *                 "projectParticipation:list",
+ *                 "project:read",
+ *                 "projectParticipation:read",
+ *                 "projectParticipationMember:read",
+ *                 "projectParticipationTranche:read",
+ *                 "projectParticipationStatus:read",
+ *                 "projectOrganizer:read",
+ *                 "projectStatus:read",
+ *                 "company:read",
+ *                 "role:read",
+ *                 "nullableMoney:read",
+ *                 "money:read",
+ *                 "rangedOfferWithFee:read",
+ *                 "offerWithFee:read",
+ *                 "offer:read",
+ *                 "archivable:read",
+ *                 "timestampable:read",
+ *                 "companyStatus:read"
+ *             }}
+ *         },
  *         "post": {
  *             "denormalization_context": {"groups": {
  *                 "projectParticipation:create",
  *                 "projectParticipation:write",
- *                 "projectParticipationContact:write",
- *                 "projectParticipationFee:create",
- *                 "projectParticipationFee:write",
- *                 "fee:write",
- *                 "nullableMoney:write"
+ *                 "nullableMoney:write",
+ *                 "rangedOfferWithFee:write",
+ *                 "offerWithFee:write",
+ *                 "offer:write"
  *             }},
  *             "security_post_denormalize": "is_granted('create', object)"
  *         }
  *     },
  *     itemOperations={
- *         "get": {"security": "is_granted('view', object)"},
- *         "delete": {"security_post_denormalize": "is_granted('edit', previous_object)"},
- *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)"},
- *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"}
+ *         "get": {
+ *             "security": "is_granted('view', object)",
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "projectParticipation:read",
+ *                     "projectParticipationMember:read",
+ *                     "projectParticipationTranche:read",
+ *                     "projectParticipationStatus:read",
+ *                     "projectStatus:read",
+ *                     "project:read",
+ *                     "role:read",
+ *                     "company:read",
+ *                     "nullableMoney:read",
+ *                     "money:read",
+ *                     "rangedOfferWithFee:read",
+ *                     "offerWithFee:read",
+ *                     "offer:read",
+ *                     "archivable:read",
+ *                     "timestampable:read",
+ *                     "file:read",
+ *                     "fileVersion:read",
+ *                     "tranche:read",
+ *                     "lendingRate:read",
+ *                     "companyStatus:read",
+ *                     "role:read"
+ *                 }
+ *             }
+ *         },
+ *         "delete": {"security": "is_granted('delete', object)"},
+ *         "put": {"security": "is_granted('edit', object)"},
+ *         "patch": {
+ *            "security": "is_granted('edit', object)",
+ *            "denormalization_context": {"groups": {
+ *                 "projectParticipationTranche:write",
+ *                 "projectParticipationMember:write",
+ *                 "projectParticipationStatus:create",
+ *                 "projectParticipation:write",
+ *                 "nullableMoney:write",
+ *                 "rangedOfferWithFee:write",
+ *                 "offerWithFee:write",
+ *                 "offer:write"
+ *             }},
+ *         }
  *     }
  * )
  *
- * @ApiFilter("Unilend\Filter\CountFilter", properties={"projectParticipationOffers"})
- * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status"})
- * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status"})
- * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"project.hash": "exact", "projectParticipationContacts.client.publicId": "exact"})
+ * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectParticipation")
+ *
+ * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status", "currentStatus.status"})
+ * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status", "currentStatus.status"})
+ * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={
+ *     "project.publicId": "exact",
+ *     "projectParticipationMembers.staff.publicId": "exact",
+ *     "participant.publicId": "exact"
+ * })
  * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"project.submitterCompany.publicId"})
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
- * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity({"project", "company"})
+ * @UniqueEntity({"participant", "project"})
  */
-class ProjectParticipation
+class ProjectParticipation implements TraceableStatusAwareInterface
 {
     use TimestampableTrait;
     use BlamableAddedTrait;
     use PublicizeIdentityTrait;
     use ConstantsAwareTrait;
 
-    public const SERIALIZER_GROUP_ADMIN_READ     = 'projectParticipation:admin:read'; // Additional group that is available for admin (admin user or arranger)
-    public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipation:sensitive:read'; // Additional group that is available for public visibility project
+    // Additional normalizer group that is available for those who have the admin right on the participation (participation owner or arranger)
+    public const SERIALIZER_GROUP_ADMIN_READ = 'projectParticipation:admin:read';
+    // Additional normalizer group that is available for public visibility project. It's also available for the participation owner and arranger
+    public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipation:sensitive:read';
 
-    public const BLACKLISTED_COMPANIES = [
-        'CA-CIB',
-        'Unifergie',
-    ];
+    // Additional denormalizer group that is available for the participation owner in all steps
+    public const SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE = 'projectParticipation:participationOwner:write';
 
-    private const STATUS_NOT_CONSULTED = 0;
-    private const STATUS_CONSULTED     = 10;
-    private const STATUS_UNINTERESTED  = 20;
+    // Additional denormalizer group that is available for the participation owner in interest collection step (marque d'intérêt)
+    public const SERIALIZER_GROUP_PARTICIPATION_OWNER_INTEREST_COLLECTION_WRITE = 'projectParticipation:participationOwner:interestCollection:write';
+    // Additional denormalizer group that is available for the arranger in interest collection step (marque d'intérêt)
+    public const SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE = 'projectParticipation:arranger:interestCollection:write';
 
-    private const DEFAULT_STATUS = self::STATUS_NOT_CONSULTED;
+    // Additional denormalizer group that is available for the participation owner in offer negotiation step (réponse ferme)
+    public const SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE = 'projectParticipation:participationOwner:offerNegotiation:write';
+    // Additional denormalizer group that is available for the arranger in offer negotiation step (réponse ferme)
+    public const SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE = 'projectParticipation:arranger:offerNegotiation:write';
+    // Additional denormalizer group that is available for the arranger in allocation step
+    public const SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE = 'projectParticipation:arranger:allocation:write';
+
+    public const PROJECT_PARTICIPATION_FILE_TYPE_NDA = 'project_participation_nda';
+
+    public const INVITATION_REPLY_MODE_PRO_RATA   = 'pro-rata';
+    public const INVITATION_REPLY_MODE_CUSTOMIZED = 'customized';
 
     /**
      * @var Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectParticipations")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"projectParticipation:read", "projectParticipation:create"})
      *
@@ -125,75 +189,156 @@ class ProjectParticipation
      *
      * @Assert\NotBlank
      */
-    private $project;
+    private Project $project;
 
     /**
      * @var Company
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company", inversedBy="projectParticipations")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
-     * })
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company")
+     * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      *
      * @Groups({"projectParticipation:read", "projectParticipation:create"})
      *
      * @Assert\NotBlank
      */
-    private $company;
+    private Company $participant;
 
     /**
-     * @var ProjectParticipationContact[]|ArrayCollection
+     * @var ProjectParticipationStatus|null
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationContact", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipationStatus", cascade={"persist"})
+     * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
-     * @Groups({"projectParticipation:admin:read"})
-     */
-    private $projectParticipationContacts;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer", nullable=false, options={"default": 0})
-     *
-     * @Assert\Choice(callback="getStatuses")
      * @Assert\NotBlank
-     * @Assert\Expression("this.hasOffer() === false or this.isNotInterested() === false")
+     * @Assert\Valid
+     *
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE})
      */
-    private $currentStatus = self::DEFAULT_STATUS;
+    private ?ProjectParticipationStatus $currentStatus;
 
     /**
-     * @var ProjectParticipationFee
+     * Participant committee response deadline if the status = "pended".
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipationFee", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     * @var DateTimeImmutable|null
+     *
+     * @ORM\Column(type="date_immutable", nullable=true)
+     *
+     * @Gedmo\Versioned
+     *
+     * @Groups({
+     *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
+     *     ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE,
+     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE
+     * })
      */
-    private $projectParticipationFee;
+    private ?DateTimeImmutable $committeeDeadline = null;
 
     /**
-     * @var ProjectParticipationOffer[]|ArrayCollection
+     * @var string|null
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationOffer", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"projectParticipation:sensitive:read"})
+     * @Gedmo\Versioned
+     *
+     * @Groups({
+     *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
+     *     ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE,
+     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE
+     * })
      */
-    private $projectParticipationOffers;
+    private ?string $committeeComment = null;
 
     /**
-     * Property created in order that API platform understand it's a nullable field.
+     * Marque d'interet sollicitation envoyé par l'arrangeur au participant.
      *
-     * @var Fee|null
+     * @var RangedOfferWithFee
      *
-     * @Groups({"projectParticipation:admin:read", "projectParticipation:write"})
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\RangedOfferWithFee")
+     *
+     * @Assert\Valid
+     *
+     * @Gedmo\Versioned
+     *
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE, "projectParticipation:create"})
      */
-    private $fee;
+    private RangedOfferWithFee $interestRequest;
 
     /**
-     * @var NullableMoney
+     * Réponse de la sollicitation de l'arrangeur envoyé au participant.
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney", columnPrefix="invitation_")
+     * @var Offer
      *
-     * @Groups({"projectParticipation:admin:read", "projectParticipation:write"})
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
+     *
+     * @Assert\Valid
+     *
+     * @Gedmo\Versioned
+     *
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_INTEREST_COLLECTION_WRITE})
      */
-    private $invitationMoney;
+    private Offer $interestReply;
+
+    /**
+     * Réponse ferme : Invitation envoyé par l'arrangeur au participant.
+     *
+     * @var OfferWithFee
+     *
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\OfferWithFee")
+     *
+     * @Assert\Valid
+     *
+     * @Gedmo\Versioned
+     *
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE, "projectParticipation:create"})
+     */
+    private OfferWithFee $invitationRequest;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(length=10, nullable=true)
+     *
+     * @Assert\Choice(callback="getPossibleInvitationReplyMode")
+     *
+     * @Gedmo\Versioned
+     *
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE})
+     */
+    private ?string $invitationReplyMode = null;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
+     *
+     * @Assert\Type("numeric")
+     * @Assert\NotBlank(allowNull=true)
+     *
+     * @Gedmo\Versioned
+     *
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE})
+     */
+    private ?string $allocationFeeRate = null;
+
+    /**
+     * @var DateTimeImmutable|null
+     *
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE})
+     */
+    private ?DateTimeImmutable $participantLastConsulted = null;
+
+    /**
+     * @var Collection|ProjectParticipationMember[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationMember", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @Assert\Valid
+     *
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
+     */
+    private Collection $projectParticipationMembers;
 
     /**
      * @var Collection|ProjectMessage[]
@@ -203,37 +348,71 @@ class ProjectParticipation
      *
      * @ApiSubresource
      */
-    private $messages;
+    private Collection $messages;
 
     /**
-     * @param Company            $company
-     * @param Project            $project
-     * @param Staff              $addedBy
-     * @param NullableMoney|null $invitationMoney
+     * @var Collection|ProjectParticipationTranche[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="projectParticipation", cascade={"persist"})
+     *
+     * @Assert\Valid()
+     *
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
+     */
+    private Collection $projectParticipationTranches;
+
+    /**
+     * @var Collection|ProjectParticipationStatus[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationStatus", mappedBy="projectParticipation", cascade={"persist"})
+     * @ORM\OrderBy({"added": "ASC"})
+     */
+    private Collection $statuses;
+
+    /**
+     * @var File|null
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\File")
+     * @ORM\JoinColumn(name="id_nda")
+     *
+     * @Groups({
+     *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
+     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE,
+     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE
+     * })
+     */
+    private ?File $nda = null;
+
+    /**
+     * @param Company $participant
+     * @param Project $project
+     * @param Staff   $addedBy
      *
      * @throws Exception
      */
-    public function __construct(
-        Company $company,
-        Project $project,
-        Staff $addedBy,
-        NullableMoney $invitationMoney = null
-    ) {
-        $this->added                      = new DateTimeImmutable();
-        $this->addedBy                    = $addedBy;
-        $this->company                    = $company;
-        $this->project                    = $project;
-        $this->invitationMoney            = $invitationMoney ?? new NullableMoney();
-        $this->projectParticipationOffers = new ArrayCollection();
+    public function __construct(Company $participant, Project $project, Staff $addedBy)
+    {
+        $this->added                        = new DateTimeImmutable();
+        $this->addedBy                      = $addedBy;
+        $this->participant                  = $participant;
+        $this->project                      = $project;
+        $this->projectParticipationMembers  = new ArrayCollection();
+        $this->messages                     = new ArrayCollection();
+        $this->statuses                     = new ArrayCollection();
+        $this->projectParticipationTranches = new ArrayCollection();
+        $this->interestRequest              = new RangedOfferWithFee();
+        $this->interestReply                = new Offer();
+        $this->invitationRequest            = new OfferWithFee();
 
-        $this->projectParticipationContacts = $company->getStaff()
-            ->filter(static function (Staff $staff) use ($project) {
-                return $staff->isActive() && ($staff->isManager() || $staff->isAuditor()) && $staff->getMarketSegments()->contains($project->getMarketSegment());
-            })
-            ->map(function (Staff $staff) use ($addedBy) {
-                return new ProjectParticipationContact($this, $staff->getClient(), $addedBy);
-            })
-        ;
+        $this->setCurrentStatus(new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_CREATED, $addedBy));
+    }
+
+    /**
+     * @return array
+     */
+    public static function getFileTypes()
+    {
+        return [static::PROJECT_PARTICIPATION_FILE_TYPE_NDA];
     }
 
     /**
@@ -245,241 +424,229 @@ class ProjectParticipation
     }
 
     /**
-     * @param Project|null $project
-     *
-     * @return ProjectParticipation
-     */
-    public function setProject(?Project $project): ProjectParticipation
-    {
-        $this->project = $project;
-
-        return $this;
-    }
-
-    /**
      * @return Company
      */
-    public function getCompany(): Company
+    public function getParticipant(): Company
     {
-        return $this->company;
+        return $this->participant;
     }
 
     /**
-     * @return bool
-     *
-     * @Groups({"projectParticipation:sensitive:read"})
+     * @return ProjectParticipationStatus|null
      */
-    public function hasOffer(): bool
+    public function getCurrentStatus(): ?ProjectParticipationStatus
     {
-        return 0 < count($this->projectParticipationOffers);
+        return $this->currentStatus;
     }
 
     /**
-     * @return bool
-     *
-     * @Groups({"projectParticipation:sensitive:read"})
-     */
-    public function hasValidatedOffer(): bool
-    {
-        return 0 < count(
-            $this->projectParticipationOffers->filter(
-                static function (ProjectParticipationOffer $participationOffer) {
-                    return $participationOffer->isAccepted();
-                }
-            )
-        );
-    }
-
-    /**
-     * @return ArrayCollection|ProjectParticipationOffer[]
-     */
-    public function getProjectParticipationOffers()
-    {
-        return $this->projectParticipationOffers;
-    }
-
-    /**
-     * @Groups({"projectParticipation:admin:read"})
-     *
-     * @return bool
-     */
-    public function isNotInterested(): bool
-    {
-        return $this->currentStatus === static::STATUS_UNINTERESTED;
-    }
-
-    /**
-     * @return bool
-     *
-     * @Groups({"projectParticipation:admin:read"})
-     */
-    public function isConsulted(): bool
-    {
-        return $this->currentStatus >= static::STATUS_CONSULTED;
-    }
-
-    /**
-     * @Groups({"projectParticipation:write"})
-     *
-     * @param bool $uninterested
+     * @param ProjectParticipationStatus|StatusInterface $currentStatus
      *
      * @return ProjectParticipation
      */
-    public function setUninterested(bool $uninterested): ProjectParticipation
+    public function setCurrentStatus(StatusInterface $currentStatus): ProjectParticipation
     {
-        $this->currentStatus = $uninterested ? static::STATUS_UNINTERESTED : $this->currentStatus;
+        $this->currentStatus = $currentStatus;
 
         return $this;
-    }
-
-    /**
-     * @Groups({"projectParticipation:write"})
-     *
-     * @param bool $consulted The setter needs a parameter to work with API Platform
-     *
-     * @return ProjectParticipation
-     */
-    public function setConsulted(bool $consulted): ProjectParticipation
-    {
-        $this->currentStatus = $consulted && ($this->currentStatus === static::STATUS_NOT_CONSULTED) ?
-            static::STATUS_CONSULTED : $this->currentStatus;
-
-        return $this;
-    }
-
-    /**
-     * @return ProjectParticipationContact[]|ArrayCollection
-     */
-    public function getProjectParticipationContacts(): iterable
-    {
-        return $this->projectParticipationContacts;
-    }
-
-    /**
-     * @return ProjectParticipationFee|null
-     */
-    public function getProjectParticipationFee(): ?ProjectParticipationFee
-    {
-        return $this->projectParticipationFee;
-    }
-
-    /**
-     * @return NullableMoney|null
-     */
-    public function getInvitationMoney(): ?NullableMoney
-    {
-        return $this->invitationMoney->isValid() ? $this->invitationMoney : null;
-    }
-
-    /**
-     * @param NullableMoney $nullableMoney
-     *
-     * @return NullableMoney
-     */
-    public function setInvitationMoney(NullableMoney $nullableMoney): NullableMoney
-    {
-        return $this->invitationMoney = $nullableMoney;
-    }
-
-    /**
-     * @throws Exception
-     *
-     * @return Money
-     *
-     * @Groups({"projectParticipation:sensitive:read"})
-     */
-    public function getOfferMoney(): Money
-    {
-        $money = new Money($this->getProject()->getGlobalFundingMoney()->getCurrency());
-
-        foreach ($this->getProjectParticipationOffers() as $projectParticipationOffer) {
-            $money = $money->add($projectParticipationOffer->getOfferMoney());
-        }
-
-        return $money;
-    }
-
-    /**
-     * @return Fee
-     */
-    public function getFee(): ?Fee
-    {
-        return $this->getProjectParticipationFee() ? $this->getProjectParticipationFee()->getFee() : null;
-    }
-
-    /**
-     * @param Fee|null $fee
-     *
-     * @throws Exception
-     *
-     * @return ProjectParticipation
-     */
-    public function setFee(?Fee $fee): ProjectParticipation
-    {
-        if (null === $fee) {
-            $this->setProjectParticipationFee(null);
-
-            return $this;
-        }
-
-        $projectParticipationFee = $this->getProjectParticipationFee();
-
-        if (!$projectParticipationFee) {
-            $projectParticipationFee = new ProjectParticipationFee($this, $fee);
-        }
-
-        $projectParticipationFee->getFee()->setRate($fee->getRate());
-        $projectParticipationFee->getFee()->setType($fee->getType());
-        $projectParticipationFee->getFee()->setComment($fee->getComment());
-        $projectParticipationFee->getFee()->setRecurring($fee->isRecurring());
-
-        return $this->setProjectParticipationFee($projectParticipationFee);
-    }
-
-    /**
-     * @param ProjectParticipationFee|null $projectParticipationFee
-     *
-     * @return $this
-     */
-    public function setProjectParticipationFee(?ProjectParticipationFee $projectParticipationFee): ProjectParticipation
-    {
-        $this->projectParticipationFee = $projectParticipationFee;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     *
-     * @Groups({"projectParticipation:admin:read"})
-     */
-    public function getOfferComment(): ?string
-    {
-        return $this->projectParticipationOffers->first() ? $this->projectParticipationOffers->first()->getComment() : null;
-    }
-
-    /**
-     * @return string|null
-     *
-     * @Groups({"projectParticipation:admin:read"})
-     */
-    public function getOfferCommitteeStatus(): ?string
-    {
-        return $this->projectParticipationOffers->first() ? $this->projectParticipationOffers->first()->getCommitteeStatus() : null;
     }
 
     /**
      * @return DateTimeImmutable|null
      *
-     * @Groups({"projectParticipation:admin:read"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
      */
-    public function getOfferExpectedCommitteeDate(): ?DateTimeImmutable
+    public function getParticipantLastConsulted(): ?DateTimeImmutable
     {
-        return $this->projectParticipationOffers->first() ? $this->projectParticipationOffers->first()->getExpectedCommitteeDate() : null;
+        return $this->participantLastConsulted;
     }
 
     /**
-     * @return Collection
+     * @param DateTimeImmutable|null $participantLastConsulted
+     *
+     * @return ProjectParticipation
+     */
+    public function setParticipantLastConsulted(?DateTimeImmutable $participantLastConsulted): ProjectParticipation
+    {
+        $this->participantLastConsulted = $participantLastConsulted;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getCommitteeDeadline(): ?DateTimeImmutable
+    {
+        return $this->committeeDeadline;
+    }
+
+    /**
+     * @param DateTimeImmutable|null $committeeDeadline
+     *
+     * @return ProjectParticipation
+     */
+    public function setCommitteeDeadline(?DateTimeImmutable $committeeDeadline): ProjectParticipation
+    {
+        $this->committeeDeadline = $committeeDeadline;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCommitteeComment(): ?string
+    {
+        return $this->committeeComment;
+    }
+
+    /**
+     * @param string|null $committeeComment
+     *
+     * @return ProjectParticipation
+     */
+    public function setCommitteeComment(?string $committeeComment): ProjectParticipation
+    {
+        $this->committeeComment = $committeeComment;
+
+        return $this;
+    }
+
+    /**
+     * @return RangedOfferWithFee
+     */
+    public function getInterestRequest(): RangedOfferWithFee
+    {
+        return $this->interestRequest;
+    }
+
+    /**
+     * @param RangedOfferWithFee $interestRequest
+     *
+     * @return ProjectParticipation
+     */
+    public function setInterestRequest(RangedOfferWithFee $interestRequest): ProjectParticipation
+    {
+        $this->interestRequest = $interestRequest;
+
+        return $this;
+    }
+
+    /**
+     * @return Offer
+     */
+    public function getInterestReply(): Offer
+    {
+        return $this->interestReply;
+    }
+
+    /**
+     * @param Offer $interestReply
+     *
+     * @return ProjectParticipation
+     */
+    public function setInterestReply(Offer $interestReply): ProjectParticipation
+    {
+        $this->interestReply = $interestReply;
+
+        return $this;
+    }
+
+    /**
+     * @return OfferWithFee
+     */
+    public function getInvitationRequest(): OfferWithFee
+    {
+        return $this->invitationRequest;
+    }
+
+    /**
+     * @param OfferWithFee $invitationRequest
+     *
+     * @return ProjectParticipation
+     */
+    public function setInvitationRequest(OfferWithFee $invitationRequest): ProjectParticipation
+    {
+        $this->invitationRequest = $invitationRequest;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getInvitationReplyMode(): ?string
+    {
+        return $this->invitationReplyMode;
+    }
+
+    /**
+     * @param string|null $invitationReplyMode
+     *
+     * @return ProjectParticipation
+     */
+    public function setInvitationReplyMode(?string $invitationReplyMode): ProjectParticipation
+    {
+        $this->invitationReplyMode = $invitationReplyMode;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAllocationFeeRate(): ?string
+    {
+        return $this->allocationFeeRate;
+    }
+
+    /**
+     * @param string|null $allocationFeeRate
+     *
+     * @return ProjectParticipation
+     */
+    public function setAllocationFeeRate(?string $allocationFeeRate): ProjectParticipation
+    {
+        $this->allocationFeeRate = $allocationFeeRate;
+
+        return $this;
+    }
+
+    /**
+     * @return ProjectParticipationMember[]|Collection
+     */
+    public function getProjectParticipationMembers(): Collection
+    {
+        return $this->projectParticipationMembers;
+    }
+
+    /**
+     * @return ProjectParticipationMember[]|Collection
+     */
+    public function getActiveProjectParticipationMembers(): Collection
+    {
+        return $this->projectParticipationMembers->filter(static function (ProjectParticipationMember $projectParticipationMember) {
+            return false === $projectParticipationMember->isArchived();
+        });
+    }
+
+    /**
+     * @param ProjectParticipationMember $projectParticipationMember
+     *
+     * @return ProjectParticipation
+     */
+    public function addProjectParticipationMember(ProjectParticipationMember $projectParticipationMember): ProjectParticipation
+    {
+        if (false === $this->projectParticipationMembers->contains($projectParticipationMember)) {
+            $this->projectParticipationMembers->add($projectParticipationMember);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ProjectMessage[]
      */
     public function getMessages(): Collection
     {
@@ -487,18 +654,167 @@ class ProjectParticipation
     }
 
     /**
-     * @param int $currentStatus
+     * @return Collection|ProjectParticipationStatus[]
      */
-    public function setCurrentStatus(int $currentStatus): void
+    public function getStatuses(): Collection
     {
-        $this->currentStatus = $currentStatus;
+        return $this->statuses;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return 0 < $this->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * @return ArrayCollection|ProjectParticipationTranche[]
+     */
+    public function getProjectParticipationTranches()
+    {
+        return $this->projectParticipationTranches;
+    }
+
+    /**
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
+     *
+     * @return MoneyInterface
+     */
+    public function getTotalInvitationReply(): MoneyInterface
+    {
+        $totalInvitationReply = new NullableMoney();
+        foreach ($this->projectParticipationTranches as $projectParticipationTranche) {
+            $totalInvitationReply = MoneyCalculator::add($totalInvitationReply, $projectParticipationTranche->getInvitationReply()->getMoney());
+        }
+
+        return $totalInvitationReply;
+    }
+
+    /**
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
+     *
+     * @return MoneyInterface
+     */
+    public function getTotalAllocation(): MoneyInterface
+    {
+        $totalAllocation = new NullableMoney();
+        foreach ($this->projectParticipationTranches as $projectParticipationTranche) {
+            $totalAllocation = MoneyCalculator::add($totalAllocation, $projectParticipationTranche->getAllocation()->getMoney());
+        }
+
+        return $totalAllocation;
     }
 
     /**
      * @return array
      */
-    public function getStatuses()
+    public static function getPossibleInvitationReplyMode(): array
     {
-        return self::getConstants('STATUS_');
+        return static::getConstants('INVITATION_REPLY_MODE_');
+    }
+
+    /**
+     * @return File|null
+     */
+    public function getNda(): ?File
+    {
+        return $this->nda;
+    }
+
+    /**
+     * @param File|null $nda
+     *
+     * @return ProjectParticipation
+     */
+    public function setNda(?File $nda): ProjectParticipation
+    {
+        $this->nda = $nda;
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectParticipationTranche $participationTranche
+     *
+     * @return ProjectParticipation
+     */
+    public function addProjectParticipationTranche(ProjectParticipationTranche $participationTranche): ProjectParticipation
+    {
+        if (false === $this->projectParticipationTranches->contains($participationTranche)) {
+            $this->projectParticipationTranches->add($participationTranche);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @Assert\Callback()
+     *
+     * @param ExecutionContextInterface $context
+     * @param                           $payload
+     */
+    public function validateSendingInvitation(ExecutionContextInterface $context, $payload)
+    {
+        if ($this->getProject()->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION)) {
+            if ((null === $this->getInvitationRequest() || false === $this->invitationRequest->isValid())) {
+                $context->buildViolation('ProjectParticipation.invitationRequest.invalid')
+                    ->atPath('invitationRequest')
+                    ->addViolation();
+            }
+
+            if ($this->projectParticipationTranches->isEmpty() && $this->getCurrentStatus()->getStatus() > 0) {
+                $context->buildViolation('ProjectParticipation.projectParticipationTranches.required')
+                    ->atPath('projectParticipationTranches')
+                    ->addViolation();
+            }
+        }
+    }
+
+    /**
+     * @Assert\Callback()
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateProjectParticipationTranches(ExecutionContextInterface $context)
+    {
+        foreach ($this->projectParticipationTranches as $index => $participationTranche) {
+            if ($participationTranche->getProjectParticipation() !== $this) {
+                $context->buildViolation('ProjectParticipation.projectParticipationTranches.incorrectParticipation')
+                    ->atPath("projectParticipationTranches[$index]")
+                    ->addViolation();
+            }
+        }
+    }
+
+    /**
+     * @Assert\Callback()
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateProjectParticipationMembers(ExecutionContextInterface $context)
+    {
+        foreach ($this->projectParticipationMembers as $index => $participationMember) {
+            if ($participationMember->getProjectParticipation() !== $this) {
+                $context->buildViolation('ProjectParticipation.projectParticipationMembers.incorrectParticipation')
+                    ->atPath("projectParticipationMembers[$index]")
+                    ->addViolation();
+            }
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateCommitteeDeadline(ExecutionContextInterface $context)
+    {
+        if (null === $this->committeeDeadline && ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $this->currentStatus->getStatus()) {
+            $context->buildViolation('ProjectParticipation.committeeDeadline.required')
+                ->atPath('committeeDeadline')
+                ->addViolation();
+        }
     }
 }

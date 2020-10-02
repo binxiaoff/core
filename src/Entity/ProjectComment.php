@@ -58,8 +58,8 @@ class ProjectComment
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="comments")
-     * @ORM\JoinColumn(name="id_project", referencedColumnName="id", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectComments")
+     * @ORM\JoinColumn(name="id_project", referencedColumnName="id", nullable=false, onDelete="CASCADE")
      */
     private $project;
 

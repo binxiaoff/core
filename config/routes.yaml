@@ -1,17 +1,5 @@
-_knp_mailjet:
-    path:  /ws/mailjet/notify/{token}
-    defaults: { _controller: knp_mailjet.event.controller:handleEventAction, token: null }
-
-api_login_check:
-    path: /authentication_token
-    methods: ['POST']
-
-gesdinet_jwt_refresh_token:
-    path:       /token/refresh
-    controller: gesdinet.jwtrefreshtoken::refresh
-
 front:
-    resource: 'front/routes.yaml'
+    resource: 'routes/front/routes.yaml'
     host: '%front.host%'
     methods: ['GET']
     schemes: ['https']

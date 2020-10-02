@@ -6,20 +6,24 @@ namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Entity\Embeddable\NullableMoney;
 use Unilend\Entity\Traits\{BlamableUpdatedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_company", "label"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_company", "code"})})
+ * @ORM\HasLifecycleCallbacks
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"module:read"}},
- *     denormalizationContext={"groups": {"module:write"}},
+ *     normalizationContext={"groups": {"companyModule:read", "nullableMoney:read"}},
+ *     denormalizationContext={"groups": {"companyModule:write"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -27,7 +31,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "output": false,
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object)"
+ *             "security": "is_granted('edit', object)",
+ *             "security_post_denormalize": "is_granted('edit', object) && object.isActivated() === true"
  *         }
  *     }
  * )
@@ -39,20 +44,21 @@ class CompanyModule
     use BlamableUpdatedTrait;
     use ConstantsAwareTrait;
 
-    public const MODULE_ARRANGEMENT   = 'arrangement';
-    public const MODULE_PARTICIPATION = 'participation';
-    public const MODULE_AGENCY        = 'agency';
+    public const MODULE_ARRANGEMENT    = 'arrangement';
+    public const MODULE_PARTICIPATION  = 'participation';
+    public const MODULE_AGENCY         = 'agency';
+    public const MODULE_ARRANGEMENT_EXTERNAL_BANK = 'arrangement_external_bank';
 
     /**
      * @var string
      *
      * @ORM\Column(type="string", nullable=false)
      *
-     * @Assert\Choice(callback="getAvailableModulesNames")
+     * @Assert\Choice(callback="getAvailableModuleCodes")
      *
-     * @Groups({"module:read"})
+     * @Groups({"companyModule:read"})
      */
-    private $label;
+    private string $code;
 
     /**
      * @var Company
@@ -61,41 +67,60 @@ class CompanyModule
      * @ORM\JoinColumn(nullable=false, name="id_company")
      *
      * @Assert\NotBlank
-     *
-     * @Groups({"module:read"})
      */
-    private $company;
+    private Company $company;
 
     /**
      * @var bool
      *
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"module:read", "module:write"})
+     * @Groups({"companyModule:read", "companyModule:write"})
      */
-    private $activated;
+    private bool $activated;
 
     /**
-     * @param string  $name
+     * @var Collection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\CompanyModuleLog", mappedBy="companyModule")
+     * @ORM\OrderBy({"added": "ASC"})
+     */
+    private Collection $logs;
+
+    /**
+     * TODO This is temporary. Remove when facturation is handled by the platform
+     *
+     * @var NullableMoney|null
+     *
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"companyModule:read"})
+     */
+    private ?NullableMoney $arrangementAnnualLicenseMoney;
+
+    /**
+     * @param string  $code
      * @param Company $company
      * @param bool    $activated
      *
      * @throws Exception
      */
-    public function __construct(string $name, Company $company, bool $activated = false)
+    public function __construct(string $code, Company $company, bool $activated = false)
     {
-        $this->label     = $name;
+        $this->code      = $code;
         $this->company   = $company;
         $this->activated = $activated;
         $this->added     = new DateTimeImmutable();
+        $this->logs      = new ArrayCollection();
+        $this->arrangementAnnualLicenseMoney = new NullableMoney();
     }
 
     /**
      * @return string
      */
-    public function getLabel(): string
+    public function getCode(): string
     {
-        return $this->label;
+        return $this->code;
     }
 
     /**
@@ -127,10 +152,49 @@ class CompanyModule
     }
 
     /**
+     * @return Collection
+     */
+    public function getLogs(): Collection
+    {
+        return $this->logs;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     *
+     * @Groups({"companyModule:read"})
+     */
+    public function getLastActivationDate(): ?DateTimeImmutable
+    {
+        // Work for now because there is no user module deactivation
+        return $this->getUpdated();
+    }
+
+    /**
      * @return array|string[]
      */
-    public static function getAvailableModuleLabels(): array
+    public static function getAvailableModuleCodes(): array
     {
         return static::getConstants('MODULE_');
+    }
+
+    /**
+     * @return NullableMoney|null
+     */
+    public function getArrangementAnnualLicenseMoney(): ?NullableMoney
+    {
+        return $this->arrangementAnnualLicenseMoney->isValid() ? $this->arrangementAnnualLicenseMoney : null;
+    }
+
+    /**
+     * @param NullableMoney|null $arrangementAnnualLicenseMoney
+     *
+     * @return CompanyModule
+     */
+    public function setArrangementAnnualLicenseMoney(?NullableMoney $arrangementAnnualLicenseMoney): CompanyModule
+    {
+        $this->arrangementAnnualLicenseMoney = $arrangementAnnualLicenseMoney;
+
+        return $this;
     }
 }

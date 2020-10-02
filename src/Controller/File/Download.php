@@ -17,11 +17,11 @@ use Unilend\Service\File\FileDownloadManager;
 class Download
 {
     /** @var Security */
-    private $security;
+    private Security $security;
     /** @var FileDownloadRepository */
-    private $fileDownloadRepository;
+    private FileDownloadRepository $fileDownloadRepository;
     /** @var FileDownloadManager */
-    private $fileDownloadManager;
+    private FileDownloadManager $fileDownloadManager;
 
     /**
      * @param FileDownloadManager    $fileDownloadManager

@@ -5,24 +5,24 @@ declare(strict_types=1);
 namespace Unilend\Exception\Money;
 
 use InvalidArgumentException;
-use Unilend\Entity\Embeddable\Money;
+use Unilend\Entity\Interfaces\MoneyInterface;
 
 class DifferentCurrencyException extends InvalidArgumentException
 {
-    /** @var Money[] */
+    /** @var MoneyInterface[] */
     private $moneys;
 
     /**
-     * @param Money ...$moneys
+     * @param MoneyInterface ...$moneys
      */
-    public function __construct(Money ...$moneys)
+    public function __construct(MoneyInterface ...$moneys)
     {
         $this->moneys = $moneys;
         parent::__construct('The given money object have different currencies', 152);
     }
 
     /**
-     * @return Money[]
+     * @return MoneyInterface[]
      */
     public function getMoneys(): array
     {

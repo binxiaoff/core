@@ -4,41 +4,33 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
+use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, Project, ProjectOrganizer};
-use Unilend\Repository\ProjectOrganizerRepository;
+use Unilend\Entity\{Clients, CompanyModule, Project, ProjectStatus, Staff};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW                          = 'view';
-    public const ATTRIBUTE_VIEW_CONFIDENTIALITY_DOCUMENT = 'view_confidentiality_document';
-    public const ATTRIBUTE_EDIT                          = 'edit';
-    public const ATTRIBUTE_MANAGE_TRANCHE_OFFER          = 'manage_tranche_offer';
-    public const ATTRIBUTE_RATE                          = 'rate';
-    public const ATTRIBUTE_CREATE_TRANCHE_OFFER          = 'create_tranche_offer';
-    public const ATTRIBUTE_COMMENT                       = 'comment';
-    public const ATTRIBUTE_CREATE                        = 'create';
+    public const ATTRIBUTE_VIEW                 = 'view';
+    public const ATTRIBUTE_VIEW_NDA             = 'view_nda';
+    public const ATTRIBUTE_ADMIN_VIEW           = 'admin_view';
+    public const ATTRIBUTE_EDIT                 = 'edit';
+    public const ATTRIBUTE_COMMENT              = 'comment';
+    public const ATTRIBUTE_CREATE               = 'create';
+    public const ATTRIBUTE_DELETE               = 'delete';
 
-    /** @var ProjectOrganizerRepository */
-    private $projectOrganizerRepository;
     /** @var ProjectParticipationManager */
-    private $projectParticipationManager;
+    private ProjectParticipationManager $projectParticipationManager;
 
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
      * @param ProjectParticipationManager   $projectParticipationManager
-     * @param ProjectOrganizerRepository    $projectOrganizerRepository
      */
-    public function __construct(
-        AuthorizationCheckerInterface $authorizationChecker,
-        ProjectParticipationManager $projectParticipationManager,
-        ProjectOrganizerRepository $projectOrganizerRepository
-    ) {
+    public function __construct(AuthorizationCheckerInterface $authorizationChecker, ProjectParticipationManager $projectParticipationManager)
+    {
         parent::__construct($authorizationChecker);
         $this->projectParticipationManager = $projectParticipationManager;
-        $this->projectOrganizerRepository  = $projectOrganizerRepository;
     }
 
     /**
@@ -51,12 +43,24 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canView(Project $project, Clients $user): bool
     {
-        if ($this->canEdit($project, $user)) {
-            return true;
-        }
+        $staff = $user->getCurrentStaff();
 
-        return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $project)
-            && (false === $project->isConfidential() || $this->projectParticipationManager->isConfidentialityAccepted($user->getCurrentStaff(), $project));
+        return $staff && ($this->hasArrangerReadAccess($project, $staff) || $this->hasParticipantReadAccess($project, $staff));
+    }
+
+    /**
+     * @param Project $project
+     * @param Clients $user
+     *
+     * @return bool
+     *
+     * @throws Exception
+     */
+    protected function canAdminView(Project $project, Clients $user): bool
+    {
+        $staff = $user->getCurrentStaff();
+
+        return $staff && $this->hasArrangerReadAccess($project, $staff);
     }
 
     /**
@@ -69,7 +73,9 @@ class ProjectVoter extends AbstractEntityVoter
     {
         $staff = $user->getCurrentStaff();
 
-        return  $staff && $staff->isActive() && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
+        return $staff
+            && $this->hasArrangerWriteAccess($project, $staff)
+            && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT);
     }
 
     /**
@@ -80,7 +86,7 @@ class ProjectVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function canViewConfidentialityDocument(Project $project, Clients $user): bool
+    protected function canViewNda(Project $project, Clients $user): bool
     {
         if ($this->canEdit($project, $user) || $this->canView($project, $user)) {
             return true;
@@ -99,59 +105,11 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canEdit(Project $project, Clients $user): bool
     {
-        if ($project->getSubmitterClient() === $user) {
-            return true;
-        }
-
         $staff = $user->getCurrentStaff();
 
-        return  $staff
-                       && $staff->isActive()
-                       && $staff->getCompany() === $project->getSubmitterCompany()
-                       && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()));
-    }
-
-    /**
-     * @param Project $project
-     * @param Clients $user
-     *
-     * @throws Exception
-     *
-     * @return bool
-     */
-    protected function canManageTrancheOffer(Project $project, Clients $user): bool
-    {
-        $projectOrganizer = $this->getProjectOrganizer($project, $user);
-
-        return $projectOrganizer && $projectOrganizer->isArranger();
-    }
-
-    /**
-     * @param Project $project
-     * @param Clients $user
-     *
-     * @throws Exception
-     *
-     * @return bool
-     */
-    protected function canRate(Project $project, Clients $user): bool
-    {
-        $projectOrganizer = $this->getProjectOrganizer($project, $user);
-
-        return $projectOrganizer && $projectOrganizer->isRun();
-    }
-
-    /**
-     * @param Project $project
-     * @param Clients $user
-     *
-     * @throws Exception
-     *
-     * @return bool
-     */
-    protected function canCreateTrancheOffer(Project $project, Clients $user): bool
-    {
-        return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $project);
+        return $staff
+            && $this->hasArrangerWriteAccess($project, $staff)
+            && ProjectStatus::STATUS_SYNDICATION_CANCELLED !== $project->getCurrentStatus()->getStatus();
     }
 
     /**
@@ -171,10 +129,56 @@ class ProjectVoter extends AbstractEntityVoter
      * @param Project $project
      * @param Clients $user
      *
-     * @return ProjectOrganizer|null
+     * @throws Exception
+     *
+     * @return bool
      */
-    private function getProjectOrganizer(Project $project, Clients $user): ?ProjectOrganizer
+    protected function canDelete(Project $project, Clients $user): bool
     {
-        return $this->projectOrganizerRepository->findOneBy(['project' => $project, 'company' => $user->getCompany()]);
+        $staff = $user->getCurrentStaff();
+
+        return $staff
+            && $this->hasArrangerWriteAccess($project, $staff)
+            && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * @param Project $project
+     * @param Staff   $staff
+     *
+     * @throws NonUniqueResultException
+     *
+     * @return bool
+     */
+    private function hasParticipantReadAccess(Project $project, Staff $staff): bool
+    {
+        // The participant doesn't need the participation module for the read access (CALS-2379)
+        return $staff->isActive()
+            && $this->projectParticipationManager->isParticipant($staff, $project)
+            && (null === $project->getNda() || $this->projectParticipationManager->isNdaAccepted($staff, $project));
+    }
+
+    /**
+     * @param Project $project
+     * @param Staff   $staff
+     *
+     * @return bool
+     */
+    private function hasArrangerReadAccess(Project $project, Staff $staff): bool
+    {
+        return $staff->isActive()
+            && $staff->getCompany() === $project->getSubmitterCompany()
+            && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()) || $project->getSubmitterClient() === $staff->getClient());
+    }
+
+    /**
+     * @param Project $project
+     * @param Staff   $staff
+     *
+     * @return bool
+     */
+    private function hasArrangerWriteAccess(Project $project, Staff $staff): bool
+    {
+        return $this->hasArrangerReadAccess($project, $staff) && ($staff->isAdmin() || $staff->isManager() || $staff->isOperator());
     }
 }

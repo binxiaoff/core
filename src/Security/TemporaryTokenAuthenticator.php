@@ -17,10 +17,9 @@ use Unilend\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
 {
-    /** @var TemporaryTokenRepository */
-    private $temporaryTokenRepository;
-    /** @var EventDispatcherInterface */
-    private $dispatcher;
+    private TemporaryTokenRepository $temporaryTokenRepository;
+
+    private EventDispatcherInterface $dispatcher;
 
     /**
      * @param TemporaryTokenRepository $temporaryTokenRepository

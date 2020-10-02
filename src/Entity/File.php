@@ -91,7 +91,11 @@ use Unilend\Entity\Traits\{ArchivableTrait, BlamableArchivedTrait, PublicizeIden
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
- *         }
+ *         },
+ *         "delete": {
+ *             "controller": "Unilend\Controller\File\Delete",
+ *             "path": "/files/{id}/{type}",
+ *         },
  *     }
  * )
  */
@@ -103,28 +107,33 @@ class File
     use ArchivableTrait;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(length=191, nullable=true)
      *
      * @Groups({"file:read"})
      */
-    private $description;
+    private ?string $description;
 
     /**
+     * @var FileVersion[]|Collection
+     *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\FileVersion", mappedBy="file")
+     * @ORM\OrderBy({"added": "ASC"})
      *
      * @Groups({"file:read"})
      */
-    private $fileVersions;
+    private Collection $fileVersions;
 
     /**
+     * @var FileVersion|null
+     *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\FileVersion", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_file_version")
      *
      * @Groups({"file:read"})
      */
-    private $currentFileVersion;
+    private ?FileVersion $currentFileVersion = null;
 
     /**
      * @throws Exception

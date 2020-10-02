@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace Unilend\Entity\Traits;
 
 use DateTime;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 trait ArchivableTrait
 {
     /**
-     * @var DateTime
+     * SoftDeletable don't support datetime immutable.
      *
      * @ORM\Column(type="datetime", nullable=true)
+     *
+     * @Groups({"archivable:read", "archivable:write"})
      */
     private $archived;
 
@@ -20,7 +24,7 @@ trait ArchivableTrait
      *
      * @return self
      */
-    public function setArchived(DateTime $archived): self
+    public function setArchived(?DateTime $archived): self
     {
         $this->archived = $archived;
 

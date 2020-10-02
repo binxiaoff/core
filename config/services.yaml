@@ -10,6 +10,7 @@ parameters:
     directory.temporary: '%directory.shared%tmp/'
     directory.protected: '%directory.shared%protected/'
     front.host: '%env(HOST_APP_URL)%'
+    maintenance: '%env(MAINTENANCE_MODE)%'
     slack.webhook.support: '%env(SLACK_WEBHOOK_URL)%'
     slack.webhook.security: https://hooks.slack.com/services/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
     security.recipients: ['tech@ca-lendingservices.com']
@@ -37,9 +38,9 @@ services:
             $documentRootDirectory: '%directory.protected%/generated_document/'
             $projectDirectory: '%kernel.project_dir%'
             $userAttachmentFilesystem: '@League\Flysystem\UserAttachmentFilesystem'
-            $publicUserUploadFilesystem: '@League\Flysystem\PublicUserUploadFilesystem'
             $generatedDocumentFilesystem: '@League\Flysystem\GeneratedDocumentFilesystem'
             $securityRecipients: '%security.recipients%'
+            $debug: '%kernel.debug%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -151,6 +152,10 @@ services:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
+    Unilend\Serializer\ContextBuilder\CurrentUser:
+        decorates: 'api_platform.serializer.context_builder'
+        autoconfigure: false
+
     Unilend\Serializer\ContextBuilder\SkipNullValue:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
@@ -170,3 +175,13 @@ services:
     Unilend\Service\DataCrypto:
         $masterKeyPath: '%file_encryption.kek_file%'
         $masterKeyPassPhrase: '%file_encryption.kek_passphrase%'
+
+    Unilend\Security\UsernamePasswordRecaptchaAuthenticator:
+        $authenticationSuccessHandler: '@lexik_jwt_authentication.handler.authentication_success'
+        $authenticationFailureHandler: '@lexik_jwt_authentication.handler.authentication_failure'
+        $path: '/authentication_token'
+
+    Unilend\Listener\MaintenanceListener:
+        arguments: ["%maintenance%"]
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }

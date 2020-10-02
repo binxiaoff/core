@@ -5,49 +5,49 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Doctrine\ORM\NonUniqueResultException;
+use InvalidArgumentException;
 use LogicException;
-use Prophecy\Exception\InvalidArgumentException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, FileDownload, FileVersion, Project, ProjectFile, ProjectParticipationContact, ProjectStatus, Staff};
-use Unilend\Repository\{FileVersionSignatureRepository, ProjectFileRepository, ProjectParticipationContactRepository, ProjectRepository};
+use Unilend\Entity\{Clients, Company, File, FileDownload, FileVersion, Project, ProjectFile, ProjectParticipation, ProjectParticipationMember, ProjectStatus, Staff};
+use Unilend\Repository\{FileVersionSignatureRepository, ProjectFileRepository, ProjectParticipationMemberRepository, ProjectParticipationRepository, ProjectRepository};
 
 class FileDownloadVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
 
     /** @var FileVersionSignatureRepository */
-    private $fileVersionSignatureRepository;
-
-    /** @var ProjectParticipationContactRepository */
-    private $participationContactRepository;
-    /**
-     * @var ProjectFileRepository
-     */
-    private $projectFileRepository;
-    /**
-     * @var ProjectRepository
-     */
-    private $projectRepository;
+    private FileVersionSignatureRepository $fileVersionSignatureRepository;
+    /** @var ProjectParticipationMemberRepository */
+    private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
+    /** @var ProjectFileRepository */
+    private ProjectFileRepository $projectFileRepository;
+    /** @var ProjectRepository */
+    private ProjectRepository $projectRepository;
+    /** @var ProjectParticipationRepository */
+    private ProjectParticipationRepository $projectParticipationRepository;
 
     /**
-     * @param AuthorizationCheckerInterface         $authorizationChecker
-     * @param FileVersionSignatureRepository        $fileVersionSignatureRepository
-     * @param ProjectParticipationContactRepository $participationContactRepository
-     * @param ProjectFileRepository                 $projectFileRepository
-     * @param ProjectRepository                     $projectRepository
+     * @param AuthorizationCheckerInterface        $authorizationChecker
+     * @param FileVersionSignatureRepository       $fileVersionSignatureRepository
+     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
+     * @param ProjectFileRepository                $projectFileRepository
+     * @param ProjectRepository                    $projectRepository
+     * @param ProjectParticipationRepository       $projectParticipationRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         FileVersionSignatureRepository $fileVersionSignatureRepository,
-        ProjectParticipationContactRepository $participationContactRepository,
+        ProjectParticipationMemberRepository $projectParticipationMemberRepository,
         ProjectFileRepository $projectFileRepository,
-        ProjectRepository $projectRepository
+        ProjectRepository $projectRepository,
+        ProjectParticipationRepository $projectParticipationRepository
     ) {
         parent::__construct($authorizationChecker);
-        $this->fileVersionSignatureRepository = $fileVersionSignatureRepository;
-        $this->participationContactRepository = $participationContactRepository;
-        $this->projectFileRepository          = $projectFileRepository;
-        $this->projectRepository              = $projectRepository;
+        $this->fileVersionSignatureRepository       = $fileVersionSignatureRepository;
+        $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
+        $this->projectFileRepository                = $projectFileRepository;
+        $this->projectRepository                    = $projectRepository;
+        $this->projectParticipationRepository       = $projectParticipationRepository;
     }
 
     /**
@@ -80,7 +80,7 @@ class FileDownloadVoter extends AbstractEntityVoter
             return false;
         }
 
-        if (in_array($type, ProjectFile::getProjectFileTypes(), true)) {
+        if (\in_array($type, ProjectFile::getProjectFileTypes(), true)) {
             $projectFile = $this->projectFileRepository->findOneBy(['file' => $file, 'type' => $type]);
             if (null === $projectFile) {
                 return false;
@@ -88,19 +88,28 @@ class FileDownloadVoter extends AbstractEntityVoter
             $project = $projectFile->getProject();
         }
 
-        if (in_array($type, Project::getProjectFileTypes(), true)) {
+        if (\in_array($type, Project::getProjectFileTypes(), true)) {
             switch ($type) {
                 case Project::PROJECT_FILE_TYPE_DESCRIPTION:
                     $project = $this->projectRepository->findOneBy(['descriptionDocument' => $file]);
 
                     break;
-                case Project::PROJECT_FILE_TYPE_CONFIDENTIALITY:
-                    $project = $this->projectRepository->findOneBy(['confidentialityDisclaimer' => $file]);
+                case Project::PROJECT_FILE_TYPE_NDA:
+                    $project = $this->projectRepository->findOneBy(['nda' => $file]);
+                    if (null === $project) {
+                        // Try to find the NDA in the participation,
+                        // since the front may not know it's a specific NDA in case of getting it from ProjectParticipationMember::getAcceptableNdaVersion()
+                        $project = $this->findProjectByNDAFile($file, $staff->getCompany());
+                    }
 
                     break;
                 default:
                     throw new InvalidArgumentException(sprintf('The type %s is not supported.', $type));
             }
+        }
+
+        if (ProjectParticipation::PROJECT_PARTICIPATION_FILE_TYPE_NDA === $type) {
+            $project = $this->findProjectByNDAFile($file, $staff->getCompany());
         }
 
         if (null === $project) {
@@ -109,20 +118,20 @@ class FileDownloadVoter extends AbstractEntityVoter
 
         $signature = $this->fileVersionSignatureRepository->findOneBy(['fileVersion' => $fileDownload->getFileVersion(), 'signatory' => $staff]);
 
-        if ($signature || $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project) || $project->getBorrowerCompany() === $user->getCompany()) {
+        if ($signature || $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
             return true;
         }
 
         switch ($project->getCurrentStatus()->getStatus()) {
-            case ProjectStatus::STATUS_PUBLISHED:
-            case ProjectStatus::STATUS_INTERESTS_COLLECTED:
+            case ProjectStatus::STATUS_INTEREST_EXPRESSION:
+            case ProjectStatus::STATUS_PARTICIPANT_REPLY:
                 return null !== $this->getActiveParticipantParticipation($project, $staff);
-            case ProjectStatus::STATUS_OFFERS_COLLECTED:
-            case ProjectStatus::STATUS_CONTRACTS_SIGNED:
-            case ProjectStatus::STATUS_REPAID:
+            case ProjectStatus::STATUS_ALLOCATION:
+            case ProjectStatus::STATUS_CONTRACTUALISATION:
+            case ProjectStatus::STATUS_SYNDICATION_FINISHED:
                 return
-                    null !== ($contact = $this->getActiveParticipantParticipation($project, $staff))
-                    && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeOfferCollected($project, $fileDownload->getFileVersion()));
+                    null !== ($projectParticipationMember = $this->getActiveParticipantParticipation($project, $staff))
+                    && ($this->hasValidatedOffer($projectParticipationMember) || $this->isAddedBeforeOfferCollected($project, $fileDownload->getFileVersion()));
             default:
                 throw new LogicException('This code should not be reached');
         }
@@ -136,25 +145,26 @@ class FileDownloadVoter extends AbstractEntityVoter
      *
      * @throws NonUniqueResultException
      *
-     * @return ProjectParticipationContact|null
+     * @return ProjectParticipationMember|null
      */
-    private function getActiveParticipantParticipation(Project $project, Staff $staff): ?ProjectParticipationContact
+    private function getActiveParticipantParticipation(Project $project, Staff $staff): ?ProjectParticipationMember
     {
-        /** @var ProjectParticipationContact $participationContact */
-        $participationContact = $this->participationContactRepository->findByProjectAndStaff($project, $staff);
+        /** @var ProjectParticipationMember $projectParticipationMember */
+        $projectParticipationMember = $this->projectParticipationMemberRepository->findByProjectAndStaff($project, $staff);
 
-        return ($participationContact && false === $participationContact->getProjectParticipation()->isNotInterested())
-            ? $participationContact : null;
+        return ($projectParticipationMember && $projectParticipationMember->getProjectParticipation()->isActive())
+            ? $projectParticipationMember : null;
     }
 
     /**
-     * @param ProjectParticipationContact $contact
+     * @param ProjectParticipationMember $projectParticipationMember
      *
      * @return bool
      */
-    private function hasValidatedOffer(ProjectParticipationContact $contact): bool
+    private function hasValidatedOffer(ProjectParticipationMember $projectParticipationMember): bool
     {
-        return null !== ($participation = $contact->getProjectParticipation()) && $participation->hasValidatedOffer();
+        // Todo: the rule of validate offer need to be defined CALS-1702
+        return null !== ($participation = $projectParticipationMember->getProjectParticipation()) && $participation->getAllocationFeeRate();
     }
 
     /**
@@ -165,8 +175,31 @@ class FileDownloadVoter extends AbstractEntityVoter
      */
     private function isAddedBeforeOfferCollected(Project $project, FileVersion $fileVersion): bool
     {
-        $offerCollected = $project->getLastSpecificStatus(ProjectStatus::STATUS_OFFERS_COLLECTED);
+        $statuses  = $project->getStatuses();
+        $lastIndex = count($statuses) - 1;
+        /** @var int $i */
+        for ($i = $lastIndex; $i <= 0; --$i) {
+            $status = $statuses[$i];
+            if ($project->isInAllocationStep()) {
+                return $fileVersion->getAdded() <= $status->getAdded();
+            }
+        }
 
-        return null === $offerCollected || $fileVersion->getAdded() <= $offerCollected->getAdded();
+        return true;
+    }
+
+    /**
+     * @param File    $nda
+     * @param Company $currentStaffCompany
+     *
+     * @return Project|null
+     */
+    private function findProjectByNDAFile(File $nda, Company $currentStaffCompany): ?Project
+    {
+        $projectParticipation = $this->projectParticipationRepository->findOneBy(['nda' => $nda]);
+        $project = $projectParticipation ? $projectParticipation->getProject() : null;
+
+        // Only the arranger or the participant of the participation can download the specific NDA
+        return $project && ($project->getArranger() === $currentStaffCompany || $projectParticipation->getParticipant() === $currentStaffCompany) ? $project : null;
     }
 }

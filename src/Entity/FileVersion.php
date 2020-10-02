@@ -266,9 +266,9 @@ class FileVersion
     }
 
     /**
-     * @return File|null
+     * @return File
      */
-    public function getFile(): ?File
+    public function getFile(): File
     {
         return $this->file;
     }
@@ -303,5 +303,17 @@ class FileVersion
         $this->fileSystem = $fileSystem;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"fileVersion:read"})
+     *
+     * @return int
+     */
+    public function getVersionNumber(): int
+    {
+        $fileVersions = $this->getFile()->getFileVersions();
+
+        return $fileVersions->indexOf($this) + 1;
     }
 }

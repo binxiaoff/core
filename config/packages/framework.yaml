@@ -9,10 +9,6 @@ framework:
         cookie_domain: .kls-platform.com
     php_errors:
         log: true
-    cache:
-        app: cache.adapter.redis
-        default_redis_provider: '%env(REDIS_URL)%'
-        prefix_seed: cals-app
     form:
         csrf_protection:
             field_name: _csrf

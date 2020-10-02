@@ -61,7 +61,7 @@ class StaffNotifier
 
         $message = $this->templateMessageProvider->newMessage('staff-client-initialisation', [
             'client' => [
-                'hash'      => $client->getPublicId(),
+                'publicId'  => $client->getPublicId(),
                 'firstName' => $client->getFirstName(),
             ],
             'temporaryToken' => [
@@ -77,6 +77,7 @@ class StaffNotifier
                 'marketSegments' => $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
                     return $this->translator->trans('market-segment.' . $marketSegment->getLabel());
                 })->toArray(),
+                'company' => ['displayName' => $staff->getCompany()->getDisplayName()],
             ],
         ])
             ->setTo($client->getEmail())

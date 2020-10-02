@@ -9,10 +9,12 @@ use Unilend\Entity\{Clients, MarketSegment, Staff};
 
 class StaffVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_DELETE = 'delete';
-    public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_VIEW       = 'view';
+    public const ATTRIBUTE_EDIT       = 'edit';
+    public const ATTRIBUTE_ADMIN_EDIT = 'admin_edit';
+    public const ATTRIBUTE_DELETE     = 'delete';
+    public const ATTRIBUTE_CREATE     = 'create';
+
 
     /**
      * @param mixed   $subject
@@ -22,7 +24,7 @@ class StaffVoter extends AbstractEntityVoter
      */
     protected function fulfillPreconditions($subject, Clients $user): bool
     {
-        return $user->getCurrentStaff() ? true : false;
+        return (bool) $user->getCurrentStaff();
     }
 
     /**
@@ -48,11 +50,31 @@ class StaffVoter extends AbstractEntityVoter
     {
         $submitterStaff = $user->getCurrentStaff();
 
-        // A manager cannot create a staff with markets other than is own. But we can create a staff without market segment (used for invitation via email)
-        return 0 === $subject->getMarketSegments()->count()
-            || $subject->getMarketSegments()->forAll(static function ($key, MarketSegment $marketSegment) use ($submitterStaff) {
-                return $submitterStaff->getMarketSegments()->contains($marketSegment);
-            });
+        return
+            (
+                // You can create a staff for external banks
+                false === $subject->getCompany()->isCAGMember()
+                || (
+                    // Or You can, as an admin, create a staff; or as a manager, create a non-admin staff for your own bank
+                    $submitterStaff
+                    && $submitterStaff->getCompany() === $subject->getCompany()
+                    && ($submitterStaff->isAdmin() || ($submitterStaff->isManager() && false === $subject->isAdmin()))
+                )
+            )
+            // You must be connected with a crédit agricole group bank
+            && $submitterStaff->getCompany()->isCAGMember();
+    }
+
+    /**
+     * @param Staff   $staff
+     * @param Clients $user
+     *
+     * @return bool
+     */
+    protected function canAdminEdit(Staff $staff, Clients $user): bool
+    {
+        // or is admin, already in isGrantedAll()
+        return $user->getCurrentStaff() && $user->getCurrentStaff()->isManager() && $staff->getCompany() === $user->getCurrentStaff()->getCompany();
     }
 
     /**
@@ -77,6 +99,11 @@ class StaffVoter extends AbstractEntityVoter
     protected function canEdit(Staff $subject, Clients $user): bool
     {
         $submitterStaff = $user->getCurrentStaff();
+
+        if (null === $submitterStaff) {
+            return false;
+        }
+
         if (false === $this->ableToManage($subject, $user)) {
             return false;
         }

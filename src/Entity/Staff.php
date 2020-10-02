@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
@@ -12,11 +13,13 @@ use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait, TraceableStatusTrait};
+use Unilend\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
+use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
  *     normalizationContext={"groups": {"staff:read", "client:read", "client_status:read", "staffStatus:read", "timestampable:read", "traceableStatus:read"}},
+ *     attributes={"pagination_client_enabled": true},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -28,10 +31,16 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableT
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"role:write", "staff:create", "client:create"}}
+ *             "denormalization_context": {"groups": {"role:write", "staff:create"}}
+ *         },
+ *         "get",
+ *         "api_companies_staff_get_subresource": {
+ *            "pagination_enabled":false
  *         }
  *     }
  * )
+ *
+ * @ApiFilter(SearchFilter::class, properties={"company.groupName"})
  *
  * @ORM\Entity
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "id_company"})})
@@ -39,17 +48,13 @@ use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableT
  *
  * @UniqueEntity(fields={"company", "client"}, message="Staff.client.unique")
  */
-class Staff
+class Staff implements TraceableStatusAwareInterface
 {
-    use RoleableTrait;
+    use RoleableTrait {
+        getRoles as private baseRolesGetter;
+    }
     use TimestampableTrait;
     use PublicizeIdentityTrait;
-    use TraceableStatusTrait {
-        setCurrentStatus as private baseStatusSetter;
-    }
-
-    /** @deprecated Just for backward compatibility. Later, we will define a new role list for staff. */
-    public const ROLE_COMPANY_OWNER = 'ROLE_COMPANY_OWNER';
 
     public const DUTY_STAFF_OPERATOR   = 'DUTY_STAFF_OPERATOR';
     public const DUTY_STAFF_MANAGER    = 'DUTY_STAFF_MANAGER';
@@ -58,8 +63,9 @@ class Staff
     public const DUTY_STAFF_ACCOUNTANT = 'DUTY_STAFF_ACCOUNTANT';
     public const DUTY_STAFF_SIGNATORY  = 'DUTY_STAFF_SIGNATORY';
 
-    public const SERIALIZER_GROUP_ADMIN_READ   = 'staff:admin:read';
     public const SERIALIZER_GROUP_ADMIN_CREATE = 'staff:admin:create';
+
+    public const SERIALIZER_GROUP_OWNER_READ = 'staff:owner:read';
 
     /**
      * @var Company
@@ -75,7 +81,7 @@ class Staff
      *
      * @MaxDepth(2)
      */
-    private $company;
+    private Company $company;
 
     /**
      * @var Clients
@@ -92,22 +98,22 @@ class Staff
      *
      * @MaxDepth(1)
      */
-    private $client;
+    private Clients $client;
 
     /**
      * @var Collection|MarketSegment[]
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Entity\MarketSegment")
      *
-     * @Groups({Staff::SERIALIZER_GROUP_ADMIN_READ, "staff:update", Staff::SERIALIZER_GROUP_ADMIN_CREATE})
+     * @Groups({"staff:read", "staff:create", "staff:update", Staff::SERIALIZER_GROUP_ADMIN_CREATE})
      */
-    private $marketSegments;
+    private Collection $marketSegments;
 
     /**
-     * @var StaffStatus
+     * @var StaffStatus|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\StaffStatus")
-     * @ORM\JoinColumn(name="id_current_status", unique=true)
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\StaffStatus", cascade={"persist"})
+     * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -116,17 +122,16 @@ class Staff
      *
      * @MaxDepth(1)
      */
-    private $currentStatus;
+    private ?StaffStatus $currentStatus;
 
     /**
-     * @var ArrayCollection|StaffStatus[]
+     * @var Collection|StaffStatus[]
      *
-     * @Assert\Count(min="1")
      * @Assert\Valid
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\StaffStatus", mappedBy="staff", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      */
-    private $statuses;
+    private Collection $statuses;
 
     /**
      * Staff constructor.
@@ -256,9 +261,25 @@ class Staff
     /**
      * @return bool
      */
+    public function isOperator(): bool
+    {
+        return $this->hasRole(static::DUTY_STAFF_OPERATOR);
+    }
+
+    /**
+     * @return bool
+     */
     public function isAuditor(): bool
     {
         return $this->hasRole(static::DUTY_STAFF_AUDITOR);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAccountant(): bool
+    {
+        return $this->hasRole(static::DUTY_STAFF_ACCOUNTANT);
     }
 
     /**
@@ -270,16 +291,15 @@ class Staff
     }
 
     /**
-     * TODO its argument should be an int and the necessary parameters to create it not the object itself.
-     * TODO It might be solved with a DTO.
-     *
-     * @param StaffStatus $staffStatus
+     * @param StatusInterface|StaffStatus $currentStatus
      *
      * @return Staff
      */
-    public function setCurrentStatus(StaffStatus $staffStatus): self
+    public function setCurrentStatus(StatusInterface $currentStatus): Staff
     {
-        return $this->baseStatusSetter($staffStatus);
+        $this->currentStatus = $currentStatus;
+
+        return $this;
     }
 
     /**
@@ -288,5 +308,55 @@ class Staff
     public function isArchived(): bool
     {
         return $this->getCurrentStatus() && StaffStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * @return Collection|StaffStatus[]
+     */
+    public function getStatuses(): Collection
+    {
+        return $this->statuses;
+    }
+
+    /**
+     * @return StaffStatus
+     */
+    public function getCurrentStatus(): StaffStatus
+    {
+        return $this->currentStatus;
+    }
+
+    /**
+     * @Groups({"staff:read"})
+     *
+     * @return array
+     */
+    public function getRoles(): array
+    {
+        return $this->baseRolesGetter();
+    }
+
+    /**
+     * @Groups({Staff::SERIALIZER_GROUP_OWNER_READ})
+     *
+     * @return array
+     */
+    public function getActivatedModules(): array
+    {
+        return $this->company->getActivatedModules();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGrantedLogin(): bool
+    {
+        $company = $this->getCompany();
+
+        if ($company->isCAGMember() && false === $company->hasSigned()) {
+            return false;
+        }
+
+        return $this->isActive();
     }
 }

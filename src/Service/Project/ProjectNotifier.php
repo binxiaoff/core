@@ -89,10 +89,10 @@ class ProjectNotifier
             ->setText($this->getSlackMessageText($project))
             ->attach(
                 (new Attachment())
-                    ->addField(new AttachmentField('Entité', $project->getSubmitterCompany()->getName(), true))
+                    ->addField(new AttachmentField('Entité', $project->getSubmitterCompany()->getDisplayName(), true))
                     ->addField(new AttachmentField('Entités invitées', (string) count($project->getProjectParticipations()), true))
                     ->addField(new AttachmentField('Utilisateur', $project->getSubmitterClient()->getEmail(), true))
-                    ->addField(new AttachmentField('Utilisateurs invités', (string) $this->projectRepository->countProjectParticipationContact($project), true))
+                    ->addField(new AttachmentField('Utilisateurs invités', (string) $this->projectRepository->countProjectParticipationMembers($project), true))
             )
         ;
     }
@@ -105,17 +105,17 @@ class ProjectNotifier
     public function getSlackMessageText(Project $project): string
     {
         switch ($project->getCurrentStatus()->getStatus()) {
-            case ProjectStatus::STATUS_REQUESTED:
+            case ProjectStatus::STATUS_DRAFT:
                 return 'Le dosier « ' . $project->getTitle() . ' » vient d’être créé';
-            case ProjectStatus::STATUS_PUBLISHED:
+            case ProjectStatus::STATUS_INTEREST_EXPRESSION:
                 return 'Les sollicitations des marques d\'intérêt ont été envoyées pour le dossier « ' . $project->getTitle() . ' ».';
-            case ProjectStatus::STATUS_INTERESTS_COLLECTED:
+            case ProjectStatus::STATUS_PARTICIPANT_REPLY:
                 return 'Les demandes de réponse ferme ont été envoyées pour le dossier « ' . $project->getTitle() . ' ».';
-            case ProjectStatus::STATUS_OFFERS_COLLECTED:
+            case ProjectStatus::STATUS_ALLOCATION:
                 return 'Le dossier « ' . $project->getTitle() . ' » vient de passer en phase de contractualisation.';
-            case ProjectStatus::STATUS_CONTRACTS_SIGNED:
+            case ProjectStatus::STATUS_CONTRACTUALISATION:
                 return 'Le dossier « ' . $project->getTitle() . ' » vient d‘être clos.';
-            case ProjectStatus::STATUS_REPAID:
+            case ProjectStatus::STATUS_SYNDICATION_FINISHED:
                 return '';
         }
 
@@ -135,23 +135,26 @@ class ProjectNotifier
     {
         $sent = 0;
 
-        if (ProjectStatus::STATUS_PUBLISHED > $project->getCurrentStatus()->getStatus()) {
+        if (ProjectStatus::STATUS_INTEREST_EXPRESSION > $project->getCurrentStatus()->getStatus()) {
             return $sent;
         }
 
         foreach ($project->getProjectParticipations() as $participation) {
-            if ($participation->getCompany() !== $project->getSubmitterCompany() && $participation->getCompany()->hasSigned()) {
-                foreach ($participation->getProjectParticipationContacts() as $contact) {
+            if ($participation->getParticipant() !== $project->getSubmitterCompany() && $participation->getParticipant()->hasSigned()) {
+                foreach ($participation->getActiveProjectParticipationMembers() as $activeProjectParticipationMember) {
                     $message = $this->messageProvider->newMessage('project-file-uploaded', [
                         'client' => [
-                            'firstName' => $contact->getClient()->getFirstName(),
+                            'firstName' => $activeProjectParticipationMember->getStaff()->getClient()->getFirstName(),
                         ],
                         'project' => [
-                            'submitterCompany' => $project->getSubmitterCompany()->getName(),
-                            'title'            => $project->getTitle(),
-                            'hash'             => $project->getHash(),
+                            'arranger'      => $project->getSubmitterCompany()->getDisplayName(),
+                            'title'         => $project->getTitle(),
+                            'riskGroupName' => $project->getRiskGroupName(),
                         ],
-                    ])->setTo($contact->getClient()->getEmail());
+                        'projectParticipation' => [
+                            'publicId' => $participation->getPublicId(),
+                        ],
+                    ])->setTo($activeProjectParticipationMember->getStaff()->getClient()->getEmail());
                     $sent += $this->mailer->send($message);
                 }
             }

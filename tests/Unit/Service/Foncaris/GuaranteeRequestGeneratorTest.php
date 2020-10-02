@@ -8,6 +8,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Faker\Provider\Base;
+use Faker\Provider\Color;
 use Faker\Provider\Internet;
 use Faker\Provider\Miscellaneous;
 use League\Flysystem\FileExistsException;
@@ -174,7 +175,7 @@ class GuaranteeRequestGeneratorTest extends TestCase
         static::assertStringContainsString($path, $mainDirectory);
         static::assertStringContainsString((string) $foncarisRequest->getProject()->getId(), $subdirectory);
         static::assertStringStartsWith($filePrefix, $filename);
-        static::assertStringContainsStringIgnoringCase($foncarisRequest->getProject()->getBorrowerCompany()->getName(), $filename);
+        static::assertStringContainsStringIgnoringCase($foncarisRequest->getProject()->getRiskGroupName(), $filename);
     }
 
     /**
@@ -215,18 +216,31 @@ class GuaranteeRequestGeneratorTest extends TestCase
      */
     protected function createFoncarisRequest(): FoncarisRequest
     {
-        /** @var Company|ObjectProphecy $borrowerCompany */
-        $borrowerCompany = $this->prophesize(Company::class);
-        $borrowerCompany->getName()->willReturn(Base::randomLetter());
-        $borrowerCompany->getSiren()->willReturn(Base::numerify(str_repeat('#', 9)));
-        $borrowerCompany = $borrowerCompany->reveal();
+        /** @var Company|ObjectProphecy $submitterCompany */
+        $submitterCompany = $this->prophesize(Company::class);
+        $submitterCompany->getDisplayName()->willReturn(Base::randomLetter());
+        $submitterCompany->getSiren()->willReturn(Base::numerify(str_repeat('#', 9)));
+        $submitterCompany = $submitterCompany->reveal();
 
         /** @var Project|ObjectProphecy $project */
         $project = $this->prophesize(Project::class);
         $project->getId()->willReturn(1);
-        $project->getBorrowerCompany()->willReturn($borrowerCompany);
-        $project->getTranches()->willReturn([new Tranche($project->reveal(), new Money(Miscellaneous::currencyCode(), (string) Base::randomDigitNotNull()))]);
-        $project->getSubmitterCompany()->willReturn($borrowerCompany);
+        $project->getRiskGroupName()->willReturn('CALS');
+        $project->getTranches()->willReturn([
+            new Tranche(
+                $project->reveal(),
+                new Money(
+                    Miscellaneous::currencyCode(),
+                    (string) Base::randomDigitNotNull()
+                ),
+                Base::asciify(),
+                Base::randomDigitNotNull(),
+                Base::randomElement(Tranche::getRepaymentTypes()),
+                Base::randomElement(Tranche::getLoanTypes()),
+                Color::hexColor()
+            ),
+        ]);
+        $project->getSubmitterCompany()->willReturn($submitterCompany);
         $project->getSubmitterClient()->willReturn(new Clients('test@' . Internet::safeEmailDomain()));
         $project = $project->reveal();
 

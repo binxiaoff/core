@@ -76,8 +76,8 @@ class NotificationDisplayManager
                     $content = $this->translator->trans('notifications.project-request-content', [
                         '%projectUrl%'    => '', // TODO Create a router
                         '%projectTitle%'  => $project->getTitle(),
-                        '%borrowerName%'  => $project->getBorrowerCompany()->getName(),
-                        '%submitterName%' => $project->getSubmitterCompany()->getName(),
+                        '%borrowerName%'  => $project->getRiskGroupName(),
+                        '%submitterName%' => $project->getSubmitterCompany()->getDisplayName(),
                     ]);
 
                     break;
@@ -89,41 +89,47 @@ class NotificationDisplayManager
                     $content = $this->translator->trans('notifications.project-publication-content', [
                         '%projectUrl%'   => '', // TODO Create a router
                         '%projectTitle%' => $project->getTitle(),
-                        '%borrowerName%' => $project->getBorrowerCompany()->getName(),
+                        '%borrowerName%' => $project->getRiskGroupName(),
                     ]);
 
                     break;
                 case Notification::TYPE_TRANCHE_OFFER_SUBMITTED_SUBMITTER:
-                    $trancheOffer = $notification->getTrancheOffer();
-                    if ($trancheOffer) {
-                        $project = $trancheOffer->getTranche()->getProject();
+                    $projectParticipationTranche = $notification->getProjectParticipationTranche();
+                    if ($projectParticipationTranche) {
+                        $project = $projectParticipationTranche->getTranche()->getProject();
                         $type    = 'normal';
                         $image   = 'offer';
                         $title   = $this->translator->trans('notifications.tranche-offer-submitted-maker-title');
                         $content = $this->translator->trans('notifications.tranche-offer-submitted-maker-content', [
                             '%projectUrl%'   => '', // TODO Create a router
                             '%projectTitle%' => $project->getTitle(),
-                            '%borrowerName%' => $project->getBorrowerCompany()->getName(),
+                            '%borrowerName%' => $project->getRiskGroupName(),
                             '%offerAmount%'  => $this->currencyFormatterNoDecimal
-                                ->formatCurrency((float) $trancheOffer->getMoney()->getAmount(), $trancheOffer->getMoney()->getCurrency()),
+                                ->formatCurrency(
+                                    (float) $projectParticipationTranche->getInvitationReply()->getMoney()->getAmount(),
+                                    $projectParticipationTranche->getInvitationReply()->getMoney()->getCurrency()
+                                ),
                         ]);
                     }
 
                     break;
                 case Notification::TYPE_TRANCHE_OFFER_SUBMITTED_PARTICIPANTS:
-                    $trancheOffer = $notification->getTrancheOffer();
-                    if ($trancheOffer) {
-                        $project = $trancheOffer->getTranche()->getProject();
+                    $projectParticipationTranche = $notification->getProjectParticipationTranche();
+                    if ($projectParticipationTranche) {
+                        $project = $projectParticipationTranche->getTranche()->getProject();
                         $type    = 'normal';
                         $image   = 'offer';
                         $title   = $this->translator->trans('notifications.tranche-offer-submitted-participants-title');
                         $content = $this->translator->trans('notifications.tranche-offer-submitted-participants-content', [
                             '%projectUrl%'     => '', // TODO Create a router
                             '%projectTitle%'   => $project->getTitle(),
-                            '%borrowerName%'   => $project->getBorrowerCompany()->getName(),
-                            '%offerMakerName%' => $trancheOffer->getProjectParticipationOffer()->getProjectParticipation()->getCompany(),
+                            '%borrowerName%'   => $project->getRiskGroupName(),
+                            '%offerMakerName%' => $projectParticipationTranche->getProjectParticipation()->getParticipant(),
                             '%offerAmount%'    => $this->currencyFormatterNoDecimal
-                                ->formatCurrency($trancheOffer->getMoney()->getAmount(), $trancheOffer->getMoney()->getCurrency()),
+                                ->formatCurrency(
+                                    (float) $projectParticipationTranche->getInvitationReply()->getMoney()->getAmount(),
+                                    $projectParticipationTranche->getInvitationReply()->getMoney()->getCurrency()
+                                ),
                         ]);
                     }
 
@@ -136,7 +142,7 @@ class NotificationDisplayManager
                     $content = $this->translator->trans('notifications.project-comment-added-content', [
                         '%projectUrl%'   => '', // TODO Create a router
                         '%projectTitle%' => $project->getTitle(),
-                        '%borrowerName%' => $project->getBorrowerCompany()->getName(),
+                        '%borrowerName%' => $project->getRiskGroupName(),
                     ]);
 
                     break;

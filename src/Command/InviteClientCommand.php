@@ -37,7 +37,7 @@ class InviteClientCommand extends Command
     protected function configure(): void
     {
         $this->setDescription('This command notify a list of clients to initialise their accounts.');
-        $this->addArgument('clients', InputArgument::IS_ARRAY, 'Which clients do you want to sign ?');
+        $this->addArgument('clients', InputArgument::IS_ARRAY, 'Which clients do you want to sign (separate multiple id with a space)?');
     }
 
     /**

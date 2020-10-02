@@ -1,3 +1,11 @@
 api_platform:
     resource: .
     type: api_platform
+
+# Login route. The controller here do not matter as it will not be executed
+# Used by UsernamePasswordRecaptchaAuthenticator
+authentication_token:
+    path: /authentication_token
+    methods: ['POST']
+    controller: ApiPlatform\Core\Action\NotFoundAction
+

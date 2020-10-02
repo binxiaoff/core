@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Filter;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Core\Exception\InvalidArgumentException;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
 
-class ArrayFilter extends AbstractFilter
+class ArrayFilter extends AbstractContextAwareFilter
 {
     private const DOCTRINE_ARRAY_TYPES = [
         Type::JSON         => true,
