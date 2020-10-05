@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, CompanyModule, ProjectParticipationMember, ProjectStatus};
+use Unilend\Entity\{Clients, CompanyModule, ProjectParticipationMember};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationMemberVoter extends AbstractEntityVoter
@@ -26,17 +26,6 @@ class ProjectParticipationMemberVoter extends AbstractEntityVoter
         parent::__construct($authorizationChecker);
         $this->authorizationChecker        = $authorizationChecker;
         $this->projectParticipationManager = $projectParticipationManager;
-    }
-
-    /**
-     * @param mixed   $subject
-     * @param Clients $user
-     *
-     * @return bool
-     */
-    protected function fulfillPreconditions($subject, Clients $user): bool
-    {
-        return $subject->getProjectParticipation()->getProject()->getCurrentStatus()->getStatus() <= ProjectStatus::STATUS_PARTICIPANT_REPLY;
     }
 
     /**
