@@ -10,11 +10,10 @@ use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\{Constraints as Assert, Context\ExecutionContextInterface};
 use Unilend\Entity\Embeddable\{LendingRate, Money, NullableMoney};
 use Unilend\Entity\Interfaces\MoneyInterface;
-use Unilend\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -845,5 +844,21 @@ class Tranche
         }
 
         return $totalAllocation;
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateCurrencyConsistency(ExecutionContextInterface $context): void
+    {
+        $globalFundingMoney = $this->getProject()->getGlobalFundingMoney();
+
+        if (MoneyCalculator::isDifferentCurrency($this->getMoney(), $globalFundingMoney)) {
+            $context->buildViolation('Money.currency.inconsistent')
+                ->atPath('money')
+                ->addViolation();
+        }
     }
 }

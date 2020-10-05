@@ -104,3 +104,7 @@ AcceptationsLegalDocs:
     legalDoc:
         unique: Vous ne pouvez pas signé 2 fois les mêmes CGU.
         notCurrent: Vous ne pouvez qu'accepter les dernières CGU.
+
+Money:
+    currency:
+        inconsistent: La devise n'est pas cohérente avec celle du projet.
