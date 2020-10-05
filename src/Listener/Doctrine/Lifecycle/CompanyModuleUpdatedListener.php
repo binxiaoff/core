@@ -45,16 +45,12 @@ class CompanyModuleUpdatedListener
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
             if (($entity instanceof CompanyModule)) {
-                $changeSet = $uow->getEntityChangeSet($entity);
-
-                if (isset($changeSet['activated'])) {
-                    $em = $args->getEntityManager();
-                    $uow = $em->getUnitOfWork();
-                    $entity->setUpdatedBy($currentStaff);
-                    $log = new CompanyModuleLog($entity);
-                    $em->persist($log);
-                    $uow->computeChangeSet($classMetadata, $log);
-                }
+                $em = $args->getEntityManager();
+                $uow = $em->getUnitOfWork();
+                $entity->setUpdatedBy($currentStaff);
+                $log = new CompanyModuleLog($entity);
+                $em->persist($log);
+                $uow->computeChangeSet($classMetadata, $log);
             }
         }
     }

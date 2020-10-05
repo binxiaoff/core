@@ -69,4 +69,12 @@ class CompanyModuleLog
     {
         return $this->activated;
     }
+
+    /**
+     * @return CompanyModule
+     */
+    public function getCompanyModule(): CompanyModule
+    {
+        return $this->companyModule;
+    }
 }
