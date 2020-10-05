@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, CompanyModule, ProjectParticipationMember, ProjectStatus};
+use Unilend\Entity\{Clients, CompanyModule, ProjectParticipationMember};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationMemberVoter extends AbstractEntityVoter
@@ -36,7 +36,7 @@ class ProjectParticipationMemberVoter extends AbstractEntityVoter
      */
     protected function canAcceptNda(ProjectParticipationMember $subject, Clients $user): bool
     {
-        return $subject->getStaff() === $user->getCurrentStaff() && $subject->getAcceptedNdaTerm() === null ;
+        return $subject->getStaff() === $user->getCurrentStaff();
     }
 
     /**
