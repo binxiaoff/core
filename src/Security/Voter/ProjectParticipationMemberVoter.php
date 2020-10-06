@@ -62,8 +62,7 @@ class ProjectParticipationMemberVoter extends AbstractEntityVoter
 
         return $currentCompany && (
             $subject->getProjectParticipation()->getProject()->getSubmitterCompany() === $currentCompany // You are connected as a staff of the arranger
-            || ($subject->getProjectParticipation()->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION) &&
-                $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject->getProjectParticipation()) &&
-                $currentCompany->isCAGMember())); // You are connected as a staff of the participation
+            || ($this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject->getProjectParticipation())
+                && $currentCompany->isCAGMember())); // You are connected as a staff of the participation
     }
 }
