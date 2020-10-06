@@ -78,20 +78,10 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
      */
     protected function canParticipationOwnerEdit(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
     {
-        $project     = $projectParticipationTranche->getProjectParticipation()->getProject();
-        $participant = $projectParticipationTranche->getProjectParticipation()->getParticipant();
+        $projectParticipation = $projectParticipationTranche->getProjectParticipation();
 
-        // For the non-client entity, it's the arrange who edit the invitation reply.
-        return $project->isInOfferNegotiationStep()
-            && (
-                (
-                    $participant->isProspect()
-                    && $project->getSubmitterCompany() === $client->getCompany()
-                ) || (
-                    $participant->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
-                    && $this->projectParticipationManager->isParticipationOwner($client->getCurrentStaff(), $projectParticipationTranche->getProjectParticipation())
-                )
-            );
+        return $projectParticipation->getProject()->isInOfferNegotiationStep()
+            && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_EDIT, $projectParticipation);
     }
 
     /**
