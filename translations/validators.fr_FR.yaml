@@ -44,8 +44,10 @@ ProjectParticipation:
 ProjectParticipationTranche:
     tranche:
         notOwn: Merci de choisir une tranche du projet.
+        incorrectSyndicationStatus: Le statut de syndication de la tranche rend impossible sa proposition à ce participant
     allocation:
         aboveInvitationReply: Le montant de l'allocation est au-dessus du montant de réponse du participant
+
 
 ProjectParticipationStatus:
     status:

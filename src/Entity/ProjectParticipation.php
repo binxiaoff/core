@@ -354,7 +354,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="projectParticipation", cascade={"persist"})
      *
-     * @Assert\Valid()
+     * @Assert\Valid
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
      */
@@ -746,6 +746,14 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isArrangerParticipation()
+    {
+        return $this->getParticipant() === $this->getProject()->getArranger();
     }
 
     /**

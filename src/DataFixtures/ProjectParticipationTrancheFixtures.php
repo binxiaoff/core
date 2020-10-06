@@ -14,7 +14,7 @@ use Unilend\Entity\ProjectStatus;
 use Unilend\Entity\Staff;
 use Unilend\Entity\Tranche;
 
-class ParticipationTrancheFixtures extends AbstractFixtures implements DependentFixtureInterface
+class ProjectParticipationTrancheFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     use OfferFixtureTrait;
 
