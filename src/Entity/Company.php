@@ -381,6 +381,16 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
+     * @param Company $company
+     *
+     * @return bool
+     */
+    public function isSameGroup(Company $company): bool
+    {
+        return $this->getGroupName() === $company->getGroupName();
+    }
+
+    /**
      * @return CompanyStatus|null
      */
     public function getCurrentStatus(): ?CompanyStatus
