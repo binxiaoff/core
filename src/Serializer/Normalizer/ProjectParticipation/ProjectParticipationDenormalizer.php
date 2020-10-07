@@ -155,30 +155,27 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
      */
     private function getAdditionalDenormalizerGroups(ProjectParticipation $projectParticipation): array
     {
+        $project = $projectParticipation->getProject();
+
+        $possibleStatuses = ProjectStatus::getPossibleStatuses();
+        $label = array_flip($possibleStatuses)[$project->getCurrentStatus()->getStatus()] ?? null;
+
         $groups = [];
 
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_INTEREST_COLLECTION_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE;
+        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_OWNER, $projectParticipation)) {
+            $groups[] = 'projectParticipation:owner:write';
+
+            if ($label) {
+                $groups[] = "projectParticipation:owner:$label:write";
+            }
         }
 
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_OFFER_NEGOTIATION_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE;
-        }
+        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER, $projectParticipation)) {
+            $groups[] = 'projectParticipation:arranger:write';
 
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE;
-        }
-
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_INTEREST_COLLECTION_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_INTEREST_COLLECTION_WRITE;
-        }
-
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_OFFER_NEGOTIATION_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE;
-        }
-
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_ALLOCATION_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE;
+            if ($label) {
+                $groups[] = "projectParticipation:arranger:$label:write";
+            }
         }
 
         return $groups;

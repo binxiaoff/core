@@ -20,14 +20,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_SENSITIVE_VIEW = 'sensitive_view';
     public const ATTRIBUTE_ADMIN_VIEW     = 'admin_view';
 
-    public const ATTRIBUTE_ARRANGER_EDIT                      = 'arranger_edit';
-    public const ATTRIBUTE_ARRANGER_INTEREST_COLLECTION_EDIT  = 'arranger_interest_collection_edit';
-    public const ATTRIBUTE_ARRANGER_OFFER_NEGOTIATION_EDIT    = 'arranger_offer_negotiation_edit';
-    public const ATTRIBUTE_ARRANGER_ALLOCATION_EDIT           = 'arranger_allocation_edit';
-
-    public const ATTRIBUTE_PARTICIPATION_OWNER_EDIT                      = 'participation_owner_edit';
-    public const ATTRIBUTE_PARTICIPATION_OWNER_INTEREST_COLLECTION_EDIT  = 'participation_owner_interest_collection_edit';
-    public const ATTRIBUTE_PARTICIPATION_OWNER_OFFER_NEGOTIATION_EDIT    = 'participation_owner_offer_negotiation_edit';
+    public const ATTRIBUTE_ARRANGER                      = 'arranger';
+    public const ATTRIBUTE_OWNER                         = 'owner';
 
     /** @var ProjectParticipationManager */
     private ProjectParticipationManager $projectParticipationManager;
@@ -56,12 +50,11 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
+     * @param ProjectParticipation $subject
      *
      * @return bool
      */
-    protected function canArrangerEdit(ProjectParticipation $projectParticipation, Clients $user): bool
+    protected function canCreate(ProjectParticipation $subject): bool
     {
         return $this->canEdit($projectParticipation, $user) && $this->isProjectArranger($projectParticipation, $user);
     }
@@ -111,7 +104,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canView(ProjectParticipation $subject, Clients $user): bool
     {
-        if ($this->isProjectArranger($subject, $user)) {
+        if ($this->canArranger($subject, $user)) {
             return true;
         }
 
@@ -137,7 +130,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     protected function canAdminView(ProjectParticipation $projectParticipation, Clients $user): bool
     {
         return $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
-            || $this->isProjectArranger($projectParticipation, $user);
+            || $this->canArranger($projectParticipation, $user);
     }
 
     /**
@@ -160,14 +153,17 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return $projectParticipation->isActive()
-            && $projectParticipation->getProject()->hasEditableStatus()
+        $project = $projectParticipation->getProject();
+
+        return false === $projectParticipation->isArchived()
+            && $project->hasEditableStatus()
             && (
-                $this->isProjectArranger($projectParticipation, $user)
+                $this->canArranger($projectParticipation, $user)
                 || (
                     $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
-                    && $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
-                    && ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED !== $projectParticipation->getCurrentStatus()->getStatus()
+                    && $this->canOwner($projectParticipation, $user)
+                    && $project->isPublished()
+                    && $project->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION
                 )
             );
     }
@@ -265,8 +261,25 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    private function isProjectArranger(ProjectParticipation $subject, Clients $user): bool
+    private function canArranger(ProjectParticipation $subject, Clients $user): bool
     {
         return $subject->getProject()->getSubmitterCompany() === $user->getCompany();
+    }
+
+    /**
+     * @param ProjectParticipation $subject
+     * @param Clients              $user
+     *
+     * @return bool
+     */
+    private function canOwner(ProjectParticipation $subject, Clients $user)
+    {
+        return (
+            // The arranger can act as an owner for a prospect or a refused
+            $this->canArranger($subject, $user)
+            && ($subject->getParticipant()->isProspect() || $subject->getParticipant()->hasRefused())
+        ) || (
+            $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject)
+        );
     }
 }
