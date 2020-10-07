@@ -91,8 +91,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             if ($participant->isProspect() && $participant->isSameGroup($staff->getCompany())) {
                 return true;
             }
-            // Or the one of arranger's own.
-            if ($this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)) {
+            // Or the one of arranger's own (we don't check if the user is a participation member for the arranger's participation)
+            if ($participant === $staff->getCompany()) {
                 return true;
             }
         }
