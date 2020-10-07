@@ -81,7 +81,9 @@ class ClientLoginFactory
     {
         $failedLogin = new ClientFailedLogin();
 
-        if ($request = $this->requestStack->getCurrentRequest()) {
+        $request = $this->requestStack->getCurrentRequest();
+
+        if ($request) {
             $failedLogin->setIp($request->getClientIp());
         }
 
