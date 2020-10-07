@@ -155,10 +155,17 @@ class ProjectParticipationStatus implements StatusInterface
             case self::STATUS_COMMITTEE_PENDED:
             case self::STATUS_COMMITTEE_ACCEPTED:
             case self::STATUS_COMMITTEE_REJECTED:
+                // see ProjectParticipationVoter::canParticipationOwnerEdit()
                 return $this->isParticipationMember()
                     || (
                         $this->isArranger()
-                        && CompanyStatus::STATUS_PROSPECT === $this->getProjectParticipation()->getParticipant()->getCurrentStatus()->getStatus()
+                        && (
+                            (
+                                CompanyStatus::STATUS_PROSPECT === $this->getProjectParticipation()->getParticipant()->isProspect()
+                                && $this->getProjectParticipation()->getParticipant()->isSameGroup($this->getAddedBy()->getCompany())
+                            )
+                            ||  $this->getProjectParticipation()->getParticipant() === $this->getAddedBy()->getCompany()
+                        )
                     );
             case self::STATUS_ARCHIVED_BY_PARTICIPANT:
                 return $this->isParticipationMember();
