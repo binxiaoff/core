@@ -74,22 +74,31 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canParticipationOwnerEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        $project = $projectParticipation->getProject();
+        $project     = $projectParticipation->getProject();
+        $participant = $projectParticipation->getParticipant();
+        $staff       = $user->getCurrentStaff();
 
-        return $project->isPublished()
-            && $projectParticipation->getProject()->hasEditableStatus()
-            && (
-                (
-                    // The arranger can act as an owner for a prospect
-                    $this->isProjectArranger($projectParticipation, $user)
-                    && $projectParticipation->getParticipant()->isProspect()
-                )
-                ||
-                (
-                    $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
-                    && $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
-                )
-            );
+        if (null === $staff) {
+            return false;
+        }
+
+        if (false ===  $project->isPublished() || false === $project->hasEditableStatus()) {
+            return false;
+        }
+        // As an arranger, the user doesn't need the participation module to edit the following participation.
+        if ($this->isProjectArranger($projectParticipation, $user)) {
+            // The one of a prospect in the same company group.
+            if ($participant->isProspect() && $participant->isSameGroup($staff->getCompany())) {
+                return true;
+            }
+            // Or the one of arranger's own (we don't check if the user is a participation member for the arranger's participation)
+            if ($participant === $staff->getCompany()) {
+                return true;
+            }
+        }
+
+        return $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
+            && $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION);
     }
 
     /**
@@ -220,8 +229,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canParticipationOwnerInterestCollectionEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
-            && $this->canParticipationOwnerEdit($projectParticipation, $user) && $projectParticipation->getProject()->isInInterestCollectionStep();
+        return $this->canParticipationOwnerEdit($projectParticipation, $user)
+            && $projectParticipation->getProject()->isInInterestCollectionStep();
     }
 
     /**
@@ -232,9 +241,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canParticipationOwnerOfferNegotiationEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return ($projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
-                || ($this->isProjectArranger($projectParticipation, $user) && $projectParticipation->getParticipant()->isProspect()))
-            && $this->canParticipationOwnerEdit($projectParticipation, $user)
+        return $this->canParticipationOwnerEdit($projectParticipation, $user)
             && $projectParticipation->getProject()->isInOfferNegotiationStep();
     }
 
