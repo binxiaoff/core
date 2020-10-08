@@ -64,7 +64,7 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
      *
      * @throws Exception
      */
-    public function getUser($credentials, UserProviderInterface $userProvider): ?UserInterface
+    public function getUser($credentials, UserProviderInterface $userProvider): UserInterface
     {
         if (empty($credentials)) {
             throw new InvalidTemporaryTokenException('Temporary token is empty.');
@@ -83,7 +83,7 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
         $temporaryToken->setAccessed();
         $this->temporaryTokenRepository->save($temporaryToken);
 
-        return $temporaryToken instanceof TemporaryToken ? $temporaryToken->getClient() : null;
+        return $temporaryToken->getClient();
     }
 
     /**
