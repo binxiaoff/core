@@ -161,10 +161,10 @@ class ProjectParticipationStatus implements StatusInterface
                         $this->isArranger()
                         && (
                             (
-                                CompanyStatus::STATUS_PROSPECT === $this->getProjectParticipation()->getParticipant()->isProspect()
+                                $this->getProjectParticipation()->getParticipant()->isProspect()
                                 && $this->getProjectParticipation()->getParticipant()->isSameGroup($this->getAddedBy()->getCompany())
                             )
-                            ||  $this->getProjectParticipation()->getParticipant() === $this->getAddedBy()->getCompany()
+                            ||  $this->isArrangerParticipation()
                         )
                     );
             case self::STATUS_ARCHIVED_BY_PARTICIPANT:
