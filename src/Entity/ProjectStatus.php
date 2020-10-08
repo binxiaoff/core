@@ -159,7 +159,23 @@ class ProjectStatus implements StatusInterface
      */
     public function getHumanLabel(): string
     {
-        return str_replace('status_', '', mb_strtolower(array_flip(static::getPossibleStatuses())[$this->status]));
+        $constantName = array_flip(static::getPossibleStatuses())[$this->status];
+        $lowercaseConstantName = mb_strtolower($constantName);
+
+        // CamelCased status label
+        $tokens = explode('_', $lowercaseConstantName);
+
+        // Remove "status" prefix
+        array_shift($tokens);
+
+        // Capitalize all tokens
+        $capitalizedTokens = array_map('ucfirst', $tokens);
+
+        // Join to create  PascalCase statusLabel
+        $statusLabel = implode('', $capitalizedTokens);
+
+        // Return camelCase statusLabel
+        return lcfirst($statusLabel);
     }
 
     /**

@@ -10,11 +10,11 @@ use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationTrancheVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE                   = 'create';
-    public const ATTRIBUTE_EDIT                     = 'edit';
-    public const ATTRIBUTE_SENSITIVE_VIEW           = 'sensitive_view';
-    public const ATTRIBUTE_ARRANGER_EDIT            = 'arranger_edit';
-    public const ATTRIBUTE_PARTICIPATION_OWNER_EDIT = 'participation_owner_edit';
+    public const ATTRIBUTE_CREATE           = 'create';
+    public const ATTRIBUTE_EDIT             = 'edit';
+    public const ATTRIBUTE_SENSITIVE_VIEW   = 'sensitive_view';
+    public const ATTRIBUTE_ARRANGER         = 'arranger';
+    public const ATTRIBUTE_OWNER            = 'owner';
 
     /** @var ProjectParticipationManager */
     private ProjectParticipationManager $projectParticipationManager;
@@ -46,11 +46,10 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
 
     /**
      * @param ProjectParticipationTranche $projectParticipationTranche
-     * @param Clients                     $client
      *
      * @return bool
      */
-    protected function canEdit(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
+    protected function canEdit(ProjectParticipationTranche $projectParticipationTranche): bool
     {
         $projectParticipation = $projectParticipationTranche->getProjectParticipation();
 
@@ -59,29 +58,26 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
 
     /**
      * @param ProjectParticipationTranche $projectParticipationTranche
-     * @param Clients                     $client
      *
      * @return bool
      */
-    protected function canArrangerEdit(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
+    protected function isArranger(ProjectParticipationTranche $projectParticipationTranche): bool
     {
-        $project = $projectParticipationTranche->getProjectParticipation()->getProject();
+        $projectParticipation = $projectParticipationTranche->getProjectParticipation();
 
-        return $project->isInAllocationStep() && $project->getSubmitterCompany() === $client->getCompany();
+        return $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER, $projectParticipation);
     }
 
     /**
      * @param ProjectParticipationTranche $projectParticipationTranche
-     * @param Clients                     $client
      *
      * @return bool
      */
-    protected function canParticipationOwnerEdit(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
+    protected function isOwner(ProjectParticipationTranche $projectParticipationTranche): bool
     {
         $projectParticipation = $projectParticipationTranche->getProjectParticipation();
 
-        return $projectParticipation->getProject()->isInOfferNegotiationStep()
-            && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_EDIT, $projectParticipation);
+        return $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_OWNER, $projectParticipation);
     }
 
     /**

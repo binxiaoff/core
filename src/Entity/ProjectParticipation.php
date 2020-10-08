@@ -36,7 +36,10 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "offer:read",
  *         "archivable:read",
  *         "timestampable:read",
- *         "companyStatus:read"
+ *         "companyStatus:read",
+ *         "role:read",
+ *         "file:read",
+ *         "fileVersion:read",
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
@@ -198,7 +201,9 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({
      *     ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ,
-     *     "projectParticipation:owner:write"
+     *     "projectParticipation:owner:interestRequest:write",
+     *     "projectParticipation:owner:participantReply:write",
+     *     "projectParticipation:arranger:write"
      * })
      */
     private ?ProjectParticipationStatus $currentStatus;
@@ -214,7 +219,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({
      *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
-     *     "projectParticipation:owner:write"
+     *     "projectParticipation:owner:participantReply:write"
      * })
      */
     private ?DateTimeImmutable $committeeDeadline = null;
@@ -366,8 +371,9 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({
      *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
-     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE,
-     *     ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE
+     *     "projectParticipation:arranger:interestExpression:write",
+     *     "projectParticipation:arranger:participantReply:write",
+     *     "projectParticipation:arranger:draft:write"
      * })
      */
     private ?File $nda = null;

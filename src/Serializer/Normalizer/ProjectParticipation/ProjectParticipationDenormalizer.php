@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Serializer\Normalizer\ProjectParticipation;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
+use Exception;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
@@ -12,7 +13,14 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
-use Unilend\Entity\{Clients, ProjectParticipation, ProjectParticipationMember, ProjectParticipationStatus, ProjectParticipationTranche, ProjectStatus, Staff};
+use Unilend\Entity\{Clients,
+    Project,
+    ProjectParticipation,
+    ProjectParticipationMember,
+    ProjectParticipationStatus,
+    ProjectParticipationTranche,
+    ProjectStatus,
+    Staff};
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 use Unilend\Security\Voter\ProjectParticipationVoter;
 
@@ -152,29 +160,31 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
      * @param ProjectParticipation $projectParticipation
      *
      * @return array
+     *
+     * @throws Exception
      */
     private function getAdditionalDenormalizerGroups(ProjectParticipation $projectParticipation): array
     {
         $project = $projectParticipation->getProject();
 
-        $possibleStatuses = ProjectStatus::getPossibleStatuses();
-        $label = array_flip($possibleStatuses)[$project->getCurrentStatus()->getStatus()] ?? null;
+        $label = $project->getCurrentStatus()->getHumanLabel();
 
         $groups = [];
 
         if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_OWNER, $projectParticipation)) {
             $groups[] = 'projectParticipation:owner:write';
-
-            if ($label) {
-                $groups[] = "projectParticipation:owner:$label:write";
-            }
+            $groups[] = "projectParticipation:owner:$label:write";
         }
 
         if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER, $projectParticipation)) {
             $groups[] = 'projectParticipation:arranger:write';
+            $groups[] = "projectParticipation:arranger:$label:write";
 
-            if ($label) {
-                $groups[] = "projectParticipation:arranger:$label:write";
+            if (ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus()) {
+                $nextStep = $project->isInterestExpressionEnabled() ? ProjectStatus::STATUS_INTEREST_EXPRESSION : ProjectStatus::STATUS_PARTICIPANT_REPLY;
+                $nextStepLabel = (new ProjectStatus($project, $nextStep, $project->getCurrentStatus()->getAddedBy()))->getHumanLabel();
+
+                $groups[] = "projectParticipation:arranger:$nextStepLabel:write";
             }
         }
 

@@ -13,7 +13,9 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
 use Unilend\Entity\Clients;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationTranche;
+use Unilend\Entity\ProjectStatus;
 use Unilend\Security\Voter\ProjectParticipationTrancheVoter;
+use Unilend\Security\Voter\ProjectParticipationVoter;
 
 class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -69,24 +71,20 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
      */
     private function getAdditionalDenormalizerGroups(ProjectParticipationTranche $projectParticipationTranche): array
     {
-        $projectParticipation = $projectParticipationTranche->getProjectParticipation();
-        $participant = $projectParticipation->getParticipant();
-        $project = $projectParticipation->getProject();
-        $arranger = $project->getSubmitterCompany();
+        $project = $projectParticipationTranche->getProjectParticipation()->getProject();
+
+        $label = $project->getCurrentStatus()->getHumanLabel();
 
         $groups = [];
 
-        if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_ARRANGER_EDIT, $projectParticipationTranche)) {
-            // The voter currently assert that we are in allocation step and the connected user entity is the arranger entity of the project
-            $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_ARRANGER_WRITE;
-
-            if ($arranger === $participant) {
-                $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_INVITATION_REPLY_WRITE;
-            }
+        if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_OWNER, $projectParticipationTranche)) {
+            $groups[] = 'projectParticipationTranche:owner:write';
+            $groups[] = "projectParticipationTranche:owner:$label:write";
         }
 
-        if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_PARTICIPATION_OWNER_EDIT, $projectParticipationTranche)) {
-            $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE;
+        if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_ARRANGER, $projectParticipationTranche)) {
+            $groups[] = 'projectParticipationTranche:arranger:write';
+            $groups[] = "projectParticipationTranche:arranger:$label:write";
         }
 
         return $groups;
