@@ -7,7 +7,6 @@ namespace Unilend\Listener\Doctrine\Lifecycle;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
-use Doctrine\ORM\PersistentCollection;
 use Exception;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\Clients;
@@ -119,7 +118,7 @@ class ProjectStatusUpdatedListener
      * @throws ORMException
      * @throws Exception
      */
-    private function createMissingArrangerParticipationTranche(Project $project, EntityManager $em)
+    private function createMissingArrangerParticipationTranche(Project $project, EntityManager $em): void
     {
         /** @var Clients $user */
         $user = $this->security->getUser();
@@ -134,9 +133,9 @@ class ProjectStatusUpdatedListener
         $projectParticipationTrancheClassMetadata = $em->getClassMetadata(ProjectParticipationTranche::class);
 
         foreach ($tranches as $tranche) {
-            $projectParticipationTranches = $tranche->getProjectParticipationTranches();
-
             if (false === $tranche->isSyndicated() && Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER === $tranche->getUnsyndicatedFunderType()) {
+                $projectParticipationTranches = $tranche->getProjectParticipationTranches();
+
                 $exist = $projectParticipationTranches->exists(
                     static function (int $index, ProjectParticipationTranche $projectParticipationTranche) use ($arrangerParticipation) {
                         return $arrangerParticipation === $projectParticipationTranche->getProjectParticipation();
