@@ -38,11 +38,12 @@ class MoneyCalculator
      *
      * @return MoneyInterface
      */
-    public static function substract(MoneyInterface $minuend, MoneyInterface $subtrahend): MoneyInterface
+    public static function subtract(MoneyInterface $minuend, MoneyInterface $subtrahend): MoneyInterface
     {
         if (static::isDifferentCurrency($minuend, $subtrahend)) {
             throw new DifferentCurrencyException($minuend, $subtrahend);
         }
+
 
         if (static::isBothNullMoney($minuend, $subtrahend)) {
             return new NullableMoney();
@@ -125,6 +126,17 @@ class MoneyCalculator
     }
 
     /**
+     * @param MoneyInterface $leftOperand
+     * @param MoneyInterface $rightOperand
+     *
+     * @return bool
+     */
+    public static function isDifferentCurrency(MoneyInterface $leftOperand, MoneyInterface $rightOperand): bool
+    {
+        return null !== $leftOperand->getCurrency() && null !== $rightOperand->getCurrency() && $leftOperand->getCurrency() !== $rightOperand->getCurrency();
+    }
+
+    /**
      * @param string $number
      *
      * @return string
@@ -143,16 +155,5 @@ class MoneyCalculator
     private static function isBothNullMoney(MoneyInterface $leftOperand, MoneyInterface $rightOperand): bool
     {
         return null === $leftOperand->getAmount() && null === $rightOperand->getAmount();
-    }
-
-    /**
-     * @param MoneyInterface $leftOperand
-     * @param MoneyInterface $rightOperand
-     *
-     * @return bool
-     */
-    private static function isDifferentCurrency(MoneyInterface $leftOperand, MoneyInterface $rightOperand): bool
-    {
-        return null !== $leftOperand->getCurrency() && null !== $rightOperand->getCurrency() && $leftOperand->getCurrency() !== $rightOperand->getCurrency();
     }
 }

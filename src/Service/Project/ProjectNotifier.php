@@ -8,7 +8,7 @@ use Doctrine\ORM\{NoResultException, NonUniqueResultException};
 use Http\Client\Exception;
 use InvalidArgumentException;
 use Nexy\Slack\Exception\SlackApiException;
-use Nexy\Slack\{Attachment, AttachmentField, Client, Message};
+use Nexy\Slack\{Attachment, AttachmentField, Client, MessageInterface};
 use Swift_Mailer;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{Project, ProjectStatus};
@@ -18,28 +18,24 @@ use Unilend\SwiftMailer\TemplateMessageProvider;
 class ProjectNotifier
 {
     /** @var Client */
-    private $client;
+    private Client $client;
     /** @var ProjectRepository */
-    private $projectRepository;
-    /** @var string */
-    private $environment;
+    private ProjectRepository $projectRepository;
     /** @var TemplateMessageProvider */
-    private $messageProvider;
+    private TemplateMessageProvider $messageProvider;
     /** @var Swift_Mailer */
-    private $mailer;
+    private Swift_Mailer $mailer;
 
     /**
      * @param Client                  $client
      * @param ProjectRepository       $projectRepository
-     * @param string                  $environment
      * @param TemplateMessageProvider $messageProvider
      * @param Swift_Mailer            $mailer
      */
-    public function __construct(Client $client, ProjectRepository $projectRepository, string $environment, TemplateMessageProvider $messageProvider, Swift_Mailer $mailer)
+    public function __construct(Client $client, ProjectRepository $projectRepository, TemplateMessageProvider $messageProvider, Swift_Mailer $mailer)
     {
         $this->client            = $client;
         $this->projectRepository = $projectRepository;
-        $this->environment       = $environment;
         $this->messageProvider   = $messageProvider;
         $this->mailer            = $mailer;
     }
@@ -54,9 +50,7 @@ class ProjectNotifier
      */
     public function notifyProjectCreated(Project $project): void
     {
-        if ('dev' !== $this->environment) {
-            $this->client->sendMessage($this->createSlackMessage($project));
-        }
+        $this->client->sendMessage($this->createSlackMessage($project));
     }
 
     /**
@@ -69,9 +63,7 @@ class ProjectNotifier
      */
     public function notifyProjectStatusChanged(Project $project): void
     {
-        if ('dev' !== $this->environment) {
-            $this->client->sendMessage($this->createSlackMessage($project));
-        }
+        $this->client->sendMessage($this->createSlackMessage($project));
     }
 
     /**
@@ -80,9 +72,9 @@ class ProjectNotifier
      * @throws NoResultException
      * @throws NonUniqueResultException
      *
-     * @return Message
+     * @return MessageInterface
      */
-    public function createSlackMessage(Project $project): Message
+    public function createSlackMessage(Project $project): MessageInterface
     {
         return $this->client->createMessage()
             ->enableMarkdown()
@@ -116,7 +108,9 @@ class ProjectNotifier
             case ProjectStatus::STATUS_CONTRACTUALISATION:
                 return 'Le dossier « ' . $project->getTitle() . ' » vient d‘être clos.';
             case ProjectStatus::STATUS_SYNDICATION_FINISHED:
-                return '';
+                return 'Le dossier « ' . $project->getTitle() . ' » est terminé.';
+            case ProjectStatus::STATUS_SYNDICATION_CANCELLED:
+                return 'Le dossier « ' . $project->getTitle() . ' » est annulé.';
         }
 
         throw new InvalidArgumentException('The project is in an unknown status');

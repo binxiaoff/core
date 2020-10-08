@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
-use ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
@@ -13,7 +12,7 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
-use Symfony\Component\Validator\{ConstraintViolation, ConstraintViolationList, Constraints as Assert, Context\ExecutionContextInterface};
+use Symfony\Component\Validator\{Constraints as Assert, Context\ExecutionContextInterface};
 use Unilend\Entity\Embeddable\{NullableMoney, Offer, OfferWithFee, RangedOfferWithFee};
 use Unilend\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
@@ -753,9 +752,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @Assert\Callback()
      *
      * @param ExecutionContextInterface $context
-     * @param                           $payload
      */
-    public function validateSendingInvitation(ExecutionContextInterface $context, $payload)
+    public function validateSendingInvitation(ExecutionContextInterface $context): void
     {
         if ($this->getProject()->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION)) {
             if ((null === $this->getInvitationRequest() || false === $this->invitationRequest->isValid())) {
@@ -777,7 +775,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @param ExecutionContextInterface $context
      */
-    public function validateProjectParticipationTranches(ExecutionContextInterface $context)
+    public function validateProjectParticipationTranches(ExecutionContextInterface $context): void
     {
         foreach ($this->projectParticipationTranches as $index => $participationTranche) {
             if ($participationTranche->getProjectParticipation() !== $this) {
@@ -793,7 +791,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @param ExecutionContextInterface $context
      */
-    public function validateProjectParticipationMembers(ExecutionContextInterface $context)
+    public function validateProjectParticipationMembers(ExecutionContextInterface $context): void
     {
         foreach ($this->projectParticipationMembers as $index => $participationMember) {
             if ($participationMember->getProjectParticipation() !== $this) {
@@ -809,11 +807,45 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @param ExecutionContextInterface $context
      */
-    public function validateCommitteeDeadline(ExecutionContextInterface $context)
+    public function validateCommitteeDeadline(ExecutionContextInterface $context): void
     {
         if (null === $this->committeeDeadline && ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $this->currentStatus->getStatus()) {
             $context->buildViolation('ProjectParticipation.committeeDeadline.required')
                 ->atPath('committeeDeadline')
+                ->addViolation();
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateCurrencyConsistency(ExecutionContextInterface $context): void
+    {
+        $globalFundingMoney = $this->getProject()->getGlobalFundingMoney();
+
+        if (MoneyCalculator::isDifferentCurrency($this->interestRequest->getMoney(), $globalFundingMoney)) {
+            $context->buildViolation('Money.currency.inconsistent')
+                ->atPath('interestRequest.money')
+                ->addViolation();
+        }
+
+        if (MoneyCalculator::isDifferentCurrency($this->interestRequest->getMinMoney(), $globalFundingMoney)) {
+            $context->buildViolation('Money.currency.inconsistent')
+                ->atPath('interestRequest.minMoney')
+                ->addViolation();
+        }
+
+        if (MoneyCalculator::isDifferentCurrency($this->interestReply->getMoney(), $globalFundingMoney)) {
+            $context->buildViolation('Money.currency.inconsistent')
+                ->atPath('interestReply')
+                ->addViolation();
+        }
+
+        if (MoneyCalculator::isDifferentCurrency($this->invitationRequest->getMoney(), $globalFundingMoney)) {
+            $context->buildViolation('Money.currency.inconsistent')
+                ->atPath('invitationRequest')
                 ->addViolation();
         }
     }

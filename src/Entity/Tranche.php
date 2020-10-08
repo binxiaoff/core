@@ -10,11 +10,10 @@ use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\{Constraints as Assert, Context\ExecutionContextInterface};
 use Unilend\Entity\Embeddable\{LendingRate, Money, NullableMoney};
 use Unilend\Entity\Interfaces\MoneyInterface;
-use Unilend\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -233,7 +232,7 @@ class Tranche
      *
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Type("numeric")
-     * @Assert\Positive
+     * @Assert\PositiveOrZero
      * @Assert\Expression(
      *     "this.isCommissionRateValid()",
      *     message="Tranche.commissionRate.expression"
@@ -420,7 +419,7 @@ class Tranche
      */
     public function setLoanType(string $loanType): Tranche
     {
-        if (false === in_array($loanType, self::CHARGEABLE_LOAN_TYPE)) {
+        if (false === \in_array($loanType, self::CHARGEABLE_LOAN_TYPE)) {
             $this->setCommissionRate(null)
                 ->setCommissionType(null)
             ;
@@ -714,7 +713,7 @@ class Tranche
      */
     public function setThirdPartyFunder(?string $thirdPartyFunder): Tranche
     {
-        $this->thirdPartyFunder = $thirdPartyFunder;
+        $this->thirdPartyFunder = $thirdPartyFunder ?: null;
 
         return $this;
     }
@@ -805,7 +804,7 @@ class Tranche
      */
     public function setCommissionRate(?string $commissionRate): Tranche
     {
-        $this->commissionRate = $commissionRate;
+        $this->commissionRate = '' === $commissionRate ? null : $commissionRate;
 
         return $this;
     }
@@ -819,9 +818,9 @@ class Tranche
     {
         return (null === $this->getCommissionType() && null === $this->getCommissionRate())
             || (
-                $this->getCommissionRate()
-                && in_array($this->getLoanType(), self::CHARGEABLE_LOAN_TYPE, true)
-                && in_array($this->getCommissionType(), self::getCommissionTypes(), true)
+                ($this->getCommissionRate() || '0' === $this->getCommissionRate())
+                && \in_array($this->getLoanType(), self::CHARGEABLE_LOAN_TYPE, true)
+                && \in_array($this->getCommissionType(), self::getCommissionTypes(), true)
             );
     }
 
@@ -845,5 +844,21 @@ class Tranche
         }
 
         return $totalAllocation;
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateCurrencyConsistency(ExecutionContextInterface $context): void
+    {
+        $globalFundingMoney = $this->getProject()->getGlobalFundingMoney();
+
+        if (MoneyCalculator::isDifferentCurrency($this->getMoney(), $globalFundingMoney)) {
+            $context->buildViolation('Money.currency.inconsistent')
+                ->atPath('money')
+                ->addViolation();
+        }
     }
 }

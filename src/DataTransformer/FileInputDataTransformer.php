@@ -213,15 +213,15 @@ class FileInputDataTransformer
      * @param ProjectParticipation $projectParticipation
      * @param FileInput            $fileInput
      * @param Staff                $currentStaff
-     * @param File                 $file
+     * @param File|null            $file
+     *
+     * @return File
      *
      * @throws EnvironmentIsBrokenException
      * @throws FileExistsException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
-     *
-     * @return File
      */
     private function uploadProjectParticipationNda(ProjectParticipation $projectParticipation, FileInput $fileInput, Staff $currentStaff, ?File $file)
     {
@@ -229,12 +229,14 @@ class FileInputDataTransformer
             throw new AccessDeniedException();
         }
 
+        $isPublished = $projectParticipation->getProject()->isPublished();
+
         $existingNda = $projectParticipation->getNda();
-        if (null !== $file && null !== $existingNda && $file !== $existingNda) {
+        if ($isPublished && null !== $file && null !== $existingNda && $file !== $existingNda) {
             static::denyUploadExistingFile($fileInput, $existingNda, $projectParticipation);
         }
 
-        $file = $existingNda ?? new File();
+        $file = $isPublished && $existingNda ? $existingNda : new File();
 
         $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, null, ['projectParticipationId' => $projectParticipation->getId()]);
 
