@@ -751,7 +751,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @return bool
      */
-    public function isArrangerParticipation()
+    public function isArrangerParticipation(): bool
     {
         return $this->getParticipant() === $this->getProject()->getArranger();
     }

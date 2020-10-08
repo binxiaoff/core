@@ -271,7 +271,7 @@ class ProjectParticipationTranche
      *
      * @param ExecutionContextInterface $context
      */
-    public function validateSyndicationStatus(ExecutionContextInterface $context)
+    public function validateSyndicationStatus(ExecutionContextInterface $context): void
     {
         $tranche = $this->getTranche();
 
@@ -283,7 +283,7 @@ class ProjectParticipationTranche
             return;
         }
 
-        $context->buildViolation('ProjectParticipationTranche.tranche.incorrectSyndicationStatus')
+        $context->buildViolation('ProjectParticipationTranche.tranche.unsyndicated')
             ->atPath('tranche')
             ->addViolation();
     }
