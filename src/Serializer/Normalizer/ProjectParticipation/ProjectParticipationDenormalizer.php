@@ -181,10 +181,8 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
             $groups[] = "projectParticipation:arranger:$label:write";
 
             if (ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus()) {
-                $nextStep = $project->isInterestExpressionEnabled() ? ProjectStatus::STATUS_INTEREST_EXPRESSION : ProjectStatus::STATUS_PARTICIPANT_REPLY;
-                $nextStepLabel = (new ProjectStatus($project, $nextStep, $project->getCurrentStatus()->getAddedBy()))->getHumanLabel();
-
-                $groups[] = "projectParticipation:arranger:$nextStepLabel:write";
+                $groups[] = $project->isInterestExpressionEnabled() ? 'projectParticipation:arranger:interestRequest:write' :
+                    'projectParticipation:arranger:invitationRequest:write';
             }
         }
 

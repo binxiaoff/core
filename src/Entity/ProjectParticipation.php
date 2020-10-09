@@ -203,7 +203,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *     ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ,
      *     "projectParticipation:owner:interestRequest:write",
      *     "projectParticipation:owner:participantReply:write",
-     *     "projectParticipation:arranger:write"
+     *     "projectParticipation:arranger:interestRequest:write",
+     *     "projectParticipation:arranger:participantReply:write"
      * })
      */
     private ?ProjectParticipationStatus $currentStatus;
@@ -251,7 +252,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({
      *     ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ,
-     *     "projectParticipation:arranger:interestExpression:write",
+     *     "projectParticipation:arranger:interestRequest:write",
      *     "projectParticipation:create"
      * })
      */
@@ -283,7 +284,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Gedmo\Versioned
      *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, "projectParticipation:arranger:participantReply:write", "projectParticipation:create"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, "projectParticipation:arranger:invitationRequest:write", "projectParticipation:create"})
      */
     private OfferWithFee $invitationRequest;
 
