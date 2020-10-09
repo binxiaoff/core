@@ -23,6 +23,8 @@ class ProjectParticipationManager
     }
 
     /**
+     * TODO Should be moved to ProjectManager
+     *
      * @param Staff   $staff
      * @param Project $project
      *
@@ -38,18 +40,54 @@ class ProjectParticipationManager
     }
 
     /**
-     * @param Staff                $staff                we pass staff here to prepare for the migration from client to staff
      * @param ProjectParticipation $projectParticipation
+     * @param Staff                $staff
      *
      * @return bool
      */
-    public function isParticipationOwner(Staff $staff, ProjectParticipation $projectParticipation): bool
+    public function isParticipationMember(ProjectParticipation $projectParticipation, Staff $staff): bool
     {
         return null !== $this->projectParticipationMemberRepository->findOneBy([
             'projectParticipation' => $projectParticipation,
             'staff'                => $staff,
             'archived'             => null,
         ]);
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     * @param Staff                $staff
+     *
+     * @return bool
+     */
+    public function isParticipationOwner(ProjectParticipation $projectParticipation, Staff $staff): bool
+    {
+        $participant = $projectParticipation->getParticipant();
+
+        // As an arranger, the user doesn't need the participation module to edit the following participation.
+        if ($this->isParticipationArranger($projectParticipation, $staff)) {
+            // The one of a prospect in the same company group.
+            if (($participant->isProspect() || $participant->hasRefused()) && $participant->isSameGroup($staff->getCompany())) {
+                return true;
+            }
+            // Or the one of arranger's own (we don't check if the user is a participation member for the arranger's participation)
+            if ($participant === $staff->getCompany()) {
+                return true;
+            }
+        }
+
+        return $this->isParticipationMember($projectParticipation, $staff);
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     * @param Staff                $staff
+     *
+     * @return bool
+     */
+    public function isParticipationArranger(ProjectParticipation $projectParticipation, Staff $staff): bool
+    {
+        return $projectParticipation->getProject()->getSubmitterCompany() === $staff->getCompany();
     }
 
     /**

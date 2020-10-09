@@ -22,7 +22,7 @@ use Unilend\Entity\{Clients,
     ProjectStatus,
     Staff};
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
-use Unilend\Security\Voter\ProjectParticipationVoter;
+use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -35,15 +35,19 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
     private Security $security;
     /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
+    /** @var ProjectParticipationManager */
+    private ProjectParticipationManager $projectParticipationManager;
 
     /**
-     * @param Security              $security
-     * @param IriConverterInterface $iriConverter
+     * @param Security                    $security
+     * @param IriConverterInterface       $iriConverter
+     * @param ProjectParticipationManager $projectParticipationManager
      */
-    public function __construct(Security $security, IriConverterInterface $iriConverter)
+    public function __construct(Security $security, IriConverterInterface $iriConverter, ProjectParticipationManager $projectParticipationManager)
     {
         $this->security = $security;
         $this->iriConverter = $iriConverter;
+        $this->projectParticipationManager = $projectParticipationManager;
     }
 
     /**
@@ -165,24 +169,30 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
      */
     private function getAdditionalDenormalizerGroups(ProjectParticipation $projectParticipation): array
     {
-        $project = $projectParticipation->getProject();
-
-        $label = $project->getCurrentStatus()->getHumanLabel();
-
         $groups = [];
 
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_OWNER, $projectParticipation)) {
-            $groups[] = 'projectParticipation:owner:write';
-            $groups[] = "projectParticipation:owner:$label:write";
-        }
+        $currentUser = $this->security->getUser();
 
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER, $projectParticipation)) {
-            $groups[] = 'projectParticipation:arranger:write';
-            $groups[] = "projectParticipation:arranger:$label:write";
+        $currentStaff = $currentUser instanceof Clients ? $currentUser->getCurrentStaff() : null;
 
-            if (ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus()) {
-                $groups[] = $project->isInterestExpressionEnabled() ? 'projectParticipation:arranger:interestRequest:write' :
-                    'projectParticipation:arranger:invitationRequest:write';
+        if ($currentStaff) {
+            $project = $projectParticipation->getProject();
+
+            $label = $project->getCurrentStatus()->getHumanLabel();
+
+            if ($this->projectParticipationManager->isParticipationOwner($projectParticipation, $currentStaff)) {
+                $groups[] = 'projectParticipation:owner:write';
+                $groups[] = "projectParticipation:owner:$label:write";
+            }
+
+            if ($this->projectParticipationManager->isParticipationArranger($projectParticipation, $currentStaff)) {
+                $groups[] = 'projectParticipation:arranger:write';
+                $groups[] = "projectParticipation:arranger:$label:write";
+
+                if (ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus()) {
+                    $groups[] = $project->isInterestExpressionEnabled() ? 'projectParticipation:arranger:interestRequest:write' :
+                        'projectParticipation:arranger:invitationRequest:write';
+                }
             }
         }
 

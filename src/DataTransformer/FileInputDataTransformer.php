@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\DataTransformer;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
-use ApiPlatform\Core\Bridge\Symfony\Routing\IriConverter;
 use ApiPlatform\Core\Validator\ValidatorInterface;
 use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, IOException};
 use Doctrine\ORM\{ORMException, OptimisticLockException};
@@ -20,51 +18,49 @@ use Unilend\Entity\{Clients,
     Project,
     ProjectFile,
     ProjectParticipation,
-    ProjectStatus,
     Staff};
 use Unilend\Repository\{ProjectFileRepository, ProjectRepository};
 use Unilend\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
 use Unilend\Service\File\FileUploadManager;
+use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class FileInputDataTransformer
 {
     /** @var ValidatorInterface */
-    private $validator;
-    /** @var IriConverter */
-    private $iriConverter;
+    private ValidatorInterface $validator;
     /** @var Security */
-    private $security;
+    private Security $security;
     /** @var FileUploadManager */
-    private $fileUploadManager;
+    private FileUploadManager $fileUploadManager;
     /** @var ProjectFileRepository */
-    private $projectFileRepository;
-    /**
-     * @var ProjectRepository
-     */
-    private $projectRepository;
+    private ProjectFileRepository $projectFileRepository;
+    /** @var ProjectRepository  */
+    private ProjectRepository $projectRepository;
+    /** @var ProjectParticipationManager */
+    private ProjectParticipationManager $projectParticipationManager;
 
     /**
-     * @param ValidatorInterface    $validator
-     * @param IriConverterInterface $iriConverter
-     * @param Security              $security
-     * @param FileUploadManager     $fileUploadManager
-     * @param ProjectFileRepository $projectFileRepository
-     * @param ProjectRepository     $projectRepository
+     * @param ValidatorInterface          $validator
+     * @param Security                    $security
+     * @param FileUploadManager           $fileUploadManager
+     * @param ProjectParticipationManager $projectParticipationManager
+     * @param ProjectFileRepository       $projectFileRepository
+     * @param ProjectRepository           $projectRepository
      */
     public function __construct(
         ValidatorInterface $validator,
-        IriConverterInterface $iriConverter,
         Security $security,
         FileUploadManager $fileUploadManager,
+        ProjectParticipationManager $projectParticipationManager,
         ProjectFileRepository $projectFileRepository,
         ProjectRepository $projectRepository
     ) {
         $this->validator             = $validator;
-        $this->iriConverter          = $iriConverter;
         $this->security              = $security;
         $this->fileUploadManager     = $fileUploadManager;
         $this->projectFileRepository = $projectFileRepository;
         $this->projectRepository     = $projectRepository;
+        $this->projectParticipationManager = $projectParticipationManager;
     }
 
     /**
@@ -227,7 +223,7 @@ class FileInputDataTransformer
     {
         if (
             false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $projectParticipation)
-            || false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER, $projectParticipation)
+            || false === $this->projectParticipationManager->isParticipationArranger($projectParticipation, $currentStaff)
         ) {
             throw new AccessDeniedException();
         }

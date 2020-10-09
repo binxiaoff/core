@@ -11,11 +11,8 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
 use Unilend\Entity\Clients;
-use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationTranche;
-use Unilend\Entity\ProjectStatus;
-use Unilend\Security\Voter\ProjectParticipationTrancheVoter;
-use Unilend\Security\Voter\ProjectParticipationVoter;
+use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -25,14 +22,18 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
     private const ALREADY_CALLED = 'PROJECT_PARTICIPATION_TRANCHE_ATTRIBUTE_DENORMALIZER_ALREADY_CALLED';
 
     /** @var Security */
-    private $security;
+    private Security $security;
+    /** @var ProjectParticipationManager */
+    private ProjectParticipationManager $projectParticipationManager;
 
     /**
-     * @param Security $security
+     * @param Security                    $security
+     * @param ProjectParticipationManager $projectParticipationManager
      */
-    public function __construct(Security $security)
+    public function __construct(Security $security, ProjectParticipationManager $projectParticipationManager)
     {
         $this->security = $security;
+        $this->projectParticipationManager = $projectParticipationManager;
     }
 
     /**
@@ -71,20 +72,29 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
      */
     private function getAdditionalDenormalizerGroups(ProjectParticipationTranche $projectParticipationTranche): array
     {
-        $project = $projectParticipationTranche->getProjectParticipation()->getProject();
-
-        $label = $project->getCurrentStatus()->getHumanLabel();
+        $projectParticipation = $projectParticipationTranche->getProjectParticipation();
 
         $groups = [];
 
-        if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_OWNER, $projectParticipationTranche)) {
-            $groups[] = 'projectParticipationTranche:owner:write';
-            $groups[] = "projectParticipationTranche:owner:$label:write";
-        }
+        $currentUser = $this->security->getUser();
 
-        if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_ARRANGER, $projectParticipationTranche)) {
-            $groups[] = 'projectParticipationTranche:arranger:write';
-            $groups[] = "projectParticipationTranche:arranger:$label:write";
+        $currentStaff = $currentUser instanceof Clients ? $currentUser->getCurrentStaff() : null;
+
+        if ($currentStaff) {
+            $project = $projectParticipation->getProject();
+
+            $label = $project->getCurrentStatus()->getHumanLabel();
+
+
+            if ($this->projectParticipationManager->isParticipationOwner($projectParticipation, $currentStaff)) {
+                $groups[] = 'projectParticipationTranche:owner:write';
+                $groups[] = "projectParticipationTranche:owner:$label:write";
+            }
+
+            if ($this->projectParticipationManager->isParticipationArranger($projectParticipation, $currentStaff)) {
+                $groups[] = 'projectParticipationTranche:arranger:write';
+                $groups[] = "projectParticipationTranche:arranger:$label:write";
+            }
         }
 
         return $groups;

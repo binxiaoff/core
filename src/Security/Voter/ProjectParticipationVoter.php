@@ -7,7 +7,12 @@ namespace Unilend\Security\Voter;
 use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, CompanyModule, Project, ProjectParticipation, ProjectParticipationStatus, ProjectStatus};
+use Unilend\Entity\{Clients,
+    CompanyModule,
+    Project,
+    ProjectParticipation,
+    ProjectStatus,
+    Staff};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationVoter extends AbstractEntityVoter
@@ -19,9 +24,6 @@ class ProjectParticipationVoter extends AbstractEntityVoter
 
     public const ATTRIBUTE_SENSITIVE_VIEW = 'sensitive_view';
     public const ATTRIBUTE_ADMIN_VIEW     = 'admin_view';
-
-    public const ATTRIBUTE_ARRANGER                      = 'arranger';
-    public const ATTRIBUTE_OWNER                         = 'owner';
 
     /** @var ProjectParticipationManager */
     private ProjectParticipationManager $projectParticipationManager;
@@ -59,7 +61,13 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canView(ProjectParticipation $subject, Clients $user): bool
     {
-        if ($this->isArranger($subject, $user)) {
+        $staff = $user->getCurrentStaff();
+
+        if (false === $staff instanceof Staff) {
+            return false;
+        }
+
+        if ($this->projectParticipationManager->isParticipationArranger($subject, $staff)) {
             return true;
         }
 
@@ -67,7 +75,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
 
         switch ($project->getOfferVisibility()) {
             case Project::OFFER_VISIBILITY_PRIVATE:
-                return $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject);
+                return $this->projectParticipationManager->isParticipationMember($subject, $user->getCurrentStaff());
             case Project::OFFER_VISIBILITY_PARTICIPANT:
             case Project::OFFER_VISIBILITY_PUBLIC:
                 return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $project);
@@ -84,8 +92,14 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canAdminView(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
-            || $this->isArranger($projectParticipation, $user);
+        $staff = $user->getCurrentStaff();
+
+        if (false === $staff instanceof Staff) {
+            return false;
+        }
+
+        return $this->projectParticipationManager->isParticipationMember($projectParticipation, $staff)
+            || $this->projectParticipationManager->isParticipationArranger($projectParticipation, $staff);
     }
 
     /**
@@ -110,13 +124,19 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     {
         $project = $projectParticipation->getProject();
 
+        $staff = $user->getCurrentStaff();
+
+        if (false === $staff instanceof Staff) {
+            return false;
+        }
+
         return false === $projectParticipation->isArchived()
             && $project->hasEditableStatus()
             && (
-                $this->isArranger($projectParticipation, $user)
+                $this->projectParticipationManager->isParticipationArranger($projectParticipation, $staff)
                 || (
                     $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
-                    && $this->isOwner($projectParticipation, $user)
+                    && $this->projectParticipationManager->isParticipationOwner($projectParticipation, $staff)
                     && $project->isPublished()
                     && $project->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION
                 )
@@ -146,46 +166,5 @@ class ProjectParticipationVoter extends AbstractEntityVoter
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)
             && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus()
             && $projectParticipation->getParticipant() !== $project->getSubmitterCompany();
-    }
-
-    /**
-     * @param ProjectParticipation $subject
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    protected function isArranger(ProjectParticipation $subject, Clients $user): bool
-    {
-        return $subject->getProject()->getSubmitterCompany() === $user->getCompany();
-    }
-
-    /**
-     * @param ProjectParticipation $subject
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    protected function isOwner(ProjectParticipation $subject, Clients $user)
-    {
-        $participant = $subject->getParticipant();
-        $staff       = $user->getCurrentStaff();
-
-        if (null === $staff) {
-            return false;
-        }
-
-        // As an arranger, the user doesn't need the participation module to edit the following participation.
-        if ($this->isArranger($subject, $user)) {
-            // The one of a prospect in the same company group.
-            if (($participant->isProspect() || $participant->hasRefused()) && $participant->isSameGroup($staff->getCompany())) {
-                return true;
-            }
-            // Or the one of arranger's own (we don't check if the user is a participation member for the arranger's participation)
-            if ($participant === $staff->getCompany()) {
-                return true;
-            }
-        }
-
-        return $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject);
     }
 }
