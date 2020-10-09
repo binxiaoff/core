@@ -67,6 +67,7 @@ class ProjectParticipationTrancheFixtures extends AbstractFixtures implements De
     public function getDependencies(): array
     {
         return [
+            TrancheFixtures::class,
             ProjectParticipationFixtures::class,
         ];
     }
