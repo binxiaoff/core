@@ -56,33 +56,22 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-        $temporaryTokenString = $request->headers->get('X-AUTH-TOKEN');
-        if (empty($temporaryTokenString)) {
-            throw (new InvalidTemporaryTokenException('Temporary token is not found.'));
-        }
-
-        return $this->temporaryTokenRepository->findOneBy(['token' => $temporaryTokenString]);
+        return $request->headers->get('X-AUTH-TOKEN');
     }
 
     /**
      * {@inheritdoc}
-     *
-     * @param TemporaryToken $temporaryToken
-     */
-    public function getUser($temporaryToken, UserProviderInterface $userProvider)
-    {
-        return $temporaryToken->getClient();
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param TemporaryToken $temporaryToken
      *
      * @throws Exception
      */
-    public function checkCredentials($temporaryToken, UserInterface $user): bool
+    public function getUser($credentials, UserProviderInterface $userProvider): UserInterface
     {
+        if (empty($credentials)) {
+            throw new InvalidTemporaryTokenException('Temporary token is empty.');
+        }
+
+        $temporaryToken = $this->temporaryTokenRepository->findOneBy(['token' => $credentials]);
+
         if (null === $temporaryToken) {
             throw new InvalidTemporaryTokenException('Temporary token is not found.');
         }
@@ -94,6 +83,14 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
         $temporaryToken->setAccessed();
         $this->temporaryTokenRepository->save($temporaryToken);
 
+        return $temporaryToken->getClient();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function checkCredentials($credentials, UserInterface $user): bool
+    {
         return true;
     }
 
