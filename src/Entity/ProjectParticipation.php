@@ -352,7 +352,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Collection|ProjectParticipationTranche[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="projectParticipation", cascade={"persist"}, indexBy="id")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="projectParticipation", cascade={"persist"})
      *
      * @Assert\Valid
      *
