@@ -666,18 +666,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return bool
-     */
-    public function isArchived(): bool
-    {
-        return $this->getCurrentStatus()
-            && \in_array(
-                $this->getCurrentStatus()->getStatus(),
-                [ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER, ProjectParticipationStatus::STATUS_ARCHIVED_BY_PARTICIPANT],
-                true
-            );
-    }
-    /**
      * @return ArrayCollection|ProjectParticipationTranche[]
      */
     public function getProjectParticipationTranches()

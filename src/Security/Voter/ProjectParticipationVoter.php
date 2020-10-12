@@ -130,7 +130,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             return false;
         }
 
-        return false === $projectParticipation->isArchived()
+        return false === $projectParticipation->isActive()
             && $project->hasEditableStatus()
             && (
                 $this->projectParticipationManager->isParticipationArranger($projectParticipation, $staff)
