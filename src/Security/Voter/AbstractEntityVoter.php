@@ -52,18 +52,13 @@ abstract class AbstractEntityVoter extends Voter
             return true;
         }
 
-        $prefixes = ['can', 'is'];
-        $suffix = implode('', array_map('ucfirst', explode('_', $attribute)));
+        $methodName = 'can' . implode('', array_map('ucfirst', explode('_', $attribute)));
 
-        foreach ($prefixes as $prefix) {
-            $methodName = $prefix . $suffix;
-
-            if (method_exists($this, $methodName)) {
-                return $user && $this->fulfillPreconditions($subject, $user) && $this->{$methodName}($subject, $user);
-            }
+        if (false === method_exists($this, $methodName)) {
+            return false;
         }
 
-        return false;
+        return $user && $this->fulfillPreconditions($subject, $user) && $this->{$methodName}($subject, $user);
     }
 
     /**
