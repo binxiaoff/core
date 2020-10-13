@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, CompanyModule, Project, ProjectParticipationStatus, ProjectParticipationTranche};
+use Unilend\Entity\{Clients, Project, ProjectParticipationStatus, ProjectParticipationTranche};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationTrancheVoter extends AbstractEntityVoter

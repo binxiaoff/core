@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Serializer\Normalizer\ProjectParticipation;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
-use Exception;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
@@ -14,15 +13,15 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
 use Unilend\Entity\{Clients,
-    Project,
     ProjectParticipation,
     ProjectParticipationMember,
     ProjectParticipationStatus,
     ProjectParticipationTranche,
-    ProjectStatus,
-    Staff};
+    ProjectStatus};
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
+
+use function is_array;
 
 class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -69,7 +68,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         $projectParticipation = $this->extractObjectToPopulate(ProjectParticipation::class, $context);
         if ($projectParticipation) {
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipation));
-            if (isset($data['currentStatus']) && \is_array($data['currentStatus'])) {
+            if (isset($data['currentStatus']) && is_array($data['currentStatus'])) {
                 unset($data['currentStatus']['projectParticipation']);
                 $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationStatus::class]['projectParticipation'] = $projectParticipation;
             }
@@ -124,7 +123,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
             unset($projectParticipationMember['projectParticipation']);
 
             // Disallow requestData to set staff company when its an array
-            if (isset($projectParticipationMember['staff']) && \is_array($projectParticipationMember['staff'])) {
+            if (isset($projectParticipationMember['staff']) && is_array($projectParticipationMember['staff'])) {
                 unset($projectParticipationMember['staff']['company']);
             }
 
@@ -164,8 +163,6 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
      * @param ProjectParticipation $projectParticipation
      *
      * @return array
-     *
-     * @throws Exception
      */
     private function getAdditionalDenormalizerGroups(ProjectParticipation $projectParticipation): array
     {
@@ -178,20 +175,34 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         if ($currentStaff) {
             $project = $projectParticipation->getProject();
 
-            $label = $project->getCurrentStatus()->getHumanLabel();
-
+            $currentStatus = $project->getCurrentStatus()->getStatus();
             if ($this->projectParticipationManager->isParticipationOwner($projectParticipation, $currentStaff)) {
-                $groups[] = 'projectParticipation:owner:write';
-                $groups[] = "projectParticipation:owner:$label:write";
+                switch ($currentStatus) {
+                    case ProjectStatus::STATUS_INTEREST_EXPRESSION:
+                        $groups[] = 'projectParticipation:owner:interestExpression:write';
+                        break;
+                    case ProjectStatus::STATUS_PARTICIPANT_REPLY:
+                        $groups[] = 'projectParticipation:owner:participantReply:write';
+                        break;
+                }
             }
 
             if ($this->projectParticipationManager->isParticipationArranger($projectParticipation, $currentStaff)) {
-                $groups[] = 'projectParticipation:arranger:write';
-                $groups[] = "projectParticipation:arranger:$label:write";
-
-                if (ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus()) {
-                    $groups[] = $project->isInterestExpressionEnabled() ? 'projectParticipation:arranger:interestRequest:write' :
-                        'projectParticipation:arranger:invitationRequest:write';
+                switch ($currentStatus) {
+                    case ProjectStatus::STATUS_DRAFT:
+                        $groups[] = 'projectParticipation:arranger:draft:write';
+                        $groups[] = $project->isInterestExpressionEnabled() ?
+                            'projectParticipation:arranger:interestExpression:write' : 'projectParticipation:arranger:participantReply:write';
+                        break;
+                    case ProjectStatus::STATUS_INTEREST_EXPRESSION:
+                        $groups[] = 'projectParticipation:arranger:interestExpression:write';
+                        break;
+                    case ProjectStatus::STATUS_PARTICIPANT_REPLY:
+                        $groups[] = 'projectParticipation:arranger:participantReply:write';
+                        break;
+                    case ProjectStatus::STATUS_ALLOCATION:
+                        $groups[] = 'projectParticipation:arranger:allocation:write';
+                        break;
                 }
             }
         }

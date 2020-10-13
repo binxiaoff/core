@@ -12,6 +12,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ObjectToPopulateTrait};
 use Unilend\Entity\Clients;
 use Unilend\Entity\ProjectParticipationTranche;
+use Unilend\Entity\ProjectStatus;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
@@ -83,17 +84,20 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
         if ($currentStaff) {
             $project = $projectParticipation->getProject();
 
-            $label = $project->getCurrentStatus()->getHumanLabel();
-
-
+            $currentStatus = $project->getCurrentStatus()->getStatus();
             if ($this->projectParticipationManager->isParticipationOwner($projectParticipation, $currentStaff)) {
-                $groups[] = 'projectParticipationTranche:owner:write';
-                $groups[] = "projectParticipationTranche:owner:$label:write";
+                switch ($currentStatus) {
+                    case ProjectStatus::STATUS_PARTICIPANT_REPLY:
+                        $groups[] = 'projectParticipationTranche:owner:participantReply:write';
+                        break;
+                    case ProjectStatus::STATUS_ALLOCATION:
+                        $groups[] = 'projectParticipationTranche:owner:allocation:write';
+                        break;
+                }
             }
 
-            if ($this->projectParticipationManager->isParticipationArranger($projectParticipation, $currentStaff)) {
-                $groups[] = 'projectParticipationTranche:arranger:write';
-                $groups[] = "projectParticipationTranche:arranger:$label:write";
+            if (ProjectStatus::STATUS_ALLOCATION === $currentStatus && $this->projectParticipationManager->isParticipationArranger($projectParticipation, $currentStaff)) {
+                $groups[] = 'projectParticipationTranche:arranger:allocation:write';
             }
         }
 

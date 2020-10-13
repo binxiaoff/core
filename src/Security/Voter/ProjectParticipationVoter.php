@@ -71,17 +71,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             return true;
         }
 
-        $project = $subject->getProject();
-
-        switch ($project->getOfferVisibility()) {
-            case Project::OFFER_VISIBILITY_PRIVATE:
-                return $this->projectParticipationManager->isParticipationMember($subject, $user->getCurrentStaff());
-            case Project::OFFER_VISIBILITY_PARTICIPANT:
-            case Project::OFFER_VISIBILITY_PUBLIC:
-                return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $project);
-        }
-
-        throw new LogicException('This code should not be reached');
+        return $this->projectParticipationManager->isParticipationMember($subject, $user->getCurrentStaff());
     }
 
     /**
@@ -130,13 +120,13 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             return false;
         }
 
-        return false === $projectParticipation->isActive()
+        return $projectParticipation->isActive()
             && $project->hasEditableStatus()
             && (
                 $this->projectParticipationManager->isParticipationArranger($projectParticipation, $staff)
                 || (
                     $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
-                    && $this->projectParticipationManager->isParticipationOwner($projectParticipation, $staff)
+                    && $this->projectParticipationManager->isParticipationMember($projectParticipation, $staff)
                     && $project->isPublished()
                     && $project->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION
                 )

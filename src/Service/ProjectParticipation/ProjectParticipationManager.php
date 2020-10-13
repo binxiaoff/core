@@ -55,6 +55,8 @@ class ProjectParticipationManager
     }
 
     /**
+     * Returns true if for given projectParticipation,
+     *
      * @param ProjectParticipation $projectParticipation
      * @param Staff                $staff
      *
@@ -80,6 +82,8 @@ class ProjectParticipationManager
     }
 
     /**
+     * Returns true if for given projectParticipation, the given staff is staffed by its project arranger
+     *
      * @param ProjectParticipation $projectParticipation
      * @param Staff                $staff
      *
@@ -87,7 +91,7 @@ class ProjectParticipationManager
      */
     public function isParticipationArranger(ProjectParticipation $projectParticipation, Staff $staff): bool
     {
-        return $projectParticipation->getProject()->getSubmitterCompany() === $staff->getCompany();
+        return $projectParticipation->getProject()->getArranger() === $staff->getCompany();
     }
 
     /**
