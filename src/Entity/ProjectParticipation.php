@@ -204,7 +204,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *     "projectParticipation:owner:interestExpression:write",
      *     "projectParticipation:owner:participantReply:write",
      *     "projectParticipation:arranger:interestExpression:write",
-     *     "projectParticipation:arranger:participantReply:write"
+     *     "projectParticipation:arranger:participantReply:write",
+     *     "projectParticipation:arranger:allocation:write"
      * })
      */
     private ?ProjectParticipationStatus $currentStatus;

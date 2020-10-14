@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
+use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, Project, ProjectParticipationStatus, ProjectParticipationTranche};
-use Unilend\Service\Project\ProjectManager;
+use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationTrancheVoter extends AbstractEntityVoter
 {
@@ -14,14 +15,14 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
     public const ATTRIBUTE_EDIT             = 'edit';
     public const ATTRIBUTE_SENSITIVE_VIEW   = 'sensitive_view';
 
-    /** @var ProjectManager */
-    private ProjectManager $projectParticipationManager;
+    /** @var ProjectParticipationManager */
+    private ProjectParticipationManager $projectParticipationManager;
 
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param ProjectManager                $projectManager
+     * @param ProjectParticipationManager   $projectManager
      */
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker, ProjectManager $projectManager)
+    public function __construct(AuthorizationCheckerInterface $authorizationChecker, ProjectParticipationManager $projectManager)
     {
         $this->projectParticipationManager = $projectManager;
         parent::__construct($authorizationChecker);
@@ -32,13 +33,15 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
      * @param Clients                     $client
      *
      * @return bool
+     *
+     * @throws NonUniqueResultException
      */
     protected function canSensitiveView(ProjectParticipationTranche $projectParticipationTranche, Clients $client): bool
     {
         $project = $projectParticipationTranche->getProjectParticipation()->getProject();
 
         return Project::OFFER_VISIBILITY_PUBLIC === $project->getOfferVisibility()
-            || $this->projectParticipationManager->isParticipationMember($projectParticipationTranche->getProjectParticipation(), $client->getCurrentStaff())
+            || $this->projectParticipationManager->isMember($projectParticipationTranche->getProjectParticipation(), $client->getCurrentStaff())
             || $project->getSubmitterCompany() === $client->getCompany();
     }
 
