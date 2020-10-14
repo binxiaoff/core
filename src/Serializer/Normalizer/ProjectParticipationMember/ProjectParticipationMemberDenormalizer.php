@@ -78,12 +78,10 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
             $participation = $this->iriConverter->getItemFromIri($data['projectParticipation'], [AbstractNormalizer::GROUPS => []]);
         }
 
-        // permit to create staff if POST method and for an external bank
-        // Remove false === $participation->getParticipant()->isCAGMember() when you need to authorize it for all banks
-        if (null === $projectParticipationMember && false === $participation->getParticipant()->isCAGMember()) {
+        // permit to create staff from email (CALS-2023)
+        if (null === $projectParticipationMember) {
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['role:write', 'staff:create', 'client:create']);
         }
-
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationMember::class]['addedBy'] = $user->getCurrentStaff();
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'] = $participation->getParticipant();
 
