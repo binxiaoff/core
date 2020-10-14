@@ -67,11 +67,11 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             return false;
         }
 
-        if ($this->projectParticipationManager->isParticipationArranger($subject, $staff)) {
+        if ($this->projectParticipationManager->isArranger($subject, $staff)) {
             return true;
         }
 
-        return $this->projectParticipationManager->isParticipationMember($subject, $user->getCurrentStaff());
+        return $this->projectParticipationManager->isMember($subject, $user->getCurrentStaff());
     }
 
     /**
@@ -88,8 +88,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $this->projectParticipationManager->isParticipationMember($projectParticipation, $staff)
-            || $this->projectParticipationManager->isParticipationArranger($projectParticipation, $staff);
+        return $this->projectParticipationManager->isMember($projectParticipation, $staff)
+            || $this->projectParticipationManager->isArranger($projectParticipation, $staff);
     }
 
     /**
@@ -123,10 +123,10 @@ class ProjectParticipationVoter extends AbstractEntityVoter
         return $projectParticipation->isActive()
             && $project->hasEditableStatus()
             && (
-                $this->projectParticipationManager->isParticipationArranger($projectParticipation, $staff)
+                $this->projectParticipationManager->isArranger($projectParticipation, $staff)
                 || (
                     $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
-                    && $this->projectParticipationManager->isParticipationMember($projectParticipation, $staff)
+                    && $this->projectParticipationManager->isMember($projectParticipation, $staff)
                     && $project->isPublished()
                     && $project->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION
                 )

@@ -21,8 +21,6 @@ use Unilend\Entity\{Clients,
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
-use function is_array;
-
 class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
     use DenormalizerAwareTrait;
@@ -176,7 +174,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
             $project = $projectParticipation->getProject();
 
             $currentStatus = $project->getCurrentStatus()->getStatus();
-            if ($this->projectParticipationManager->isParticipationOwner($projectParticipation, $currentStaff)) {
+            if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
                 switch ($currentStatus) {
                     case ProjectStatus::STATUS_INTEREST_EXPRESSION:
                         $groups[] = 'projectParticipation:owner:interestExpression:write';
@@ -187,7 +185,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                 }
             }
 
-            if ($this->projectParticipationManager->isParticipationArranger($projectParticipation, $currentStaff)) {
+            if ($this->projectParticipationManager->isArranger($projectParticipation, $currentStaff)) {
                 switch ($currentStatus) {
                     case ProjectStatus::STATUS_DRAFT:
                         $groups[] = 'projectParticipation:arranger:draft:write';
@@ -201,7 +199,9 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                         $groups[] = 'projectParticipation:arranger:participantReply:write';
                         break;
                     case ProjectStatus::STATUS_ALLOCATION:
-                        $groups[] = 'projectParticipation:arranger:allocation:write';
+                        if ($projectParticipation->isArrangerParticipation()) {
+                            $groups[] = 'projectParticipation:arranger:allocation:write';
+                        }
                         break;
                 }
             }

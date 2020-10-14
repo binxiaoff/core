@@ -85,7 +85,7 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
             $project = $projectParticipation->getProject();
 
             $currentStatus = $project->getCurrentStatus()->getStatus();
-            if ($this->projectParticipationManager->isParticipationOwner($projectParticipation, $currentStaff)) {
+            if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
                 switch ($currentStatus) {
                     case ProjectStatus::STATUS_PARTICIPANT_REPLY:
                         $groups[] = 'projectParticipationTranche:owner:participantReply:write';
@@ -96,7 +96,7 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
                 }
             }
 
-            if (ProjectStatus::STATUS_ALLOCATION === $currentStatus && $this->projectParticipationManager->isParticipationArranger($projectParticipation, $currentStaff)) {
+            if (ProjectStatus::STATUS_ALLOCATION === $currentStatus && $this->projectParticipationManager->isArranger($projectParticipation, $currentStaff)) {
                 $groups[] = 'projectParticipationTranche:arranger:allocation:write';
             }
         }

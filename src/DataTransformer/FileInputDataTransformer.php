@@ -223,7 +223,7 @@ class FileInputDataTransformer
     {
         if (
             false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $projectParticipation)
-            || false === $this->projectParticipationManager->isParticipationArranger($projectParticipation, $currentStaff)
+            || false === $this->projectParticipationManager->isArranger($projectParticipation, $currentStaff)
         ) {
             throw new AccessDeniedException();
         }

@@ -4,39 +4,28 @@ declare(strict_types=1);
 
 namespace Unilend\Service\ProjectParticipation;
 
-use Doctrine\ORM\NonUniqueResultException;
-use RuntimeException;
-use Unilend\Entity\{Project, ProjectParticipation, Staff};
+use Unilend\Entity\{ProjectParticipation, Staff};
 use Unilend\Repository\ProjectParticipationMemberRepository;
+use Unilend\Service\Project\ProjectManager;
 
 class ProjectParticipationManager
 {
     /** @var ProjectParticipationMemberRepository */
     private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
 
+    /** @var ProjectManager */
+    private ProjectManager $projectManager;
+
     /**
+     * @param ProjectManager                       $projectManager
      * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
      */
-    public function __construct(ProjectParticipationMemberRepository $projectParticipationMemberRepository)
-    {
+    public function __construct(
+        ProjectManager $projectManager,
+        ProjectParticipationMemberRepository $projectParticipationMemberRepository
+    ) {
         $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
-    }
-
-    /**
-     * TODO Should be moved to ProjectManager
-     *
-     * @param Staff   $staff
-     * @param Project $project
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return bool
-     */
-    public function isParticipant(Staff $staff, Project $project): bool
-    {
-        $projectParticipationMember = $this->projectParticipationMemberRepository->findByProjectAndStaff($project, $staff);
-
-        return null !== $projectParticipationMember && false === $projectParticipationMember->isArchived();
+        $this->projectManager = $projectManager;
     }
 
     /**
@@ -45,7 +34,7 @@ class ProjectParticipationManager
      *
      * @return bool
      */
-    public function isParticipationMember(ProjectParticipation $projectParticipation, Staff $staff): bool
+    public function isMember(ProjectParticipation $projectParticipation, Staff $staff): bool
     {
         return null !== $this->projectParticipationMemberRepository->findOneBy([
             'projectParticipation' => $projectParticipation,
@@ -62,12 +51,12 @@ class ProjectParticipationManager
      *
      * @return bool
      */
-    public function isParticipationOwner(ProjectParticipation $projectParticipation, Staff $staff): bool
+    public function isOwner(ProjectParticipation $projectParticipation, Staff $staff): bool
     {
         $participant = $projectParticipation->getParticipant();
 
         // As an arranger, the user doesn't need the participation module to edit the following participation.
-        if ($this->isParticipationArranger($projectParticipation, $staff)) {
+        if ($this->isArranger($projectParticipation, $staff)) {
             // The one of a prospect in the same company group.
             if (($participant->isProspect() || $participant->hasRefused()) && $participant->isSameGroup($staff->getCompany())) {
                 return true;
@@ -78,38 +67,17 @@ class ProjectParticipationManager
             }
         }
 
-        return $this->isParticipationMember($projectParticipation, $staff);
+        return $this->isMember($projectParticipation, $staff);
     }
 
     /**
-     * Returns true if for given projectParticipation, the given staff is staffed by its project arranger
-     *
      * @param ProjectParticipation $projectParticipation
      * @param Staff                $staff
      *
      * @return bool
      */
-    public function isParticipationArranger(ProjectParticipation $projectParticipation, Staff $staff): bool
+    public function isArranger(ProjectParticipation $projectParticipation, Staff $staff): bool
     {
-        return $projectParticipation->getProject()->getArranger() === $staff->getCompany();
-    }
-
-    /**
-     * @param Staff   $staff
-     * @param Project $project
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return bool
-     */
-    public function isNdaAccepted(Staff $staff, Project $project): bool
-    {
-        $projectParticipationMember = $this->projectParticipationMemberRepository->findByProjectAndStaff($project, $staff);
-
-        if (null === $projectParticipationMember) {
-            throw new RuntimeException(sprintf('The staff %s is not a participant of project %s', $staff->getPublicId(), $project->getPublicId()));
-        }
-
-        return null !== $projectParticipationMember->getNdaAccepted();
+        return $this->projectManager->isArranger($projectParticipation->getProject(), $staff);
     }
 }

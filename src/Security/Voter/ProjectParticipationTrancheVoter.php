@@ -6,7 +6,7 @@ namespace Unilend\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, Project, ProjectParticipationStatus, ProjectParticipationTranche};
-use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
+use Unilend\Service\Project\ProjectManager;
 
 class ProjectParticipationTrancheVoter extends AbstractEntityVoter
 {
@@ -14,16 +14,16 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
     public const ATTRIBUTE_EDIT             = 'edit';
     public const ATTRIBUTE_SENSITIVE_VIEW   = 'sensitive_view';
 
-    /** @var ProjectParticipationManager */
-    private ProjectParticipationManager $projectParticipationManager;
+    /** @var ProjectManager */
+    private ProjectManager $projectParticipationManager;
 
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param ProjectParticipationManager   $projectParticipationManager
+     * @param ProjectManager                $projectManager
      */
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker, ProjectParticipationManager $projectParticipationManager)
+    public function __construct(AuthorizationCheckerInterface $authorizationChecker, ProjectManager $projectManager)
     {
-        $this->projectParticipationManager = $projectParticipationManager;
+        $this->projectParticipationManager = $projectManager;
         parent::__construct($authorizationChecker);
     }
 
