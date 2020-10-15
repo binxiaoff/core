@@ -35,6 +35,22 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         self::COMPANY_NOT_SIGNED,
     ];
 
+    private const CA_SHORTCODE = [
+        'ALVO', 'ATVD', 'BRPI', 'CENL', 'CEST', 'CM2SE', 'CHPE',
+        'CAPR', 'AQTN', 'CENF', 'CHBO',
+        'FRAC', 'CORS', 'GUAD', 'MART', 'REUN', 'TPOI', 'ANMA', 'LORR',
+        'NORM', 'IDFR', 'TOUL', 'CODA', 'SAVO',
+        'ILVI', 'COUE', 'FINI', 'LANG', 'MORB', 'NEST', 'L&HL', 'NORF',
+        'NMPY', 'NORS', 'PRCA', 'PYGA', 'SRAL', 'SMED', 'VALF', 'CIB', 'CDM', 'CASA', 'LCL',
+    ];
+    private const OTHER_SHORTCODE = [
+        'SOGE', 'BNP', 'LBP', 'HSBC', 'GCDN', 'CMDC', 'BARC',
+        'OBC', 'ABN', 'RABO', 'PASCHI', 'FORTIS', 'CCOP', 'NATIXIS',
+        'BPAL', 'BRED', 'BP', 'BPALC', 'BPACA', 'BPBFC', 'BPGO',
+        'BPARA', 'BPDN', 'BPDS', 'BPM', 'BPO', 'BPRP', 'BPVF', 'CDE', 'CEPC',
+        'CEBPL', 'CEPAC', 'CECA', 'CEAL', 'CEBFC', 'CEMP', 'CEGEE',
+    ];
+
     /** @var EntityManagerInterface */
     private EntityManagerInterface $entityManager;
 
@@ -57,7 +73,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     public function load(ObjectManager $manager): void
     {
-        // Main company
+       // Main company
         /** @var Clients $user */
         $user    = $this->getReference(UserFixtures::ADMIN);
         $domain  = explode('@', $user->getEmail())[1];
@@ -66,35 +82,35 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         // Fake bank
         for ($i = 1; $i <= 5; $i++) {
-            $company = $this->createCompany("CA Bank $i", 'CABANK' . $i)->setGroupName('Crédit Agricole');
+            $company = $this->createCompany("CA Bank $i", static::CA_SHORTCODE[$i])->setGroupName('Crédit Agricole');
             $this->addReference(self::COMPANIES[$i - 1], $company);
         }
 
-        for ($i = 6; $i <= 50; $i++) {
-            $this->createCompany("CA Bank $i", 'CABANK' . $i)->setGroupName('Crédit Agricole');
+        for ($i = 6; $i <= 20; $i++) {
+            $this->createCompany("CA Bank $i", static::CA_SHORTCODE[$i])->setGroupName('Crédit Agricole');
         }
 
         // External bank
-        $company = $this->createCompany('External Bank')->setShortCode('EXTBANK');
+        $company = $this->createCompany('External Bank')->setShortCode(static::OTHER_SHORTCODE[0]);
         $this->addReference(self::COMPANY_EXTERNAL, $company);
 
         // Fake bank
         for ($i = 1; $i <= 5; $i++) {
-            $this->createCompany("External Bank $i")->setShortCode('EXTBANK' . $i);
+            $this->createCompany("External Bank $i")->setShortCode(static::OTHER_SHORTCODE[$i]);
         }
 
         $this->addReference(
             self::COMPANY_NOT_SIGNED,
-            $this->createCompany('Not signed Bank', 'UNSIGNED', CompanyStatus::STATUS_PROSPECT)->setGroupName('Crédit Agricole')
+            $this->createCompany('Not signed Bank', static::CA_SHORTCODE[21], CompanyStatus::STATUS_PROSPECT)->setGroupName('Crédit Agricole')
         );
         $this->addReference(
             self::COMPANY_NOT_SIGNED_NO_MEMBERS,
-            $this->createCompany('Not signed no member Bank', 'NOMEMBER', CompanyStatus::STATUS_PROSPECT)->setGroupName('Crédit Agricole')
+            $this->createCompany('Not signed no member Bank', static::CA_SHORTCODE[22], CompanyStatus::STATUS_PROSPECT)->setGroupName('Crédit Agricole')
         );
 
         $this->addReference(
             self::COMPANY_MANY_STAFF,
-            $this->createCompany('Many staff', 'MANYSTAFF')->setGroupName('Crédit Agricole')
+            $this->createCompany('Many staff', static::CA_SHORTCODE[23])->setGroupName('Crédit Agricole')
         );
 
         $manager->flush();
