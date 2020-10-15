@@ -60,7 +60,7 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
      */
     private function getAdditionalNormalizerGroups(ProjectParticipation $projectParticipation): array
     {
-        $group = [];
+        $group = ["offer:read"];
 
         if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ADMIN_VIEW, $projectParticipation)) {
             $group[] = ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ;
