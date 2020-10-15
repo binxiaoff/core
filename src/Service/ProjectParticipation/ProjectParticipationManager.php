@@ -56,7 +56,7 @@ class ProjectParticipationManager
         $participant = $projectParticipation->getParticipant();
 
         // As an arranger, the user doesn't need the participation module to edit the following participation.
-        if ($this->isArranger($projectParticipation, $staff)) {
+        if ($this->projectManager->isArranger($projectParticipation->getProject(), $staff)) {
             // The one of a prospect in the same company group.
             if (($participant->isProspect() || $participant->hasRefused()) && $participant->isSameGroup($staff->getCompany())) {
                 return true;
@@ -68,16 +68,5 @@ class ProjectParticipationManager
         }
 
         return $this->isMember($projectParticipation, $staff);
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Staff                $staff
-     *
-     * @return bool
-     */
-    public function isArranger(ProjectParticipation $projectParticipation, Staff $staff): bool
-    {
-        return $this->projectManager->isArranger($projectParticipation->getProject(), $staff);
     }
 }

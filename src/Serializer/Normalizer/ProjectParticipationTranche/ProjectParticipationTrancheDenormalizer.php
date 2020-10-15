@@ -13,6 +13,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
 use Unilend\Entity\Clients;
 use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Entity\ProjectStatus;
+use Unilend\Service\Project\ProjectManager;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
@@ -26,15 +27,19 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
     private Security $security;
     /** @var ProjectParticipationManager */
     private ProjectParticipationManager $projectParticipationManager;
+    /** @var ProjectManager */
+    private ProjectManager $projectManager;
 
     /**
      * @param Security                    $security
+     * @param ProjectManager              $projectManager
      * @param ProjectParticipationManager $projectParticipationManager
      */
-    public function __construct(Security $security, ProjectParticipationManager $projectParticipationManager)
+    public function __construct(Security $security, ProjectManager $projectManager, ProjectParticipationManager $projectParticipationManager)
     {
         $this->security = $security;
         $this->projectParticipationManager = $projectParticipationManager;
+        $this->projectManager = $projectManager;
     }
 
     /**
@@ -85,19 +90,21 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
             $project = $projectParticipation->getProject();
 
             $currentStatus = $project->getCurrentStatus()->getStatus();
-            if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
-                switch ($currentStatus) {
-                    case ProjectStatus::STATUS_PARTICIPANT_REPLY:
-                        $groups[] = 'projectParticipationTranche:owner:participantReply:write';
-                        break;
-                    case ProjectStatus::STATUS_ALLOCATION:
-                        $groups[] = 'projectParticipationTranche:owner:allocation:write';
-                        break;
-                }
-            }
+            switch ($currentStatus) {
+                case ProjectStatus::STATUS_PARTICIPANT_REPLY:
+                    if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
+                            $groups[] = 'projectParticipationTranche:owner:participantReply:write';
+                    }
+                    break;
+                case ProjectStatus::STATUS_ALLOCATION:
+                    if ($this->projectManager->isArranger($project, $currentStaff)) {
+                        $groups[] = 'projectParticipationTranche:arranger:allocation:write';
 
-            if (ProjectStatus::STATUS_ALLOCATION === $currentStatus && $this->projectParticipationManager->isArranger($projectParticipation, $currentStaff)) {
-                $groups[] = 'projectParticipationTranche:arranger:allocation:write';
+                        if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
+                            $groups[] = 'projectParticipationTranche:arrangerOwner:allocation:write';
+                        }
+                    }
+                    break;
             }
         }
 

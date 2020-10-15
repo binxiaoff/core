@@ -22,7 +22,7 @@ use Unilend\Entity\{Clients,
 use Unilend\Repository\{ProjectFileRepository, ProjectRepository};
 use Unilend\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
 use Unilend\Service\File\FileUploadManager;
-use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
+use Unilend\Service\Project\ProjectManager;
 
 class FileInputDataTransformer
 {
@@ -36,22 +36,22 @@ class FileInputDataTransformer
     private ProjectFileRepository $projectFileRepository;
     /** @var ProjectRepository  */
     private ProjectRepository $projectRepository;
-    /** @var ProjectParticipationManager */
-    private ProjectParticipationManager $projectParticipationManager;
+    /** @var ProjectManager */
+    private ProjectManager $projectManager;
 
     /**
-     * @param ValidatorInterface          $validator
-     * @param Security                    $security
-     * @param FileUploadManager           $fileUploadManager
-     * @param ProjectParticipationManager $projectParticipationManager
-     * @param ProjectFileRepository       $projectFileRepository
-     * @param ProjectRepository           $projectRepository
+     * @param ValidatorInterface    $validator
+     * @param Security              $security
+     * @param FileUploadManager     $fileUploadManager
+     * @param ProjectManager        $projectManager
+     * @param ProjectFileRepository $projectFileRepository
+     * @param ProjectRepository     $projectRepository
      */
     public function __construct(
         ValidatorInterface $validator,
         Security $security,
         FileUploadManager $fileUploadManager,
-        ProjectParticipationManager $projectParticipationManager,
+        ProjectManager $projectManager,
         ProjectFileRepository $projectFileRepository,
         ProjectRepository $projectRepository
     ) {
@@ -60,7 +60,7 @@ class FileInputDataTransformer
         $this->fileUploadManager     = $fileUploadManager;
         $this->projectFileRepository = $projectFileRepository;
         $this->projectRepository     = $projectRepository;
-        $this->projectParticipationManager = $projectParticipationManager;
+        $this->projectManager = $projectManager;
     }
 
     /**
@@ -223,7 +223,7 @@ class FileInputDataTransformer
     {
         if (
             false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $projectParticipation)
-            || false === $this->projectParticipationManager->isArranger($projectParticipation, $currentStaff)
+            || false === $this->projectManager->isArranger($projectParticipation->getProject(), $currentStaff)
         ) {
             throw new AccessDeniedException();
         }

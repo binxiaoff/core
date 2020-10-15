@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients,
@@ -13,6 +12,7 @@ use Unilend\Entity\{Clients,
     ProjectParticipation,
     ProjectStatus,
     Staff};
+use Unilend\Service\Project\ProjectManager;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationVoter extends AbstractEntityVoter
@@ -28,16 +28,23 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     /** @var ProjectParticipationManager */
     private ProjectParticipationManager $projectParticipationManager;
 
+    /** @var ProjectManager  */
+    private ProjectManager $projectManager;
+
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param ProjectManager                $projectManager
      * @param ProjectParticipationManager   $projectParticipationManager
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
+        ProjectManager $projectManager,
         ProjectParticipationManager $projectParticipationManager
     ) {
         parent::__construct($authorizationChecker);
         $this->projectParticipationManager = $projectParticipationManager;
+        $this->projectManager = $projectManager;
+        $this->authorizationChecker = $authorizationChecker;
     }
 
     /**
@@ -55,8 +62,6 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      * @param ProjectParticipation $subject
      * @param Clients              $user
      *
-     * @throws NonUniqueResultException
-     *
      * @return bool
      */
     protected function canView(ProjectParticipation $subject, Clients $user): bool
@@ -67,11 +72,19 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             return false;
         }
 
-        if ($this->projectParticipationManager->isArranger($subject, $staff)) {
+        if ($this->projectManager->isArranger($subject->getProject(), $staff)) {
             return true;
         }
 
-        return $this->projectParticipationManager->isMember($subject, $user->getCurrentStaff());
+        switch ($subject->getProject()->getOfferVisibility()) {
+            case Project::OFFER_VISIBILITY_PRIVATE:
+                return $this->projectParticipationManager->isOwner($subject, $staff);
+            case Project::OFFER_VISIBILITY_PARTICIPANT:
+            case Project::OFFER_VISIBILITY_PUBLIC:
+                return $this->projectParticipationManager->isMember($subject, $staff);
+        }
+
+        throw new LogicException('This code should not be reached');
     }
 
     /**
@@ -89,7 +102,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
         }
 
         return $this->projectParticipationManager->isMember($projectParticipation, $staff)
-            || $this->projectParticipationManager->isArranger($projectParticipation, $staff);
+            || $this->projectManager->isArranger($projectParticipation->getProject(), $staff);
     }
 
     /**
@@ -123,7 +136,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
         return $projectParticipation->isActive()
             && $project->hasEditableStatus()
             && (
-                $this->projectParticipationManager->isArranger($projectParticipation, $staff)
+                $this->projectManager->isArranger($projectParticipation->getProject(), $staff)
                 || (
                     $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
                     && $this->projectParticipationManager->isMember($projectParticipation, $staff)

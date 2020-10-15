@@ -19,6 +19,7 @@ use Unilend\Entity\{Clients,
     ProjectParticipationTranche,
     ProjectStatus};
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
+use Unilend\Service\Project\ProjectManager;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
@@ -34,17 +35,21 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
     private IriConverterInterface $iriConverter;
     /** @var ProjectParticipationManager */
     private ProjectParticipationManager $projectParticipationManager;
+    /** @var ProjectManager */
+    private ProjectManager $projectManager;
 
     /**
      * @param Security                    $security
      * @param IriConverterInterface       $iriConverter
+     * @param ProjectManager              $projectManager
      * @param ProjectParticipationManager $projectParticipationManager
      */
-    public function __construct(Security $security, IriConverterInterface $iriConverter, ProjectParticipationManager $projectParticipationManager)
+    public function __construct(Security $security, IriConverterInterface $iriConverter, ProjectManager $projectManager, ProjectParticipationManager $projectParticipationManager)
     {
         $this->security = $security;
         $this->iriConverter = $iriConverter;
         $this->projectParticipationManager = $projectParticipationManager;
+        $this->projectManager = $projectManager;
     }
 
     /**
@@ -174,6 +179,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
             $project = $projectParticipation->getProject();
 
             $currentStatus = $project->getCurrentStatus()->getStatus();
+
             if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
                 switch ($currentStatus) {
                     case ProjectStatus::STATUS_INTEREST_EXPRESSION:
@@ -185,7 +191,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                 }
             }
 
-            if ($this->projectParticipationManager->isArranger($projectParticipation, $currentStaff)) {
+            if ($this->projectManager->isArranger($project, $currentStaff)) {
                 switch ($currentStatus) {
                     case ProjectStatus::STATUS_DRAFT:
                         $groups[] = 'projectParticipation:arranger:draft:write';
@@ -199,8 +205,8 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                         $groups[] = 'projectParticipation:arranger:participantReply:write';
                         break;
                     case ProjectStatus::STATUS_ALLOCATION:
-                        if ($projectParticipation->isArrangerParticipation()) {
-                            $groups[] = 'projectParticipation:arranger:allocation:write';
+                        if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
+                            $groups[] = 'projectParticipation:arrangerOwner:allocation:write';
                         }
                         break;
                 }

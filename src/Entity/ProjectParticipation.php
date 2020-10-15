@@ -205,7 +205,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *     "projectParticipation:owner:participantReply:write",
      *     "projectParticipation:arranger:interestExpression:write",
      *     "projectParticipation:arranger:participantReply:write",
-     *     "projectParticipation:arranger:allocation:write"
+     *     "projectParticipation:arrangerOwner:allocation:write"
      * })
      */
     private ?ProjectParticipationStatus $currentStatus;
@@ -222,7 +222,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @Groups({
      *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
      *     "projectParticipation:owner:participantReply:write",
-     *     "projectParticipation:arranger:allocation:write"
+     *     "projectParticipation:arrangerOwner:allocation:write"
      * })
      */
     private ?DateTimeImmutable $committeeDeadline = null;
@@ -236,9 +236,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @Groups({
      *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
-     *     "projectParticipation:owner:interestExpression:write",
      *     "projectParticipation:owner:participantReply:write",
-     *     "projectParticipation:arranger:allocation:write"
+     *     "projectParticipation:arrangerOwner:allocation:write"
      * })
      */
     private ?string $committeeComment = null;

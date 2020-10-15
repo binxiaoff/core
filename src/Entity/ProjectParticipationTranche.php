@@ -106,7 +106,7 @@ class ProjectParticipationTranche
      * @Groups({
      *     ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ,
      *     "projectParticipationTranche:owner:participantReply:write",
-     *     "projectParticipationTranche:owner:allocation:write"
+     *     "projectParticipationTranche:arrangerOwner:allocation:write"
      * })
      */
     private Offer $invitationReply;
