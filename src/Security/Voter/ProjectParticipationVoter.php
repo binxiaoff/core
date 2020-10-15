@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
+use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients,
@@ -63,6 +64,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      * @param Clients              $user
      *
      * @return bool
+     *
+     * @throws NonUniqueResultException
      */
     protected function canView(ProjectParticipation $subject, Clients $user): bool
     {
@@ -78,10 +81,10 @@ class ProjectParticipationVoter extends AbstractEntityVoter
 
         switch ($subject->getProject()->getOfferVisibility()) {
             case Project::OFFER_VISIBILITY_PRIVATE:
-                return $this->projectParticipationManager->isOwner($subject, $staff);
+                return $this->projectParticipationManager->isMember($subject, $staff);
             case Project::OFFER_VISIBILITY_PARTICIPANT:
             case Project::OFFER_VISIBILITY_PUBLIC:
-                return $this->projectParticipationManager->isMember($subject, $staff);
+                return $this->projectManager->isParticipationMember($subject->getProject(), $staff);
         }
 
         throw new LogicException('This code should not be reached');
