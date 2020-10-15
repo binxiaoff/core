@@ -7,7 +7,13 @@ namespace Unilend\Security\Voter;
 use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, CompanyModule, Project, ProjectParticipation, ProjectParticipationStatus, ProjectStatus};
+use Unilend\Entity\{Clients,
+    CompanyModule,
+    Project,
+    ProjectParticipation,
+    ProjectStatus,
+    Staff};
+use Unilend\Service\Project\ProjectManager;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationVoter extends AbstractEntityVoter
@@ -20,28 +26,26 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_SENSITIVE_VIEW = 'sensitive_view';
     public const ATTRIBUTE_ADMIN_VIEW     = 'admin_view';
 
-    public const ATTRIBUTE_ARRANGER_EDIT                      = 'arranger_edit';
-    public const ATTRIBUTE_ARRANGER_INTEREST_COLLECTION_EDIT  = 'arranger_interest_collection_edit';
-    public const ATTRIBUTE_ARRANGER_OFFER_NEGOTIATION_EDIT    = 'arranger_offer_negotiation_edit';
-    public const ATTRIBUTE_ARRANGER_ALLOCATION_EDIT           = 'arranger_allocation_edit';
-
-    public const ATTRIBUTE_PARTICIPATION_OWNER_EDIT                      = 'participation_owner_edit';
-    public const ATTRIBUTE_PARTICIPATION_OWNER_INTEREST_COLLECTION_EDIT  = 'participation_owner_interest_collection_edit';
-    public const ATTRIBUTE_PARTICIPATION_OWNER_OFFER_NEGOTIATION_EDIT    = 'participation_owner_offer_negotiation_edit';
-
     /** @var ProjectParticipationManager */
     private ProjectParticipationManager $projectParticipationManager;
 
+    /** @var ProjectManager  */
+    private ProjectManager $projectManager;
+
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param ProjectManager                $projectManager
      * @param ProjectParticipationManager   $projectParticipationManager
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
+        ProjectManager $projectManager,
         ProjectParticipationManager $projectParticipationManager
     ) {
         parent::__construct($authorizationChecker);
         $this->projectParticipationManager = $projectParticipationManager;
+        $this->projectManager = $projectManager;
+        $this->authorizationChecker = $authorizationChecker;
     }
 
     /**
@@ -56,73 +60,31 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    protected function canArrangerEdit(ProjectParticipation $projectParticipation, Clients $user): bool
-    {
-        return $this->canEdit($projectParticipation, $user) && $this->isProjectArranger($projectParticipation, $user);
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    protected function canParticipationOwnerEdit(ProjectParticipation $projectParticipation, Clients $user): bool
-    {
-        $project     = $projectParticipation->getProject();
-        $participant = $projectParticipation->getParticipant();
-        $staff       = $user->getCurrentStaff();
-
-        if (null === $staff) {
-            return false;
-        }
-
-        if (false ===  $project->isPublished() || false === $project->hasEditableStatus()) {
-            return false;
-        }
-        // As an arranger, the user doesn't need the participation module to edit the following participation.
-        if ($this->isProjectArranger($projectParticipation, $user)) {
-            // The one of a prospect in the same company group.
-            if ($participant->isProspect() && $participant->isSameGroup($staff->getCompany())) {
-                return true;
-            }
-            // Or the one of arranger's own (we don't check if the user is a participation member for the arranger's participation)
-            if ($participant === $staff->getCompany()) {
-                return true;
-            }
-        }
-
-        return $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
-            && $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION);
-    }
-
-    /**
      * @param ProjectParticipation $subject
      * @param Clients              $user
      *
-     * @throws NonUniqueResultException
-     *
      * @return bool
+     *
+     * @throws NonUniqueResultException
      */
     protected function canView(ProjectParticipation $subject, Clients $user): bool
     {
-        if ($this->isProjectArranger($subject, $user)) {
+        $staff = $user->getCurrentStaff();
+
+        if (false === $staff instanceof Staff) {
+            return false;
+        }
+
+        if ($this->projectManager->isArranger($subject->getProject(), $staff)) {
             return true;
         }
 
-        $project = $subject->getProject();
-
-        switch ($project->getOfferVisibility()) {
+        switch ($subject->getProject()->getOfferVisibility()) {
             case Project::OFFER_VISIBILITY_PRIVATE:
-                return $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject);
+                return $this->projectParticipationManager->isMember($subject, $staff);
             case Project::OFFER_VISIBILITY_PARTICIPANT:
             case Project::OFFER_VISIBILITY_PUBLIC:
-                return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $project);
+                return $this->projectManager->isParticipationMember($subject->getProject(), $staff);
         }
 
         throw new LogicException('This code should not be reached');
@@ -136,8 +98,14 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canAdminView(ProjectParticipation $projectParticipation, Clients $user): bool
     {
-        return $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
-            || $this->isProjectArranger($projectParticipation, $user);
+        $staff = $user->getCurrentStaff();
+
+        if (false === $staff instanceof Staff) {
+            return false;
+        }
+
+        return $this->projectParticipationManager->isMember($projectParticipation, $staff)
+            || $this->projectManager->isArranger($projectParticipation->getProject(), $staff);
     }
 
     /**
@@ -160,14 +128,23 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canEdit(ProjectParticipation $projectParticipation, Clients $user): bool
     {
+        $project = $projectParticipation->getProject();
+
+        $staff = $user->getCurrentStaff();
+
+        if (false === $staff instanceof Staff) {
+            return false;
+        }
+
         return $projectParticipation->isActive()
-            && $projectParticipation->getProject()->hasEditableStatus()
+            && $project->hasEditableStatus()
             && (
-                $this->isProjectArranger($projectParticipation, $user)
+                $this->projectManager->isArranger($projectParticipation->getProject(), $staff)
                 || (
                     $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
-                    && $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation)
-                    && ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED !== $projectParticipation->getCurrentStatus()->getStatus()
+                    && $this->projectParticipationManager->isMember($projectParticipation, $staff)
+                    && $project->isPublished()
+                    && $project->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION
                 )
             );
     }
@@ -179,70 +156,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canCreate(ProjectParticipation $subject): bool
     {
-        return $this->authorizationChecker->isGranted('edit', $subject->getProject())
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $subject->getProject())
             && ($subject->getParticipant()->isCAGMember() || $subject->getProject()->getArranger()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT_EXTERNAL_BANK));
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    protected function canArrangerInterestCollectionEdit(ProjectParticipation $projectParticipation, Clients $user): bool
-    {
-        return $this->isProjectArranger($projectParticipation, $user) && false === $projectParticipation->getProject()->isInterestCollected();
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    protected function canArrangerOfferNegotiationEdit(ProjectParticipation $projectParticipation, Clients $user): bool
-    {
-        $project = $projectParticipation->getProject();
-
-        return $this->isProjectArranger($projectParticipation, $user)
-            && ($project->isInOfferNegotiationStep() || (false === $project->isInterestExpressionEnabled() && false === $project->isPublished()));
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    protected function canArrangerAllocationEdit(ProjectParticipation $projectParticipation, Clients $user): bool
-    {
-        return $this->isProjectArranger($projectParticipation, $user)
-            && $projectParticipation->getProject()->isInAllocationStep()
-            && $this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $projectParticipation);
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    protected function canParticipationOwnerInterestCollectionEdit(ProjectParticipation $projectParticipation, Clients $user): bool
-    {
-        return $this->canParticipationOwnerEdit($projectParticipation, $user)
-            && $projectParticipation->getProject()->isInInterestCollectionStep();
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    protected function canParticipationOwnerOfferNegotiationEdit(ProjectParticipation $projectParticipation, Clients $user): bool
-    {
-        return $this->canParticipationOwnerEdit($projectParticipation, $user)
-            && $projectParticipation->getProject()->isInOfferNegotiationStep();
     }
 
     /**
@@ -257,16 +172,5 @@ class ProjectParticipationVoter extends AbstractEntityVoter
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)
             && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus()
             && $projectParticipation->getParticipant() !== $project->getSubmitterCompany();
-    }
-
-    /**
-     * @param ProjectParticipation $subject
-     * @param Clients              $user
-     *
-     * @return bool
-     */
-    private function isProjectArranger(ProjectParticipation $subject, Clients $user): bool
-    {
-        return $subject->getProject()->getSubmitterCompany() === $user->getCompany();
     }
 }

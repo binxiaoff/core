@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\DataTransformer;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
-use ApiPlatform\Core\Bridge\Symfony\Routing\IriConverter;
 use ApiPlatform\Core\Validator\ValidatorInterface;
 use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, IOException};
 use Doctrine\ORM\{ORMException, OptimisticLockException};
@@ -20,51 +18,49 @@ use Unilend\Entity\{Clients,
     Project,
     ProjectFile,
     ProjectParticipation,
-    ProjectStatus,
     Staff};
 use Unilend\Repository\{ProjectFileRepository, ProjectRepository};
 use Unilend\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
 use Unilend\Service\File\FileUploadManager;
+use Unilend\Service\Project\ProjectManager;
 
 class FileInputDataTransformer
 {
     /** @var ValidatorInterface */
-    private $validator;
-    /** @var IriConverter */
-    private $iriConverter;
+    private ValidatorInterface $validator;
     /** @var Security */
-    private $security;
+    private Security $security;
     /** @var FileUploadManager */
-    private $fileUploadManager;
+    private FileUploadManager $fileUploadManager;
     /** @var ProjectFileRepository */
-    private $projectFileRepository;
-    /**
-     * @var ProjectRepository
-     */
-    private $projectRepository;
+    private ProjectFileRepository $projectFileRepository;
+    /** @var ProjectRepository  */
+    private ProjectRepository $projectRepository;
+    /** @var ProjectManager */
+    private ProjectManager $projectManager;
 
     /**
      * @param ValidatorInterface    $validator
-     * @param IriConverterInterface $iriConverter
      * @param Security              $security
      * @param FileUploadManager     $fileUploadManager
+     * @param ProjectManager        $projectManager
      * @param ProjectFileRepository $projectFileRepository
      * @param ProjectRepository     $projectRepository
      */
     public function __construct(
         ValidatorInterface $validator,
-        IriConverterInterface $iriConverter,
         Security $security,
         FileUploadManager $fileUploadManager,
+        ProjectManager $projectManager,
         ProjectFileRepository $projectFileRepository,
         ProjectRepository $projectRepository
     ) {
         $this->validator             = $validator;
-        $this->iriConverter          = $iriConverter;
         $this->security              = $security;
         $this->fileUploadManager     = $fileUploadManager;
         $this->projectFileRepository = $projectFileRepository;
         $this->projectRepository     = $projectRepository;
+        $this->projectManager = $projectManager;
     }
 
     /**
@@ -225,7 +221,10 @@ class FileInputDataTransformer
      */
     private function uploadProjectParticipationNda(ProjectParticipation $projectParticipation, FileInput $fileInput, Staff $currentStaff, ?File $file)
     {
-        if (false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_EDIT, $projectParticipation)) {
+        if (
+            false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $projectParticipation)
+            || false === $this->projectManager->isArranger($projectParticipation->getProject(), $currentStaff)
+        ) {
             throw new AccessDeniedException();
         }
 

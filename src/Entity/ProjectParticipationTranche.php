@@ -62,14 +62,6 @@ class ProjectParticipationTranche
 
     // Additional normalizer group that is available for public visibility project. It's also available for the participation owner and arranger
     public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipationTranche:sensitive:read';
-    // Additional denormalizer group that is available for the participation owner (for now, it's only available in offer negotiation step)
-    public const SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE = 'projectParticipationTranche:participationOwner:write';
-    // Additional denormalizer group that is available for the arranger (for now, it's only available in contract negotiation step)
-    public const SERIALIZER_GROUP_ARRANGER_WRITE = 'projectParticipationTranche:arranger:write';
-
-    // Specific denormalizer group to enable invitationReply write in allocation for arranger for its own participation
-    // TODO Refactor after MEP
-    public const SERIALIZER_GROUP_INVITATION_REPLY_WRITE = 'projectParticipationTranche:invitationReply:write';
 
     /**
      * @var Tranche
@@ -113,8 +105,8 @@ class ProjectParticipationTranche
      *
      * @Groups({
      *     ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ,
-     *     ProjectParticipationTranche::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE,
-     *     ProjectParticipationTranche::SERIALIZER_GROUP_INVITATION_REPLY_WRITE
+     *     "projectParticipationTranche:owner:participantReply:write",
+     *     "projectParticipationTranche:arrangerOwner:allocation:write"
      * })
      */
     private Offer $invitationReply;
@@ -128,7 +120,10 @@ class ProjectParticipationTranche
      *
      * @Gedmo\Versioned
      *
-     * @Groups({ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipationTranche::SERIALIZER_GROUP_ARRANGER_WRITE})
+     * @Groups({
+     *     ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ,
+     *    "projectParticipationTranche:arranger:allocation:write"
+     *})
      */
     private Offer $allocation;
 

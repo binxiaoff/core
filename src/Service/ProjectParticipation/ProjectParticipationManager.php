@@ -4,46 +4,37 @@ declare(strict_types=1);
 
 namespace Unilend\Service\ProjectParticipation;
 
-use Doctrine\ORM\NonUniqueResultException;
-use RuntimeException;
-use Unilend\Entity\{Project, ProjectParticipation, Staff};
+use Unilend\Entity\{ProjectParticipation, Staff};
 use Unilend\Repository\ProjectParticipationMemberRepository;
+use Unilend\Service\Project\ProjectManager;
 
 class ProjectParticipationManager
 {
     /** @var ProjectParticipationMemberRepository */
     private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
 
+    /** @var ProjectManager */
+    private ProjectManager $projectManager;
+
     /**
+     * @param ProjectManager                       $projectManager
      * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
      */
-    public function __construct(ProjectParticipationMemberRepository $projectParticipationMemberRepository)
-    {
+    public function __construct(
+        ProjectManager $projectManager,
+        ProjectParticipationMemberRepository $projectParticipationMemberRepository
+    ) {
         $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
+        $this->projectManager = $projectManager;
     }
 
     /**
-     * @param Staff   $staff
-     * @param Project $project
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return bool
-     */
-    public function isParticipant(Staff $staff, Project $project): bool
-    {
-        $projectParticipationMember = $this->projectParticipationMemberRepository->findByProjectAndStaff($project, $staff);
-
-        return null !== $projectParticipationMember && false === $projectParticipationMember->isArchived();
-    }
-
-    /**
-     * @param Staff                $staff                we pass staff here to prepare for the migration from client to staff
      * @param ProjectParticipation $projectParticipation
+     * @param Staff                $staff
      *
      * @return bool
      */
-    public function isParticipationOwner(Staff $staff, ProjectParticipation $projectParticipation): bool
+    public function isMember(ProjectParticipation $projectParticipation, Staff $staff): bool
     {
         return null !== $this->projectParticipationMemberRepository->findOneBy([
             'projectParticipation' => $projectParticipation,
@@ -53,21 +44,29 @@ class ProjectParticipationManager
     }
 
     /**
-     * @param Staff   $staff
-     * @param Project $project
+     * Returns true if for given projectParticipation,
      *
-     * @throws NonUniqueResultException
+     * @param ProjectParticipation $projectParticipation
+     * @param Staff                $staff
      *
      * @return bool
      */
-    public function isNdaAccepted(Staff $staff, Project $project): bool
+    public function isOwner(ProjectParticipation $projectParticipation, Staff $staff): bool
     {
-        $projectParticipationMember = $this->projectParticipationMemberRepository->findByProjectAndStaff($project, $staff);
+        $participant = $projectParticipation->getParticipant();
 
-        if (null === $projectParticipationMember) {
-            throw new RuntimeException(sprintf('The staff %s is not a participant of project %s', $staff->getPublicId(), $project->getPublicId()));
+        // As an arranger, the user doesn't need the participation module to edit the following participation.
+        if ($this->projectManager->isArranger($projectParticipation->getProject(), $staff)) {
+            // The one of a prospect in the same company group.
+            if (($participant->isProspect() || $participant->hasRefused()) && $participant->isSameGroup($staff->getCompany())) {
+                return true;
+            }
+            // Or the one of arranger's own (we don't check if the user is a participation member for the arranger's participation)
+            if ($participant === $staff->getCompany()) {
+                return true;
+            }
         }
 
-        return null !== $projectParticipationMember->getNdaAccepted();
+        return $this->isMember($projectParticipation, $staff);
     }
 }

@@ -11,9 +11,10 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
 use Unilend\Entity\Clients;
-use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationTranche;
-use Unilend\Security\Voter\ProjectParticipationTrancheVoter;
+use Unilend\Entity\ProjectStatus;
+use Unilend\Service\Project\ProjectManager;
+use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -23,14 +24,22 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
     private const ALREADY_CALLED = 'PROJECT_PARTICIPATION_TRANCHE_ATTRIBUTE_DENORMALIZER_ALREADY_CALLED';
 
     /** @var Security */
-    private $security;
+    private Security $security;
+    /** @var ProjectParticipationManager */
+    private ProjectParticipationManager $projectParticipationManager;
+    /** @var ProjectManager */
+    private ProjectManager $projectManager;
 
     /**
-     * @param Security $security
+     * @param Security                    $security
+     * @param ProjectManager              $projectManager
+     * @param ProjectParticipationManager $projectParticipationManager
      */
-    public function __construct(Security $security)
+    public function __construct(Security $security, ProjectManager $projectManager, ProjectParticipationManager $projectParticipationManager)
     {
         $this->security = $security;
+        $this->projectParticipationManager = $projectParticipationManager;
+        $this->projectManager = $projectManager;
     }
 
     /**
@@ -70,23 +79,33 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
     private function getAdditionalDenormalizerGroups(ProjectParticipationTranche $projectParticipationTranche): array
     {
         $projectParticipation = $projectParticipationTranche->getProjectParticipation();
-        $participant = $projectParticipation->getParticipant();
-        $project = $projectParticipation->getProject();
-        $arranger = $project->getSubmitterCompany();
 
         $groups = [];
 
-        if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_ARRANGER_EDIT, $projectParticipationTranche)) {
-            // The voter currently assert that we are in allocation step and the connected user entity is the arranger entity of the project
-            $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_ARRANGER_WRITE;
+        $currentUser = $this->security->getUser();
 
-            if ($arranger === $participant) {
-                $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_INVITATION_REPLY_WRITE;
+        $currentStaff = $currentUser instanceof Clients ? $currentUser->getCurrentStaff() : null;
+
+        if ($currentStaff) {
+            $project = $projectParticipation->getProject();
+
+            $currentStatus = $project->getCurrentStatus()->getStatus();
+            switch ($currentStatus) {
+                case ProjectStatus::STATUS_PARTICIPANT_REPLY:
+                    if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
+                            $groups[] = 'projectParticipationTranche:owner:participantReply:write';
+                    }
+                    break;
+                case ProjectStatus::STATUS_ALLOCATION:
+                    if ($this->projectManager->isArranger($project, $currentStaff)) {
+                        $groups[] = 'projectParticipationTranche:arranger:allocation:write';
+
+                        if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
+                            $groups[] = 'projectParticipationTranche:arrangerOwner:allocation:write';
+                        }
+                    }
+                    break;
             }
-        }
-
-        if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_PARTICIPATION_OWNER_EDIT, $projectParticipationTranche)) {
-            $groups[] = ProjectParticipationTranche::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE;
         }
 
         return $groups;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, CompanyModule, ProjectParticipationMember};
+use Unilend\Entity\{Clients, ProjectParticipationMember};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationMemberVoter extends AbstractEntityVoter
@@ -62,7 +62,7 @@ class ProjectParticipationMemberVoter extends AbstractEntityVoter
 
         return $currentCompany && (
             $subject->getProjectParticipation()->getProject()->getSubmitterCompany() === $currentCompany // You are connected as a staff of the arranger
-            || ($this->projectParticipationManager->isParticipationOwner($user->getCurrentStaff(), $subject->getProjectParticipation())
+            || ($this->projectParticipationManager->isMember($subject->getProjectParticipation(), $user->getCurrentStaff())
                 && $currentCompany->isCAGMember())); // You are connected as a staff of the participation
     }
 }
