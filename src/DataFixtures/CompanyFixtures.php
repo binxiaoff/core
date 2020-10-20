@@ -41,7 +41,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         'FRAC', 'CORS', 'GUAD', 'MART', 'REUN', 'TPOI', 'ANMA', 'LORR',
         'NORM', 'IDFR', 'TOUL', 'CODA', 'SAVO',
         'ILVI', 'COUE', 'FINI', 'LANG', 'MORB', 'NEST', 'L&HL', 'NORF',
-        'NMPY', 'NORS', 'PRCA', 'PYGA', 'SRAL', 'SMED', 'VALF', 'CIB', 'CDM', 'CASA', 'LCL',
+        'NMPY', 'NORS', 'PRCA', 'PYGA', 'SRAL', 'SMED', 'VALF', 'CIB', 'LCL',
     ];
     private const OTHER_SHORTCODE = [
         'SOGE', 'BNP', 'LBP', 'HSBC', 'GCDN', 'CMDC', 'BARC',
