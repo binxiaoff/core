@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
@@ -378,6 +379,21 @@ class Company implements TraceableStatusAwareInterface
         $currentStatus = $this->getCurrentStatus();
 
         return $currentStatus && CompanyStatus::STATUS_PROSPECT === $currentStatus->getStatus();
+    }
+
+    /**
+     * @param DateTimeInterface $dateTime
+     *
+     * @return bool
+     */
+    public function isProspectAt(DateTimeInterface $dateTime): bool
+    {
+        /** @var CompanyStatus $status */
+        $previousStatuses = $this->getStatuses()->filter(function ($status) use ($dateTime) {
+            return $status->getAdded() <= $dateTime;
+        });
+
+        return $previousStatuses->last() && CompanyStatus::STATUS_PROSPECT ===  $previousStatuses->last()->getStatus();
     }
 
     /**
