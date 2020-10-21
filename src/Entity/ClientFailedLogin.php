@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
@@ -26,28 +25,28 @@ class ClientFailedLogin
      *
      * @ORM\Column(name="username", type="string", length=191, nullable=true)
      */
-    private $username;
+    private ?string $username;
 
     /**
      * @var string|null
      *
      * @ORM\Column(name="ip", type="string", length=191, nullable=true)
      */
-    private $ip;
+    private ?string $ip;
 
     /**
      * @var string|null
      *
      * @ORM\Column(name="retour", type="string", length=191, nullable=true)
      */
-    private $error;
+    private ?string $error;
 
     /**
-     * @var DateTime
+     * @var DateTimeImmutable
      *
      * @ORM\Column(name="added", type="datetime_immutable")
      */
-    private $added;
+    private DateTimeImmutable $added;
 
     /**
      * @var int
@@ -56,10 +55,17 @@ class ClientFailedLogin
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $id;
+    private int $id;
 
     /**
-     * @throws Exception
+     * @var float|null
+     *
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private ?float $recaptchaScore;
+
+    /**
+     * Constructor
      */
     public function __construct()
     {
@@ -138,6 +144,26 @@ class ClientFailedLogin
     public function setError(?string $error): ClientFailedLogin
     {
         $this->error = $error;
+
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getRecaptchaScore(): ?float
+    {
+        return $this->recaptchaScore;
+    }
+
+    /**
+     * @param float|null $recaptchaScore
+     *
+     * @return ClientFailedLogin
+     */
+    public function setRecaptchaScore(?float $recaptchaScore): ClientFailedLogin
+    {
+        $this->recaptchaScore = $recaptchaScore;
 
         return $this;
     }

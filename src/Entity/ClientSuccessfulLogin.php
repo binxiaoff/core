@@ -34,7 +34,7 @@ class ClientSuccessfulLogin
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $id;
+    private int $id;
 
     /**
      * @var Clients
@@ -44,35 +44,35 @@ class ClientSuccessfulLogin
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
      * })
      */
-    private $client;
+    private Clients $client;
 
     /**
-     * @var int
+     * @var string
      *
      * @ORM\Column(name="action", type="string", length=20)
      */
-    private $action;
+    private string $action;
 
     /**
      * @var string|null
      *
      * @ORM\Column(name="ip", type="string", length=45, nullable=true)
      */
-    private $ip;
+    private ?string $ip;
 
     /**
      * @var string|null
      *
      * @ORM\Column(name="country_iso_code", type="string", length=2, nullable=true)
      */
-    private $countryIsoCode;
+    private ?string $countryIsoCode;
 
     /**
      * @var string|null
      *
      * @ORM\Column(name="city", type="string", length=64, nullable=true)
      */
-    private $city;
+    private ?string $city;
 
     /**
      * @var UserAgent|null
@@ -82,19 +82,24 @@ class ClientSuccessfulLogin
      *     @ORM\JoinColumn(name="id_user_agent", referencedColumnName="id")
      * })
      */
-    private $userAgent;
+    private ?UserAgent $userAgent;
+
+    /**
+     * @var float|null
+     *
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private ?float $recaptchaScore;
 
     /**
      * ClientLoginHistory constructor.
      *
      * @param Clients $client
      * @param string  $action
-     *
-     * @throws \Exception
      */
-    public function __construct(Clients $client, string $action = self::ACTION_JWT_LOGIN)
+    public function __construct(Clients $client, string $action)
     {
-        if (false === in_array($action, self::getActions(), true)) {
+        if (false === \in_array($action, self::getActions(), true)) {
             throw new InvalidArgumentException(
                 sprintf('action should be one of these values (%s), %s given', implode(', ', self::getActions()), $action)
             );
@@ -210,13 +215,33 @@ class ClientSuccessfulLogin
     }
 
     /**
-     * @param UserAgent $userAgent
+     * @param UserAgent|null $userAgent
      *
      * @return ClientSuccessfulLogin
      */
     public function setUserAgent(?UserAgent $userAgent): ClientSuccessfulLogin
     {
         $this->userAgent = $userAgent;
+
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getRecaptchaScore(): ?float
+    {
+        return $this->recaptchaScore;
+    }
+
+    /**
+     * @param float|null $recaptchaScore
+     *
+     * @return ClientSuccessfulLogin
+     */
+    public function setRecaptchaScore(?float $recaptchaScore): ClientSuccessfulLogin
+    {
+        $this->recaptchaScore = $recaptchaScore;
 
         return $this;
     }

@@ -16,6 +16,8 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Symfony\Component\Security\Guard\PasswordAuthenticatedInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationFailureHandlerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
+use Unilend\DTO\GoogleRecaptchaResult;
+use Unilend\Entity\Clients;
 use Unilend\Exception\Authentication\RecaptchaChallengeFailedException;
 use Unilend\Service\GoogleRecaptchaManager;
 
@@ -28,7 +30,12 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
     private AuthenticationFailureHandlerInterface $authenticationFailureHandler;
 
     private UserPasswordEncoderInterface $passwordEncoder;
+
     private string $path;
+
+    private GoogleRecaptchaResult $recaptchaResult;
+
+    public const GOOGLE_RECAPTCHA_RESULT_TOKEN_ATTRIBUTE = 'GOOGLE_RECAPTCHA_RESULT';
 
     /**
      * @param GoogleRecaptchaManager                $googleRecaptchaManager
@@ -114,9 +121,16 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
      */
     public function checkCredentials($credentials, UserInterface $user)
     {
-        if (false === $this->googleRecaptchaManager->isValid($credentials['captchaValue'])) {
-            throw new RecaptchaChallengeFailedException();
+        $recaptchaResult = $this->googleRecaptchaManager->getResult($credentials['captchaValue']);
+
+        if ($user instanceof Clients) {
+            $user->setRecaptchaResult($recaptchaResult);
         }
+
+        if (false === $recaptchaResult->valid) {
+            throw new RecaptchaChallengeFailedException($this->recaptchaResult);
+        }
+
 
         if (false === $this->passwordEncoder->isPasswordValid($user, $this->getPassword($credentials))) {
             throw new BadCredentialsException('Invalid credentials');

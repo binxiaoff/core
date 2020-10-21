@@ -7,16 +7,17 @@ namespace Unilend\Service\User;
 use Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Unilend\Entity\{ClientFailedLogin, ClientSuccessfulLogin, Clients};
+use Unilend\Exception\Authentication\RecaptchaChallengeFailedException;
 use Unilend\Service\{UserActivity\IpGeoLocManager, UserActivity\UserAgentManager};
 
 class ClientLoginFactory
 {
     /** @var IpGeoLocManager */
-    private $ipGeoLocManager;
+    private IpGeoLocManager $ipGeoLocManager;
     /** @var UserAgentManager */
-    private $userAgentManager;
+    private UserAgentManager $userAgentManager;
     /** @var RequestStack */
-    private $requestStack;
+    private RequestStack $requestStack;
 
     /**
      * @param IpGeoLocManager  $ipGeoLocManager
@@ -66,18 +67,24 @@ class ClientLoginFactory
             }
         }
 
+        $recaptchaResult = $client->getRecaptchaResult();
+
+        if ($recaptchaResult) {
+            $entry->setRecaptchaScore($recaptchaResult->score);
+        }
+
         return $entry;
     }
 
     /**
-     * @param string      $message
+     * @param Exception   $exception
      * @param string|null $username
      *
      * @throws Exception
      *
      * @return ClientFailedLogin
      */
-    public function createClientLoginFailure(string $message, ?string $username = null): ClientFailedLogin
+    public function createClientLoginFailure(Exception $exception, ?string $username = null): ClientFailedLogin
     {
         $failedLogin = new ClientFailedLogin();
 
@@ -88,7 +95,11 @@ class ClientLoginFactory
         }
 
         $failedLogin->setUsername($username);
-        $failedLogin->setError($message);
+        $failedLogin->setError($exception->getMessage());
+
+        if ($exception instanceof RecaptchaChallengeFailedException) {
+            $failedLogin->setRecaptchaScore($exception->getResult()->score);
+        }
 
         return $failedLogin;
     }
