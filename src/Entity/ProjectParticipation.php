@@ -855,9 +855,9 @@ class ProjectParticipation implements TraceableStatusAwareInterface
                 ->addViolation();
         }
 
-        if (MoneyCalculator::isDifferentCurrency($this->interestRequest->getMinMoney(), $globalFundingMoney)) {
+        if (MoneyCalculator::isDifferentCurrency($this->interestRequest->getMaxMoney(), $globalFundingMoney)) {
             $context->buildViolation('Money.currency.inconsistent')
-                ->atPath('interestRequest.minMoney')
+                ->atPath('interestRequest.maxMoney')
                 ->addViolation();
         }
 
@@ -870,6 +870,21 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         if (MoneyCalculator::isDifferentCurrency($this->invitationRequest->getMoney(), $globalFundingMoney)) {
             $context->buildViolation('Money.currency.inconsistent')
                 ->atPath('invitationRequest')
+                ->addViolation();
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateMaxMoney(ExecutionContextInterface $context): void
+    {
+        $interestMaxAmount = $this->interestRequest->getMaxMoney();
+        if ($interestMaxAmount->getAmount() !== null && 1 !== MoneyCalculator::compare($interestMaxAmount, $this->interestRequest->getMoney())) {
+            $context->buildViolation('Money.currency.maxMoney')
+                ->atPath('interestRequest.maxMoney')
                 ->addViolation();
         }
     }

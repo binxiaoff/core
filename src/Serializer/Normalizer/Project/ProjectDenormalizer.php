@@ -130,7 +130,7 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
             ProjectParticipation::class,
             'array',
             [
-                AbstractNormalizer::GROUPS => ['projectParticipation:create', 'offerWithFee:write', 'nullableMoney:write', 'offer:write'],
+                AbstractNormalizer::GROUPS => ['projectParticipation:create', 'offerWithFee:write', 'nullableMoney:write', 'offer:write', 'rangedOfferWithFee:write'],
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     ProjectParticipation::class => [
                         'project' => $project,
