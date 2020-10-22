@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity\Embeddable;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -38,6 +39,11 @@ class OfferWithFee extends Offer
     public function __construct(?NullableMoney $money = null, ?string $feeRate = null)
     {
         $this->feeRate = $feeRate;
+
+        if ($feeRate) {
+            $this->added = new DateTimeImmutable();
+        }
+
         parent::__construct($money);
     }
 
