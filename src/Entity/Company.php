@@ -353,7 +353,7 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @return string
      */
-    public function getShortCode()
+    public function getShortCode(): string
     {
         return $this->shortCode;
     }
@@ -388,12 +388,9 @@ class Company implements TraceableStatusAwareInterface
      */
     public function isProspectAt(DateTimeInterface $dateTime): bool
     {
-        /** @var CompanyStatus $status */
-        $previousStatuses = $this->getStatuses()->filter(function ($status) use ($dateTime) {
-            return $status->getAdded() <= $dateTime;
-        });
+        $status = $this->getCurrentStatusAt($dateTime);
 
-        return $previousStatuses->last() && CompanyStatus::STATUS_PROSPECT ===  $previousStatuses->last()->getStatus();
+        return $status && CompanyStatus::STATUS_PROSPECT === $status->getStatus();
     }
 
     /**
@@ -586,8 +583,23 @@ class Company implements TraceableStatusAwareInterface
      *
      * @return bool
      */
-    public function isCAGMember()
+    public function isCAGMember(): bool
     {
         return $this->groupName === static::GROUPNAME_CA;
+    }
+
+    /**
+     * @param DateTimeInterface $dateTime
+     *
+     * @return CompanyStatus|null
+     */
+    private function getCurrentStatusAt(DateTimeInterface $dateTime): ?CompanyStatus
+    {
+        /** @var CompanyStatus $status */
+        $previousStatuses = $this->getStatuses()->filter(function ($status) use ($dateTime) {
+            return $status->getAdded() <= $dateTime;
+        });
+
+        return $previousStatuses ? $previousStatuses->last() : null;
     }
 }
