@@ -195,12 +195,8 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                 switch ($currentStatus) {
                     case ProjectStatus::STATUS_DRAFT:
                         $groups[] = 'projectParticipation:arranger:draft:write';
-                        $groups = array_merge(
-                            $groups,
-                            $project->isInterestExpressionEnabled()
-                                ? ['projectParticipation:arranger:interestExpression:write', 'rangedOfferWithFee:write']
-                                : ['projectParticipation:arranger:participantReply:write']
-                        );
+                        $groups[] = $project->isInterestExpressionEnabled() ?
+                            'projectParticipation:arranger:interestExpression:write' : 'projectParticipation:arranger:participantReply:write';
                         break;
                     case ProjectStatus::STATUS_INTEREST_EXPRESSION:
                         $groups[] = 'projectParticipation:arranger:interestExpression:write';
