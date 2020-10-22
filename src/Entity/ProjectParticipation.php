@@ -883,7 +883,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     {
         $interestMaxAmount = $this->interestRequest->getMaxMoney();
         if ($interestMaxAmount->getAmount() !== null && 1 !== MoneyCalculator::compare($interestMaxAmount, $this->interestRequest->getMoney())) {
-            $context->buildViolation('Money.currency.inconsistent')
+            $context->buildViolation('Money.currency.maxMoney')
                 ->atPath('interestRequest.maxMoney')
                 ->addViolation();
         }
