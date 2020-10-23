@@ -526,13 +526,13 @@ class Project implements TraceableStatusAwareInterface
     private Collection $projectFiles;
 
     /**
-     * @var bool
+     * @var bool|null
      *
      * @Groups({"project:read", "project:write"})
      *
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="boolean", nullable=true,)
      */
-    private bool $interestExpressionEnabled;
+    private ?bool $interestExpressionEnabled;
 
     /**
      * @var NullableMoney
@@ -604,7 +604,6 @@ class Project implements TraceableStatusAwareInterface
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
 
-        $this->interestExpressionEnabled  = false;
         $this->arrangementCommissionMoney = new NullableMoney();
     }
 
