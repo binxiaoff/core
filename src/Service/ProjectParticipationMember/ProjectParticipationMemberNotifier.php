@@ -6,38 +6,31 @@ namespace Unilend\Service\ProjectParticipationMember;
 
 use Exception;
 use Swift_Mailer;
-use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{Project, ProjectParticipationMember, ProjectStatus, Staff};
 use Unilend\Service\TemporaryTokenGenerator;
-use Unilend\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\MailjetMessage;
 
 class ProjectParticipationMemberNotifier
 {
     /** @var Swift_Mailer */
     private Swift_Mailer $mailer;
-    /** @var TemplateMessageProvider */
-    private TemplateMessageProvider $templateMessageProvider;
+
     /** @var TemporaryTokenGenerator */
     private TemporaryTokenGenerator $temporaryTokenGenerator;
 
     /**
-     * @param TemplateMessageProvider $templateMessageProvider
      * @param Swift_Mailer            $mailer
      * @param TemporaryTokenGenerator $temporaryTokenGenerator
      */
-    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator)
+    public function __construct(Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator)
     {
         $this->mailer                  = $mailer;
-        $this->templateMessageProvider = $templateMessageProvider;
         $this->temporaryTokenGenerator = $temporaryTokenGenerator;
     }
 
     /**
      * @param ProjectParticipationMember $projectParticipationMember
      *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
      * @throws Exception
      */
     public function notifyMemberAdded(ProjectParticipationMember $projectParticipationMember): void
@@ -93,8 +86,10 @@ class ProjectParticipationMemberNotifier
         ];
 
         if ($templateId) {
-            $message = $this->templateMessageProvider->newMessage($templateId, $context)
+            $message = (new MailjetMessage())
                 ->setTo($client->getEmail())
+                ->setTemplate((int) $templateId)
+                ->setVars($context)
             ;
 
             $this->mailer->send($message);

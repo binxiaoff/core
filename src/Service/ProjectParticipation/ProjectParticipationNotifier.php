@@ -1,37 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service\ProjectParticipation;
 
+use JsonException;
 use Swift_Mailer;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationStatus;
-use Unilend\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\MailjetMessage;
 
 class ProjectParticipationNotifier
 {
-    private TemplateMessageProvider $templateMessageProvider;
-
     private Swift_Mailer $mailer;
 
     /**
-     * @param TemplateMessageProvider $templateMessageProvider
-     * @param Swift_Mailer            $mailer
+     * @param Swift_Mailer $mailer
      */
-    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer)
+    public function __construct(Swift_Mailer $mailer)
     {
-        $this->templateMessageProvider = $templateMessageProvider;
         $this->mailer = $mailer;
     }
 
     /**
      * @param ProjectParticipation $projectParticipation
      *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
+     * @throws JsonException
      */
     public function notifyParticipantReply(ProjectParticipation $projectParticipation): void
     {
@@ -50,7 +44,7 @@ class ProjectParticipationNotifier
 
         $submitterClient = $project->getSubmitterClient();
 
-        $message = $this->templateMessageProvider->newMessage('participant-reply', [
+        $message = (new MailjetMessage())->setTo($submitterClient->getEmail())->setTemplate(1)->setVars([
             'participant' => [
                 'displayName' => $projectParticipation->getParticipant()->getDisplayName(),
             ],
@@ -63,7 +57,7 @@ class ProjectParticipationNotifier
                 'riskGroupName' => $project->getRiskGroupName(),
             ],
         ]);
-        $message->setTo($submitterClient->getEmail());
+
         $this->mailer->send($message);
     }
 }

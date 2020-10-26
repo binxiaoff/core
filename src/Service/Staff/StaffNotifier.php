@@ -4,38 +4,33 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Staff;
 
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\ORMException;
+use JsonException;
 use Swift_Mailer;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{MarketSegment, Staff};
 use Unilend\Service\TemporaryTokenGenerator;
-use Unilend\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\MailjetMessage;
 
 class StaffNotifier
 {
-    /** @var TemplateMessageProvider */
-    private $templateMessageProvider;
     /** @var Swift_Mailer */
-    private $mailer;
+    private Swift_Mailer $mailer;
     /** @var TranslatorInterface */
-    private $translator;
+    private TranslatorInterface $translator;
     /** @var TemporaryTokenGenerator */
-    private $temporaryTokenGenerator;
+    private TemporaryTokenGenerator $temporaryTokenGenerator;
 
     /**
-     * @param TemplateMessageProvider $templateMessageProvider
      * @param Swift_Mailer            $mailer
      * @param TranslatorInterface     $translator
      * @param TemporaryTokenGenerator $temporaryTokenGenerator
      */
     public function __construct(
-        TemplateMessageProvider $templateMessageProvider,
         Swift_Mailer $mailer,
         TranslatorInterface $translator,
         TemporaryTokenGenerator $temporaryTokenGenerator
     ) {
-        $this->templateMessageProvider = $templateMessageProvider;
         $this->mailer                  = $mailer;
         $this->translator              = $translator;
         $this->temporaryTokenGenerator = $temporaryTokenGenerator;
@@ -44,13 +39,10 @@ class StaffNotifier
     /**
      * @param Staff $staff
      *
-     * @throws LoaderError
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws RuntimeError
-     * @throws SyntaxError
-     *
      * @return int
+     *
+     * @throws JsonException
+     * @throws ORMException
      */
     public function notifyClientInitialisation(Staff $staff): int
     {
@@ -59,29 +51,32 @@ class StaffNotifier
             return 0;
         }
 
-        $message = $this->templateMessageProvider->newMessage('staff-client-initialisation', [
-            'client' => [
-                'publicId'  => $client->getPublicId(),
-                'firstName' => $client->getFirstName(),
-            ],
-            'temporaryToken' => [
-                'token' => $this->temporaryTokenGenerator->generateUltraLongToken($client)->getToken(),
-            ],
-            'staff' => [
-                'roles' => array_map(
-                    function (string $role) {
-                        return $this->translator->trans('staff-roles.' . mb_strtolower($role));
-                    },
-                    $staff->getRoles()
-                ),
-                'marketSegments' => $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
-                    return $this->translator->trans('market-segment.' . $marketSegment->getLabel());
-                })->toArray(),
-                'company' => ['displayName' => $staff->getCompany()->getDisplayName()],
-            ],
-        ])
+        $message = (new MailjetMessage())
             ->setTo($client->getEmail())
+            ->setTemplate(1)
+            ->setVars([
+                'client' => [
+                    'publicId'  => $client->getPublicId(),
+                    'firstName' => $client->getFirstName(),
+                ],
+                'temporaryToken' => [
+                    'token' => $this->temporaryTokenGenerator->generateUltraLongToken($client)->getToken(),
+                ],
+                'staff' => [
+                    'roles' => array_map(
+                        function (string $role) {
+                            return $this->translator->trans('staff-roles.' . mb_strtolower($role));
+                        },
+                        $staff->getRoles()
+                    ),
+                    'marketSegments' => $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
+                        return $this->translator->trans('market-segment.' . $marketSegment->getLabel());
+                    })->toArray(),
+                    'company' => ['displayName' => $staff->getCompany()->getDisplayName()],
+                ],
+            ])
         ;
+
 
         return $this->mailer->send($message);
     }

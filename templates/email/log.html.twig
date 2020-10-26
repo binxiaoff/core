@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>{{ message }}</title>
+    <style>
+        .date {
+          color: gray;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <h1>{{ message }}</h1>
+    {% if datetime is defined %}
+        <span class="date">{{ datetime|date("c")}}</span>
+    {% endif %}
+    {% if context is defined and context is not empty %}
+        <h2>Context</h2>
+        {% for key, value in context %}
+            <strong>{{ key }}</strong>
+            <pre>{{ value }}</pre>
+            {% if loop.last is same as(false) %}
+                <hr/>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    <hr/>
+    {% if extra is defined and extra is not empty %}
+        <h2>Extra</h2>
+        {% for key, value in extra %}
+            <strong>{{ key }}</strong>
+            <pre>{{ value }}</pre>
+            {% if loop.last is same as(false) %}
+                <hr/>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
+</body>
+</html>

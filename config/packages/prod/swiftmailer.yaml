@@ -1,5 +1,8 @@
 swiftmailer:
-    transport: 'mailjet'
+    transport: 'smtp'
+    username: '%env(MAILJET_API_KEY)%'
+    password: '%env(MAILJET_API_SECRET)%'
+    host: 'in-v3.mailjet.com'
+    port: '25'
     spool:
-        type: service
-        id: 'Unilend\SwiftMailer\DatabaseSpool'
+        type: file
