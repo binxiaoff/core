@@ -130,11 +130,11 @@ class ProjectParticipationTranche
     private Offer $allocation;
 
     /**
-     * @var Collection|ProjectParticipationTrancheHistory[]
+     * @var Collection|ProjectParticipationTrancheVersion[]
      *
-     * @ORM\OneToMany(targetEntity=ProjectParticipationTrancheHistory::class, mappedBy="projectParticipationTranche", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=ProjectParticipationTrancheVersion::class, mappedBy="projectParticipationTranche", orphanRemoval=true)
      */
-    private Collection $history;
+    private Collection $versions;
 
     /**
      * @param ProjectParticipation $projectParticipation
@@ -151,7 +151,7 @@ class ProjectParticipationTranche
         $this->added                = new DateTimeImmutable();
         $this->invitationReply      = new Offer();
         $this->allocation           = new Offer();
-        $this->history              = new ArrayCollection();
+        $this->versions             = new ArrayCollection();
     }
 
     /**
@@ -211,11 +211,11 @@ class ProjectParticipationTranche
     }
 
     /**
-     * @return Collection|ProjectParticipationTrancheHistory[]
+     * @return Collection|ProjectParticipationTrancheVersion[]
      */
-    public function getHistory(): Collection
+    public function getVersions(): Collection
     {
-        return $this->history;
+        return $this->versions;
     }
 
     /**

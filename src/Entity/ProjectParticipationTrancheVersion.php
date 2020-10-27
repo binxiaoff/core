@@ -8,12 +8,12 @@ use Exception;
 use Unilend\Entity\Embeddable\Offer;
 use Unilend\Entity\Traits\BlamableAddedTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Repository\ProjectParticipationTrancheHistoryRepository;
+use Unilend\Repository\ProjectParticipationTrancheVersionRepository;
 
 /**
- * @ORM\Entity(repositoryClass=ProjectParticipationTrancheHistoryRepository::class)
+ * @ORM\Entity(repositoryClass=ProjectParticipationTrancheVersionRepository::class)
  */
-class ProjectParticipationTrancheHistory
+class ProjectParticipationTrancheVersion
 {
     use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
@@ -27,7 +27,7 @@ class ProjectParticipationTrancheHistory
 
     /**
      * @ORM\ManyToOne(targetEntity=ProjectParticipationTranche::class, inversedBy="history")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(name="id_project_participation_tranche", unique=true, nullable=false)
      */
     private ProjectParticipationTranche $projectParticipationTranche;
 
