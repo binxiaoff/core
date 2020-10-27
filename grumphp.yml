@@ -13,4 +13,6 @@ grumphp:
                 - "PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions"
                 - "PHPCS_SecurityAudit.BadFunctions.PregReplace"
                 - "PHPCS_SecurityAudit.Drupal7.DynQueries"
+            ignore_patterns:
+                - config/
         phpstan: ~

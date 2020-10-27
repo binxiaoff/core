@@ -1,0 +1,10 @@
+<?php
+
+return array (
+  'APP_SECRET' => NULL,
+  'AWS_API_SECRET' => NULL,
+  'DATABASE_URL' => NULL,
+  'DATABASE_URL_MIGRATION' => NULL,
+  'ENQUEUE_DSN' => NULL,
+  'GOOGLE_RECAPTCHA_SECRET' => NULL,
+);
