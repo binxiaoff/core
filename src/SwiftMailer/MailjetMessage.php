@@ -48,7 +48,7 @@ class MailjetMessage extends \Swift_Message
      */
     public function disableTemplatingLanguage(): self
     {
-        $this->getHeaders()->addTextHeader('X-MJ-TemplateLanguage', '0');
+        $this->getHeaders()->removeAll('X-MJ-TemplateLanguage');
 
         return $this;
     }
@@ -94,7 +94,7 @@ class MailjetMessage extends \Swift_Message
      */
     public function disableErrorDelivery(): self
     {
-        $this->getHeaders()->addTextHeader('X-MJ-TemplateErrorDeliver', '0');
+        $this->getHeaders()->removeAll('X-MJ-TemplateErrorDeliver');
 
         return $this;
     }
