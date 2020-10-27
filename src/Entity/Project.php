@@ -1374,11 +1374,11 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param bool $interestExpressionEnabled
+     * @param bool|null $interestExpressionEnabled
      *
      * @return Project
      */
-    public function setInterestExpressionEnabled(bool $interestExpressionEnabled): Project
+    public function setInterestExpressionEnabled(?bool $interestExpressionEnabled): Project
     {
         if (null === $this->getCurrentStatus() || ProjectStatus::STATUS_DRAFT === $this->getCurrentStatus()->getStatus()) {
             $this->interestExpressionEnabled = $interestExpressionEnabled;
