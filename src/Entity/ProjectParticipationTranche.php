@@ -6,6 +6,8 @@ namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -128,6 +130,13 @@ class ProjectParticipationTranche
     private Offer $allocation;
 
     /**
+     * @var Collection|ProjectParticipationTrancheHistory[]
+     *
+     * @ORM\OneToMany(targetEntity=ProjectParticipationTrancheHistory::class, mappedBy="projectParticipationTranche", orphanRemoval=true)
+     */
+    private Collection $history;
+
+    /**
      * @param ProjectParticipation $projectParticipation
      * @param Tranche              $tranche
      * @param Staff                $addedBy
@@ -142,6 +151,7 @@ class ProjectParticipationTranche
         $this->added                = new DateTimeImmutable();
         $this->invitationReply      = new Offer();
         $this->allocation           = new Offer();
+        $this->history              = new ArrayCollection();
     }
 
     /**
@@ -198,6 +208,14 @@ class ProjectParticipationTranche
         $this->allocation = $allocation;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|ProjectParticipationTrancheHistory[]
+     */
+    public function getHistory(): Collection
+    {
+        return $this->history;
     }
 
     /**
