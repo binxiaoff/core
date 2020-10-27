@@ -114,19 +114,17 @@ class ProjectParticipationFixtures extends AbstractFixtures implements Dependent
             return ProjectParticipationStatus::STATUS_CREATED;
         }
 
-        if (ProjectFixtures::PROJECT_REPLY === $reference) {
-            return ProjectParticipationStatus::STATUS_CREATED;
+        switch ($reference) {
+            case ProjectFixtures::PROJECT_INTEREST:
+            case ProjectFixtures::PROJECT_REPLY:
+                return ProjectParticipationStatus::STATUS_CREATED;
+            case ProjectFixtures::PROJECT_REPLY_COMMITTEE_REFUSED:
+                return ProjectParticipationStatus::STATUS_COMMITTEE_REJECTED;
+            case ProjectFixtures::PROJECT_REPLY_COMMITTEE_PENDING:
+                return ProjectParticipationStatus::STATUS_COMMITTEE_PENDED;
+            default:
+                return ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED;
         }
-
-        if (ProjectFixtures::PROJECT_REPLY_COMMITTEE_REFUSED === $reference) {
-            return ProjectParticipationStatus::STATUS_COMMITTEE_REJECTED;
-        }
-
-        if (ProjectFixtures::PROJECT_REPLY_COMMITTEE_PENDING === $reference) {
-            return ProjectParticipationStatus::STATUS_COMMITTEE_PENDED;
-        }
-
-        return ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED;
     }
 
     /**
