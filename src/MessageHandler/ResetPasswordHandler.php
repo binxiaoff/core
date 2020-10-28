@@ -43,7 +43,7 @@ class ResetPasswordHandler implements MessageHandlerInterface
     {
         $client = $this->clientsRepository->findOneBy(['email' => $resetPasswordRequest->email]);
 
-        if ($client && $this->googleRecaptchaManager->isValid($resetPasswordRequest->captchaValue)) {
+        if ($client && $this->googleRecaptchaManager->getResult($resetPasswordRequest->captchaValue)->valid) {
             $this->notifier->notifyPasswordRequest($client);
         }
     }
