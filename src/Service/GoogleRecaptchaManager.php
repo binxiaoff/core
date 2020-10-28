@@ -51,6 +51,13 @@ class GoogleRecaptchaManager
     {
         $result = new GoogleRecaptchaResult();
 
+        // Condition to allow to test in development environment with postman without having to have a captcha token
+        if ($this->debug) {
+            $result->valid = true;
+
+            return $result;
+        }
+
         if (null === $captchaResponse) {
             return $result;
         }

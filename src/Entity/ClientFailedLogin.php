@@ -6,7 +6,6 @@ namespace Unilend\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
 
 /**
  * @ORM\Table(

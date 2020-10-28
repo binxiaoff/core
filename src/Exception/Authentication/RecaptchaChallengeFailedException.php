@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Exception\Authentication;
 
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Throwable;
 use Unilend\DTO\GoogleRecaptchaResult;
 
 class RecaptchaChallengeFailedException extends AuthenticationException

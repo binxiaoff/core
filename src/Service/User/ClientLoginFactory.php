@@ -6,6 +6,7 @@ namespace Unilend\Service\User;
 
 use Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Throwable;
 use Unilend\Entity\{ClientFailedLogin, ClientSuccessfulLogin, Clients};
 use Unilend\Exception\Authentication\RecaptchaChallengeFailedException;
 use Unilend\Service\{UserActivity\IpGeoLocManager, UserActivity\UserAgentManager};
@@ -77,14 +78,14 @@ class ClientLoginFactory
     }
 
     /**
-     * @param Exception   $exception
+     * @param Throwable   $exception
      * @param string|null $username
      *
      * @throws Exception
      *
      * @return ClientFailedLogin
      */
-    public function createClientLoginFailure(Exception $exception, ?string $username = null): ClientFailedLogin
+    public function createClientLoginFailure(Throwable $exception, ?string $username = null): ClientFailedLogin
     {
         $failedLogin = new ClientFailedLogin();
 
