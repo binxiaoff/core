@@ -5,6 +5,7 @@ namespace Unilend\Entity;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Offer;
 use Unilend\Entity\Traits\BlamableAddedTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
