@@ -44,6 +44,9 @@ class ProjectParticipationFixtures extends AbstractFixtures implements Dependent
             // Updates the participation for the arranger
             foreach ($project->getProjectParticipations() as $participation) {
                 $participation->setInvitationRequest($this->createOfferWithFee(1000000));
+                if ($project->isInInterestCollectionStep()) {
+                    $participation->setInterestReply($this->createOfferWithFee(1000000));
+                }
             }
 
             foreach ($companies as $company) {
