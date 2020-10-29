@@ -8,12 +8,12 @@ use Exception;
 use Unilend\Entity\Embeddable\Offer;
 use Unilend\Entity\Traits\BlamableAddedTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Repository\ProjectParticipationTrancheVersionRepository;
+use Unilend\Repository\InvitationReplyVersionRepository;
 
 /**
- * @ORM\Entity(repositoryClass=ProjectParticipationTrancheVersionRepository::class)
+ * @ORM\Entity(repositoryClass=InvitationReplyVersionRepository::class)
  */
-class ProjectParticipationTrancheVersion
+class InvitationReplyVersion
 {
     use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;

@@ -130,11 +130,11 @@ class ProjectParticipationTranche
     private Offer $allocation;
 
     /**
-     * @var Collection|ProjectParticipationTrancheVersion[]
+     * @var Collection|InvitationReplyVersion[]
      *
-     * @ORM\OneToMany(targetEntity=ProjectParticipationTrancheVersion::class, mappedBy="projectParticipationTranche", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=InvitationReplyVersion::class, mappedBy="projectParticipationTranche", orphanRemoval=true)
      */
-    private Collection $versions;
+    private Collection $invitationReplyVersions;
 
     /**
      * @param ProjectParticipation $projectParticipation
@@ -145,13 +145,13 @@ class ProjectParticipationTranche
      */
     public function __construct(ProjectParticipation $projectParticipation, Tranche $tranche, Staff $addedBy)
     {
-        $this->projectParticipation = $projectParticipation;
-        $this->tranche              = $tranche;
-        $this->addedBy              = $addedBy;
-        $this->added                = new DateTimeImmutable();
-        $this->invitationReply      = new Offer();
-        $this->allocation           = new Offer();
-        $this->versions             = new ArrayCollection();
+        $this->projectParticipation     = $projectParticipation;
+        $this->tranche                  = $tranche;
+        $this->addedBy                  = $addedBy;
+        $this->added                    = new DateTimeImmutable();
+        $this->invitationReply          = new Offer();
+        $this->allocation               = new Offer();
+        $this->invitationReplyVersions  = new ArrayCollection();
     }
 
     /**
@@ -211,11 +211,11 @@ class ProjectParticipationTranche
     }
 
     /**
-     * @return Collection|ProjectParticipationTrancheVersion[]
+     * @return Collection|InvitationReplyVersion[]
      */
-    public function getVersions(): Collection
+    public function getInvitationReplyVersions(): Collection
     {
-        return $this->versions;
+        return $this->invitationReplyVersions;
     }
 
     /**

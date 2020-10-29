@@ -8,8 +8,8 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\Clients;
+use Unilend\Entity\InvitationReplyVersion;
 use Unilend\Entity\ProjectParticipationTranche;
-use Unilend\Entity\ProjectParticipationTrancheVersion;
 use Unilend\Repository\ClientsRepository;
 
 class ProjectParticipationTrancheUpdatedListener
@@ -51,9 +51,9 @@ class ProjectParticipationTrancheUpdatedListener
                     $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
                 }
 
-                $version = new ProjectParticipationTrancheVersion($entity, $user->getCurrentStaff());
+                $version = new InvitationReplyVersion($entity, $user->getCurrentStaff());
                 $em->persist($version);
-                $uow->computeChangeSet($em->getClassMetadata(ProjectParticipationTrancheVersion::class), $version);
+                $uow->computeChangeSet($em->getClassMetadata(InvitationReplyVersion::class), $version);
             }
         }
     }
