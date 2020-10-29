@@ -27,7 +27,7 @@ class ProjectParticipationTrancheVersion
 
     /**
      * @ORM\ManyToOne(targetEntity=ProjectParticipationTranche::class, inversedBy="history")
-     * @ORM\JoinColumn(name="id_project_participation_tranche", unique=true, nullable=false)
+     * @ORM\JoinColumn(name="id_project_participation_tranche", nullable=false)
      */
     private ProjectParticipationTranche $projectParticipationTranche;
 
@@ -38,15 +38,14 @@ class ProjectParticipationTrancheVersion
 
     /**
      * @param ProjectParticipationTranche $projectParticipationTranche
-     * @param Offer                       $invitationReply
      * @param Staff                       $addedBy
      *
      * @throws Exception
      */
-    public function __construct(ProjectParticipationTranche $projectParticipationTranche, Offer $invitationReply, Staff $addedBy)
+    public function __construct(ProjectParticipationTranche $projectParticipationTranche, Staff $addedBy)
     {
         $this->projectParticipationTranche = $projectParticipationTranche;
-        $this->invitationReply             = $invitationReply;
+        $this->invitationReply             = $projectParticipationTranche->getInvitationReply();
         $this->addedBy                     = $addedBy;
         $this->added                       = new DateTimeImmutable();
     }
