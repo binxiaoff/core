@@ -19,6 +19,8 @@ class InvitationReplyVersion
     use TimestampableAddedOnlyTrait;
 
     /**
+     * @var int
+     *
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
@@ -26,13 +28,20 @@ class InvitationReplyVersion
     private int $id;
 
     /**
+     * @var ProjectParticipationTranche
+     *
      * @ORM\ManyToOne(targetEntity=ProjectParticipationTranche::class, inversedBy="history")
      * @ORM\JoinColumn(name="id_project_participation_tranche", nullable=false)
      */
     private ProjectParticipationTranche $projectParticipationTranche;
 
     /**
+     *
+     * @var Offer
+     *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
+     *
+     * @Assert\Valid
      */
     private Offer $invitationReply;
 
