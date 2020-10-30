@@ -7,3 +7,6 @@ swiftmailer:
   sender_address: 'support@kls-platfrom.com'
   delivery_addresses:
     - test@kls-platform.com
+  spool:
+    type: service
+    id: Unilend\SwiftMailer\DatabaseSpool

@@ -44,6 +44,16 @@ class MailjetMessage extends \Swift_Message
     }
 
     /**
+     * @return int|null
+     */
+    public function getTemplate(): ?int
+    {
+        $header =  $this->getHeaders()->get('X-MJ-TemplateID');
+
+        return $header ? $header->getFieldBodyModel() : null;
+    }
+
+    /**
      * @return $this
      */
     public function disableTemplatingLanguage(): self
