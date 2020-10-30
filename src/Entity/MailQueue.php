@@ -94,7 +94,7 @@ class MailQueue
         $this->serialized = serialize($message);
         $this->hash = hash('sha256', $this->serialized);
         if ($message instanceof MailjetMessage) {
-            $this->mailjetTemplateId = $message->getTemplate();
+            $this->mailjetTemplateId = $message->getTemplateId();
         }
         $this->recipients = $message->getTo();
         $this->status = static::STATUS_PENDING;

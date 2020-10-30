@@ -53,7 +53,7 @@ class StaffNotifier
 
         $message = (new MailjetMessage())
             ->setTo($client->getEmail())
-            ->setTemplate(1)
+            ->setTemplateId(1)
             ->setVars([
                 'client' => [
                     'publicId'  => $client->getPublicId(),

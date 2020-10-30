@@ -22,11 +22,21 @@ class MailjetMessage extends \Swift_Message
     }
 
     /**
+     * @return int|null
+     */
+    public function getTemplateId(): ?int
+    {
+        $header =  $this->getHeaders()->get('X-MJ-TemplateID');
+
+        return $header ? $header->getFieldBodyModel() : null;
+    }
+
+    /**
      * @param int|null $templateId
      *
      * @return MailjetMessage
      */
-    public function setTemplate(?int $templateId): self
+    public function setTemplateId(?int $templateId): self
     {
         $this->getHeaders()->addTextHeader('X-MJ-TemplateID', $templateId);
 
@@ -41,16 +51,6 @@ class MailjetMessage extends \Swift_Message
         $this->getHeaders()->addTextHeader('X-MJ-TemplateLanguage', '1');
 
         return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getTemplate(): ?int
-    {
-        $header =  $this->getHeaders()->get('X-MJ-TemplateID');
-
-        return $header ? $header->getFieldBodyModel() : null;
     }
 
     /**

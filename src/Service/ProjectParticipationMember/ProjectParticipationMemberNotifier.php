@@ -88,7 +88,7 @@ class ProjectParticipationMemberNotifier
         if ($templateId) {
             $message = (new MailjetMessage())
                 ->setTo($client->getEmail())
-                ->setTemplate((int) $templateId)
+                ->setTemplateId((int) $templateId)
                 ->setVars($context)
             ;
 

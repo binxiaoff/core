@@ -44,7 +44,7 @@ class ProjectParticipationNotifier
 
         $submitterClient = $project->getSubmitterClient();
 
-        $message = (new MailjetMessage())->setTo($submitterClient->getEmail())->setTemplate(1)->setVars([
+        $message = (new MailjetMessage())->setTo($submitterClient->getEmail())->setTemplateId(1)->setVars([
             'participant' => [
                 'displayName' => $projectParticipation->getParticipant()->getDisplayName(),
             ],

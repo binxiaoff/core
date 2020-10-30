@@ -132,7 +132,7 @@ class ProjectNotifier
                 foreach ($participation->getActiveProjectParticipationMembers() as $activeProjectParticipationMember) {
                     $message = (new MailjetMessage())
                         ->setTo($activeProjectParticipationMember->getStaff()->getClient()->getEmail())
-                        ->setTemplate(1)
+                        ->setTemplateId(1)
                         ->setVars([
                             'client' => [
                             'firstName' => $activeProjectParticipationMember->getStaff()->getClient()->getFirstName(),

@@ -39,7 +39,7 @@ class ClientNotifier
         }
 
         $message = (new MailjetMessage())
-            ->setTemplate(1817538)
+            ->setTemplateId(1817538)
             ->setVars([
                 'client' => [
                     'firstName' => $client->getFirstName(),
