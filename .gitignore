@@ -23,6 +23,12 @@ npm-debug.log
 /.env.*.local
 /public/bundles/
 /vendor/
+/config/secrets/dev/dev.decrypt.private.php
+/config/secrets/test/test.decrypt.private.php
+/config/secrets/demo/demo.decrypt.private.php
+/config/secrets/develop/develop.decrypt.private.php
+/config/secrets/preprod/preprod.decrypt.private.php
+/config/secrets/prod/prod.decrypt.private.php
 ###< symfony/framework-bundle ###
 
 ###> friendsofphp/php-cs-fixer ###
