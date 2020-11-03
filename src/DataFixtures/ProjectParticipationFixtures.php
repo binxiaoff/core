@@ -43,10 +43,9 @@ class ProjectParticipationFixtures extends AbstractFixtures implements Dependent
         foreach ($projectsWithParticipations as $reference => $project) {
             // Updates the participation for the arranger
             foreach ($project->getProjectParticipations() as $participation) {
-                $participation->setInvitationRequest($this->createOfferWithFee(1000000));
-                if ($project->isInInterestCollectionStep()) {
-                    $participation->setInterestReply($this->createOfferWithFee(1000000));
-                }
+                $project->isInInterestCollectionStep()
+                    ? $participation->setInterestReply($this->createOfferWithFee(1000000))
+                    : $participation->setInvitationRequest($this->createOfferWithFee(1000000));
             }
 
             foreach ($companies as $company) {
@@ -95,12 +94,13 @@ class ProjectParticipationFixtures extends AbstractFixtures implements Dependent
         Staff $staff
     ): ProjectParticipation {
         $participation = (new ProjectParticipation($company, $project, $staff))
-            ->setInterestRequest($this->createRangedOffer(1000000, 2000000))
-            ->setInterestReply($this->createOffer(2000000))
-            ->setInvitationRequest($this->createOfferWithFee(1000000))
             ->setInvitationReplyMode(ProjectParticipation::INVITATION_REPLY_MODE_PRO_RATA)
             ->setAllocationFeeRate((string) $this->faker->randomDigit);
         $this->forcePublicId($participation, "p-{$project->getPublicId()}-" . uniqid());
+
+        $participation->getProject()->isInInterestCollectionStep()
+            ? $participation->setInterestRequest($this->createRangedOffer(1000000, 2000000))->setInterestReply($this->createOffer(2000000))
+            : $participation->setInvitationRequest($this->createOfferWithFee(1000000));
 
         return $participation;
     }

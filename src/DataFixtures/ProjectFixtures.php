@@ -150,6 +150,11 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setParticipationType(Project::PROJECT_PARTICIPATION_TYPE_DIRECT)
             ->setSyndicationType(Project::PROJECT_SYNDICATION_TYPE_PRIMARY)
             ->setInterestExpressionEnabled(ProjectStatus::STATUS_INTEREST_EXPRESSION === $status)
+            ->setInterestExpressionDeadline(
+                ProjectStatus::STATUS_INTEREST_EXPRESSION === $status
+                    ? DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+10 days', '+1 year'))
+                    : null
+            )
             ->setParticipantReplyDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+70 days', '+1 year')))
             ->setAllocationDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+1 year', '+2 year')))
             ->setPrivilegedContactPerson(
