@@ -7,6 +7,7 @@ namespace Unilend\Service\Staff;
 use Doctrine\ORM\ORMException;
 use JsonException;
 use Swift_Mailer;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{MarketSegment, Staff};
 use Unilend\Service\TemporaryTokenGenerator;
@@ -20,20 +21,27 @@ class StaffNotifier
     private TranslatorInterface $translator;
     /** @var TemporaryTokenGenerator */
     private TemporaryTokenGenerator $temporaryTokenGenerator;
+    /**
+     * @var RouterInterface
+     */
+    private RouterInterface $router;
 
     /**
      * @param Swift_Mailer            $mailer
      * @param TranslatorInterface     $translator
      * @param TemporaryTokenGenerator $temporaryTokenGenerator
+     * @param RouterInterface         $router
      */
     public function __construct(
         Swift_Mailer $mailer,
         TranslatorInterface $translator,
-        TemporaryTokenGenerator $temporaryTokenGenerator
+        TemporaryTokenGenerator $temporaryTokenGenerator,
+        RouterInterface $router
     ) {
         $this->mailer                  = $mailer;
         $this->translator              = $translator;
         $this->temporaryTokenGenerator = $temporaryTokenGenerator;
+        $this->router = $router;
     }
 
     /**
@@ -51,29 +59,29 @@ class StaffNotifier
             return 0;
         }
 
+        $token = $this->temporaryTokenGenerator->generateUltraLongToken($client)->getToken();
+
         $message = (new MailjetMessage())
             ->setTo($client->getEmail())
-            ->setTemplateId(1)
+            ->setTemplateId(MailjetMessage::TEMPLATE_STAFF_CLIENT_INITIALISATION)
             ->setVars([
-                'client' => [
-                    'publicId'  => $client->getPublicId(),
-                    'firstName' => $client->getFirstName(),
-                ],
-                'temporaryToken' => [
-                    'token' => $this->temporaryTokenGenerator->generateUltraLongToken($client)->getToken(),
-                ],
-                'staff' => [
-                    'roles' => array_map(
+                    'inscriptionFinalisationUrl' =>
+                        $this->router->generate(
+                            'front_initialAccount',
+                            ['temporaryTokenPublicId' => $token, 'clientPublicId' => $client->getPublicId()],
+                            RouterInterface::ABSOLUTE_URL
+                        ),
+                    'marketSegments' => implode(' ,', $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
+                        return $this->translator->trans('market-segment.' . $marketSegment->getLabel());
+                    })->toArray()),
+                    'roles' => implode(' ,', array_map(
                         function (string $role) {
                             return $this->translator->trans('staff-roles.' . mb_strtolower($role));
                         },
                         $staff->getRoles()
-                    ),
-                    'marketSegments' => $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
-                        return $this->translator->trans('market-segment.' . $marketSegment->getLabel());
-                    })->toArray(),
-                    'company' => ['displayName' => $staff->getCompany()->getDisplayName()],
-                ],
+                    )),
+                    'company_displayName' => $staff->getCompany()->getDisplayName(),
+                    'client_firstName' =>  $client->getFirstName(),
             ])
         ;
 

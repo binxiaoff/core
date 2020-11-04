@@ -4,10 +4,26 @@ declare(strict_types=1);
 
 namespace Unilend\SwiftMailer;
 
+use InvalidArgumentException;
 use JsonException;
+use Unilend\Traits\ConstantsAwareTrait;
 
 class MailjetMessage extends \Swift_Message
 {
+    use ConstantsAwareTrait;
+
+    public const TEMPLATE_STAFF_CLIENT_INITIALISATION = 1851115;
+    public const TEMPLATE_CLIENT_PASSWORD_REQUEST = 1852070;
+    public const TEMPLATE_PUBLICATION_PROSPECT_COMPANY = 1852083;
+    public const TEMPLATE_PUBLICATION_UNINITIALIZED_USER = 1852104;
+    public const TEMPLATE_PUBLICATION = 1853426;
+    public const TEMPLATE_SYNDICATION_PROSPECT_COMPANY = 1853443;
+    public const TEMPLATE_SYNDICATION_UNINITIALIZED_USER = 1853467;
+    public const TEMPLATE_SYNDICATION = 1853479;
+    public const TEMPLATE_PROJECT_FILE_UPLOADED = 1853491;
+    public const TEMPLATE_PARTICIPANT_REPLY = 1853502;
+    public const TEMPLATE_ARRANGER_INVITATION_EXTERNAL_BANK = 1853530;
+
     /**
      * @param string|null $subject
      * @param string|null $body
@@ -38,27 +54,15 @@ class MailjetMessage extends \Swift_Message
      */
     public function setTemplateId(?int $templateId): self
     {
-        $this->getHeaders()->addTextHeader('X-MJ-TemplateID', $templateId);
+        if ($templateId && false === \in_array($templateId, static::getAvailableTemplates(), true)) {
+            throw new InvalidArgumentException('This template id does not exist');
+        }
 
-        return $this;
-    }
-
-    /**
-     * @return MailjetMessage
-     */
-    public function enableTemplatingLanguage(): self
-    {
-        $this->getHeaders()->addTextHeader('X-MJ-TemplateLanguage', '1');
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function disableTemplatingLanguage(): self
-    {
-        $this->getHeaders()->removeAll('X-MJ-TemplateLanguage');
+        if ($templateId) {
+            $this->getHeaders()->addTextHeader('X-MJ-TemplateID', $templateId);
+        } else {
+            $this->getHeaders()->removeAll('X-MJ-TemplateID');
+        }
 
         return $this;
     }
@@ -70,7 +74,7 @@ class MailjetMessage extends \Swift_Message
      *
      * @throws JsonException
      */
-    public function setVars(array $vars): self
+    public function setVars(array $vars = []): self
     {
         $this->getHeaders()->addTextHeader('X-MJ-Vars', json_encode($vars, JSON_THROW_ON_ERROR));
 
@@ -84,7 +88,11 @@ class MailjetMessage extends \Swift_Message
      */
     public function setTemplateErrorEmail(?string $email): self
     {
-        $this->getHeaders()->addTextHeader('X-MJ-TemplateErrorReporting', $email);
+        if ($email) {
+            $this->getHeaders()->addTextHeader('X-MJ-TemplateErrorReporting', $email);
+        } else {
+            $this->getHeaders()->removeAll('X-MJ-TemplateErrorReporting');
+        }
 
         return $this;
     }
@@ -105,6 +113,24 @@ class MailjetMessage extends \Swift_Message
     public function disableErrorDelivery(): self
     {
         $this->getHeaders()->removeAll('X-MJ-TemplateErrorDeliver');
+
+        return $this;
+    }
+
+    /**
+     * @return array|int[]
+     */
+    private static function getAvailableTemplates(): array
+    {
+        return static::getConstants('TEMPLATES_');
+    }
+
+    /**
+     * @return MailjetMessage
+     */
+    private function enableTemplatingLanguage(): self
+    {
+        $this->getHeaders()->addTextHeader('X-MJ-TemplateLanguage', '1');
 
         return $this;
     }

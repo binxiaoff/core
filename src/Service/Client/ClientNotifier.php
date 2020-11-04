@@ -6,6 +6,7 @@ namespace Unilend\Service\Client;
 
 use Exception;
 use Swift_Mailer;
+use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\Clients;
 use Unilend\Service\TemporaryTokenGenerator;
 use Unilend\SwiftMailer\MailjetMessage;
@@ -16,15 +17,19 @@ class ClientNotifier
     private Swift_Mailer $mailer;
     /** @var TemporaryTokenGenerator */
     private TemporaryTokenGenerator $temporaryTokenGenerator;
+    /** @var RouterInterface */
+    private RouterInterface $router;
 
     /**
      * @param Swift_Mailer            $mailer
      * @param TemporaryTokenGenerator $temporaryTokenGenerator
+     * @param RouterInterface         $router
      */
-    public function __construct(Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator)
+    public function __construct(Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator, RouterInterface $router)
     {
         $this->mailer                  = $mailer;
         $this->temporaryTokenGenerator = $temporaryTokenGenerator;
+        $this->router = $router;
     }
 
     /**
@@ -38,16 +43,20 @@ class ClientNotifier
             return;
         }
 
+        $temporaryToken = $this->temporaryTokenGenerator->generateMediumToken($client);
+
         $message = (new MailjetMessage())
-            ->setTemplateId(1817538)
+            ->setTemplateId(MailjetMessage::TEMPLATE_CLIENT_PASSWORD_REQUEST)
             ->setVars([
-                'client' => [
-                    'firstName' => $client->getFirstName(),
-                    'publicId'  => $client->getPublicId(),
-                ],
-                'temporaryToken' => [
-                    'token' => $this->temporaryTokenGenerator->generateMediumToken($client)->getToken(),
-                ],
+                'firstName' => $client->getFirstName(),
+                'resetPasswordURL' => $this->router->generate(
+                    'front_resetPassword',
+                    [
+                    'temporaryTokenPublicId' => $temporaryToken->getToken(),
+                    'clientPublicId' => $client->getPublicId(),
+                    ],
+                    RouterInterface::ABSOLUTE_URL
+                ),
             ])
             ->setTo($client->getEmail())
         ;

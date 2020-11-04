@@ -6,6 +6,7 @@ namespace Unilend\Service\ProjectParticipation;
 
 use JsonException;
 use Swift_Mailer;
+use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationStatus;
 use Unilend\SwiftMailer\MailjetMessage;
@@ -13,13 +14,19 @@ use Unilend\SwiftMailer\MailjetMessage;
 class ProjectParticipationNotifier
 {
     private Swift_Mailer $mailer;
+    /**
+     * @var RouterInterface
+     */
+    private RouterInterface $router;
 
     /**
-     * @param Swift_Mailer $mailer
+     * @param Swift_Mailer    $mailer
+     * @param RouterInterface $router
      */
-    public function __construct(Swift_Mailer $mailer)
+    public function __construct(Swift_Mailer $mailer, RouterInterface $router)
     {
         $this->mailer = $mailer;
+        $this->router = $router;
     }
 
     /**
@@ -44,19 +51,18 @@ class ProjectParticipationNotifier
 
         $submitterClient = $project->getSubmitterClient();
 
-        $message = (new MailjetMessage())->setTo($submitterClient->getEmail())->setTemplateId(1)->setVars([
-            'participant' => [
-                'displayName' => $projectParticipation->getParticipant()->getDisplayName(),
-            ],
-            'client' => [
-                'firstName' => $submitterClient->getFirstName(),
-            ],
-            'project' => [
-                'publicId' => $project->getPublicId(),
-                'title' => $project->getTitle(),
-                'riskGroupName' => $project->getRiskGroupName(),
-            ],
-        ]);
+        $message = (new MailjetMessage())
+            ->setTo($submitterClient->getEmail())
+            ->setTemplateId(MailjetMessage::TEMPLATE_PARTICIPANT_REPLY)
+            ->setVars(
+                [
+                    'front_projectForm_URL' => $this->router->generate('front_projectForm', ['projectPublicId' => $project->getPublicId()], RouterInterface::ABSOLUTE_URL),
+                    'project_riskGroupName' =>  $project->getRiskGroupName(),
+                    'project_title' => $project->getTitle(),
+                    'participant_displayName' => $projectParticipation->getParticipant()->getDisplayName(),
+                    'client_firstName' => $submitterClient->getFirstName(),
+                ]
+            );
 
         $this->mailer->send($message);
     }
