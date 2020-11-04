@@ -14,7 +14,7 @@ final class Version20201030171200 extends AbstractMigration
 {
     public function getDescription() : string
     {
-        return '';
+        return 'CALS-2687 Add DatabaseSpool table';
     }
 
     public function up(Schema $schema) : void
