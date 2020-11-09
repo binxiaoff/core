@@ -108,9 +108,9 @@ class ProjectParticipationMemberNotifier
      * @param Project $project
      * @param Staff   $staff
      *
-     * @return string|null
+     * @return int|null
      */
-    private function getTemplateId(Project $project, Staff $staff): ?string
+    private function getTemplateId(Project $project, Staff $staff): ?int
     {
         $templateId  = null;
         // In the actual habilitation context, the staff company is the same as the participant company

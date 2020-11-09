@@ -122,7 +122,7 @@ class MailjetMessage extends \Swift_Message
      */
     private static function getAvailableTemplates(): array
     {
-        return static::getConstants('TEMPLATES_');
+        return static::getConstants('TEMPLATE_');
     }
 
     /**
