@@ -109,6 +109,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "lendingRate:read",
  *                     "companyStatus:read",
  *                     "role:read",
+ *                     "invitationReplyVersion:read",
  *                     "interestReplyVersion:read"
  *                 }
  *             }

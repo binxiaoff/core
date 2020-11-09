@@ -24,7 +24,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     normalizationContext={"groups": {
  *         "projectParticipationTranche:read",
  *         "offer:read",
- *         "nullableMoney:read"
+ *         "nullableMoney:read",
+ *         "invitationReplyVersion:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "offer:write",
@@ -133,6 +134,8 @@ class ProjectParticipationTranche
      * @var Collection|InvitationReplyVersion[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\InvitationReplyVersion", mappedBy="projectParticipationTranche", orphanRemoval=true)
+     *
+     * @Groups({"projectParticipationTranche:read"})
      */
     private Collection $invitationReplyVersions;
 
