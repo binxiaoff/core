@@ -117,6 +117,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *             "normalization_context": {
  *                 "groups": {
  *                     "project:list",
+ *                     "projectStatus:read",
  *                     "project:read",
  *                     "company:read",
  *                     "timestampable:read",

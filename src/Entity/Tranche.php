@@ -861,4 +861,34 @@ class Tranche
                 ->addViolation();
         }
     }
+
+    /**
+     * @param ProjectParticipationTranche $projectParticipationTranche
+     *
+     * @return Tranche
+     */
+    public function addProjectParticipationTranche(ProjectParticipationTranche $projectParticipationTranche)
+    {
+        if (false === $this->hasProjectParticipationTranche($projectParticipationTranche)) {
+            $this->projectParticipationTranches->add($projectParticipationTranche);
+        }
+
+        $projectParticipation = $projectParticipationTranche->getProjectParticipation();
+
+        if (false === $projectParticipation->hasProjectParticipationTranche($projectParticipationTranche)) {
+            $projectParticipation->addProjectParticipationTranche($projectParticipationTranche);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectParticipationTranche $projectParticipationTranche
+     *
+     * @return bool
+     */
+    public function hasProjectParticipationTranche(ProjectParticipationTranche $projectParticipationTranche): bool
+    {
+        return isset($this->projectParticipationTranches[$projectParticipationTranche->getProjectParticipation()->getId()]);
+    }
 }

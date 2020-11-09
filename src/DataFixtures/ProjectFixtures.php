@@ -59,6 +59,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     public const PROJECTS_WITH_PARTICIPATION_TRANCHES = [
         self::PROJECT_REPLY,
         self::PROJECT_REPLY_COMMITTEE_ACCEPTED,
+        self::PROJECT_REPLY_COMMITTEE_REFUSED,
         self::PROJECT_REPLY_COMMITTEE_PENDING,
         self::PROJECT_ALLOCATION,
         self::PROJECT_FINISHED,

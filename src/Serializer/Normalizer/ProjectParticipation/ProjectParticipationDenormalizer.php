@@ -12,9 +12,15 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
-use Unilend\Entity\{Clients, ProjectParticipation, ProjectParticipationMember, ProjectParticipationStatus, ProjectParticipationTranche, ProjectStatus, Staff};
+use Unilend\Entity\{Clients,
+    ProjectParticipation,
+    ProjectParticipationMember,
+    ProjectParticipationStatus,
+    ProjectParticipationTranche,
+    ProjectStatus};
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
-use Unilend\Security\Voter\ProjectParticipationVoter;
+use Unilend\Service\Project\ProjectManager;
+use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -27,15 +33,23 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
     private Security $security;
     /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
+    /** @var ProjectParticipationManager */
+    private ProjectParticipationManager $projectParticipationManager;
+    /** @var ProjectManager */
+    private ProjectManager $projectManager;
 
     /**
-     * @param Security              $security
-     * @param IriConverterInterface $iriConverter
+     * @param Security                    $security
+     * @param IriConverterInterface       $iriConverter
+     * @param ProjectManager              $projectManager
+     * @param ProjectParticipationManager $projectParticipationManager
      */
-    public function __construct(Security $security, IriConverterInterface $iriConverter)
+    public function __construct(Security $security, IriConverterInterface $iriConverter, ProjectManager $projectManager, ProjectParticipationManager $projectParticipationManager)
     {
         $this->security = $security;
         $this->iriConverter = $iriConverter;
+        $this->projectParticipationManager = $projectParticipationManager;
+        $this->projectManager = $projectManager;
     }
 
     /**
@@ -57,7 +71,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         $projectParticipation = $this->extractObjectToPopulate(ProjectParticipation::class, $context);
         if ($projectParticipation) {
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipation));
-            if (isset($data['currentStatus']) && \is_array($data['currentStatus'])) {
+            if (isset($data['currentStatus']) && is_array($data['currentStatus'])) {
                 unset($data['currentStatus']['projectParticipation']);
                 $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationStatus::class]['projectParticipation'] = $projectParticipation;
             }
@@ -112,7 +126,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
             unset($projectParticipationMember['projectParticipation']);
 
             // Disallow requestData to set staff company when its an array
-            if (isset($projectParticipationMember['staff']) && \is_array($projectParticipationMember['staff'])) {
+            if (isset($projectParticipationMember['staff']) && is_array($projectParticipationMember['staff'])) {
                 unset($projectParticipationMember['staff']['company']);
             }
 
@@ -157,28 +171,46 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
     {
         $groups = [];
 
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_INTEREST_COLLECTION_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_INTEREST_COLLECTION_WRITE;
-        }
+        $currentUser = $this->security->getUser();
 
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_OFFER_NEGOTIATION_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_OFFER_NEGOTIATION_WRITE;
-        }
+        $currentStaff = $currentUser instanceof Clients ? $currentUser->getCurrentStaff() : null;
 
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_WRITE;
-        }
+        if ($currentStaff) {
+            $project = $projectParticipation->getProject();
 
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_INTEREST_COLLECTION_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_INTEREST_COLLECTION_WRITE;
-        }
+            $currentStatus = $project->getCurrentStatus()->getStatus();
 
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_PARTICIPATION_OWNER_OFFER_NEGOTIATION_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_PARTICIPATION_OWNER_OFFER_NEGOTIATION_WRITE;
-        }
+            if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
+                switch ($currentStatus) {
+                    case ProjectStatus::STATUS_INTEREST_EXPRESSION:
+                        $groups[] = 'projectParticipation:owner:interestExpression:write';
+                        break;
+                    case ProjectStatus::STATUS_PARTICIPANT_REPLY:
+                        $groups[] = 'projectParticipation:owner:participantReply:write';
+                        break;
+                }
+            }
 
-        if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_ARRANGER_ALLOCATION_EDIT, $projectParticipation)) {
-            $groups[] = ProjectParticipation::SERIALIZER_GROUP_ARRANGER_ALLOCATION_WRITE;
+            if ($this->projectManager->isArranger($project, $currentStaff)) {
+                switch ($currentStatus) {
+                    case ProjectStatus::STATUS_DRAFT:
+                        $groups[] = 'projectParticipation:arranger:draft:write';
+                        $groups[] = $project->isInterestExpressionEnabled() ?
+                            'projectParticipation:arranger:interestExpression:write' : 'projectParticipation:arranger:participantReply:write';
+                        break;
+                    case ProjectStatus::STATUS_INTEREST_EXPRESSION:
+                        $groups[] = 'projectParticipation:arranger:interestExpression:write';
+                        break;
+                    case ProjectStatus::STATUS_PARTICIPANT_REPLY:
+                        $groups[] = 'projectParticipation:arranger:participantReply:write';
+                        break;
+                    case ProjectStatus::STATUS_ALLOCATION:
+                        if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
+                            $groups[] = 'projectParticipation:arrangerOwner:allocation:write';
+                        }
+                        break;
+                }
+            }
         }
 
         return $groups;

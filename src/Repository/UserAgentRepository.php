@@ -40,11 +40,12 @@ class UserAgentRepository extends ServiceEntityRepository
         Device $device
     ): ?UserAgent {
         return $this->findOneBy([
-            'client'      => $client,
-            'browserName' => $browser->getName(),
-            'deviceModel' => $device->getModel(),
-            'deviceBrand' => $device->getBrand(),
-            'deviceType'  => $device->getType(),
+            'client'         => $client,
+            'browserName'    => $browser->getName(),
+            'browserVersion' => $browser->getVersion()->getComplete() ?: null,
+            'deviceModel'    => $device->getModel(),
+            'deviceBrand'    => $device->getBrand(),
+            'deviceType'     => $device->getType(),
         ])
         ;
     }

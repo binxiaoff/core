@@ -44,8 +44,10 @@ ProjectParticipation:
 ProjectParticipationTranche:
     tranche:
         notOwn: Merci de choisir une tranche du projet.
+        unsyndicated: La tranche ne peut pas être syndiqué par ce participant.
     allocation:
         aboveInvitationReply: Le montant de l'allocation est au-dessus du montant de réponse du participant
+
 
 ProjectParticipationStatus:
     status:

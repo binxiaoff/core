@@ -8,7 +8,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Entity\{Clients, CompanyModule, Project, ProjectStatus, Staff};
-use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
+use Unilend\Service\Project\ProjectManager;
 
 class ProjectVoter extends AbstractEntityVoter
 {
@@ -20,17 +20,17 @@ class ProjectVoter extends AbstractEntityVoter
     public const ATTRIBUTE_CREATE               = 'create';
     public const ATTRIBUTE_DELETE               = 'delete';
 
-    /** @var ProjectParticipationManager */
-    private ProjectParticipationManager $projectParticipationManager;
+    /** @var ProjectManager */
+    private ProjectManager $projectManager;
 
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param ProjectParticipationManager   $projectParticipationManager
+     * @param ProjectManager                $projectManager
      */
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker, ProjectParticipationManager $projectParticipationManager)
+    public function __construct(AuthorizationCheckerInterface $authorizationChecker, ProjectManager $projectManager)
     {
         parent::__construct($authorizationChecker);
-        $this->projectParticipationManager = $projectParticipationManager;
+        $this->projectManager = $projectManager;
     }
 
     /**
@@ -92,7 +92,7 @@ class ProjectVoter extends AbstractEntityVoter
             return true;
         }
 
-        return $this->projectParticipationManager->isParticipant($user->getCurrentStaff(), $project);
+        return $this->projectManager->isParticipationMember($project, $user->getCurrentStaff());
     }
 
     /**
@@ -152,10 +152,14 @@ class ProjectVoter extends AbstractEntityVoter
      */
     private function hasParticipantReadAccess(Project $project, Staff $staff): bool
     {
+        if (false === $staff->isActive()) {
+            return false;
+        }
+
+        $projectParticipationMember = $this->projectManager->getParticipationMember($project, $staff);
+
         // The participant doesn't need the participation module for the read access (CALS-2379)
-        return $staff->isActive()
-            && $this->projectParticipationManager->isParticipant($staff, $project)
-            && (null === $project->getNda() || $this->projectParticipationManager->isNdaAccepted($staff, $project));
+        return $projectParticipationMember && $projectParticipationMember->getNdaAccepted();
     }
 
     /**
