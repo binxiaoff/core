@@ -161,7 +161,7 @@ class ProjectParticipationStatus implements StatusInterface
                         $this->isArranger()
                         && (
                             (
-                                $this->getProjectParticipation()->getParticipant()->isProspect()
+                                $this->getProjectParticipation()->getParticipant()->isProspectAt($this->getAdded() ?? new DateTimeImmutable())
                                 && $this->getProjectParticipation()->getParticipant()->isSameGroup($this->getAddedBy()->getCompany())
                             )
                             ||  $this->isArrangerParticipation()
