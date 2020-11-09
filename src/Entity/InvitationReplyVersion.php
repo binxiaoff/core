@@ -9,10 +9,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Offer;
 use Unilend\Entity\Traits\BlamableAddedTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Repository\InvitationReplyVersionRepository;
 
 /**
- * @ORM\Entity(repositoryClass=InvitationReplyVersionRepository::class)
+ * @ORM\Entity
  */
 class InvitationReplyVersion
 {
@@ -31,7 +30,7 @@ class InvitationReplyVersion
     /**
      * @var ProjectParticipationTranche
      *
-     * @ORM\ManyToOne(targetEntity=ProjectParticipationTranche::class, inversedBy="history")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipationTranche", inversedBy="invitationReplyVersions")
      * @ORM\JoinColumn(name="id_project_participation_tranche", nullable=false)
      */
     private ProjectParticipationTranche $projectParticipationTranche;

@@ -132,7 +132,7 @@ class ProjectParticipationTranche
     /**
      * @var Collection|InvitationReplyVersion[]
      *
-     * @ORM\OneToMany(targetEntity=InvitationReplyVersion::class, mappedBy="projectParticipationTranche", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\InvitationReplyVersion", mappedBy="projectParticipationTranche", orphanRemoval=true)
      */
     private Collection $invitationReplyVersions;
 
