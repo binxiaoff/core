@@ -212,7 +212,8 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @var GoogleRecaptchaResult|null
      */
-    private ?GoogleRecaptchaResult $recaptchaResult;
+    private ?GoogleRecaptchaResult $recaptchaResult = null;
+
     /**
      * Clients constructor.
      *
