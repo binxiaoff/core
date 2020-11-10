@@ -24,6 +24,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     public const PROJECT_DRAFT = 'PROJECT_DRAFT';
     public const PROJECT_DRAFT_PARTICIPATION = 'PROJECT_DRAFT_PARTICIPATION';
+    public const PROJECT_INTEREST = 'PROJECT_INTEREST';
     public const PROJECT_REPLY = 'PROJECT_REPLY';
     public const PROJECT_REPLY_COMMITTEE_ACCEPTED = 'PROJECT_REPLY_COMMITTEE_ACCEPTED';
     public const PROJECT_REPLY_COMMITTEE_REFUSED = 'PROJECT_REPLY_COMMITTEE_REFUSED';
@@ -37,6 +38,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         self::PROJECT_DRAFT,
         self::PROJECT_DRAFT_PARTICIPATION,
         self::PROJECT_REPLY,
+        self::PROJECT_INTEREST,
         self::PROJECT_REPLY_COMMITTEE_ACCEPTED,
         self::PROJECT_REPLY_COMMITTEE_REFUSED,
         self::PROJECT_REPLY_COMMITTEE_PENDING,
@@ -47,6 +49,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     public const PROJECTS_WITH_PARTICIPATION = [
         self::PROJECT_DRAFT_PARTICIPATION,
+        self::PROJECT_INTEREST,
         self::PROJECT_REPLY,
         self::PROJECT_REPLY_COMMITTEE_ACCEPTED,
         self::PROJECT_REPLY_COMMITTEE_REFUSED,
@@ -90,6 +93,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $this->manager = $manager;
         $projectDraft = $this->createProject('Project created', ProjectStatus::STATUS_DRAFT);
         $projectDraftParticipation = $this->createProject('Project draft', ProjectStatus::STATUS_DRAFT);
+        $projectInterest = $this->createProject('Project interest', ProjectStatus::STATUS_INTEREST_EXPRESSION);
         $projectReply = $this->createProject('Project reply', ProjectStatus::STATUS_PARTICIPANT_REPLY);
         $projectReplyCommitteeAccepted = $this->createProject('Project reply c acc', ProjectStatus::STATUS_PARTICIPANT_REPLY);
         $projectReplyCommitteeRefused = $this->createProject('Project reply c ref', ProjectStatus::STATUS_PARTICIPANT_REPLY);
@@ -98,16 +102,17 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $projectFinished = $this->createProject('Project finished', ProjectStatus::STATUS_SYNDICATION_FINISHED);
         $projectArchived = $this->createProject('Project archived', ProjectStatus::STATUS_SYNDICATION_CANCELLED);
         $projectDraftOtherUser = $this->createProject('Project other user', ProjectStatus::STATUS_DRAFT, $otherUser->getCurrentStaff());
-        $this->addReference(self::PROJECT_ALLOCATION, $projectAllocation);
+        $this->addReference(self::PROJECT_DRAFT, $projectDraft);
+        $this->addReference(self::PROJECT_DRAFT_PARTICIPATION, $projectDraftParticipation);
+        $this->addReference(self::PROJECT_INTEREST, $projectInterest);
         $this->addReference(self::PROJECT_REPLY, $projectReply);
         $this->addReference(self::PROJECT_REPLY_COMMITTEE_ACCEPTED, $projectReplyCommitteeAccepted);
         $this->addReference(self::PROJECT_REPLY_COMMITTEE_REFUSED, $projectReplyCommitteeRefused);
         $this->addReference(self::PROJECT_REPLY_COMMITTEE_PENDING, $projectReplyCommitteePending);
-        $this->addReference(self::PROJECT_DRAFT, $projectDraft);
-        $this->addReference(self::PROJECT_DRAFT_PARTICIPATION, $projectDraftParticipation);
-        $this->addReference(self::PROJECT_OTHER_USER, $projectDraftOtherUser);
+        $this->addReference(self::PROJECT_ALLOCATION, $projectAllocation);
         $this->addReference(self::PROJECT_FINISHED, $projectFinished);
         $this->addReference(self::PROJECT_ARCHIVED, $projectArchived);
+        $this->addReference(self::PROJECT_OTHER_USER, $projectDraftOtherUser);
         $manager->flush();
     }
 
@@ -144,7 +149,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setFundingSpecificity(Project::FUNDING_SPECIFICITY_FSA)
             ->setParticipationType(Project::PROJECT_PARTICIPATION_TYPE_DIRECT)
             ->setSyndicationType(Project::PROJECT_SYNDICATION_TYPE_PRIMARY)
-            ->setInterestExpressionEnabled(false) // "Réponse ferme"
+            ->setInterestExpressionEnabled(ProjectStatus::STATUS_INTEREST_EXPRESSION === $status)
+            ->setInterestExpressionDeadline(
+                ProjectStatus::STATUS_INTEREST_EXPRESSION === $status
+                    ? DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+10 days', '+1 year'))
+                    : null
+            )
             ->setParticipantReplyDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+70 days', '+1 year')))
             ->setAllocationDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+1 year', '+2 year')))
             ->setPrivilegedContactPerson(
