@@ -6,38 +6,38 @@ namespace Unilend\Service\ProjectParticipationMember;
 
 use Exception;
 use Swift_Mailer;
-use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
+use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\{Project, ProjectParticipationMember, ProjectStatus, Staff};
 use Unilend\Service\TemporaryTokenGenerator;
-use Unilend\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\MailjetMessage;
 
 class ProjectParticipationMemberNotifier
 {
     /** @var Swift_Mailer */
     private Swift_Mailer $mailer;
-    /** @var TemplateMessageProvider */
-    private TemplateMessageProvider $templateMessageProvider;
+
     /** @var TemporaryTokenGenerator */
     private TemporaryTokenGenerator $temporaryTokenGenerator;
+    /**
+     * @var RouterInterface
+     */
+    private RouterInterface $router;
 
     /**
-     * @param TemplateMessageProvider $templateMessageProvider
      * @param Swift_Mailer            $mailer
      * @param TemporaryTokenGenerator $temporaryTokenGenerator
+     * @param RouterInterface         $router
      */
-    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator)
+    public function __construct(Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator, RouterInterface $router)
     {
         $this->mailer                  = $mailer;
-        $this->templateMessageProvider = $templateMessageProvider;
         $this->temporaryTokenGenerator = $temporaryTokenGenerator;
+        $this->router = $router;
     }
 
     /**
      * @param ProjectParticipationMember $projectParticipationMember
      *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
      * @throws Exception
      */
     public function notifyMemberAdded(ProjectParticipationMember $projectParticipationMember): void
@@ -69,32 +69,35 @@ class ProjectParticipationMemberNotifier
         }
 
         $context = [
-            'client' => [
-                'firstName' => $client->getFirstName(),
-                'publicId'  => $client->getPublicId(),
-            ],
-            'arranger' => [
-                'displayName' => $project->getSubmitterCompany()->getDisplayName(),
-            ],
-            'project' => [
-                'title' => $project->getTitle(),
-                'riskGroupName' => $project->getRiskGroupName(),
-                'publicId' => $project->getPublicId(),
-            ],
-            'projectParticipation' => [
-                'publicId'    => $projectParticipation->getPublicId(),
-                'participant' => [
-                    'displayName' => $projectParticipation->getParticipant()->getDisplayName(),
+            'front_viewParticipation_URL' => $this->router->generate(
+                'front_viewParticipation',
+                [
+                    'projectParticipationPublicId' => $projectParticipation->getPublicId(),
                 ],
-            ],
-            'temporaryToken' => [
-                'token' => $temporaryToken ? $temporaryToken->getToken() : false,
-            ],
+                RouterInterface::ABSOLUTE_URL
+            ),
+            'front_initialAccount_URL' => $temporaryToken ? $this->router->generate(
+                'front_initialAccount',
+                [
+                    'temporaryTokenPublicId' => $temporaryToken->getToken(),
+                    'clientPublicId' => $client->getPublicId(),
+                ],
+                RouterInterface::ABSOLUTE_URL
+            ) : null,
+            'front_home' => $this->router->generate('front_home'),
+            'front_home_URL' => $this->router->generate('front_home'),
+            'project_riskGroupName' => $project->getRiskGroupName(),
+            'project_title' => $project->getTitle(),
+            'projectParticipation_participant_displayName' => $projectParticipation->getParticipant()->getDisplayName(),
+            'arranger_displayName' => $project->getSubmitterCompany()->getDisplayName(),
+            'client_firstName' => $client->getFirstName(),
         ];
 
         if ($templateId) {
-            $message = $this->templateMessageProvider->newMessage($templateId, $context)
+            $message = (new MailjetMessage())
                 ->setTo($client->getEmail())
+                ->setTemplateId($this->getTemplateId($project, $projectParticipationMember->getStaff()))
+                ->setVars($context)
             ;
 
             $this->mailer->send($message);
@@ -105,9 +108,9 @@ class ProjectParticipationMemberNotifier
      * @param Project $project
      * @param Staff   $staff
      *
-     * @return string|null
+     * @return int|null
      */
-    private function getTemplateId(Project $project, Staff $staff): ?string
+    private function getTemplateId(Project $project, Staff $staff): ?int
     {
         $templateId  = null;
         // In the actual habilitation context, the staff company is the same as the participant company
@@ -116,25 +119,25 @@ class ProjectParticipationMemberNotifier
 
         if (ProjectStatus::STATUS_INTEREST_EXPRESSION === $project->getCurrentStatus()->getStatus()) {
             if ($participant->isProspect()) {
-                $templateId = 'publication-prospect-company';
+                $templateId = MailjetMessage::TEMPLATE_PUBLICATION_PROSPECT_COMPANY;
             }
 
             if ($participant->hasSigned()) {
-                $templateId = $client->isInitializationNeeded() ? 'publication-uninitialized-user' : 'publication';
+                $templateId = $client->isInitializationNeeded() ? MailjetMessage::TEMPLATE_PUBLICATION_UNINITIALIZED_USER : MailjetMessage::TEMPLATE_PUBLICATION;
             }
         }
 
         if (ProjectStatus::STATUS_PARTICIPANT_REPLY === $project->getCurrentStatus()->getStatus()) {
             if ($participant->isCAGMember()) {
                 if ($participant->isProspect()) {
-                    $templateId = 'syndication-prospect-company';
+                    $templateId = MailjetMessage::TEMPLATE_SYNDICATION_PROSPECT_COMPANY;
                 }
 
                 if ($participant->hasSigned()) {
-                    $templateId = $client->isInitializationNeeded() ? 'syndication-uninitialized-user' : 'syndication';
+                    $templateId = $client->isInitializationNeeded() ? MailjetMessage::TEMPLATE_SYNDICATION_UNINITIALIZED_USER : MailjetMessage::TEMPLATE_SYNDICATION;
                 }
             } else {
-                $templateId = 'arranger-invitation-external-bank';
+                $templateId = MailjetMessage::TEMPLATE_ARRANGER_INVITATION_EXTERNAL_BANK;
             }
         }
 

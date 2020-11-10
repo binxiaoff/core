@@ -1,29 +1,12 @@
-#swiftmailer:
-#    spool:
-#        type: service
-#        id: 'Unilend\SwiftMailer\DatabaseSpool'
-
-services:
-    _defaults:
-        autowire: true
-
-    Mailjet\Client:
-        arguments:
-            $key: '%env(MAILJET_API_KEY)%'
-            $secret: '%env(MAILJET_API_SECRET)%'
-            $call: true
-            $settings:
-                version: 'v3.1'
-
-    mailjet:
-        alias: 'Unilend\SwiftMailer\MailjetTransport'
-
-    swiftmailer.mailer.transport.mailjet:
-        alias: 'Unilend\SwiftMailer\MailjetTransport'
-
-    Unilend\SwiftMailer\MailjetTransport:
-        shared: false
-
-    Swift_Events_EventDispatcher:
-        class: Swift_Events_SimpleEventDispatcher
-        shared: false
+swiftmailer:
+  transport: 'smtp'
+  username: '%env(MAILJET_API_KEY)%'
+  password: '%env(MAILJET_API_SECRET)%'
+  host: 'in-v3.mailjet.com'
+  port: '25'
+  sender_address: 'support@kls-platfrom.com'
+  delivery_addresses:
+    - test@kls-platform.com
+  spool:
+    type: service
+    id: Unilend\SwiftMailer\DatabaseSpool

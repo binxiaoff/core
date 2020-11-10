@@ -1,2 +1,7 @@
 swiftmailer:
-    url: '%env(MAILER_URL)%'
+  transport: smtp
+  host: 'mail'
+  port: 1025
+  username: ~
+  password: ~
+  delivery_addresses: ~

@@ -7,13 +7,14 @@ namespace Unilend\Service\Project;
 use Doctrine\ORM\{NoResultException, NonUniqueResultException};
 use Http\Client\Exception;
 use InvalidArgumentException;
+use JsonException;
 use Nexy\Slack\Exception\SlackApiException;
 use Nexy\Slack\{Attachment, AttachmentField, Client, MessageInterface};
 use Swift_Mailer;
-use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
+use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\{Project, ProjectStatus};
 use Unilend\Repository\ProjectRepository;
-use Unilend\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\MailjetMessage;
 
 class ProjectNotifier
 {
@@ -21,23 +22,25 @@ class ProjectNotifier
     private Client $client;
     /** @var ProjectRepository */
     private ProjectRepository $projectRepository;
-    /** @var TemplateMessageProvider */
-    private TemplateMessageProvider $messageProvider;
     /** @var Swift_Mailer */
     private Swift_Mailer $mailer;
+    /**
+     * @var RouterInterface
+     */
+    private RouterInterface $router;
 
     /**
-     * @param Client                  $client
-     * @param ProjectRepository       $projectRepository
-     * @param TemplateMessageProvider $messageProvider
-     * @param Swift_Mailer            $mailer
+     * @param Client            $client
+     * @param ProjectRepository $projectRepository
+     * @param Swift_Mailer      $mailer
+     * @param RouterInterface   $router
      */
-    public function __construct(Client $client, ProjectRepository $projectRepository, TemplateMessageProvider $messageProvider, Swift_Mailer $mailer)
+    public function __construct(Client $client, ProjectRepository $projectRepository, Swift_Mailer $mailer, RouterInterface $router)
     {
         $this->client            = $client;
         $this->projectRepository = $projectRepository;
-        $this->messageProvider   = $messageProvider;
         $this->mailer            = $mailer;
+        $this->router = $router;
     }
 
     /**
@@ -119,11 +122,9 @@ class ProjectNotifier
     /**
      * @param Project $project
      *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     *
      * @return int
+     *
+     * @throws JsonException
      */
     public function notifyUploaded(Project $project): int
     {
@@ -136,19 +137,18 @@ class ProjectNotifier
         foreach ($project->getProjectParticipations() as $participation) {
             if ($participation->getParticipant() !== $project->getSubmitterCompany() && $participation->getParticipant()->hasSigned()) {
                 foreach ($participation->getActiveProjectParticipationMembers() as $activeProjectParticipationMember) {
-                    $message = $this->messageProvider->newMessage('project-file-uploaded', [
-                        'client' => [
-                            'firstName' => $activeProjectParticipationMember->getStaff()->getClient()->getFirstName(),
-                        ],
-                        'project' => [
-                            'arranger'      => $project->getSubmitterCompany()->getDisplayName(),
-                            'title'         => $project->getTitle(),
-                            'riskGroupName' => $project->getRiskGroupName(),
-                        ],
-                        'projectParticipation' => [
-                            'publicId' => $participation->getPublicId(),
-                        ],
-                    ])->setTo($activeProjectParticipationMember->getStaff()->getClient()->getEmail());
+                    $message = (new MailjetMessage())
+                        ->setTo($activeProjectParticipationMember->getStaff()->getClient()->getEmail())
+                        ->setTemplateId(MailjetMessage::TEMPLATE_PROJECT_FILE_UPLOADED)
+                        ->setVars([
+                            'front_viewParticipation_URL' => $this->router->generate('front_viewParticipation', [
+                                'projectParticipationPublicId' => $participation->getPublicId(),
+                            ], RouterInterface::ABSOLUTE_URL),
+                            'client_firstName' => $activeProjectParticipationMember->getStaff()->getClient()->getFirstName(),
+                            'project_arranger'      => $project->getSubmitterCompany()->getDisplayName(),
+                            'project_title'         => $project->getTitle(),
+                            'project_riskGroupName' => $project->getRiskGroupName(),
+                        ]);
                     $sent += $this->mailer->send($message);
                 }
             }

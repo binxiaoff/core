@@ -6,38 +6,35 @@ namespace Unilend\Service\Client;
 
 use Exception;
 use Swift_Mailer;
-use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
+use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\Clients;
 use Unilend\Service\TemporaryTokenGenerator;
-use Unilend\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\MailjetMessage;
 
 class ClientNotifier
 {
-    /** @var TemplateMessageProvider */
-    private $messageProvider;
     /** @var Swift_Mailer */
-    private $mailer;
+    private Swift_Mailer $mailer;
     /** @var TemporaryTokenGenerator */
-    private $temporaryTokenGenerator;
+    private TemporaryTokenGenerator $temporaryTokenGenerator;
+    /** @var RouterInterface */
+    private RouterInterface $router;
 
     /**
-     * @param TemplateMessageProvider $messageProvider
      * @param Swift_Mailer            $mailer
      * @param TemporaryTokenGenerator $temporaryTokenGenerator
+     * @param RouterInterface         $router
      */
-    public function __construct(TemplateMessageProvider $messageProvider, Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator)
+    public function __construct(Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator, RouterInterface $router)
     {
-        $this->messageProvider         = $messageProvider;
         $this->mailer                  = $mailer;
         $this->temporaryTokenGenerator = $temporaryTokenGenerator;
+        $this->router = $router;
     }
 
     /**
      * @param Clients $client
      *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
      * @throws Exception
      */
     public function notifyPasswordRequest(Clients $client): void
@@ -46,15 +43,23 @@ class ClientNotifier
             return;
         }
 
-        $message = $this->messageProvider->newMessage('client-password-request', [
-            'client' => [
+        $temporaryToken = $this->temporaryTokenGenerator->generateMediumToken($client);
+
+        $message = (new MailjetMessage())
+            ->setTemplateId(MailjetMessage::TEMPLATE_CLIENT_PASSWORD_REQUEST)
+            ->setVars([
                 'firstName' => $client->getFirstName(),
-                'publicId'  => $client->getPublicId(),
-            ],
-            'temporaryToken' => [
-                'token' => $this->temporaryTokenGenerator->generateMediumToken($client)->getToken(),
-            ],
-        ])->setTo($client->getEmail());
+                'resetPasswordURL' => $this->router->generate(
+                    'front_resetPassword',
+                    [
+                    'temporaryTokenPublicId' => $temporaryToken->getToken(),
+                    'clientPublicId' => $client->getPublicId(),
+                    ],
+                    RouterInterface::ABSOLUTE_URL
+                ),
+            ])
+            ->setTo($client->getEmail())
+        ;
 
         $this->mailer->send($message);
     }

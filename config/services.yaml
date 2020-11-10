@@ -135,16 +135,6 @@ services:
             - '@UserAgentParser\Provider\WhichBrowser'
             - '@UserAgentParser\Provider\PiwikDeviceDetector'
 
-    Unilend\Twig\Loader\DatabaseLoader:
-        arguments:
-            $repository: '@Unilend\Repository\MailTemplateRepository'
-        tags:
-            - name: twig.loader
-              priority: -9999
-
-    Unilend\SwiftMailer\MailjetTransport:
-        shared: false
-
     Unilend\Swagger\SwaggerDecorator:
         decorates: 'api_platform.swagger.normalizer.api_gateway'
 

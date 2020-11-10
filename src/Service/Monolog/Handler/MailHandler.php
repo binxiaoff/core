@@ -7,39 +7,41 @@ namespace Unilend\Service\Monolog\Handler;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
 use Swift_Mailer;
+use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use Unilend\Service\Mailer\MailTemplateManager;
-use Unilend\SwiftMailer\TemplateMessageProvider;
 
-class MailTemplateHandler extends AbstractProcessingHandler
+class MailHandler extends AbstractProcessingHandler
 {
-    /** @var MailTemplateManager */
-    private $mailer;
-    /** @var TemplateMessageProvider */
-    private $templateMessageProvider;
+    /** @var Swift_Mailer */
+    private Swift_Mailer $mailer;
     /** @var mixed */
     private $securityRecipients;
 
     /**
-     * @param TemplateMessageProvider $templateMessageProvider
-     * @param Swift_Mailer            $mailer
-     * @param mixed                   $securityRecipients
-     * @param int                     $level
-     * @param bool                    $bubble
+     * @var Environment
+     */
+    private Environment $twig;
+
+    /**
+     * @param Swift_Mailer $mailer
+     * @param Environment  $twig
+     * @param mixed        $securityRecipients
+     * @param int          $level
+     * @param bool         $bubble
      */
     public function __construct(
-        TemplateMessageProvider $templateMessageProvider,
         Swift_Mailer $mailer,
+        Environment $twig,
         $securityRecipients,
         $level = Logger::CRITICAL, // @see https://github.com/symfony/monolog-bundle/issues/322
         $bubble = true
     ) {
         parent::__construct($level, $bubble);
-        $this->templateMessageProvider = $templateMessageProvider;
         $this->mailer                  = $mailer;
         $this->securityRecipients      = $securityRecipients;
+        $this->twig = $twig;
     }
 
     /**
@@ -47,14 +49,14 @@ class MailTemplateHandler extends AbstractProcessingHandler
      *
      * @param array $record
      *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
+     * @throws LoaderError|RuntimeError|SyntaxError
      */
     protected function write(array $record): void
     {
-        $message = $this->templateMessageProvider->newMessage('log', $record);
-        $message->setTo($this->securityRecipients);
+        $message = new \Swift_Message();
+        $message->setSubject('Log')
+            ->setBody($this->twig->render('email/log.html.twig', $record))
+            ->setTo($this->securityRecipients);
 
         $this->mailer->send($message);
     }

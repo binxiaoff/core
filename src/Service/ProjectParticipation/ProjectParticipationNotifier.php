@@ -1,37 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service\ProjectParticipation;
 
+use JsonException;
 use Swift_Mailer;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
+use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationStatus;
-use Unilend\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\MailjetMessage;
 
 class ProjectParticipationNotifier
 {
-    private TemplateMessageProvider $templateMessageProvider;
-
     private Swift_Mailer $mailer;
+    /**
+     * @var RouterInterface
+     */
+    private RouterInterface $router;
 
     /**
-     * @param TemplateMessageProvider $templateMessageProvider
-     * @param Swift_Mailer            $mailer
+     * @param Swift_Mailer    $mailer
+     * @param RouterInterface $router
      */
-    public function __construct(TemplateMessageProvider $templateMessageProvider, Swift_Mailer $mailer)
+    public function __construct(Swift_Mailer $mailer, RouterInterface $router)
     {
-        $this->templateMessageProvider = $templateMessageProvider;
         $this->mailer = $mailer;
+        $this->router = $router;
     }
 
     /**
      * @param ProjectParticipation $projectParticipation
      *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
+     * @throws JsonException
      */
     public function notifyParticipantReply(ProjectParticipation $projectParticipation): void
     {
@@ -50,20 +51,19 @@ class ProjectParticipationNotifier
 
         $submitterClient = $project->getSubmitterClient();
 
-        $message = $this->templateMessageProvider->newMessage('participant-reply', [
-            'participant' => [
-                'displayName' => $projectParticipation->getParticipant()->getDisplayName(),
-            ],
-            'client' => [
-                'firstName' => $submitterClient->getFirstName(),
-            ],
-            'project' => [
-                'publicId' => $project->getPublicId(),
-                'title' => $project->getTitle(),
-                'riskGroupName' => $project->getRiskGroupName(),
-            ],
-        ]);
-        $message->setTo($submitterClient->getEmail());
+        $message = (new MailjetMessage())
+            ->setTo($submitterClient->getEmail())
+            ->setTemplateId(MailjetMessage::TEMPLATE_PARTICIPANT_REPLY)
+            ->setVars(
+                [
+                    'front_projectForm_URL' => $this->router->generate('front_projectForm', ['projectPublicId' => $project->getPublicId()], RouterInterface::ABSOLUTE_URL),
+                    'project_riskGroupName' =>  $project->getRiskGroupName(),
+                    'project_title' => $project->getTitle(),
+                    'participant_displayName' => $projectParticipation->getParticipant()->getDisplayName(),
+                    'client_firstName' => $submitterClient->getFirstName(),
+                ]
+            );
+
         $this->mailer->send($message);
     }
 }
