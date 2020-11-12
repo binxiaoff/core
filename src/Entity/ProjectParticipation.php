@@ -108,7 +108,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "tranche:read",
  *                     "lendingRate:read",
  *                     "companyStatus:read",
- *                     "role:read"
+ *                     "role:read",
+ *                     "interestReplyVersion:read"
  *                 }
  *             }
  *         },
@@ -275,6 +276,15 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, "projectParticipation:owner:interestExpression:write"})
      */
     private Offer $interestReply;
+
+    /**
+     * @var Collection|InterestReplyVersion[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\InterestReplyVersion", mappedBy="projectParticipationTranche", orphanRemoval=true)
+     *
+     * @Groups({"projectParticipation:read"})
+     */
+    private Collection $interestReplyVersions;
 
     /**
      * Réponse ferme : Invitation envoyé par l'arrangeur au participant.
