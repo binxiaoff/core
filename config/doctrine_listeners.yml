@@ -96,3 +96,7 @@ services:
     Unilend\Listener\Doctrine\Lifecycle\StaffUpdatedListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
+
+    Unilend\Listener\Doctrine\Lifecycle\ParticipationReplyListener:
+        tags:
+            - { name: doctrine.event_listener, event: onFlush }
