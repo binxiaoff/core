@@ -61,15 +61,23 @@ class InvitationReplyVersion
     private Offer $invitationReply;
 
     /**
+     * @var ProjectParticipationStatus
+     *
+     * @ORM\ManyToOne(targetEntity=ProjectParticipationStatus::class)
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private ProjectParticipationStatus $currentProjectParticipationStatus;
+
+    /**
      * @param ProjectParticipationTranche $projectParticipationTranche
      * @param Staff                       $addedBy
-     *
-     * @throws Exception
+     * @param ProjectParticipationStatus  $projectParticipationStatus
      */
-    public function __construct(ProjectParticipationTranche $projectParticipationTranche, Staff $addedBy)
+    public function __construct(ProjectParticipationTranche $projectParticipationTranche, Staff $addedBy, ProjectParticipationStatus $projectParticipationStatus)
     {
-        $this->projectParticipationTranche = $projectParticipationTranche;
-        $this->invitationReply             = $projectParticipationTranche->getInvitationReply();
-        $this->addedBy                     = $addedBy;
+        $this->projectParticipationTranche       = $projectParticipationTranche;
+        $this->invitationReply                   = $projectParticipationTranche->getInvitationReply();
+        $this->addedBy                           = $addedBy;
+        $this->currentProjectParticipationStatus = $projectParticipationStatus;
     }
 }
