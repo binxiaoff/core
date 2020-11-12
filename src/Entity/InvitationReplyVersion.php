@@ -30,7 +30,6 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 class InvitationReplyVersion
 {
     use BlamableAddedTrait;
-    use TimestampableAddedOnlyTrait;
 
     /**
      * @var int
@@ -72,6 +71,5 @@ class InvitationReplyVersion
         $this->projectParticipationTranche = $projectParticipationTranche;
         $this->invitationReply             = $projectParticipationTranche->getInvitationReply();
         $this->addedBy                     = $addedBy;
-        $this->added                       = new DateTimeImmutable();
     }
 }
