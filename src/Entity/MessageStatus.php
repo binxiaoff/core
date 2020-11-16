@@ -91,7 +91,6 @@ class MessageStatus
         return $this->message;
     }
 
-
     /**
      * @return Staff
      */
