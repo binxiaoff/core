@@ -393,6 +393,16 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private ?File $nda = null;
 
     /**
+     * @var ArrayCollection|Collection
+     * @ORM\ManyToMany(targetEntity="Unilend\Entity\MessageThread", cascade={"persist"})
+     * @ORM\JoinTable(name="message_thread_project_participation",
+     *      joinColumns={@ORM\JoinColumn(name="id_project_participation", referencedColumnName="id")},
+     *      inverseJoinColumns={@ORM\JoinColumn(name="id_message_thread", referencedColumnName="id")}
+     * )
+     */
+    protected Collection $messageThreads;
+
+    /**
      * @param Company $participant
      * @param Project $project
      * @param Staff   $addedBy
@@ -412,6 +422,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         $this->interestRequest              = new RangedOfferWithFee();
         $this->interestReply                = new Offer();
         $this->invitationRequest            = new OfferWithFee();
+        $this->messageThreads               = new ArrayCollection();
 
         $this->setCurrentStatus(new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_CREATED, $addedBy));
     }
@@ -741,6 +752,49 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     {
         $this->nda = $nda;
 
+        return $this;
+    }
+
+    /**
+     * @return ArrayCollection|Collection
+     */
+    public function getMessageThreads()
+    {
+        return $this->messageThreads;
+    }
+
+    /**
+     * @param Collection|null $messageThreads
+     * @return ProjectParticipation
+     */
+    public function setMessageThreads(?Collection $messageThreads): ProjectParticipation
+    {
+        $this->messageThreads = $messageThreads;
+
+        return $this;
+    }
+
+    /**
+     * @param MessageThread $messageThread
+     * @return ProjectParticipation
+     */
+    public function addMessageThread(MessageThread $messageThread): ProjectParticipation
+    {
+        if (!$this->messageThreads->contains($messageThread)) {
+            $this->messageThreads->add($messageThread);
+        }
+        return $this;
+    }
+
+    /**
+     * @param MessageThread $messageThread
+     * @return ProjectParticipation
+     */
+    public function removeMessageThread(MessageThread $messageThread): ProjectParticipation
+    {
+        if ($this->messageThreads->contains($messageThread)) {
+            $this->messageThreads->remove($messageThread);
+        }
         return $this;
     }
 
