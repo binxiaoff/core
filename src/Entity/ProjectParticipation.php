@@ -284,7 +284,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\InterestReplyVersion", mappedBy="projectParticipationTranche", orphanRemoval=true)
      *
-     * @Groups({"projectParticipation:read"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
      */
     private Collection $interestReplyVersions;
 
