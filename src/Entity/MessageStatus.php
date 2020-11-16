@@ -94,7 +94,6 @@ class MessageStatus
         return $this->message;
     }
 
-
     /**
      * @return Staff
      */
@@ -119,3 +118,4 @@ class MessageStatus
         return static::getConstants('STATUS_');
     }
 }
+

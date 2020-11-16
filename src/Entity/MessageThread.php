@@ -45,7 +45,6 @@ class MessageThread
 
     /**
      * @param Message $message
-     *
      * @return MessageThread
      */
     public function addMessage(Message $message): MessageThread
@@ -57,3 +56,4 @@ class MessageThread
         return $this;
     }
 }
+

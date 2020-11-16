@@ -118,3 +118,4 @@ class Message
         return $this;
     }
 }
+
