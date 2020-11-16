@@ -19,6 +19,8 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  *      @ORM\Index(name="idx_added", columns={"added"}),
  *  }
  * )
+ * @ORM\Entity(repositoryClass="Unilend\Repository\MessageStatusRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class MessageStatus
 {
