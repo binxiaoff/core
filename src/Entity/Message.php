@@ -52,7 +52,7 @@ class Message
     /**
      * @var MessageFile[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\MessageFile", mappedBy="message", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="MessageFile", mappedBy="message", cascade={"persist"}, orphanRemoval=true)
      */
     private Collection $messageFiles;
 
