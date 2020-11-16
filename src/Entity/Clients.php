@@ -215,6 +215,13 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     private ?GoogleRecaptchaResult $recaptchaResult = null;
 
     /**
+     * @var Collection|MessageStatus[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\MessageStatus", mappedBy="client")
+     */
+    private Collection $messageStatuses;
+
+    /**
      * Clients constructor.
      *
      * @param string $email
@@ -230,6 +237,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
         $this->roles[] = self::ROLE_USER;
         $this->staff   = new ArrayCollection();
         $this->email   = $email;
+        $this->messageStatuses = new ArrayCollection();
     }
 
     /**
@@ -668,6 +676,14 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
         $this->recaptchaResult = $recaptchaResult;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|MessageStatus[]
+     */
+    public function getMessageStatuses(): Collection
+    {
+        return $this->messageStatuses;
     }
 
     /**
