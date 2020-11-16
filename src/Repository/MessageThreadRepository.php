@@ -25,3 +25,4 @@ class MessageThreadRepository extends ServiceEntityRepository
         parent::__construct($registry, MessageThread::class);
     }
 }
+

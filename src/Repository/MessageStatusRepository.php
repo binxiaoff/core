@@ -25,3 +25,4 @@ class MessageStatusRepository extends ServiceEntityRepository
         parent::__construct($registry, MessageStatus::class);
     }
 }
+

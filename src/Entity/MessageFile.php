@@ -63,3 +63,4 @@ class MessageFile
         return $this->message;
     }
 }
+
