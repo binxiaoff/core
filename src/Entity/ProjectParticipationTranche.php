@@ -135,7 +135,7 @@ class ProjectParticipationTranche
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\InvitationReplyVersion", mappedBy="projectParticipationTranche", orphanRemoval=true)
      *
-     * @Groups({"projectParticipationTranche:read"})
+     * @Groups({ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ})
      */
     private Collection $invitationReplyVersions;
 

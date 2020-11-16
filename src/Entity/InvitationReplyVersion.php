@@ -2,30 +2,14 @@
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Offer;
 use Unilend\Entity\Traits\BlamableAddedTrait;
-use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
- *
- * @ApiResource(
- *     normalizationContext={"groups": {"invitationReplyVersion:read"}},
- *     itemOperations={
- *         "get": {
- *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
- *             "read": false,
- *             "output": false,
- *         }
- *     },
- *     collectionOperations={}
- * )
  */
 class InvitationReplyVersion
 {
@@ -38,7 +22,7 @@ class InvitationReplyVersion
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    public int $id;
+    private int $id;
 
     /**
      * @var ProjectParticipationTranche
@@ -80,5 +64,45 @@ class InvitationReplyVersion
         $this->invitationReply                   = $projectParticipationTranche->getInvitationReply();
         $this->currentProjectParticipationStatus = $projectParticipationTranche->getProjectParticipation()->getCurrentStatus();
         $this->addedBy                           = $addedBy;
+    }
+
+    /**
+     * @return Staff
+     */
+    public function getAddedBy(): Staff
+    {
+        return $this->addedBy;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return ProjectParticipationTranche
+     */
+    public function getProjectParticipationTranche(): ProjectParticipationTranche
+    {
+        return $this->projectParticipationTranche;
+    }
+
+    /**
+     * @return Offer
+     */
+    public function getInvitationReply(): Offer
+    {
+        return $this->invitationReply;
+    }
+
+    /**
+     * @return ProjectParticipationStatus
+     */
+    public function getCurrentProjectParticipationStatus(): ProjectParticipationStatus
+    {
+        return $this->currentProjectParticipationStatus;
     }
 }
