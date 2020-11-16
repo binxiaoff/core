@@ -51,7 +51,7 @@ class ParticipationReplyListener
                     $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
                 }
 
-                $version = new InterestReplyVersion($entity->getInterestReply(), $entity, $user->getCurrentStaff());
+                $version = new InterestReplyVersion($entity, $user->getCurrentStaff());
                 $em->persist($version);
                 $uow->computeChangeSet($em->getClassMetadata(InterestReplyVersion::class), $version);
             }

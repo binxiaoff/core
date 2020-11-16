@@ -56,14 +56,13 @@ class InterestReplyVersion
     private ProjectParticipation $projectParticipation;
 
     /**
-     * @param Offer                $interestReply
      * @param ProjectParticipation $projectParticipation
      * @param Staff                $addedBy
      */
-    public function __construct(Offer $interestReply, ProjectParticipation $projectParticipation, Staff $addedBy)
+    public function __construct(ProjectParticipation $projectParticipation, Staff $addedBy)
     {
-        $this->interestReply        = $interestReply;
         $this->projectParticipation = $projectParticipation;
+        $this->interestReply        = $projectParticipation->getInterestReply();
         $this->addedBy              = $addedBy;
     }
 }
