@@ -63,21 +63,22 @@ class InvitationReplyVersion
     /**
      * @var ProjectParticipationStatus
      *
-     * @ORM\ManyToOne(targetEntity=ProjectParticipationStatus::class)
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipationStatus")
+     * @ORM\JoinColumn(name="id_project_participation_status", nullable=false)
+     *
+     * @Groups({"invitationReplyVersion:read"})
      */
     private ProjectParticipationStatus $currentProjectParticipationStatus;
 
     /**
      * @param ProjectParticipationTranche $projectParticipationTranche
      * @param Staff                       $addedBy
-     * @param ProjectParticipationStatus  $projectParticipationStatus
      */
-    public function __construct(ProjectParticipationTranche $projectParticipationTranche, Staff $addedBy, ProjectParticipationStatus $projectParticipationStatus)
+    public function __construct(ProjectParticipationTranche $projectParticipationTranche, Staff $addedBy)
     {
         $this->projectParticipationTranche       = $projectParticipationTranche;
         $this->invitationReply                   = $projectParticipationTranche->getInvitationReply();
+        $this->currentProjectParticipationStatus = $projectParticipationTranche->getProjectParticipation()->getCurrentStatus();
         $this->addedBy                           = $addedBy;
-        $this->currentProjectParticipationStatus = $projectParticipationStatus;
     }
 }

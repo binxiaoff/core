@@ -40,6 +40,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "role:read",
  *         "file:read",
  *         "fileVersion:read",
+ *         "invitationReplyVersion:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",

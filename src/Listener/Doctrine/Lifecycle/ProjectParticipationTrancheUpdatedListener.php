@@ -51,7 +51,7 @@ class ProjectParticipationTrancheUpdatedListener
                     $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
                 }
 
-                $version = new InvitationReplyVersion($entity, $user->getCurrentStaff(), $entity->getProjectParticipation()->getCurrentStatus());
+                $version = new InvitationReplyVersion($entity, $user->getCurrentStaff());
                 $em->persist($version);
                 $uow->computeChangeSet($em->getClassMetadata(InvitationReplyVersion::class), $version);
             }
