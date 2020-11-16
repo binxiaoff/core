@@ -7,7 +7,6 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Symfony\Component\Validator\Constraints as Assert;
-
 use Unilend\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
@@ -28,6 +27,7 @@ class MessageThread
 
     /**
      * @var ArrayCollection|Collection
+     *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Message", mappedBy="messageThread")
      */
     private Collection $messages;
@@ -51,6 +51,7 @@ class MessageThread
 
     /**
      * @param Message $message
+     *
      * @return MessageThread
      */
     public function addMessage(Message $message): MessageThread
@@ -58,6 +59,7 @@ class MessageThread
         if (!$this->messages->contains($message)) {
             $this->messages->add($message);
         }
+
         return $this;
     }
 }
