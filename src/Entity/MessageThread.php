@@ -32,6 +32,7 @@ class MessageThread
     public function __construct()
     {
         $this->added    = new DateTimeImmutable();
+
         $this->messages = new ArrayCollection();
     }
 
