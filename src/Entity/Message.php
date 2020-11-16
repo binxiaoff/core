@@ -21,6 +21,8 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  *      @ORM\Index(name="idx_thread_message", columns={"id_message_thread"}),
  *  }
  * )
+ * @ORM\Entity(repositoryClass="Unilend\Repository\MessageRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Message
 {
@@ -62,11 +64,19 @@ class Message
     private Collection $statuses;
 
     /**
+     * @var MessageFile[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="MessageFile", mappedBy="message", cascade={"persist"}, orphanRemoval=true)
+     */
+    private Collection $messageFiles;
+
+    /**
      * Message constructor.
      */
     public function __construct()
     {
         $this->statuses = new ArrayCollection();
+        $this->messageFiles = new ArrayCollection();
     }
 
     /**
@@ -165,6 +175,50 @@ class Message
     {
         if ($this->statuses->contains($status)) {
             $this->statuses->remove($status);
+        }
+        return $this;
+    }
+
+    /**
+     * @param Collection|null $messageFiles
+     * @return $this
+     */
+    public function setMessageFiles(?Collection $messageFiles): Message
+    {
+        $this->messageFiles = $messageFiles;
+
+        return $this;
+    }
+
+    /**
+     * @return MessageFile[]|Collection
+     */
+    public function getMessageFiles(): Collection
+    {
+        return $this->messageFiles;
+    }
+
+    /**
+     * @param MessageFile $messageFile
+     * @return $this
+     */
+    public function addMessageFile(MessageFile $messageFile): Message
+    {
+        if (!$this->messageFiles->contains($messageFile)) {
+            $this->messageFiles->add($messageFile);
+        }
+        return $this;
+    }
+
+    /**
+     * @param MessageFile $messageFile
+     *
+     * @return Message
+     */
+    public function removeMessageFile(MessageFile $messageFile): Message
+    {
+        if ($this->messageFiles->contains($messageFile)) {
+            $this->messageFiles->remove($messageFile);
         }
         return $this;
     }
