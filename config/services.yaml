@@ -2,7 +2,6 @@ imports:
     - { resource: doctrine_listeners.yml }
 
 parameters:
-    dbal_driver_class: Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
     locale: fr_FR
     router.request_context.scheme: https
     directory.public: /data/sites/unilend/public
