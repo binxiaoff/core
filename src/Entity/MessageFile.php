@@ -11,11 +11,10 @@ use Unilend\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
- * @ORM\Entity(repositoryClass="Unilend\Repository\MessageFile")
+ * @ORM\Entity
  * @ORM\Table(
  *  name="message_file",
  *  indexes={
- *      @ORM\Index(name="idx_message", columns={"id_message"}),
  *      @ORM\Index(name="idx_added", columns={"added"}),
  *  }
  * )
@@ -23,7 +22,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  */
 class MessageFile
 {
-    public const ACCEPTED_FILE_TYPES = [
+    private const ACCEPTED_FILE_TYPES = [
         'application/pdf',
         'application/vnd.ms-excel',
         'application/vnd.ms-powerpoint',
@@ -36,7 +35,7 @@ class MessageFile
     /**
      * @var string
      *
-     * @ORM\Column(name="type", type="string", length=50, nullable=false)
+     * @ORM\Column(length=50, nullable=false)
      * @Assert\Choice(callback="getTypes")
      */
     private $type;
@@ -65,11 +64,6 @@ class MessageFile
      */
     public function __construct(string $type, File $file, Message $message)
     {
-        if (!in_array($type, static::ACCEPTED_FILE_TYPES, true)) {
-            throw new \InvalidArgumentException(
-                sprintf('%s is not a possible type for %s', $type, __CLASS__)
-            );
-        }
         $this->type = $type;
         $this->file = $file;
         $this->message = $message;
