@@ -19,7 +19,6 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  *     @ORM\Index(name="idx_added", columns={"added"})
  *  }
  * )
- * @ORM\Entity(repositoryClass="Unilend\Repository\MessageThreadRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class MessageThread
@@ -43,17 +42,6 @@ class MessageThread
     }
 
     /**
-     * @param Collection|null $messages
-     * @return MessageThread
-     */
-    public function setMessages(?Collection $messages): MessageThread
-    {
-        $this->messages = $messages;
-
-        return $this;
-    }
-
-    /**
      * @return ArrayCollection
      */
     public function getMessages()
@@ -69,18 +57,6 @@ class MessageThread
     {
         if (!$this->messages->contains($message)) {
             $this->messages->add($message);
-        }
-        return $this;
-    }
-
-    /**
-     * @param Message $message
-     * @return MessageThread
-     */
-    public function removeMessage(Message $message): MessageThread
-    {
-        if ($this->messages->contains($message)) {
-            $this->messages->remove($message);
         }
         return $this;
     }
