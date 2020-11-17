@@ -420,7 +420,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         $this->interestRequest              = new RangedOfferWithFee();
         $this->interestReply                = new Offer();
         $this->invitationRequest            = new OfferWithFee();
-        $this->messageThreads               = new ArrayCollection();
 
         $this->setCurrentStatus(new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_CREATED, $addedBy));
     }
