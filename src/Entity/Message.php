@@ -57,13 +57,6 @@ class Message
     private Collection $messageFiles;
 
     /**
-     * @var MessageFile[]|Collection
-     *
-     * @ORM\OneToMany(targetEntity="MessageFile", mappedBy="message", cascade={"persist"}, orphanRemoval=true)
-     */
-    private Collection $messageFiles;
-
-    /**
      * Message constructor.
      *
      * @param Staff         $sender
@@ -121,7 +114,5 @@ class Message
         if (!$this->messageFiles->contains($messageFile)) {
             $this->messageFiles->add($messageFile);
         }
-
-        return $this;
     }
 }
