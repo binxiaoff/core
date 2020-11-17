@@ -9,20 +9,13 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use ReflectionException;
-use Unilend\Entity\Company;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectParticipation;
-use Unilend\Entity\ProjectParticipationStatus;
-use Unilend\Entity\ProjectStatus;
-use Unilend\Entity\Staff;
+use Unilend\Entity\{Company, Project, ProjectParticipation, ProjectParticipationStatus, ProjectStatus, Staff};
 
 class ProjectParticipationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     use OfferFixtureTrait;
 
-    /**
-     * @var ObjectManager
-     */
+    /** @var ObjectManager */
     private ObjectManager $manager;
 
     /**
@@ -34,17 +27,16 @@ class ProjectParticipationFixtures extends AbstractFixtures implements Dependent
     {
         /** @var Company[] $companies */
         $companies = $this->getReferences(CompanyFixtures::COMPANIES);
-        /** @var Project[] $projects */
+        /** @var Project[] $projectsWithParticipations */
         $projectsWithParticipations = $this->getReferences(ProjectFixtures::PROJECTS_WITH_PARTICIPATION);
         /** @var Staff $staff */
         $staff = $this->getReference(StaffFixtures::ADMIN);
 
-        /** @var Project $project */
         foreach ($projectsWithParticipations as $reference => $project) {
             // Updates the participation for the arranger
             foreach ($project->getProjectParticipations() as $participation) {
                 $project->isInInterestCollectionStep()
-                    ? $participation->setInterestReply($this->createOfferWithFee(1000000))
+                    ? $participation->setInterestRequest($this->createRangedOffer(1000000, 2000000))
                     : $participation->setInvitationRequest($this->createOfferWithFee(1000000));
             }
 
