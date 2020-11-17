@@ -10,7 +10,8 @@ doctrine:
         connections:
             default:
                 schema_filter: '~^(?!messenger_messages)~'
-                url: '%env(DATABASE_URL)%&driverClass=%dbal_driver_class%'
+                url: '%env(DATABASE_URL)%'
+                driver_class: 'Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver'
                 default_table_options:
                     charset: utf8mb4
                     collate: utf8mb4_unicode_ci
@@ -21,7 +22,8 @@ doctrine:
             # connection dedicated to Doctrine Migration bundle
             migration:
                 schema_filter: '~^(?!messenger_messages)~'
-                url: '%env(DATABASE_URL_MIGRATION)%&driverClass=%dbal_driver_class%'
+                url: '%env(DATABASE_URL_MIGRATION)%'
+                driver_class: 'Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver'
                 default_table_options:
                     charset: utf8mb4
                     collate: utf8mb4_unicode_ci
