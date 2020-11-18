@@ -33,7 +33,7 @@ class Message
      * @var Staff
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff")
-     * @ORM\JoinColumn(name="id_sender", nullable=false)
+     * @ORM\JoinColumn(name="id_sender")
      *
      * @Assert\NotBlank
      * @Assert\Valid
