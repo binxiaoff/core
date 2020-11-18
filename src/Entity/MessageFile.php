@@ -12,70 +12,39 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
- * @ORM\Table(
- *  name="message_file",
- *  indexes={
- *      @ORM\Index(name="idx_added", columns={"added"}),
- *  }
- * )
- * @ORM\HasLifecycleCallbacks
+ * @ORM\Table
  */
 class MessageFile
 {
-    private const ACCEPTED_FILE_TYPES = [
-        'application/pdf',
-        'application/vnd.ms-excel',
-        'application/vnd.ms-powerpoint',
-        'application/msword',
-    ];
-
-    use TimestampableAddedOnlyTrait;
     use PublicizeIdentityTrait;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(length=50, nullable=false)
-     * @Assert\Choice(callback="getTypes")
-     */
-    private $type;
+    use TimestampableAddedOnlyTrait;
 
     /**
      * @var File
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\File", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_file", nullable=false, unique=true)
+     * @ORM\JoinColumn(name="id_file", unique=true)
      */
-    private $file;
+    private File $file;
 
     /**
      * @var Message
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Message", inversedBy="messageFiles")
-     * @ORM\JoinColumn(name="id_message", nullable=false, onDelete="CASCADE")
+     * @ORM\JoinColumn(name="id_message", onDelete="CASCADE")
      */
-    private $message;
+    private Message $message;
 
     /**
      * MessageFile constructor.
-     * @param string $type
      * @param File $file
      * @param Message $message
      */
-    public function __construct(string $type, File $file, Message $message)
+    public function __construct(File $file, Message $message)
     {
-        $this->type = $type;
         $this->file = $file;
         $this->message = $message;
         $this->added = new \DateTimeImmutable();
-    }
-
-    /**
-     * @return string
-     */
-    public function getType(): string
-    {
-        return $this->type;
     }
 
     /**
@@ -92,13 +61,5 @@ class MessageFile
     public function getMessage(): Message
     {
         return $this->message;
-    }
-
-    /**
-     * @return string[]
-     */
-    public static function getTypes(): array
-    {
-        return self::ACCEPTED_FILE_TYPES;
     }
 }

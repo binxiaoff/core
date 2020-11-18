@@ -12,12 +12,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
- * @ORM\Table(
- *  indexes={
- *      @ORM\Index(name="idx_added", columns={"added"}),
- *  }
- * )
- * @ORM\HasLifecycleCallbacks
+ * @ORM\Table
  */
 class Message
 {
@@ -36,7 +31,7 @@ class Message
      * @var Staff
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff")
-     * @ORM\JoinColumn(name="id_sender", nullable=false)
+     * @ORM\JoinColumn(name="id_sender")
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -46,7 +41,7 @@ class Message
     /**
      * @var string
      *
-     * @ORM\Column(type="text", length=16777215, nullable=false)
+     * @ORM\Column(type="text", length=16777215)
      *
      * @Assert\NotBlank
      */
@@ -61,21 +56,17 @@ class Message
 
     /**
      * Message constructor.
+     * @param Staff $sender
+     * @param MessageTread $messageThread
+     * @param string $body
      */
-    public function __construct()
-    {
-        $this->added = new \DateTimeImmutable();
-    }
-
-    /**
-     * @param Clients|null $sender
-     * @return Message
-     */
-    public function setSender(?Clients $sender): Message
+    public function __construct(Staff $sender, MessageTread $messageThread, string $body)
     {
         $this->sender = $sender;
-
-        return $this;
+        $this->messageThread = $messageThread;
+        $this->body = $body;
+        $this->messageFiles = new ArrayCollection();
+        $this->added = new \DateTimeImmutable();
     }
 
     /**
@@ -87,35 +78,11 @@ class Message
     }
 
     /**
-     * @param MessageThread|null $messageThread
-     *
-     * @return Message
-     */
-    public function setMessageThread(?MessageThread $messageThread): Message
-    {
-        $this->messageThread = $messageThread;
-
-        return $this;
-    }
-
-    /**
      * @return MessageThread
      */
     public function getMessageThread(): MessageThread
     {
         return $this->messageThread;
-    }
-
-    /**
-     * @param string|null $body
-     *
-     * @return Message
-     */
-    public function setBody(?string $body): Message
-    {
-        $this->body = $body;
-
-        return $this;
     }
 
     /**

@@ -4,18 +4,12 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use Doctrine\ORM\Mapping as ORM;;
+use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
- * @ORM\Table(
- *  name="message_history",
- *  indexes={
- *      @ORM\Index(name="idx_added", columns={"added"}),
- *  }
- * )
- * @ORM\HasLifecycleCallbacks
+ * @ORM\Table
  */
 class MessageHistory
 {
@@ -30,7 +24,14 @@ class MessageHistory
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $id;
+    private int $id;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(type="integer")
+     */
+    private int $status;
 
     /**
      * @var Message
@@ -44,36 +45,35 @@ class MessageHistory
      * @var Staff
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff")
-     * @ORM\JoinColumn(name="id_maker", nullable=false)
+     * @ORM\JoinColumn(name="id_recipient", nullable=false)
      */
-    private Staff $maker;
+    private Staff $recipient;
 
     /**
-     * MessageStatus constructor.
+     * MessageHistory constructor.
+     * @param int $status
+     * @param Message $message
+     * @param Staff $recipient
      */
-    public function __construct()
+    public function __construct(int $status, Message $message, Staff $recipient)
     {
+        if (!in_array($status, self::getPossibleStatuses(), true)) {
+            throw new InvalidArgumentException(
+                sprintf('%s is not a possible status for %s', $status, __CLASS__)
+            );
+        }
+        $this->status = $status;
+        $this->message = $message;
+        $this->recipient = $recipient;
         $this->added = new \DateTimeImmutable();
     }
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
-    }
-
-    /**
-     * @param Message|null $message
-     *
-     * @return MessageHistory
-     */
-    public function setMessage(?Message $message): MessageHistory
-    {
-        $this->message = $message;
-
-        return $this;
     }
 
     /**
@@ -84,39 +84,13 @@ class MessageHistory
         return $this->message;
     }
 
-    /**
-     * @param Staff|null $maker
-     * @return MessageHistory
-     */
-    public function setMaker(?Staff $maker): MessageHistory
-    {
-        $this->maker = $maker;
-
-        return $this;
-    }
 
     /**
      * @return Staff
      */
-    public function getMaker(): Staff
+    public function getRecipient(): Staff
     {
-        return $this->maker;
-    }
-
-    /**
-     * @param int|null $status
-     * @return Messagehistory
-     */
-    public function setStatus(?int $status): Messagehistory
-    {
-        if (in_array($status, self::getPossibleStatuses(), true)) {
-            $this->status = $status;
-
-            return $this;
-        }
-        throw new InvalidArgumentException(
-            sprintf('%s is not a possible status for %s', $status, __CLASS__)
-        );
+        return $this->recipient;
     }
 
     /**
