@@ -397,7 +397,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var MessageThread|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\MessageThread")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MessageThread")
      * @ORM\JoinColumn(name="message_thread_id")
      */
     private ?MessageThread $messageThread = null;
