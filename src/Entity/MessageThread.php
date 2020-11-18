@@ -12,13 +12,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
- * @ORM\Table(
- *  name="message_thread",
- *  indexes={
- *     @ORM\Index(name="idx_added", columns={"added"})
- *  }
- * )
- * @ORM\HasLifecycleCallbacks
+ * @ORM\Table
  */
 class MessageThread
 {
@@ -42,9 +36,9 @@ class MessageThread
     }
 
     /**
-     * @return ArrayCollection
+     * @return Message[]|Collection
      */
-    public function getMessages()
+    public function getMessages(): Collection
     {
         return $this->messages;
     }
