@@ -37,7 +37,7 @@ class MessageFile
     /**
      * MessageFile constructor.
      *
-     * @param File $file
+     * @param File    $file
      * @param Message $message
      */
     public function __construct(File $file, Message $message)
