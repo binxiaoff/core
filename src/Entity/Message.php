@@ -56,6 +56,7 @@ class Message
 
     /**
      * Message constructor.
+     *
      * @param Staff $sender
      * @param MessageTread $messageThread
      * @param string $body
@@ -103,6 +104,7 @@ class Message
 
     /**
      * @param MessageFile $messageFile
+     *
      * @return $this
      */
     public function addMessageFile(MessageFile $messageFile): Message

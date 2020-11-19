@@ -5,16 +5,18 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Entity
  * @ORM\Table
+ * @ORM\HasLifecycleCallbacks
  */
-class MessageHistory
+class MessageStatus
 {
-    use TimestampableAddedOnlyTrait;
+    use TimestampableTrait;
 
+    public const STATUS_UNREAD = 0;
     public const STATUS_READ = 1;
 
     /**
@@ -50,7 +52,8 @@ class MessageHistory
     private Staff $recipient;
 
     /**
-     * MessageHistory constructor.
+     * MessageStatus constructor.
+     *
      * @param int $status
      * @param Message $message
      * @param Staff $recipient
