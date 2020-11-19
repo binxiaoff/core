@@ -7,7 +7,8 @@ namespace Unilend\Entity;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Unilend\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
@@ -58,9 +59,9 @@ class Message
     /**
      * Message constructor.
      *
-     * @param Staff $sender
+     * @param Staff         $sender
      * @param MessageThread $messageThread
-     * @param string $body
+     * @param string        $body
      */
     public function __construct(Staff $sender, MessageThread $messageThread, string $body)
     {
@@ -113,6 +114,7 @@ class Message
         if (!$this->messageFiles->contains($messageFile)) {
             $this->messageFiles->add($messageFile);
         }
+
         return $this;
     }
 }

@@ -58,9 +58,9 @@ class MessageStatus
     /**
      * MessageStatus constructor.
      *
-     * @param int $status
+     * @param int     $status
      * @param Message $message
-     * @param Staff $recipient
+     * @param Staff   $recipient
      */
     public function __construct(int $status, Message $message, Staff $recipient)
     {
