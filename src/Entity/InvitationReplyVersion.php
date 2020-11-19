@@ -67,14 +67,6 @@ class InvitationReplyVersion
     }
 
     /**
-     * @return Staff
-     */
-    public function getAddedBy(): Staff
-    {
-        return $this->addedBy;
-    }
-
-    /**
      * @return int
      */
     public function getId(): int

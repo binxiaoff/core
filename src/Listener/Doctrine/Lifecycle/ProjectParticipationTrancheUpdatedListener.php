@@ -8,11 +8,11 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\Clients;
-use Unilend\Entity\InterestReplyVersion;
-use Unilend\Entity\ProjectParticipation;
+use Unilend\Entity\InvitationReplyVersion;
+use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Repository\ClientsRepository;
 
-class ParticipationReplyListener
+class ProjectParticipationTrancheUpdatedListener
 {
     /** @var Security */
     private Security $security;
@@ -20,7 +20,7 @@ class ParticipationReplyListener
     /** @var ClientsRepository */
     private ClientsRepository $clientsRepository;
 
-    public const INTEREST_REPLY_PROPERTY = 'interestReply.money.amount';
+    public const INVITATION_REPLY_PROPERTY = 'invitationReply.money.amount';
 
     /**
      * @param Security          $security
@@ -43,7 +43,7 @@ class ParticipationReplyListener
         $uow = $em->getUnitOfWork();
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
-            if ($entity instanceof ProjectParticipation && array_key_exists(self::INTEREST_REPLY_PROPERTY, $uow->getEntityChangeSet($entity))) {
+            if ($entity instanceof ProjectParticipationTranche && array_key_exists(self::INVITATION_REPLY_PROPERTY, $uow->getEntityChangeSet($entity))) {
                 /** @var Clients $user */
                 $user = $this->security->getUser();
 
@@ -51,9 +51,9 @@ class ParticipationReplyListener
                     $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
                 }
 
-                $version = new InterestReplyVersion($entity, $user->getCurrentStaff());
+                $version = new InvitationReplyVersion($entity, $user->getCurrentStaff());
                 $em->persist($version);
-                $uow->computeChangeSet($em->getClassMetadata(InterestReplyVersion::class), $version);
+                $uow->computeChangeSet($em->getClassMetadata(InvitationReplyVersion::class), $version);
             }
         }
     }

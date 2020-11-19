@@ -54,14 +54,6 @@ class InterestReplyVersion
     }
 
     /**
-     * @return Staff
-     */
-    public function getAddedBy(): Staff
-    {
-        return $this->addedBy;
-    }
-
-    /**
      * @return mixed
      */
     public function getId()
