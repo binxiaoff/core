@@ -12,7 +12,7 @@ use Unilend\Entity\InterestReplyVersion;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Repository\ClientsRepository;
 
-class ParticipationReplyListener
+class ProjectParticipationUpdated
 {
     /** @var Security */
     private Security $security;

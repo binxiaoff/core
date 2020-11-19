@@ -97,6 +97,11 @@ services:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\Listener\Doctrine\Lifecycle\ParticipationReplyListener:
+    Unilend\Listener\Doctrine\Lifecycle\ProjectParticipationUpdated:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
+
+    Unilend\Listener\Doctrine\Lifecycle\ProjectParticipationTrancheUpdatedListener:
+        tags:
+            - { name: doctrine.event_listener, event: onFlush }
+
