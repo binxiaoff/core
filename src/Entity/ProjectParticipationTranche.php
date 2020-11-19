@@ -6,6 +6,8 @@ namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -22,7 +24,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     normalizationContext={"groups": {
  *         "projectParticipationTranche:read",
  *         "offer:read",
- *         "nullableMoney:read"
+ *         "nullableMoney:read",
+ *         "invitationReplyVersion:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "offer:write",
@@ -128,6 +131,15 @@ class ProjectParticipationTranche
     private Offer $allocation;
 
     /**
+     * @var Collection|InvitationReplyVersion[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\InvitationReplyVersion", mappedBy="projectParticipationTranche", orphanRemoval=true)
+     *
+     * @Groups({ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ})
+     */
+    private Collection $invitationReplyVersions;
+
+    /**
      * @param ProjectParticipation $projectParticipation
      * @param Tranche              $tranche
      * @param Staff                $addedBy
@@ -136,12 +148,13 @@ class ProjectParticipationTranche
      */
     public function __construct(ProjectParticipation $projectParticipation, Tranche $tranche, Staff $addedBy)
     {
-        $this->projectParticipation = $projectParticipation;
-        $this->tranche              = $tranche;
-        $this->addedBy              = $addedBy;
-        $this->added                = new DateTimeImmutable();
-        $this->invitationReply      = new Offer();
-        $this->allocation           = new Offer();
+        $this->projectParticipation     = $projectParticipation;
+        $this->tranche                  = $tranche;
+        $this->addedBy                  = $addedBy;
+        $this->added                    = new DateTimeImmutable();
+        $this->invitationReply          = new Offer();
+        $this->allocation               = new Offer();
+        $this->invitationReplyVersions  = new ArrayCollection();
     }
 
     /**
@@ -198,6 +211,14 @@ class ProjectParticipationTranche
         $this->allocation = $allocation;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|InvitationReplyVersion[]
+     */
+    public function getInvitationReplyVersions(): Collection
+    {
+        return $this->invitationReplyVersions;
     }
 
     /**

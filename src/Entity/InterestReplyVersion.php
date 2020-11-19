@@ -11,20 +11,7 @@ use Unilend\Entity\Traits\BlamableAddedTrait;
 
 /**
  * @ORM\Entity
- *
- * @ApiResource(
- *     normalizationContext={"groups": {"interestReplyVersion:read"}},
- *     itemOperations={
- *         "get": {
- *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
- *             "read": false,
- *             "output": false,
- *         }
- *     },
- *     collectionOperations={}
- * )
  */
-
 class InterestReplyVersion
 {
     use BlamableAddedTrait;
@@ -34,7 +21,7 @@ class InterestReplyVersion
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    public $id;
+    private int $id;
 
     /**
      * @var Offer
@@ -64,5 +51,29 @@ class InterestReplyVersion
         $this->projectParticipation = $projectParticipation;
         $this->interestReply        = $projectParticipation->getInterestReply();
         $this->addedBy              = $addedBy;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return Offer
+     */
+    public function getInterestReply(): Offer
+    {
+        return $this->interestReply;
+    }
+
+    /**
+     * @return ProjectParticipation
+     */
+    public function getProjectParticipation(): ProjectParticipation
+    {
+        return $this->projectParticipation;
     }
 }

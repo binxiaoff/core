@@ -40,6 +40,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "role:read",
  *         "file:read",
  *         "fileVersion:read",
+ *         "invitationReplyVersion:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
@@ -109,6 +110,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "lendingRate:read",
  *                     "companyStatus:read",
  *                     "role:read",
+ *                     "invitationReplyVersion:read",
  *                     "interestReplyVersion:read"
  *                 }
  *             }
@@ -282,7 +284,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\InterestReplyVersion", mappedBy="projectParticipationTranche", orphanRemoval=true)
      *
-     * @Groups({"projectParticipation:read"})
+     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
      */
     private Collection $interestReplyVersions;
 
