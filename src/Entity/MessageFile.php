@@ -6,6 +6,8 @@ namespace Unilend\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
