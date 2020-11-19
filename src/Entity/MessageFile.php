@@ -23,7 +23,7 @@ class MessageFile
      * @var File
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\File", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_file", unique=true)
+     * @ORM\JoinColumn(name="id_file", unique=true, nullable=false)
      */
     private File $file;
 
@@ -31,12 +31,13 @@ class MessageFile
      * @var Message
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Message", inversedBy="messageFiles")
-     * @ORM\JoinColumn(name="id_message", onDelete="CASCADE")
+     * @ORM\JoinColumn(name="id_message", onDelete="CASCADE", nullable=false)
      */
     private Message $message;
 
     /**
      * MessageFile constructor.
+     *
      * @param File $file
      * @param Message $message
      */
