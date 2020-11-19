@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Symfony\Component\Validator\Constraints as Assert;
@@ -31,7 +32,7 @@ class MessageThread
      */
     public function __construct()
     {
-        $this->added = new \DateTimeImmutable();
+        $this->added = new DateTimeImmutable();
         $this->messages = new ArrayCollection();
     }
 
