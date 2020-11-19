@@ -27,7 +27,7 @@ class MessageThread
     private Collection $messages;
 
     /**
-     * Thread constructor.
+     * MessageThread constructor.
      */
     public function __construct()
     {
