@@ -70,9 +70,9 @@ class Message
     }
 
     /**
-     * @return Clients
+     * @return Staff
      */
-    public function getSender(): Clients
+    public function getSender(): Staff
     {
         return $this->sender;
     }
