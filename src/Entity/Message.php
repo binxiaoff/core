@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
@@ -58,16 +59,16 @@ class Message
      * Message constructor.
      *
      * @param Staff $sender
-     * @param MessageTread $messageThread
+     * @param MessageThread $messageThread
      * @param string $body
      */
-    public function __construct(Staff $sender, MessageTread $messageThread, string $body)
+    public function __construct(Staff $sender, MessageThread $messageThread, string $body)
     {
         $this->sender = $sender;
         $this->messageThread = $messageThread;
         $this->body = $body;
         $this->messageFiles = new ArrayCollection();
-        $this->added = new \DateTimeImmutable();
+        $this->added = new DateTimeImmutable();
     }
 
     /**
