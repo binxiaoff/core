@@ -114,5 +114,7 @@ class Message
         if (!$this->messageFiles->contains($messageFile)) {
             $this->messageFiles->add($messageFile);
         }
+
+        return $this;
     }
 }
