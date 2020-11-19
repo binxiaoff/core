@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
-
 use Unilend\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
@@ -45,7 +44,7 @@ class MessageFile
     {
         $this->file = $file;
         $this->message = $message;
-        $this->added = new \DateTimeImmutable();
+        $this->added = new DateTimeImmutable();
     }
 
     /**
