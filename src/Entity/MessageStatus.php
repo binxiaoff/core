@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
+use InvalidArgumentException;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Traits\ConstantsAwareTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
@@ -15,6 +18,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
 class MessageStatus
 {
     use TimestampableTrait;
+    use ConstantsAwareTrait;
 
     public const STATUS_UNREAD = 0;
     public const STATUS_READ = 1;
@@ -68,7 +72,7 @@ class MessageStatus
         $this->status = $status;
         $this->message = $message;
         $this->recipient = $recipient;
-        $this->added = new \DateTimeImmutable();
+        $this->added = new DateTimeImmutable();
     }
 
     /**
