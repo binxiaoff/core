@@ -21,6 +21,7 @@ class MessageThread
 
     /**
      * @var ArrayCollection|Collection
+     *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Message", mappedBy="messageThread")
      */
     private Collection $messages;
@@ -52,6 +53,7 @@ class MessageThread
         if (!$this->messages->contains($message)) {
             $this->messages->add($message);
         }
+
         return $this;
     }
 }
