@@ -22,7 +22,7 @@ class Bitmask
      *
      * @return $this
      */
-    public function add($addendum): self
+    public function add($addendum): Bitmask
     {
         $this->bitmask |= $this->normalize($addendum);
 
