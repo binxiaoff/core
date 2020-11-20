@@ -69,10 +69,10 @@ class MessageStatus
                 sprintf('%s is not a possible status for %s', $status, __CLASS__)
             );
         }
-        $this->status = $status;
-        $this->message = $message;
+        $this->status    = $status;
+        $this->message   = $message;
         $this->recipient = $recipient;
-        $this->added = new DateTimeImmutable();
+        $this->added     = new DateTimeImmutable();
     }
 
     /**
