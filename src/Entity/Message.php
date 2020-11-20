@@ -65,11 +65,11 @@ class Message
      */
     public function __construct(Staff $sender, MessageThread $messageThread, string $body)
     {
-        $this->sender = $sender;
+        $this->sender        = $sender;
         $this->messageThread = $messageThread;
-        $this->body = $body;
-        $this->messageFiles = new ArrayCollection();
-        $this->added = new DateTimeImmutable();
+        $this->body          = $body;
+        $this->messageFiles  = new ArrayCollection();
+        $this->added         = new DateTimeImmutable();
     }
 
     /**
@@ -107,7 +107,7 @@ class Message
     /**
      * @param MessageFile $messageFile
      *
-     * @return $this
+     * @return Message
      */
     public function addMessageFile(MessageFile $messageFile): Message
     {

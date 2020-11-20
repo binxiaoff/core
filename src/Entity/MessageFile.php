@@ -42,9 +42,9 @@ class MessageFile
      */
     public function __construct(File $file, Message $message)
     {
-        $this->file = $file;
+        $this->file    = $file;
         $this->message = $message;
-        $this->added = new DateTimeImmutable();
+        $this->added   = new DateTimeImmutable();
     }
 
     /**
