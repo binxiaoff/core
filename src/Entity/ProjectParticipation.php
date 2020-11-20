@@ -395,6 +395,14 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private ?File $nda = null;
 
     /**
+     * @var MessageThread|null
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MessageThread")
+     * @ORM\JoinColumn(name="id_message_thread")
+     */
+    private ?MessageThread $messageThread = null;
+
+    /**
      * @param Company $participant
      * @param Project $project
      * @param Staff   $addedBy
@@ -744,6 +752,25 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         $this->nda = $nda;
 
         return $this;
+    }
+
+    /**
+     * @param MessageThread|null $messageThread
+     * @return $this
+     */
+    public function setMessageThread(?MessageThread $messageThread): ProjectParticipation
+    {
+        $this->messageThread = $messageThread;
+
+        return $this;
+    }
+
+    /**
+     * @return MessageThread|null
+     */
+    public function getMessageThread(): ?MessageThread
+    {
+        return $this->messageThread;
     }
 
     /**
