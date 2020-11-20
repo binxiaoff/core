@@ -114,3 +114,4 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
         return $projectParticipationsWithMembers;
     }
 }
+
