@@ -14,7 +14,7 @@ final class Version20201120131013 extends AbstractMigration
 {
     public function getDescription() : string
     {
-        return '';
+        return 'CALS-2846 Add new data model for V2 messaging';
     }
 
     public function up(Schema $schema) : void
