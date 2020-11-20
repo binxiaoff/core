@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Traits\ConstantsAwareTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
 
@@ -35,7 +36,9 @@ class MessageStatus
     /**
      * @var int
      *
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="smallint")
+     *
+     * @Assert\Choice(callback="getPossibleStatuses")
      */
     private int $status;
 
@@ -64,11 +67,6 @@ class MessageStatus
      */
     public function __construct(int $status, Message $message, Staff $recipient)
     {
-        if (!in_array($status, self::getPossibleStatuses(), true)) {
-            throw new InvalidArgumentException(
-                sprintf('%s is not a possible status for %s', $status, __CLASS__)
-            );
-        }
         $this->status    = $status;
         $this->message   = $message;
         $this->recipient = $recipient;
