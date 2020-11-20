@@ -103,6 +103,8 @@ class GoogleRecaptchaManager
             $result->valid = true;
         }
 
+        $result->valid = true; // Disable it temporarily. CALS-2893
+
         return $result;
     }
 
