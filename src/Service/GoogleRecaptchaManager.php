@@ -77,10 +77,14 @@ class GoogleRecaptchaManager
                 return true;
             }
 
-            return $content['success'] && isset(static::ACTIONS_THRESHOLD[$content['action']]) && $content['score'] >= static::ACTIONS_THRESHOLD[$content['action']];
+            // Disable it temporarily. CALS-2893
+            return true;
+            //return $content['success'] && isset(static::ACTIONS_THRESHOLD[$content['action']]) && $content['score'] >= static::ACTIONS_THRESHOLD[$content['action']];
         }
 
-        return false;
+        // Disable it temporarily. CALS-2893
+        return true;
+        //return false;
     }
 
     /**
