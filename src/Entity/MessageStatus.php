@@ -67,15 +67,10 @@ class MessageStatus
      */
     public function __construct(int $status, Message $message, Staff $recipient)
     {
-        if (!in_array($status, self::getPossibleStatuses(), true)) {
-            throw new InvalidArgumentException(
-                sprintf('%s is not a possible status for %s', $status, __CLASS__)
-            );
-        }
-        $this->status = $status;
-        $this->message = $message;
+        $this->status    = $status;
+        $this->message   = $message;
         $this->recipient = $recipient;
-        $this->added = new DateTimeImmutable();
+        $this->added     = new DateTimeImmutable();
     }
 
     /**
