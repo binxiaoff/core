@@ -8,32 +8,56 @@ use Doctrine\Persistence\ObjectManager;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Unilend\Entity\Company;
 use Unilend\Entity\Staff;
 use Unilend\Entity\Project;
 use Unilend\Entity\Message;
 use Unilend\Entity\MessageStatus;
 use Unilend\Entity\MessageThread;
 use Unilend\Entity\ProjectParticipation;
+use Unilend\Repository\StaffRepository;
 
 class MessageFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
+    /**
+     * @var StaffRepository
+     */
+    private $staffRepository;
+
     /**
      * @var ObjectManager
      */
     private ObjectManager $manager;
 
     /**
+     * MessageFixtures constructor.
+     *
+     * @param TokenStorageInterface $tokenStorage
+     * @param StaffRepository       $staffRepository
+     */
+    public function __construct(TokenStorageInterface $tokenStorage, StaffRepository $staffRepository)
+    {
+        parent::__construct($tokenStorage);
+        $this->staffRepository = $staffRepository;
+    }
+
+    /**
      * @param ObjectManager $manager
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function load(ObjectManager $manager): void
     {
         $this->manager = $manager;
         $projectsWithParticipations = $this->getReferences(ProjectFixtures::PROJECTS_WITH_PARTICIPATION);
 
-        foreach ($projectsWithParticipations as $key => $projectWithParticipation) {
-            if ($projectWithParticipation->getOrganizers()->count() > 0) {
+        foreach ($projectsWithParticipations as $projectWithParticipation) {
+            if ($projectWithParticipation->getArranger()) {
+                $staffSender = $this->staffRepository->findOneByClientEmailAndCompany($projectWithParticipation->getSubmitterClient()->getEmail(), $projectWithParticipation->getArranger());
+
                 // Create a projectOrganizer.staff message to each projectParticipationMember.staff
-                $projectParticipationsWithMembers = $this->createMessagesForProjectParticipations($projectWithParticipation, $projectWithParticipation->getProjectParticipations(), $projectWithParticipation->getOrganizers()->first()->getAddedBy());
+                $projectParticipationsWithMembers = $this->createMessagesForProjectParticipations($projectWithParticipation, $projectWithParticipation->getProjectParticipations(), $staffSender);
 
                 // Create a random projectParticipation.member.staff message to each projectParticipationMember.staff
                 $this->createMessagesForProjectParticipations($projectWithParticipation, $projectParticipationsWithMembers);
@@ -42,7 +66,7 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
-     * @return string[]
+     * @return string[]Project::getArranger()
      */
     public function getDependencies(): array
     {
@@ -58,12 +82,12 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
      *
      * @return MessageThread
      */
-    private function getMessageThreadForProjectParticipation(ProjectParticipation $projectParticipation)
+    private function getMessageThreadForProjectParticipation(ProjectParticipation $projectParticipation): MessageThread
     {
         if ($projectParticipation->getMessageThread() instanceof MessageThread) {
             return $projectParticipation->getMessageThread();
         }
-        $messageThread = (new MessageThread())->setPublicId();
+        $messageThread = new MessageThread();
         $this->manager->persist($messageThread);
         $projectParticipation->setMessageThread($messageThread);
         $this->manager->flush();
@@ -76,12 +100,12 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
      * @param Collection $projectParticipations
      * @param Staff|null $sender
      *
-     * @return ArrayCollection
+     * @return Collection
      */
-    private function createMessagesForProjectParticipations(Project $project, Collection $projectParticipations, Staff $sender = null)
+    private function createMessagesForProjectParticipations(Project $project, Collection $projectParticipations, Staff $sender = null): Collection
     {
         $projectParticipationsWithMembers = new ArrayCollection();
-        foreach ($projectParticipations as $i => $projectParticipation) {
+        foreach ($projectParticipations as $projectParticipation) {
             if ($projectParticipation->getProjectParticipationMembers()->count() > 0) {
                 $messageThread = $this->getMessageThreadForProjectParticipation($projectParticipation);
                 $projectParticipationMembers = $projectParticipation->getProjectParticipationMembers()->toArray();
