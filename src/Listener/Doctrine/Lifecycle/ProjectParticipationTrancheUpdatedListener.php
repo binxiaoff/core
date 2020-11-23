@@ -20,6 +20,7 @@ class ProjectParticipationTrancheUpdatedListener
     /** @var ClientsRepository */
     private ClientsRepository $clientsRepository;
 
+    public array $idsProjectParticipations = [];
     public const INVITATION_REPLY_PROPERTY = 'invitationReply.money.amount';
 
     /**
@@ -51,9 +52,16 @@ class ProjectParticipationTrancheUpdatedListener
                     $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
                 }
 
-                $version = new InvitationReplyVersion($entity, $user->getCurrentStaff());
-                $em->persist($version);
-                $uow->computeChangeSet($em->getClassMetadata(InvitationReplyVersion::class), $version);
+                $projectParticipation = $entity->getProjectParticipation();
+
+                if (!in_array($projectParticipation->getPublicId(), $this->idsProjectParticipations)) {
+                    foreach ($projectParticipation->getProjectParticipationTranches() as $projectParticipationTranche) {
+                        $version = new InvitationReplyVersion($projectParticipationTranche, $user->getCurrentStaff());
+                        $em->persist($version);
+                        $uow->computeChangeSet($em->getClassMetadata(InvitationReplyVersion::class), $version);
+                    }
+                    $this->idsProjectParticipations[] = $projectParticipation->getPublicId();
+                }
             }
         }
     }
