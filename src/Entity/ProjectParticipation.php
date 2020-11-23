@@ -376,6 +376,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationStatus", mappedBy="projectParticipation", cascade={"persist"})
      * @ORM\OrderBy({"added": "ASC"})
+     *
+     * @Groups({"projectParticipation:read"})
      */
     private Collection $statuses;
 
@@ -782,6 +784,14 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public function isArrangerParticipation(): bool
     {
         return $this->getParticipant() === $this->getProject()->getArranger();
+    }
+
+    /**
+     * @return Collection|InterestReplyVersion[]
+     */
+    public function getInterestReplyVersions(): Collection
+    {
+        return $this->interestReplyVersions;
     }
 
     /**
