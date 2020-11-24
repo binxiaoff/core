@@ -36,7 +36,7 @@ class ClientFailedLogin
     /**
      * @var string|null
      *
-     * @ORM\Column(name="retour", type="string", length=191, nullable=true)
+     * @ORM\Column(name="error", type="string", length=191, nullable=true)
      */
     private ?string $error;
 
