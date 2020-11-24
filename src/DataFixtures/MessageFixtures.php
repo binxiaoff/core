@@ -9,11 +9,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Entity\Company;
 use Unilend\Entity\Staff;
 use Unilend\Entity\Project;
 use Unilend\Entity\Message;
-use Unilend\Entity\MessageStatus;
 use Unilend\Entity\MessageThread;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Repository\StaffRepository;
@@ -23,7 +21,7 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
     /**
      * @var StaffRepository
      */
-    private $staffRepository;
+    private StaffRepository $staffRepository;
 
     /**
      * @var ObjectManager
@@ -121,15 +119,6 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
                 )));
                 $this->manager->persist($message);
 
-                // Add an message status for each recipient projectParticipationMember
-                foreach ($projectParticipation->getProjectParticipationMembers() as $projectParticipationMember) {
-                    // Avoid to send to sender
-                    if ($sender !== $projectParticipationMember->getStaff()) {
-                        $messagePossibleStatuses = MessageStatus::getPossibleStatuses();
-                        $messageStatus = (new MessageStatus($messagePossibleStatuses[array_rand($messagePossibleStatuses)], $message, $projectParticipationMember->getStaff()));
-                        $this->manager->persist($messageStatus);
-                    }
-                }
                 $projectParticipationsWithMembers->add($projectParticipation);
             }
         }
