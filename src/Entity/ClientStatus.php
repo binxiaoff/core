@@ -47,15 +47,6 @@ class ClientStatus implements StatusInterface
     private $client;
 
     /**
-     * @var string
-     *
-     * @Groups({"client_status:read"})
-     *
-     * @ORM\Column(name="content", type="text", length=16777215, nullable=true)
-     */
-    private $content;
-
-    /**
      * @var int
      *
      * @Groups({"client_status:read"})
@@ -74,13 +65,12 @@ class ClientStatus implements StatusInterface
     private $id;
 
     /**
-     * @param Clients     $clients
-     * @param int         $status
-     * @param string|null $content
+     * @param Clients $clients
+     * @param int     $status
      *
      * @throws \Exception
      */
-    public function __construct(Clients $clients, int $status, string $content = null)
+    public function __construct(Clients $clients, int $status)
     {
         if (!in_array($status, static::getPossibleStatuses(), true)) {
             throw new InvalidArgumentException(
@@ -89,7 +79,6 @@ class ClientStatus implements StatusInterface
         }
         $this->status  = $status;
         $this->client  = $clients;
-        $this->content = $content;
         $this->added   = new DateTimeImmutable();
     }
 
@@ -101,30 +90,6 @@ class ClientStatus implements StatusInterface
     public function getClient(): Clients
     {
         return $this->client;
-    }
-
-    /**
-     * Set content.
-     *
-     * @param string|null $content
-     *
-     * @return ClientStatus
-     */
-    public function setContent(?string $content): ClientStatus
-    {
-        $this->content = $content;
-
-        return $this;
-    }
-
-    /**
-     * Get content.
-     *
-     * @return string|null
-     */
-    public function getContent(): ?string
-    {
-        return $this->content;
     }
 
     /**
