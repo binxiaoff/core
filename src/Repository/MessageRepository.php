@@ -18,6 +18,7 @@ class MessageRepository extends ServiceEntityRepository
 {
     /**
      * MessageRepository constructor.
+     *
      * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
