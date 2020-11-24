@@ -92,11 +92,9 @@ class UserFixtures extends AbstractFixtures
      */
     public function initialize(Clients $user): void
     {
-         $user->setTitle($this->faker->company);
          $user->setLastName($this->faker->lastName);
          $user->setFirstName($this->faker->firstName);
          $user->setPhone('+33600000000');
-         $user->setMobile('+33600000000');
          $user->setJobFunction('Job function');
          $user->setPlainPassword('0000');
          $user->setPassword($this->passwordEncoder->encodePassword($user, $user->getPlainPassword()));
