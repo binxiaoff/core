@@ -93,7 +93,6 @@
     "symfony/validator": "5.1.*",
     "symfony/yaml": "5.1.*",
     "thadafinser/user-agent-parser": "^2.0",
-    "twig/extensions": "^1.5",
     "whichbrowser/parser": "^2.0"
   },
   "require-dev": {
