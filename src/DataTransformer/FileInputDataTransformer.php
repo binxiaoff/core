@@ -146,7 +146,7 @@ class FileInputDataTransformer
             }
         }
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, null, ['projectId' => $projectFile->getProject()->getId()]);
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, ['projectId' => $projectFile->getProject()->getId()]);
 
         $this->projectFileRepository->save($projectFile);
 
@@ -198,7 +198,7 @@ class FileInputDataTransformer
                 throw new \InvalidArgumentException(sprintf('You cannot upload the file of the type %s.', $fileInput->type));
         }
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, null, ['projectId' => $project->getId()]);
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, ['projectId' => $project->getId()]);
 
         $this->projectRepository->save($project);
 
@@ -237,7 +237,7 @@ class FileInputDataTransformer
 
         $file = $isPublished && $existingNda ? $existingNda : new File();
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, null, ['projectParticipationId' => $projectParticipation->getId()]);
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, ['projectParticipationId' => $projectParticipation->getId()]);
 
         $projectParticipation->setNda($file);
 

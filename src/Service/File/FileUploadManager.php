@@ -45,7 +45,6 @@ class FileUploadManager
      * @param UploadedFile $uploadedFile
      * @param Staff        $uploader
      * @param File|null    $file
-     * @param string|null  $description
      * @param array        $context
      *
      * @throws EnvironmentIsBrokenException
@@ -53,9 +52,8 @@ class FileUploadManager
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws Exception
      */
-    public function upload(UploadedFile $uploadedFile, Staff $uploader, File $file, string $description = null, array $context = []): void
+    public function upload(UploadedFile $uploadedFile, Staff $uploader, File $file, array $context = []): void
     {
         $mineType                               = $uploadedFile->getMimeType();
         [$relativeUploadedPath, $encryptionKey] = $this->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader->getClient()));
@@ -65,10 +63,7 @@ class FileUploadManager
             ->setOriginalName($this->fileSystemHelper->normalizeFileName($uploadedFile->getClientOriginalName()))
             ->setSize($uploadedFile->getSize())
         ;
-        $file
-            ->setCurrentFileVersion($fileVersion)
-            ->setDescription($description)
-        ;
+        $file->setCurrentFileVersion($fileVersion);
 
         $this->fileRepository->save($file);
         $this->messageBus->dispatch(new FileUploaded($file, $context));
