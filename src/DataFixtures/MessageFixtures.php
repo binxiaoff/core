@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\DataFixtures;
 
-use Doctrine\Persistence\ObjectManager;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
+use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Entity\Staff;
-use Unilend\Entity\Project;
 use Unilend\Entity\Message;
 use Unilend\Entity\MessageThread;
+use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipation;
+use Unilend\Entity\Staff;
 use Unilend\Repository\StaffRepository;
 
 class MessageFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -37,29 +35,30 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
     public function __construct(TokenStorageInterface $tokenStorage, StaffRepository $staffRepository)
     {
         parent::__construct($tokenStorage);
+        /** @var Project[] $projectsWithParticipations */
         $this->staffRepository = $staffRepository;
     }
 
     /**
      * @param ObjectManager $manager
-     *
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function load(ObjectManager $manager): void
     {
         $this->manager = $manager;
+        /** @var Project[] $projectsWithParticipations */
         $projectsWithParticipations = $this->getReferences(ProjectFixtures::PROJECTS_WITH_PARTICIPATION);
 
         foreach ($projectsWithParticipations as $projectWithParticipation) {
-            if ($projectWithParticipation->getArranger()) {
-                $staffSender = $this->staffRepository->findOneByClientEmailAndCompany($projectWithParticipation->getSubmitterClient()->getEmail(), $projectWithParticipation->getArranger());
+            $staffSender = $this->staffRepository->findOneBy([
+                'client' => $projectWithParticipation->getSubmitterClient(),
+                'company' => $projectWithParticipation->getSubmitterCompany(),
+            ]);
 
-                // Create a projectOrganizer.staff message to each projectParticipationMember.staff
-                $projectParticipationsWithMembers = $this->createMessagesForProjectParticipations($projectWithParticipation, $projectWithParticipation->getProjectParticipations(), $staffSender);
+            // Create a projectOrganizer.staff message to each projectParticipationMember.staff
+            $this->createMessagesForProjectParticipations($projectWithParticipation, $staffSender);
 
-                // Create a random projectParticipation.member.staff message to each projectParticipationMember.staff
-                $this->createMessagesForProjectParticipations($projectWithParticipation, $projectParticipationsWithMembers);
-            }
+            // Create a random projectParticipation.member.staff message to each projectParticipationMember.staff
+            $this->createMessagesForProjectParticipations($projectWithParticipation);
         }
     }
 
@@ -95,14 +94,11 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     /**
      * @param Project    $project
-     * @param Collection $projectParticipations
      * @param Staff|null $sender
-     *
-     * @return Collection
      */
-    private function createMessagesForProjectParticipations(Project $project, Collection $projectParticipations, Staff $sender = null): Collection
+    private function createMessagesForProjectParticipations(Project $project, Staff $sender = null): void
     {
-        $projectParticipationsWithMembers = new ArrayCollection();
+        $projectParticipations = $project->getProjectParticipations();
         foreach ($projectParticipations as $projectParticipation) {
             if ($projectParticipation->getProjectParticipationMembers()->count() > 0) {
                 $messageThread = $this->getMessageThreadForProjectParticipation($projectParticipation);
@@ -118,12 +114,8 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
                     $projectParticipation->getParticipant()->getDisplayName()
                 )));
                 $this->manager->persist($message);
-
-                $projectParticipationsWithMembers->add($projectParticipation);
             }
         }
         $this->manager->flush();
-
-        return $projectParticipationsWithMembers;
     }
 }
