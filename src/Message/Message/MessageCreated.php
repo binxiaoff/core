@@ -12,7 +12,7 @@ class MessageCreated implements AsyncMessageInterface
     /**
      * @var int|null
      */
-    private int $messageId;
+    private ?int $messageId;
 
     /**
      * MessageCreated constructor.
