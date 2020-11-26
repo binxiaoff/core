@@ -25,7 +25,7 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
  *     collectionOperations={
  *         "current_service_terms": {
  *             "method": "GET",
- *             "controller": "Unilend\Controller\LegalDocument\CurrentServiceTerms",
+ *             "controller": "Unilend\Core\Controller\LegalDocument\CurrentServiceTerms",
  *             "path": "/legal_documents/current_service_terms",
  *         }
  *     }

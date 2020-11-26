@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Controller\LegalDocument;
+namespace Unilend\Core\Controller\LegalDocument;
 
 use Unilend\Core\Entity\LegalDocument;
 use Unilend\Service\ServiceTerms\ServiceTermsManager;

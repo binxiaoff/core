@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Controller\FileVersionSignature;
+namespace Unilend\Core\Controller\FileVersionSignature;
 
 use League\Flysystem\FileNotFoundException;
 use Symfony\Contracts\HttpClient\Exception\{ClientExceptionInterface, RedirectionExceptionInterface, ServerExceptionInterface, TransportExceptionInterface};

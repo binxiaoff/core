@@ -31,7 +31,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         },
  *         "download": {
  *             "method": "GET",
- *             "controller": "Unilend\Controller\File\Download",
+ *             "controller": "Unilend\Core\Controller\File\Download",
  *             "path": "/file_versions/{id}/download/{type}"
  *         }
  *     }

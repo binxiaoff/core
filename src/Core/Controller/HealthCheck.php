@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Controller;
+namespace Unilend\Core\Controller;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 

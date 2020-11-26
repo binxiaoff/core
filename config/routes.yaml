@@ -7,12 +7,12 @@ front:
 
 health_check:
     path: /pulse
-    controller: Unilend\Controller\HealthCheck
+    controller: Unilend\Core\Controller\HealthCheck
 
 # PSN callback URL
 file-signature-result:
     path: /file_version_signatures/{fileSignatureId}/result
-    controller: Unilend\Controller\FileVersionSignature\Result
+    controller: Unilend\Core\Controller\FileVersionSignature\Result
 
 # Route created to return a 404 for pulse check
 home:

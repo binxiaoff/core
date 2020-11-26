@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Controller\File;
+namespace Unilend\Core\Controller\File;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;

@@ -24,7 +24,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *         "sign": {
  *             "security": "is_granted('sign', object)",
  *             "method": "POST",
- *             "controller": "Unilend\Controller\FileVersionSignature\Sign",
+ *             "controller": "Unilend\Core\Controller\FileVersionSignature\Sign",
  *             "path": "/file_version_signatures/{id}/sign",
  *             "denormalization_context": {"groups": {"fileVersionSignature:sign"}}
  *         }

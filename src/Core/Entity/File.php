@@ -24,7 +24,7 @@ use Unilend\Core\Entity\Traits\{ArchivableTrait, BlamableArchivedTrait, Publiciz
  *     normalizationContext={"groups": {"file:read", "fileVersion:read", "timestampable:read"}},
  *     collectionOperations={
  *         "post": {
- *             "controller": "Unilend\Controller\File\Upload",
+ *             "controller": "Unilend\Core\Controller\File\Upload",
  *             "path": "/files/upload",
  *             "deserialize": false,
  *             "swagger_context": {
@@ -58,7 +58,7 @@ use Unilend\Core\Entity\Traits\{ArchivableTrait, BlamableArchivedTrait, Publiciz
  *     itemOperations={
  *         "upload_file_version": {
  *             "method": "POST",
- *             "controller": "Unilend\Controller\File\Upload",
+ *             "controller": "Unilend\Core\Controller\File\Upload",
  *             "path": "/files/{id}/file_versions/upload",
  *             "deserialize": false,
  *             "swagger_context": {
@@ -94,7 +94,7 @@ use Unilend\Core\Entity\Traits\{ArchivableTrait, BlamableArchivedTrait, Publiciz
  *             "output": false,
  *         },
  *         "delete": {
- *             "controller": "Unilend\Controller\File\Delete",
+ *             "controller": "Unilend\Core\Controller\File\Delete",
  *             "path": "/files/{id}/{type}",
  *         },
  *     }
