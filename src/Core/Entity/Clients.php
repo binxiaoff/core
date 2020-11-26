@@ -17,10 +17,7 @@ use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Serializer\Annotation\{Groups, SerializedName};
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\DTO\GoogleRecaptchaResult;
-use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
-use Unilend\Core\Entity\LegalDocument;
-use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait};
 use Unilend\Core\Validator\Constraints\{Password as AssertPassword};
 
