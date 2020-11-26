@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Extension\Staff;
+namespace Unilend\Core\Extension\Staff;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryItemExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
