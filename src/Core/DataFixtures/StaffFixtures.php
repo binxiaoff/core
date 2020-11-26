@@ -1,11 +1,15 @@
 <?php
 
-namespace Unilend\DataFixtures;
+namespace Unilend\Core\DataFixtures;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
+use Unilend\Core\DataFixtures\AbstractFixtures;
+use Unilend\Core\DataFixtures\CompanyFixtures;
+use Unilend\Core\DataFixtures\MarketSegmentFixtures;
+use Unilend\Core\DataFixtures\UserFixtures;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Staff;

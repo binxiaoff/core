@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\DataFixtures;
+namespace Unilend\Core\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\Entity\Clients;
 use Unilend\Traits\ConstantsAwareTrait;
 

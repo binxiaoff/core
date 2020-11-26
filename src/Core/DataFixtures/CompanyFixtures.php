@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\DataFixtures;
+namespace Unilend\Core\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,6 +11,8 @@ use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Unilend\Core\DataFixtures\AbstractFixtures;
+use Unilend\Core\DataFixtures\UserFixtures;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\{CompanyStatus};

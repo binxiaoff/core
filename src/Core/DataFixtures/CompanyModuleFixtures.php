@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\DataFixtures;
+namespace Unilend\Core\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use phpDocumentor\Reflection\Types\Nullable;
+use Unilend\Core\DataFixtures\AbstractFixtures;
+use Unilend\Core\DataFixtures\CompanyFixtures;
+use Unilend\Core\DataFixtures\StaffFixtures;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\Embeddable\NullableMoney;

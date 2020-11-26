@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\DataFixtures;
+namespace Unilend\Core\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Unilend\Core\DataFixtures\AbstractFixtures;
 
 class DumpedDataFixture extends AbstractFixtures
 {

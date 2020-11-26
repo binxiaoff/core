@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\DataFixtures;
+namespace Unilend\Core\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\ORM\Id\AssignedGenerator;
