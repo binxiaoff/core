@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\EventSubscriber\JWT;
+namespace Unilend\Core\EventSubscriber\JWT;
 
 use Lexik\Bundle\JWTAuthenticationBundle\Event\{JWTCreatedEvent, JWTDecodedEvent};
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;

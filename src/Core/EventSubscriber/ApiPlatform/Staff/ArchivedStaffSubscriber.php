@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\EventSubscriber\ApiPlatform\Staff;
+namespace Unilend\Core\EventSubscriber\ApiPlatform\Staff;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\ORM\NonUniqueResultException;

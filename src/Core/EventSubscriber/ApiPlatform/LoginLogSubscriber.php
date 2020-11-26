@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\EventSubscriber\ApiPlatform;
+namespace Unilend\Core\EventSubscriber\ApiPlatform;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;

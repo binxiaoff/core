@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\EventSubscriber;
+namespace Unilend\Core\EventSubscriber;
 
 use Doctrine\DBAL\{Connection, DBALException};
 use Symfony\Component\Console\Command\Command;

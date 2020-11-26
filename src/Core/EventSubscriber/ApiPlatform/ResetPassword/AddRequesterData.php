@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\EventSubscriber\ApiPlatform\ResetPassword;
+namespace Unilend\Core\EventSubscriber\ApiPlatform\ResetPassword;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\EventSubscriber\ApiPlatform\Clients;
+namespace Unilend\Core\EventSubscriber\ApiPlatform\Clients;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;

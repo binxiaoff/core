@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\EventSubscriber\JWT;
+namespace Unilend\Core\EventSubscriber\JWT;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use Exception;
