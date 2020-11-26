@@ -59,12 +59,12 @@ class MessageCreatedHandler implements MessageHandlerInterface
     public function __invoke(MessageCreated $messageCreated)
     {
         $message = $this->messageRepository->find($messageCreated->getMessageId());
-        if (false == $message instanceof Message) {
+        if (false === $message instanceof Message) {
             throw new InvalidArgumentException(sprintf('The message with id %d does not exist', $messageCreated->getMessageId()));
         }
 
         $projectParticipation = $this->projectParticipationRepository->findOneBy(['messageThread' => $message->getMessageThread()]);
-        if (false == $projectParticipation instanceof ProjectParticipation) {
+        if (false === $projectParticipation instanceof ProjectParticipation) {
             throw new InvalidArgumentException(sprintf('There is no projectParticipation linked to messageThread with id %d', $message->getMessageThread()));
         }
 
