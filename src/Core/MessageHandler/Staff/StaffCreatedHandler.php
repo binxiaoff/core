@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\MessageHandler\Staff;
+namespace Unilend\Core\MessageHandler\Staff;
 
 use Exception;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;

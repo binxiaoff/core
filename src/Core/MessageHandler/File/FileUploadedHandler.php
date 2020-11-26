@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\MessageHandler\File;
+namespace Unilend\Core\MessageHandler\File;
 
 use InvalidArgumentException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;

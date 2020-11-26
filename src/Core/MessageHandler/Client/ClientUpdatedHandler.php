@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\MessageHandler\Client;
+namespace Unilend\Core\MessageHandler\Client;
 
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};

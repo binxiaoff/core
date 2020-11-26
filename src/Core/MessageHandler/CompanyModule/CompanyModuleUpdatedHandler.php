@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\MessageHandler\CompanyModule;
+namespace Unilend\Core\MessageHandler\CompanyModule;
 
 use Http\Client\Exception;
 use Nexy\Slack\Exception\SlackApiException;
