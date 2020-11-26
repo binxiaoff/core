@@ -16,7 +16,7 @@ use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\{NullableMoney};
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Service\MoneyCalculator;
+use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**

@@ -9,7 +9,7 @@ use Symfony\Component\Console\{Command\Command, Input\InputArgument, Input\Input
 use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\{CompanyStatus};
 use Unilend\Core\Repository\{CompanyModuleRepository, CompanyRepository};
-use Unilend\Service\Staff\StaffNotifier;
+use Unilend\Core\Service\Staff\StaffNotifier;
 
 class SignCompanyCommand extends Command
 {

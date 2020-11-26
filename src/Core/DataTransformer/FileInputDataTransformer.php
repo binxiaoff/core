@@ -16,13 +16,13 @@ use Unilend\Core\DTO\FileInput;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Service\File\FileUploadManager;
 use Unilend\Entity\{Project,
     ProjectFile,
     ProjectParticipation
 };
 use Unilend\Repository\{ProjectFileRepository, ProjectRepository};
 use Unilend\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
-use Unilend\Service\File\FileUploadManager;
 use Unilend\Service\Project\ProjectManager;
 
 class FileInputDataTransformer

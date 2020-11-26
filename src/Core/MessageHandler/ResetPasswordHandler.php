@@ -8,7 +8,7 @@ use Exception;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Unilend\Core\Entity\Request\ResetPassword;
 use Unilend\Core\Repository\ClientsRepository;
-use Unilend\Service\{Client\ClientNotifier, GoogleRecaptchaManager};
+use Unilend\Core\Service\{Client\ClientNotifier, GoogleRecaptchaManager};
 
 class ResetPasswordHandler implements MessageHandlerInterface
 {

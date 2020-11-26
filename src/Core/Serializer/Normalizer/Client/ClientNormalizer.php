@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Serializer\Normalizer\Client;
+namespace Unilend\Core\Serializer\Normalizer\Client;
 
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Unilend\Core\Entity\Clients;
-use Unilend\Service\ServiceTerms\ServiceTermsManager;
+use Unilend\Core\Service\ServiceTerms\ServiceTermsManager;
 
 class ClientNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {

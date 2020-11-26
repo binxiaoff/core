@@ -23,11 +23,11 @@ use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\{Staff};
 use Unilend\Core\Message\File\FileUploaded;
 use Unilend\Core\Repository\FileRepository;
-use Unilend\Service\File\FileUploadManager;
-use Unilend\Service\FileSystem\FileSystemHelper;
+use Unilend\Core\Service\File\FileUploadManager;
+use Unilend\Core\Service\FileSystem\FileSystemHelper;
 
 /**
- * @coversDefaultClass \Unilend\Service\File\FileUploadManager
+ * @coversDefaultClass \Unilend\Core\Service\File\FileUploadManager
  *
  * @internal
  */

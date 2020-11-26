@@ -19,8 +19,8 @@ use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithFee};
-use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**

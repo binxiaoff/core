@@ -8,7 +8,7 @@ use Exception;
 use Symfony\Component\Console\{Command\Command, Input\InputArgument, Input\InputInterface, Output\OutputInterface};
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Repository\ClientsRepository;
-use Unilend\Service\Staff\StaffNotifier;
+use Unilend\Core\Service\Staff\StaffNotifier;
 
 class InviteClientCommand extends Command
 {

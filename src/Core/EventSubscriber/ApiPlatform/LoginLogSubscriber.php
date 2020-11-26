@@ -16,7 +16,7 @@ use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\{ClientSuccessfulLogin};
 use Unilend\Core\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
 use Unilend\Core\Repository\{ClientFailedLoginRepository, ClientSuccessfulLoginRepository, ClientsRepository};
-use Unilend\Service\User\ClientLoginFactory;
+use Unilend\Core\Service\User\ClientLoginFactory;
 
 class LoginLogSubscriber implements EventSubscriberInterface
 {

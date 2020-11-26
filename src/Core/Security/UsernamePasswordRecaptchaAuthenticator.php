@@ -19,7 +19,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerI
 use Unilend\Core\DTO\GoogleRecaptchaResult;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Exception\Authentication\RecaptchaChallengeFailedException;
-use Unilend\Service\GoogleRecaptchaManager;
+use Unilend\Core\Service\GoogleRecaptchaManager;
 
 class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator implements PasswordAuthenticatedInterface
 {

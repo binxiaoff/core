@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\{Clients, Company, Embeddable\Money, Embeddable\NullableMoney, Embeddable\NullablePerson, File, Interfaces\MoneyInterface, Interfaces\StatusInterface,
     Interfaces\TraceableStatusAwareInterface, MarketSegment, Staff, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Core\Filter\ArrayFilter;
-use Unilend\Service\MoneyCalculator;
+use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**

@@ -9,7 +9,7 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Core\Message\Staff\StaffCreated;
 use Unilend\Core\Repository\StaffRepository;
-use Unilend\Service\Staff\StaffNotifier;
+use Unilend\Core\Service\Staff\StaffNotifier;
 
 class StaffCreatedHandler implements MessageHandlerInterface
 {

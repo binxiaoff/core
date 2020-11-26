@@ -99,7 +99,7 @@ class TemporaryToken
     }
 
     /**
-     * @internal Use Unilend\Service\TemporaryTokenGenerator::generateMediumToken
+     * @internal Use Unilend\Core\Service\TemporaryTokenGenerator::generateMediumToken
      *
      * @param Clients $client
      *
@@ -113,7 +113,7 @@ class TemporaryToken
     }
 
     /**
-     * @internal Use Unilend\Service\TemporaryTokenGenerator::generateUltraLongToken
+     * @internal Use Unilend\Core\Service\TemporaryTokenGenerator::generateUltraLongToken
      *
      * @param Clients $client
      *

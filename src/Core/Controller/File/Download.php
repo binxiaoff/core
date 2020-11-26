@@ -14,7 +14,7 @@ use Unilend\Core\Entity\FileDownload;
 use Unilend\Core\Entity\{FileVersion};
 use Unilend\Core\Repository\FileDownloadRepository;
 use Unilend\Core\Security\Voter\FileDownloadVoter;
-use Unilend\Service\File\FileDownloadManager;
+use Unilend\Core\Service\File\FileDownloadManager;
 
 class Download
 {

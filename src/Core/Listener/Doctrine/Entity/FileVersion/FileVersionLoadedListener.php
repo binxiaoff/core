@@ -6,7 +6,7 @@ namespace Unilend\Core\Listener\Doctrine\Entity\FileVersion;
 
 use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, WrongKeyOrModifiedCiphertextException};
 use Unilend\Core\Entity\FileVersion;
-use Unilend\Service\DataCrypto;
+use Unilend\Core\Service\DataCrypto;
 
 class FileVersionLoadedListener
 {

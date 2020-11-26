@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Core\Controller\LegalDocument;
 
 use Unilend\Core\Entity\LegalDocument;
-use Unilend\Service\ServiceTerms\ServiceTermsManager;
+use Unilend\Core\Service\ServiceTerms\ServiceTermsManager;
 
 class CurrentServiceTerms
 {

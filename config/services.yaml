@@ -57,10 +57,10 @@ services:
         tags:
             - { name: 'controller.service_arguments' }
 
-    Unilend\Service\WebServiceClient\InseeManager:
+    Unilend\Core\Service\WebServiceClient\InseeManager:
         $client: '@eight_points_guzzle.client.insee'
 
-    Unilend\Service\GoogleRecaptchaManager:
+    Unilend\Core\Service\GoogleRecaptchaManager:
         $client: '@eight_points_guzzle.client.google_recaptcha'
         $secret: '%env(GOOGLE_RECAPTCHA_SECRET)%'
 
@@ -68,7 +68,7 @@ services:
         class: 'Symfony\Contracts\HttpClient\HttpClientInterface'
         factory: ['Symfony\Component\HttpClient\HttpClient', create]
 
-    Unilend\Service\ElectronicSignatureManager:
+    Unilend\Core\Service\ElectronicSignatureManager:
         $integratorKey: '%env(DOCUSIGN_INTEGRATOR_KEY)%'
         $userId: '%env(DOCUSIGN_USER_ID)%'
         $privateKey: '%env(file:DOCUSIGN_PRIVATE_KEY)%'
@@ -157,11 +157,11 @@ services:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Service\ElectronicSignature\XmlSigner:
+    Unilend\Core\Service\ElectronicSignature\XmlSigner:
         $publicKey: '%psn.public_key%'
         $privateKey: '%psn.private_key%'
 
-    Unilend\Service\DataCrypto:
+    Unilend\Core\Service\DataCrypto:
         $masterKeyPath: '%file_encryption.kek_file%'
         $masterKeyPassPhrase: '%file_encryption.kek_passphrase%'
 

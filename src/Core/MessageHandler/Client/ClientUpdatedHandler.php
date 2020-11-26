@@ -8,7 +8,7 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Core\Message\Client\ClientUpdated;
 use Unilend\Core\Repository\ClientsRepository;
-use Unilend\Service\Client\ClientNotifier;
+use Unilend\Core\Service\Client\ClientNotifier;
 
 class ClientUpdatedHandler implements MessageHandlerInterface
 {

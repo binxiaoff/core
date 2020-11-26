@@ -2,16 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Serializer\Normalizer\Company;
+namespace Unilend\Core\Serializer\Normalizer\Company;
 
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Staff;
+use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer, ContextAwareNormalizerInterface, NormalizerAwareInterface, NormalizerInterface};
+use Unilend\Core\Entity\{Clients, Company, Staff};
 
 class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {

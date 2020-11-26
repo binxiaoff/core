@@ -10,8 +10,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Unilend\Core\Entity\Request\ResetPassword;
-use Unilend\Service\UserActivity\IpGeoLocManager;
-use Unilend\Service\UserActivity\UserAgentManager;
+use Unilend\Core\Service\UserActivity\IpGeoLocManager;
+use Unilend\Core\Service\UserActivity\UserAgentManager;
 
 class AddRequesterData implements EventSubscriberInterface
 {
