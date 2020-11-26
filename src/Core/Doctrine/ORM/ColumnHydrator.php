@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Doctrine\ORM;
+namespace Unilend\Core\Doctrine\ORM;
 
 use Doctrine\ORM\Internal\Hydration\AbstractHydrator;
 use PDO;
