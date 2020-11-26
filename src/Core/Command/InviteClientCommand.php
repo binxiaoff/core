@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Command;
+namespace Unilend\Core\Command;
 
 use Exception;
 use Symfony\Component\Console\{Command\Command, Input\InputArgument, Input\InputInterface, Output\OutputInterface};

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Command;
+namespace Unilend\Core\Command;
 
 use Psr\Log\LoggerInterface;
 use SensioLabs\Security\SecurityChecker;

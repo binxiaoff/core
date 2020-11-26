@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Console;
+namespace Unilend\Core\Console;
 
 use Symfony\Bundle\FrameworkBundle\Console\Application as FrameworkBundleApplication;
 use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
