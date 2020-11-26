@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Serializer\ContextBuilder;
+namespace Unilend\Core\Serializer\ContextBuilder;
 
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;

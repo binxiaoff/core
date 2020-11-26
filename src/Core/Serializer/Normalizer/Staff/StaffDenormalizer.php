@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Serializer\Normalizer\Staff;
+namespace Unilend\Core\Serializer\Normalizer\Staff;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\ORM\NonUniqueResultException;
