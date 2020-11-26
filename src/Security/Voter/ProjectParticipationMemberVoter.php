@@ -6,6 +6,7 @@ namespace Unilend\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Core\Entity\Clients;
+use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\Entity\{ProjectParticipationMember};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 

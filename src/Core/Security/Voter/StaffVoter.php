@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Security\Voter;
+namespace Unilend\Core\Security\Voter;
 
 use Doctrine\ORM\PersistentCollection;
 use Unilend\Core\Entity\Clients;

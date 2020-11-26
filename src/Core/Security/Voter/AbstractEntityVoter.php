@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Security\Voter;
+namespace Unilend\Core\Security\Voter;
 
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
@@ -32,7 +32,7 @@ abstract class AbstractEntityVoter extends Voter
      */
     final protected function supports($attribute, $subject): bool
     {
-        $entityClass = static::UNILEND_ENTITY_NAMESPACE . str_replace(['Unilend\\Security\\Voter\\', 'Voter'], '', static::class);
+        $entityClass = static::UNILEND_ENTITY_NAMESPACE . str_replace(['Unilend\\Core\\Security\\Voter\\', 'Voter'], '', static::class);
 
         return $subject instanceof $entityClass && \in_array($attribute, static::getConstants('ATTRIBUTE_'), true);
     }

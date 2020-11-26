@@ -165,7 +165,7 @@ services:
         $masterKeyPath: '%file_encryption.kek_file%'
         $masterKeyPassPhrase: '%file_encryption.kek_passphrase%'
 
-    Unilend\Security\UsernamePasswordRecaptchaAuthenticator:
+    Unilend\Core\Security\UsernamePasswordRecaptchaAuthenticator:
         $authenticationSuccessHandler: '@lexik_jwt_authentication.handler.authentication_success'
         $authenticationFailureHandler: '@lexik_jwt_authentication.handler.authentication_failure'
         $path: '/authentication_token'

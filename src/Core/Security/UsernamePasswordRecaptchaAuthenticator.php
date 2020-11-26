@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Security;
+namespace Unilend\Core\Security;
 
 use JsonException;
 use Symfony\Component\HttpFoundation\Request;

@@ -18,12 +18,12 @@ security:
         api:
             stateless: true
             anonymous: true
-            user_checker: Unilend\Security\UserChecker
+            user_checker: Unilend\Core\Security\UserChecker
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
-                    - Unilend\Security\TemporaryTokenAuthenticator
-                    - Unilend\Security\UsernamePasswordRecaptchaAuthenticator
+                    - Unilend\Core\Security\TemporaryTokenAuthenticator
+                    - Unilend\Core\Security\UsernamePasswordRecaptchaAuthenticator
                 entry_point: lexik_jwt_authentication.jwt_token_authenticator
 
     access_control:

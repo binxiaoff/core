@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Security\Voter;
+namespace Unilend\Core\Security\Voter;
 
 use Doctrine\ORM\NonUniqueResultException;
 use InvalidArgumentException;
@@ -12,6 +12,7 @@ use Unilend\Core\Entity\{Clients, Company, File, FileDownload, FileVersion, Staf
 use Unilend\Core\Repository\FileVersionSignatureRepository;
 use Unilend\Entity\{Project, ProjectFile, ProjectParticipation, ProjectParticipationMember, ProjectStatus};
 use Unilend\Repository\{ProjectFileRepository, ProjectParticipationMemberRepository, ProjectParticipationRepository, ProjectRepository};
+use Unilend\Security\Voter\ProjectVoter;
 
 class FileDownloadVoter extends AbstractEntityVoter
 {

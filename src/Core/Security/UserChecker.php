@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Security;
+namespace Unilend\Core\Security;
 
 use Symfony\Component\Security\Core\Exception\DisabledException;
 use Symfony\Component\Security\Core\User\{UserCheckerInterface, UserInterface};

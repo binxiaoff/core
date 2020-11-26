@@ -7,6 +7,7 @@ namespace Unilend\Security\Voter;
 use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Core\Entity\Clients;
+use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\Entity\{ProjectMessage};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 

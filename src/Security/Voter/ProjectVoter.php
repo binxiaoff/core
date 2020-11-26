@@ -10,6 +10,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\Entity\{Project, ProjectStatus};
 use Unilend\Service\Project\ProjectManager;
 

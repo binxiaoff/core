@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Security\Voter;
+namespace Unilend\Core\Security\Voter;
 
 use Unilend\Core\Entity\AcceptationsLegalDocs;
 use Unilend\Core\Entity\Clients;
