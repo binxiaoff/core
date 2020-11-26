@@ -6,7 +6,7 @@ namespace Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\Staff;
 
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
-use Unilend\Message\Staff\StaffCreated;
+use Unilend\Core\Message\Staff\StaffCreated;
 
 class StaffCreatedListener
 {

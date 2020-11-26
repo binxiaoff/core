@@ -6,7 +6,7 @@ namespace Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\CompanyModule;
 
 use Symfony\Component\Messenger\MessageBusInterface;
 use Unilend\Core\Entity\CompanyModule;
-use Unilend\Message\CompanyModule\CompanyModuleUpdated;
+use Unilend\Core\Message\CompanyModule\CompanyModuleUpdated;
 
 class CompanyModuleUpdatedListener
 {

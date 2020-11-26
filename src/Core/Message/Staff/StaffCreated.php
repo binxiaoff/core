@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Message\Staff;
+namespace Unilend\Core\Message\Staff;
 
 use Unilend\Core\Entity\Staff;
-use Unilend\Message\AsyncMessageInterface;
+use Unilend\Core\Message\AsyncMessageInterface;
 
 class StaffCreated implements AsyncMessageInterface
 {

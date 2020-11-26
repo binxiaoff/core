@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Message;
+namespace Unilend\Core\Message;
 
 interface AsyncMessageInterface
 {

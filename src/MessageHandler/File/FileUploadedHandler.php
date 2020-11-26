@@ -7,7 +7,7 @@ namespace Unilend\MessageHandler\File;
 use InvalidArgumentException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Message\File\FileUploaded;
+use Unilend\Core\Message\File\FileUploaded;
 use Unilend\Repository\ProjectRepository;
 use Unilend\Service\Project\ProjectNotifier;
 

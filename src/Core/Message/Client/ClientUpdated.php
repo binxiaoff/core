@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Message\Client;
+namespace Unilend\Core\Message\Client;
 
 use Unilend\Core\Entity\Clients;
-use Unilend\Message\AsyncMessageInterface;
+use Unilend\Core\Message\AsyncMessageInterface;
 
 class ClientUpdated implements AsyncMessageInterface
 {

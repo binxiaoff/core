@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Message\CompanyModule;
+namespace Unilend\Core\Message\CompanyModule;
 
 use Unilend\Core\Entity\CompanyModule;
-use Unilend\Message\AsyncMessageInterface;
+use Unilend\Core\Message\AsyncMessageInterface;
 
 class CompanyModuleUpdated implements AsyncMessageInterface
 {

@@ -6,7 +6,7 @@ namespace Unilend\MessageHandler\Client;
 
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Message\Client\ClientUpdated;
+use Unilend\Core\Message\Client\ClientUpdated;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Service\Client\ClientNotifier;
 

@@ -7,7 +7,7 @@ namespace Unilend\MessageHandler\Staff;
 use Exception;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Message\Staff\StaffCreated;
+use Unilend\Core\Message\Staff\StaffCreated;
 use Unilend\Repository\StaffRepository;
 use Unilend\Service\Staff\StaffNotifier;
 

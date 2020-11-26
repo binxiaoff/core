@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Message\ProjectParticipationMember;
 
+use Unilend\Core\Message\AsyncMessageInterface;
 use Unilend\Entity\ProjectParticipationMember;
-use Unilend\Message\AsyncMessageInterface;
 
 class ProjectParticipationMemberCreated implements AsyncMessageInterface
 {
