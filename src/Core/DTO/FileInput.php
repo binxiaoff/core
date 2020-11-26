@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\DTO;
+namespace Unilend\Core\DTO;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -33,7 +33,7 @@ class FileInput
     /**
      * @var UploadedFile
      *
-     * @Assert\File(maxSize="250Mi", mimeTypes=Unilend\DTO\FileInput::ACCEPTED_MEDIA_TYPE)
+     * @Assert\File(maxSize="250Mi", mimeTypes=Unilend\Core\DTO\FileInput::ACCEPTED_MEDIA_TYPE)
      */
     public UploadedFile $uploadedFile;
 

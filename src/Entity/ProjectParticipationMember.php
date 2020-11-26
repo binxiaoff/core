@@ -12,10 +12,10 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\DTO\AcceptedNDA;
 use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
-use Unilend\DTO\AcceptedNDA;
 
 /**
  * @ApiResource(

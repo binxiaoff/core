@@ -12,10 +12,10 @@ use League\Flysystem\FileExistsException;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
+use Unilend\Core\DTO\FileInput;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\Staff;
-use Unilend\DTO\FileInput;
 use Unilend\Entity\{Project,
     ProjectFile,
     ProjectParticipation

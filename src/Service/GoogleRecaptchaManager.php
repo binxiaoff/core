@@ -8,7 +8,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\DTO\GoogleRecaptchaResult;
+use Unilend\Core\DTO\GoogleRecaptchaResult;
 
 class GoogleRecaptchaManager
 {

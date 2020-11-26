@@ -12,9 +12,9 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Core\DataTransformer\FileInputDataTransformer;
+use Unilend\Core\DTO\FileInput;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\{File};
-use Unilend\DTO\FileInput;
 use Unilend\Repository\FileRepository;
 
 class Upload
