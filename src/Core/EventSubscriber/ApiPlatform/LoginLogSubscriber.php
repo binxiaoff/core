@@ -15,7 +15,7 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\{ClientSuccessfulLogin};
 use Unilend\Core\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
-use Unilend\Repository\{ClientFailedLoginRepository, ClientSuccessfulLoginRepository, ClientsRepository};
+use Unilend\Core\Repository\{ClientFailedLoginRepository, ClientSuccessfulLoginRepository, ClientsRepository};
 use Unilend\Service\User\ClientLoginFactory;
 
 class LoginLogSubscriber implements EventSubscriberInterface

@@ -13,7 +13,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Unilend\Core\Entity\TemporaryToken;
 use Unilend\Core\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
 use Unilend\Core\Exception\TemporaryToken\InvalidTemporaryTokenException;
-use Unilend\Repository\TemporaryTokenRepository;
+use Unilend\Core\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
 {

@@ -12,7 +12,7 @@ use Swift_ConfigurableSpool;
 use Swift_Mime_SimpleMessage;
 use Swift_Transport;
 use Unilend\Core\Entity\MailQueue;
-use Unilend\Repository\MailQueueRepository;
+use Unilend\Core\Repository\MailQueueRepository;
 
 class DatabaseSpool extends Swift_ConfigurableSpool
 {

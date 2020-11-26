@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\{EventDispatcher\EventSubscriberInterface, HttpFoundation\Request, HttpKernel\KernelEvents};
 use Unilend\Core\Entity\Clients;
-use Unilend\Repository\TemporaryTokenRepository;
+use Unilend\Core\Repository\TemporaryTokenRepository;
 
 class ClientProfileUpdatedEventSubscriber implements EventSubscriberInterface
 {

@@ -14,8 +14,8 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ObjectToPopulateTrait};
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Staff;
-use Unilend\Repository\ClientsRepository;
-use Unilend\Repository\StaffRepository;
+use Unilend\Core\Repository\ClientsRepository;
+use Unilend\Core\Repository\StaffRepository;
 use Unilend\Security\Voter\StaffVoter;
 
 class StaffDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface

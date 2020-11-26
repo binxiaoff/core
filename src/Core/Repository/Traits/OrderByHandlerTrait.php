@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Repository\Traits;
+namespace Unilend\Core\Repository\Traits;
 
 use Doctrine\ORM\QueryBuilder;
 use RuntimeException;

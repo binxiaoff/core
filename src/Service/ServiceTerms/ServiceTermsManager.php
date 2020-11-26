@@ -6,7 +6,7 @@ namespace Unilend\Service\ServiceTerms;
 
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\{LegalDocument};
-use Unilend\Repository\{AcceptationLegalDocsRepository, LegalDocumentRepository};
+use Unilend\Core\Repository\{AcceptationLegalDocsRepository, LegalDocumentRepository};
 
 class ServiceTermsManager
 {

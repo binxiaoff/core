@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\HttpClient\{Exception\ClientExceptionInterface, Exception\RedirectionExceptionInterface, Exception\ServerExceptionInterface,
     Exception\TransportExceptionInterface, HttpClientInterface, ResponseInterface};
 use Unilend\Core\Entity\FileVersionSignature;
-use Unilend\Repository\FileVersionSignatureRepository;
+use Unilend\Core\Repository\FileVersionSignatureRepository;
 
 class RequestSender
 {

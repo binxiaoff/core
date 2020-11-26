@@ -146,7 +146,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId"})
  *
  * @ORM\Table
- * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProject")

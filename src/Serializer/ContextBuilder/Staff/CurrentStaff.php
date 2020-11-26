@@ -14,9 +14,9 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\StaffStatus;
+use Unilend\Core\Repository\ClientsRepository;
 use Unilend\Entity\ProjectParticipationStatus;
 use Unilend\Entity\ProjectStatus;
-use Unilend\Repository\ClientsRepository;
 
 class CurrentStaff implements SerializerContextBuilderInterface
 {

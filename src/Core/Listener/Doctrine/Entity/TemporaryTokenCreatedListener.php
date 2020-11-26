@@ -6,7 +6,7 @@ namespace Unilend\Core\Listener\Doctrine\Entity;
 
 use Exception;
 use Unilend\Core\Entity\TemporaryToken;
-use Unilend\Repository\TemporaryTokenRepository;
+use Unilend\Core\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenCreatedListener
 {

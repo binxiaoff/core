@@ -9,7 +9,7 @@ use Doctrine\ORM\ORMException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Core\Entity\Clients;
-use Unilend\Repository\ClientsRepository;
+use Unilend\Core\Repository\ClientsRepository;
 
 class ArchivedByListener
 {

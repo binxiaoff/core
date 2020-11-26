@@ -8,14 +8,10 @@ use Doctrine\ORM\NonUniqueResultException;
 use InvalidArgumentException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\FileDownload;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\{Clients, Company, File, FileDownload, FileVersion, Staff};
+use Unilend\Core\Repository\FileVersionSignatureRepository;
 use Unilend\Entity\{Project, ProjectFile, ProjectParticipation, ProjectParticipationMember, ProjectStatus};
-use Unilend\Repository\{FileVersionSignatureRepository, ProjectFileRepository, ProjectParticipationMemberRepository, ProjectParticipationRepository, ProjectRepository};
+use Unilend\Repository\{ProjectFileRepository, ProjectParticipationMemberRepository, ProjectParticipationRepository, ProjectRepository};
 
 class FileDownloadVoter extends AbstractEntityVoter
 {

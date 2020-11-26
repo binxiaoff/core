@@ -13,7 +13,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\{Staff};
-use Unilend\Repository\ClientsRepository;
+use Unilend\Core\Repository\ClientsRepository;
 
 class ClientSubscriber implements EventSubscriberInterface
 {

@@ -8,7 +8,7 @@ use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\{TemporaryToken};
-use Unilend\Repository\TemporaryTokenRepository;
+use Unilend\Core\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenGenerator
 {

@@ -8,7 +8,7 @@ use Exception;
 use Symfony\Component\Console\{Command\Command, Input\InputArgument, Input\InputInterface, Output\OutputInterface};
 use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\{CompanyStatus};
-use Unilend\Repository\{CompanyModuleRepository, CompanyRepository};
+use Unilend\Core\Repository\{CompanyModuleRepository, CompanyRepository};
 use Unilend\Service\Staff\StaffNotifier;
 
 class SignCompanyCommand extends Command

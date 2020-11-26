@@ -15,7 +15,7 @@ use Unilend\Core\DataTransformer\FileInputDataTransformer;
 use Unilend\Core\DTO\FileInput;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\{File};
-use Unilend\Repository\FileRepository;
+use Unilend\Core\Repository\FileRepository;
 
 class Upload
 {

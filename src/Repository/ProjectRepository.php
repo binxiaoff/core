@@ -7,8 +7,8 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{NoResultException, NonUniqueResultException, ORMException, OptimisticLockException};
+use Unilend\Core\Repository\Traits\{OrderByHandlerTrait, PaginationHandlerTrait};
 use Unilend\Entity\Project;
-use Unilend\Repository\Traits\{OrderByHandlerTrait, PaginationHandlerTrait};
 
 /**
  * @method Project|null find($id, $lockMode = null, $lockVersion = null)

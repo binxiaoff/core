@@ -15,7 +15,7 @@ use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\StaffStatus;
-use Unilend\Repository\StaffRepository;
+use Unilend\Core\Repository\StaffRepository;
 
 class ArchivedStaffSubscriber implements EventSubscriberInterface
 {

@@ -8,7 +8,7 @@ use Exception;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Core\Message\Staff\StaffCreated;
-use Unilend\Repository\StaffRepository;
+use Unilend\Core\Repository\StaffRepository;
 use Unilend\Service\Staff\StaffNotifier;
 
 class StaffCreatedHandler implements MessageHandlerInterface

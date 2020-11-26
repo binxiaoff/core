@@ -16,7 +16,7 @@ use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Entity\{Staff};
 use Unilend\Core\Message\File\FileUploaded;
-use Unilend\Repository\FileRepository;
+use Unilend\Core\Repository\FileRepository;
 use Unilend\Service\FileSystem\FileSystemHelper;
 
 class FileUploadManager

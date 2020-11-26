@@ -8,7 +8,7 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\{UserAgent};
-use Unilend\Repository\UserAgentRepository;
+use Unilend\Core\Repository\UserAgentRepository;
 use UserAgentParser\Model\UserAgent as Model;
 use UserAgentParser\Provider\Chain as UserAgentParser;
 

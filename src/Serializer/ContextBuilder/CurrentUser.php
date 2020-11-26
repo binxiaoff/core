@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Core\Entity\AcceptationsLegalDocs;
 use Unilend\Core\Entity\{Clients};
-use Unilend\Repository\ClientsRepository;
+use Unilend\Core\Repository\ClientsRepository;
 
 class CurrentUser implements SerializerContextBuilderInterface
 {

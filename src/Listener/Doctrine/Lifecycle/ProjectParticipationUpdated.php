@@ -8,9 +8,9 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Core\Entity\Clients;
+use Unilend\Core\Repository\ClientsRepository;
 use Unilend\Entity\InterestReplyVersion;
 use Unilend\Entity\ProjectParticipation;
-use Unilend\Repository\ClientsRepository;
 
 class ProjectParticipationUpdated
 {

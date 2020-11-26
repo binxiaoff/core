@@ -8,7 +8,7 @@ use Http\Client\Exception;
 use Nexy\Slack\Exception\SlackApiException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Unilend\Core\Message\CompanyModule\CompanyModuleUpdated;
-use Unilend\Repository\CompanyModuleRepository;
+use Unilend\Core\Repository\CompanyModuleRepository;
 use Unilend\Service\CompanyModule\CompanyModuleNotifier;
 
 class CompanyModuleUpdatedHandler implements MessageHandlerInterface

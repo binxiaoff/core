@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Repository;
+namespace Unilend\Core\Repository;
 
 use DateInterval;
 use DateTime;

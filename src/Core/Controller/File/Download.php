@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\FileDownload;
 use Unilend\Core\Entity\{FileVersion};
-use Unilend\Repository\FileDownloadRepository;
+use Unilend\Core\Repository\FileDownloadRepository;
 use Unilend\Security\Voter\FileDownloadVoter;
 use Unilend\Service\File\FileDownloadManager;
 
