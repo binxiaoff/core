@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\{BlamableUpdatedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Traits\ConstantsAwareTrait;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity

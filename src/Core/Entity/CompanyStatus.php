@@ -10,7 +10,7 @@ use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\{Company, Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface, Traits\PublicizeIdentityTrait, Traits\TimestampableAddedOnlyTrait};
-use Unilend\Traits\ConstantsAwareTrait;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity

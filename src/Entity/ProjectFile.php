@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
-use Unilend\Traits\ConstantsAwareTrait;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity

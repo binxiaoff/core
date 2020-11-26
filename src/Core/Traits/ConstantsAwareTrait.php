@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Traits;
+namespace Unilend\Core\Traits;
 
 use ReflectionClass;
 use ReflectionException;

@@ -16,7 +16,7 @@ use Unilend\Core\Entity\FileDownload;
 use Unilend\Core\Entity\FileVersionSignature;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Traits\ConstantsAwareTrait;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity

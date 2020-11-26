@@ -6,7 +6,7 @@ namespace Unilend\Core\SwiftMailer;
 
 use InvalidArgumentException;
 use JsonException;
-use Unilend\Traits\ConstantsAwareTrait;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 
 class MailjetMessage extends \Swift_Message
 {

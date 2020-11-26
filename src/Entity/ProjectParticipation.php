@@ -20,8 +20,8 @@ use Unilend\Core\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableSt
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Service\MoneyCalculator;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 use Unilend\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithFee};
-use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(

@@ -20,7 +20,7 @@ use Unilend\Core\Entity\{Clients, Company, Embeddable\Money, Embeddable\Nullable
     Interfaces\TraceableStatusAwareInterface, MarketSegment, Staff, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Core\Filter\ArrayFilter;
 use Unilend\Core\Service\MoneyCalculator;
-use Unilend\Traits\ConstantsAwareTrait;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(

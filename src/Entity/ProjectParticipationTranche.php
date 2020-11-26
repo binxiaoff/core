@@ -17,8 +17,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\{Staff, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Core\Service\MoneyCalculator;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 use Unilend\Entity\Embeddable\Offer;
-use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(

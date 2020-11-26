@@ -17,7 +17,7 @@ use Unilend\Core\Entity\Embeddable\{NullableMoney};
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Service\MoneyCalculator;
-use Unilend\Traits\ConstantsAwareTrait;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(

@@ -10,7 +10,7 @@ use InvalidArgumentException;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Entity\UserAgent;
-use Unilend\Traits\ConstantsAwareTrait;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Table(name="client_successful_login", indexes={

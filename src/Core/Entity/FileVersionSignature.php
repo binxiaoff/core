@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Traits\ConstantsAwareTrait;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
