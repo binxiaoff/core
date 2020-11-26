@@ -12,8 +12,8 @@ use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Core\Exception\AccountStatusException;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Unilend\Core\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
 use Unilend\Entity\{ClientSuccessfulLogin, Clients};
-use Unilend\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
 use Unilend\Repository\{ClientFailedLoginRepository, ClientSuccessfulLoginRepository, ClientsRepository};
 use Unilend\Service\User\ClientLoginFactory;
 

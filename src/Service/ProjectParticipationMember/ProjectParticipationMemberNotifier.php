@@ -7,9 +7,9 @@ namespace Unilend\Service\ProjectParticipationMember;
 use Exception;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
+use Unilend\Core\SwiftMailer\MailjetMessage;
 use Unilend\Entity\{Project, ProjectParticipationMember, ProjectStatus, Staff};
 use Unilend\Service\TemporaryTokenGenerator;
-use Unilend\SwiftMailer\MailjetMessage;
 
 class ProjectParticipationMemberNotifier
 {

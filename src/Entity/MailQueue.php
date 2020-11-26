@@ -9,8 +9,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Swift_Message;
 use Swift_Mime_SimpleMessage;
 use UnexpectedValueException;
+use Unilend\Core\SwiftMailer\MailjetMessage;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\SwiftMailer\MailjetMessage;
 
 /**
  * @ORM\Table(name="mail_queue", indexes={

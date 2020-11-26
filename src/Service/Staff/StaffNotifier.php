@@ -9,9 +9,9 @@ use JsonException;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Unilend\Core\SwiftMailer\MailjetMessage;
 use Unilend\Entity\{MarketSegment, Staff};
 use Unilend\Service\TemporaryTokenGenerator;
-use Unilend\SwiftMailer\MailjetMessage;
 
 class StaffNotifier
 {

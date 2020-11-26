@@ -142,7 +142,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     "projectParticipationMembers.staff.publicId": "exact",
  *     "participant.publicId": "exact"
  * })
- * @ApiFilter("Unilend\Filter\InvertedSearchFilter", properties={"project.submitterCompany.publicId"})
+ * @ApiFilter("Unilend\Core\Filter\InvertedSearchFilter", properties={"project.submitterCompany.publicId"})
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
  * @ORM\Entity

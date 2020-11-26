@@ -12,9 +12,9 @@ use Nexy\Slack\Exception\SlackApiException;
 use Nexy\Slack\{Attachment, AttachmentField, Client, MessageInterface};
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
+use Unilend\Core\SwiftMailer\MailjetMessage;
 use Unilend\Entity\{Project, ProjectStatus};
 use Unilend\Repository\ProjectRepository;
-use Unilend\SwiftMailer\MailjetMessage;
 
 class ProjectNotifier
 {

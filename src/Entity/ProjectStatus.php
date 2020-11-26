@@ -45,7 +45,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * )
  *
  * @Assert\Callback(
- *     callback={"Unilend\Validator\Constraints\TraceableStatusValidator", "validate"},
+ *     callback={"Unilend\Core\Validator\Constraints\TraceableStatusValidator", "validate"},
  *     payload={ "path": "status" }
  * )
  *

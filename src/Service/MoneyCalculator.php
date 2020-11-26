@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Service;
 
+use Unilend\Core\Exception\Money\DifferentCurrencyException;
 use Unilend\Entity\Embeddable\{Money, NullableMoney};
 use Unilend\Entity\Interfaces\MoneyInterface;
-use Unilend\Exception\Money\DifferentCurrencyException;
 
 class MoneyCalculator
 {

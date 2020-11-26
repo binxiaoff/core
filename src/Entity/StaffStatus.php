@@ -36,7 +36,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ORM\Table(indexes={@ORM\Index(columns={"status"}, name="idx_staff_status_status")})
  *
  * @Assert\Callback(
- *     callback={"Unilend\Validator\Constraints\TraceableStatusValidator", "validate"},
+ *     callback={"Unilend\Core\Validator\Constraints\TraceableStatusValidator", "validate"},
  *     payload={ "path": "status" }
  * )
  */

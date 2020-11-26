@@ -7,9 +7,9 @@ namespace Unilend\Service\ProjectParticipation;
 use JsonException;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
+use Unilend\Core\SwiftMailer\MailjetMessage;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationStatus;
-use Unilend\SwiftMailer\MailjetMessage;
 
 class ProjectParticipationNotifier
 {

@@ -28,7 +28,7 @@ services:
             $consoleLogger: '@monolog.logger.console'
             $defaultLocale: '%locale%'
             $temporaryDirectory: '%directory.temporary%'
-            $templateMessageFQCN: 'Unilend\SwiftMailer\TemplateMessage'
+            $templateMessageFQCN: 'Unilend\Core\SwiftMailer\TemplateMessage'
             $numberFormatter: '@number_formatter'
             $currencyFormatter: '@currency_formatter'
             $percentageFormatter: '@percentage_formatter'
@@ -135,7 +135,7 @@ services:
             - '@UserAgentParser\Provider\WhichBrowser'
             - '@UserAgentParser\Provider\PiwikDeviceDetector'
 
-    Unilend\Swagger\SwaggerDecorator:
+    Unilend\Core\Swagger\SwaggerDecorator:
         decorates: 'api_platform.swagger.normalizer.api_gateway'
 
     Unilend\Serializer\ContextBuilder\Staff\CurrentStaff:

@@ -7,8 +7,8 @@ namespace Unilend\Service\User;
 use Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Throwable;
+use Unilend\Core\Exception\Authentication\RecaptchaChallengeFailedException;
 use Unilend\Entity\{ClientFailedLogin, ClientSuccessfulLogin, Clients};
-use Unilend\Exception\Authentication\RecaptchaChallengeFailedException;
 use Unilend\Service\{UserActivity\IpGeoLocManager, UserActivity\UserAgentManager};
 
 class ClientLoginFactory

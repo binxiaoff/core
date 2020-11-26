@@ -16,10 +16,10 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Serializer\Annotation\{Groups, SerializedName};
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Validator\Constraints\{Password as AssertPassword};
 use Unilend\DTO\GoogleRecaptchaResult;
 use Unilend\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait};
-use Unilend\Validator\Constraints\{Password as AssertPassword};
 use URLify;
 
 /**
