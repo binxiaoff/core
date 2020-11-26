@@ -57,10 +57,6 @@ services:
         tags:
             - { name: 'controller.service_arguments' }
 
-    Unilend\Service\Translation\TranslationLoader:
-        tags:
-            - { name: translation.loader, alias: db }
-
     Unilend\Service\WebServiceClient\InseeManager:
         $client: '@eight_points_guzzle.client.insee'
 
