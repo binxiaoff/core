@@ -35,7 +35,6 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
     public function __construct(TokenStorageInterface $tokenStorage, StaffRepository $staffRepository)
     {
         parent::__construct($tokenStorage);
-        /** @var Project[] $projectsWithParticipations */
         $this->staffRepository = $staffRepository;
     }
 

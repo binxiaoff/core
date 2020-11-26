@@ -59,21 +59,21 @@ class MessageCreatedHandler implements MessageHandlerInterface
     public function __invoke(MessageCreated $messageCreated)
     {
         $message = $this->messageRepository->find($messageCreated->getMessageId());
-        if ($message instanceof Message) {
-            $projectParticipation = $this->projectParticipationRepository->findOneBy(['messageThread' => $message->getMessageThread()]);
-            if ($projectParticipation instanceof ProjectParticipation) {
-                foreach ($projectParticipation->getProjectParticipationMembers() as $projectParticipationMember) {
-                    if ($message->getSender() !== $projectParticipationMember->getStaff()) {
-                        $messageStatus = new MessageStatus(MessageStatus::STATUS_UNREAD, $message, $projectParticipationMember->getStaff());
-                        $this->messageStatusRepository->persist($messageStatus);
-                    }
-                }
-                $this->messageStatusRepository->flush();
-            } else {
-                throw new InvalidArgumentException(sprintf('There is no projectParticipation linked to messageThread with id %d', $message->getMessageThread()));
-            }
-        } else {
+        if (false == $message instanceof Message) {
             throw new InvalidArgumentException(sprintf('The message with id %d does not exist', $messageCreated->getMessageId()));
         }
+
+        $projectParticipation = $this->projectParticipationRepository->findOneBy(['messageThread' => $message->getMessageThread()]);
+        if (false == $projectParticipation instanceof ProjectParticipation) {
+            throw new InvalidArgumentException(sprintf('There is no projectParticipation linked to messageThread with id %d', $message->getMessageThread()));
+        }
+
+        foreach ($projectParticipation->getProjectParticipationMembers() as $projectParticipationMember) {
+            if ($message->getSender() !== $projectParticipationMember->getStaff()) {
+                $messageStatus = new MessageStatus(MessageStatus::STATUS_UNREAD, $message, $projectParticipationMember->getStaff());
+                $this->messageStatusRepository->persist($messageStatus);
+            }
+        }
+        $this->messageStatusRepository->flush();
     }
 }

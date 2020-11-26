@@ -27,7 +27,7 @@ class MessageCreated implements AsyncMessageInterface
     /**
      * @return int
      */
-    public function getMessageId(): int
+    public function getMessageId(): ?int
     {
         return $this->messageId;
     }
