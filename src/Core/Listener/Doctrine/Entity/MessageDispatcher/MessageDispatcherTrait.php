@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Entity\MessageDispatcher;
+namespace Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher;
 
 use Symfony\Component\Messenger\MessageBusInterface;
 

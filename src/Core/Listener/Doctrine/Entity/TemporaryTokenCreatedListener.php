@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Entity;
+namespace Unilend\Core\Listener\Doctrine\Entity;
 
 use Exception;
 use Unilend\Core\Entity\TemporaryToken;

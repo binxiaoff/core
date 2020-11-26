@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Entity\MessageDispatcher\Staff;
+namespace Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\Staff;
 
 use Unilend\Core\Entity\Staff;
-use Unilend\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
+use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
 use Unilend\Message\Staff\StaffCreated;
 
 class StaffCreatedListener

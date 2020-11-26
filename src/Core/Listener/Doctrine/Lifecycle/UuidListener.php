@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Lifecycle;
+namespace Unilend\Core\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;

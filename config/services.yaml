@@ -170,7 +170,7 @@ services:
         $authenticationFailureHandler: '@lexik_jwt_authentication.handler.authentication_failure'
         $path: '/authentication_token'
 
-    Unilend\Listener\MaintenanceListener:
+    Unilend\Core\Listener\MaintenanceListener:
         arguments: ["%maintenance%"]
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Entity\MessageDispatcher\Client;
+namespace Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\Client;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Unilend\Core\Entity\Clients;
-use Unilend\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
+use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
 use Unilend\Message\Client\ClientUpdated;
 
 class ClientUpdatedListener

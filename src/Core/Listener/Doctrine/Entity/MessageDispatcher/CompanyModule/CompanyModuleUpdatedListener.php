@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Entity\MessageDispatcher\CompanyModule;
+namespace Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\CompanyModule;
 
 use Symfony\Component\Messenger\MessageBusInterface;
 use Unilend\Core\Entity\CompanyModule;

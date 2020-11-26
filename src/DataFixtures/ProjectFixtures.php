@@ -179,7 +179,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $project->setCurrentStatus($projectStatus);
 
         // Persist
-        // Need to repersist the correct status because of listener  Unilend\Listener\Doctrine\Lifecycle\StatusCreatedListener
+        // Need to repersist the correct status because of listener  Unilend\Core\Listener\Doctrine\Lifecycle\StatusCreatedListener
         $this->manager->persist($projectStatus);
         $this->manager->persist($ndaFile);
         $this->manager->persist($project);

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Lifecycle;
+namespace Unilend\Core\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Symfony\Component\Security\Core\Security;

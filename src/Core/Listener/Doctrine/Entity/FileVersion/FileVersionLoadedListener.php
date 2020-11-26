@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Entity\FileVersion;
+namespace Unilend\Core\Listener\Doctrine\Entity\FileVersion;
 
 use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, WrongKeyOrModifiedCiphertextException};
 use Unilend\Core\Entity\FileVersion;

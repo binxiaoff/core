@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipation;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
+use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
 use Unilend\Entity\ProjectParticipation;
-use Unilend\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
 use Unilend\Message\ProjectParticipation\ProjectParticipationStatusUpdated;
 
 class ProjectParticipationUpdatedListener
