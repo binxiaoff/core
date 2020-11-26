@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Service\ProjectParticipation;
 
-use Unilend\Entity\{ProjectParticipation, Staff};
+use Unilend\Core\Entity\Staff;
+use Unilend\Entity\{ProjectParticipation};
 use Unilend\Repository\ProjectParticipationMemberRepository;
 use Unilend\Service\Project\ProjectManager;
 

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Service\Project;
 
 use Doctrine\ORM\NonUniqueResultException;
+use Unilend\Core\Entity\Staff;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipationMember;
-use Unilend\Entity\Staff;
 use Unilend\Repository\ProjectParticipationMemberRepository;
 
 class ProjectManager

@@ -13,7 +13,7 @@ use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserTo
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Entity\Staff;
+use Unilend\Core\Entity\Staff;
 
 use function get_class;
 use function is_string;

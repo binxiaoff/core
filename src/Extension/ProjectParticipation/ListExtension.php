@@ -9,7 +9,8 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\{Clients, Project, ProjectParticipation, ProjectStatus};
+use Unilend\Core\Entity\Clients;
+use Unilend\Entity\{Project, ProjectParticipation, ProjectStatus};
 
 class ListExtension implements QueryCollectionExtensionInterface
 {

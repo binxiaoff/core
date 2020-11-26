@@ -3,7 +3,7 @@
 namespace Unilend\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Entity\LegalDocument;
+use Unilend\Core\Entity\LegalDocument;
 
 class LegalDocumentFixtures extends AbstractFixtures
 {

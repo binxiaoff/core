@@ -9,7 +9,7 @@ use Exception;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
 use Unilend\Traits\ConstantsAwareTrait;
 
 class UserFixtures extends AbstractFixtures

@@ -11,7 +11,8 @@ use Lexik\Bundle\JWTAuthenticationBundle\{Event\AuthenticationSuccessEvent, Even
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Entity\{Clients, Staff};
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\{Staff};
 use Unilend\Repository\ClientsRepository;
 
 class ClientSubscriber implements EventSubscriberInterface

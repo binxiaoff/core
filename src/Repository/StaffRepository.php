@@ -8,8 +8,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\ORMException;
-use Unilend\Entity\Company;
-use Unilend\Entity\Staff;
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Staff;
 
 /**
  * @method Staff|null find($id, $lockMode = null, $lockVersion = null)

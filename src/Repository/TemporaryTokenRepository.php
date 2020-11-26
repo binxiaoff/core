@@ -9,7 +9,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
-use Unilend\Entity\{Clients, TemporaryToken};
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\{TemporaryToken};
 
 /**
  * @method TemporaryToken|null find($id, $lockMode = null, $lockVersion = null)

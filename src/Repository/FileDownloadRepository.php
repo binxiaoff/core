@@ -8,7 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Unilend\Entity\FileDownload;
+use Unilend\Core\Entity\FileDownload;
 
 /**
  * @method FileDownload|null find($id, $lockMode = null, $lockVersion = null)

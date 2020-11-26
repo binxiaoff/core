@@ -16,9 +16,9 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Symfony\Component\Security\Guard\PasswordAuthenticatedInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationFailureHandlerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
+use Unilend\Core\Entity\Clients;
 use Unilend\Core\Exception\Authentication\RecaptchaChallengeFailedException;
 use Unilend\DTO\GoogleRecaptchaResult;
-use Unilend\Entity\Clients;
 use Unilend\Service\GoogleRecaptchaManager;
 
 class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator implements PasswordAuthenticatedInterface

@@ -11,11 +11,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\StaffStatus;
 use Unilend\Entity\ProjectParticipationStatus;
 use Unilend\Entity\ProjectStatus;
-use Unilend\Entity\Staff;
-use Unilend\Entity\StaffStatus;
 use Unilend\Repository\ClientsRepository;
 
 class CurrentStaff implements SerializerContextBuilderInterface

@@ -9,7 +9,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\{Expr\Join};
 use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use PDO;
-use Unilend\Entity\{ClientStatus, Clients, Company, ProjectParticipation, Staff};
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\ClientStatus;
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Staff;
+use Unilend\Entity\{ProjectParticipation};
 
 /**
  * @method Clients|null find($id, $lockMode = null, $lockVersion = null)

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Doctrine\ORM\PersistentCollection;
-use Unilend\Entity\{Clients, MarketSegment, Staff};
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\MarketSegment;
+use Unilend\Core\Entity\{Staff};
 
 class StaffVoter extends AbstractEntityVoter
 {

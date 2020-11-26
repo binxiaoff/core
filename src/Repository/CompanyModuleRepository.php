@@ -8,7 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Unilend\Entity\CompanyModule;
+use Unilend\Core\Entity\CompanyModule;
 
 /**
  * @method CompanyModule|null find($id, $lockMode = null, $lockVersion = null)

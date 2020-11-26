@@ -9,9 +9,9 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Unilend\Entity\Clients;
-use Unilend\Entity\Company;
-use Unilend\Entity\Staff;
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Staff;
 
 class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {

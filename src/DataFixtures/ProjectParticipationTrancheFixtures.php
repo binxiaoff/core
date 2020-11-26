@@ -7,11 +7,11 @@ namespace Unilend\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
+use Unilend\Core\Entity\Staff;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipationStatus;
 use Unilend\Entity\ProjectParticipationTranche;
 use Unilend\Entity\ProjectStatus;
-use Unilend\Entity\Staff;
 use Unilend\Entity\Tranche;
 
 class ProjectParticipationTrancheFixtures extends AbstractFixtures implements DependentFixtureInterface

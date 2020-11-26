@@ -11,7 +11,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
-use Unilend\Entity\ClientFailedLogin;
+use Unilend\Core\Entity\ClientFailedLogin;
 
 /**
  * @method ClientFailedLogin|null find($id, $lockMode = null, $lockVersion = null)

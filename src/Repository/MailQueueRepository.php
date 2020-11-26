@@ -10,7 +10,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Unilend\Entity\{MailQueue};
+use Unilend\Core\Entity\{MailQueue};
 
 /**
  * @method MailQueue|null find($id, $lockMode = null, $lockVersion = null)

@@ -12,8 +12,10 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\FileVersion;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 use Unilend\DTO\AcceptedNDA;
-use Unilend\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 
 /**
  * @ApiResource(
@@ -67,7 +69,7 @@ class ProjectParticipationMember
     /**
      * @var Staff
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff", cascade={"persist"})
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_staff", referencedColumnName="id", nullable=false)
      * })
@@ -94,7 +96,7 @@ class ProjectParticipationMember
     /**
      * @var FileVersion|null
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\FileVersion")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\FileVersion")
      * @ORM\JoinColumn(name="id_accepted_nda_version")
      *
      * @Groups({"projectParticipationMember:read"})

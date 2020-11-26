@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
 use Swift_ConfigurableSpool;
 use Swift_Mime_SimpleMessage;
 use Swift_Transport;
-use Unilend\Entity\MailQueue;
+use Unilend\Core\Entity\MailQueue;
 use Unilend\Repository\MailQueueRepository;
 
 class DatabaseSpool extends Swift_ConfigurableSpool

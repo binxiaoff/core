@@ -10,14 +10,14 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
-use Unilend\Entity\Clients;
-use Unilend\Entity\Embeddable\Money;
-use Unilend\Entity\Embeddable\NullablePerson;
-use Unilend\Entity\File;
-use Unilend\Entity\FileVersion;
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullablePerson;
+use Unilend\Core\Entity\File;
+use Unilend\Core\Entity\FileVersion;
+use Unilend\Core\Entity\Staff;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectStatus;
-use Unilend\Entity\Staff;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

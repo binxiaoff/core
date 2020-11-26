@@ -7,8 +7,8 @@ namespace Unilend\Extension\Staff;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
-use Unilend\Entity\Staff;
-use Unilend\Entity\StaffStatus;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\StaffStatus;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {

@@ -6,7 +6,7 @@ namespace Unilend\Service\File;
 
 use Exception;
 use Symfony\Component\HttpFoundation\{ResponseHeaderBag, StreamedResponse};
-use Unilend\Entity\FileVersion;
+use Unilend\Core\Entity\FileVersion;
 use Unilend\Service\FileSystem\FileSystemHelper;
 
 class FileDownloadManager

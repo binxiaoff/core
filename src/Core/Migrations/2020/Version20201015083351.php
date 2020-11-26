@@ -8,7 +8,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 use Exception;
 use Ramsey\Uuid\Uuid;
-use Unilend\Entity\CompanyModule;
+use Unilend\Core\Entity\CompanyModule;
 
 final class Version20201015083351 extends AbstractMigration
 {

@@ -8,7 +8,7 @@ use Exception;
 use League\Flysystem\FileNotFoundException;
 use SimpleXMLElement;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Entity\FileVersionSignature;
+use Unilend\Core\Entity\FileVersionSignature;
 use Unilend\Service\FileSystem\FileSystemHelper;
 
 class XmlGenerator

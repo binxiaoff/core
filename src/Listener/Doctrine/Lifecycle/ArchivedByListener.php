@@ -8,7 +8,7 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
 use Unilend\Repository\ClientsRepository;
 
 class ArchivedByListener

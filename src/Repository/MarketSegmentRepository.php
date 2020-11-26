@@ -6,7 +6,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Unilend\Entity\MarketSegment;
+use Unilend\Core\Entity\MarketSegment;
 
 /**
  * @method MarketSegment|null find($id, $lockMode = null, $lockVersion = null)

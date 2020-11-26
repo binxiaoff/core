@@ -8,7 +8,7 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
 use Unilend\Entity\ProjectOrganizer;
 
 class ProjectOrganizerNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface

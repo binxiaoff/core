@@ -8,7 +8,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
@@ -66,7 +67,7 @@ class ProjectComment
     /**
      * @var Clients
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Clients")
      * @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
      */
     private $client;

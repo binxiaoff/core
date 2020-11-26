@@ -6,7 +6,9 @@ namespace Unilend\Service\CompanyModule;
 
 use Http\Client\Exception;
 use Nexy\Slack\{ Attachment, AttachmentField, Client as Slack, Exception\SlackApiException, MessageInterface};
-use Unilend\Entity\{Clients, CompanyModule, CompanyModuleLog};
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\CompanyModule;
+use Unilend\Core\Entity\{CompanyModuleLog};
 
 class CompanyModuleNotifier
 {

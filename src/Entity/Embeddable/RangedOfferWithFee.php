@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 
 /**
  * @ORM\Embeddable
@@ -15,7 +16,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class RangedOfferWithFee extends OfferWithFee
 {
     /**
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
      * @Gedmo\Versioned
      *

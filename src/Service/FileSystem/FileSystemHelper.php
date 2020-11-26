@@ -8,7 +8,7 @@ use Defuse\Crypto\Exception\{BadFormatException, EnvironmentIsBrokenException, I
 use Exception;
 use League\Flysystem\{FileExistsException, FilesystemInterface};
 use RuntimeException;
-use Unilend\Entity\FileVersion;
+use Unilend\Core\Entity\FileVersion;
 
 use function Symfony\Component\String\s;
 

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use Unilend\Entity\{Clients, ProjectComment};
+use Unilend\Core\Entity\Clients;
+use Unilend\Entity\{ProjectComment};
 
 class ProjectCommentVoter extends AbstractEntityVoter
 {

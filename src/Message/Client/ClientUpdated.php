@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Message\Client;
 
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
 use Unilend\Message\AsyncMessageInterface;
 
 class ClientUpdated implements AsyncMessageInterface

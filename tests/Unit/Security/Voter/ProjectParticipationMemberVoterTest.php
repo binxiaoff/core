@@ -3,14 +3,14 @@
 namespace Unilend\Test\Unit\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\Clients;
-use Unilend\Entity\Company;
-use Unilend\Entity\Embeddable\Money;
-use Unilend\Entity\MarketSegment;
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\MarketSegment;
+use Unilend\Core\Entity\Staff;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationMember;
-use Unilend\Entity\Staff;
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 

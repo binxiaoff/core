@@ -12,7 +12,9 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
@@ -78,7 +80,7 @@ class ProjectOrganizer
     /**
      * @var Company
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
      * @ORM\JoinColumn(name="id_company", nullable=false)
      *
      * @Assert\NotBlank

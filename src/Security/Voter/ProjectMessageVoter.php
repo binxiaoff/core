@@ -6,7 +6,8 @@ namespace Unilend\Security\Voter;
 
 use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, ProjectMessage};
+use Unilend\Core\Entity\Clients;
+use Unilend\Entity\{ProjectMessage};
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectMessageVoter extends AbstractEntityVoter

@@ -6,7 +6,7 @@ namespace Unilend\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
 
 class UpdatedByListener
 {

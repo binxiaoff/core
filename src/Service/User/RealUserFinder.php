@@ -7,7 +7,7 @@ namespace Unilend\Service\User;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
 
 class RealUserFinder
 {

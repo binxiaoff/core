@@ -6,7 +6,7 @@ namespace Unilend\Controller\FileVersionSignature;
 
 use League\Flysystem\FileNotFoundException;
 use Symfony\Contracts\HttpClient\Exception\{ClientExceptionInterface, RedirectionExceptionInterface, ServerExceptionInterface, TransportExceptionInterface};
-use Unilend\Entity\FileVersionSignature;
+use Unilend\Core\Entity\FileVersionSignature;
 use Unilend\Service\ElectronicSignature\RequestSender;
 
 class Sign

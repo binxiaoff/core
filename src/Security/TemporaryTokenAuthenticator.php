@@ -10,9 +10,9 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\{Exception\AuthenticationException, User\UserInterface, User\UserProviderInterface};
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Unilend\Core\Entity\TemporaryToken;
 use Unilend\Core\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
 use Unilend\Core\Exception\TemporaryToken\InvalidTemporaryTokenException;
-use Unilend\Entity\TemporaryToken;
 use Unilend\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator

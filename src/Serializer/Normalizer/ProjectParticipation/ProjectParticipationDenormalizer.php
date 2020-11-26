@@ -12,8 +12,8 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
-use Unilend\Entity\{Clients,
-    ProjectParticipation,
+use Unilend\Core\Entity\Clients;
+use Unilend\Entity\{ProjectParticipation,
     ProjectParticipationMember,
     ProjectParticipationStatus,
     ProjectParticipationTranche,

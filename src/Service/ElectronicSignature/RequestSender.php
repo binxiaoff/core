@@ -12,7 +12,7 @@ use SimpleXMLElement;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\HttpClient\{Exception\ClientExceptionInterface, Exception\RedirectionExceptionInterface, Exception\ServerExceptionInterface,
     Exception\TransportExceptionInterface, HttpClientInterface, ResponseInterface};
-use Unilend\Entity\FileVersionSignature;
+use Unilend\Core\Entity\FileVersionSignature;
 use Unilend\Repository\FileVersionSignatureRepository;
 
 class RequestSender

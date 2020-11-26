@@ -7,7 +7,7 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Unilend\Entity\Company;
+use Unilend\Core\Entity\Company;
 use Unilend\Repository\Traits\OrderByHandlerTrait;
 
 /**

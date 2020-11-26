@@ -9,7 +9,7 @@ use Exception;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\{EventDispatcher\EventSubscriberInterface, HttpFoundation\Request, HttpKernel\KernelEvents};
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
 use Unilend\Repository\TemporaryTokenRepository;
 
 class ClientProfileUpdatedEventSubscriber implements EventSubscriberInterface

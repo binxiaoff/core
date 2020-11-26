@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Listener\Doctrine\Entity\FileVersion;
 
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
-use Unilend\Entity\FileVersion;
+use Unilend\Core\Entity\FileVersion;
 use Unilend\Service\DataCrypto;
 
 class FileVersionCreatedListener

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Service\ServiceTerms;
 
-use Unilend\Entity\{Clients, LegalDocument};
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\{LegalDocument};
 use Unilend\Repository\{AcceptationLegalDocsRepository, LegalDocumentRepository};
 
 class ServiceTermsManager

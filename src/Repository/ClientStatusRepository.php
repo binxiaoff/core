@@ -6,7 +6,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Unilend\Entity\ClientStatus;
+use Unilend\Core\Entity\ClientStatus;
 
 /**
  * @method ClientStatus|null find($id, $lockMode = null, $lockVersion = null)

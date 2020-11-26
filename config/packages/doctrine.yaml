@@ -44,6 +44,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'Unilend\Entity'
                 alias: Unilend
+            Unilend\Core:
+                is_bundle: false
+                type: annotation
+                dir: '%kernel.project_dir%/src/Core/Entity'
+                prefix: 'Unilend\Core\Entity'
+                alias: Unilend\Core
         hydrators:
             HYDRATE_COLUMN: Unilend\Doctrine\ORM\ColumnHydrator
         filters:

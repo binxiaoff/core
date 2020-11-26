@@ -6,7 +6,7 @@ namespace Unilend\Listener\Doctrine\Entity;
 
 use Exception;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
 
 class ClientPlainPasswordSubmittedListener
 {

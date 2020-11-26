@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\{Request, RequestStack, Session\SessionInterface};
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
 
 /**
  * @todo webhooks: https://developers.docusign.com/esign-rest-api/code-examples/webhook-status

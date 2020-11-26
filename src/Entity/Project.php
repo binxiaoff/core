@@ -16,9 +16,9 @@ use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\{Clients, Company, Embeddable\Money, Embeddable\NullableMoney, Embeddable\NullablePerson, File, Interfaces\MoneyInterface, Interfaces\StatusInterface,
+    Interfaces\TraceableStatusAwareInterface, MarketSegment, Staff, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Core\Filter\ArrayFilter;
-use Unilend\Entity\{Embeddable\Money, Embeddable\NullableMoney, Embeddable\NullablePerson, Interfaces\MoneyInterface, Interfaces\StatusInterface,
-    Interfaces\TraceableStatusAwareInterface, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -215,7 +215,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var Company
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company_submitter", referencedColumnName="id", nullable=false)
      * })
@@ -229,7 +229,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var Clients
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Clients")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_client_submitter",  referencedColumnName="id", nullable=false)
      * })
@@ -254,7 +254,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var MarketSegment
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MarketSegment")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\MarketSegment")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_market_segment", referencedColumnName="id", nullable=false)
      * })
@@ -280,7 +280,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var File|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\File", orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File", orphanRemoval=true)
      * @ORM\JoinColumn(name="id_description_document", unique=true)
      *
      * @Groups({"project:write", "project:read"})
@@ -290,7 +290,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var File|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\File", orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File", orphanRemoval=true)
      * @ORM\JoinColumn(name="id_nda", unique=true)
      *
      * @Groups({"project:write", "project:read"})
@@ -507,7 +507,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var Money
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -537,7 +537,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var NullableMoney
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"project:admin:read", "project:write"})
      */
@@ -557,7 +557,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var NullablePerson
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullablePerson", columnPrefix="privileged_contact_")
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullablePerson", columnPrefix="privileged_contact_")
      *
      * @Assert\Valid
      *

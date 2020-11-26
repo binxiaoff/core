@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Core\Exception\Money;
 
 use InvalidArgumentException;
-use Unilend\Entity\Interfaces\MoneyInterface;
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
 
 class DifferentCurrencyException extends InvalidArgumentException
 {

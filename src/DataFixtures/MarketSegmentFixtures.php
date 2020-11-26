@@ -6,7 +6,7 @@ namespace Unilend\DataFixtures;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Entity\MarketSegment;
+use Unilend\Core\Entity\MarketSegment;
 
 class MarketSegmentFixtures extends AbstractFixtures
 {

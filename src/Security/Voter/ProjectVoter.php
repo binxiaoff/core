@@ -7,7 +7,10 @@ namespace Unilend\Security\Voter;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, CompanyModule, Project, ProjectStatus, Staff};
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\CompanyModule;
+use Unilend\Core\Entity\Staff;
+use Unilend\Entity\{Project, ProjectStatus};
 use Unilend\Service\Project\ProjectManager;
 
 class ProjectVoter extends AbstractEntityVoter

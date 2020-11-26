@@ -5,9 +5,9 @@ namespace Unilend\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
+use Unilend\Core\Entity\Staff;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipationMember;
-use Unilend\Entity\Staff;
 
 class ProjectParticipationMemberFixture extends AbstractFixtures implements DependentFixtureInterface
 {

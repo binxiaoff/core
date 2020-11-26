@@ -9,7 +9,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
+use Unilend\Core\Entity\File;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -52,7 +54,7 @@ class ProjectFile
     private $type;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\File", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File", cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_file", nullable=false, unique=true)
      *
      * @Groups({"projectFile:read"})

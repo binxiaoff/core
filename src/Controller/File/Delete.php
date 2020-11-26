@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Controller\File;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Unilend\Entity\File;
+use Unilend\Core\Entity\File;
 use Unilend\Service\File\FileDeleteManager;
 
 class Delete

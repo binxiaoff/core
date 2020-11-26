@@ -12,4 +12,4 @@ framework:
             # If a message doesn't match any routing rules, it won't be sent to any transport and will be handled immediately.
             # In some cases (like when binding handlers to different transports), it's easier or more flexible to handle this explicitly:
             # by creating a sync transport and "sending" messages there to be handled immediately.
-            'Unilend\Entity\Request\ResetPassword': sync
+            'Unilend\Core\Entity\Request\ResetPassword': sync

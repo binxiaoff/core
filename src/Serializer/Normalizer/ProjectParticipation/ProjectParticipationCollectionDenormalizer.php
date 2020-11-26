@@ -9,11 +9,12 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer, ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
-use Unilend\Entity\{Clients,
-    ProjectParticipation,
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\Staff;
+use Unilend\Entity\{ProjectParticipation,
     ProjectParticipationMember,
-    Request\ProjectParticipationCollection,
-    Staff};
+    Request\ProjectParticipationCollection
+};
 
 class ProjectParticipationCollectionDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

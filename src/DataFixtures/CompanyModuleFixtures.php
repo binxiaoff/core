@@ -7,9 +7,9 @@ namespace Unilend\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use phpDocumentor\Reflection\Types\Nullable;
-use Unilend\Entity\Company;
-use Unilend\Entity\CompanyModule;
-use Unilend\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\CompanyModule;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 
 class CompanyModuleFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

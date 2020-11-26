@@ -5,8 +5,9 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 use Unilend\Entity\Embeddable\Offer;
-use Unilend\Entity\Traits\BlamableAddedTrait;
 
 /**
  * @ORM\Entity

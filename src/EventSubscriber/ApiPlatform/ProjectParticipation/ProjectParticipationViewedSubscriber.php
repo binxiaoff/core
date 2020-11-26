@@ -11,7 +11,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\{Event\RequestEvent, KernelEvents};
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\{Clients, ProjectParticipation};
+use Unilend\Core\Entity\Clients;
+use Unilend\Entity\{ProjectParticipation};
 use Unilend\Repository\ProjectParticipationRepository;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Core\Validator\Constraints;
 
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Entity\Interfaces\StatusInterface;
+use Unilend\Core\Entity\Interfaces\StatusInterface;
 
 class TraceableStatusValidator
 {

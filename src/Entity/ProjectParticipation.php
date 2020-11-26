@@ -13,9 +13,13 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\{Constraints as Assert, Context\ExecutionContextInterface};
-use Unilend\Entity\Embeddable\{NullableMoney, Offer, OfferWithFee, RangedOfferWithFee};
-use Unilend\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableStatusAwareInterface};
-use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\File;
+use Unilend\Core\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableStatusAwareInterface};
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithFee};
 use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -184,7 +188,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Company
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Company")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
      * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      *
      * @Groups({"projectParticipation:read", "projectParticipation:create"})
@@ -384,7 +388,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var File|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\File")
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File")
      * @ORM\JoinColumn(name="id_nda")
      *
      * @Groups({

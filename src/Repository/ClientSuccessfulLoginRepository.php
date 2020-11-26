@@ -7,7 +7,7 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Unilend\Entity\ClientSuccessfulLogin;
+use Unilend\Core\Entity\ClientSuccessfulLogin;
 
 /**
  * @method ClientSuccessfulLogin|null find($id, $lockMode = null, $lockVersion = null)

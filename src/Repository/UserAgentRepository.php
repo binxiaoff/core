@@ -6,8 +6,8 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Unilend\Entity\Clients;
-use Unilend\Entity\UserAgent;
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\UserAgent;
 use UserAgentParser\Model\Browser;
 use UserAgentParser\Model\Device;
 

@@ -11,10 +11,10 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\Staff;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\ProjectParticipationMember;
-use Unilend\Entity\Staff;
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 
 class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface

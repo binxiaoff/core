@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
-use Unilend\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 class UuidListener
 {

@@ -9,7 +9,8 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Unilend\Entity\{Project, ProjectParticipationMember, Staff};
+use Unilend\Core\Entity\Staff;
+use Unilend\Entity\{Project, ProjectParticipationMember};
 
 /**
  * @method ProjectParticipationMember|null find($id, $lockMode = null, $lockVersion = null)

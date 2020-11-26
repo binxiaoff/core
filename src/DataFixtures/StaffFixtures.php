@@ -6,10 +6,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Unilend\Entity\Clients;
-use Unilend\Entity\Company;
-use Unilend\Entity\Staff;
-use Unilend\Entity\StaffStatus;
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\StaffStatus;
 
 class StaffFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

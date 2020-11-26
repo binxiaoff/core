@@ -6,7 +6,8 @@ namespace Unilend\Service;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
-use Unilend\Entity\{Clients, TemporaryToken};
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\{TemporaryToken};
 use Unilend\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenGenerator

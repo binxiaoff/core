@@ -7,12 +7,13 @@ namespace Unilend\Security\Voter;
 use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients,
-    CompanyModule,
-    Project,
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\CompanyModule;
+use Unilend\Core\Entity\Staff;
+use Unilend\Entity\{Project,
     ProjectParticipation,
-    ProjectStatus,
-    Staff};
+    ProjectStatus
+};
 use Unilend\Service\Project\ProjectManager;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 

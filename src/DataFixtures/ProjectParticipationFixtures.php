@@ -9,7 +9,9 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use ReflectionException;
-use Unilend\Entity\{Company, Project, ProjectParticipation, ProjectParticipationStatus, ProjectStatus, Staff};
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Staff;
+use Unilend\Entity\{Project, ProjectParticipation, ProjectParticipationStatus, ProjectStatus};
 
 class ProjectParticipationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

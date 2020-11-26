@@ -6,7 +6,8 @@ namespace Unilend\Service\UserActivity;
 
 use Exception;
 use Psr\Log\LoggerInterface;
-use Unilend\Entity\{Clients, UserAgent};
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\{UserAgent};
 use Unilend\Repository\UserAgentRepository;
 use UserAgentParser\Model\UserAgent as Model;
 use UserAgentParser\Provider\Chain as UserAgentParser;

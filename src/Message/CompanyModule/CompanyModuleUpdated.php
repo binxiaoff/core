@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Message\CompanyModule;
 
-use Unilend\Entity\CompanyModule;
+use Unilend\Core\Entity\CompanyModule;
 use Unilend\Message\AsyncMessageInterface;
 
 class CompanyModuleUpdated implements AsyncMessageInterface

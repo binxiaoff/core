@@ -7,7 +7,7 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Unilend\Entity\LegalDocument;
+use Unilend\Core\Entity\LegalDocument;
 
 /**
  * @method LegalDocument|null find($id, $lockMode = null, $lockVersion = null)

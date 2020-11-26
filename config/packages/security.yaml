@@ -1,11 +1,11 @@
 security:
     encoders:
-        Unilend\Entity\Clients:
+        Unilend\Core\Entity\Clients:
             algorithm: 'auto'
 
     providers:
         database_users:
-            entity: { class: Unilend\Entity\Clients, property: email }
+            entity: { class: Unilend\Core\Entity\Clients, property: email }
 
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER

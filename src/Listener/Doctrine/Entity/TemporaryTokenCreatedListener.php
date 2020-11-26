@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Listener\Doctrine\Entity;
 
 use Exception;
-use Unilend\Entity\TemporaryToken;
+use Unilend\Core\Entity\TemporaryToken;
 use Unilend\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenCreatedListener

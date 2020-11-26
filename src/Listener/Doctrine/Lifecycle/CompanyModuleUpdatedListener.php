@@ -7,9 +7,9 @@ namespace Unilend\Listener\Doctrine\Lifecycle;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Exception;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\Clients;
-use Unilend\Entity\CompanyModule;
-use Unilend\Entity\CompanyModuleLog;
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\CompanyModule;
+use Unilend\Core\Entity\CompanyModuleLog;
 
 /**
  * TODO Refactor because we should not use doctrine for automatic insert of log

@@ -7,7 +7,7 @@ namespace Unilend\Security\Voter;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
 use Unilend\Traits\ConstantsAwareTrait;
 
 abstract class AbstractEntityVoter extends Voter

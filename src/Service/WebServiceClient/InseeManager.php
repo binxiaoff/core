@@ -6,7 +6,7 @@ namespace Unilend\Service\WebServiceClient;
 
 use GuzzleHttp\Client;
 use Symfony\Component\HttpFoundation\Response;
-use Unilend\Entity\Company;
+use Unilend\Core\Entity\Company;
 
 class InseeManager
 {

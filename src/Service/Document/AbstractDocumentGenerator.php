@@ -7,7 +7,7 @@ namespace Unilend\Service\Document;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use InvalidArgumentException;
 use RuntimeException;
-use Unilend\Entity\Interfaces\FileStorageInterface;
+use Unilend\Core\Entity\Interfaces\FileStorageInterface;
 
 abstract class AbstractDocumentGenerator
 {

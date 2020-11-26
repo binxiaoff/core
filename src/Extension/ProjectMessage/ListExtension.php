@@ -9,10 +9,10 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\Staff;
 use Unilend\Entity\ProjectMessage;
 use Unilend\Entity\ProjectOrganizer;
-use Unilend\Entity\Staff;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use Unilend\Entity\Clients;
-use Unilend\Entity\StaffStatus;
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\StaffStatus;
 
 class StaffStatusVoter extends AbstractEntityVoter
 {

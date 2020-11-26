@@ -7,7 +7,7 @@ namespace Unilend\Serializer\Normalizer\Client;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
 use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 class ClientNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface

@@ -11,7 +11,9 @@ use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Entity\{Clients, Company, CompanyStatus};
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\{CompanyStatus};
 
 class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

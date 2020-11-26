@@ -11,9 +11,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\{Constraints as Assert, Context\ExecutionContextInterface};
-use Unilend\Entity\Embeddable\{LendingRate, Money, NullableMoney};
-use Unilend\Entity\Interfaces\MoneyInterface;
-use Unilend\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Entity\Embeddable\LendingRate;
+use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\{NullableMoney};
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
+use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -170,7 +172,7 @@ class Tranche
     /**
      * @var Money
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -184,7 +186,7 @@ class Tranche
     /**
      * @var LendingRate
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\LendingRate")
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\LendingRate")
      *
      * @Assert\NotBlank
      * @Assert\Valid

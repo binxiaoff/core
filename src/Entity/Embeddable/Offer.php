@@ -10,6 +10,7 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 
 /**
  * @ORM\Embeddable
@@ -19,7 +20,7 @@ class Offer
     /**
      * @var NullableMoney
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
      * @Assert\Valid
      *

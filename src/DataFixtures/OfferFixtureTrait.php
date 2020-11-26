@@ -3,8 +3,8 @@
 namespace Unilend\DataFixtures;
 
 use Exception;
-use Unilend\Entity\Embeddable\Money;
-use Unilend\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Entity\Embeddable\Offer;
 use Unilend\Entity\Embeddable\OfferWithFee;
 use Unilend\Entity\Embeddable\RangedOfferWithFee;

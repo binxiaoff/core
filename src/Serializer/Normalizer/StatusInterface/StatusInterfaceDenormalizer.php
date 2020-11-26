@@ -8,7 +8,7 @@ use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
-use Unilend\Entity\Interfaces\StatusInterface;
+use Unilend\Core\Entity\Interfaces\StatusInterface;
 
 class StatusInterfaceDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

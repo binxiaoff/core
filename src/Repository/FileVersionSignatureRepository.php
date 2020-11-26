@@ -7,7 +7,7 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Unilend\Entity\FileVersionSignature;
+use Unilend\Core\Entity\FileVersionSignature;
 
 /**
  * @method FileVersionSignature|null find($id, $lockMode = null, $lockVersion = null)

@@ -7,7 +7,7 @@ namespace Unilend\Listener\Doctrine\Lifecycle;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\Clients;
+use Unilend\Core\Entity\Clients;
 use Unilend\Entity\InterestReplyVersion;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Repository\ClientsRepository;

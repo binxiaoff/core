@@ -9,7 +9,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Unilend\Entity\Staff;
+use Unilend\Core\Entity\Staff;
 
 class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
