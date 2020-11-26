@@ -41,19 +41,6 @@ class Bitmask
         return $this;
     }
 
-
-    /**
-     * @param int|Bitmask|array $bitmask
-     *
-     * @return $this
-     */
-    public function set($bitmask): Bitmask
-    {
-        $this->bitmask = $this->normalize($bitmask);
-
-        return $this;
-    }
-
     /**
      * @return int
      */
