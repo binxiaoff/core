@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\DataTransformer;
+namespace Unilend\Core\DataTransformer;
 
 use ApiPlatform\Core\Validator\ValidatorInterface;
 use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, IOException};
