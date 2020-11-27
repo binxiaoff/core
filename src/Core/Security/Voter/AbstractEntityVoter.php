@@ -14,8 +14,6 @@ abstract class AbstractEntityVoter extends Voter
 {
     use ConstantsAwareTrait;
 
-    protected const UNILEND_ENTITY_NAMESPACE = 'Unilend\\Entity\\';
-
     /** @var AuthorizationCheckerInterface */
     protected AuthorizationCheckerInterface $authorizationChecker;
 
@@ -32,7 +30,13 @@ abstract class AbstractEntityVoter extends Voter
      */
     final protected function supports($attribute, $subject): bool
     {
-        $entityClass = static::UNILEND_ENTITY_NAMESPACE . str_replace(['Unilend\\Core\\Security\\Voter\\', 'Voter'], '', static::class);
+        $domain = explode('\\', static::class)[1];
+
+        // TODO remove domain condition when all files are moved in their specific domain
+        $domain = $domain !== 'Security' ? $domain : '';
+
+        $entityClass = 'Unilend\\' . $domain . '\\Entity\\'
+            . str_replace(['Unilend\\Core\\Security\\Voter\\', 'Voter', 'Unilend\\Security\\Voter\\'], '', static::class);
 
         return $subject instanceof $entityClass && \in_array($attribute, static::getConstants('ATTRIBUTE_'), true);
     }
