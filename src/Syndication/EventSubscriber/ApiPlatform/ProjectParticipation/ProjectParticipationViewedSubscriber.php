@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\EventSubscriber\ApiPlatform\ProjectParticipation;
+namespace Unilend\Syndication\EventSubscriber\ApiPlatform\ProjectParticipation;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\ORM\{ORMException, OptimisticLockException};

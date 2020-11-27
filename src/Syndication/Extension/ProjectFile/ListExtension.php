@@ -2,22 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Extension\ProjectMessage;
+namespace Unilend\Syndication\Extension\ProjectFile;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
-use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\Staff;
-use Unilend\Syndication\Entity\ProjectMessage;
-use Unilend\Syndication\Entity\ProjectOrganizer;
+use Unilend\Syndication\Entity\{ProjectFile};
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
     /** @var Security */
-    private $security;
+    private Security $security;
 
     /**
      * @param Security $security
@@ -35,29 +32,20 @@ class ListExtension implements QueryCollectionExtensionInterface
      */
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
     {
-        if (ProjectMessage::class !== $resourceClass || $this->security->isGranted(Clients::ROLE_ADMIN)) {
+        if (ProjectFile::class !== $resourceClass || $this->security->isGranted(Clients::ROLE_ADMIN)) {
             return;
         }
+
         /** @var Clients $user */
-        $user = $this->security->getUser();
-        if (!$user instanceof Clients) {
-            return;
-        }
+        $user  = $this->security->getUser();
+        $staff = $user instanceof Clients ? $user->getCurrentStaff() : null;
 
-        $staff = $user->getCurrentStaff();
-        if (!$staff instanceof Staff) {
-            return;
+        // External banks can't access to KYC files
+        if (!$staff->getCompany()->isCAGMember()) {
+            $rootAlias = $queryBuilder->getRootAliases()[0];
+            $queryBuilder
+                ->andWhere($rootAlias . '.type != :kyc')
+                ->setParameter('kyc', ProjectFile::PROJECT_FILE_TYPE_KYC);
         }
-
-        $rootAlias = $queryBuilder->getRootAliases()[0];
-        $queryBuilder
-            ->distinct()
-            ->innerJoin($rootAlias . '.participation', 'pp')
-            ->leftJoin('pp.projectParticipationMembers', 'ppc')
-            ->leftJoin('pp.project', 'project')
-            ->andWhere('(ppc.staff = :staff AND ppc.archived IS NULL) OR :company = organizer.company')
-            ->setParameter('staff', $staff)
-            ->setParameter('company', $staff->getCompany())
-        ;
     }
 }

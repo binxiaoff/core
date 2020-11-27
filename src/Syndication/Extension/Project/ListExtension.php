@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Extension\Project;
+namespace Unilend\Syndication\Extension\Project;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
