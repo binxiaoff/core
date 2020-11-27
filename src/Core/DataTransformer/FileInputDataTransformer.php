@@ -17,13 +17,13 @@ use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Service\File\FileUploadManager;
-use Unilend\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
 use Unilend\Service\Project\ProjectManager;
 use Unilend\Syndication\Entity\{Project,
     ProjectFile,
     ProjectParticipation
 };
 use Unilend\Syndication\Repository\{ProjectFileRepository, ProjectRepository};
+use Unilend\Syndication\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
 
 class FileInputDataTransformer
 {

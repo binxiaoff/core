@@ -13,9 +13,9 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ObjectToPopulateTrait};
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Staff;
-use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 use Unilend\Syndication\Entity\ProjectParticipation;
 use Unilend\Syndication\Entity\ProjectParticipationMember;
+use Unilend\Syndication\Security\Voter\ProjectParticipationMemberVoter;
 
 class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

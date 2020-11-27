@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Security\Voter;
+namespace Unilend\Syndication\Security\Voter;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;

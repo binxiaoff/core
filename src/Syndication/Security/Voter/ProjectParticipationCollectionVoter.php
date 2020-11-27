@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Security\Voter;
+namespace Unilend\Syndication\Security\Voter;
 
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\Syndication\Entity\Request\ProjectParticipationCollection;

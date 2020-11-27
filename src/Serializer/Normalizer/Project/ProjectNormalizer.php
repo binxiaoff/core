@@ -12,8 +12,8 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Staff;
-use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Syndication\Entity\{Project};
+use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {

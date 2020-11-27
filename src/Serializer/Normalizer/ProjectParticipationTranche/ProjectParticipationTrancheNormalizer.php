@@ -9,8 +9,8 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ContextAwareNormalizerInterface,
     NormalizerAwareInterface,
     NormalizerAwareTrait};
-use Unilend\Security\Voter\ProjectParticipationTrancheVoter;
 use Unilend\Syndication\Entity\ProjectParticipationTranche;
+use Unilend\Syndication\Security\Voter\ProjectParticipationTrancheVoter;
 
 class ProjectParticipationTrancheNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
