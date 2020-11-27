@@ -6,9 +6,9 @@ namespace Unilend\Service\Project;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Unilend\Core\Entity\Staff;
-use Unilend\Repository\ProjectParticipationMemberRepository;
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectParticipationMember;
+use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ProjectManager
 {

@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\MessageHandler\Project;
+namespace Unilend\Syndication\MessageHandler\Project;
 
 use Doctrine\ORM\{NoResultException, NonUniqueResultException};
 use Http\Client\Exception;
 use Nexy\Slack\Exception\SlackApiException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Message\Project\ProjectStatusUpdated;
-use Unilend\Repository\ProjectRepository;
 use Unilend\Service\Project\ProjectNotifier;
 use Unilend\Service\ProjectParticipationMember\ProjectParticipationMemberNotifier;
 use Unilend\Syndication\Entity\ProjectStatus;
+use Unilend\Syndication\Message\Project\ProjectStatusUpdated;
+use Unilend\Syndication\Repository\ProjectRepository;
 
 class ProjectStatusUpdatedHandler implements MessageHandlerInterface
 {

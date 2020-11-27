@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Repository;
+namespace Unilend\Syndication\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;

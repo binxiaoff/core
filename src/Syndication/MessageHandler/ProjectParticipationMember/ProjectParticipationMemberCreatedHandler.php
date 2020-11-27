@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\MessageHandler\ProjectParticipationMember;
+namespace Unilend\Syndication\MessageHandler\ProjectParticipationMember;
 
 use InvalidArgumentException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Message\ProjectParticipationMember\ProjectParticipationMemberCreated;
-use Unilend\Repository\ProjectParticipationMemberRepository;
 use Unilend\Service\{ProjectParticipationMember\ProjectParticipationMemberNotifier};
+use Unilend\Syndication\Message\ProjectParticipationMember\ProjectParticipationMemberCreated;
+use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ProjectParticipationMemberCreatedHandler implements MessageHandlerInterface
 {

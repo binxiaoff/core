@@ -6,8 +6,8 @@ namespace Unilend\Syndication\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Unilend\Repository\ProjectParticipationRepository;
 use Unilend\Syndication\Entity\Request\ProjectParticipationCollection;
+use Unilend\Syndication\Repository\ProjectParticipationRepository;
 
 class ProjectParticipationCollectionDataPersister implements DataPersisterInterface
 {

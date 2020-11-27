@@ -39,7 +39,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *     }
  * )
  *
- * @ORM\Entity(repositoryClass="Unilend\Repository\TrancheRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Syndication\Repository\TrancheRepository")
  * @ORM\HasLifecycleCallbacks
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedTranche")

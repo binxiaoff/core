@@ -12,9 +12,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\{Event\RequestEvent, KernelEvents};
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Clients;
-use Unilend\Repository\ProjectParticipationRepository;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 use Unilend\Syndication\Entity\{ProjectParticipation};
+use Unilend\Syndication\Repository\ProjectParticipationRepository;
 
 class ProjectParticipationViewedSubscriber implements EventSubscriberInterface
 {

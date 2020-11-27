@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Message\Project;
+namespace Unilend\Syndication\Message\Project;
 
 use Unilend\Core\Message\AsyncMessageInterface;
 use Unilend\Syndication\Entity\Project;

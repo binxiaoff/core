@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Message\ProjectParticipationMember;
+namespace Unilend\Syndication\Message\ProjectParticipationMember;
 
 use Unilend\Core\Message\AsyncMessageInterface;
 use Unilend\Syndication\Entity\ProjectParticipationMember;

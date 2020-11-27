@@ -8,8 +8,8 @@ use InvalidArgumentException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Core\Message\File\FileUploaded;
-use Unilend\Repository\ProjectRepository;
 use Unilend\Service\Project\ProjectNotifier;
+use Unilend\Syndication\Repository\ProjectRepository;
 
 class FileUploadedHandler implements MessageHandlerInterface
 {
