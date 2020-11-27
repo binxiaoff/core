@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\DataFixtures;
+namespace Unilend\Syndication\DataFixtures;
 
 use DateTimeImmutable;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -10,16 +10,8 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\Core\DataFixtures\MarketSegmentFixtures;
-use Unilend\Core\DataFixtures\StaffFixtures;
-use Unilend\Core\DataFixtures\UserFixtures;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullablePerson;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\Staff;
+use Unilend\Core\DataFixtures\{AbstractFixtures, MarketSegmentFixtures, StaffFixtures, UserFixtures};
+use Unilend\Core\Entity\{Clients, Embeddable\Money, Embeddable\NullablePerson, File, FileVersion, Staff};
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectStatus;
 

@@ -1,10 +1,9 @@
 <?php
 
-namespace Unilend\DataFixtures;
+namespace Unilend\Syndication\DataFixtures;
 
 use Exception;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Embeddable\{Money, NullableMoney};
 use Unilend\Entity\Embeddable\Offer;
 use Unilend\Entity\Embeddable\OfferWithFee;
 use Unilend\Entity\Embeddable\RangedOfferWithFee;
@@ -33,6 +32,8 @@ trait OfferFixtureTrait
      * @param float $rate
      *
      * @return RangedOfferWithFee
+     *
+     * @throws Exception
      */
     public function createRangedOffer(int $min, int $max, float $rate = 0.03): RangedOfferWithFee
     {

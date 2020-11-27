@@ -1,11 +1,10 @@
 <?php
 
-namespace Unilend\DataFixtures;
+namespace Unilend\Syndication\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\Core\DataFixtures\CompanyFixtures;
+use Unilend\Core\DataFixtures\{AbstractFixtures, CompanyFixtures};
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Entity\{Project, Tranche};

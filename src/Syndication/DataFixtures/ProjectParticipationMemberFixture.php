@@ -1,12 +1,11 @@
 <?php
 
-namespace Unilend\DataFixtures;
+namespace Unilend\Syndication\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\Core\DataFixtures\StaffFixtures;
+use Unilend\Core\DataFixtures\{AbstractFixtures, StaffFixtures};
 use Unilend\Core\Entity\Staff;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipationMember;
