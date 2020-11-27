@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\DataPersister;
+namespace Unilend\Syndication\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
