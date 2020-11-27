@@ -13,14 +13,14 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
 use Unilend\Core\Entity\Clients;
-use Unilend\Service\Project\ProjectManager;
-use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 use Unilend\Syndication\Entity\{ProjectParticipation,
     ProjectParticipationMember,
     ProjectParticipationStatus,
     ProjectParticipationTranche,
     ProjectStatus};
 use Unilend\Syndication\Security\Voter\ProjectParticipationMemberVoter;
+use Unilend\Syndication\Service\Project\ProjectManager;
+use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

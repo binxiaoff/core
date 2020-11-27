@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service\Project;
+namespace Unilend\Syndication\Service\Project;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Unilend\Core\Entity\Staff;

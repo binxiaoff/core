@@ -11,12 +11,12 @@ use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\Service\Project\ProjectManager;
-use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 use Unilend\Syndication\Entity\{Project,
     ProjectParticipation,
     ProjectStatus
 };
+use Unilend\Syndication\Service\Project\ProjectManager;
+use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationVoter extends AbstractEntityVoter
 {

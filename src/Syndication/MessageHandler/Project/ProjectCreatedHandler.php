@@ -8,9 +8,9 @@ use Doctrine\ORM\{NoResultException, NonUniqueResultException};
 use Http\Client\Exception;
 use Nexy\Slack\Exception\SlackApiException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Unilend\Service\Project\ProjectNotifier;
 use Unilend\Syndication\Message\Project\ProjectCreated;
 use Unilend\Syndication\Repository\ProjectRepository;
+use Unilend\Syndication\Service\Project\ProjectNotifier;
 
 class ProjectCreatedHandler implements MessageHandlerInterface
 {

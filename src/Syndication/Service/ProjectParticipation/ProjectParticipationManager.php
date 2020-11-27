@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service\ProjectParticipation;
+namespace Unilend\Syndication\Service\ProjectParticipation;
 
 use Unilend\Core\Entity\Staff;
-use Unilend\Service\Project\ProjectManager;
 use Unilend\Syndication\Entity\{ProjectParticipation};
 use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
+use Unilend\Syndication\Service\Project\ProjectManager;
 
 class ProjectParticipationManager
 {

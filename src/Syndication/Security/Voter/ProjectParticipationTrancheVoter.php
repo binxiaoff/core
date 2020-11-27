@@ -8,8 +8,8 @@ use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 use Unilend\Syndication\Entity\{Project, ProjectParticipationStatus, ProjectParticipationTranche};
+use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationTrancheVoter extends AbstractEntityVoter
 {

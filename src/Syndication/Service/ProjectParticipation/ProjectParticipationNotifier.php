@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service\ProjectParticipation;
+namespace Unilend\Syndication\Service\ProjectParticipation;
 
 use JsonException;
 use Swift_Mailer;

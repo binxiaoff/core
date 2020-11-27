@@ -8,10 +8,10 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use Unilend\Service\ProjectParticipation\ProjectParticipationNotifier;
 use Unilend\Syndication\Entity\ProjectParticipationStatus;
 use Unilend\Syndication\Message\ProjectParticipation\ProjectParticipationStatusUpdated;
 use Unilend\Syndication\Repository\ProjectParticipationRepository;
+use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationNotifier;
 
 class ProjectParticipationStatusUpdatedHandler implements MessageHandlerInterface
 {

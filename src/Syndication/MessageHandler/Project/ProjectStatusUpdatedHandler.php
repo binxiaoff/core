@@ -9,11 +9,11 @@ use Http\Client\Exception;
 use Nexy\Slack\Exception\SlackApiException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Service\Project\ProjectNotifier;
-use Unilend\Service\ProjectParticipationMember\ProjectParticipationMemberNotifier;
 use Unilend\Syndication\Entity\ProjectStatus;
 use Unilend\Syndication\Message\Project\ProjectStatusUpdated;
 use Unilend\Syndication\Repository\ProjectRepository;
+use Unilend\Syndication\Service\Project\ProjectNotifier;
+use Unilend\Syndication\Service\ProjectParticipationMember\ProjectParticipationMemberNotifier;
 
 class ProjectStatusUpdatedHandler implements MessageHandlerInterface
 {

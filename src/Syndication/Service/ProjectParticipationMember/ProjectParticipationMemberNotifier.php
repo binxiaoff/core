@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service\ProjectParticipationMember;
+namespace Unilend\Syndication\Service\ProjectParticipationMember;
 
 use Exception;
 use Swift_Mailer;

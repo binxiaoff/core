@@ -8,8 +8,8 @@ use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 use Unilend\Syndication\Entity\{ProjectMessage};
+use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectMessageVoter extends AbstractEntityVoter
 {
