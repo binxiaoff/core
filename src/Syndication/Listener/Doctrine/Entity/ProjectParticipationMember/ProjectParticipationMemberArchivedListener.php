@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Entity\ProjectParticipationMember;
+namespace Unilend\Syndication\Listener\Doctrine\Entity\ProjectParticipationMember;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Symfony\Component\Security\Core\Security;

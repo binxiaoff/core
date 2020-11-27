@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Lifecycle;
+namespace Unilend\Syndication\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\{EntityManager, Event\OnFlushEventArgs, ORMException};
 use Exception;

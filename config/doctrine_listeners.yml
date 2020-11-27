@@ -26,15 +26,15 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Core\Entity\FileVersion, method: blockUpdating }
 
-    Unilend\Listener\Doctrine\Entity\Project\ProjectCreatedListener:
+    Unilend\Syndication\Listener\Doctrine\Entity\Project\ProjectCreatedListener:
         tags:
             - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Syndication\Entity\Project, method: purify }
 
-    Unilend\Listener\Doctrine\Entity\Project\ProjectUpdatedListener:
+    Unilend\Syndication\Listener\Doctrine\Entity\Project\ProjectUpdatedListener:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Syndication\Entity\Project, method: purify }
 
-    Unilend\Listener\Doctrine\Entity\ProjectParticipationMember\ProjectParticipationMemberArchivedListener:
+    Unilend\Syndication\Listener\Doctrine\Entity\ProjectParticipationMember\ProjectParticipationMemberArchivedListener:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Syndication\Entity\ProjectParticipationMember, method: setArchivedBy }
 
@@ -44,11 +44,11 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Core\Entity\Clients }
 
-    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectCreatedListener:
+    Unilend\Syndication\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectCreatedListener:
         tags:
             - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Syndication\Entity\Project }
 
-    Unilend\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationMember\ProjectParticipationMemberCreatedListener:
+    Unilend\Syndication\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationMember\ProjectParticipationMemberCreatedListener:
         tags:
             - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Syndication\Entity\ProjectParticipationMember }
 
@@ -56,11 +56,11 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Core\Entity\Staff}
 
-    Unilend\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectUpdatedListener:
+    Unilend\Syndication\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectUpdatedListener:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Syndication\Entity\Project}
 
-    Unilend\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipation\ProjectParticipationUpdatedListener:
+    Unilend\Syndication\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipation\ProjectParticipationUpdatedListener:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Syndication\Entity\ProjectParticipation}
 
@@ -89,7 +89,7 @@ services:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\Listener\Doctrine\Lifecycle\ProjectStatusUpdatedListener:
+    Unilend\Syndication\Listener\Doctrine\Lifecycle\ProjectStatusUpdatedListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
@@ -97,11 +97,11 @@ services:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\Listener\Doctrine\Lifecycle\ProjectParticipationUpdated:
+    Unilend\Syndication\Listener\Doctrine\Lifecycle\ProjectParticipationUpdated:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\Listener\Doctrine\Lifecycle\ProjectParticipationTrancheUpdatedListener:
+    Unilend\Syndication\Listener\Doctrine\Lifecycle\ProjectParticipationTrancheUpdatedListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 

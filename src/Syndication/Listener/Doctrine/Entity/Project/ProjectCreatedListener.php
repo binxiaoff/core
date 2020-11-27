@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Entity\Project;
+namespace Unilend\Syndication\Listener\Doctrine\Entity\Project;
 
 use HTMLPurifier;
 use Unilend\Syndication\Entity\Project;

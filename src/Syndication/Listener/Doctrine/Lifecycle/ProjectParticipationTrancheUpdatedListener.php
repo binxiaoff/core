@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Lifecycle;
+namespace Unilend\Syndication\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Repository\ClientsRepository;
-use Unilend\Syndication\Entity\InterestReplyVersion;
-use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\InvitationReplyVersion;
+use Unilend\Syndication\Entity\ProjectParticipationTranche;
 
-class ProjectParticipationUpdated
+class ProjectParticipationTrancheUpdatedListener
 {
     /** @var Security */
     private Security $security;
@@ -20,7 +20,8 @@ class ProjectParticipationUpdated
     /** @var ClientsRepository */
     private ClientsRepository $clientsRepository;
 
-    public const INTEREST_REPLY_PROPERTY = 'interestReply.money.amount';
+    public array $idsProjectParticipations = [];
+    public const INVITATION_REPLY_PROPERTY = 'invitationReply.money.amount';
 
     /**
      * @param Security          $security
@@ -43,7 +44,7 @@ class ProjectParticipationUpdated
         $uow = $em->getUnitOfWork();
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
-            if ($entity instanceof ProjectParticipation && array_key_exists(self::INTEREST_REPLY_PROPERTY, $uow->getEntityChangeSet($entity))) {
+            if ($entity instanceof ProjectParticipationTranche && array_key_exists(self::INVITATION_REPLY_PROPERTY, $uow->getEntityChangeSet($entity))) {
                 /** @var Clients $user */
                 $user = $this->security->getUser();
 
@@ -51,9 +52,16 @@ class ProjectParticipationUpdated
                     $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
                 }
 
-                $version = new InterestReplyVersion($entity, $user->getCurrentStaff());
-                $em->persist($version);
-                $uow->computeChangeSet($em->getClassMetadata(InterestReplyVersion::class), $version);
+                $projectParticipation = $entity->getProjectParticipation();
+
+                if (!in_array($projectParticipation->getPublicId(), $this->idsProjectParticipations)) {
+                    foreach ($projectParticipation->getProjectParticipationTranches() as $projectParticipationTranche) {
+                        $version = new InvitationReplyVersion($projectParticipationTranche, $user->getCurrentStaff());
+                        $em->persist($version);
+                        $uow->computeChangeSet($em->getClassMetadata(InvitationReplyVersion::class), $version);
+                    }
+                    $this->idsProjectParticipations[] = $projectParticipation->getPublicId();
+                }
             }
         }
     }

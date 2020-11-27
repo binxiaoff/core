@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Doctrine\Entity\MessageDispatcher\Project;
+namespace Unilend\Syndication\Listener\Doctrine\Entity\MessageDispatcher\Project;
 
 use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
 use Unilend\Message\Project\ProjectCreated;
