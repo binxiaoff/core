@@ -32,7 +32,6 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  * )
  *
  * @ORM\Entity
- * @ORM\HasLifecycleCallbacks
  */
 class LegalDocument
 {
