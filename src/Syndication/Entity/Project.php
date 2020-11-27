@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity;
+namespace Unilend\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\{NumericFilter, SearchFilter};
@@ -149,7 +149,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProject")
+ * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedProject")
  */
 class Project implements TraceableStatusAwareInterface
 {
@@ -392,7 +392,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var ProjectParticipation[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
      *
      * @MaxDepth(2)
      *
@@ -405,14 +405,14 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var ProjectOrganizer[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectOrganizer", mappedBy="project", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectOrganizer", mappedBy="project", cascade={"persist"})
      */
     private Collection $organizers;
 
     /**
      * @var ProjectComment[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectComment", mappedBy="project")
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectComment", mappedBy="project")
      * @ORM\OrderBy({"added": "DESC"})
      *
      * @Groups({"project:read"})
@@ -422,7 +422,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var Tranche[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Tranche", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\Tranche", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      *
      * @Assert\Valid
      *
@@ -433,7 +433,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var ProjectStatus
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="Unilend\Syndication\Entity\ProjectStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -446,7 +446,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var ProjectStatus[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      * @ORM\OrderBy({"added": "ASC"})
      *
      * @Groups({"project:read"})
@@ -498,7 +498,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var Collection|Tag[]
      *
-     * @ORM\ManyToMany(targetEntity="Unilend\Entity\Tag", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="Unilend\Syndication\Entity\Tag", cascade={"persist"})
      *
      * @Groups({"project:read", "project:write"})
      */

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity;
+namespace Unilend\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
@@ -68,7 +68,7 @@ class ProjectOrganizer
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="organizers")
+     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Project", inversedBy="organizers")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank

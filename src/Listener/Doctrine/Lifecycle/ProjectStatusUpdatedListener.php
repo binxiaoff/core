@@ -8,7 +8,7 @@ use Doctrine\ORM\{EntityManager, Event\OnFlushEventArgs, ORMException};
 use Exception;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Clients;
-use Unilend\Entity\{Embeddable\Offer, Project, ProjectParticipationStatus, ProjectParticipationTranche, ProjectStatus, Tranche};
+use Unilend\Syndication\Entity\{Embeddable\Offer, Project, ProjectParticipationStatus, ProjectParticipationTranche, ProjectStatus, Tranche};
 
 /**
  * TODO Refactor because we should not use doctrine for automatic status action

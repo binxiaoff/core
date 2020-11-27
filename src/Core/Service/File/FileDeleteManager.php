@@ -8,9 +8,9 @@ use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
 use Unilend\Core\Entity\File;
-use Unilend\Entity\{Project, ProjectFile};
 use Unilend\Repository\{ProjectFileRepository, ProjectRepository};
 use Unilend\Security\Voter\{ProjectFileVoter, ProjectVoter};
+use Unilend\Syndication\Entity\{Project, ProjectFile};
 
 class FileDeleteManager
 {

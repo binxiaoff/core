@@ -9,8 +9,8 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Repository\ClientsRepository;
-use Unilend\Entity\InvitationReplyVersion;
-use Unilend\Entity\ProjectParticipationTranche;
+use Unilend\Syndication\Entity\InvitationReplyVersion;
+use Unilend\Syndication\Entity\ProjectParticipationTranche;
 
 class ProjectParticipationTrancheUpdatedListener
 {

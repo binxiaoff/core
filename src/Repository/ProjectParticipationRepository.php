@@ -7,7 +7,7 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Unilend\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectParticipation;
 
 /**
  * @method ProjectParticipation|null find($id, $lockMode = null, $lockVersion = null)

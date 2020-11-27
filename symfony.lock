@@ -37,7 +37,7 @@
         "files": [
             "config/packages/api_platform.yaml",
             "config/routes/api_platform.yaml",
-            "src/Entity/.gitignore"
+            "src/Syndication/Entity/.gitignore"
         ]
     },
     "aws/aws-sdk-php": {
@@ -123,7 +123,7 @@
         "files": [
             "config/packages/doctrine.yaml",
             "config/packages/prod/doctrine.yaml",
-            "src/Entity/.gitignore",
+            "src/Syndication/Entity/.gitignore",
             "src/Repository/.gitignore"
         ]
     },

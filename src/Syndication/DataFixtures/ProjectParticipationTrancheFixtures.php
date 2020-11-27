@@ -9,11 +9,11 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Unilend\Core\DataFixtures\{AbstractFixtures, StaffFixtures};
 use Unilend\Core\Entity\Staff;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectParticipationStatus;
-use Unilend\Entity\ProjectParticipationTranche;
-use Unilend\Entity\ProjectStatus;
-use Unilend\Entity\Tranche;
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectParticipationStatus;
+use Unilend\Syndication\Entity\ProjectParticipationTranche;
+use Unilend\Syndication\Entity\ProjectStatus;
+use Unilend\Syndication\Entity\Tranche;
 
 class ProjectParticipationTrancheFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

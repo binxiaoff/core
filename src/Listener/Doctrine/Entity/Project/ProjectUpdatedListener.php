@@ -6,7 +6,7 @@ namespace Unilend\Listener\Doctrine\Entity\Project;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use HTMLPurifier;
-use Unilend\Entity\Project;
+use Unilend\Syndication\Entity\Project;
 
 class ProjectUpdatedListener
 {

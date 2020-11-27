@@ -11,8 +11,8 @@ use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Staff;
-use Unilend\Entity\ProjectMessage;
-use Unilend\Entity\ProjectOrganizer;
+use Unilend\Syndication\Entity\ProjectMessage;
+use Unilend\Syndication\Entity\ProjectOrganizer;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {

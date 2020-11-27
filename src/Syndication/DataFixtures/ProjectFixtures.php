@@ -12,8 +12,8 @@ use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
 use Unilend\Core\DataFixtures\{AbstractFixtures, MarketSegmentFixtures, StaffFixtures, UserFixtures};
 use Unilend\Core\Entity\{Clients, Embeddable\Money, Embeddable\NullablePerson, File, FileVersion, Staff};
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectStatus;
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectStatus;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

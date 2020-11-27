@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity;
+namespace Unilend\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
@@ -83,7 +83,7 @@ class ProjectStatus implements StatusInterface
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="statuses")
+     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Project", inversedBy="statuses")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"projectStatus:create"})

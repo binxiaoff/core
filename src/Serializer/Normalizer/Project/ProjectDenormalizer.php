@@ -12,7 +12,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
-use Unilend\Entity\{Project, ProjectParticipation, ProjectStatus};
+use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
 
 class ProjectDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

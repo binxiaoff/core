@@ -4,9 +4,9 @@ namespace Unilend\Syndication\DataFixtures;
 
 use Exception;
 use Unilend\Core\Entity\Embeddable\{Money, NullableMoney};
-use Unilend\Entity\Embeddable\Offer;
-use Unilend\Entity\Embeddable\OfferWithFee;
-use Unilend\Entity\Embeddable\RangedOfferWithFee;
+use Unilend\Syndication\Entity\Embeddable\Offer;
+use Unilend\Syndication\Entity\Embeddable\OfferWithFee;
+use Unilend\Syndication\Entity\Embeddable\RangedOfferWithFee;
 
 /**
  * Helpers to generate offer objects

@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer, ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Staff;
-use Unilend\Entity\{ProjectParticipation,
+use Unilend\Syndication\Entity\{ProjectParticipation,
     ProjectParticipationMember,
     Request\ProjectParticipationCollection
 };

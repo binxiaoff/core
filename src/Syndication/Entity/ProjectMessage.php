@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity;
+namespace Unilend\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
 use DateTimeImmutable;
@@ -47,7 +47,7 @@ class ProjectMessage
     /**
      * @var ProjectParticipation
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="messages")
+     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation", inversedBy="messages")
      * @ORM\JoinColumn(nullable=false, name="id_participation", onDelete="CASCADE")
      *
      * @Groups({"message:create"})

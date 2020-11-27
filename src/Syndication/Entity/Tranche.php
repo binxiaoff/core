@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity;
+namespace Unilend\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
@@ -42,7 +42,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ORM\Entity(repositoryClass="Unilend\Repository\TrancheRepository")
  * @ORM\HasLifecycleCallbacks
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedTranche")
+ * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedTranche")
  *
  * Short explanations about loan facilities can be found at https://www.translegal.com/lesson/3263
  */
@@ -83,7 +83,7 @@ class Tranche
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="tranches")
+     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Project", inversedBy="tranches")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"tranche:create", "tranche:read"})
@@ -306,7 +306,7 @@ class Tranche
     /**
      * @var ProjectParticipationTranche[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true, fetch="LAZY")
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectParticipationTranche", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true, fetch="LAZY")
      *
      * @Groups({"tranche:read"})
      */

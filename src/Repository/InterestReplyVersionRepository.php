@@ -4,7 +4,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Entity\InterestReplyVersion;
+use Unilend\Syndication\Entity\InterestReplyVersion;
 
 /**
  * @method InterestReplyVersion|null find($id, $lockMode = null, $lockVersion = null)

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity;
+namespace Unilend\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
@@ -18,7 +18,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\{Staff, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Core\Traits\ConstantsAwareTrait;
-use Unilend\Entity\Embeddable\Offer;
+use Unilend\Syndication\Entity\Embeddable\Offer;
 
 /**
  * @ApiResource(
@@ -49,7 +49,7 @@ use Unilend\Entity\Embeddable\Offer;
  *     }
  * )
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectParticipationTranche")
+ * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedProjectParticipationTranche")
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_tranche", "id_project_participation"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationTrancheRepository")
@@ -70,7 +70,7 @@ class ProjectParticipationTranche
     /**
      * @var Tranche
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Tranche", inversedBy="projectParticipationTranches")
+     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Tranche", inversedBy="projectParticipationTranches")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_tranche", nullable=false)
      * })
@@ -87,7 +87,7 @@ class ProjectParticipationTranche
     /**
      * @var ProjectParticipation
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationTranches")
+     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation", inversedBy="projectParticipationTranches")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
      * })
@@ -101,7 +101,7 @@ class ProjectParticipationTranche
      *
      * @var Offer
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
+     * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\Offer")
      *
      * @Assert\Valid
      *
@@ -118,7 +118,7 @@ class ProjectParticipationTranche
     /**
      * @var Offer
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
+     * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\Offer")
      *
      * @Assert\Valid
      *
@@ -134,7 +134,7 @@ class ProjectParticipationTranche
     /**
      * @var Collection|InvitationReplyVersion[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\InvitationReplyVersion", mappedBy="projectParticipationTranche", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\InvitationReplyVersion", mappedBy="projectParticipationTranche", orphanRemoval=true)
      *
      * @Groups({ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ})
      */

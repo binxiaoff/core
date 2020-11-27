@@ -1,13 +1,13 @@
 <?php
 
-namespace Unilend\Entity;
+namespace Unilend\Syndication\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
-use Unilend\Entity\Embeddable\Offer;
+use Unilend\Syndication\Entity\Embeddable\Offer;
 
 /**
  * @ORM\Entity
@@ -28,7 +28,7 @@ class InvitationReplyVersion
     /**
      * @var ProjectParticipationTranche
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipationTranche", inversedBy="invitationReplyVersions")
+     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipationTranche", inversedBy="invitationReplyVersions")
      * @ORM\JoinColumn(name="id_project_participation_tranche", nullable=false)
      */
     private ProjectParticipationTranche $projectParticipationTranche;
@@ -37,7 +37,7 @@ class InvitationReplyVersion
      *
      * @var Offer
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
+     * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\Offer")
      *
      * @Assert\Valid
      *
@@ -48,7 +48,7 @@ class InvitationReplyVersion
     /**
      * @var ProjectParticipationStatus
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipationStatus")
+     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipationStatus")
      * @ORM\JoinColumn(name="id_project_participation_status", nullable=false)
      *
      * @Groups({"invitationReplyVersion:read"})

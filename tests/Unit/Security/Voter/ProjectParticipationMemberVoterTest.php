@@ -4,9 +4,9 @@ namespace Unilend\Test\Unit\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Core\Entity\{Clients, Company, Embeddable\Money, MarketSegment, Staff};
-use Unilend\Entity\{Project, ProjectParticipation, ProjectParticipationMember};
 use Unilend\Security\Voter\ProjectParticipationMemberVoter;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
+use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectParticipationMember};
 
 class ProjectParticipationMemberVoterTest extends AbstractVoterTestCase
 {

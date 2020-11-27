@@ -8,8 +8,8 @@ use JsonException;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Core\SwiftMailer\MailjetMessage;
-use Unilend\Entity\ProjectParticipation;
-use Unilend\Entity\ProjectParticipationStatus;
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectParticipationStatus;
 
 class ProjectParticipationNotifier
 {

@@ -10,7 +10,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Unilend\Core\Entity\Staff;
-use Unilend\Entity\{Project, ProjectParticipationMember};
+use Unilend\Syndication\Entity\{Project, ProjectParticipationMember};
 
 /**
  * @method ProjectParticipationMember|null find($id, $lockMode = null, $lockVersion = null)

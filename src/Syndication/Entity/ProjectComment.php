@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity;
+namespace Unilend\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
@@ -23,7 +23,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *     }
  * )
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectComment")
+ * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedProjectComment")
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
@@ -46,20 +46,20 @@ class ProjectComment
     /**
      * @var ProjectComment
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectComment", inversedBy="children")
+     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectComment", inversedBy="children")
      * @ORM\JoinColumn(name="id_parent", referencedColumnName="id", onDelete="CASCADE", nullable=true)
      */
     private $parent;
 
     /**
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectComment", mappedBy="parent")
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectComment", mappedBy="parent")
      */
     private $children;
 
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectComments")
+     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Project", inversedBy="projectComments")
      * @ORM\JoinColumn(name="id_project", referencedColumnName="id", nullable=false, onDelete="CASCADE")
      */
     private $project;

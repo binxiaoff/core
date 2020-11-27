@@ -9,7 +9,7 @@ use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Unilend\Core\Entity\Clients;
-use Unilend\Entity\ProjectOrganizer;
+use Unilend\Syndication\Entity\ProjectOrganizer;
 
 class ProjectOrganizerNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {

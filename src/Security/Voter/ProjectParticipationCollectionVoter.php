@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\Entity\Request\ProjectParticipationCollection;
+use Unilend\Syndication\Entity\Request\ProjectParticipationCollection;
 
 class ProjectParticipationCollectionVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
 
-    protected const UNILEND_ENTITY_NAMESPACE = 'Unilend\\Entity\\Request\\';
+    protected const UNILEND_ENTITY_NAMESPACE = 'Unilend\\Syndication\\Entity\\Request\\';
 
     /**
      * @param ProjectParticipationCollection $projectParticipationCollection

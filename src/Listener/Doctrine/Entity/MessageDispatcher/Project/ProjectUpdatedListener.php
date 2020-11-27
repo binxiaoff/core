@@ -6,8 +6,8 @@ namespace Unilend\Listener\Doctrine\Entity\MessageDispatcher\Project;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
-use Unilend\Entity\Project;
 use Unilend\Message\Project\ProjectStatusUpdated;
+use Unilend\Syndication\Entity\Project;
 
 class ProjectUpdatedListener
 {

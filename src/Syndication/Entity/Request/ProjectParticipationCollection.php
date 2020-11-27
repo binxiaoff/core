@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity\Request;
+namespace Unilend\Syndication\Entity\Request;
 
 use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Entity\{Project, ProjectParticipation};
+use Unilend\Syndication\Entity\{Project, ProjectParticipation};
 
 /**
  * @ApiResource(

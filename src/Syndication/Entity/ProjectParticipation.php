@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity;
+namespace Unilend\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
 use DateTimeImmutable;
@@ -21,7 +21,7 @@ use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Core\Traits\ConstantsAwareTrait;
-use Unilend\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithFee};
+use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithFee};
 
 /**
  * @ApiResource(
@@ -137,7 +137,7 @@ use Unilend\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithFee};
  *     }
  * )
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectParticipation")
+ * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedProjectParticipation")
  *
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status", "currentStatus.status"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status", "currentStatus.status"})
@@ -174,7 +174,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectParticipations")
+     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Project", inversedBy="projectParticipations")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"projectParticipation:read", "projectParticipation:create"})
@@ -200,7 +200,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var ProjectParticipationStatus|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectParticipationStatus", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipationStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -254,7 +254,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @var RangedOfferWithFee
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\RangedOfferWithFee")
+     * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\RangedOfferWithFee")
      *
      * @Assert\Valid
      *
@@ -273,7 +273,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @var Offer
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Offer")
+     * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\Offer")
      *
      * @Assert\Valid
      *
@@ -286,7 +286,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Collection|InterestReplyVersion[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\InterestReplyVersion", mappedBy="projectParticipation", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\InterestReplyVersion", mappedBy="projectParticipation", orphanRemoval=true)
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
      */
@@ -297,7 +297,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      *
      * @var OfferWithFee
      *
-     * @ORM\Embedded(class="Unilend\Entity\Embeddable\OfferWithFee")
+     * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\OfferWithFee")
      *
      * @Assert\Valid
      *
@@ -346,7 +346,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Collection|ProjectParticipationMember[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationMember", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectParticipationMember", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
      * @Assert\Valid
      *
@@ -357,7 +357,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Collection|ProjectMessage[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectMessage", mappedBy="participation")
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectMessage", mappedBy="participation")
      * @ORM\OrderBy({"added": "ASC"})
      *
      * @ApiSubresource
@@ -367,7 +367,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Collection|ProjectParticipationTranche[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationTranche", mappedBy="projectParticipation", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectParticipationTranche", mappedBy="projectParticipation", cascade={"persist"})
      *
      * @Assert\Valid
      *
@@ -378,7 +378,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Collection|ProjectParticipationStatus[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationStatus", mappedBy="projectParticipation", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectParticipationStatus", mappedBy="projectParticipation", cascade={"persist"})
      * @ORM\OrderBy({"added": "ASC"})
      *
      * @Groups({"projectParticipation:read"})

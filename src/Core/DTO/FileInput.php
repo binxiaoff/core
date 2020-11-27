@@ -7,9 +7,9 @@ namespace Unilend\Core\DTO;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectFile;
-use Unilend\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectFile;
+use Unilend\Syndication\Entity\ProjectParticipation;
 
 class FileInput
 {

@@ -6,7 +6,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Unilend\Entity\ProjectOrganizer;
+use Unilend\Syndication\Entity\ProjectOrganizer;
 
 /**
  * @method ProjectOrganizer|null find($id, $lockMode = null, $lockVersion = null)

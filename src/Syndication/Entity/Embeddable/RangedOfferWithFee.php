@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity\Embeddable;
+namespace Unilend\Syndication\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
 use Exception;

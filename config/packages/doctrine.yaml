@@ -41,8 +41,8 @@ doctrine:
             Unilend:
                 is_bundle: false
                 type: annotation
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'Unilend\Entity'
+                dir: '%kernel.project_dir%/src/Syndication/Entity'
+                prefix: 'Unilend\Syndication\Entity'
                 alias: Unilend
             Unilend\Core:
                 is_bundle: false

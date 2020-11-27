@@ -13,8 +13,8 @@ use Nexy\Slack\{Attachment, AttachmentField, Client, MessageInterface};
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Core\SwiftMailer\MailjetMessage;
-use Unilend\Entity\{Project, ProjectStatus};
 use Unilend\Repository\ProjectRepository;
+use Unilend\Syndication\Entity\{Project, ProjectStatus};
 
 class ProjectNotifier
 {

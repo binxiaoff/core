@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Message\Project;
 
 use Unilend\Core\Message\AsyncMessageInterface;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectStatus;
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectStatus;
 
 class ProjectStatusUpdated implements AsyncMessageInterface
 {

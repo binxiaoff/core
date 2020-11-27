@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity\Versioned;
+namespace Unilend\Syndication\Entity\Versioned;
 
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Loggable\Entity\MappedSuperclass\AbstractLogEntry;
 
 /**
  * @ORM\Table(
- *     name="zz_versioned_project",
+ *     name="zz_versioned_project_comment",
  *     indexes={
  *         @ORM\Index(columns={"logged_at"}),
  *         @ORM\Index(columns={"username"}),
@@ -18,6 +18,6 @@ use Gedmo\Loggable\Entity\MappedSuperclass\AbstractLogEntry;
  * )
  * @ORM\Entity(repositoryClass="Gedmo\Loggable\Entity\Repository\LogEntryRepository")
  */
-class VersionedProject extends AbstractLogEntry
+class VersionedProjectComment extends AbstractLogEntry
 {
 }

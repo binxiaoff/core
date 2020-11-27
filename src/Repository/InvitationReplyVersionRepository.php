@@ -4,7 +4,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Entity\InvitationReplyVersion;
+use Unilend\Syndication\Entity\InvitationReplyVersion;
 
 /**
  * @method InvitationReplyVersion|null find($id, $lockMode = null, $lockVersion = null)

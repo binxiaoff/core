@@ -10,7 +10,7 @@ use Symfony\Component\Routing\RouterInterface;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Service\TemporaryTokenGenerator;
 use Unilend\Core\SwiftMailer\MailjetMessage;
-use Unilend\Entity\{Project, ProjectParticipationMember, ProjectStatus};
+use Unilend\Syndication\Entity\{Project, ProjectParticipationMember, ProjectStatus};
 
 class ProjectParticipationMemberNotifier
 {

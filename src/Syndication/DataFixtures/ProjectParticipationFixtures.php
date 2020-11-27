@@ -11,7 +11,7 @@ use Exception;
 use ReflectionException;
 use Unilend\Core\DataFixtures\{AbstractFixtures, CompanyFixtures, StaffFixtures};
 use Unilend\Core\Entity\{Company, Staff};
-use Unilend\Entity\{Project, ProjectParticipation, ProjectParticipationStatus, ProjectStatus};
+use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectParticipationStatus, ProjectStatus};
 
 class ProjectParticipationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

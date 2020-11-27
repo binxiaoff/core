@@ -11,8 +11,8 @@ use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\Entity\{Project, ProjectStatus};
 use Unilend\Service\Project\ProjectManager;
+use Unilend\Syndication\Entity\{Project, ProjectStatus};
 
 class ProjectVoter extends AbstractEntityVoter
 {

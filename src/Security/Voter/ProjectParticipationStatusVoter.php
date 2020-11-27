@@ -6,7 +6,7 @@ namespace Unilend\Security\Voter;
 
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\Entity\{ProjectParticipationStatus};
+use Unilend\Syndication\Entity\{ProjectParticipationStatus};
 
 class ProjectParticipationStatusVoter extends AbstractEntityVoter
 {

@@ -6,7 +6,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Unilend\Entity\Tranche;
+use Unilend\Syndication\Entity\Tranche;
 
 /**
  * @method Tranche|null find($id, $lockMode = null, $lockVersion = null)

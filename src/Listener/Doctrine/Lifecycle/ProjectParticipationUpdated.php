@@ -9,8 +9,8 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Repository\ClientsRepository;
-use Unilend\Entity\InterestReplyVersion;
-use Unilend\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\InterestReplyVersion;
+use Unilend\Syndication\Entity\ProjectParticipation;
 
 class ProjectParticipationUpdated
 {

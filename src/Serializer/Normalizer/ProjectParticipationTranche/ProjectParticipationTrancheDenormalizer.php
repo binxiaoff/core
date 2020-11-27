@@ -11,10 +11,10 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
 use Unilend\Core\Entity\Clients;
-use Unilend\Entity\ProjectParticipationTranche;
-use Unilend\Entity\ProjectStatus;
 use Unilend\Service\Project\ProjectManager;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
+use Unilend\Syndication\Entity\ProjectParticipationTranche;
+use Unilend\Syndication\Entity\ProjectStatus;
 
 class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

@@ -10,7 +10,7 @@ use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\AcceptationsLegalDocs;
 use Unilend\Core\Entity\Clients;
-use Unilend\Entity\{ProjectFile};
+use Unilend\Syndication\Entity\{ProjectFile};
 
 class ListExtension implements QueryCollectionExtensionInterface
 {

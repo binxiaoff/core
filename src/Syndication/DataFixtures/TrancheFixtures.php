@@ -7,7 +7,7 @@ use Doctrine\Persistence\ObjectManager;
 use Unilend\Core\DataFixtures\{AbstractFixtures, CompanyFixtures};
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Entity\{Project, Tranche};
+use Unilend\Syndication\Entity\{Project, Tranche};
 
 class TrancheFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

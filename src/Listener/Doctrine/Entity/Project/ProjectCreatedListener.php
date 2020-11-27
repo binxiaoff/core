@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Listener\Doctrine\Entity\Project;
 
 use HTMLPurifier;
-use Unilend\Entity\Project;
+use Unilend\Syndication\Entity\Project;
 
 class ProjectCreatedListener
 {

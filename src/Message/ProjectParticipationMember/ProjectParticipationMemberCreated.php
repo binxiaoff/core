@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Message\ProjectParticipationMember;
 
 use Unilend\Core\Message\AsyncMessageInterface;
-use Unilend\Entity\ProjectParticipationMember;
+use Unilend\Syndication\Entity\ProjectParticipationMember;
 
 class ProjectParticipationMemberCreated implements AsyncMessageInterface
 {

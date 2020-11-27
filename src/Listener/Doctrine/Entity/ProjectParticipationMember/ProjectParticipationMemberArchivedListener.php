@@ -7,7 +7,7 @@ namespace Unilend\Listener\Doctrine\Entity\ProjectParticipationMember;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Clients;
-use Unilend\Entity\ProjectParticipationMember;
+use Unilend\Syndication\Entity\ProjectParticipationMember;
 
 class ProjectParticipationMemberArchivedListener
 {

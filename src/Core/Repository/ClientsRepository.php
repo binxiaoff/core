@@ -13,7 +13,7 @@ use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\ClientStatus;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Staff;
-use Unilend\Entity\{ProjectParticipation};
+use Unilend\Syndication\Entity\{ProjectParticipation};
 
 /**
  * @method Clients|null find($id, $lockMode = null, $lockVersion = null)

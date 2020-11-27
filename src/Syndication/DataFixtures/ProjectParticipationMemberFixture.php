@@ -7,8 +7,8 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Unilend\Core\DataFixtures\{AbstractFixtures, StaffFixtures};
 use Unilend\Core\Entity\Staff;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectParticipationMember;
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectParticipationMember;
 
 class ProjectParticipationMemberFixture extends AbstractFixtures implements DependentFixtureInterface
 {

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Listener\Doctrine\Entity\MessageDispatcher\Project;
 
 use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
-use Unilend\Entity\Project;
 use Unilend\Message\Project\ProjectCreated;
+use Unilend\Syndication\Entity\Project;
 
 class ProjectCreatedListener
 {
