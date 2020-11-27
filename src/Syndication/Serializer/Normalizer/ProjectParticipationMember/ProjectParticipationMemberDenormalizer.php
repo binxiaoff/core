@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Serializer\Normalizer\ProjectParticipationMember;
+namespace Unilend\Syndication\Serializer\Normalizer\ProjectParticipationMember;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use Symfony\Component\Security\Core\Security;
