@@ -67,6 +67,6 @@ final class Version20201127154620 extends AbstractMigration
         $this->addSql('RENAME TABLE core_temporary_token TO temporary_token');
         $this->addSql('RENAME TABLE core_user_agent TO user_agent');
 
-        $this->addSql('RENAME TABLE zz_versioned_clients TO core_zz_versioned_clients');
+        $this->addSql('RENAME TABLE core_zz_versioned_clients TO zz_versioned_clients');
     }
 }
