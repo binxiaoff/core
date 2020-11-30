@@ -50,7 +50,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *     payload={ "path": "status" }
  * )
  *
- * @ORM\Entity(repositoryClass="Unilend\Syndication\Repository\ProjectStatusRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectStatus implements StatusInterface
