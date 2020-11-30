@@ -28,6 +28,7 @@ final class Version20201130100833 extends AbstractMigration
         $this->addSql('RENAME TABLE project_participation_status TO syndication_project_participation_status');
         $this->addSql('RENAME TABLE project_participation_tranche TO syndication_project_participation_tranche');
         $this->addSql('RENAME TABLE project_status TO syndication_project_status');
+        $this->addSql('RENAME TABLE project_tag TO syndication_project_tag');
         $this->addSql('RENAME TABLE tag TO syndication_tag');
         $this->addSql('RENAME TABLE tranche TO syndication_tranche');
     }

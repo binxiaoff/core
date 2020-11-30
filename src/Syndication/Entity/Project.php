@@ -502,6 +502,7 @@ class Project implements TraceableStatusAwareInterface
      * @var Collection|Tag[]
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Syndication\Entity\Tag", cascade={"persist"})
+     * @ORM\JoinTable(name="syndication_project_tag")
      *
      * @Groups({"project:read", "project:write"})
      */
