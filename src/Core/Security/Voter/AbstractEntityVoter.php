@@ -33,10 +33,10 @@ abstract class AbstractEntityVoter extends Voter
         $domain = explode('\\', static::class)[1];
 
         // TODO remove domain condition when all files are moved in their specific domain
-        $domain = $domain !== 'Security' ? $domain : '';
+        $domain = $domain !== 'Security' ? $domain . '\\' : '';
 
-        $entityClass = 'Unilend\\' . $domain . '\\Entity\\'
-            . str_replace(['Unilend\\Core\\Security\\Voter\\', 'Voter', 'Unilend\\Security\\Voter\\'], '', static::class);
+        $entityClass = 'Unilend' . $domain . '\\Entity\\'
+            . str_replace(['Unilend\\Core\\Security\\Voter\\', 'Unilend\\Security\\Voter\\', 'Voter'], '', static::class);
 
         return $subject instanceof $entityClass && \in_array($attribute, static::getConstants('ATTRIBUTE_'), true);
     }
