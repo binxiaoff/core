@@ -6,10 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\Core\DataFixtures\CompanyFixtures;
-use Unilend\Core\DataFixtures\MarketSegmentFixtures;
-use Unilend\Core\DataFixtures\UserFixtures;
+use JsonException;
 use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Staff;
@@ -146,14 +143,14 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
      *
      * @return Staff
      *
-     * @throws \JsonException
+     * @throws JsonException
      */
     private function insertStaff(Clients $user, Company $company, ObjectManager $manager, array $roles = [], array $marketSegments = []): Staff
     {
         // We need to use SQL since we cannot instantiate Staff entity
         $rolesEncoded = json_encode($roles, JSON_THROW_ON_ERROR);
         $sql = <<<SQL
-            INSERT INTO `staff` 
+            INSERT INTO `core_staff` 
                 (id_company, id_client, roles, updated, added, public_id) VALUES 
                 (
                     "{$company->getId()}", 
@@ -169,7 +166,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $staffActiveCode = StaffStatus::STATUS_ACTIVE;
         $publicId = uniqid();
         $sql = <<<SQL
-            INSERT INTO staff_status
+            INSERT INTO core_staff_status
             (id_staff, added_by, status, added, public_id) VALUES 
             ({$staffId}, {$staffId}, {$staffActiveCode}, NOW(), '{$publicId}')
 SQL;
@@ -177,7 +174,7 @@ SQL;
         $manager->getConnection()->exec($sql);
         $staffStatusId = $manager->getConnection()->lastInsertId();
 
-        $sql = "UPDATE staff SET id_current_status = {$staffStatusId} WHERE id = {$staffId}";
+        $sql = "UPDATE core_staff SET id_current_status = {$staffStatusId} WHERE id = {$staffId}";
         $manager->getConnection()->exec($sql);
 
         foreach ($marketSegments as $marketSegment) {
@@ -186,7 +183,7 @@ SQL;
             }
             $marketSegmentId = $marketSegment->getId();
 
-            $sql = "INSERT INTO staff_market_segment(staff_id, market_segment_id) VALUES ({$staffId}, {$marketSegmentId})";
+            $sql = "INSERT INTO core_staff_market_segment(staff_id, market_segment_id) VALUES ({$staffId}, {$marketSegmentId})";
             $manager->getConnection()->exec($sql);
         }
 

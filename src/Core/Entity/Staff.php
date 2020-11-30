@@ -109,6 +109,7 @@ class Staff implements TraceableStatusAwareInterface
      * @var Collection|MarketSegment[]
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Core\Entity\MarketSegment")
+     * @ORM\JoinTable(name="core_staff_market_segment")
      *
      * @Groups({"staff:read", "staff:create", "staff:update", Staff::SERIALIZER_GROUP_ADMIN_CREATE})
      */
