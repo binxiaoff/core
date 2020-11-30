@@ -11,6 +11,9 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity
  *
  * @ApiResource(
+ *     attributes={
+ *         "route_prefix"="/core"
+ *     },
  *     collectionOperations={
  *         "get"
  *     },

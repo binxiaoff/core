@@ -21,6 +21,9 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
+ *     attributes={
+ *         "route_prefix"="/syndication"
+ *     },
  *     normalizationContext={"groups": {"tranche:read", "fee:read", "lendingRate:read", "money:read"}},
  *     denormalizationContext={"groups": {"tranche:write", "fee:write", "lendingRate:write", "money:write"}},
  *     collectionOperations={

@@ -14,6 +14,9 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ApiResource(
+ *     attributes={
+ *         "route_prefix"="/core"
+ *     },
  *     normalizationContext={"groups": {"legalDocument:read", "timestampable:read"}},
  *     itemOperations={
  *         "get": {

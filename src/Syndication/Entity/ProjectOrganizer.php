@@ -18,6 +18,9 @@ use Unilend\Core\Entity\Traits\{BlamableAddedTrait, RoleableTrait, Timestampable
 
 /**
  * @ApiResource(
+ *     attributes={
+ *         "route_prefix"="/syndication"
+ *     },
  *     normalizationContext={"groups": {"projectOrganizer:read", "role:read", "company:read"}},
  *     itemOperations={
  *         "get": {

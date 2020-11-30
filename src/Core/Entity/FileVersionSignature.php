@@ -15,6 +15,9 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
+ *     attributes={
+ *         "route_prefix"="/core"
+ *     },
  *     normalizationContext={"groups": "fileVersionSignature:read"},
  *     denormalizationContext={"groups": "fileVersionSignature:write"},
  *     itemOperations={

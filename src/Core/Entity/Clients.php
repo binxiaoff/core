@@ -23,6 +23,9 @@ use Unilend\Core\Validator\Constraints\{Password as AssertPassword};
 
 /**
  * @ApiResource(
+ *     attributes={
+ *         "route_prefix"="/core"
+ *     },
  *     collectionOperations={
  *         "get"
  *     },

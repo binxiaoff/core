@@ -15,7 +15,11 @@ use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, Time
 
 /**
  * @ApiResource(
- *     attributes={"order": {"added", "id"}, "pagination_enabled": false},
+ *     attributes={
+ *         "route_prefix"="/syndication",
+ *         "order": {"added", "id"},
+ *         "pagination_enabled": false
+ *     },
  *     normalizationContext={"groups": {"staff:read", "message:read", "blameable:read", "client:read", "timestampable:read", "company:read"}},
  *     denormalizationContext={"groups": {"message:write"}},
  *     collectionOperations={

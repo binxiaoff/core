@@ -13,6 +13,9 @@ use Unilend\Syndication\Entity\{Project, ProjectParticipation};
 
 /**
  * @ApiResource(
+ *     attributes={
+ *         "route_prefix"="/syndication"
+ *     },
  *     normalizationContext={"groups": {
  *         "projectParticipationCollection:read",
  *         "projectParticipation:read",
