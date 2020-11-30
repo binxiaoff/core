@@ -32,6 +32,7 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
  * )
  *
  * @ORM\Entity
+ * @ORM\Table(name="core_legal_document")
  */
 class LegalDocument
 {

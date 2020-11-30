@@ -10,8 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
@@ -36,6 +34,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
+ * @ORM\Table(name="core_file_version_signature")
  */
 class FileVersionSignature
 {

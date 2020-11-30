@@ -11,16 +11,13 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\FileDownload;
-use Unilend\Core\Entity\FileVersionSignature;
-use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
+ * @ORM\Table(name="core_file_version")
  *
  * @ApiResource(
  *     itemOperations={

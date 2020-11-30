@@ -12,14 +12,18 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\{BlamableUpdatedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_company", "code"})})
+ * @ORM\Table(
+ *     name="core_company_module",
+ *     uniqueConstraints={
+ *         @ORM\UniqueConstraint(columns={"id_company", "code"})
+ *      }
+ * )
  * @ORM\HasLifecycleCallbacks
  *
  * @ApiResource(

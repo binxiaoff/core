@@ -13,11 +13,7 @@ use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
-use Unilend\Core\Entity\MarketSegment;
-use Unilend\Core\Entity\StaffStatus;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait};
 
 /**
@@ -47,7 +43,12 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, Timestamp
  * @ApiFilter(SearchFilter::class, properties={"company.groupName"})
  *
  * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "id_company"})})
+ * @ORM\Table(
+ *     name="core_staff",
+ *     uniqueConstraints={
+ *         @ORM\UniqueConstraint(columns={"id_client", "id_company"})
+ *     }
+ * )
  * @ORM\HasLifecycleCallbacks
  *
  * @UniqueEntity(fields={"company", "client"}, message="Staff.client.unique")

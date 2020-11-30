@@ -12,11 +12,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Entity\Traits\{ArchivableTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableTrait};
 
 /**
  * @ORM\Entity
+ * @ORM\Table(name="core_file")
  *
  * @Gedmo\SoftDeleteable(fieldName="archived")
  *

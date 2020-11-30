@@ -6,14 +6,13 @@ namespace Unilend\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Swift_Message;
 use Swift_Mime_SimpleMessage;
 use UnexpectedValueException;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\SwiftMailer\MailjetMessage;
 
 /**
- * @ORM\Table(name="mail_queue", indexes={
+ * @ORM\Table(name="core_mail_queue", indexes={
  *    @ORM\Index(name="status", columns={"status"}),
  *    @ORM\Index(name="idx_mail_queue_sent_at", columns={"sent_at"})
  * })

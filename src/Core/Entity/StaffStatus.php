@@ -11,7 +11,6 @@ use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
-use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
@@ -34,7 +33,12 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * )
  *
  * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(columns={"status"}, name="idx_staff_status_status")})
+ * @ORM\Table(
+ *     name="core_staff_status",
+ *     indexes={
+ *         @ORM\Index(columns={"status"}, name="idx_staff_status_status")
+ *     }
+ * )
  *
  * @Assert\Callback(
  *     callback={"Unilend\Core\Validator\Constraints\TraceableStatusValidator", "validate"},

@@ -7,12 +7,12 @@ namespace Unilend\Core\Entity;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use Unilend\Core\Entity\MarketSegment;
-use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 
 /**
  * @ORM\Entity
+ *
+ * @ORM\Table(name="core_staff_log")
  */
 class StaffLog
 {

@@ -40,7 +40,7 @@ use Unilend\Core\Validator\Constraints\{Password as AssertPassword};
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Core\Entity\Versioned\VersionedClients")
  *
- * @ORM\Table(name="clients", indexes={@ORM\Index(columns={"last_name"})})
+ * @ORM\Table(name="core_clients", indexes={@ORM\Index(columns={"last_name"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *

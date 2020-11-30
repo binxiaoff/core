@@ -13,11 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\CompanyModule;
-use Unilend\Core\Entity\CompanyStatus;
 use Unilend\Core\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
-use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
 /**
@@ -47,6 +43,7 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
+ * @ORM\Table(name="core_company")
  */
 class Company implements TraceableStatusAwareInterface
 {

@@ -9,11 +9,10 @@ use DateInterval;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
- * @ORM\Table(name="temporary_token", indexes={@ORM\Index(name="fk_temporary_token_id_client", columns={"id_client"})})
+ * @ORM\Table(name="core_temporary_token", indexes={@ORM\Index(name="fk_temporary_token_id_client", columns={"id_client"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */

@@ -7,11 +7,11 @@ namespace Unilend\Core\Entity;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
 
 /**
  * @ORM\Entity
+ * @ORM\Table(name="core_company_module_log")
  */
 class CompanyModuleLog
 {

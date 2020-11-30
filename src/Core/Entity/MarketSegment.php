@@ -18,6 +18,8 @@ use Doctrine\ORM\Mapping as ORM;
  *         "get"
  *     }
  * )
+ *
+ * @ORM\Table(name="core_market_segment")
  */
 class MarketSegment
 {

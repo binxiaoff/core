@@ -7,13 +7,12 @@ namespace Unilend\Core\Entity;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
+ * @ORM\Table(name="core_file_download")
  */
 class FileDownload
 {

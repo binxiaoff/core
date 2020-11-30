@@ -10,9 +10,12 @@ use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
- * @ORM\Table(indexes={
- *     @ORM\Index(columns={"id_client", "browser_name", "device_model", "device_brand", "device_type"})
- * })
+ * @ORM\Table(
+ *     indexes={
+ *      @ORM\Index(columns={"id_client", "browser_name", "device_model", "device_brand", "device_type"})
+ *     },
+ *     name="core_user_agent"
+ * )
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */

@@ -8,15 +8,13 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\Interfaces\StatusInterface;
-use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use Unilend\Core\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Table(
- *     name="client_status",
+ *     name="core_client_status",
  *     indexes={
  *         @ORM\Index(columns={"id_client"}, name="idx_client_status_id_client"),
  *         @ORM\Index(columns={"status"}, name="idx_client_status_status")

@@ -7,13 +7,11 @@ namespace Unilend\Core\Entity;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
-use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Core\Entity\UserAgent;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
- * @ORM\Table(name="client_successful_login", indexes={
+ * @ORM\Table(name="core_client_successful_login", indexes={
  *     @ORM\Index(name="idx_client_successful_login_ip", columns={"ip"}),
  *     @ORM\Index(name="idx_client_successful_login_added", columns={"added"})
  * })

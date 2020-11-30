@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Table(
- *     name="client_failed_login",
+ *     name="core_client_failed_login",
  *     indexes={
  *         @ORM\Index(name="idx_client_failed_login_username", columns={"username"}),
  *         @ORM\Index(name="idx_client_failed_login_ip", columns={"ip"})

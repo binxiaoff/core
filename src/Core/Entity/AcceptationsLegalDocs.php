@@ -35,7 +35,12 @@ use Unilend\Core\Filter\CountFilter;
  *
  * @ApiFilter(CountFilter::class)
  *
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_legal_doc", "accepted_by"})})
+ * @ORM\Table(
+ *     uniqueConstraints={
+ *      @ORM\UniqueConstraint(columns={"id_legal_doc", "accepted_by"})
+ *     },
+ *     name="core_acceptations_legal_docs"
+ * )
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *
