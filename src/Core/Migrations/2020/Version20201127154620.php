@@ -38,6 +38,8 @@ final class Version20201127154620 extends AbstractMigration
         $this->addSql('RENAME TABLE staff_market_segment TO core_staff_market_segment');
         $this->addSql('RENAME TABLE temporary_token TO core_temporary_token');
         $this->addSql('RENAME TABLE user_agent TO core_user_agent');
+
+        $this->addSql('RENAME TABLE zz_versioned_clients TO core_zz_versioned_clients');
     }
 
     public function down(Schema $schema) : void
@@ -64,5 +66,7 @@ final class Version20201127154620 extends AbstractMigration
         $this->addSql('RENAME TABLE core_staff_market_segment TO staff_market_segment');
         $this->addSql('RENAME TABLE core_temporary_token TO temporary_token');
         $this->addSql('RENAME TABLE core_user_agent TO user_agent');
+
+        $this->addSql('RENAME TABLE zz_versioned_clients TO core_zz_versioned_clients');
     }
 }
