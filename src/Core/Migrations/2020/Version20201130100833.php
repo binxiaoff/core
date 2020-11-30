@@ -37,7 +37,6 @@ final class Version20201130100833 extends AbstractMigration
     {
         $this->addSql('RENAME TABLE syndication_interest_reply_version TO interest_reply_version');
         $this->addSql('RENAME TABLE syndication_invitation_reply_version TO invitation_reply_version');
-        $this->addSql('RENAME TABLE syndication_interest_reply_version TO interest_reply_version');
         $this->addSql('RENAME TABLE syndication_project TO project');
         $this->addSql('RENAME TABLE syndication_project_comment TO project_comment');
         $this->addSql('RENAME TABLE syndication_project_file TO project_file');
