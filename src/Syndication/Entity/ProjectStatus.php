@@ -40,7 +40,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * )
  *
  * @ORM\Table(
- *     name="project_status",
+ *     name="syndication_project_status",
  *     indexes={
  *         @ORM\Index(columns={"status"}, name="idx_project_status_status"),
  *         @ORM\Index(columns={"id_project"}, name="idx_project_status_id_project"),

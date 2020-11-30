@@ -16,6 +16,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
+ * @ORM\Table(name="syndication_project_file")
  *
  * @ApiResource(
  *     attributes={

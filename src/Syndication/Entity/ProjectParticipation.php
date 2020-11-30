@@ -151,7 +151,10 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  * })
  * @ApiFilter("Unilend\Core\Filter\InvertedSearchFilter", properties={"project.submitterCompany.publicId"})
  *
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
+ * @ORM\Table(
+ *     name="syndication_project_participation",
+ *     uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})}
+ * )
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *

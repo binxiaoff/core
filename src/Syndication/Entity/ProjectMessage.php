@@ -39,6 +39,7 @@ use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, Time
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter", properties={"added": "ASC"})
  *
  * @ORM\Entity
+ * @ORM\Table(name="syndication_project_message")
  *
  * @Gedmo\SoftDeleteable(fieldName="archived", hardDelete=false)
  */

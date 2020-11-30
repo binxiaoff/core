@@ -148,7 +148,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ApiFilter(ArrayFilter::class, properties={"organizers.roles"})
  * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId"})
  *
- * @ORM\Table
+ * @ORM\Table(name="syndication_project")
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *

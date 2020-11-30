@@ -40,6 +40,7 @@ use Unilend\Core\Entity\Traits\{BlamableAddedTrait, RoleableTrait, Timestampable
  * )
  * @ORM\Entity
  * @ORM\Table(
+ *     name="syndication_project_organizer",
  *     uniqueConstraints={
  *         @ORM\UniqueConstraint(columns={"id_project", "id_company"})
  *     }

@@ -41,7 +41,10 @@ use Unilend\Core\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArc
  *         }
  *     }
  * )
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_staff", "id_project_participation"})})
+ * @ORM\Table(
+ *     name="syndication_project_participation_member",
+ *     uniqueConstraints={@ORM\UniqueConstraint(columns={"id_staff", "id_project_participation"})}
+ * )
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *

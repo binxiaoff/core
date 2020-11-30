@@ -43,6 +43,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * )
  *
  * @ORM\Entity
+ * @ORM\Table(name="syndication_tranche")
  * @ORM\HasLifecycleCallbacks
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedTranche")

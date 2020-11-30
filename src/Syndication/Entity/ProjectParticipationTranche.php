@@ -54,7 +54,10 @@ use Unilend\Syndication\Entity\Embeddable\Offer;
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedProjectParticipationTranche")
  *
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_tranche", "id_project_participation"})})
+ * @ORM\Table(
+ *     name="syndication_project_participation_tranche",
+ *     uniqueConstraints={@ORM\UniqueConstraint(columns={"id_tranche", "id_project_participation"})}
+ * )
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *

@@ -38,7 +38,10 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * )
  *
  * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(columns={"status", "id_project_participation"})})
+ * @ORM\Table(
+ *     name="syndication_project_participation_status",
+ *     indexes={@ORM\Index(columns={"status", "id_project_participation"})}
+ * )
  *
  * @Assert\Callback(
  *     callback={"Unilend\Core\Validator\Constraints\TraceableStatusValidator", "validate"},

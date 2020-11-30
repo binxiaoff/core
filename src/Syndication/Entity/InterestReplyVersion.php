@@ -11,6 +11,7 @@ use Unilend\Syndication\Entity\Embeddable\Offer;
 
 /**
  * @ORM\Entity
+ * @ORM\Table(name="syndication_interest_reply_version")
  */
 class InterestReplyVersion
 {

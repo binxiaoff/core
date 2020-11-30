@@ -29,6 +29,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedProjectComment")
  *
  * @ORM\Entity
+ * @ORM\Table(name="syndication_project_comment")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectComment
