@@ -5,4 +5,4 @@ doctrine_migrations:
     all_or_nothing: true
     storage:
         table_storage:
-            table_name: 'migration_versions'
+            table_name: 'core_migration_versions'
