@@ -2,7 +2,4 @@ twig:
     debug: '%kernel.debug%'
     default_path: '%kernel.project_dir%/templates'
     strict_variables: '%kernel.debug%'
-    form_themes:
-        - 'layouts/form/form_layout.html.twig'
-        - 'layouts/form/collections.html.twig'
     exception_controller: null

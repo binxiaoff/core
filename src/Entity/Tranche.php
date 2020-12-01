@@ -243,13 +243,6 @@ class Tranche
     private ?string $commissionRate = null;
 
     /**
-     * @var Collection|TrancheAttribute[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheAttribute", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
-     */
-    private Collection $trancheAttributes;
-
-    /**
      * @var string|null
      *
      * @ORM\Column(type="text", nullable=true)
@@ -332,7 +325,6 @@ class Tranche
     {
         $this->money                        = $money;
         $this->rate                         = new LendingRate();
-        $this->trancheAttributes            = new ArrayCollection();
         $this->projectParticipationTranches = new ArrayCollection();
         $this->added                        = new DateTimeImmutable();
         $this->project                      = $project;
@@ -584,49 +576,6 @@ class Tranche
     public static function getRepaymentTypes(): array
     {
         return self::getConstants('REPAYMENT_TYPE_');
-    }
-
-    /**
-     * @param string|null $name
-     *
-     * @return TrancheAttribute[]|ArrayCollection
-     */
-    public function getTrancheAttributes(?string $name = null): iterable
-    {
-        $criteria = new Criteria();
-        if ($name) {
-            $criteria->where(Criteria::expr()->eq('attribute.name', $name));
-        }
-
-        return $this->trancheAttributes->matching($criteria);
-    }
-
-    /**
-     * @param TrancheAttribute $trancheAttribute
-     *
-     * @return Tranche
-     */
-    public function addTrancheAttribute(TrancheAttribute $trancheAttribute): Tranche
-    {
-        $trancheAttribute->setTranche($this);
-
-        if (false === $this->trancheAttributes->contains($trancheAttribute) && false === empty($trancheAttribute->getAttribute()->getValue())) {
-            $this->trancheAttributes->add($trancheAttribute);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param TrancheAttribute $trancheAttribute
-     *
-     * @return Tranche
-     */
-    public function removeTrancheAttribute(TrancheAttribute $trancheAttribute): Tranche
-    {
-        $this->trancheAttributes->removeElement($trancheAttribute);
-
-        return $this;
     }
 
     /**

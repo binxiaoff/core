@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Test\Unit\Service\File;
 
+use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, IOException};
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Faker\Provider\{Base, Internet};
@@ -57,17 +58,17 @@ class FileUploadManagerTest extends TestCase
      *
      * @dataProvider uploadDataProvider
      *
-     * @param File|null   $file
-     * @param string|null $description
-     * @param array       $context
+     * @param File|null $file
+     * @param array     $context
      *
      * @throws FileExistsException
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws ReflectionException
-     * @throws Exception
+     * @throws EnvironmentIsBrokenException
+     * @throws IOException
      */
-    public function testUpload(?File $file, ?string $description, array $context): void
+    public function testUpload(?File $file, array $context): void
     {
         $idClientsReflectionProperty = new ReflectionProperty(Clients::class, 'id');
         $idClientsReflectionProperty->setAccessible(true);
@@ -101,7 +102,6 @@ class FileUploadManagerTest extends TestCase
             $uploadedFile,
             $uploaderStaff,
             $file,
-            $description,
             $context
         );
 
@@ -125,7 +125,6 @@ class FileUploadManagerTest extends TestCase
 
         static::assertSame($uploaderStaff, $file->getCurrentFileVersion()->getAddedBy());
         static::assertStringContainsString((string) $uploader->getId(), $file->getCurrentFileVersion()->getPath());
-        static::assertSame($description, $file->getDescription());
         static::assertSame('application/x-empty', $file->getCurrentFileVersion()->getMimeType());
         static::assertSame($encryptionKey, $file->getCurrentFileVersion()->getPlainEncryptionKey());
     }
@@ -137,7 +136,7 @@ class FileUploadManagerTest extends TestCase
      */
     public function uploadDataProvider(): array
     {
-        $file = (new File())->setDescription(Base::randomLetter());
+        $file = new File();
 
         $fileIdReflectionProperty = new ReflectionProperty(File::class, 'id');
         $fileIdReflectionProperty->setAccessible(true);
@@ -147,8 +146,7 @@ class FileUploadManagerTest extends TestCase
         $context = ['projectId' => Base::randomDigitNotNull() + 1];
 
         return [
-            'file without description' => [$file, null, $context],
-            'file with description'    => [$file, Base::randomLetter(), $context],
+            'file ' => [$file, $context],
         ];
     }
 
