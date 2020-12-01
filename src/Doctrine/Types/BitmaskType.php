@@ -16,12 +16,10 @@ class BitmaskType extends Type
 
     /**
      * @inheritDoc
-     *
-     * @throws DBALException
      */
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
     {
-        return Type::getType(Types::INTEGER)->getSQLDeclaration($fieldDeclaration, $platform);
+        return $platform->getIntegerTypeDeclarationSQL($fieldDeclaration);
     }
 
 

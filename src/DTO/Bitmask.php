@@ -10,33 +10,33 @@ class Bitmask
     private int $bitmask;
 
     /**
-     * @param int|Bitmask|array $bitmask
+     * @param int $bitmask
      */
-    public function __construct($bitmask)
+    public function __construct(int $bitmask)
     {
-        $this->bitmask = $this->normalize($bitmask);
+        $this->bitmask = $bitmask;
     }
 
     /**
-     * @param int|Bitmask|array $addendum
+     * @param int $addendum
      *
-     * @return $this
+     * @return Bitmask
      */
-    public function add($addendum): Bitmask
+    public function add(int $addendum): Bitmask
     {
-        $this->bitmask |= $this->normalize($addendum);
+        $this->bitmask |= $addendum;
 
         return $this;
     }
 
     /**
-     * @param int|Bitmask|array $subtract
+     * @param int $subtract
      *
-     * @return $this
+     * @return Bitmask
      */
-    public function remove($subtract): Bitmask
+    public function remove(int $subtract): Bitmask
     {
-        $this->bitmask &= ~$this->normalize($subtract);
+        $this->bitmask &= ~$subtract;
 
         return $this;
     }
@@ -54,9 +54,9 @@ class Bitmask
      *
      * @return bool
      */
-    public function has($query): bool
+    public function has(int $query): bool
     {
-        return ($this->bitmask & $this->normalize($query)) === $this->normalize($query);
+        return ($this->bitmask & $query) === $query;
     }
 
     /**
@@ -65,27 +65,5 @@ class Bitmask
     public function __toString(): string
     {
         return (string) $this->bitmask;
-    }
-
-    /**
-     * @param $bitmask
-     *
-     * @return int
-     */
-    private function normalize($bitmask): int
-    {
-        if (is_iterable($bitmask)) {
-            $tmp = new Bitmask(0);
-            foreach ($bitmask as $bit) {
-                $tmp->add($this->normalize($bit));
-            }
-            $bitmask = $tmp;
-        }
-
-        if ($bitmask instanceof self) {
-            return $bitmask->bitmask;
-        }
-
-        return (int) $bitmask;
     }
 }

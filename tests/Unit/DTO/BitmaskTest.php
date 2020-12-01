@@ -34,10 +34,10 @@ class BitmaskTest extends TestCase
     public function providerAdd(): array
     {
         return [
-            'addendum is 0' => [new Bitmask(9), 0, new Bitmask(9)],
-            'addendum is int' => [new Bitmask(3), 10, new Bitmask(11)],
-            'addendum is array' => [new Bitmask(3), [1, 2, 3, 5], new Bitmask(7)],
-            'addendum is Bitmask' => [new Bitmask(6), new Bitmask(11), new Bitmask(15)],
+            'It should return an equal object when addendum is 0' => [new Bitmask(9), 0, new Bitmask(9)],
+            'It should return an object with the correct result 1' => [new Bitmask(3), 10, new Bitmask(11)],
+            'It should return an object with the correct result 2' => [new Bitmask(3), 1 | 2 | 3 | 5, new Bitmask(7)],
+            'It should return an object with the correct result 3' => [new Bitmask(6), 11, new Bitmask(15)],
         ];
     }
 
@@ -63,11 +63,10 @@ class BitmaskTest extends TestCase
     public function providerRemove(): array
     {
         return [
-            'subtract is 0' => [new Bitmask(9), 0, new Bitmask(9)],
-            'subtract is int' => [new Bitmask(10), 3, new Bitmask(8)],
-            'subtract is higher than subtracted' => [new Bitmask(3), 10, new Bitmask(1)],
-            'subtract is array' => [new Bitmask(15), [2, 4, 8], new Bitmask(1)],
-            'subtract is Bitmask' => [new Bitmask(6), new Bitmask(11), new Bitmask(4)],
+            'It should return an equal object when same when subtract is 0' => [new Bitmask(9), 0, new Bitmask(9)],
+            'It should return an object with the correct result 1' => [new Bitmask(10), 3, new Bitmask(8)],
+            'It should return an object with the correct result 2' => [new Bitmask(3), 10, new Bitmask(1)],
+            'It should return an object with the correct result 3' => [new Bitmask(15), 2 | 4 | 8, new Bitmask(1)],
         ];
     }
 
@@ -81,33 +80,17 @@ class BitmaskTest extends TestCase
 
         $expected = $tested->get();
 
-
         static::assertEquals($expected, $value);
     }
 
     /**
-     * @param $value
-     * @param $expected
-     *
      * @covers ::__construct
-     *
-     * @dataProvider providerConstructor
      */
-    public function testConstructor($value, $expected)
+    public function testConstructor()
     {
-        static::assertEquals(new Bitmask($value), $expected);
-    }
+        $value = 4;
 
-    /**
-     * @return array
-     */
-    public function providerConstructor(): array
-    {
-        return [
-            'int' => [4, new Bitmask(4)],
-            'bitmask' => [new Bitmask(4), new Bitmask(4)],
-            'array' => [[6, 5, 15, new Bitmask(9), new Bitmask(17)], new Bitmask(31)],
-        ];
+        static::assertEquals(new Bitmask(4), new Bitmask($value));
     }
 
     /**
@@ -130,12 +113,12 @@ class BitmaskTest extends TestCase
     public function providerHas(): array
     {
         return [
-            'int success' => [new Bitmask(9), 8, true],
-            'int failure' => [new Bitmask(28), 9, false],
-            'bitmask success' => [new Bitmask(34), new Bitmask(32), true],
-            'bitmask failure' => [new Bitmask(68), new Bitmask(1), false],
-            'array success' => [new Bitmask(79), [1, 64, 8, 6], true],
-            'array failure' => [new Bitmask(78), [1, 32], false],
+            'It should return true 1' => [new Bitmask(9), 8, true],
+            'It should return true 2' => [new Bitmask(34), 32, true],
+            'It should return true 3' => [new Bitmask(79), 1 | 64 | 6 | 8, true],
+            'It should return false 1' => [new Bitmask(28), 9, false],
+            'It should return false 2' => [new Bitmask(68), 1, false],
+            'It should return false 3' => [new Bitmask(78), 1 | 32, false],
         ];
     }
 }
