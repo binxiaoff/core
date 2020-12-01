@@ -1,4 +1,2 @@
 swiftmailer:
     delivery_addresses: ~
-    spool:
-        type: file
