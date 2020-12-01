@@ -175,3 +175,10 @@ services:
         arguments: ["%maintenance%"]
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
+
+    Unilend\SwiftMailer\TemplateErrorReportingPlugin:
+        tags:
+            - { name: swiftmailer.default.plugin }
+        arguments:
+            $enableErrorDelivery: '%env(MAILJET_ERROR_DELIVERY)%'
+            $errorReportingEmail: '%env(MAILJET_ERROR_ReportingEmail)%'
