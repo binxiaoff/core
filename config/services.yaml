@@ -19,6 +19,7 @@ parameters:
     psn.public_key: '%env(base64:PSN_PUBLIC_KEY)%'
     psn.private_key: '%env(base64:PSN_PRIVATE_KEY)%'
     psn.base_uri: '%env(PSN_BASE_URI)%'
+    mailer.error_reporting_email: tech@kls-platform.com
 
 services:
     _defaults:
@@ -181,4 +182,4 @@ services:
             - { name: swiftmailer.default.plugin }
         arguments:
             $enableErrorDelivery: '%env(MAILJET_ERROR_DELIVERY)%'
-            $errorReportingEmail: '%env(MAILJET_ERROR_ReportingEmail)%'
+            $errorReportingEmail: '%mailer.error_reporting_email%'
