@@ -7,13 +7,8 @@ namespace Unilend\Repository;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
-use Doctrine\ORM\Query\Expr\Join;
 use Exception;
 use Unilend\Entity\{MailQueue};
 
@@ -53,10 +48,10 @@ class MailQueueRepository extends ServiceEntityRepository
     public function getPendingMails(?int $limit = null): array
     {
         return $this->createQueryBuilder('mq')
-            ->where('mq.status IN (:statuses)')
+            ->where('mq.status = :status')
             ->andWhere('mq.scheduledAt <= :now')
             ->setParameters([
-                'statuses' => [MailQueue::STATUS_PENDING, MailQueue::STATUS_ERROR],
+                'status' => MailQueue::STATUS_PENDING,
                 'now' => new DateTime(),
             ])
             ->setMaxResults(is_numeric($limit) ? $limit : null)
