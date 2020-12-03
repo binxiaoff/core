@@ -159,7 +159,9 @@ class ProjectVoter extends AbstractEntityVoter
         $projectParticipationMember = $this->projectManager->getParticipationMember($project, $staff);
 
         // The participant doesn't need the participation module for the read access (CALS-2379)
-        return $projectParticipationMember && $projectParticipationMember->getNdaAccepted();
+        return $projectParticipationMember && (
+            null === $projectParticipationMember->getAcceptableNdaVersion() || $projectParticipationMember->getNdaAccepted()
+        );
     }
 
     /**
