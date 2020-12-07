@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use Unilend\DTO\GoogleRecaptchaResult;
 
 class GoogleRecaptchaManager
 {
@@ -44,47 +45,67 @@ class GoogleRecaptchaManager
      * @param string|null $captchaResponse
      * @param string|null $remoteIp
      *
-     * @return bool
+     * @return GoogleRecaptchaResult
      */
-    public function isValid(?string $captchaResponse, ?string $remoteIp = null): bool
+    public function getResult(?string $captchaResponse, ?string $remoteIp = null): GoogleRecaptchaResult
     {
+        $result = new GoogleRecaptchaResult();
+
         // Condition to allow to test in development environment with postman without having to have a captcha token
         if ($this->debug) {
-            return true;
+            $result->valid = true;
+
+            return $result;
         }
 
-        if ($captchaResponse) {
+        if (null === $captchaResponse) {
+            return $result;
+        }
+
+        try {
             $response = $this->verify($captchaResponse, $remoteIp);
 
-            if (200 !== $response->getStatusCode()) {
-                $this->logger->warning('Unable to check Google reCAPTCHA - Invalid response code: ' . $response->getStatusCode());
-
-                return true;
-            }
-
             $content = $response->getBody()->getContents();
-            $content = json_decode($content, true);
 
-            if (null === $content) {
-                $this->logger->warning('Unable to check Google reCAPTCHA - JSON could not be decoded');
-
-                return true;
+            if (200 !== $response->getStatusCode()) {
+                throw new \RuntimeException('The request failed');
             }
 
-            if (false === isset($content['success'])) {
-                $this->logger->warning('Unable to check Google reCAPTCHA - "success" key not found');
+            $content = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+            $success = $content['success'] ?? null;
 
-                return true;
+            if (!$success) {
+                throw new \RuntimeException('The response has errors or do not contain mandatory success field');
             }
 
-            // Disable it temporarily. CALS-2893
-            return true;
-            //return $content['success'] && isset(static::ACTIONS_THRESHOLD[$content['action']]) && $content['score'] >= static::ACTIONS_THRESHOLD[$content['action']];
+            $action = $content['action'] ?? null;
+            $score =  $content['score'] ?? null;
+
+            if (!$action) {
+                throw new \RuntimeException('The response do not contain mandatory "action" field');
+            }
+
+            if (!$score) {
+                throw new \RuntimeException('The response do not contain mandatory "score" field');
+            }
+
+            $threshold = static::ACTIONS_THRESHOLD[$action] ?? null;
+
+            if (!$threshold) {
+                throw new \RuntimeException(sprintf('This action "%s" is unknown', $action));
+            }
+
+            $result->score = $score;
+            $result->action = $action;
+            $result->valid = $score >= static::ACTIONS_THRESHOLD[$action];
+        } catch (\Exception $e) {
+            $this->logger->warning('Unable to check Google reCAPTCHA - ' . $e->getMessage());
+            $result->valid = true;
         }
 
-        // Disable it temporarily. CALS-2893
-        return true;
-        //return false;
+        $result->valid = true; // Disable it temporarily. CALS-2893
+
+        return $result;
     }
 
     /**

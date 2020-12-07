@@ -19,6 +19,7 @@ parameters:
     psn.public_key: '%env(base64:PSN_PUBLIC_KEY)%'
     psn.private_key: '%env(base64:PSN_PRIVATE_KEY)%'
     psn.base_uri: '%env(PSN_BASE_URI)%'
+    mailer.error_reporting_email: tech@kls-platform.com
 
 services:
     _defaults:
@@ -135,16 +136,6 @@ services:
             - '@UserAgentParser\Provider\WhichBrowser'
             - '@UserAgentParser\Provider\PiwikDeviceDetector'
 
-    Unilend\Twig\Loader\DatabaseLoader:
-        arguments:
-            $repository: '@Unilend\Repository\MailTemplateRepository'
-        tags:
-            - name: twig.loader
-              priority: -9999
-
-    Unilend\SwiftMailer\MailjetTransport:
-        shared: false
-
     Unilend\Swagger\SwaggerDecorator:
         decorates: 'api_platform.swagger.normalizer.api_gateway'
 
@@ -185,3 +176,10 @@ services:
         arguments: ["%maintenance%"]
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
+
+    Unilend\SwiftMailer\TemplateErrorReportingPlugin:
+        tags:
+            - { name: swiftmailer.default.plugin }
+        arguments:
+            $enableErrorDelivery: '%env(MAILJET_ERROR_DELIVERY)%'
+            $errorReportingEmail: '%mailer.error_reporting_email%'

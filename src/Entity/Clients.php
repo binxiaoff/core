@@ -16,6 +16,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Serializer\Annotation\{Groups, SerializedName};
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\DTO\GoogleRecaptchaResult;
 use Unilend\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait};
 use Unilend\Validator\Constraints\{Password as AssertPassword};
@@ -207,6 +208,11 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      * @var Staff|null
      */
     private ?Staff $currentStaff = null;
+
+    /**
+     * @var GoogleRecaptchaResult|null
+     */
+    private ?GoogleRecaptchaResult $recaptchaResult = null;
 
     /**
      * Clients constructor.
@@ -640,6 +646,26 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     public function setServiceTermsToSign(LegalDocument $serviceTermsToSign): Clients
     {
         $this->serviceTermsToSign = $serviceTermsToSign;
+
+        return $this;
+    }
+
+    /**
+     * @return GoogleRecaptchaResult|null
+     */
+    public function getRecaptchaResult(): ?GoogleRecaptchaResult
+    {
+        return $this->recaptchaResult;
+    }
+
+    /**
+     * @param GoogleRecaptchaResult|null $recaptchaResult
+     *
+     * @return Clients
+     */
+    public function setRecaptchaResult(?GoogleRecaptchaResult $recaptchaResult): Clients
+    {
+        $this->recaptchaResult = $recaptchaResult;
 
         return $this;
     }

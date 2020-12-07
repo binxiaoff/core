@@ -46,6 +46,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *                     "project:list",
  *                     "project:read",
  *                     "company:read",
+ *                     "offer:read",
  *                     "projectParticipation:read",
  *                     "projectParticipationStatus:read",
  *                     "projectParticipationTranche:read",
@@ -525,13 +526,13 @@ class Project implements TraceableStatusAwareInterface
     private Collection $projectFiles;
 
     /**
-     * @var bool
+     * @var bool|null
      *
      * @Groups({"project:read", "project:write"})
      *
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="boolean", nullable=true,)
      */
-    private bool $interestExpressionEnabled;
+    private ?bool $interestExpressionEnabled;
 
     /**
      * @var NullableMoney
@@ -603,7 +604,6 @@ class Project implements TraceableStatusAwareInterface
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
 
-        $this->interestExpressionEnabled  = false;
         $this->arrangementCommissionMoney = new NullableMoney();
     }
 
@@ -1366,19 +1366,19 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
-    public function isInterestExpressionEnabled(): bool
+    public function isInterestExpressionEnabled(): ?bool
     {
         return $this->interestExpressionEnabled;
     }
 
     /**
-     * @param bool $interestExpressionEnabled
+     * @param bool|null $interestExpressionEnabled
      *
      * @return Project
      */
-    public function setInterestExpressionEnabled(bool $interestExpressionEnabled): Project
+    public function setInterestExpressionEnabled(?bool $interestExpressionEnabled): Project
     {
         if (null === $this->getCurrentStatus() || ProjectStatus::STATUS_DRAFT === $this->getCurrentStatus()->getStatus()) {
             $this->interestExpressionEnabled = $interestExpressionEnabled;
@@ -1540,6 +1540,7 @@ class Project implements TraceableStatusAwareInterface
             && $this->allocationDeadline
             && $this->participantReplyDeadline
             // ensure interestExpressionDeadline is present only if interest expression is enabled
+            && is_bool($this->interestExpressionEnabled)
             && false === $this->interestExpressionEnabled xor null !== $this->interestExpressionDeadline
             && $this->nda
             ;

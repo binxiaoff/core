@@ -22,23 +22,23 @@ class LoginLogSubscriber implements EventSubscriberInterface
     /**
      * @var ClientLoginFactory
      */
-    private $clientLoginHistoryFactory;
+    private ClientLoginFactory $clientLoginHistoryFactory;
     /**
      * @var ClientsRepository
      */
-    private $clientsRepository;
+    private ClientsRepository $clientsRepository;
     /**
      * @var ClientSuccessfulLoginRepository
      */
-    private $clientSuccessfulLoginRepository;
+    private ClientSuccessfulLoginRepository $clientSuccessfulLoginRepository;
     /**
      * @var ClientFailedLoginRepository
      */
-    private $clientFailedLoginRepository;
+    private ClientFailedLoginRepository $clientFailedLoginRepository;
     /**
      * @var bool
      */
-    private $alreadyLogged;
+    private bool $alreadyLogged;
 
     /**
      * LoginLogSubscriber constructor.
@@ -91,7 +91,9 @@ class LoginLogSubscriber implements EventSubscriberInterface
         $client = $this->clientsRepository->findOneBy(['email' => $event->getUser()->getUsername()]);
 
         $successfulLogin = $this->clientLoginHistoryFactory->createClientLoginSuccess($client, ClientSuccessfulLogin::ACTION_JWT_LOGIN);
+
         $this->clientSuccessfulLoginRepository->save($successfulLogin);
+
         $this->alreadyLogged = true;
     }
 
@@ -125,9 +127,7 @@ class LoginLogSubscriber implements EventSubscriberInterface
     {
         $authenticationException = $event->getException();
 
-        $message  = $authenticationException->getMessage();
-
-        $failedLogin = $this->clientLoginHistoryFactory->createClientLoginFailure($message, $this->getFailedLoginUsername($authenticationException));
+        $failedLogin = $this->clientLoginHistoryFactory->createClientLoginFailure($authenticationException, $this->getFailedLoginUsername($authenticationException));
         $this->clientFailedLoginRepository->save($failedLogin);
     }
 
@@ -158,9 +158,7 @@ class LoginLogSubscriber implements EventSubscriberInterface
     {
         $authenticationException = $event->getException();
 
-        $message  = $authenticationException->getMessage();
-
-        $failedLogin = $this->clientLoginHistoryFactory->createClientLoginFailure($message, $this->getFailedLoginUsername($authenticationException));
+        $failedLogin = $this->clientLoginHistoryFactory->createClientLoginFailure($authenticationException, $this->getFailedLoginUsername($authenticationException));
         $this->clientFailedLoginRepository->save($failedLogin);
     }
 

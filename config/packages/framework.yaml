@@ -12,3 +12,6 @@ framework:
     form:
         csrf_protection:
             field_name: _csrf
+    secrets:
+        # This is a default value, but I still put it here to remain the usage of SYMFONY_DECRYPTION_SECRET as an Environment Variable
+        decryption_env_var: 'base64:default::SYMFONY_DECRYPTION_SECRET'

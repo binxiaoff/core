@@ -1,5 +1,2 @@
 swiftmailer:
-    transport: 'mailjet'
-    spool:
-        type: service
-        id: 'Unilend\SwiftMailer\DatabaseSpool'
+    delivery_addresses: ~

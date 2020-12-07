@@ -4,92 +4,83 @@ declare(strict_types=1);
 
 namespace Unilend\SwiftMailer;
 
-use DateTimeImmutable;
-use Doctrine\ORM\{EntityManagerInterface, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
-use Mailjet\Response;
 use Psr\Log\LoggerInterface;
 use Swift_ConfigurableSpool;
 use Swift_Mime_SimpleMessage;
-use Swift_RfcComplianceException;
 use Swift_Transport;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
 use Unilend\Entity\MailQueue;
-use Unilend\Service\Mailer\MailQueueManager;
+use Unilend\Repository\MailQueueRepository;
 
 class DatabaseSpool extends Swift_ConfigurableSpool
 {
-    /** @var MailQueueManager */
-    protected $mailQueueManager;
-    /** @var EntityManagerInterface */
-    protected $entityManager;
-    /** @var LoggerInterface */
-    protected $logger;
+    /**
+     * @var MailQueueRepository
+     */
+    private MailQueueRepository $mailQueueRepository;
 
     /**
-     * @param MailQueueManager       $mailQueueManager
-     * @param EntityManagerInterface $entityManager
-     * @param LoggerInterface        $logger
+     * @var LoggerInterface
      */
-    public function __construct(MailQueueManager $mailQueueManager, EntityManagerInterface $entityManager, LoggerInterface $logger)
+    private LoggerInterface $logger;
+
+    /**
+     * @param MailQueueRepository $mailQueueRepository
+     * @param LoggerInterface     $logger
+     */
+    public function __construct(MailQueueRepository $mailQueueRepository, LoggerInterface $logger)
     {
-        $this->mailQueueManager = $mailQueueManager;
-        $this->entityManager    = $entityManager;
-        $this->logger           = $logger;
+        $this->mailQueueRepository = $mailQueueRepository;
+        $this->logger = $logger;
     }
 
-    /**
-     * Starts this Spool mechanism.
-     */
-    public function start(): void
-    {
-    }
 
     /**
-     * Stops this Spool mechanism.
+     * @inheritDoc
      */
-    public function stop(): void
+    public function start()
     {
     }
 
     /**
-     * Tests if this Spool mechanism has started.
-     *
-     * @return bool
+     * @inheritDoc
      */
-    public function isStarted(): bool
+    public function stop()
     {
-        return true;
     }
 
     /**
-     * Queues a message.
-     *
-     * @param Swift_Mime_SimpleMessage $message The message to store
-     *
-     * @throws Exception
-     *
-     * @return bool
+     * @inheritDoc
      */
-    public function queueMessage(Swift_Mime_SimpleMessage $message): bool
+    public function isStarted()
     {
-        return $this->mailQueueManager->queue($message);
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function queueMessage(Swift_Mime_SimpleMessage $message)
+    {
+        $em = $this->mailQueueRepository->getEntityManager();
+
+        $em->persist(new MailQueue($message));
+        $em->flush();
     }
 
     /**
      * Sends messages using the given transport instance.
      *
      * @param Swift_Transport $transport        A transport instance
-     * @param string[]        $failedRecipients An array of failures by-reference
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     * @throws Exception
+     * @param string[]|null   $failedRecipients An array of failures by-reference
      *
      * @return int The number of sent emails
+     *
+     * @throws Exception
      */
     public function flushQueue(Swift_Transport $transport, &$failedRecipients = null): int
     {
@@ -99,91 +90,32 @@ class DatabaseSpool extends Swift_ConfigurableSpool
 
         $limit        = $this->getMessageLimit();
         $limit        = $limit > 0 ? $limit : null;
-        $emailsToSend = $this->mailQueueManager->getMailsToSend($limit);
+        $pendingMails = $this->mailQueueRepository->getPendingMails($limit);
 
-        if (!count($emailsToSend)) {
+        if (!count($pendingMails)) {
             return 0;
         }
 
+        $em = $this->mailQueueRepository->getEntityManager();
         $failedRecipients = (array) $failedRecipients;
         $count            = 0;
-        $batches          = array_chunk($emailsToSend, 50);
 
-        /** @var MailQueue[] $batch */
-        foreach ($batches as $index => $batch) {
-            foreach ($batch as $email) {
-                $email->setStatus(MailQueue::STATUS_PROCESSING);
+        foreach ($pendingMails as $item) {
+            try {
+                $mail = $item->getMessage();
+                $count += $transport->send($mail, $failedRecipients);
 
-                try {
-                    $message = $this->mailQueueManager->getMessage($email);
-                } catch (Swift_RfcComplianceException $exception) {
-                    $this->logger->error(
-                        'Unable to retrieve message ' . $email->getId() . '. Got exception: ' . $exception->getMessage(),
-                        ['file' => $exception->getFile(), 'line' => $exception->getFile()]
-                    );
-
-                    continue;
+                if (empty($failedRecipients)) {
+                    $item->succeed();
+                } else {
+                    $item->fail('Mail found in failedRecipients');
                 }
-
-                $response = $transport->send($message, $failedRecipients);
-
-                if (!($transport instanceof MailjetTransport)) {
-                    if ($response) {
-                        ++$count;
-                        $email->setStatus(MailQueue::STATUS_SENT);
-                        $email->setSentAt(new DateTimeImmutable());
-                    } else {
-                        $email->setStatus(MailQueue::STATUS_ERROR);
-                    }
-                }
-            }
-
-            if ($transport instanceof MailjetTransport) {
-                /** @var Response $response */
-                $response = $transport->stop();
-
-                if ($response instanceof Response) {
-                    if ($response->success()) {
-                        $count += count($batch);
-                        foreach ($batch as $email) {
-                            $email->setStatus(MailQueue::STATUS_SENT);
-                            $email->setSentAt(new DateTimeImmutable());
-                            $email->setIdMessageMailjet($transport->getMessageId($email, $response));
-                        }
-                    } else {
-                        $errorEmails  = [];
-                        $reasonPhrase = json_encode($response->getReasonPhrase(), JSON_THROW_ON_ERROR);
-
-                        foreach ($batch as $email) {
-                            $email->setStatus(MailQueue::STATUS_ERROR);
-                            $email->setErrorMailjet($reasonPhrase);
-
-                            $errorEmails[] = $email->getId();
-                        }
-
-                        $errorMessage = sprintf('An error occurred while sending emails via Mailjet: %s', $reasonPhrase);
-                        if ($response->getBody() && isset($response->getBody()['Messages'])) {
-                            $errorMessage .= sprintf(' Response was %s', json_encode($response->getBody()['Messages'], JSON_THROW_ON_ERROR));
-                        }
-
-                        $this->logger->warning($errorMessage, [
-                            'emails'   => $errorEmails,
-                            'class'    => __CLASS__,
-                            'function' => __FUNCTION__,
-                        ]);
-                    }
-                }
+            } catch (Exception $exception) {
+                $item->fail($exception->getMessage());
             }
         }
 
-        try {
-            $this->entityManager->flush();
-        } catch (OptimisticLockException $exception) {
-            $this->logger->error(
-                'Unable to save message queue flush due to Doctrine error: ' . $exception->getMessage(),
-                ['file' => $exception->getFile(), 'line' => $exception->getFile()]
-            );
-        }
+        $em->flush();
 
         return $count;
     }

@@ -110,3 +110,4 @@ AcceptationsLegalDocs:
 Money:
     currency:
         inconsistent: La devise n'est pas cohérente avec celle du projet.
+        maxMoney: Le montant maximum est inférieur ou égal au montant minimum.
