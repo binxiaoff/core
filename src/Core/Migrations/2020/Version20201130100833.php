@@ -31,6 +31,12 @@ final class Version20201130100833 extends AbstractMigration
         $this->addSql('RENAME TABLE project_tag TO syndication_project_tag');
         $this->addSql('RENAME TABLE tag TO syndication_tag');
         $this->addSql('RENAME TABLE tranche TO syndication_tranche');
+
+        $this->addSql('RENAME TABLE zz_versioned_project TO syndication_zz_versioned_project');
+        $this->addSql('RENAME TABLE zz_versioned_project_comment TO syndication_zz_versioned_project_comment');
+        $this->addSql('RENAME TABLE zz_versioned_project_participation TO syndication_zz_versioned_project_participation');
+        $this->addSql('RENAME TABLE zz_versioned_project_participation_tranche TO syndication_zz_versioned_project_participation_tranche');
+        $this->addSql('RENAME TABLE zz_versioned_tranche TO syndication_zz_versioned_tranche');
     }
 
     public function down(Schema $schema) : void
@@ -50,5 +56,11 @@ final class Version20201130100833 extends AbstractMigration
         $this->addSql('RENAME TABLE syndication_project_tag TO project_tag');
         $this->addSql('RENAME TABLE syndication_tag TO tag');
         $this->addSql('RENAME TABLE syndication_tranche TO tranche');
+
+        $this->addSql('RENAME TABLE syndication_zz_versioned_project TO zz_versioned_project');
+        $this->addSql('RENAME TABLE syndication_zz_versioned_project_comment TO zz_versioned_project_comment');
+        $this->addSql('RENAME TABLE syndication_zz_versioned_project_participation TO zz_versioned_project_participation');
+        $this->addSql('RENAME TABLE syndication_zz_versioned_project_participation_tranche TO zz_versioned_project_participation_tranche');
+        $this->addSql('RENAME TABLE syndication_zz_versioned_tranche TO zz_versioned_tranche');
     }
 }

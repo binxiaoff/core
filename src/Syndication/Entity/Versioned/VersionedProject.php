@@ -9,7 +9,7 @@ use Gedmo\Loggable\Entity\MappedSuperclass\AbstractLogEntry;
 
 /**
  * @ORM\Table(
- *     name="zz_versioned_project",
+ *     name="syndication_zz_versioned_project",
  *     indexes={
  *         @ORM\Index(columns={"logged_at"}),
  *         @ORM\Index(columns={"username"}),
