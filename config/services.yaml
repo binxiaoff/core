@@ -168,7 +168,7 @@ services:
     Unilend\Core\Security\UsernamePasswordRecaptchaAuthenticator:
         $authenticationSuccessHandler: '@lexik_jwt_authentication.handler.authentication_success'
         $authenticationFailureHandler: '@lexik_jwt_authentication.handler.authentication_failure'
-        $path: '/authentication_token'
+        $path: '/core/authentication_token'
 
     Unilend\Core\Listener\MaintenanceListener:
         arguments: ["%maintenance%"]

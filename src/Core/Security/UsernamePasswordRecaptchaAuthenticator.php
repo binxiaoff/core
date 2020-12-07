@@ -49,7 +49,7 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
         UserPasswordEncoderInterface $passwordEncoder,
         AuthenticationSuccessHandlerInterface $authenticationSuccessHandler,
         AuthenticationFailureHandlerInterface $authenticationFailureHandler,
-        string $path = '/authentication_token'
+        string $path = '/core/authentication_token'
     ) {
         $this->googleRecaptchaManager       = $googleRecaptchaManager;
         $this->authenticationSuccessHandler = $authenticationSuccessHandler;

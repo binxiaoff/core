@@ -6,7 +6,7 @@ front:
     name_prefix: 'front_'
 
 health_check:
-    path: /pulse
+    path: /core/pulse
     controller: Unilend\Core\Controller\HealthCheck
 
 # PSN callback URL
