@@ -62,22 +62,6 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     public const PHONE_NUMBER_DEFAULT_REGION = 'FR';
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="id_language", type="string", length=2)
-     */
-    private string $idLanguage = 'fr';
-
-    /**
-     * @var string|null
-     *
-     * @Groups({"client:read", "client:write"})
-     *
-     * @ORM\Column(name="title", type="string", nullable=true)
-     */
-    private ?string $title = null;
-
-    /**
      * @var string|null
      *
      * @Groups({"client:read", "client:write"})
@@ -104,13 +88,6 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @var string|null
      *
-     * @ORM\Column(name="slug", type="string", length=191, nullable=true)
-     */
-    private ?string $slug = null;
-
-    /**
-     * @var string|null
-     *
      * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="phone", type="string", length=35, nullable=true)
@@ -118,17 +95,6 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      * @AssertPhoneNumber(defaultRegion="Clients::PHONE_NUMBER_DEFAULT_REGION", type="any")
      */
     private ?string $phone = null;
-
-    /**
-     * @var string|null
-     *
-     * @Groups({"client:read", "client:write"})
-     *
-     * @ORM\Column(name="mobile", type="string", length=35, nullable=true)
-     *
-     * @AssertPhoneNumber(defaultRegion="Clients::PHONE_NUMBER_DEFAULT_REGION", type="mobile")
-     */
-    private ?string $mobile = null;
 
     /**
      * @var string
@@ -243,46 +209,6 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     }
 
     /**
-     * @param string $idLanguage
-     *
-     * @return Clients
-     */
-    public function setIdLanguage(string $idLanguage): Clients
-    {
-        $this->idLanguage = $idLanguage;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getIdLanguage(): string
-    {
-        return $this->idLanguage;
-    }
-
-    /**
-     * @param string|null $title
-     *
-     * @return Clients
-     */
-    public function setTitle(?string $title): Clients
-    {
-        $this->title = $title;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
-
-    /**
      * @param string|null $lastName
      *
      * @throws Exception
@@ -331,26 +257,6 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     }
 
     /**
-     * @param string|null $slug
-     *
-     * @return Clients
-     */
-    public function setSlug(?string $slug): Clients
-    {
-        $this->slug = URLify::filter($slug);
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getSlug(): ?string
-    {
-        return $this->slug;
-    }
-
-    /**
      * @param string|null $phone
      *
      * @return Clients
@@ -368,26 +274,6 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     public function getPhone(): ?string
     {
         return $this->phone;
-    }
-
-    /**
-     * @param string|null $mobile
-     *
-     * @return Clients
-     */
-    public function setMobile(?string $mobile): Clients
-    {
-        $this->mobile = $mobile;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getMobile(): ?string
-    {
-        return $this->mobile;
     }
 
     /**

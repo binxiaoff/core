@@ -88,10 +88,10 @@ class MailjetMessage extends \Swift_Message
      */
     public function setTemplateErrorEmail(?string $email): self
     {
+        // Remove the previously existing headers to prevent the duplication.
+        $this->getHeaders()->removeAll('X-MJ-TemplateErrorReporting');
         if ($email) {
             $this->getHeaders()->addTextHeader('X-MJ-TemplateErrorReporting', $email);
-        } else {
-            $this->getHeaders()->removeAll('X-MJ-TemplateErrorReporting');
         }
 
         return $this;
@@ -102,6 +102,8 @@ class MailjetMessage extends \Swift_Message
      */
     public function enableErrorDelivery(): self
     {
+        // Remove the previously existing headers to prevent the duplication.
+        $this->getHeaders()->removeAll('X-MJ-TemplateErrorDeliver');
         $this->getHeaders()->addTextHeader('X-MJ-TemplateErrorDeliver', 'deliver');
 
         return $this;

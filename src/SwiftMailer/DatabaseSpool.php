@@ -101,17 +101,18 @@ class DatabaseSpool extends Swift_ConfigurableSpool
         $count            = 0;
 
         foreach ($pendingMails as $item) {
-            $mail = $item->getMessage();
+            try {
+                $mail = $item->getMessage();
+                $count += $transport->send($mail, $failedRecipients);
 
-            $count += $transport->send($mail, $failedRecipients);
-
-            if (empty($failedRecipients)) {
-                $item->succeed();
-            } else {
-                $item->fail();
+                if (empty($failedRecipients)) {
+                    $item->succeed();
+                } else {
+                    $item->fail('Mail found in failedRecipients');
+                }
+            } catch (Exception $exception) {
+                $item->fail($exception->getMessage());
             }
-
-            $em->persist($item);
         }
 
         $em->flush();

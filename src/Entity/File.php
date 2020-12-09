@@ -107,15 +107,6 @@ class File
     use ArchivableTrait;
 
     /**
-     * @var string|null
-     *
-     * @ORM\Column(length=191, nullable=true)
-     *
-     * @Groups({"file:read"})
-     */
-    private ?string $description;
-
-    /**
      * @var FileVersion[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\FileVersion", mappedBy="file")
@@ -142,26 +133,6 @@ class File
     {
         $this->added        = new DateTimeImmutable();
         $this->fileVersions = new ArrayCollection();
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-
-    /**
-     * @param string|null $description
-     *
-     * @return File
-     */
-    public function setDescription(?string $description): File
-    {
-        $this->description = $description;
-
-        return $this;
     }
 
     /**

@@ -86,6 +86,13 @@ class MailQueue
     private ?int $mailjetTemplateId;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(type="text", length=65535, nullable=true)
+     */
+    private string $errorMessage;
+
+    /**
      * @param Swift_Mime_SimpleMessage $message
      * @param DateTimeImmutable|null   $scheduledAt
      */
@@ -130,11 +137,17 @@ class MailQueue
     }
 
     /**
+     * @param string|null $errorMessage
+     *
      * @return MailQueue
      */
-    public function fail(): MailQueue
+    public function fail(?string $errorMessage = null): MailQueue
     {
         $this->status = static::STATUS_ERROR;
+
+        if ($errorMessage) {
+            $this->errorMessage = $errorMessage;
+        }
 
         return $this;
     }
@@ -173,6 +186,14 @@ class MailQueue
     public function getMailjetTemplateId(): ?int
     {
         return $this->mailjetTemplateId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getErrorMessage(): string
+    {
+        return $this->errorMessage;
     }
 
     /**
