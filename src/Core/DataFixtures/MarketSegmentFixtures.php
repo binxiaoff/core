@@ -40,7 +40,7 @@ class MarketSegmentFixtures extends AbstractFixtures
     public function load(ObjectManager $manager): void
     {
         // We need to reset auto increment cause ID are important for the front :(
-        $manager->getConnection()->exec('ALTER TABLE market_segment AUTO_INCREMENT = 1;');
+        $manager->getConnection()->exec('ALTER TABLE core_market_segment AUTO_INCREMENT = 1;');
         foreach (self::SEGMENTS as $index => $label) {
             $segment = (new MarketSegment())->setLabel($label);
             $manager->persist($segment);

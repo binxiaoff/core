@@ -1,4 +1,4 @@
-INSERT INTO legal_document (id, type, title, content, added, public_id) VALUES (1, 1, 'Conditions générales d‘utilisation', '<p>Les présentes conditions générales d’utilisation (ci-après désignées les « Conditions Générales ») régissent les
+INSERT INTO core_legal_document (id, type, title, content, added, public_id) VALUES (1, 1, 'Conditions générales d‘utilisation', '<p>Les présentes conditions générales d’utilisation (ci-après désignées les « Conditions Générales ») régissent les
     relations entre la société Crédit Agricole Lending Services, société par actions simplifiée à associé unique au
     capital de 30.000 euros, immatriculée au registre du commerce et des sociétés de Paris sous le numéro 850 890 666,
     dont le siège social est situé au 50 rue de la Boétie, 75008 Paris (ci-après désignée « Crédit Agricole Lending
