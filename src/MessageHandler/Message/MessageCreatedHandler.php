@@ -61,8 +61,7 @@ class MessageCreatedHandler implements MessageHandlerInterface
 
         // Add messageStatus unread for other arranger member not current arranger if the sender is an arranger member
         $participationArranger = $projectParticipation->getProject()->getArrangerProjectParticipation();
-        $arrangerParticipationMembers = $participationArranger->getActiveProjectParticipationMembers();
-        foreach($participationArranger->getActiveProjectParticipationMembers() as $arranger){
+        foreach ($participationArranger->getActiveProjectParticipationMembers() as $arranger) {
             if ($message->getSender() !== $arranger->getStaff()) {
                 $this->entityManager->persist(new MessageStatus($message, $arranger->getStaff()));
             }
@@ -77,6 +76,4 @@ class MessageCreatedHandler implements MessageHandlerInterface
         $this->entityManager->persist(new MessageStatus($message, $message->getSender(), MessageStatus::STATUS_READ));
         $this->entityManager->flush();
     }
-
 }
-

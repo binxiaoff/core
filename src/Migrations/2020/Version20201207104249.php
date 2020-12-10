@@ -21,7 +21,6 @@ final class Version20201207104249 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE UNIQUE INDEX UNIQ_250AADC97BF2A12 ON message_file (id_file)');
-        $this->addSql('ALTER TABLE message_status ADD public_id VARCHAR(36) NOT NULL');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_4C27F813B5B48B91 ON message_status (public_id)');
     }
 
@@ -30,6 +29,5 @@ final class Version20201207104249 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('DROP INDEX UNIQ_250AADC97BF2A12 ON message_file');
         $this->addSql('DROP INDEX UNIQ_4C27F813B5B48B91 ON message_status');
-        $this->addSql('ALTER TABLE message_status DROP public_id');
     }
 }
