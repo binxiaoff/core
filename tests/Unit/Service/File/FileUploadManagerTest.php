@@ -17,14 +17,17 @@ use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Entity\{Clients, Company, File, Staff};
-use Unilend\Message\File\FileUploaded;
-use Unilend\Repository\FileRepository;
-use Unilend\Service\File\FileUploadManager;
-use Unilend\Service\FileSystem\FileSystemHelper;
+use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\File;
+use Unilend\Core\Entity\{Staff};
+use Unilend\Core\Message\File\FileUploaded;
+use Unilend\Core\Repository\FileRepository;
+use Unilend\Core\Service\File\FileUploadManager;
+use Unilend\Core\Service\FileSystem\FileSystemHelper;
 
 /**
- * @coversDefaultClass \Unilend\Service\File\FileUploadManager
+ * @coversDefaultClass \Unilend\Core\Service\File\FileUploadManager
  *
  * @internal
  */

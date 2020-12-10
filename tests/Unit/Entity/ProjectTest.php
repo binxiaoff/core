@@ -4,12 +4,8 @@ namespace Unilend\Test\Unit\Service\File;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
-use Unilend\Entity\Clients;
-use Unilend\Entity\Company;
-use Unilend\Entity\Embeddable\Money;
-use Unilend\Entity\MarketSegment;
-use Unilend\Entity\Project;
-use Unilend\Entity\Staff;
+use Unilend\Core\Entity\{Clients, Company, Embeddable\Money, MarketSegment, Staff};
+use Unilend\Syndication\Entity\Project;
 
 class ProjectTest extends TestCase
 {

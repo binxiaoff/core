@@ -1,11 +1,11 @@
 security:
     encoders:
-        Unilend\Entity\Clients:
+        Unilend\Core\Entity\Clients:
             algorithm: 'auto'
 
     providers:
         database_users:
-            entity: { class: Unilend\Entity\Clients, property: email }
+            entity: { class: Unilend\Core\Entity\Clients, property: email }
 
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER
@@ -18,21 +18,21 @@ security:
         api:
             stateless: true
             anonymous: true
-            user_checker: Unilend\Security\UserChecker
+            user_checker: Unilend\Core\Security\UserChecker
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
-                    - Unilend\Security\TemporaryTokenAuthenticator
-                    - Unilend\Security\UsernamePasswordRecaptchaAuthenticator
+                    - Unilend\Core\Security\TemporaryTokenAuthenticator
+                    - Unilend\Core\Security\UsernamePasswordRecaptchaAuthenticator
                 entry_point: lexik_jwt_authentication.jwt_token_authenticator
 
     access_control:
         - { path: '^/captcha_checks', allow_if: "is_anonymous()" }
-        - { path: '^/reset_passwords$', allow_if: "is_anonymous()" }
-        - { path: '^/temporary_tokens', allow_if: "is_anonymous()" }
-        - { path: '^/authentication_token', allow_if: "is_anonymous()" }
-        - { path: '^/pulse$', allow_if: "is_anonymous()" }
-        - { path: '^/legal_documents', allow_if: "is_authenticated() or is_anonymous()" }
+        - { path: '^/core/authentication_token', allow_if: "is_anonymous()" }
+        - { path: '^/core/legal_documents', allow_if: "is_authenticated() or is_anonymous()" }
+        - { path: '^/core/pulse$', allow_if: "is_anonymous()" }
+        - { path: '^/core/reset_passwords$', allow_if: "is_anonymous()" }
+        - { path: '^/core/temporary_tokens', allow_if: "is_anonymous()" }
+        - { path: '^/core/token/refresh', allow_if: "is_authenticated() or is_anonymous()" }
         - { path: '^/docs', allow_if: "is_authenticated() or is_anonymous()" }
-        - { path: '^/token/refresh', allow_if: "is_authenticated() or is_anonymous()" }
         - { path: '^/.+', allow_if: 'is_authenticated()' }

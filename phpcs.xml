@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ruleset name="CALS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
-    <description>The coding standard for CALS project.</description>
+    <description>The coding standard for KLS project.</description>
 
     <arg name="basepath" value="."/>
     <arg name="cache" value=".phpcs-cache"/>
@@ -12,7 +12,7 @@
     <file>src/</file>
     <file>tests/</file>
 
-    <exclude-pattern>*/src/Migrations/*$</exclude-pattern>
+    <exclude-pattern>*/src/Core/Migrations/*$</exclude-pattern>
 
     <rule ref="PSR1"/>
     <rule ref="PSR2">

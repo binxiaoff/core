@@ -1,8 +1,8 @@
 doctrine_migrations:
     migrations_paths:
-        'DoctrineMigrations': '%kernel.project_dir%/src/Migrations'
+        'DoctrineMigrations': '%kernel.project_dir%/src/Core/Migrations'
     organize_migrations: BY_YEAR
     all_or_nothing: true
     storage:
         table_storage:
-            table_name: 'migration_versions'
+            table_name: 'core_migration_versions'

@@ -1,0 +1,201 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Unilend\Core\Entity;
+
+use ApiPlatform\Core\Annotation\ApiProperty;
+use DateInterval;
+use DateTimeImmutable;
+use Doctrine\ORM\Mapping as ORM;
+use Exception;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
+
+/**
+ * @ORM\Table(name="core_temporary_token", indexes={@ORM\Index(name="fk_temporary_token_id_client", columns={"id_client"})})
+ * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
+ */
+class TemporaryToken
+{
+    use TimestampableTrait;
+
+    protected const LIFETIME_MEDIUM     = '1 day';
+    protected const LIFETIME_ULTRA_LONG = '1 month';
+
+    /**
+     * @var DateTimeImmutable|null
+     *
+     * @ORM\Column(name="updated", type="datetime_immutable", nullable=true)
+     */
+    protected $updated;
+
+    /**
+     * @var DateTimeImmutable|null
+     *
+     * @ORM\Column(name="added", type="datetime_immutable")
+     */
+    protected $added;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="token", type="string", length=150)
+     *
+     * @ApiProperty(identifier=true)
+     */
+    private $token;
+
+    /**
+     * @var DateTimeImmutable
+     *
+     * @ORM\Column(name="expires", type="datetime_immutable")
+     */
+    private $expires;
+
+    /**
+     * @var DateTimeImmutable
+     *
+     * @ORM\Column(name="accessed", type="datetime_immutable", nullable=true)
+     */
+    private $accessed;
+
+    /**
+     * @var int
+     *
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     *
+     * @ApiProperty(identifier=false)
+     */
+    private $id;
+
+    /**
+     * @var Clients
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Clients")
+     * @ORM\JoinColumns({
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
+     * })
+     */
+    private $client;
+
+    /**
+     * TemporaryToken constructor.
+     *
+     * @param Clients $clients
+     * @param string  $expirationDelay
+     *
+     * @throws Exception
+     */
+    private function __construct(Clients $clients, string $expirationDelay)
+    {
+        $this->token   = bin2hex(random_bytes(16));
+        $this->client  = $clients;
+        $this->added   = new DateTimeImmutable();
+        $this->expires = (new DateTimeImmutable())->add(DateInterval::createFromDateString($expirationDelay));
+    }
+
+    /**
+     * @internal Use Unilend\Core\Service\TemporaryTokenGenerator::generateMediumToken
+     *
+     * @param Clients $client
+     *
+     * @throws Exception
+     *
+     * @return TemporaryToken
+     */
+    public static function generateMediumToken(Clients $client): TemporaryToken
+    {
+        return new TemporaryToken($client, static::LIFETIME_MEDIUM);
+    }
+
+    /**
+     * @internal Use Unilend\Core\Service\TemporaryTokenGenerator::generateUltraLongToken
+     *
+     * @param Clients $client
+     *
+     * @throws Exception
+     *
+     * @return TemporaryToken
+     */
+    public static function generateUltraLongToken(Clients $client): TemporaryToken
+    {
+        return new TemporaryToken($client, static::LIFETIME_ULTRA_LONG);
+    }
+
+    /**
+     * @return Clients
+     */
+    public function getClient(): Clients
+    {
+        return $this->client;
+    }
+
+    /**
+     * @return string
+     */
+    public function getToken(): string
+    {
+        return $this->token;
+    }
+
+    /**
+     * @return DateTimeImmutable
+     */
+    public function getExpires(): DateTimeImmutable
+    {
+        return $this->expires;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getAccessed(): ?DateTimeImmutable
+    {
+        return $this->accessed;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return TemporaryToken
+     */
+    public function setExpired(): TemporaryToken
+    {
+        $this->expires = new DateTimeImmutable();
+
+        return $this;
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return TemporaryToken
+     */
+    public function setAccessed(): TemporaryToken
+    {
+        $this->accessed = $this->accessed ?: new DateTimeImmutable();
+
+        return $this;
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return bool
+     */
+    public function isValid(): bool
+    {
+        return (new DateTimeImmutable()) < $this->expires;
+    }
+}
