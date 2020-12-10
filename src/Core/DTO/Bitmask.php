@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\DTO;
+namespace Unilend\Core\DTO;
 
 class Bitmask
 {

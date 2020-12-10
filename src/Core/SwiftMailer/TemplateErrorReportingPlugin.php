@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\SwiftMailer;
+namespace Unilend\Core\SwiftMailer;
 
 use Swift_Events_SendEvent;
 use Swift_Events_SendListener;

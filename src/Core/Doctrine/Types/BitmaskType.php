@@ -2,13 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Doctrine\Types;
+namespace Unilend\Core\Doctrine\Types;
 
-use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
-use Doctrine\DBAL\Types\Types;
-use Unilend\DTO\Bitmask;
+use Unilend\Core\DTO\Bitmask;
 
 class BitmaskType extends Type
 {

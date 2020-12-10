@@ -175,7 +175,7 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
 
-    Unilend\SwiftMailer\TemplateErrorReportingPlugin:
+    Unilend\Core\SwiftMailer\TemplateErrorReportingPlugin:
         tags:
             - { name: swiftmailer.default.plugin }
         arguments:
