@@ -16,11 +16,11 @@ final class Version20201202112908 extends AbstractMigration
 
     public function up(Schema $schema) : void
     {
-        $this->addSql('ALTER TABLE mail_queue ADD error_message TEXT DEFAULT NULL');
+        $this->addSql('ALTER TABLE core_mail_queue ADD error_message TEXT DEFAULT NULL');
     }
 
     public function down(Schema $schema) : void
     {
-        $this->addSql('ALTER TABLE mail_queue DROP error_message');
+        $this->addSql('ALTER TABLE core_mail_queue DROP error_message');
     }
 }
