@@ -6,9 +6,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
-use Unilend\Entity\MessageStatus;
+use Unilend\Entity\{MessageStatus, MessageThread, Staff};
 
 /**
  * @method MessageStatus|null find($id, $lockMode = null, $lockVersion = null)
@@ -29,9 +27,6 @@ class MessageStatusRepository extends ServiceEntityRepository
 
     /**
      * @param MessageStatus $messageStatus
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
     public function save(MessageStatus $messageStatus): void
     {
@@ -40,22 +35,27 @@ class MessageStatusRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param MessageStatus $messageStatus
+     * @param Staff         $recipient
+     * @param MessageThread $messageThread
      *
-     * @throws ORMException
+     * @return int|mixed|string
      */
-    public function persist(MessageStatus $messageStatus): void
+    public function findUnreadStatusByRecipientAndMessageThread(Staff $recipient, MessageThread $messageThread)
     {
-        $this->getEntityManager()->persist($messageStatus);
-    }
+        $queryBuilder = $this->createQueryBuilder('msgst');
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function flush(): void
-    {
-        $this->getEntityManager()->flush();
+        return $queryBuilder
+            ->innerJoin('msgst.message', 'msg')
+            ->innerJoin('msg.messageThread', 'msgthd')
+            ->where($queryBuilder->expr()->eq('msgst.recipient', ':recipient'))
+            ->andWhere($queryBuilder->expr()->eq('msg.messageThread', ':message_thread'))
+            ->andWhere($queryBuilder->expr()->eq('msgst.status', ':message_status_status'))
+            ->setParameters([
+                'recipient'             => $recipient,
+                'message_thread'        => $messageThread,
+                'message_status_status' => MessageStatus::STATUS_UNREAD,
+            ])
+            ->getQuery()
+            ->getResult();
     }
 }
-

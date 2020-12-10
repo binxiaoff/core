@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\{Constraints as Assert, Context\ExecutionContextInterface};
 use Unilend\Entity\Embeddable\{NullableMoney, Offer, OfferWithFee, RangedOfferWithFee};
 use Unilend\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableStatusAwareInterface};
+use Unilend\Entity\MessageThread;
 use Unilend\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Service\MoneyCalculator;
 use Unilend\Traits\ConstantsAwareTrait;
@@ -399,8 +400,9 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var MessageThread|null
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MessageThread")
-     * @ORM\JoinColumn(name="id_message_thread")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\MessageThread", mappedBy="projectParticipation")
+     *
+     * @Groups({"projectParticipation:read"})
      */
     private ?MessageThread $messageThread = null;
 
@@ -757,23 +759,23 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param MessageThread|null $messageThread
-     *
-     * @return $this
-     */
-    public function setMessageThread(?MessageThread $messageThread): ProjectParticipation
-    {
-        $this->messageThread = $messageThread;
-
-        return $this;
-    }
-
-    /**
      * @return MessageThread|null
      */
     public function getMessageThread(): ?MessageThread
     {
         return $this->messageThread;
+    }
+
+    /**
+     * @param MessageThread $messageThread
+     *
+     * @return $this
+     */
+    public function setMessageThread(MessageThread $messageThread): ProjectParticipation
+    {
+        $this->messageThread = $messageThread;
+
+        return $this;
     }
 
     /**
@@ -939,4 +941,3 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         }
     }
 }
-

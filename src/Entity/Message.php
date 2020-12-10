@@ -4,28 +4,74 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\{ApiResource};
 use DateTimeImmutable;
+use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Unilend\DTO\MessageInput;
+use Unilend\DTO\MessageBroadcastInput;
 use Unilend\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
- * @ORM\Entity
+ * @ApiResource(
+ *  normalizationContext={"groups": {
+ *     "message:read",
+ *     "messageStatus:read",
+ *     "messageThread:read",
+ *     "client:read",
+ *     "staff:read",
+ *     "company:read",
+ *     "timestampable:read",
+ *     "file:read",
+ *     "fileVersion:read"
+ *  }},
+ *  collectionOperations={
+ *       "post"={
+ *           "input"=MessageInput::class
+ *       }
+ *  },
+ *  itemOperations={
+ *      "get": {
+ *          "security": "is_granted('view', object)",
+ *          "normalization_context": {
+ *              "groups": {
+ *                  "message:read",
+ *                  "messageStatus:read",
+ *                  "messageThread:read",
+ *                  "client:read",
+ *                  "staff:read",
+ *                  "company:read",
+ *                  "timestampable:read",
+ *                  "file:read",
+ *                  "fileVersion:read"
+ *              }
+ *          }
+ *     }
+ *  }
+ * )
+ *
  * @ORM\Table
+ * @ORM\Entity
  */
 class Message
 {
     use PublicizeIdentityTrait;
     use TimestampableAddedOnlyTrait;
 
+    public const FILE_TYPE_MESSAGE_ATTACHMENT = 'file_type_message_attachment';
+
     /**
      * @var MessageThread
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MessageThread", inversedBy="messages")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MessageThread", cascade={"persist"}, inversedBy="messages")
      * @ORM\JoinColumn(name="id_message_thread", nullable=false)
+     *
+     * @Groups({"message:read"})
+     *
+     * @MaxDepth(1)
      */
     private MessageThread $messageThread;
 
@@ -34,6 +80,8 @@ class Message
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff")
      * @ORM\JoinColumn(name="id_sender", nullable=false)
+     *
+     * @Groups({"message:read"})
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -45,6 +93,8 @@ class Message
      *
      * @ORM\Column(type="text", length=16777215)
      *
+     * @Groups({"message:read"})
+     *
      * @Assert\NotBlank
      */
     protected string $body;
@@ -53,15 +103,26 @@ class Message
      * @var MessageFile[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\MessageFile", mappedBy="message", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @Groups({"message:read"})
      */
     private Collection $messageFiles;
 
     /**
-     * @var MessageFile[]|Collection
+     * @var MessageStatus[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\MessageFile", mappedBy="message", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\MessageStatus", mappedBy="message")
      */
-    private Collection $messageFiles;
+    private Collection $messageStatuses;
+
+    /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean")
+     *
+     * @Groups({"message:read"})
+     */
+    private bool $broadcasted;
 
     /**
      * Message constructor.
@@ -69,14 +130,25 @@ class Message
      * @param Staff         $sender
      * @param MessageThread $messageThread
      * @param string        $body
+     * @param bool          $broadcasted
      */
-    public function __construct(Staff $sender, MessageThread $messageThread, string $body)
+    public function __construct(Staff $sender, MessageThread $messageThread, string $body, bool $broadcasted = false)
     {
-        $this->sender        = $sender;
-        $this->messageThread = $messageThread;
-        $this->body          = $body;
-        $this->messageFiles  = new ArrayCollection();
-        $this->added         = new DateTimeImmutable();
+        $this->sender          = $sender;
+        $this->messageThread   = $messageThread;
+        $this->body            = $body;
+        $this->messageFiles    = new ArrayCollection();
+        $this->added           = new DateTimeImmutable();
+        $this->messageStatuses = new ArrayCollection();
+        $this->broadcasted     = $broadcasted;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getFileTypes()
+    {
+        return [static::FILE_TYPE_MESSAGE_ATTACHMENT];
     }
 
     /**
@@ -124,5 +196,20 @@ class Message
 
         return $this;
     }
-}
 
+    /**
+     * @return MessageStatus[]|Collection
+     */
+    public function getMessageStatuses(): Collection
+    {
+        return $this->messageStatuses;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBroadcasted(): bool
+    {
+        return $this->broadcasted;
+    }
+}

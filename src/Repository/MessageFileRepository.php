@@ -25,4 +25,3 @@ class MessageFileRepository extends ServiceEntityRepository
         parent::__construct($registry, MessageFile::class);
     }
 }
-

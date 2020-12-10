@@ -4,14 +4,42 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
-use InvalidArgumentException;
 use Doctrine\ORM\Mapping as ORM;
+use InvalidArgumentException;
+use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Traits\ConstantsAwareTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
+ * @ApiResource(
+ *  normalizationContext={"groups": {
+ *     "messageStatus:read",
+ *     "message:read"
+ *  }},
+ *  collectionOperations={
+ *      "get": {
+ *          "groups": {
+ *              "messageStatus:read",
+ *              "message:read"
+ *          }
+ *     }
+ *  },
+ *  itemOperations={
+ *      "get": {
+ *          "security": "is_granted('view', object)",
+ *          "groups": {
+ *              "messageStatus:read",
+ *              "message:read"
+ *          }
+ *     }
+ *  }
+ * )
+ * @ApiFilter(SearchFilter::class, properties={"status": "exact"})
+ *
  * @ORM\Entity
  * @ORM\Table
  * @ORM\HasLifecycleCallbacks
@@ -39,14 +67,18 @@ class MessageStatus
      * @ORM\Column(type="smallint")
      *
      * @Assert\Choice(callback="getPossibleStatuses")
+     *
+     * @Groups({"messageStatus:read"})
      */
     private int $status;
 
     /**
-     * @var Message
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Message", inversedBy="messageStatuses")
+     * @ORM\JoinColumn(name="id_message", referencedColumnName="id")
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Message")
-     * @ORM\JoinColumn(name="id_message", nullable=false)
+     * @Groups({"messageStatus:read"})
+     *
+     * @MaxDepth(1)
      */
     private Message $message;
 
@@ -55,27 +87,25 @@ class MessageStatus
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Staff")
      * @ORM\JoinColumn(name="id_recipient", nullable=false)
+     *
+     *
+     * @Groups({"messageStatus:read"})
      */
     private Staff $recipient;
 
     /**
      * MessageStatus constructor.
      *
-     * @param int     $status
      * @param Message $message
      * @param Staff   $recipient
+     * @param int     $status
      */
-    public function __construct(int $status, Message $message, Staff $recipient)
+    public function __construct(Message $message, Staff $recipient, int $status = self::STATUS_UNREAD)
     {
-        if (!in_array($status, self::getPossibleStatuses(), true)) {
-            throw new InvalidArgumentException(
-                sprintf('%s is not a possible status for %s', $status, __CLASS__)
-            );
-        }
-        $this->status = $status;
-        $this->message = $message;
+        $this->message   = $message;
         $this->recipient = $recipient;
-        $this->added = new DateTimeImmutable();
+        $this->setStatus($status);
+        $this->added     = new DateTimeImmutable();
     }
 
     /**
@@ -101,6 +131,23 @@ class MessageStatus
     public function getRecipient(): Staff
     {
         return $this->recipient;
+    }
+
+    /**
+     * @param int $status
+     *
+     * @return $this
+     */
+    public function setStatus(int $status): MessageStatus
+    {
+        if (!in_array($status, self::getPossibleStatuses(), true)) {
+            throw new InvalidArgumentException(
+                sprintf('%s is not a possible status for %s', $status, __CLASS__)
+            );
+        }
+        $this->status = $status;
+
+        return $this;
     }
 
     /**

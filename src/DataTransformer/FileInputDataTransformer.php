@@ -13,16 +13,12 @@ use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
 use Unilend\DTO\FileInput;
-use Unilend\Entity\{Clients,
-    File,
-    Project,
-    ProjectFile,
-    ProjectParticipation,
-    Staff};
-use Unilend\Repository\{ProjectFileRepository, ProjectRepository};
+use Unilend\Entity\{Clients, File, Message, MessageFile, Project, ProjectFile, ProjectParticipation, Staff};
+use Unilend\Repository\{MessageFileRepository, MessageRepository, MessageThreadRepository, ProjectFileRepository, ProjectRepository};
 use Unilend\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
 use Unilend\Service\File\FileUploadManager;
 use Unilend\Service\Project\ProjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 class FileInputDataTransformer
 {
@@ -36,16 +32,30 @@ class FileInputDataTransformer
     private ProjectFileRepository $projectFileRepository;
     /** @var ProjectRepository  */
     private ProjectRepository $projectRepository;
+    /** @var MessageFileRepository */
+    private MessageFileRepository $messageFileRepository;
     /** @var ProjectManager */
     private ProjectManager $projectManager;
+    /** @var MessageThreadRepository */
+    private MessageThreadRepository $messageThreadRepository;
+    /** @var MessageRepository */
+    private MessageRepository $messageRepository;
+    /** @var EntityManagerInterface */
+    private EntityManagerInterface $entityManager;
 
     /**
-     * @param ValidatorInterface    $validator
-     * @param Security              $security
-     * @param FileUploadManager     $fileUploadManager
-     * @param ProjectManager        $projectManager
-     * @param ProjectFileRepository $projectFileRepository
-     * @param ProjectRepository     $projectRepository
+     * FileInputDataTransformer constructor.
+     *
+     * @param ValidatorInterface      $validator
+     * @param Security                $security
+     * @param FileUploadManager       $fileUploadManager
+     * @param ProjectManager          $projectManager
+     * @param ProjectFileRepository   $projectFileRepository
+     * @param ProjectRepository       $projectRepository
+     * @param MessageFileRepository   $messageFileRepository
+     * @param MessageThreadRepository $messageThreadRepository
+     * @param MessageRepository       $messageRepository
+     * @param EntityManagerInterface  $entityManager
      */
     public function __construct(
         ValidatorInterface $validator,
@@ -53,14 +63,22 @@ class FileInputDataTransformer
         FileUploadManager $fileUploadManager,
         ProjectManager $projectManager,
         ProjectFileRepository $projectFileRepository,
-        ProjectRepository $projectRepository
+        ProjectRepository $projectRepository,
+        MessageFileRepository $messageFileRepository,
+        MessageThreadRepository $messageThreadRepository,
+        MessageRepository $messageRepository,
+        EntityManagerInterface $entityManager
     ) {
-        $this->validator             = $validator;
-        $this->security              = $security;
-        $this->fileUploadManager     = $fileUploadManager;
-        $this->projectFileRepository = $projectFileRepository;
-        $this->projectRepository     = $projectRepository;
-        $this->projectManager = $projectManager;
+        $this->validator                = $validator;
+        $this->security                 = $security;
+        $this->fileUploadManager        = $fileUploadManager;
+        $this->projectFileRepository    = $projectFileRepository;
+        $this->projectRepository        = $projectRepository;
+        $this->messageFileRepository    = $messageFileRepository;
+        $this->projectManager           = $projectManager;
+        $this->messageThreadRepository  = $messageThreadRepository;
+        $this->messageRepository        = $messageRepository;
+        $this->entityManager            = $entityManager;
     }
 
     /**
@@ -101,6 +119,67 @@ class FileInputDataTransformer
         if ($targetEntity instanceof ProjectParticipation) {
             $file = $this->uploadProjectParticipationNda($targetEntity, $fileInput, $currentStaff, $file);
         }
+
+        if ($targetEntity instanceof Message) {
+            $file = $this->uploadMessageFile($targetEntity, $fileInput, $currentStaff, $file);
+        }
+
+        return $file;
+    }
+
+    /**
+     * @param Message   $message
+     * @param FileInput $fileInput
+     * @param Staff     $currentStaff
+     * @param File|null $file
+     *
+     * @return File
+     * @throws EnvironmentIsBrokenException
+     * @throws FileExistsException
+     * @throws IOException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    private function uploadMessageFile(Message $message, FileInput $fileInput, Staff $currentStaff, ?File $file): File
+    {
+        if (null === $file) {
+            $file        = new File();
+            $messageFile = new MessageFile($file, $message);
+            // If user is allowed to view, then he is allowed to messaging and to upload file on a message too
+            if (false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $message->getMessageThread()->getProjectParticipation())) {
+                throw new AccessDeniedException();
+            }
+        } else {
+            $messageFile = $this->messageFileRepository->findOneBy(['file' => $file, 'message' => $message]);
+
+            if (null === $messageFile) {
+                throw new RuntimeException(sprintf(
+                    'We cannot find the file (%s) for message (%s) of type (%s). Do you tend to upload a new file (instead of updating it) ?',
+                    $file->getPublicId(),
+                    $message->getPublicId(),
+                    $fileInput->type
+                ));
+
+                if (false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $message->getMessageThread()->getProjectParticipation())) {
+                    throw new AccessDeniedException();
+                }
+            }
+        }
+
+        // If it's a broadcasted message, then add messageFile to all broadcasted messages
+        if($message->isBroadcasted()) {
+            $messageThreads = $this->messageThreadRepository->findMessageThreadsByProject($message->getMessageThread()->getProjectParticipation()->getProject());
+            $messages = $this->messageRepository->findMessagesByMessageThreadsAndBody($messageThreads, $message->getBody());
+            foreach($messages as $messageToAddMessageFile) {
+                if($messageToAddMessageFile !== $message) {
+                    $messageFileBroadcated = new MessageFile($file, $messageToAddMessageFile);
+                    $this->entityManager->persist($messageFileBroadcated);
+                }
+            }
+        }
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, ['messageId' => $messageFile->getMessage()->getId()]);
+        $this->entityManager->persist($messageFile);
+        $this->entityManager->flush();
 
         return $file;
     }
