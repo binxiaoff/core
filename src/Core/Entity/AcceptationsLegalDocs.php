@@ -61,7 +61,7 @@ class AcceptationsLegalDocs
      * @ORM\JoinColumn(name="id_legal_doc", nullable=false)
      *
      * @Assert\Expression(
-     *     "this.getLegalDoc().getId() === constant('Unilend\Core\Entity\\LegalDocument::CURRENT_SERVICE_TERMS')",
+     *     "this.getLegalDoc().getId() === constant('Unilend\\Core\\Entity\\LegalDocument::CURRENT_SERVICE_TERMS')",
      *     message="AcceptationsLegalDocs.legalDoc.notCurrent"
      * )
      *
