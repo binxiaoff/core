@@ -7,7 +7,7 @@ namespace Unilend\Core\Service\User;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 
 class RealUserFinder
 {
@@ -27,7 +27,7 @@ class RealUserFinder
     }
 
     /**
-     * @return Clients
+     * @return User
      */
     public function __invoke(): object
     {

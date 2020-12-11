@@ -7,13 +7,11 @@ namespace Unilend\Core\Service\User;
 use Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Throwable;
-use Unilend\Core\Entity\ClientFailedLogin;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\{ClientSuccessfulLogin};
+use Unilend\Core\Entity\{User, UserFailedLogin, UserSuccessfulLogin};
 use Unilend\Core\Exception\Authentication\RecaptchaChallengeFailedException;
 use Unilend\Core\Service\{UserActivity\IpGeoLocManager, UserActivity\UserAgentManager};
 
-class ClientLoginFactory
+class UserLoginFactory
 {
     /** @var IpGeoLocManager */
     private IpGeoLocManager $ipGeoLocManager;
@@ -38,16 +36,17 @@ class ClientLoginFactory
     }
 
     /**
-     * @param Clients $client
-     * @param string  $action
+     * @param User   $user
+     * @param string $action
      *
-     * @throws Exception
+     * @return UserSuccessfulLogin
+
+     **@throws Exception
      *
-     * @return ClientSuccessfulLogin
      */
-    public function createClientLoginSuccess(Clients $client, string $action): ClientSuccessfulLogin
+    public function createUserLoginSuccess(User $user, string $action): UserSuccessfulLogin
     {
-        $entry = new ClientSuccessfulLogin($client, $action);
+        $entry = new UserSuccessfulLogin($user, $action);
 
         $request = $this->requestStack->getCurrentRequest();
 
@@ -56,7 +55,7 @@ class ClientLoginFactory
             $entry->setIp($ip);
 
             if ($request->headers->get('User-Agent')) {
-                $userAgent = $this->userAgentManager->getClientUserAgent($client, $request->headers->get('User-Agent'));
+                $userAgent = $this->userAgentManager->getUserUserAgent($user, $request->headers->get('User-Agent'));
                 $entry->setUserAgent($userAgent);
             }
 
@@ -70,7 +69,7 @@ class ClientLoginFactory
             }
         }
 
-        $recaptchaResult = $client->getRecaptchaResult();
+        $recaptchaResult = $user->getRecaptchaResult();
 
         if ($recaptchaResult) {
             $entry->setRecaptchaScore($recaptchaResult->score);
@@ -83,13 +82,14 @@ class ClientLoginFactory
      * @param Throwable   $exception
      * @param string|null $username
      *
-     * @throws Exception
+     * @return UserFailedLogin
+
+     **@throws Exception
      *
-     * @return ClientFailedLogin
      */
-    public function createClientLoginFailure(Throwable $exception, ?string $username = null): ClientFailedLogin
+    public function createUserLoginFailure(Throwable $exception, ?string $username = null): UserFailedLogin
     {
-        $failedLogin = new ClientFailedLogin();
+        $failedLogin = new UserFailedLogin();
 
         $request = $this->requestStack->getCurrentRequest();
 

@@ -41,9 +41,9 @@ class StaffCreatedHandler implements MessageHandlerInterface
         $staff = $this->staffRepository->find($staffCreated->getStaffId());
         if ($staff) {
             // TODO Remove when this become asynchronous
-            // Refresh the staff, so that the $client->getStaff() doesn't return null
+            // Refresh the staff, so that the $user->getStaff() doesn't return null
             $this->staffRepository->refresh($staff);
-            $this->notifier->notifyClientInitialisation($staff);
+            $this->notifier->notifyUserInitialisation($staff);
         }
     }
 }

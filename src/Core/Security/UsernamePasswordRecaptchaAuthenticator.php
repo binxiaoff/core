@@ -17,7 +17,7 @@ use Symfony\Component\Security\Guard\PasswordAuthenticatedInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationFailureHandlerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
 use Unilend\Core\DTO\GoogleRecaptchaResult;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Exception\Authentication\RecaptchaChallengeFailedException;
 use Unilend\Core\Service\GoogleRecaptchaManager;
 
@@ -123,7 +123,7 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
     {
         $recaptchaResult = $this->googleRecaptchaManager->getResult($credentials['captchaValue']);
 
-        if ($user instanceof Clients) {
+        if ($user instanceof User) {
             $user->setRecaptchaResult($recaptchaResult);
         }
 

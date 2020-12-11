@@ -7,7 +7,7 @@ namespace Unilend\Syndication\Security\Voter;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
@@ -39,13 +39,14 @@ class ProjectVoter extends AbstractEntityVoter
 
     /**
      * @param Project $project
-     * @param Clients $user
-     *
-     * @throws Exception
+     * @param User    $user
      *
      * @return bool
+
+     **@throws Exception
+     *
      */
-    protected function canView(Project $project, Clients $user): bool
+    protected function canView(Project $project, User $user): bool
     {
         $staff = $user->getCurrentStaff();
 
@@ -54,13 +55,13 @@ class ProjectVoter extends AbstractEntityVoter
 
     /**
      * @param Project $project
-     * @param Clients $user
+     * @param User    $user
      *
      * @return bool
      *
      * @throws Exception
      */
-    protected function canAdminView(Project $project, Clients $user): bool
+    protected function canAdminView(Project $project, User $user): bool
     {
         $staff = $user->getCurrentStaff();
 
@@ -69,11 +70,11 @@ class ProjectVoter extends AbstractEntityVoter
 
     /**
      * @param Project $project
-     * @param Clients $user
+     * @param User    $user
      *
      * @return bool
      */
-    protected function canCreate(Project $project, Clients $user): bool
+    protected function canCreate(Project $project, User $user): bool
     {
         $staff = $user->getCurrentStaff();
 
@@ -84,13 +85,14 @@ class ProjectVoter extends AbstractEntityVoter
 
     /**
      * @param Project $project
-     * @param Clients $user
-     *
-     * @throws Exception
+     * @param User    $user
      *
      * @return bool
+
+     **@throws Exception
+     *
      */
-    protected function canViewNda(Project $project, Clients $user): bool
+    protected function canViewNda(Project $project, User $user): bool
     {
         if ($this->canEdit($project, $user) || $this->canView($project, $user)) {
             return true;
@@ -101,13 +103,14 @@ class ProjectVoter extends AbstractEntityVoter
 
     /**
      * @param Project $project
-     * @param Clients $user
-     *
-     * @throws Exception
+     * @param User    $user
      *
      * @return bool
+
+     **@throws Exception
+     *
      */
-    protected function canEdit(Project $project, Clients $user): bool
+    protected function canEdit(Project $project, User $user): bool
     {
         $staff = $user->getCurrentStaff();
 
@@ -118,26 +121,28 @@ class ProjectVoter extends AbstractEntityVoter
 
     /**
      * @param Project $project
-     * @param Clients $user
-     *
-     * @throws Exception
+     * @param User    $user
      *
      * @return bool
+
+     **@throws Exception
+     *
      */
-    protected function canComment(Project $project, Clients $user): bool
+    protected function canComment(Project $project, User $user): bool
     {
         return $this->canView($project, $user);
     }
 
     /**
      * @param Project $project
-     * @param Clients $user
-     *
-     * @throws Exception
+     * @param User    $user
      *
      * @return bool
+
+     **@throws Exception
+     *
      */
-    protected function canDelete(Project $project, Clients $user): bool
+    protected function canDelete(Project $project, User $user): bool
     {
         $staff = $user->getCurrentStaff();
 
@@ -178,7 +183,7 @@ class ProjectVoter extends AbstractEntityVoter
     {
         return $staff->isActive()
             && $staff->getCompany() === $project->getSubmitterCompany()
-            && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()) || $project->getSubmitterClient() === $staff->getClient());
+            && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()) || $project->getSubmitterUser() === $staff->getUser());
     }
 
     /**

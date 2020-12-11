@@ -9,7 +9,7 @@ use Http\Client\Exception;
 use InvalidArgumentException;
 use JsonException;
 use Nexy\Slack\Exception\SlackApiException;
-use Nexy\Slack\{Attachment, AttachmentField, Client, MessageInterface};
+use Nexy\Slack\{Attachment, AttachmentField, Client as Slack, MessageInterface};
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Core\SwiftMailer\MailjetMessage;
@@ -18,8 +18,8 @@ use Unilend\Syndication\Repository\ProjectRepository;
 
 class ProjectNotifier
 {
-    /** @var Client */
-    private Client $client;
+    /** @var Slack */
+    private Slack $slack;
     /** @var ProjectRepository */
     private ProjectRepository $projectRepository;
     /** @var Swift_Mailer */
@@ -30,14 +30,14 @@ class ProjectNotifier
     private RouterInterface $router;
 
     /**
-     * @param Client            $client
-     * @param ProjectRepository $projectRepository
+     * @param Slack                   $client
+     * @param ProjectRepository       $projectRepository
      * @param Swift_Mailer      $mailer
      * @param RouterInterface   $router
      */
-    public function __construct(Client $client, ProjectRepository $projectRepository, Swift_Mailer $mailer, RouterInterface $router)
+    public function __construct(Slack $client, ProjectRepository $projectRepository, Swift_Mailer $mailer, RouterInterface $router)
     {
-        $this->client            = $client;
+        $this->slack            = $client;
         $this->projectRepository = $projectRepository;
         $this->mailer            = $mailer;
         $this->router = $router;
@@ -53,7 +53,7 @@ class ProjectNotifier
      */
     public function notifyProjectCreated(Project $project): void
     {
-        $this->client->sendMessage($this->createSlackMessage($project));
+        $this->slack->sendMessage($this->createSlackMessage($project));
     }
 
     /**
@@ -66,7 +66,7 @@ class ProjectNotifier
      */
     public function notifyProjectStatusChanged(Project $project): void
     {
-        $this->client->sendMessage($this->createSlackMessage($project));
+        $this->slack->sendMessage($this->createSlackMessage($project));
     }
 
     /**
@@ -79,14 +79,14 @@ class ProjectNotifier
      */
     public function createSlackMessage(Project $project): MessageInterface
     {
-        return $this->client->createMessage()
+        return $this->slack->createMessage()
             ->enableMarkdown()
             ->setText($this->getSlackMessageText($project))
             ->attach(
                 (new Attachment())
                     ->addField(new AttachmentField('Entité', $project->getSubmitterCompany()->getDisplayName(), true))
                     ->addField(new AttachmentField('Entités invitées', (string) count($project->getProjectParticipations()), true))
-                    ->addField(new AttachmentField('Utilisateur', $project->getSubmitterClient()->getEmail(), true))
+                    ->addField(new AttachmentField('Utilisateur', $project->getSubmitterUser()->getEmail(), true))
                     ->addField(new AttachmentField('Utilisateurs invités', (string) $this->projectRepository->countProjectParticipationMembers($project), true))
             )
         ;
@@ -138,13 +138,13 @@ class ProjectNotifier
             if ($participation->getParticipant() !== $project->getSubmitterCompany() && $participation->getParticipant()->hasSigned()) {
                 foreach ($participation->getActiveProjectParticipationMembers() as $activeProjectParticipationMember) {
                     $message = (new MailjetMessage())
-                        ->setTo($activeProjectParticipationMember->getStaff()->getClient()->getEmail())
+                        ->setTo($activeProjectParticipationMember->getStaff()->getUser()->getEmail())
                         ->setTemplateId(MailjetMessage::TEMPLATE_PROJECT_FILE_UPLOADED)
                         ->setVars([
                             'front_viewParticipation_URL' => $this->router->generate('front_viewParticipation', [
                                 'projectParticipationPublicId' => $participation->getPublicId(),
                             ], RouterInterface::ABSOLUTE_URL),
-                            'client_firstName' => $activeProjectParticipationMember->getStaff()->getClient()->getFirstName(),
+                            'client_firstName' => $activeProjectParticipationMember->getStaff()->getUser()->getFirstName(),
                             'project_arranger'      => $project->getSubmitterCompany()->getDisplayName(),
                             'project_title'         => $project->getTitle(),
                             'project_riskGroupName' => $project->getRiskGroupName(),

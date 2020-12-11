@@ -11,7 +11,7 @@ use InvalidArgumentException;
 use League\Flysystem\{FileExistsException, FilesystemInterface};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Entity\{Staff};
@@ -59,11 +59,12 @@ class FileUploadManager
     public function upload(UploadedFile $uploadedFile, Staff $uploader, File $file, array $context = []): void
     {
         $mineType                               = $uploadedFile->getMimeType();
-        [$relativeUploadedPath, $encryptionKey] = $this->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader->getClient()));
+        [$relativeUploadedPath, $encryptionKey] = $this->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getUserDirectory($uploader->getUser()));
 
         $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file, FileVersion::FILE_SYSTEM_USER_ATTACHMENT, $encryptionKey, $mineType);
         $fileVersion
-            ->setOriginalName($this->fileSystemHelper->normalizeFileName($uploadedFile->getClientOriginalName()))
+            ->setOriginalName($this->fileSystemHelper->normalizeFileName($uploadedFile->
+            getClientOriginalName()))
             ->setSize($uploadedFile->getSize())
         ;
         $file->setCurrentFileVersion($fileVersion);
@@ -131,18 +132,19 @@ class FileUploadManager
     }
 
     /**
-     * @param Clients $client
-     *
-     * @throws InvalidArgumentException
+     * @param User $user
      *
      * @return string
+
+     **@throws InvalidArgumentException
+     *
      */
-    private function getClientDirectory(Clients $client): string
+    private function getUserDirectory(User $user): string
     {
-        if (empty($client->getId())) {
-            throw new InvalidArgumentException('Cannot find the upload destination. The client id is empty.');
+        if (null === $user->getId()) {
+            throw new InvalidArgumentException('Cannot find the upload destination. The user id is empty.');
         }
 
-        return (string) $client->getId();
+        return (string) $user->getId();
     }
 }

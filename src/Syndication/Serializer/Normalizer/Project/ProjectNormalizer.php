@@ -9,10 +9,10 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     ContextAwareNormalizerInterface,
     NormalizerAwareInterface,
     NormalizerAwareTrait};
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Staff;
-use Unilend\Syndication\Entity\{Project};
+use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
@@ -51,9 +51,9 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
     {
         $context[self::ALREADY_CALLED] = true;
 
-        $client = $this->security->getUser();
+        $user = $this->security->getUser();
 
-        $currentStaff = $client instanceof Clients ? $client->getCurrentStaff() : null;
+        $currentStaff = $user instanceof User ? $user->getCurrentStaff() : null;
 
         $currentCompany = $currentStaff instanceof Staff ? $currentStaff->getCompany() : null;
 

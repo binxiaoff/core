@@ -70,21 +70,21 @@ class AcceptationsLegalDocs
     private LegalDocument $legalDoc;
 
     /**
-     * @var Clients
+     * @var User
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
      * @ORM\JoinColumn(name="accepted_by", nullable=false)
      *
      */
-    private Clients $acceptedBy;
+    private User $acceptedBy;
 
     /**
-     * @param Clients       $acceptedBy
+     * @param User          $acceptedBy
      * @param LegalDocument $legalDoc
      *
      * @throws \Exception
      */
-    public function __construct(Clients $acceptedBy, LegalDocument $legalDoc)
+    public function __construct(User $acceptedBy, LegalDocument $legalDoc)
     {
         $this->legalDoc   = $legalDoc;
         $this->acceptedBy = $acceptedBy;
@@ -100,9 +100,9 @@ class AcceptationsLegalDocs
     }
 
     /**
-     * @return Clients
+     * @return User
      */
-    public function getAcceptedBy(): Clients
+    public function getAcceptedBy(): User
     {
         return $this->acceptedBy;
     }

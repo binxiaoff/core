@@ -12,7 +12,7 @@ use Exception;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
- * @ORM\Table(name="core_temporary_token", indexes={@ORM\Index(name="fk_temporary_token_id_client", columns={"id_client"})})
+ * @ORM\Table(name="core_temporary_token", indexes={@ORM\Index(name="fk_temporary_token_id_user", columns={"id_user"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -72,65 +72,67 @@ class TemporaryToken
     private $id;
 
     /**
-     * @var Clients
+     * @var User
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_user", referencedColumnName="id", nullable=false)
      * })
      */
-    private $client;
+    private $user;
 
     /**
      * TemporaryToken constructor.
      *
-     * @param Clients $clients
-     * @param string  $expirationDelay
+     * @param User   $users
+     * @param string $expirationDelay
      *
      * @throws Exception
      */
-    private function __construct(Clients $clients, string $expirationDelay)
+    private function __construct(User $users, string $expirationDelay)
     {
         $this->token   = bin2hex(random_bytes(16));
-        $this->client  = $clients;
+        $this->user  = $users;
         $this->added   = new DateTimeImmutable();
         $this->expires = (new DateTimeImmutable())->add(DateInterval::createFromDateString($expirationDelay));
     }
 
     /**
+     * @param User $user
+     *
+     * @return TemporaryToken
+
+     **@throws Exception
+     *
      * @internal Use Unilend\Core\Service\TemporaryTokenGenerator::generateMediumToken
      *
-     * @param Clients $client
-     *
-     * @throws Exception
-     *
-     * @return TemporaryToken
      */
-    public static function generateMediumToken(Clients $client): TemporaryToken
+    public static function generateMediumToken(User $user): TemporaryToken
     {
-        return new TemporaryToken($client, static::LIFETIME_MEDIUM);
+        return new TemporaryToken($user, static::LIFETIME_MEDIUM);
     }
 
     /**
+     * @param User $user
+     *
+     * @return TemporaryToken
+
+     **@throws Exception
+     *
      * @internal Use Unilend\Core\Service\TemporaryTokenGenerator::generateUltraLongToken
      *
-     * @param Clients $client
-     *
-     * @throws Exception
-     *
-     * @return TemporaryToken
      */
-    public static function generateUltraLongToken(Clients $client): TemporaryToken
+    public static function generateUltraLongToken(User $user): TemporaryToken
     {
-        return new TemporaryToken($client, static::LIFETIME_ULTRA_LONG);
+        return new TemporaryToken($user, static::LIFETIME_ULTRA_LONG);
     }
 
     /**
-     * @return Clients
+     * @return User
      */
-    public function getClient(): Clients
+    public function getUser(): User
     {
-        return $this->client;
+        return $this->user;
     }
 
     /**

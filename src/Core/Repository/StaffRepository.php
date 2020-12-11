@@ -45,10 +45,10 @@ class StaffRepository extends ServiceEntityRepository
      *
      * @return Staff|null
      */
-    public function findOneByClientEmailAndCompany(string $email, Company $company): ?Staff
+    public function findOneByUserEmailAndCompany(string $email, Company $company): ?Staff
     {
         return $this->createQueryBuilder('s')
-            ->innerJoin('s.client', 'c')
+            ->innerJoin('s.user', 'c')
             ->where(
                 'c.email = :email',
                 's.company = :company'

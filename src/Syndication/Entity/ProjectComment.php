@@ -8,8 +8,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\Core\Entity\User;
 
 /**
  * @ApiResource(
@@ -69,12 +69,12 @@ class ProjectComment
     private $project;
 
     /**
-     * @var Clients
+     * @var User
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Clients")
-     * @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\JoinColumn(name="id_user", referencedColumnName="id", nullable=false)
      */
-    private $client;
+    private $user;
 
     /**
      * @var string
@@ -153,21 +153,21 @@ class ProjectComment
     }
 
     /**
-     * @return Clients
+     * @return User
      */
-    public function getClient(): Clients
+    public function getUser(): User
     {
-        return $this->client;
+        return $this->user;
     }
 
     /**
-     * @param Clients $client
+     * @param User $user
      *
      * @return ProjectComment
      */
-    public function setClient(Clients $client): ProjectComment
+    public function setUser(User $user): ProjectComment
     {
-        $this->client = $client;
+        $this->user = $user;
 
         return $this;
     }

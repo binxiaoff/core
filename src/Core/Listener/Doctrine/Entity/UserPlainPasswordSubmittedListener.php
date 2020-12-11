@@ -6,9 +6,9 @@ namespace Unilend\Core\Listener\Doctrine\Entity;
 
 use Exception;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 
-class ClientPlainPasswordSubmittedListener
+class UserPlainPasswordSubmittedListener
 {
     /** @var UserPasswordEncoderInterface */
     private $userPasswordEncoder;
@@ -22,18 +22,18 @@ class ClientPlainPasswordSubmittedListener
     }
 
     /**
-     * @param Clients $client
+     * @param User $user
      *
      * @throws Exception
      */
-    public function encodePlainPassword(Clients $client): void
+    public function encodePlainPassword(User $user): void
     {
-        if ($client->getPlainPassword()) {
-            $client->setPassword(
-                $this->userPasswordEncoder->encodePassword($client, $client->getPlainPassword())
+        if ($user->getPlainPassword()) {
+            $user->setPassword(
+                $this->userPasswordEncoder->encodePassword($user, $user->getPlainPassword())
             );
 
-            $client->eraseCredentials();
+            $user->eraseCredentials();
         }
     }
 }

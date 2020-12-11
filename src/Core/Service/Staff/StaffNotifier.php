@@ -53,23 +53,23 @@ class StaffNotifier
      * @throws JsonException
      * @throws ORMException
      */
-    public function notifyClientInitialisation(Staff $staff): int
+    public function notifyUserInitialisation(Staff $staff): int
     {
-        $client = $staff->getClient();
-        if (!$staff->isActive() || false === $client->isInitializationNeeded() || false === $client->isGrantedLogin() || false === $staff->getCompany()->hasSigned()) {
+        $user = $staff->getUser();
+        if (!$staff->isActive() || false === $user->isInitializationNeeded() || false === $user->isGrantedLogin() || false === $staff->getCompany()->hasSigned()) {
             return 0;
         }
 
-        $token = $this->temporaryTokenGenerator->generateUltraLongToken($client)->getToken();
+        $token = $this->temporaryTokenGenerator->generateUltraLongToken($user)->getToken();
 
         $message = (new MailjetMessage())
-            ->setTo($client->getEmail())
-            ->setTemplateId(MailjetMessage::TEMPLATE_STAFF_CLIENT_INITIALISATION)
+            ->setTo($user->getEmail())
+            ->setTemplateId(MailjetMessage::TEMPLATE_STAFF_USER_INITIALISATION)
             ->setVars([
                     'inscriptionFinalisationUrl' =>
                         $this->router->generate(
                             'front_initialAccount',
-                            ['temporaryTokenPublicId' => $token, 'clientPublicId' => $client->getPublicId()],
+                            ['temporaryTokenPublicId' => $token, 'userPublicId' => $user->getPublicId()],
                             RouterInterface::ABSOLUTE_URL
                         ),
                     'marketSegments' => implode(' ,', $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
@@ -82,7 +82,7 @@ class StaffNotifier
                         $staff->getRoles()
                     )),
                     'company_displayName' => $staff->getCompany()->getDisplayName(),
-                    'client_firstName' =>  $client->getFirstName(),
+                    'client_firstName' =>  $user->getFirstName(),
             ])
         ;
 

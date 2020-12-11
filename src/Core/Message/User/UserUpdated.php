@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Message\Client;
+namespace Unilend\Core\Message\User;
 
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Message\AsyncMessageInterface;
 
-class ClientUpdated implements AsyncMessageInterface
+class UserUpdated implements AsyncMessageInterface
 {
     /** @var int */
-    private $clientId;
+    private $userId;
     /** @var array */
     private $changeSet;
 
     /**
-     * @param Clients $client
-     * @param array   $changeSet
+     * @param User  $user
+     * @param array $changeSet
      */
-    public function __construct(Clients $client, array $changeSet)
+    public function __construct(User $user, array $changeSet)
     {
-        $this->clientId  = $client->getId();
+        $this->userId    = $user->getId();
         $this->changeSet = $changeSet;
     }
 
@@ -35,8 +35,8 @@ class ClientUpdated implements AsyncMessageInterface
     /**
      * @return int
      */
-    public function getClientId(): int
+    public function getUserId(): int
     {
-        return $this->clientId;
+        return $this->userId;
     }
 }

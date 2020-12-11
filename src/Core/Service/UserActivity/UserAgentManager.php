@@ -6,8 +6,8 @@ namespace Unilend\Core\Service\UserActivity;
 
 use Exception;
 use Psr\Log\LoggerInterface;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\{UserAgent};
+use Unilend\Core\Entity\User;
+use Unilend\Core\Entity\UserAgent;
 use Unilend\Core\Repository\UserAgentRepository;
 use UserAgentParser\Model\UserAgent as Model;
 use UserAgentParser\Provider\Chain as UserAgentParser;
@@ -34,14 +34,15 @@ class UserAgentManager
     }
 
     /**
-     * @param Clients     $client
+     * @param User        $user
      * @param string|null $userAgent
      *
-     *@throws Exception
+     *@return UserAgent|null
+
+     **@throws Exception
      *
-     * @return UserAgent|null
      */
-    public function getClientUserAgent(Clients $client, string $userAgent): ?UserAgent
+    public function getUserUserAgent(User $user, string $userAgent): ?UserAgent
     {
         if (null === ($parsedUserAgent = $this->parse($userAgent))) {
             return null;
@@ -50,14 +51,14 @@ class UserAgentManager
         $browser = $parsedUserAgent->getBrowser();
         $device  = $parsedUserAgent->getDevice();
 
-        $knownUserAgent = $this->userAgentRepository->findOneByClientAndBrowserAndDevice($client, $browser, $device);
+        $knownUserAgent = $this->userAgentRepository->findOneByUserAndBrowserAndDevice($user, $browser, $device);
 
         if (null !== $knownUserAgent) {
             return $knownUserAgent;
         }
 
         return (new UserAgent())
-            ->setClient($client)
+            ->setUser($user)
             ->setBrowserName($browser->getName())
             ->setBrowserVersion($browser->getVersion() ? $browser->getVersion()->getComplete() : null)
             ->setDeviceModel($device->getModel())

@@ -8,7 +8,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInter
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\{Project, ProjectStatus};
 
 class ListExtension implements QueryCollectionExtensionInterface
@@ -29,14 +29,14 @@ class ListExtension implements QueryCollectionExtensionInterface
      */
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
     {
-        if (Project::class !== $resourceClass || $this->security->isGranted(Clients::ROLE_ADMIN)) {
+        if (Project::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
 
-        /** @var Clients $user */
+        /** @var User $user */
         $user = $this->security->getUser();
 
-        if (!$user instanceof Clients) {
+        if (!$user instanceof User) {
             return;
         }
 
@@ -50,7 +50,7 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->leftJoin('pp.projectParticipationMembers', 'ppc')
             ->andWhere($queryBuilder->expr()->orX(
                 // if you are owner
-                $rootAlias . '.submitterClient = :client',
+                $rootAlias . '.submitterUser = :user',
                 // or you are in owner company and you have market segment
                 $queryBuilder->expr()->andX(
                     $rootAlias . '.submitterCompany = :company',
@@ -69,7 +69,7 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
             ->setParameter('company', $staff->getCompany())
             ->setParameter('staff', $staff)
-            ->setParameter('client', $staff->getClient())
+            ->setParameter('user', $staff->getUser())
             ->setParameter('marketSegments', $staff ? $staff->getMarketSegments() : [])
         ;
     }

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\Client;
+namespace Unilend\Core\Service\User;
 
 use Exception;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Service\TemporaryTokenGenerator;
 use Unilend\Core\SwiftMailer\MailjetMessage;
 
-class ClientNotifier
+class UserNotifier
 {
     /** @var Swift_Mailer */
     private Swift_Mailer $mailer;
@@ -33,32 +33,32 @@ class ClientNotifier
     }
 
     /**
-     * @param Clients $client
+     * @param User $user
      *
      * @throws Exception
      */
-    public function notifyPasswordRequest(Clients $client): void
+    public function notifyPasswordRequest(User $user): void
     {
-        if (false === $client->isGrantedLogin() || $client->isInitializationNeeded()) {
+        if (false === $user->isGrantedLogin() || $user->isInitializationNeeded()) {
             return;
         }
 
-        $temporaryToken = $this->temporaryTokenGenerator->generateMediumToken($client);
+        $temporaryToken = $this->temporaryTokenGenerator->generateMediumToken($user);
 
         $message = (new MailjetMessage())
-            ->setTemplateId(MailjetMessage::TEMPLATE_CLIENT_PASSWORD_REQUEST)
+            ->setTemplateId(MailjetMessage::TEMPLATE_USER_PASSWORD_REQUEST)
             ->setVars([
-                'firstName' => $client->getFirstName(),
+                'firstName' => $user->getFirstName(),
                 'resetPasswordURL' => $this->router->generate(
                     'front_resetPassword',
                     [
                     'temporaryTokenPublicId' => $temporaryToken->getToken(),
-                    'clientPublicId' => $client->getPublicId(),
+                    'userPublicId' => $user->getPublicId(),
                     ],
                     RouterInterface::ABSOLUTE_URL
                 ),
             ])
-            ->setTo($client->getEmail())
+            ->setTo($user->getEmail())
         ;
 
         $this->mailer->send($message);

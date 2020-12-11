@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer, ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\Staff;
 use Unilend\Syndication\Entity\{ProjectParticipation,
     ProjectParticipationMember,
@@ -53,8 +53,8 @@ class ProjectParticipationCollectionDenormalizer implements ContextAwareDenormal
      */
     public function denormalize($data, $type, ?string $format = null, array $context = [])
     {
-        $client            = $this->security->getUser();
-        $connectedStaff    = $client instanceof Clients ? $client->getCurrentStaff() : null;
+        $user              = $this->security->getUser();
+        $connectedStaff    = $user instanceof User ? $user->getCurrentStaff() : null;
         $connectedStaffIRI = $this->iriConverter->getIriFromItem($connectedStaff);
 
         $participations = new ArrayCollection();

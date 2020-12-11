@@ -32,26 +32,26 @@ use Unilend\Core\Validator\Constraints\{Password as AssertPassword};
  *     itemOperations={
  *         "get": {
  *             "security": "is_granted('view', object)",
- *             "normalization_context": {"groups": {"client:read", "client:item:read", "staff:read", "company:read", "legalDocument:read"}}
+ *             "normalization_context": {"groups": {"user:read", "user:item:read", "staff:read", "company:read", "legalDocument:read"}}
  *         },
  *         "put": {"security": "is_granted('edit', object)"},
  *         "patch": {"security": "is_granted('edit', object)"}
  *     },
- *     normalizationContext={"groups": {"client:read"}},
- *     denormalizationContext={"groups": {"client:write"}}
+ *     normalizationContext={"groups": {"user:read"}},
+ *     denormalizationContext={"groups": {"user:write"}}
  * )
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Core\Entity\Versioned\VersionedClients")
+ * @Gedmo\Loggable(logEntryClass="Unilend\Core\Entity\Versioned\VersionedUser")
  *
- * @ORM\Table(name="core_clients", indexes={@ORM\Index(columns={"last_name"})})
- * @ORM\Entity
+ * @ORM\Table(name="core_user", indexes={@ORM\Index(columns={"last_name"})})
+ * @ORM\Entity(repositoryClass="Unilend\Core\Repository\UserRepository")
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity({"email"}, message="Clients.email.unique")
+ * @UniqueEntity({"email"}, message="Users.email.unique")
  *
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"email": "exact"})
  */
-class Clients implements UserInterface, EquatableInterface, TraceableStatusAwareInterface
+class User implements UserInterface, EquatableInterface, TraceableStatusAwareInterface
 {
     use TimestampableTrait;
     use RoleableTrait;
@@ -66,7 +66,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @var string|null
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"user:read", "user:write"})
      *
      * @ORM\Column(name="last_name", type="string", length=191, nullable=true)
      *
@@ -78,7 +78,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @var string|null
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"user:read", "user:write"})
      *
      * @ORM\Column(name="first_name", type="string", length=191, nullable=true)
      *
@@ -90,18 +90,18 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @var string|null
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"user:read", "user:write"})
      *
      * @ORM\Column(name="phone", type="string", length=35, nullable=true)
      *
-     * @AssertPhoneNumber(defaultRegion="Clients::PHONE_NUMBER_DEFAULT_REGION", type="any")
+     * @AssertPhoneNumber(defaultRegion="Users::PHONE_NUMBER_DEFAULT_REGION", type="any")
      */
     private ?string $phone = null;
 
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:create"})
+     * @Groups({"user:read", "user:create"})
      *
      * @ORM\Column(name="email", type="string", length=191, unique=true)
      *
@@ -120,18 +120,18 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     private ?string $password = null;
 
     /**
-     * @Groups({"client:write"})
+     * @Groups({"user:write"})
      *
      * @SerializedName("password")
      *
-     * @AssertPassword(message="Clients.password.password")
+     * @AssertPassword(message="Users.password.password")
      */
     private ?string $plainPassword = null;
 
     /**
      * @var string|null
      *
-     * @Groups({"client:read", "client:write"})
+     * @Groups({"user:read", "user:write"})
      *
      * @ORM\Column(type="string", length=255, nullable=true)
      */
@@ -140,35 +140,35 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @var Staff[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\Staff", mappedBy="client")
+     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\Staff", mappedBy="user")
      *
-     * @Groups({"client:item:read"})
+     * @Groups({"user:item:read"})
      */
     private Collection $staff;
 
     /**
-     * @var ClientStatus|null
+     * @var UserStatus|null
      *
-     * @Groups({"client:read"})
+     * @Groups({"user:read"})
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\ClientStatus", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="UserStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true)
      */
-    private ?ClientStatus $currentStatus = null;
+    private ?UserStatus $currentStatus = null;
 
     /**
-     * Property initialised only in ClientNormalizer
+     * Property initialised only in UserNormalizer
      *
      * @var LegalDocument|null
      *
-     * @Groups({"client:item:read"})
+     * @Groups({"user:item:read"})
      */
     private ?LegalDocument $serviceTermsToSign = null;
 
     /**
-     * @var Collection|ClientStatus[]
+     * @var Collection|UserStatus[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\ClientStatus", mappedBy="client", orphanRemoval=true, cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="UserStatus", mappedBy="user", orphanRemoval=true, cascade={"persist"})
      */
     private Collection $statuses;
 
@@ -183,7 +183,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     private ?GoogleRecaptchaResult $recaptchaResult = null;
 
     /**
-     * Clients constructor.
+     * Users constructor.
      *
      * @param string $email
      *
@@ -192,7 +192,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     public function __construct(string $email)
     {
         $this->statuses = new ArrayCollection();
-        $this->setCurrentStatus(new ClientStatus($this, ClientStatus::STATUS_INVITED));
+        $this->setCurrentStatus(new UserStatus($this, UserStatus::STATUS_INVITED));
 
         $this->added   = new DateTimeImmutable();
         $this->roles[] = self::ROLE_USER;
@@ -213,11 +213,12 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @param string|null $lastName
      *
-     * @throws Exception
+     * @return User
+
+     **@throws Exception
      *
-     * @return Clients
      */
-    public function setLastName(?string $lastName): Clients
+    public function setLastName(?string $lastName): User
     {
         $this->lastName = $this->normalizeName($lastName);
 
@@ -237,11 +238,12 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @param string|null $firstName
      *
-     * @throws Exception
+     * @return User
+
+     **@throws Exception
      *
-     * @return Clients
      */
-    public function setFirstName(?string $firstName): Clients
+    public function setFirstName(?string $firstName): User
     {
         $this->firstName = $this->normalizeName($firstName);
 
@@ -261,9 +263,9 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @param string|null $phone
      *
-     * @return Clients
+     * @return User
      */
-    public function setPhone(?string $phone): Clients
+    public function setPhone(?string $phone): User
     {
         $this->phone = $phone;
 
@@ -281,9 +283,9 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @param string $email
      *
-     * @return Clients
+     * @return User
      */
-    public function setEmail(string $email): Clients
+    public function setEmail(string $email): User
     {
         $this->email = $email;
 
@@ -301,11 +303,12 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @param string|null $password
      *
-     * @throws Exception
+     * @return User
+
+     **@throws Exception
      *
-     * @return Clients
      */
-    public function setPassword(?string $password): Clients
+    public function setPassword(?string $password): User
     {
         $this->password = $password;
 
@@ -335,7 +338,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      *
      * @return $this
      */
-    public function setPlainPassword(string $plainPassword): Clients
+    public function setPlainPassword(string $plainPassword): User
     {
         $this->plainPassword = $plainPassword;
 
@@ -353,9 +356,9 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @param string|null $jobFunction
      *
-     * @return Clients
+     * @return User
      */
-    public function setJobFunction(?string $jobFunction): Clients
+    public function setJobFunction(?string $jobFunction): User
     {
         $this->jobFunction = $jobFunction;
 
@@ -363,9 +366,9 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     }
 
     /**
-     * @return Staff[]|Collection
+     * @return Staff[]|iterable
      */
-    public function getStaff(): Collection
+    public function getStaff(): iterable
     {
         return $this->staff;
     }
@@ -375,8 +378,8 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      */
     public function addStaff(Staff $staff)
     {
-        if ($staff->getClient() !== $this) {
-            throw new InvalidArgumentException('The staff should concern the client');
+        if ($staff->getUser() !== $this) {
+            throw new InvalidArgumentException('The staff should concern the user');
         }
 
         $this->staff->add($staff);
@@ -403,11 +406,17 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      */
     public function isGrantedLogin(): bool
     {
-        return $this->isInStatus(ClientStatus::GRANTED_LOGIN) && $this->getStaff()->exists(
-            static function (int $key, Staff $staff) {
-                return $staff->isGrantedLogin();
+        if (false === $this->isInStatus(UserStatus::GRANTED_LOGIN)) {
+            return false;
+        }
+
+        foreach ($this->getStaff() as $staff) {
+            if ($staff->isGrantedLogin()) {
+                return true;
             }
-        );
+        }
+
+        return false;
     }
 
     /**
@@ -415,7 +424,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      */
     public function isInitializationNeeded(): bool
     {
-        return $this->isInStatus([ClientStatus::STATUS_INVITED]) || false === $this->isProfileCompleted();
+        return $this->isInStatus([UserStatus::STATUS_INVITED]) || false === $this->isProfileCompleted();
     }
 
     /**
@@ -436,7 +445,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
         }
 
         if (false === $user->isGrantedLogin()) {
-            return false; // The client has been changed to a critical status. He/she is no longer the client that we known as he/she was.
+            return false; // The user has been changed to a critical status. He/she is no longer the user that we known as he/she was.
         }
 
         return true;
@@ -467,11 +476,11 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     }
 
     /**
-     * @param StatusInterface|ClientStatus $currentStatus
+     * @param StatusInterface|UserStatus $currentStatus
      *
-     * @return Clients
+     * @return User
      */
-    public function setCurrentStatus(StatusInterface $currentStatus): Clients
+    public function setCurrentStatus(StatusInterface $currentStatus): User
     {
         $this->currentStatus = $currentStatus;
 
@@ -503,7 +512,7 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     }
 
     /**
-     * @return Collection|ClientStatus[]
+     * @return Collection|UserStatus[]
      */
     public function getStatuses(): Collection
     {
@@ -511,9 +520,9 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     }
 
     /**
-     * @return ClientStatus
+     * @return UserStatus
      */
-    public function getCurrentStatus(): ClientStatus
+    public function getCurrentStatus(): UserStatus
     {
         return $this->currentStatus;
     }
@@ -529,9 +538,9 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @param LegalDocument $serviceTermsToSign
      *
-     * @return Clients
+     * @return User
      */
-    public function setServiceTermsToSign(LegalDocument $serviceTermsToSign): Clients
+    public function setServiceTermsToSign(LegalDocument $serviceTermsToSign): User
     {
         $this->serviceTermsToSign = $serviceTermsToSign;
 
@@ -549,9 +558,9 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
     /**
      * @param GoogleRecaptchaResult|null $recaptchaResult
      *
-     * @return Clients
+     * @return User
      */
-    public function setRecaptchaResult(?GoogleRecaptchaResult $recaptchaResult): Clients
+    public function setRecaptchaResult(?GoogleRecaptchaResult $recaptchaResult): User
     {
         $this->recaptchaResult = $recaptchaResult;
 
@@ -594,9 +603,9 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      */
     private function isInStatus(array $status): bool
     {
-        $clientStatus = $this->getCurrentStatus();
+        $userStatus = $this->getCurrentStatus();
 
-        return $clientStatus && \in_array($clientStatus->getStatus(), $status, true);
+        return $userStatus && \in_array($userStatus->getStatus(), $status, true);
     }
 
     /**
@@ -614,8 +623,8 @@ class Clients implements UserInterface, EquatableInterface, TraceableStatusAware
      */
     private function onProfileUpdated(): void
     {
-        if ($this->isProfileCompleted() && $this->getCurrentStatus()->getStatus() < ClientStatus::STATUS_CREATED) {
-            $this->setCurrentStatus(new ClientStatus($this, ClientStatus::STATUS_CREATED));
+        if ($this->isProfileCompleted() && $this->getCurrentStatus()->getStatus() < UserStatus::STATUS_CREATED) {
+            $this->setCurrentStatus(new UserStatus($this, UserStatus::STATUS_CREATED));
         }
     }
 }

@@ -31,6 +31,6 @@ class TemporaryTokenCreatedListener
      */
     public function expireOldTemporaryToken(TemporaryToken $token): void
     {
-        $this->repository->expireTemporaryTokens($token->getClient());
+        $this->repository->expireTemporaryTokens($token->getUser());
     }
 }

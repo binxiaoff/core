@@ -12,7 +12,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\{ProjectParticipation,
     ProjectParticipationMember,
     ProjectParticipationStatus,
@@ -77,7 +77,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
             }
         }
 
-        /** @var Clients $user */
+        /** @var User $user */
         $user = $this->security->getUser();
 
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipation::class]['addedBy'] = $user->getCurrentStaff();
@@ -173,7 +173,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
 
         $currentUser = $this->security->getUser();
 
-        $currentStaff = $currentUser instanceof Clients ? $currentUser->getCurrentStaff() : null;
+        $currentStaff = $currentUser instanceof User ? $currentUser->getCurrentStaff() : null;
 
         if ($currentStaff) {
             $project = $projectParticipation->getProject();

@@ -7,7 +7,7 @@ namespace Unilend\Syndication\Security\Voter;
 use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
@@ -51,25 +51,25 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param mixed   $subject
-     * @param Clients $user
+     * @param mixed $subject
+     * @param User  $user
      *
      * @return bool
      */
-    protected function fulfillPreconditions($subject, Clients $user): bool
+    protected function fulfillPreconditions($subject, User $user): bool
     {
         return null !== $user->getCurrentStaff();
     }
 
     /**
      * @param ProjectParticipation $subject
-     * @param Clients              $user
+     * @param User                 $user
      *
      * @return bool
      *
      * @throws NonUniqueResultException
      */
-    protected function canView(ProjectParticipation $subject, Clients $user): bool
+    protected function canView(ProjectParticipation $subject, User $user): bool
     {
         $staff = $user->getCurrentStaff();
 
@@ -94,11 +94,11 @@ class ProjectParticipationVoter extends AbstractEntityVoter
 
     /**
      * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
+     * @param User                 $user
      *
      * @return bool
      */
-    protected function canAdminView(ProjectParticipation $projectParticipation, Clients $user): bool
+    protected function canAdminView(ProjectParticipation $projectParticipation, User $user): bool
     {
         $staff = $user->getCurrentStaff();
 
@@ -112,11 +112,11 @@ class ProjectParticipationVoter extends AbstractEntityVoter
 
     /**
      * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
+     * @param User                 $user
      *
      * @return bool
      */
-    protected function canSensitiveView(ProjectParticipation $projectParticipation, Clients $user): bool
+    protected function canSensitiveView(ProjectParticipation $projectParticipation, User $user): bool
     {
         return $this->canAdminView($projectParticipation, $user)
         || Project::OFFER_VISIBILITY_PUBLIC === $projectParticipation->getProject()->getOfferVisibility();
@@ -124,11 +124,11 @@ class ProjectParticipationVoter extends AbstractEntityVoter
 
     /**
      * @param ProjectParticipation $projectParticipation
-     * @param Clients              $user
+     * @param User                 $user
      *
      * @return bool
      */
-    protected function canEdit(ProjectParticipation $projectParticipation, Clients $user): bool
+    protected function canEdit(ProjectParticipation $projectParticipation, User $user): bool
     {
         $project = $projectParticipation->getProject();
 

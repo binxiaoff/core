@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\Client;
+namespace Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\User;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
-use Unilend\Core\Message\Client\ClientUpdated;
+use Unilend\Core\Message\User\UserUpdated;
 
-class ClientUpdatedListener
+class UserUpdatedListener
 {
     use MessageDispatcherTrait;
 
@@ -23,10 +23,10 @@ class ClientUpdatedListener
     ];
 
     /**
-     * @param Clients            $client
+     * @param User               $user
      * @param PreUpdateEventArgs $args
      */
-    public function preUpdate(Clients $client, PreUpdateEventArgs $args): void
+    public function preUpdate(User $user, PreUpdateEventArgs $args): void
     {
         $changeSet = $args->getEntityChangeSet();
 
@@ -37,7 +37,7 @@ class ClientUpdatedListener
         }
 
         if (false === empty($changeSet)) {
-            $this->messageBus->dispatch(new ClientUpdated($client, $changeSet));
+            $this->messageBus->dispatch(new UserUpdated($user, $changeSet));
         }
     }
 }

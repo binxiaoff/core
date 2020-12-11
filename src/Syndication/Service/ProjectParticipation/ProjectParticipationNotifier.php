@@ -49,10 +49,10 @@ class ProjectParticipationNotifier
             return;
         }
 
-        $submitterClient = $project->getSubmitterClient();
+        $submitterUser = $project->getSubmitterUser();
 
         $message = (new MailjetMessage())
-            ->setTo($submitterClient->getEmail())
+            ->setTo($submitterUser->getEmail())
             ->setTemplateId(MailjetMessage::TEMPLATE_PARTICIPANT_REPLY)
             ->setVars(
                 [
@@ -60,7 +60,7 @@ class ProjectParticipationNotifier
                     'project_riskGroupName' =>  $project->getRiskGroupName(),
                     'project_title' => $project->getTitle(),
                     'participant_displayName' => $projectParticipation->getParticipant()->getDisplayName(),
-                    'client_firstName' => $submitterClient->getFirstName(),
+                    'client_firstName' => $submitterUser->getFirstName(),
                 ]
             );
 

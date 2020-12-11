@@ -11,22 +11,22 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
-use Unilend\Core\Entity\ClientFailedLogin;
+use Unilend\Core\Entity\UserFailedLogin;
 
 /**
- * @method ClientFailedLogin|null find($id, $lockMode = null, $lockVersion = null)
- * @method ClientFailedLogin|null findOneBy(array $criteria, array $orderBy = null)
- * @method ClientFailedLogin[]    findAll()
- * @method ClientFailedLogin[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method UserFailedLogin|null find($id, $lockMode = null, $lockVersion = null)
+ * @method UserFailedLogin|null findOneBy(array $criteria, array $orderBy = null)
+ * @method UserFailedLogin[]    findAll()
+ * @method UserFailedLogin[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ClientFailedLoginRepository extends ServiceEntityRepository
+class UserFailedLoginRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ClientFailedLogin::class);
+        parent::__construct($registry, UserFailedLogin::class);
     }
 
     /**
@@ -51,12 +51,12 @@ class ClientFailedLoginRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param ClientFailedLogin $failedLogin
+     * @param UserFailedLogin $failedLogin
      *
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function save(ClientFailedLogin $failedLogin): void
+    public function save(UserFailedLogin $failedLogin): void
     {
         $this->getEntityManager()->persist($failedLogin);
         $this->getEntityManager()->flush();

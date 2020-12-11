@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Core\Security\Voter;
 
 use Unilend\Core\Entity\AcceptationsLegalDocs;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 
 class AcceptationsLegalDocsVoter extends AbstractEntityVoter
 {
@@ -13,11 +13,11 @@ class AcceptationsLegalDocsVoter extends AbstractEntityVoter
 
     /**
      * @param AcceptationsLegalDocs $acceptationsLegalDocs
-     * @param Clients               $submitter
+     * @param User                  $submitter
      *
      * @return bool
      */
-    public function canCreate(AcceptationsLegalDocs $acceptationsLegalDocs, Clients $submitter): bool
+    public function canCreate(AcceptationsLegalDocs $acceptationsLegalDocs, User $submitter): bool
     {
         return $acceptationsLegalDocs->getAcceptedBy() === $submitter;
     }

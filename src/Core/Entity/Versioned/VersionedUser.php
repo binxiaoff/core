@@ -9,7 +9,7 @@ use Gedmo\Loggable\Entity\MappedSuperclass\AbstractLogEntry;
 
 /**
  * @ORM\Table(
- *     name="core_zz_versioned_clients",
+ *     name="core_zz_versioned_user",
  *     indexes={
  *         @ORM\Index(columns={"logged_at"}),
  *         @ORM\Index(columns={"username"}),
@@ -18,6 +18,6 @@ use Gedmo\Loggable\Entity\MappedSuperclass\AbstractLogEntry;
  * )
  * @ORM\Entity(repositoryClass="Gedmo\Loggable\Entity\Repository\LogEntryRepository")
  */
-class VersionedClients extends AbstractLogEntry
+class VersionedUser extends AbstractLogEntry
 {
 }

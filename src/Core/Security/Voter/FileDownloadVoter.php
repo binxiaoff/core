@@ -8,7 +8,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use InvalidArgumentException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\{Clients, Company, File, FileDownload, FileVersion, Staff};
+use Unilend\Core\Entity\{User, Company, File, FileDownload, FileVersion, Staff};
 use Unilend\Core\Repository\FileVersionSignatureRepository;
 use Unilend\Syndication\Entity\{Project, ProjectFile, ProjectParticipation, ProjectParticipationMember, ProjectStatus};
 use Unilend\Syndication\Repository\{ProjectFileRepository, ProjectParticipationMemberRepository, ProjectParticipationRepository, ProjectRepository};
@@ -55,24 +55,25 @@ class FileDownloadVoter extends AbstractEntityVoter
 
     /**
      * @param FileDownload $fileDownload
-     * @param Clients      $user
+     * @param User         $user
      *
      * @return bool
      */
-    protected function fulfillPreconditions($fileDownload, Clients $user): bool
+    protected function fulfillPreconditions($fileDownload, User $user): bool
     {
         return $fileDownload->getFileVersion()->getFile() && $fileDownload->getFileVersion() === $fileDownload->getFileVersion()->getFile()->getCurrentFileVersion();
     }
 
     /**
      * @param FileDownload $fileDownload
-     * @param Clients      $user
-     *
-     * @throws NonUniqueResultException
+     * @param User         $user
      *
      * @return bool
+
+     **@throws NonUniqueResultException
+     *
      */
-    protected function canCreate(FileDownload $fileDownload, Clients $user): bool
+    protected function canCreate(FileDownload $fileDownload, User $user): bool
     {
         $file    = $fileDownload->getFileVersion()->getFile();
         $type    = $fileDownload->getType();

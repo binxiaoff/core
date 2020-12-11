@@ -13,8 +13,8 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Core\DataTransformer\FileInputDataTransformer;
 use Unilend\Core\DTO\FileInput;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\{File};
+use Unilend\Core\Entity\User;
+use Unilend\Core\Entity\File;
 use Unilend\Core\Repository\FileRepository;
 
 class Upload
@@ -59,7 +59,7 @@ class Upload
     public function __invoke(Request $request, ?string $id): File
     {
         $user         = $this->security->getUser();
-        $currentStaff = $user instanceof Clients ? $user->getCurrentStaff() : null;
+        $currentStaff = $user instanceof User ? $user->getCurrentStaff() : null;
 
         if (null === $currentStaff) {
             throw new AccessDeniedHttpException();

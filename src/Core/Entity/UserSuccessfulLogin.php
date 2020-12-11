@@ -11,14 +11,14 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
- * @ORM\Table(name="core_client_successful_login", indexes={
- *     @ORM\Index(name="idx_client_successful_login_ip", columns={"ip"}),
- *     @ORM\Index(name="idx_client_successful_login_added", columns={"added"})
+ * @ORM\Table(name="core_user_successful_login", indexes={
+ *     @ORM\Index(name="idx_user_successful_login_ip", columns={"ip"}),
+ *     @ORM\Index(name="idx_user_successful_login_added", columns={"added"})
  * })
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Core\Repository\UserSuccessfulLoginRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class ClientSuccessfulLogin
+class UserSuccessfulLogin
 {
     use TimestampableAddedOnlyTrait;
     use ConstantsAwareTrait;
@@ -37,14 +37,14 @@ class ClientSuccessfulLogin
     private int $id;
 
     /**
-     * @var Clients
+     * @var User
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="User")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_user", referencedColumnName="id", nullable=false)
      * })
      */
-    private Clients $client;
+    private User $user;
 
     /**
      * @var string
@@ -92,12 +92,12 @@ class ClientSuccessfulLogin
     private ?float $recaptchaScore;
 
     /**
-     * ClientLoginHistory constructor.
+     * UserLoginHistory constructor.
      *
-     * @param Clients $client
-     * @param string  $action
+     * @param User   $user
+     * @param string $action
      */
-    public function __construct(Clients $client, string $action)
+    public function __construct(User $user, string $action)
     {
         if (false === \in_array($action, self::getActions(), true)) {
             throw new InvalidArgumentException(
@@ -105,7 +105,7 @@ class ClientSuccessfulLogin
             );
         }
 
-        $this->client = $client;
+        $this->user = $user;
         $this->action = $action;
         $this->added  = new DateTimeImmutable();
     }
@@ -119,19 +119,19 @@ class ClientSuccessfulLogin
     }
 
     /**
-     * @return Clients
+     * @return User
      */
-    public function getClient(): Clients
+    public function getUser(): User
     {
-        return $this->client;
+        return $this->user;
     }
 
     /**
      * @param string $action
      *
-     * @return ClientSuccessfulLogin
+     * @return UserSuccessfulLogin
      */
-    public function setAction(string $action): ClientSuccessfulLogin
+    public function setAction(string $action): UserSuccessfulLogin
     {
         $this->action = $action;
 
@@ -157,9 +157,9 @@ class ClientSuccessfulLogin
     /**
      * @param string|null $ip
      *
-     * @return ClientSuccessfulLogin
+     * @return UserSuccessfulLogin
      */
-    public function setIp(?string $ip): ClientSuccessfulLogin
+    public function setIp(?string $ip): UserSuccessfulLogin
     {
         $this->ip = $ip;
 
@@ -177,9 +177,9 @@ class ClientSuccessfulLogin
     /**
      * @param string|null $countryIsoCode
      *
-     * @return ClientSuccessfulLogin
+     * @return UserSuccessfulLogin
      */
-    public function setCountryIsoCode(?string $countryIsoCode): ClientSuccessfulLogin
+    public function setCountryIsoCode(?string $countryIsoCode): UserSuccessfulLogin
     {
         $this->countryIsoCode = $countryIsoCode;
 
@@ -197,9 +197,9 @@ class ClientSuccessfulLogin
     /**
      * @param string|null $city
      *
-     * @return ClientSuccessfulLogin
+     * @return UserSuccessfulLogin
      */
-    public function setCity(?string $city): ClientSuccessfulLogin
+    public function setCity(?string $city): UserSuccessfulLogin
     {
         $this->city = $city;
 
@@ -217,9 +217,9 @@ class ClientSuccessfulLogin
     /**
      * @param UserAgent|null $userAgent
      *
-     * @return ClientSuccessfulLogin
+     * @return UserSuccessfulLogin
      */
-    public function setUserAgent(?UserAgent $userAgent): ClientSuccessfulLogin
+    public function setUserAgent(?UserAgent $userAgent): UserSuccessfulLogin
     {
         $this->userAgent = $userAgent;
 
@@ -237,9 +237,9 @@ class ClientSuccessfulLogin
     /**
      * @param float|null $recaptchaScore
      *
-     * @return ClientSuccessfulLogin
+     * @return UserSuccessfulLogin
      */
-    public function setRecaptchaScore(?float $recaptchaScore): ClientSuccessfulLogin
+    public function setRecaptchaScore(?float $recaptchaScore): UserSuccessfulLogin
     {
         $this->recaptchaScore = $recaptchaScore;
 

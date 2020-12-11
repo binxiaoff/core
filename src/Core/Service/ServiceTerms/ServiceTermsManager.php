@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Service\ServiceTerms;
 
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\{LegalDocument};
 use Unilend\Core\Repository\{AcceptationLegalDocsRepository, LegalDocumentRepository};
 
@@ -35,14 +35,14 @@ class ServiceTermsManager
     }
 
     /**
-     * @param Clients       $client
+     * @param User          $user
      * @param LegalDocument $serviceTerms
      *
      * @return bool
      */
-    public function hasAccepted(Clients $client, LegalDocument $serviceTerms): bool
+    public function hasAccepted(User $user, LegalDocument $serviceTerms): bool
     {
-        $legalDocsAcceptance = $this->acceptationLegalDocsRepository->findOneBy(['acceptedBy' => $client, 'legalDoc' => $serviceTerms]);
+        $legalDocsAcceptance = $this->acceptationLegalDocsRepository->findOneBy(['acceptedBy' => $user, 'legalDoc' => $serviceTerms]);
 
         return null !== $legalDocsAcceptance;
     }

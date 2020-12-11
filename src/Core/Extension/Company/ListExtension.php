@@ -8,8 +8,8 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInter
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\{Company};
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\User;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
@@ -32,7 +32,7 @@ class ListExtension implements QueryCollectionExtensionInterface
      */
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
     {
-        if (Company::class !== $resourceClass || $this->security->isGranted(Clients::ROLE_ADMIN)) {
+        if (Company::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
 

@@ -20,7 +20,7 @@ use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, Time
  *         "order": {"added", "id"},
  *         "pagination_enabled": false
  *     },
- *     normalizationContext={"groups": {"staff:read", "message:read", "blameable:read", "client:read", "timestampable:read", "company:read"}},
+ *     normalizationContext={"groups": {"staff:read", "message:read", "blameable:read", "user:read", "timestampable:read", "company:read"}},
  *     denormalizationContext={"groups": {"message:write"}},
  *     collectionOperations={
  *         "post": {"security_post_denormalize": "is_granted('create', object)", "denormalization_context": {"groups": {"message:create", "message:write"}}}

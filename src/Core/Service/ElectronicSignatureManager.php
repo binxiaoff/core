@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\{Request, RequestStack, Session\SessionInterface};
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 
 /**
  * @todo webhooks: https://developers.docusign.com/esign-rest-api/code-examples/webhook-status
@@ -108,19 +108,19 @@ class ElectronicSignatureManager
     /**
      * For demonstration purpose, only one document, one signer.
      *
-     * @param Clients $signerClient
-     * @param string  $emailSubject
-     * @param string  $documentName
-     * @param string  $documentContent
-     * @param string  $documentExtension
-     * @param string  $signatureOffsetX
-     * @param string  $signatureOffsetY
-     * @param string  $returnUrl
+     * @param User   $signerClient
+     * @param string $emailSubject
+     * @param string $documentName
+     * @param string $documentContent
+     * @param string $documentExtension
+     * @param string $signatureOffsetX
+     * @param string $signatureOffsetY
+     * @param string $returnUrl
      *
      * @return array|null
      */
     public function createSignatureRequest(
-        Clients $signerClient,
+        User $signerClient,
         string $emailSubject,
         string $documentName,
         string $documentContent,

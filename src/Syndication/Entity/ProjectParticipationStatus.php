@@ -10,10 +10,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
+use Unilend\Core\Entity\User;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
@@ -139,7 +139,7 @@ class ProjectParticipationStatus implements StatusInterface
      * Used in an expression constraints:
      *  - only arrangeur can create a participation;
      *  - arranger can put the status "ARCHIVED_BY_ARRANGER";
-     *  - arranger can put the status "COMMITTEE_*" only for non-client participant;
+     *  - arranger can put the status "COMMITTEE_*" only for non-user participant;
      *  - participant can put the status "COMMITTEE_*" and "ARCHIVED_BY_PARTICIPANT"
      * And after all, the participation of arranger cannot be archived.
      *
@@ -147,7 +147,7 @@ class ProjectParticipationStatus implements StatusInterface
      */
     public function isStatusValid(): bool
     {
-        if ($this->getAddedBy()->getClient()->hasRole(Clients::ROLE_ADMIN)) {
+        if ($this->getAddedBy()->getUser()->hasRole(User::ROLE_ADMIN)) {
             return true;
         }
 

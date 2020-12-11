@@ -12,7 +12,7 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 /**
  * @ORM\Table(
  *     indexes={
- *      @ORM\Index(columns={"id_client", "browser_name", "device_model", "device_brand", "device_type"})
+ *      @ORM\Index(columns={"id_user", "browser_name", "device_model", "device_brand", "device_type"})
  *     },
  *     name="core_user_agent"
  * )
@@ -24,14 +24,14 @@ class UserAgent
     use TimestampableAddedOnlyTrait;
 
     /**
-     * @var Clients
+     * @var User
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_user", referencedColumnName="id", nullable=false)
      * })
      */
-    private $client;
+    private $user;
 
     /**
      * @var string|null
@@ -95,21 +95,21 @@ class UserAgent
     }
 
     /**
-     * @return Clients
+     * @return User
      */
-    public function getClient(): Clients
+    public function getUser(): User
     {
-        return $this->client;
+        return $this->user;
     }
 
     /**
-     * @param Clients $client
+     * @param User $user
      *
      * @return UserAgent
      */
-    public function setClient(Clients $client): UserAgent
+    public function setUser(User $user): UserAgent
     {
-        $this->client = $client;
+        $this->user = $user;
 
         return $this;
     }

@@ -102,8 +102,8 @@ class XmlGenerator
 
         $donneePP = $parametresDeSignature->addChild('DONNEEPP');
         $donneePP->addChild('CDTICI', '1'); // todo: ask for the values for other titles
-        $donneePP->addChild('LNPRUS', $signatory->getClient()->getFirstName());
-        $donneePP->addChild('LNPATR', $signatory->getClient()->getLastName());
+        $donneePP->addChild('LNPRUS', $signatory->getUser()->getFirstName());
+        $donneePP->addChild('LNPATR', $signatory->getUser()->getLastName());
 
         $listeVisuelsSignature = $parametresDeSignature->addChild('LISTEVISUELSSIGNATURE');
 

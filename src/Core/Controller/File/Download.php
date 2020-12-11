@@ -9,7 +9,7 @@ use Exception;
 use Symfony\Component\HttpFoundation\{Request, StreamedResponse};
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\{Clients, FileDownload, FileVersion};
+use Unilend\Core\Entity\{FileDownload, FileVersion, User};
 use Unilend\Core\Repository\FileDownloadRepository;
 use Unilend\Core\Security\Voter\FileDownloadVoter;
 use Unilend\Core\Service\File\FileDownloadManager;
@@ -49,7 +49,7 @@ class Download
     public function __invoke(FileVersion $data, Request $request, string $type): StreamedResponse
     {
         $user         = $this->security->getUser();
-        $currentStaff = $user instanceof Clients ? $user->getCurrentStaff() : null;
+        $currentStaff = $user instanceof User ? $user->getCurrentStaff() : null;
 
         if (null === $currentStaff) {
             throw new AccessDeniedHttpException();

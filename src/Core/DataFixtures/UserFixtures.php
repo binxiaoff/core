@@ -9,7 +9,7 @@ use Exception;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 class UserFixtures extends AbstractFixtures
@@ -67,7 +67,7 @@ class UserFixtures extends AbstractFixtures
         $users = array_flip($users);
 
         foreach (array_keys($users) as $value) {
-            $user = new Clients($value . '@' . $this->getEmailDomain($value));
+            $user = new User($value . '@' . $this->getEmailDomain($value));
             $this->forcePublicId($user, $value);
             $manager->persist($user);
             $this->addReference($value, $user);
@@ -86,11 +86,11 @@ class UserFixtures extends AbstractFixtures
     }
 
     /**
-     * @param Clients $user
+     * @param User $user
      *
      * @throws Exception
      */
-    public function initialize(Clients $user): void
+    public function initialize(User $user): void
     {
          $user->setLastName($this->faker->lastName);
          $user->setFirstName($this->faker->firstName);
