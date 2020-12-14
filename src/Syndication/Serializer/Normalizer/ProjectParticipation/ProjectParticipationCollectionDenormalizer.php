@@ -9,8 +9,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer, ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
-use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\{ProjectParticipation,
     ProjectParticipationMember,
     Request\ProjectParticipationCollection

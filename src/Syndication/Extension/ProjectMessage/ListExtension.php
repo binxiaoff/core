@@ -8,8 +8,8 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInter
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\ProjectMessage;
 
 class ListExtension implements QueryCollectionExtensionInterface

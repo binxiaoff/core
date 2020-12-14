@@ -12,10 +12,15 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\DTO\AcceptedNDA;
 use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
+use Unilend\Core\Entity\Traits\{ArchivableTrait,
+    BlamableAddedTrait,
+    BlamableArchivedTrait,
+    PermissionTrait,
+    PublicizeIdentityTrait,
+    TimestampableAddedOnlyTrait};
+use Unilend\Core\Model\Bitmask;
 
 /**
  * @ApiResource(
@@ -54,8 +59,10 @@ class ProjectParticipationMember
     use PublicizeIdentityTrait;
     use ArchivableTrait;
     use BlamableArchivedTrait;
+    use PermissionTrait;
 
-    public const SERIALIZER_GROUP_PROJECT_PARTICIPATION_MEMBER_OWNER_WRITE = 'projectParticipationMember:owner:write';
+    public const PERMISSION_READ  = 0;
+    public const PERMISSION_WRITE = 1 << 0;
 
     /**
      * @var ProjectParticipation
@@ -88,39 +95,6 @@ class ProjectParticipationMember
     private Staff $staff;
 
     /**
-     * @var DateTimeImmutable|null
-     *
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     *
-     * @Groups({"projectParticipationMember:read"})
-     */
-    private ?DateTimeImmutable $ndaAccepted = null;
-
-    /**
-     * @var FileVersion|null
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\FileVersion")
-     * @ORM\JoinColumn(name="id_accepted_nda_version")
-     *
-     * @Groups({"projectParticipationMember:read"})
-     */
-    private ?FileVersion $acceptedNdaVersion = null;
-
-    /**
-     * @var string|null
-     *
-     * @ORM\Column(type="text", length=65535, nullable=true)
-     *
-     * @Groups({"projectParticipationMember:read"})
-     */
-    private ?string $acceptedNdaTerm = null;
-
-    /**
-     * @var array
-     */
-    private array $violations = [];
-
-    /**
      * @param ProjectParticipation $projectParticipation
      * @param Staff                $staff
      * @param Staff                $addedBy
@@ -133,6 +107,7 @@ class ProjectParticipationMember
         $this->staff                = $staff;
         $this->addedBy              = $addedBy;
         $this->added                = new DateTimeImmutable();
+        $this->permissions          = new Bitmask(0);
     }
 
     /**
@@ -144,59 +119,31 @@ class ProjectParticipationMember
     }
 
     /**
+     * @deprecated
+     *
      * @return DateTimeImmutable|null
+     *
+     * @Groups({"projectParticipationMember:read"})
      */
     public function getNdaAccepted(): ?DateTimeImmutable
     {
-        return $this->ndaAccepted;
+        $ndaSignature = $this->getNDASignature();
+
+        return $ndaSignature ? $ndaSignature->getAdded() : null;
     }
 
     /**
+     * @deprecated
+     *
      * @return FileVersion|null
+     *
+     * @Groups({"projectParticipationMember:read"})
      */
-    public function getAcceptedNdaVersion(): ?FileVersion
+    public function getAcceptedNDAVersion(): ?FileVersion
     {
-        return $this->acceptedNdaVersion;
-    }
+        $ndaSignature = $this->getNDASignature();
 
-    /**
-     * @param AcceptedNDA $acceptedNDA
-     *
-     * @throws Exception
-     *
-     * @return ProjectParticipationMember
-     *
-     * @Groups({"projectParticipationMember:owner:write"})
-     */
-    public function setAcceptedNda(AcceptedNDA $acceptedNDA): ProjectParticipationMember
-    {
-        // Save the violation in $this->violations temporarily, so that it can be translated later in @Assert\Callback
-        if ($this->acceptedNdaVersion) {
-            // acceptedNdaVersion is only settable once
-            $this->violations[] = ['path' => 'acceptableNdaVersion', 'message' => 'Syndication.ProjectParticipationMember.acceptedNdaVersion.accepted'];
-        }
-
-        if (null === $this->getAcceptableNdaVersion()) {
-            // The acceptable version is not available
-            $this->violations[] = ['path' => 'acceptableNdaVersion', 'message' => 'Syndication.ProjectParticipationMember.acceptableNdaVersion.empty'];
-        }
-
-        if ($acceptedNDA->getFileVersionId() !== $this->getAcceptableNdaVersion()->getPublicId()) {
-            // We can only accept the acceptable version
-            $this->violations[] = ['path' => 'acceptedNdaVersion', 'message' => 'Syndication.ProjectParticipationMember.acceptedNdaVersion.unacceptableVersion'];
-        }
-
-        if (
-            null === $this->acceptedNdaVersion
-            && null !== $this->getAcceptableNdaVersion()
-            && $acceptedNDA->getFileVersionId() === $this->getAcceptableNdaVersion()->getPublicId()
-        ) {
-            $this->acceptedNdaVersion = $this->getAcceptableNdaVersion();
-            $this->acceptedNdaTerm    = $acceptedNDA->getTerm();
-            $this->ndaAccepted        = new DateTimeImmutable();
-        }
-
-        return $this;
+        return $ndaSignature ? $ndaSignature->getFileVersion() : null;
     }
 
     /**
@@ -216,23 +163,33 @@ class ProjectParticipationMember
     }
 
     /**
+     * @deprecated
+     *
      * @return string|null
-     */
-    public function getAcceptedNdaTerm(): ?string
-    {
-        return $this->acceptedNdaTerm;
-    }
-
-    /**
-     * @return FileVersion|null
      *
      * @Groups({"projectParticipationMember:read"})
      */
-    public function getAcceptableNdaVersion(): ?FileVersion
+    public function getAcceptedNdaTerm(): ?string
     {
-        $file = $this->projectParticipation->getNda() ?? $this->getProjectParticipation()->getProject()->getNda();
+        $ndaSignature = $this->getNDASignature();
 
-        return $file ? $file->getCurrentFileVersion() : null;
+        return $ndaSignature ? $ndaSignature->getTerm() : null;
+    }
+
+    /**
+     * @deprecated
+     *
+     * @return NDASignature
+     */
+    public function getNDASignature(): ?NDASignature
+    {
+        foreach ($this->projectParticipation->getNDASignatures() as $signature) {
+            if ($signature->getSignatory() === $this->getStaff()) {
+                return $signature;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -256,31 +213,10 @@ class ProjectParticipationMember
      */
     public function validateArchived(ExecutionContextInterface $context): void
     {
-        if ($this->isArchived()) {
-            if ($this->getProjectParticipation()->getActiveProjectParticipationMembers()->count() < 1) {
-                $context->buildViolation('Syndication.ProjectParticipationMember.archived.lastActiveMember')
-                    ->atPath('archived')
-                    ->addViolation()
-                ;
-            }
-            if ($this->getStaff()->isManager()) {
-                $context->buildViolation('Syndication.ProjectParticipationMember.archived.isManager')
-                    ->atPath('archived')
-                    ->addViolation()
-                ;
-            }
-        }
-    }
-
-    /**
-     * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
-     */
-    public function validate(ExecutionContextInterface $context): void
-    {
-        foreach ($this->violations as $violation) {
-            $context->buildViolation($violation['message'])->atPath($violation['path'])->addViolation()
+        if ($this->isArchived() && $this->getProjectParticipation()->getActiveProjectParticipationMembers()->count() < 1) {
+            $context->buildViolation('ProjectParticipationMember.archived.lastActiveMember')
+                ->atPath('archived')
+                ->addViolation()
             ;
         }
     }

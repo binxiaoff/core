@@ -19,8 +19,6 @@ class StaffStatusVoter extends AbstractEntityVoter
      */
     protected function isGrantedAll($staffStatus, User $user): bool
     {
-        $submitterStaff = $user->getCurrentStaff();
-
-        return $submitterStaff && $submitterStaff->isAdmin() && $staffStatus->getStaff()->getCompany() === $submitterStaff->getCompany();
+        return $this->authorizationChecker->isGranted(StaffVoter::ATTRIBUTE_EDIT, $staffStatus->getStaff());
     }
 }

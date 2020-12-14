@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Core\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
+use ReflectionException;
 use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\Entity\LegalDocument;
 
@@ -12,7 +15,7 @@ class LegalDocumentFixtures extends AbstractFixtures
     /**
      * @param ObjectManager $manager
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function load(ObjectManager $manager)
     {

@@ -371,18 +371,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     }
 
     /**
-     * @param Staff $staff
-     */
-    public function addStaff(Staff $staff)
-    {
-        if ($staff->getUser() !== $this) {
-            throw new InvalidArgumentException('The staff should concern the user');
-        }
-
-        $this->staff->add($staff);
-    }
-
-    /**
      * @return Company|null
      */
     public function getCompany(): ?Company

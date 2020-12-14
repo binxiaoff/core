@@ -20,38 +20,8 @@ class ProjectOrganizerVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function fulfillPreconditions($subject, User $user): bool
+    protected function isGrantedAll($subject, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $subject->getProject());
-    }
-
-    /**
-     * @param ProjectOrganizer $subject
-     *
-     * @return bool
-     */
-    protected function canCreate(ProjectOrganizer $subject)
-    {
-        return true;
-    }
-
-    /**
-     * @param ProjectOrganizer $subject
-     *
-     * @return bool
-     */
-    protected function canDelete(ProjectOrganizer $subject): bool
-    {
-        return $subject->getCompany() !== $subject->getProject()->getSubmitterCompany();
-    }
-
-    /**
-     * @param ProjectOrganizer $subject
-     *
-     * @return bool
-     */
-    protected function canEdit(ProjectOrganizer $subject): bool
-    {
-        return true;
     }
 }

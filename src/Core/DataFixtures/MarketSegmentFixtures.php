@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\DataFixtures;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\Entity\MarketSegment;
 
 class MarketSegmentFixtures extends AbstractFixtures

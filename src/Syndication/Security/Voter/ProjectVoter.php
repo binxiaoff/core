@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\Security\Voter;
 
-use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\CompanyModule;
-use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\Syndication\Entity\{Project, ProjectStatus};
+use Unilend\Syndication\Repository\ProjectParticipationRepository;
 use Unilend\Syndication\Service\Project\ProjectManager;
+use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectVoter extends AbstractEntityVoter
 {
@@ -26,15 +26,21 @@ class ProjectVoter extends AbstractEntityVoter
 
     /** @var ProjectManager */
     private ProjectManager $projectManager;
+    /** @var ProjectParticipationManager */
+    private ProjectParticipationManager $projectParticipationManager;
+    /** @var ProjectParticipationRepository */
+    private ProjectParticipationRepository $projectParticipationRepository;
 
     /**
-     * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param ProjectManager                $projectManager
+     * @param AuthorizationCheckerInterface  $authorizationChecker
+     * @param ProjectParticipationRepository $projectParticipationRepository
      */
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker, ProjectManager $projectManager)
-    {
+    public function __construct(
+        AuthorizationCheckerInterface $authorizationChecker,
+        ProjectParticipationRepository $projectParticipationRepository
+    ) {
         parent::__construct($authorizationChecker);
-        $this->projectManager = $projectManager;
+        $this->projectParticipationRepository = $projectParticipationRepository;
     }
 
     /**
@@ -42,15 +48,25 @@ class ProjectVoter extends AbstractEntityVoter
      * @param User    $user
      *
      * @return bool
-
-     **@throws Exception
      *
+     * @throws Exception
      */
     protected function canView(Project $project, User $user): bool
     {
         $staff = $user->getCurrentStaff();
 
-        return $staff && ($this->hasArrangerReadAccess($project, $staff) || $this->hasParticipantReadAccess($project, $staff));
+        if (null === $staff) {
+            return false;
+        }
+
+        $projectParticipation = $this->projectParticipationRepository->findOneBy([
+            'participant' => $staff->getCompany(),
+            'project' => $project,
+        ]);
+
+        return $projectParticipation &&
+            $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $projectParticipation) &&
+            ($this->projectManager->hasSignedNDA($project, $staff) || $project->getArranger() === $staff->getCompany());
     }
 
     /**
@@ -65,7 +81,9 @@ class ProjectVoter extends AbstractEntityVoter
     {
         $staff = $user->getCurrentStaff();
 
-        return $staff && $this->hasArrangerReadAccess($project, $staff);
+        return $staff
+            && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $project->getArrangerProjectParticipation())
+            && $project->getArranger() === $staff->getCompany();
     }
 
     /**
@@ -79,7 +97,7 @@ class ProjectVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff
-            && $this->hasArrangerWriteAccess($project, $staff)
+            && $staff->hasArrangementProjectCreatePermissionEnabled()
             && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT);
     }
 
@@ -94,11 +112,18 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canViewNda(Project $project, User $user): bool
     {
-        if ($this->canEdit($project, $user) || $this->canView($project, $user)) {
-            return true;
+        $staff = $user->getCurrentStaff();
+
+        if (null === $staff) {
+            return false;
         }
 
-        return $this->projectManager->isParticipationMember($project, $user->getCurrentStaff());
+        $projectParticipation = $this->projectParticipationRepository->findOneBy([
+            'participant' => $staff->getCompany(),
+            'project' => $project,
+        ]);
+
+        return $staff && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $projectParticipation);
     }
 
     /**
@@ -115,7 +140,7 @@ class ProjectVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff
-            && $this->hasArrangerWriteAccess($project, $staff)
+            && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $project->getArrangerProjectParticipation())
             && ProjectStatus::STATUS_SYNDICATION_CANCELLED !== $project->getCurrentStatus()->getStatus();
     }
 
@@ -124,9 +149,8 @@ class ProjectVoter extends AbstractEntityVoter
      * @param User    $user
      *
      * @return bool
-
-     **@throws Exception
      *
+     * @throws Exception
      */
     protected function canComment(Project $project, User $user): bool
     {
@@ -139,61 +163,14 @@ class ProjectVoter extends AbstractEntityVoter
      *
      * @return bool
 
-     **@throws Exception
-     *
+     * @throws Exception
      */
     protected function canDelete(Project $project, User $user): bool
     {
         $staff = $user->getCurrentStaff();
 
         return $staff
-            && $this->hasArrangerWriteAccess($project, $staff)
+            && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_DELETE, $project->getArrangerProjectParticipation())
             && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus();
-    }
-
-    /**
-     * @param Project $project
-     * @param Staff   $staff
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return bool
-     */
-    private function hasParticipantReadAccess(Project $project, Staff $staff): bool
-    {
-        if (false === $staff->isActive()) {
-            return false;
-        }
-
-        $projectParticipationMember = $this->projectManager->getParticipationMember($project, $staff);
-
-        // The participant doesn't need the participation module for the read access (CALS-2379)
-        return $projectParticipationMember && (
-            null === $projectParticipationMember->getAcceptableNdaVersion() || $projectParticipationMember->getNdaAccepted()
-        );
-    }
-
-    /**
-     * @param Project $project
-     * @param Staff   $staff
-     *
-     * @return bool
-     */
-    private function hasArrangerReadAccess(Project $project, Staff $staff): bool
-    {
-        return $staff->isActive()
-            && $staff->getCompany() === $project->getSubmitterCompany()
-            && ($staff->isAdmin() || $staff->getMarketSegments()->contains($project->getMarketSegment()) || $project->getSubmitterUser() === $staff->getUser());
-    }
-
-    /**
-     * @param Project $project
-     * @param Staff   $staff
-     *
-     * @return bool
-     */
-    private function hasArrangerWriteAccess(Project $project, Staff $staff): bool
-    {
-        return $this->hasArrangerReadAccess($project, $staff) && ($staff->isAdmin() || $staff->isManager() || $staff->isOperator());
     }
 }

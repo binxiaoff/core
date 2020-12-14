@@ -18,7 +18,7 @@
     </php>
 
     <extensions>
-        <extension class="Unilend\Test\Hook\BypassFinalHook"/>
+        <extension class="Unilend\Test\Core\Hook\BypassFinalHook"/>
         <extension class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension" />
     </extensions>
 

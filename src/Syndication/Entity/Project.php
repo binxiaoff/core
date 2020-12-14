@@ -564,12 +564,13 @@ class Project implements TraceableStatusAwareInterface
      */
     public function __construct(Staff $addedBy, string $riskGroupName, Money $globalFundingMoney, MarketSegment $marketSegment)
     {
-        $arrangerParticipation = new ProjectParticipation($addedBy->getCompany(), $this, $addedBy);
-        $arrangerParticipation->addProjectParticipationMember(
-            new ProjectParticipationMember($arrangerParticipation, $addedBy, $addedBy)
-        );
-        $this->projectFiles          = new ArrayCollection();
+        $this->submitterCompany      = $addedBy->getCompany();
+        $this->submitterUser         = $addedBy->getUser();
+        $arrangerParticipation       = new ProjectParticipation($addedBy->getCompany(), $this, $addedBy);
+        $arrangerParticipation->addProjectParticipationMember(new ProjectParticipationMember($arrangerParticipation, $addedBy, $addedBy));
         $this->projectParticipations = new ArrayCollection([$arrangerParticipation]);
+
+        $this->projectFiles          = new ArrayCollection();
         $this->projectComments       = new ArrayCollection();
         $this->statuses              = new ArrayCollection();
         $this->tranches              = new ArrayCollection();
@@ -577,8 +578,6 @@ class Project implements TraceableStatusAwareInterface
         $this->organizers            = new ArrayCollection([new ProjectOrganizer($addedBy->getCompany(), $this, $addedBy)]);
         $this->added                 = new DateTimeImmutable();
         $this->marketSegment         = $marketSegment;
-        $this->submitterUser       = $addedBy->getUser();
-        $this->submitterCompany      = $addedBy->getCompany();
 
         $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_DRAFT, $addedBy));
         $contact = (new NullablePerson())

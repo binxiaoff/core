@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Security\Voter;
 
-use Unilend\Core\Entity\{User, FileVersionSignature};
+use Unilend\Core\Entity\{FileVersionSignature, User};
 
 class FileVersionSignatureVoter extends AbstractEntityVoter
 {

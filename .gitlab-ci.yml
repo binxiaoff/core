@@ -5,4 +5,4 @@ before_script:
 
 test:application:
     script:
-        - php -dpcov.enabled=1  bin/phpunit --coverage-text --colors=never
+        - php -dpcov.enabled=1  bin/phpunit --coverage-text --colors=never --testsuite='unit'

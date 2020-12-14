@@ -45,7 +45,7 @@ class ProjectMessageVoter extends AbstractEntityVoter
     {
         return $subject->getParticipation()->getProject()->getSubmitterCompany() === $user->getCompany()
             || (
-                $this->projectParticipationManager->isMember($subject->getParticipation(), $user->getCurrentStaff())
+                $this->projectParticipationManager->isActiveMember($subject->getParticipation(), $user->getCurrentStaff())
             );
     }
 

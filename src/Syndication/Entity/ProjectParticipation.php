@@ -14,6 +14,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\{Constraints as Assert, Context\ExecutionContextInterface};
 use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Entity\{Company, File, Staff};
@@ -404,6 +405,13 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private ?File $nda = null;
 
     /**
+     * @var ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\NDASignature", mappedBy="projectParticipation")
+     */
+    private iterable $ndaSignatures;
+
+    /**
      * @param Company $participant
      * @param Project $project
      * @param Staff   $addedBy
@@ -412,17 +420,20 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      */
     public function __construct(Company $participant, Project $project, Staff $addedBy)
     {
+        $this->project                      = $project;
+
         $this->added                        = new DateTimeImmutable();
         $this->addedBy                      = $addedBy;
         $this->participant                  = $participant;
-        $this->project                      = $project;
-        $this->projectParticipationMembers  = new ArrayCollection();
         $this->messages                     = new ArrayCollection();
         $this->statuses                     = new ArrayCollection();
         $this->projectParticipationTranches = new ArrayCollection();
         $this->interestRequest              = new RangedOfferWithFee();
         $this->interestReply                = new Offer();
         $this->invitationRequest            = new OfferWithFee();
+        $this->ndaSignatures                = new ArrayCollection([]);
+        $this->projectParticipationMembers  = new ArrayCollection([]);
+
 
         $this->setCurrentStatus(new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_CREATED, $addedBy));
     }
@@ -911,10 +922,30 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public function validateMaxMoney(ExecutionContextInterface $context): void
     {
         $interestMaxAmount = $this->interestRequest->getMaxMoney();
-        if ($interestMaxAmount->getAmount() !== null && 1 !== MoneyCalculator::compare($interestMaxAmount, $this->interestRequest->getMoney())) {
+        if (null !== $interestMaxAmount->getAmount() && 1 !== MoneyCalculator::compare($interestMaxAmount, $this->interestRequest->getMoney())) {
             $context->buildViolation('Core.Money.currency.maxMoney')
                 ->atPath('interestRequest.maxMoney')
                 ->addViolation();
         }
+    }
+
+    /**
+     * @return FileVersion|null
+     *
+     * @Groups({"projectParticipationMember:read"})
+     */
+    public function getAcceptableNdaVersion(): ?FileVersion
+    {
+        $file = $this->getNda() ?? $this->getProject()->getNda();
+
+        return $file ? $file->getCurrentFileVersion() : null;
+    }
+
+    /**
+     * @return ArrayCollection|NDASignature[]
+     */
+    public function getNDASignatures(): iterable
+    {
+        return $this->ndaSignatures;
     }
 }

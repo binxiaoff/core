@@ -4,41 +4,45 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\Service\Project;
 
-use Doctrine\ORM\NonUniqueResultException;
 use Unilend\Core\Entity\Staff;
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectParticipationMember;
 use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
+use Unilend\Syndication\Repository\ProjectParticipationRepository;
+use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectManager
 {
     /**
-     * @var ProjectParticipationMemberRepository
+     * @var ProjectParticipationManager
      */
-    private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
+    private ProjectParticipationManager $projectParticipationManager;
+    /**
+     * @var ProjectParticipationRepository
+     */
+    private ProjectParticipationRepository $projectParticipationRepository;
 
     /**
-     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
+     * @param ProjectParticipationManager    $projectParticipationManager
+     * @param ProjectParticipationRepository $projectParticipationRepository
      */
-    public function __construct(ProjectParticipationMemberRepository $projectParticipationMemberRepository)
-    {
-        $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
+    public function __construct(
+        ProjectParticipationManager $projectParticipationManager,
+        ProjectParticipationRepository $projectParticipationRepository
+    ) {
+        $this->projectParticipationManager = $projectParticipationManager;
+        $this->projectParticipationRepository = $projectParticipationRepository;
     }
-
 
     /**
      * @param Project $project
      * @param Staff   $staff
      *
-     * @throws NonUniqueResultException
-     *
      * @return bool
      */
-    public function isParticipationMember(Project $project, Staff $staff): bool
+    public function isActiveParticipationMember(Project $project, Staff $staff): bool
     {
-        $projectParticipationMember = $this->getParticipationMember($project, $staff);
-
-        return $projectParticipationMember && false === $projectParticipationMember->isArchived();
+        return null !== $this->getActiveParticipationMember($project, $staff);
     }
 
     /**
@@ -46,12 +50,16 @@ class ProjectManager
      * @param Staff   $staff
      *
      * @return ProjectParticipationMember|null
-     *
-     * @throws NonUniqueResultException
      */
-    public function getParticipationMember(Project $project, Staff $staff): ?ProjectParticipationMember
+    public function getActiveParticipationMember(Project $project, Staff $staff): ?ProjectParticipationMember
     {
-        return $this->projectParticipationMemberRepository->findByProjectAndStaff($project, $staff);
+        $projectParticipation = $this->projectParticipationRepository->findOneBy(['project' => $project, 'participant' => $staff->getCompany()]);
+
+        if (null !== $projectParticipation) {
+            return null;
+        }
+
+        return $this->projectParticipationManager->getActiveMember($projectParticipation, $staff);
     }
 
     /**
@@ -60,8 +68,10 @@ class ProjectManager
      *
      * @return bool
      */
-    public function isArranger(Project $project, Staff $staff): bool
+    public function hasSignedNDA(Project $project, Staff $staff): bool
     {
-        return $project->getArranger() === $staff->getCompany();
+        $projectParticipation = $this->projectParticipationRepository->findOneBy(['project' => $project, 'participant' => $staff->getCompany()]);
+
+        return $projectParticipation && $this->projectParticipationManager->hasSignedNDA($projectParticipation, $staff);
     }
 }

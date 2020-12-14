@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\Security\Voter;
 
-use Doctrine\ORM\NonUniqueResultException;
-use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\Syndication\Entity\{Project,
     ProjectParticipation,
+    ProjectParticipationMember,
     ProjectStatus
 };
+use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 use Unilend\Syndication\Service\Project\ProjectManager;
 use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
@@ -28,26 +28,19 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_SENSITIVE_VIEW = 'sensitive_view';
     public const ATTRIBUTE_ADMIN_VIEW     = 'admin_view';
 
-    /** @var ProjectParticipationManager */
-    private ProjectParticipationManager $projectParticipationManager;
-
-    /** @var ProjectManager  */
-    private ProjectManager $projectManager;
+    /** @var ProjectParticipationMemberRepository */
+    private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
 
     /**
-     * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param ProjectManager                $projectManager
-     * @param ProjectParticipationManager   $projectParticipationManager
+     * @param AuthorizationCheckerInterface        $authorizationChecker
+     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
-        ProjectManager $projectManager,
-        ProjectParticipationManager $projectParticipationManager
+        ProjectParticipationMemberRepository $projectParticipationMemberRepository
     ) {
         parent::__construct($authorizationChecker);
-        $this->projectParticipationManager = $projectParticipationManager;
-        $this->projectManager = $projectManager;
-        $this->authorizationChecker = $authorizationChecker;
+        $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
     }
 
     /**
@@ -66,8 +59,6 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      * @param User                 $user
      *
      * @return bool
-     *
-     * @throws NonUniqueResultException
      */
     protected function canView(ProjectParticipation $subject, User $user): bool
     {
@@ -77,19 +68,22 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             return false;
         }
 
-        if ($this->projectManager->isArranger($subject->getProject(), $staff)) {
-            return true;
-        }
+        return $this->hasPermissionEffective($subject, $staff, ProjectParticipationMember::PERMISSION_READ) ||
+            $this->hasPermissionEffective($subject->getProject()->getArrangerProjectParticipation(), $staff, ProjectParticipationMember::PERMISSION_READ);
 
+        /*
+         *
+         * Visibility is not used for now
         switch ($subject->getProject()->getOfferVisibility()) {
             case Project::OFFER_VISIBILITY_PRIVATE:
-                return $this->projectParticipationManager->isMember($subject, $staff);
+                return $this->projectParticipationManager->hasPermissionEffective($subject, $staff);
             case Project::OFFER_VISIBILITY_PARTICIPANT:
             case Project::OFFER_VISIBILITY_PUBLIC:
-                return $this->projectManager->isParticipationMember($subject->getProject(), $staff);
+                return $this->projectManager->isActiveParticipationMember($subject->getProject(), $staff);
         }
 
         throw new LogicException('This code should not be reached');
+         */
     }
 
     /**
@@ -106,8 +100,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $this->projectParticipationManager->isMember($projectParticipation, $staff)
-            || $this->projectManager->isArranger($projectParticipation->getProject(), $staff);
+        return $this->hasPermissionEffective($projectParticipation, $staff, ProjectParticipationMember::PERMISSION_READ)
+            || $this->hasPermissionEffective($projectParticipation->getProject()->getArrangerProjectParticipation(), $staff, ProjectParticipationMember::PERMISSION_READ);
     }
 
     /**
@@ -118,8 +112,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
      */
     protected function canSensitiveView(ProjectParticipation $projectParticipation, User $user): bool
     {
-        return $this->canAdminView($projectParticipation, $user)
-        || Project::OFFER_VISIBILITY_PUBLIC === $projectParticipation->getProject()->getOfferVisibility();
+        return $this->canAdminView($projectParticipation, $user);
+        // Visibility is not used for now || Project::OFFER_VISIBILITY_PUBLIC === $projectParticipation->getProject()->getOfferVisibility();
     }
 
     /**
@@ -138,41 +132,107 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $projectParticipation->isActive()
-            && $project->hasEditableStatus()
-            && (
-                $this->projectManager->isArranger($projectParticipation->getProject(), $staff)
-                || (
-                    $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
-                    && $this->projectParticipationManager->isMember($projectParticipation, $staff)
-                    && $project->isPublished()
-                    && $project->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION
-                )
-            );
+        if (false === $projectParticipation->isActive() || false === $project->hasEditableStatus()) {
+            return false;
+        }
+
+        $arrangerParticipation = $project->getArrangerProjectParticipation();
+        // Arranger condition
+        if ($this->hasPermissionEffective($arrangerParticipation, $staff, ProjectParticipationMember::PERMISSION_WRITE)) {
+            return true;
+        }
+
+        return $projectParticipation->getParticipant()->hasModuleActivated(CompanyModule::MODULE_PARTICIPATION)
+            && $project->isPublished()
+            && $project->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION
+            && $this->hasPermissionEffective($projectParticipation, $staff, ProjectParticipationMember::PERMISSION_WRITE);
     }
 
     /**
      * @param ProjectParticipation $subject
+     * @param User                 $user
      *
      * @return bool
      */
-    protected function canCreate(ProjectParticipation $subject): bool
+    protected function canCreate(ProjectParticipation $subject, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $subject->getProject())
+        // $subject->getParticipant()->isCAGMember() should be changed when other group banks use platform
+        $staff = $user->getCurrentStaff();
+
+        if (false === $staff instanceof Staff) {
+            return false;
+        }
+
+        $project = $subject->getProject();
+
+        $arrangerParticipation = $project->getArrangerProjectParticipation();
+
+        return $this->hasPermissionEffective($arrangerParticipation, $staff, ProjectParticipationMember::PERMISSION_WRITE)
             && ($subject->getParticipant()->isCAGMember() || $subject->getProject()->getArranger()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT_EXTERNAL_BANK));
     }
 
     /**
      * @param ProjectParticipation $projectParticipation
+     * @param User                 $user
      *
      * @return bool
      */
-    protected function canDelete(ProjectParticipation $projectParticipation): bool
+    protected function canDelete(ProjectParticipation $projectParticipation, User $user): bool
     {
+        $staff = $user->getCurrentStaff();
+
+        if (false === $staff instanceof Staff) {
+            return false;
+        }
+
         $project = $projectParticipation->getProject();
 
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)
+        $arrangerParticipation = $project->getArrangerProjectParticipation();
+
+        return $this->hasPermissionEffective($arrangerParticipation, $staff, ProjectParticipationMember::PERMISSION_WRITE)
             && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus()
-            && $projectParticipation->getParticipant() !== $project->getSubmitterCompany();
+            && $projectParticipation->getParticipant() !== $project->getArranger();
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     * @param Staff                $staff
+     * @param int                  $permission
+     *
+     * @return bool
+     */
+    protected function hasPermissionEffective(ProjectParticipation $projectParticipation, Staff $staff, int $permission = 0)
+    {
+        $testedParticipations = [$projectParticipation];
+
+        $participant = $projectParticipation->getParticipant();
+
+        if (($participant->isProspect() || $participant->hasRefused()) && $participant->isSameGroup($staff->getCompany())) {
+            $testedParticipation[] = $projectParticipation->getProject()->getArrangerProjectParticipation();
+        }
+
+        $testedParticipations = array_unique($testedParticipations);
+
+        foreach ($testedParticipations as $testedParticipation) {
+            $member = $this->projectParticipationMemberRepository->findOneBy([
+                'projectParticipation' => $projectParticipation,
+                'staff'                => $staff,
+                'archived'             => null,
+            ]);
+
+            if ($member && $member->getPermissions()->has($permission)) {
+                return true;
+            }
+
+            if (false === $staff->isManager()) {
+                return false;
+            }
+
+            if (0 < count($this->projectParticipationMemberRepository->findByProjectParticipationAndManagerAndPermissionEnabled($testedParticipation, $staff, $permission))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

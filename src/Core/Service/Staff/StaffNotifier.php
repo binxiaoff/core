@@ -75,12 +75,7 @@ class StaffNotifier
                     'marketSegments' => implode(', ', $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
                         return $this->translator->trans('market-segment.' . $marketSegment->getLabel());
                     })->toArray()),
-                    'roles' => implode(', ', array_map(
-                        function (string $role) {
-                            return $this->translator->trans('staff-roles.' . mb_strtolower($role));
-                        },
-                        $staff->getRoles()
-                    )),
+                    'roles' => $staff->isManager() ? 'manager' : '',
                     'company_displayName' => $staff->getCompany()->getDisplayName(),
                     'client_firstName' =>  $user->getFirstName(),
             ])

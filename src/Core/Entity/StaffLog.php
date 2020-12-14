@@ -37,13 +37,6 @@ class StaffLog
      *
      * @ORM\Column(type="json")
      */
-    private $previousRoles;
-
-    /**
-     * @var array
-     *
-     * @ORM\Column(type="json")
-     */
     private $previousMarketSegment;
 
     /**
@@ -65,20 +58,7 @@ class StaffLog
         $this->added   = new DateTimeImmutable();
         $this->addedBy = $addedBy;
 
-        $this->setPreviousRoles($staff->getRoles());
         $this->setPreviousMarketSegment($staff->getMarketSegments());
-    }
-
-    /**
-     * @param array $previousRoles
-     *
-     * @return StaffLog
-     */
-    private function setPreviousRoles(array $previousRoles): StaffLog
-    {
-        $this->previousRoles = $previousRoles;
-
-        return $this;
     }
 
     /**

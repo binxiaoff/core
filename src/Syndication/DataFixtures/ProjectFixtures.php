@@ -23,7 +23,7 @@ use Unilend\Core\Entity\{
     Embeddable\NullablePerson,
     File,
     FileVersion,
-    Staff};
+    Staff, User};
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectStatus;
 

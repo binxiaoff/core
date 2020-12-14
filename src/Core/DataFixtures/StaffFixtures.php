@@ -16,7 +16,6 @@ use Unilend\Core\Entity\User;
 
 class StaffFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-
     public const ADMIN = 'STAFF_ADMIN';
 
     /**
@@ -31,7 +30,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $adminCompany = $this->getReference(CompanyFixtures::CALS);
         /** @var User $admin */
         $admin = $this->getReference(UserFixtures::ADMIN);
-        $adminStaff = $this->insertStaff($admin, $adminCompany, $manager, [Staff::DUTY_STAFF_ADMIN], MarketSegmentFixtures::SEGMENTS);
+        $adminStaff = $this->insertStaff($admin, $adminCompany, $manager, [], MarketSegmentFixtures::SEGMENTS);
 
         $this->addReference(self::ADMIN, $adminStaff);
         $this->addStaffReference($adminStaff);
@@ -41,14 +40,11 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
 
         $data = [
             UserFixtures::AUDITOR => [
-                'roles' => [Staff::DUTY_STAFF_AUDITOR],
             ],
             UserFixtures::ACCOUNTANT => [
-                'roles' => [Staff::DUTY_STAFF_ACCOUNTANT],
             ],
             UserFixtures::OPERATOR => [],
             UserFixtures::MANAGER => [
-                'roles' => [Staff::DUTY_STAFF_MANAGER],
                 'marketSegments' => new ArrayCollection(),
             ],
             UserFixtures::UNITIALIZED => [],
@@ -77,7 +73,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $participant = $this->getReference(UserFixtures::PARTICIPANT);
         foreach ($companies as $company) {
             if ($company !== $adminCompany) {
-                $staff = $this->createStaff($participant, $company, [Staff::DUTY_STAFF_ADMIN]);
+                $staff = $this->createStaff($participant, $company, []);
                 $this->addStaffReference($staff);
                 $manager->persist($staff);
             }
@@ -98,13 +94,13 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         /** @var Company $manyStaffCompany */
         $manyStaffCompany = $this->getReference(CompanyFixtures::COMPANY_MANY_STAFF);
 
-        $manyStaffAdminStaff = $this->createStaff($admin, $manyStaffCompany, [Staff::DUTY_STAFF_ADMIN]);
+        $manyStaffAdminStaff = $this->createStaff($admin, $manyStaffCompany, []);
         $manager->persist($manyStaffAdminStaff);
 
         foreach (range(0, 50) as $i) {
             $user = new User($this->faker->email);
             $manager->persist($user);
-            $manager->persist($this->createStaff($user, $manyStaffCompany, [Staff::DUTY_STAFF_OPERATOR], null, $manyStaffAdminStaff));
+            $manager->persist($this->createStaff($user, $manyStaffCompany, [], null, $manyStaffAdminStaff));
         }
 
         $manager->flush();
@@ -152,14 +148,16 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         // We need to use SQL since we cannot instantiate Staff entity
         $rolesEncoded = json_encode($roles, JSON_THROW_ON_ERROR);
         $sql = <<<SQL
-            INSERT INTO `core_staff` 
-                (id_company, id_user, roles, updated, added, public_id) VALUES 
+            INSERT INTO `core_staff`
+                (id_team, id_user, manager, updated, added, public_id, arrangement_project_creation_permission, agency_project_creation_permission) VALUES 
                 (
-                    "{$company->getId()}", 
+                    "{$company->getRootTeam()->getId()}", 
                     "{$user->getId()}", 
-                    '{$rolesEncoded}', 
+                    1,
                     '2020-01-01', '2020-01-01', 
-                    "user{$user->getId()}-company{$company->getId()}-staff"
+                    "user{$user->getId()}-company{$company->getId()}-staff",
+                    1,
+                    1
                 )
         SQL;
         $manager->getConnection()->exec($sql);
@@ -209,16 +207,14 @@ SQL;
     private function createStaff(
         User $user,
         ?Company $company = null,
-        ?array $roles = [Staff::DUTY_STAFF_OPERATOR],
+        ?array $roles = [],
         ?ArrayCollection $markerSegments = null,
         ?Staff $addedBy = null
     ): Staff {
         $company = $company ?? $this->getReference(CompanyFixtures::CALS);
         $addedBy = $addedBy ?? $this->getReference(self::ADMIN);
-        $roles = $roles ?? [Staff::DUTY_STAFF_OPERATOR];
         $markerSegments = $markerSegments ?? new ArrayCollection($this->getReferences(MarketSegmentFixtures::SEGMENTS));
-        $staff = new Staff($company, $user, $addedBy);
-        $staff->setRoles($roles);
+        $staff = new Staff($user, $company->getRootTeam(), $addedBy);
         $staff->setMarketSegments($markerSegments);
 
         return $staff;
