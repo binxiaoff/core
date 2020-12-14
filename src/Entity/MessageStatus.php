@@ -27,15 +27,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  *              "message:read"
  *          }
  *     }
- *  },
- *  itemOperations={
- *      "get": {
- *          "security": "is_granted('view', object)",
- *          "groups": {
- *              "messageStatus:read",
- *              "message:read"
- *          }
- *     }
  *  }
  * )
  * @ApiFilter(SearchFilter::class, properties={"status": "exact"})

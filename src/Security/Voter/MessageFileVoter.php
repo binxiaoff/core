@@ -6,7 +6,7 @@ namespace Unilend\Security\Voter;
 
 use Unilend\Entity\Clients;
 
-class MessageFileVoter
+class MessageFileVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_VIEW = 'view';
 

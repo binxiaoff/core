@@ -35,14 +35,16 @@ final class Version20201120131013 extends AbstractMigration
     public function down(Schema $schema) : void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE message_file DROP FOREIGN KEY FK_250AADC96820990F');
+        $this->addSql('ALTER TABLE message_status DROP FOREIGN KEY FK_4C27F813E831476E');
         $this->addSql('ALTER TABLE message_status DROP FOREIGN KEY FK_4C27F8136820990F');
+        $this->addSql('ALTER TABLE message_file DROP FOREIGN KEY FK_250AADC96820990F');
+        $this->addSql('ALTER TABLE message_file DROP FOREIGN KEY FK_250AADC97BF2A12');
         $this->addSql('ALTER TABLE message DROP FOREIGN KEY FK_B6BD307F3B616C8A');
-        $this->addSql('ALTER TABLE project_participation DROP FOREIGN KEY FK_7FC475493B616C8A');
-        $this->addSql('DROP TABLE message');
-        $this->addSql('DROP TABLE message_file');
-        $this->addSql('DROP TABLE message_status');
+        $this->addSql('ALTER TABLE message DROP FOREIGN KEY FK_B6BD307F7937FF22');
         $this->addSql('DROP TABLE message_thread');
+        $this->addSql('DROP TABLE message_status');
+        $this->addSql('DROP TABLE message_file');
+        $this->addSql('DROP TABLE message');
     }
 }
 

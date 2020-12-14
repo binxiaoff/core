@@ -82,15 +82,16 @@ class MessageInputDataTransformer implements DataTransformerInterface
         }
 
         // Create all thread on each projectParticipation if not created yet
-        $this->createMessageThreadsNotCreatedYet($entity);
+        $project = ($entity instanceof ProjectParticipation) ? $entity->getProject() : $entity;
+        $this->createMessageThreadsNotCreatedYet($project);
 
-        // If entity is a project, the message must be broadcasted
         if ($entity instanceof ProjectParticipation) {
             return new Message($client->getCurrentStaff(), $entity->getMessageThread(), $object->body);
         }
 
         $messageThread = $this->getActiveProjectParticipationMessageThreadFromProject($entity);
 
+        // If entity is a project, the message must be broadcasted
         return new Message($client->getCurrentStaff(), $messageThread, $object->body, true);
     }
 
@@ -99,7 +100,7 @@ class MessageInputDataTransformer implements DataTransformerInterface
      *
      * @return MessageThread|null
      */
-    private function getActiveProjectParticipationMessageThreadFromProject(Project $project)
+    private function getActiveProjectParticipationMessageThreadFromProject(Project $project): ?MessageThread
     {
         foreach ($project->getProjectParticipations() as $projectParticipation) {
             if ($projectParticipation->isActive()) {
@@ -111,15 +112,13 @@ class MessageInputDataTransformer implements DataTransformerInterface
     }
 
     /**
-     * @param $entity
+     * @param Project $project
      *
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function createMessageThreadsNotCreatedYet($entity)
+    private function createMessageThreadsNotCreatedYet(Project $project): void
     {
-        $project = ($entity instanceof ProjectParticipation) ? $entity->getProject() : $entity;
-
         foreach ($project->getProjectParticipations() as $projectParticipation) {
             if ($projectParticipation->isActive()) {
                 if (!$projectParticipation->getMessageThread() instanceof MessageThread) {

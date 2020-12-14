@@ -142,6 +142,10 @@ class FileInputDataTransformer
      */
     private function uploadMessageFile(Message $message, FileInput $fileInput, Staff $currentStaff, ?File $file): File
     {
+        if (false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $message->getMessageThread()->getProjectParticipation())) {
+            throw new AccessDeniedException();
+        }
+
         if (null === $file) {
             $file        = new File();
             $messageFile = new MessageFile($file, $message);
@@ -159,10 +163,6 @@ class FileInputDataTransformer
                     $message->getPublicId(),
                     $fileInput->type
                 ));
-
-                if (false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $message->getMessageThread()->getProjectParticipation())) {
-                    throw new AccessDeniedException();
-                }
             }
         }
 
