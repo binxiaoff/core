@@ -425,7 +425,7 @@ class Staff implements TraceableStatusAwareInterface
     public function validateCompanyUnicity(ExecutionContextInterface $context)
     {
         foreach ($this->user->getStaff() as $staff) {
-            if ($this->id !== $staff->getId() && $staff->getCompany() === $this->getCompany()) {
+            if ($this->id !== $staff->getId() && $staff->getTeam()->getCompany() === $this->team->getCompany()) {
                 $context->buildViolation('Staff.company.unicity')
                     ->atPath('team')
                     ->setInvalidValue($this->team)

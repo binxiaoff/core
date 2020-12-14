@@ -7,7 +7,6 @@ namespace Unilend\Core\Entity;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -55,7 +54,7 @@ class Team
     /**
      * @var Company|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Company", mappedBy="rootTeam")
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Company", mappedBy="rootTeam", fetch="EAGER")
      */
     private ?Company $company;
 
