@@ -7,7 +7,7 @@ namespace Unilend\DataTransformer;
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
-use Symfony\Component\Security\Core\Exception\RuntimeException;
+use Symfony\Component\Security\Core\Exception\{AccessDeniedException, RuntimeException};
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\DTO\MessageInput;
@@ -17,6 +17,7 @@ use Unilend\Entity\MessageThread;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Repository\MessageThreadRepository;
+use Unilend\Security\Voter\{ProjectParticipationVoter, ProjectVoter};
 
 class MessageInputDataTransformer implements DataTransformerInterface
 {
@@ -81,8 +82,17 @@ class MessageInputDataTransformer implements DataTransformerInterface
             throw new RuntimeException();
         }
 
+        if (($entity instanceof ProjectParticipation) && false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $entity)) {
+            throw new AccessDeniedException();
+        }
+
+        if (($entity instanceof Project) && false === $entity->isProjectOrganizer($this->security->getUser()->getCurrentStaff()->getCompany())) {
+            throw new AccessDeniedException();
+        }
+
         // Create all thread on each projectParticipation if not created yet
         $project = ($entity instanceof ProjectParticipation) ? $entity->getProject() : $entity;
+
         $this->createMessageThreadsNotCreatedYet($project);
 
         if ($entity instanceof ProjectParticipation) {

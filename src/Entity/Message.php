@@ -30,7 +30,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  *  }},
  *  collectionOperations={
  *       "post"={
- *           "input"=MessageInput::class
+ *          "input"=MessageInput::class
  *       }
  *  },
  *  itemOperations={

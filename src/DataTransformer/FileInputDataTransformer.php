@@ -134,6 +134,7 @@ class FileInputDataTransformer
      * @param File|null $file
      *
      * @return File
+     *
      * @throws EnvironmentIsBrokenException
      * @throws FileExistsException
      * @throws IOException
@@ -146,32 +147,19 @@ class FileInputDataTransformer
             throw new AccessDeniedException();
         }
 
-        if (null === $file) {
-            $file        = new File();
-            $messageFile = new MessageFile($file, $message);
-            // If user is allowed to view, then he is allowed to messaging and to upload file on a message too
-            if (false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $message->getMessageThread()->getProjectParticipation())) {
-                throw new AccessDeniedException();
-            }
-        } else {
-            $messageFile = $this->messageFileRepository->findOneBy(['file' => $file, 'message' => $message]);
-
-            if (null === $messageFile) {
-                throw new RuntimeException(sprintf(
-                    'We cannot find the file (%s) for message (%s) of type (%s). Do you tend to upload a new file (instead of updating it) ?',
-                    $file->getPublicId(),
-                    $message->getPublicId(),
-                    $fileInput->type
-                ));
-            }
+        $file        = new File();
+        $messageFile = new MessageFile($file, $message);
+        // If user is allowed to view, then he is allowed to messaging and to upload file on a message too
+        if (false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $message->getMessageThread()->getProjectParticipation())) {
+            throw new AccessDeniedException();
         }
 
         // If it's a broadcasted message, then add messageFile to all broadcasted messages
-        if($message->isBroadcasted()) {
+        if ($message->isBroadcasted()) {
             $messageThreads = $this->messageThreadRepository->findMessageThreadsByProject($message->getMessageThread()->getProjectParticipation()->getProject());
-            $messages = $this->messageRepository->findMessagesByMessageThreadsAndBody($messageThreads, $message->getBody());
-            foreach($messages as $messageToAddMessageFile) {
-                if($messageToAddMessageFile !== $message) {
+            $messages = $this->messageRepository->findMessagesByAddedSenderAndThreads($message->getAdded(), $message->getSender(), $messageThreads);
+            foreach ($messages as $messageToAddMessageFile) {
+                if ($messageToAddMessageFile !== $message) {
                     $messageFileBroadcated = new MessageFile($file, $messageToAddMessageFile);
                     $this->entityManager->persist($messageFileBroadcated);
                 }
