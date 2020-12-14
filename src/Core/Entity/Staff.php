@@ -157,7 +157,7 @@ class Staff implements TraceableStatusAwareInterface
         $this->marketSegments = new ArrayCollection();
         $this->added          = new DateTimeImmutable();
         $this->company        = $company;
-        $this->user         = $user;
+        $this->user           = $user;
         $this->statuses       = new ArrayCollection();
         $this->setCurrentStatus(new StaffStatus($this, StaffStatus::STATUS_ACTIVE, $addedBy));
     }
