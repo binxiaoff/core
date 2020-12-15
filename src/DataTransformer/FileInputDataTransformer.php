@@ -15,7 +15,7 @@ use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
 use Unilend\DTO\FileInput;
 use Unilend\Entity\{Clients, File, Message, MessageFile, Project, ProjectFile, ProjectParticipation, Staff};
 use Unilend\Repository\{MessageFileRepository, MessageRepository, MessageThreadRepository, ProjectFileRepository, ProjectRepository};
-use Unilend\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
+use Unilend\Security\Voter\{MessageVoter, ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
 use Unilend\Service\File\FileUploadManager;
 use Unilend\Service\Project\ProjectManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -55,7 +55,6 @@ class FileInputDataTransformer
      * @param MessageFileRepository   $messageFileRepository
      * @param MessageThreadRepository $messageThreadRepository
      * @param MessageRepository       $messageRepository
-     * @param EntityManagerInterface  $entityManager
      */
     public function __construct(
         ValidatorInterface $validator,
@@ -66,8 +65,7 @@ class FileInputDataTransformer
         ProjectRepository $projectRepository,
         MessageFileRepository $messageFileRepository,
         MessageThreadRepository $messageThreadRepository,
-        MessageRepository $messageRepository,
-        EntityManagerInterface $entityManager
+        MessageRepository $messageRepository
     ) {
         $this->validator                = $validator;
         $this->security                 = $security;
@@ -78,7 +76,6 @@ class FileInputDataTransformer
         $this->projectManager           = $projectManager;
         $this->messageThreadRepository  = $messageThreadRepository;
         $this->messageRepository        = $messageRepository;
-        $this->entityManager            = $entityManager;
     }
 
     /**
@@ -143,31 +140,26 @@ class FileInputDataTransformer
      */
     private function uploadMessageFile(Message $message, FileInput $fileInput, Staff $currentStaff, ?File $file): File
     {
-        if (false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $message->getMessageThread()->getProjectParticipation())) {
+        if (false === $this->security->isGranted(MessageVoter::ATTRIBUTE_ATTACH_FILE, $message)) {
             throw new AccessDeniedException();
         }
 
         $file        = new File();
         $messageFile = new MessageFile($file, $message);
-        // If user is allowed to view, then he is allowed to messaging and to upload file on a message too
-        if (false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $message->getMessageThread()->getProjectParticipation())) {
-            throw new AccessDeniedException();
-        }
 
         // If it's a broadcasted message, then add messageFile to all broadcasted messages
-        if ($message->isBroadcasted()) {
+        if ($message->isBroadcast()) {
             $messageThreads = $this->messageThreadRepository->findMessageThreadsByProject($message->getMessageThread()->getProjectParticipation()->getProject());
             $messages = $this->messageRepository->findBroadcastedMessagesByAddedSenderAndThreads($message->getAdded(), $message->getSender(), $messageThreads);
             foreach ($messages as $messageToAddMessageFile) {
                 if ($messageToAddMessageFile !== $message) {
                     $messageFileBroadcasted = new MessageFile($file, $messageToAddMessageFile);
-                    $this->entityManager->persist($messageFileBroadcasted);
+                    $this->messageFileRepository->save($messageFileBroadcasted);
                 }
             }
         }
         $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, ['messageId' => $messageFile->getMessage()->getId()]);
-        $this->entityManager->persist($messageFile);
-        $this->entityManager->flush();
+        $this->messageFileRepository->save->persist($messageFile);
 
         return $file;
     }

@@ -40,6 +40,29 @@ class MessageStatusRepository extends ServiceEntityRepository
      *
      * @return int|mixed|string
      */
+    public function setMessageStatusesToReadForRecipientAndMessageThread(Staff $recipient, MessageThread $messageThread)
+    {
+        $messageStatuses = $this->findUnreadStatusByRecipientAndMessageThread($recipient, $messageThread);
+        $queryBuilder = $this->createQueryBuilder('msgst');
+
+        return $queryBuilder
+            ->update(MessageStatus::class, 'msgst')
+            ->set('msgst.status', ':status')
+            ->where($queryBuilder->expr()->in('msgst.id', ':message_statuses'))
+            ->setParameters([
+                'status'           => true,
+                'message_statuses' => $messageStatuses,
+            ])
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * @param Staff         $recipient
+     * @param MessageThread $messageThread
+     *
+     * @return int|mixed|string
+     */
     public function findUnreadStatusByRecipientAndMessageThread(Staff $recipient, MessageThread $messageThread)
     {
         $queryBuilder = $this->createQueryBuilder('msgst');

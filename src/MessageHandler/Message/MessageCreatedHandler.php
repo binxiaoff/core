@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace Unilend\MessageHandler\Message;
 
 use InvalidArgumentException;
-use Doctrine\ORM\ORMException;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\OptimisticLockException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Unilend\Entity\Message;
 use Unilend\Entity\MessageStatus;
-use Unilend\Entity\ProjectParticipation;
 use Unilend\Message\Message\MessageCreated;
 use Unilend\Repository\MessageRepository;
-use Unilend\Repository\ProjectParticipationRepository;
+use Unilend\Repository\{MessageStatusRepository, ProjectParticipationRepository};
+use Unilend\Service\Project\ProjectManager;
 
 class MessageCreatedHandler implements MessageHandlerInterface
 {
@@ -24,31 +21,34 @@ class MessageCreatedHandler implements MessageHandlerInterface
     /** @var ProjectParticipationRepository */
     private ProjectParticipationRepository $projectParticipationRepository;
 
-    /** @var EntityManagerInterface */
-    private EntityManagerInterface $entityManager;
+    /** @var ProjectManager */
+    private ProjectManager $projectManager;
+
+    /** @var MessageStatusRepository */
+    private MessageStatusRepository $messageStatusRepository;
 
     /**
      * MessageCreatedHandler constructor.
      *
      * @param MessageRepository              $messageRepository
      * @param ProjectParticipationRepository $projectParticipationRepository
-     * @param EntityManagerInterface         $entityManager
+     * @param ProjectManager                 $projectManager
+     * @param MessageStatusRepository        $messageStatusRepository
      */
     public function __construct(
         MessageRepository $messageRepository,
         ProjectParticipationRepository $projectParticipationRepository,
-        EntityManagerInterface $entityManager
+        ProjectManager $projectManager,
+        MessageStatusRepository $messageStatusRepository
     ) {
         $this->messageRepository              = $messageRepository;
         $this->projectParticipationRepository = $projectParticipationRepository;
-        $this->entityManager                  = $entityManager;
+        $this->projectManager                 = $projectManager;
+        $this->messageStatusRepository        = $messageStatusRepository;
     }
 
     /**
      * @param MessageCreated $messageCreated
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
     public function __invoke(MessageCreated $messageCreated)
     {
@@ -57,23 +57,23 @@ class MessageCreatedHandler implements MessageHandlerInterface
             throw new InvalidArgumentException(sprintf('The message with id %d does not exist', $messageCreated->getMessageId()));
         }
 
-        $projectParticipation = $message->getMessageThread()->getProjectParticipation();
-
-        // Add messageStatus unread for other arranger member not current arranger if the sender is an arranger member
-        $participationArranger = $projectParticipation->getProject()->getArrangerProjectParticipation();
-        foreach ($participationArranger->getActiveProjectParticipationMembers() as $arranger) {
-            if ($message->getSender() !== $arranger->getStaff()) {
-                $this->entityManager->persist(new MessageStatus($message, $arranger->getStaff()));
-            }
-        }
+        $projectParticipation         = $message->getMessageThread()->getProjectParticipation();
+        $projectParticipationMembers  = $message->getMessageThread()->getProjectParticipation()->getProjectParticipationMembers();
+        $participationArrangerMembers = $projectParticipation->getProject()->getArrangerProjectParticipation()->getActiveProjectParticipationMembers();
 
         // Add messageStatus unread for every projectParticipationMembers that received the message
-        foreach ($projectParticipation->getProjectParticipationMembers() as $projectParticipationMember) {
+        foreach ($projectParticipationMembers as $projectParticipationMember) {
             if ($message->getSender() !== $projectParticipationMember->getStaff()) {
-                $this->entityManager->persist(new MessageStatus($message, $projectParticipationMember->getStaff()));
+                $this->messageStatusRepository->save(new MessageStatus($message, $projectParticipationMember->getStaff()));
             }
         }
-        $this->entityManager->persist(new MessageStatus($message, $message->getSender(), MessageStatus::STATUS_READ));
-        $this->entityManager->flush();
+
+        // Message sender is not an arranger, we have to set the message as unread for each arranger member
+        if (false === $this->projectManager->isArranger($projectParticipation->getProject(), $message->getSender())) {
+            foreach ($participationArrangerMembers as $participationArrangerMember) {
+                $this->messageStatusRepository->save(new MessageStatus($message, $participationArrangerMember->getStaff()));
+            }
+        }
+        $this->messageStatusRepository->save(new MessageStatus($message, $message->getSender(), MessageStatus::STATUS_READ));
     }
 }

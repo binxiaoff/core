@@ -17,7 +17,7 @@ use Unilend\Entity\MessageThread;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Repository\MessageThreadRepository;
-use Unilend\Security\Voter\{ProjectParticipationVoter, ProjectVoter};
+use Unilend\Security\Voter\MessageVoter;
 
 class MessageInputDataTransformer implements DataTransformerInterface
 {
@@ -82,7 +82,7 @@ class MessageInputDataTransformer implements DataTransformerInterface
             throw new RuntimeException();
         }
 
-        if (($entity instanceof ProjectParticipation) && false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $entity)) {
+        if (($entity instanceof ProjectParticipation) && false === $this->security->isGranted(MessageVoter::ATTRIBUTE_CREATE, $entity)) {
             throw new AccessDeniedException();
         }
 
@@ -90,13 +90,10 @@ class MessageInputDataTransformer implements DataTransformerInterface
             throw new AccessDeniedException();
         }
 
-        // Create all thread on each projectParticipation if not created yet
-        $project = ($entity instanceof ProjectParticipation) ? $entity->getProject() : $entity;
-
-        $this->createMessageThreadsNotCreatedYet($project);
-
         if ($entity instanceof ProjectParticipation) {
-            return new Message($client->getCurrentStaff(), $entity->getMessageThread(), $object->body);
+            $messageThread = $this->getMessageThreadFromProjectParticipation($entity);
+
+            return new Message($client->getCurrentStaff(), $messageThread, $object->body);
         }
 
         $messageThread = $this->getActiveProjectParticipationMessageThreadFromProject($entity);
@@ -109,12 +106,15 @@ class MessageInputDataTransformer implements DataTransformerInterface
      * @param Project $project
      *
      * @return MessageThread|null
+     *
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function getActiveProjectParticipationMessageThreadFromProject(Project $project): ?MessageThread
     {
         foreach ($project->getProjectParticipations() as $projectParticipation) {
             if ($projectParticipation->isActive()) {
-                return $projectParticipation->getMessageThread();
+                return $this->getMessageThreadFromProjectParticipation($projectParticipation);
             }
         }
 
@@ -122,19 +122,21 @@ class MessageInputDataTransformer implements DataTransformerInterface
     }
 
     /**
-     * @param Project $project
+     * @param ProjectParticipation $projectParticipation
+     *
+     * @return MessageThread
      *
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function createMessageThreadsNotCreatedYet(Project $project): void
+    private function getMessageThreadFromProjectParticipation(ProjectParticipation $projectParticipation): MessageThread
     {
-        foreach ($project->getProjectParticipations() as $projectParticipation) {
-            if ($projectParticipation->isActive()) {
-                if (!$projectParticipation->getMessageThread() instanceof MessageThread) {
-                    $this->messageThreadRepository->save((new MessageThread())->setProjectParticipation($projectParticipation));
-                }
-            }
+        if ($projectParticipation->getMessageThread() instanceof MessageThread) {
+            return $projectParticipation->getMessageThread();
         }
+        $messageThread = (new MessageThread())->setProjectParticipation($projectParticipation);
+        $this->messageThreadRepository->save($messageThread);
+
+        return $messageThread;
     }
 }

@@ -29,14 +29,6 @@ class MessageRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return string
-     */
-    public static function getAlias(): string
-    {
-        return 'message';
-    }
-
-    /**
      * @param DateTimeImmutable $added
      * @param Staff             $sender
      * @param array             $messageThreads
@@ -45,12 +37,12 @@ class MessageRepository extends ServiceEntityRepository
      */
     public function findBroadcastedMessagesByAddedSenderAndThreads(\DateTimeImmutable $added, Staff $sender, array $messageThreads)
     {
-        $queryBuilder = $this->createQueryBuilder(self::getAlias());
+        $queryBuilder = $this->createQueryBuilder('msg');
 
         return $queryBuilder
-            ->where($queryBuilder->expr()->eq(self::getAlias() . '.added', ':added'))
-            ->andWhere($queryBuilder->expr()->eq(self::getAlias() . '.sender', ':sender'))
-            ->andWhere($queryBuilder->expr()->in(self::getAlias() . '.messageThread', ':messageThreads'))
+            ->where($queryBuilder->expr()->eq('msg.added', ':added'))
+            ->andWhere($queryBuilder->expr()->eq('msg.sender', ':sender'))
+            ->andWhere($queryBuilder->expr()->in('msg.messageThread', ':messageThreads'))
             ->setParameters([
                 'added'          => $added,
                 'sender'         => $sender,

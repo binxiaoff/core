@@ -24,4 +24,13 @@ class MessageFileRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, MessageFile::class);
     }
+
+    /**
+     * @param MessageFile $messageFile
+     */
+    public function save(MessageFile $messageFile): void
+    {
+        $this->persist($messageFile);
+        $this->flush();
+    }
 }

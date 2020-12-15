@@ -131,7 +131,7 @@ class FileDownloadVoter extends AbstractEntityVoter
         }
 
         if(Message::FILE_TYPE_MESSAGE_ATTACHMENT === $type) {
-            $project = $this->findProjectByMessage($file, $staff->getCompany());
+            return $this->isAllowedToDownloadMessageFile($file);
         }
 
         if (ProjectParticipation::PROJECT_PARTICIPATION_FILE_TYPE_NDA === $type) {
@@ -163,21 +163,20 @@ class FileDownloadVoter extends AbstractEntityVoter
         }
     }
 
-
     /**
-     * @param File    $file
-     * @param Company $currentStaffCompany
+     * @param File $file
      *
-     * @return Project|null
+     * @return bool
      */
-    private function findProjectByMessage(File $file, Company $currentStaffCompany)
+    private function isAllowedToDownloadMessageFile(File $file): bool
     {
         $messageFile = $this->messageFileRepository->findOneBy(['file' => $file]);
+
         if ($messageFile instanceof MessageFile) {
-            return $messageFile->getMessage()->getMessageThread()->getProjectParticipation()->getProject();
+            return $this->authorizationChecker->isGranted(MessageVoter::ATTRIBUTE_VIEW, $messageFile->getMessage()->getMessageThread()->getProjectParticipation());
         }
 
-        return null;
+        return false;
     }
 
     /**

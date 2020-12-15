@@ -21,12 +21,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     "message:read"
  *  }},
  *  collectionOperations={
- *      "get": {
- *          "groups": {
- *              "messageStatus:read",
- *              "message:read"
- *          }
- *     }
+ *      "get"
  *  }
  * )
  * @ApiFilter(SearchFilter::class, properties={"status": "exact"})

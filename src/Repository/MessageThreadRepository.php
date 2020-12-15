@@ -46,10 +46,10 @@ class MessageThreadRepository extends ServiceEntityRepository
      */
     public function findMessageThreadsByProject(Project $project)
     {
-        $queryBuilder = $this->createQueryBuilder('ms');
+        $queryBuilder = $this->createQueryBuilder('msgsthd');
 
         return $queryBuilder
-            ->innerJoin('ms.projectParticipation', 'pp')
+            ->innerJoin('msgsthd.projectParticipation', 'pp')
             ->where($queryBuilder->expr()->eq('pp.project', ':project'))
             ->setParameters(['project' => $project])
             ->getQuery()

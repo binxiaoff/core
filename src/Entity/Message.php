@@ -35,20 +35,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  *  },
  *  itemOperations={
  *      "get": {
- *          "security": "is_granted('view', object)",
- *          "normalization_context": {
- *              "groups": {
- *                  "message:read",
- *                  "messageStatus:read",
- *                  "messageThread:read",
- *                  "client:read",
- *                  "staff:read",
- *                  "company:read",
- *                  "timestampable:read",
- *                  "file:read",
- *                  "fileVersion:read"
- *              }
- *          }
+ *          "security": "is_granted('view', object)"
  *     }
  *  }
  * )
@@ -122,7 +109,7 @@ class Message
      *
      * @Groups({"message:read"})
      */
-    private bool $broadcasted;
+    private bool $broadcast;
 
     /**
      * Message constructor.
@@ -130,9 +117,9 @@ class Message
      * @param Staff         $sender
      * @param MessageThread $messageThread
      * @param string        $body
-     * @param bool          $broadcasted
+     * @param bool          $broadcast
      */
-    public function __construct(Staff $sender, MessageThread $messageThread, string $body, bool $broadcasted = false)
+    public function __construct(Staff $sender, MessageThread $messageThread, string $body, bool $broadcast = false)
     {
         $this->sender          = $sender;
         $this->messageThread   = $messageThread;
@@ -140,7 +127,7 @@ class Message
         $this->messageFiles    = new ArrayCollection();
         $this->added           = new DateTimeImmutable();
         $this->messageStatuses = new ArrayCollection();
-        $this->broadcasted     = $broadcasted;
+        $this->broadcast       = $broadcast;
     }
 
     /**
@@ -208,8 +195,8 @@ class Message
     /**
      * @return bool
      */
-    public function isBroadcasted(): bool
+    public function isBroadcast(): bool
     {
-        return $this->broadcasted;
+        return $this->broadcast;
     }
 }

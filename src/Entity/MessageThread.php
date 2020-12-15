@@ -49,36 +49,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  *  },
  *  itemOperations={
  *      "get": {
- *          "security": "is_granted('view', object)",
- *          "normalization_context": {
- *              "groups": {
- *                  "messageThread:read",
- *                  "message:read",
- *                  "messageFile:read",
- *                  "projectParticipation:read",
- *                  "projectParticipationMember:read",
- *                  "project:read",
- *                  "role:read",
- *                  "company:read",
- *                  "nullableMoney:read",
- *                  "money:read",
- *                  "rangedOfferWithFee:read",
- *                  "offerWithFee:read",
- *                  "offer:read",
- *                  "archivable:read",
- *                  "timestampable:read",
- *                  "file:read",
- *                  "fileVersion:read",
- *                  "tranche:read",
- *                  "lendingRate:read",
- *                  "companyStatus:read",
- *                  "role:read",
- *                  "invitationReplyVersion:read",
- *                  "interestReplyVersion:read",
- *                  "client:read",
- *                  "staff:read"
- *              }
- *          }
+ *          "security": "is_granted('view', object)"
  *      }
  *  }
  * )

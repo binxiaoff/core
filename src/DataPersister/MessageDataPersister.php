@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\DataPersister;
 
 use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
-use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Entity\Message;
 use Unilend\Repository\ProjectParticipationRepository;
 
@@ -51,7 +50,7 @@ final class MessageDataPersister implements ContextAwareDataPersisterInterface
     public function persist($data, array $context = [])
     {
         // If message is a broadcasted one, get each project projectParticipations and link a copy of this message to projectParticipation.thread
-        if ($data->isBroadcasted()) {
+        if ($data->isBroadcast()) {
             $project = $data->getMessageThread()->getProjectParticipation()->getProject();
             foreach ($project->getProjectParticipations() as $projectParticipation) {
                 if ($projectParticipation->isActive() && $data->getMessageThread() !== $projectParticipation->getMessageThread()) {

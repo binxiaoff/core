@@ -21,13 +21,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  *  },
  *  itemOperations={
  *      "get": {
- *          "security": "is_granted('view', object)",
- *          "normalization_context": {
- *              "groups": {
- *                  "messageFile:read",
- *                  "file:read"
- *              }
- *          }
+ *          "security": "is_granted('view', object)"
  *     }
  *  }
  * )

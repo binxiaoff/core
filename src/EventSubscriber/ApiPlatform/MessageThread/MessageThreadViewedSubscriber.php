@@ -65,12 +65,6 @@ class MessageThreadViewedSubscriber implements EventSubscriberInterface
 
         $staff  = $this->security->getUser()->getCurrentStaff();
 
-        /** @var MessageStatus[] $messageStatuses */
-        $messageStatuses = $this->messageStatusRepository->findUnreadStatusByRecipientAndMessageThread($staff, $messageThread);
-        foreach ($messageStatuses as $messageStatus) {
-            $messageStatus->setStatus(MessageStatus::STATUS_READ);
-            $this->entityManager->persist($messageStatus);
-        }
-        $this->entityManager->flush();
+        $this->messageStatusRepository->setMessageStatusesToReadForRecipientAndMessageThread($staff, $messageThread);
     }
 }
