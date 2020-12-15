@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use Unilend\Entity\Clients;
+use Unilend\Entity\{Clients, Message};
 
 class MessageVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_VIEW = 'view';
 
     /**
-     * @param mixed   $message
+     * @param Message $message
      * @param Clients $user
      *
      * @return bool

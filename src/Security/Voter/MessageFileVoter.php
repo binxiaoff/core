@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
-use Unilend\Entity\Clients;
+use Unilend\Entity\{Clients, MessageFile};
 
 class MessageFileVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_VIEW = 'view';
 
     /**
-     * @param         $messageFile
-     * @param Clients $user
+     * @param MessageFile $messageFile
+     * @param Clients     $user
      *
      * @return bool
      */
