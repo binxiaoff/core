@@ -43,7 +43,7 @@ class MessageRepository extends ServiceEntityRepository
      *
      * @return int|mixed|string
      */
-    public function findMessagesByAddedSenderAndThreads(\DateTimeImmutable $added, Staff $sender, array $messageThreads)
+    public function findBroadcastedMessagesByAddedSenderAndThreads(\DateTimeImmutable $added, Staff $sender, array $messageThreads)
     {
         $queryBuilder = $this->createQueryBuilder(self::getAlias());
 
@@ -55,6 +55,7 @@ class MessageRepository extends ServiceEntityRepository
                 'added'          => $added,
                 'sender'         => $sender,
                 'messageThreads' => $messageThreads,
+                'broadcasted'    => true,
             ])
             ->getQuery()
             ->getResult();
