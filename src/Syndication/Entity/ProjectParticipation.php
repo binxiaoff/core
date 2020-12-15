@@ -40,7 +40,6 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *         "archivable:read",
  *         "timestampable:read",
  *         "companyStatus:read",
- *         "role:read",
  *         "file:read",
  *         "fileVersion:read",
  *         "invitationReplyVersion:read",
@@ -66,7 +65,6 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *                 "projectOrganizer:read",
  *                 "projectStatus:read",
  *                 "company:read",
- *                 "role:read",
  *                 "nullableMoney:read",
  *                 "money:read",
  *                 "rangedOfferWithFee:read",
@@ -100,7 +98,6 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *                     "projectParticipationStatus:read",
  *                     "projectStatus:read",
  *                     "project:read",
- *                     "role:read",
  *                     "company:read",
  *                     "nullableMoney:read",
  *                     "money:read",
@@ -114,7 +111,6 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *                     "tranche:read",
  *                     "lendingRate:read",
  *                     "companyStatus:read",
- *                     "role:read",
  *                     "invitationReplyVersion:read",
  *                     "interestReplyVersion:read"
  *                 }

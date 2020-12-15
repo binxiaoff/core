@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
@@ -61,6 +62,10 @@ class Team
      * @var iterable
      *
      * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\Staff", mappedBy="team")
+     *
+     * @Groups({"team:read"})
+     *
+     * @MaxDepth(1)
      */
     private iterable $staff;
 

@@ -22,32 +22,46 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *     attributes={
  *         "pagination_enabled": false
  *     },
- *     normalizationContext={
- *         "groups": {
- *              "company:read",
- *              "companyStatus:read",
- *              "companyModule:read",
- *              "staff:read",
- *              "user:read",
- *              "user_status:read",
- *              "role:read",
- *              "nullableMoney:read"
- *         }
- *     },
  *     collectionOperations={
- *         "get"
+ *         "get": {
+ *         "normalizationContext": {
+ *              "groups": {
+ *                  "company:read",
+ *                  "companyStatus:read",
+ *                  "companyModule:read",
+ *                  "staff:read",
+ *                  "user:read",
+ *                  "user_status:read",
+ *                  "nullableMoney:read",
+ *                  "team:read"
+ *              }
+ *          },
+ *        }
  *     },
  *     itemOperations={
  *         "get",
  *         "staff": {
  *              "method": "GET",
  *              "path": "/companies/{id}/staff",
- *              "controller": "\Unilend\Controller\Company\Staff"
+ *              "controller": "\Unilend\Core\Controller\Company\Staff",
+ *              "normalization_context": {
+ *                  "groups": {
+ *                      "staff:read",
+ *                      "user:read",
+ *                      "user_status:read",
+ *                      "nullableMoney:read",
+ *                  }
+ *              },
  *         },
  *         "teams": {
  *              "method": "GET",
  *              "path": "/companies/{id}/teams",
- *              "controller": "\Unilend\Controller\Company\Team"
+ *              "controller": "\Unilend\Core\Controller\Company\Team",
+ *              "normalization_context": {
+ *                  "groups": {
+ *                      "team:read"
+ *                  }
+ *              },
  *         },
  *     }
  * )
