@@ -31,7 +31,8 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"team:create"}}
+ *             "denormalization_context": {"groups": {"team:create"}},
+ *             "input": "Unilend\Core\DTO\Team\CreateTeam"
  *         }
  *     }
  * )
@@ -76,6 +77,8 @@ class Team
      * @ORM\JoinColumn(name="id_parent", nullable=true)
      *
      * @Groups({"team:create", "team:read"})
+     *
+     * @MaxDepth(1)
      */
     private ?Team $parent;
 

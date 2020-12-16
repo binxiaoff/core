@@ -28,12 +28,12 @@ class TeamVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param User $user
      * @param Team $team
+     * @param User $user
      *
      * @return bool
      */
-    public function canCreate(User $user, Team $team)
+    public function canCreate(Team $team, User $user)
     {
         $submitterStaff = $user->getCurrentStaff();
 
@@ -49,12 +49,12 @@ class TeamVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param User $user
      * @param Team $team
+     * @param User $user
      *
      * @return bool
      */
-    public function canEdit(User $user, Team $team)
+    public function canEdit(Team $team, User $user)
     {
         $submitterStaff = $user->getCurrentStaff();
 
