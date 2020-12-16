@@ -17,7 +17,7 @@ use Unilend\Entity\MessageThread;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectParticipation;
 use Unilend\Repository\MessageThreadRepository;
-use Unilend\Security\Voter\MessageVoter;
+use Unilend\Security\Voter\MessageThreadVoter;
 
 class MessageInputDataTransformer implements DataTransformerInterface
 {
@@ -82,7 +82,7 @@ class MessageInputDataTransformer implements DataTransformerInterface
             throw new RuntimeException();
         }
 
-        if (($entity instanceof ProjectParticipation) && false === $this->security->isGranted(MessageVoter::ATTRIBUTE_CREATE, $entity)) {
+        if (($entity instanceof ProjectParticipation) && false === $this->security->isGranted(MessageThreadVoter::ATTRIBUTE_VIEW, $entity)) {
             throw new AccessDeniedException();
         }
 
@@ -112,13 +112,14 @@ class MessageInputDataTransformer implements DataTransformerInterface
      */
     private function getActiveProjectParticipationMessageThreadFromProject(Project $project): ?MessageThread
     {
+        $messageThread = null;
         foreach ($project->getProjectParticipations() as $projectParticipation) {
             if ($projectParticipation->isActive()) {
-                return $this->getMessageThreadFromProjectParticipation($projectParticipation);
+                $messageThread = $this->getMessageThreadFromProjectParticipation($projectParticipation);
             }
         }
 
-        return null;
+        return $messageThread;
     }
 
     /**

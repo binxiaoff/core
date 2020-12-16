@@ -159,7 +159,7 @@ class FileInputDataTransformer
             }
         }
         $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, ['messageId' => $messageFile->getMessage()->getId()]);
-        $this->messageFileRepository->save->persist($messageFile);
+        $this->messageFileRepository->save($messageFile);
 
         return $file;
     }
