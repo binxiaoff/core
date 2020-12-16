@@ -6,7 +6,8 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Unilend\Entity\MessageFile;
+use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Entity\{File,Message,MessageFile,MessageStatus,Staff};
 
 /**
  * @method MessageFile|null find($id, $lockMode = null, $lockVersion = null)
@@ -27,10 +28,38 @@ class MessageFileRepository extends ServiceEntityRepository
 
     /**
      * @param MessageFile $messageFile
+     *
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function save(MessageFile $messageFile): void
     {
         $this->getEntityManager()->persist($messageFile);
         $this->getEntityManager()->flush();
     }
+
+    /**
+     * @param File  $file
+     * @param Staff $recipient
+     *
+     * @return int|mixed|string|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getMessageFileByFileAndRecipient(File $file, Staff $recipient)
+    {
+        $queryBuilder = $this->createQueryBuilder('msgf');
+
+        return $queryBuilder
+            ->innerJoin(Message::class, 'msg', JOIN::WITH, 'msg.id = msgf.message')
+            ->innerJoin(MessageStatus::class, 'msgst', JOIN::WITH, 'msgst.message = msg.id')
+            ->where($queryBuilder->expr()->eq('msgf.file', ':file'))
+            ->andWhere($queryBuilder->expr()->eq('msgst.recipient', ':recipient'))
+            ->setParameters([
+                'file'      => $file,
+                'recipient' => $recipient,
+            ])
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
 }
