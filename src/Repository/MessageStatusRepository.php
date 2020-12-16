@@ -30,8 +30,8 @@ class MessageStatusRepository extends ServiceEntityRepository
      */
     public function save(MessageStatus $messageStatus): void
     {
-        $this->persist($messageStatus);
-        $this->flush();
+        $this->getEntityManager()->persist($messageStatus);
+        $this->getEntityManager()->flush();
     }
 
     /**
