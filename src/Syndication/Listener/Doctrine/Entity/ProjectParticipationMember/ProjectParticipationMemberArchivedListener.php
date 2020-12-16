@@ -6,7 +6,7 @@ namespace Unilend\Syndication\Listener\Doctrine\Entity\ProjectParticipationMembe
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\ProjectParticipationMember;
 
 class ProjectParticipationMemberArchivedListener
@@ -31,9 +31,9 @@ class ProjectParticipationMemberArchivedListener
     public function setArchivedBy(ProjectParticipationMember $projectParticipationMember, PreUpdateEventArgs $args): void
     {
         if ($args->hasChangedField('archived') && null !== $args->getNewValue('archived')) {
-            /** @var Clients $client */
-            $client = $this->security->getUser();
-            $projectParticipationMember->setArchivedBy($client->getCurrentStaff());
+            /** @var User $user */
+            $user = $this->security->getUser();
+            $projectParticipationMember->setArchivedBy($user->getCurrentStaff());
         }
     }
 }

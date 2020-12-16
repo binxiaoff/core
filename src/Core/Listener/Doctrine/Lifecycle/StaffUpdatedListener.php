@@ -7,7 +7,7 @@ namespace Unilend\Core\Listener\Doctrine\Lifecycle;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Exception;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\{StaffLog};
 
@@ -39,7 +39,7 @@ class StaffUpdatedListener
         $uow = $em->getUnitOfWork();
 
         $user = $this->security->getUser();
-        $addedBy  = $user instanceof Clients ? $user->getCurrentStaff() : null;
+        $addedBy  = $user instanceof User ? $user->getCurrentStaff() : null;
         $classMetadata = $em->getClassMetadata(StaffLog::class);
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {

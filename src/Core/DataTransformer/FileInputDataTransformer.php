@@ -13,7 +13,7 @@ use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
 use Unilend\Core\DTO\FileInput;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Service\File\FileUploadManager;
@@ -83,7 +83,7 @@ class FileInputDataTransformer
         $type         = $fileInput->type;
 
         $user         = $this->security->getUser();
-        $currentStaff = $user instanceof Clients ? $user->getCurrentStaff() : null;
+        $currentStaff = $user instanceof User ? $user->getCurrentStaff() : null;
 
         if (null === $currentStaff) {
             throw new AccessDeniedHttpException();

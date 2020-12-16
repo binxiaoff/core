@@ -8,8 +8,8 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInter
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Clients;
-use Unilend\Syndication\Entity\{ProjectFile};
+use Unilend\Core\Entity\User;
+use Unilend\Syndication\Entity\ProjectFile;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
@@ -32,13 +32,13 @@ class ListExtension implements QueryCollectionExtensionInterface
      */
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
     {
-        if (ProjectFile::class !== $resourceClass || $this->security->isGranted(Clients::ROLE_ADMIN)) {
+        if (ProjectFile::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
 
-        /** @var Clients $user */
+        /** @var User $user */
         $user  = $this->security->getUser();
-        $staff = $user instanceof Clients ? $user->getCurrentStaff() : null;
+        $staff = $user instanceof User ? $user->getCurrentStaff() : null;
 
         // External banks can't access to KYC files
         if (!$staff->getCompany()->isCAGMember()) {

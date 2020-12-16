@@ -13,6 +13,7 @@ use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait};
 
@@ -22,7 +23,7 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, Timestamp
  *         "route_prefix"="/core",
  *         "pagination_client_enabled": true
  *     },
- *     normalizationContext={"groups": {"staff:read", "client:read", "client_status:read", "staffStatus:read", "timestampable:read", "traceableStatus:read"}},
+ *     normalizationContext={"groups": {"staff:read", "user:read", "user_status:read", "staffStatus:read", "timestampable:read", "traceableStatus:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -49,12 +50,12 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, Timestamp
  * @ORM\Table(
  *     name="core_staff",
  *     uniqueConstraints={
- *         @ORM\UniqueConstraint(columns={"id_client", "id_company"})
+ *         @ORM\UniqueConstraint(columns={"id_user", "id_company"})
  *     }
  * )
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity(fields={"company", "client"}, message="Staff.client.unique")
+ * @UniqueEntity(fields={"company", "user"}, message="Staff.user.unique")
  */
 class Staff implements TraceableStatusAwareInterface
 {
@@ -92,21 +93,21 @@ class Staff implements TraceableStatusAwareInterface
     private Company $company;
 
     /**
-     * @var Clients
+     * @var User
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Clients", inversedBy="staff", cascade={"persist", "refresh"})
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User", inversedBy="staff", cascade={"persist", "refresh"})
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_user", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Assert\NotBlank(message="Staff.client.empty")
+     * @Assert\NotBlank(message="Staff.user.empty")
      * @Assert\Valid
      *
      * @Groups({"staff:read", "staff:create"})
      *
      * @MaxDepth(1)
      */
-    private Clients $client;
+    private User $user;
 
     /**
      * @var Collection|MarketSegment[]
@@ -146,17 +147,17 @@ class Staff implements TraceableStatusAwareInterface
      * Staff constructor.
      *
      * @param Company $company
-     * @param Clients $client
+     * @param User    $user
      * @param Staff   $addedBy
      *
      * @throws Exception
      */
-    public function __construct(Company $company, Clients $client, Staff $addedBy)
+    public function __construct(Company $company, User $user, Staff $addedBy)
     {
         $this->marketSegments = new ArrayCollection();
         $this->added          = new DateTimeImmutable();
         $this->company        = $company;
-        $this->client         = $client;
+        $this->user           = $user;
         $this->statuses       = new ArrayCollection();
         $this->setCurrentStatus(new StaffStatus($this, StaffStatus::STATUS_ACTIVE, $addedBy));
     }
@@ -182,21 +183,21 @@ class Staff implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return Clients
+     * @return User
      */
-    public function getClient(): Clients
+    public function getUser(): User
     {
-        return $this->client;
+        return $this->user;
     }
 
     /**
-     * @param Clients $client
+     * @param User $user
      *
      * @return Staff
      */
-    public function setClient(Clients $client): Staff
+    public function setUser(User $user): Staff
     {
-        $this->client = $client;
+        $this->user = $user;
 
         return $this;
     }

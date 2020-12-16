@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Security\Voter;
 
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\{FileVersionSignature};
+use Unilend\Core\Entity\{User, FileVersionSignature};
 
 class FileVersionSignatureVoter extends AbstractEntityVoter
 {
@@ -14,22 +13,22 @@ class FileVersionSignatureVoter extends AbstractEntityVoter
 
     /**
      * @param FileVersionSignature $fileVersionSignature
-     * @param Clients              $user
+     * @param User                 $user
      *
      * @return bool
      */
-    protected function canSign(FileVersionSignature $fileVersionSignature, Clients $user): bool
+    protected function canSign(FileVersionSignature $fileVersionSignature, User $user): bool
     {
         return $fileVersionSignature->getSignatory() === $user->getCurrentStaff();
     }
 
     /**
      * @param FileVersionSignature $fileVersionSignature
-     * @param Clients              $user
+     * @param User                 $user
      *
      * @return bool
      */
-    protected function canView(FileVersionSignature $fileVersionSignature, Clients $user): bool
+    protected function canView(FileVersionSignature $fileVersionSignature, User $user): bool
     {
         return $fileVersionSignature->getSignatory() === $user->getCurrentStaff() || $fileVersionSignature->getAddedBy() === $user->getCurrentStaff();
     }
@@ -37,7 +36,7 @@ class FileVersionSignatureVoter extends AbstractEntityVoter
     /**
      * {@inheritdoc}
      */
-    protected function fulfillPreconditions($subject, Clients $user): bool
+    protected function fulfillPreconditions($subject, User $user): bool
     {
         // Disable the signature for now
         return false;

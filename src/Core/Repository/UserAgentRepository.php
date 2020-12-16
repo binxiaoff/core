@@ -6,7 +6,7 @@ namespace Unilend\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\UserAgent;
 use UserAgentParser\Model\Browser;
 use UserAgentParser\Model\Device;
@@ -28,19 +28,19 @@ class UserAgentRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Clients $client
+     * @param User    $user
      * @param Browser $browser
      * @param Device  $device
      *
      * @return UserAgent|null
      */
-    public function findOneByClientAndBrowserAndDevice(
-        Clients $client,
+    public function findOneByUserAndBrowserAndDevice(
+        User $user,
         Browser $browser,
         Device $device
     ): ?UserAgent {
         return $this->findOneBy([
-            'client'         => $client,
+            'user'         => $user,
             'browserName'    => $browser->getName(),
             'browserVersion' => $browser->getVersion()->getComplete() ?: null,
             'deviceModel'    => $device->getModel(),

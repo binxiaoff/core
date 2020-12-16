@@ -9,8 +9,8 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Clients;
-use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
+use Unilend\Core\Entity\User;
+use Unilend\Syndication\Entity\{Project, ProjectParticipation};
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
@@ -40,9 +40,9 @@ class ListExtension implements QueryCollectionExtensionInterface
         if (ProjectParticipation::class !== $resourceClass) {
             return;
         }
-        /** @var Clients $user */
+        /** @var User $user */
         $user = $this->security->getUser();
-        if (!$user instanceof Clients) {
+        if (!$user instanceof User) {
             return;
         }
 

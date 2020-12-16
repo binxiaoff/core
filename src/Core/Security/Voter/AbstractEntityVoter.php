@@ -7,7 +7,7 @@ namespace Unilend\Core\Security\Voter;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 abstract class AbstractEntityVoter extends Voter
@@ -49,7 +49,7 @@ abstract class AbstractEntityVoter extends Voter
             return false;
         }
 
-        if ($this->isGrantedAll($subject, $user) || $this->authorizationChecker->isGranted(Clients::ROLE_ADMIN)) {
+        if ($this->isGrantedAll($subject, $user) || $this->authorizationChecker->isGranted(User::ROLE_ADMIN)) {
             return true;
         }
 
@@ -65,34 +65,34 @@ abstract class AbstractEntityVoter extends Voter
     /**
      * @param TokenInterface $token
      *
-     * @return Clients|null
+     * @return User|null
      */
-    protected function getUser(TokenInterface $token): ?Clients
+    protected function getUser(TokenInterface $token): ?User
     {
-        /** @var Clients $user */
+        /** @var User $user */
         $user = $token->getUser();
 
-        return $user instanceof Clients ? $user : null;
+        return $user instanceof User ? $user : null;
     }
 
     /**
-     * @param mixed   $subject
-     * @param Clients $user
+     * @param mixed $subject
+     * @param User  $user
      *
      * @return bool
      */
-    protected function isGrantedAll($subject, Clients $user): bool
+    protected function isGrantedAll($subject, User $user): bool
     {
         return false;
     }
 
     /**
-     * @param mixed   $subject
-     * @param Clients $user
+     * @param mixed $subject
+     * @param User  $user
      *
      * @return bool
      */
-    protected function fulfillPreconditions($subject, Clients $user): bool
+    protected function fulfillPreconditions($subject, User $user): bool
     {
         return true;
     }

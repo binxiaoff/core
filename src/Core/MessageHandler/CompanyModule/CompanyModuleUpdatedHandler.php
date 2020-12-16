@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\MessageHandler\CompanyModule;
 
-use Http\Client\Exception;
+use Http\User\Exception;
 use Nexy\Slack\Exception\SlackApiException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Unilend\Core\Message\CompanyModule\CompanyModuleUpdated;

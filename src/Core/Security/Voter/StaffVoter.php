@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Core\Security\Voter;
 
 use Doctrine\ORM\PersistentCollection;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\MarketSegment;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\{Staff};
 
 class StaffVoter extends AbstractEntityVoter
@@ -19,23 +18,23 @@ class StaffVoter extends AbstractEntityVoter
 
 
     /**
-     * @param mixed   $subject
-     * @param Clients $user
+     * @param mixed $subject
+     * @param User  $user
      *
      * @return bool
      */
-    protected function fulfillPreconditions($subject, Clients $user): bool
+    protected function fulfillPreconditions($subject, User $user): bool
     {
         return (bool) $user->getCurrentStaff();
     }
 
     /**
-     * @param Staff   $subject
-     * @param Clients $user
+     * @param Staff $subject
+     * @param User  $user
      *
      * @return bool
      */
-    protected function isGrantedAll($subject, Clients $user): bool
+    protected function isGrantedAll($subject, User $user): bool
     {
         $submitterStaff = $user->getCurrentStaff();
 
@@ -43,12 +42,12 @@ class StaffVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param Staff   $subject
-     * @param Clients $user
+     * @param Staff $subject
+     * @param User  $user
      *
      * @return bool
      */
-    protected function canCreate(Staff $subject, Clients $user): bool
+    protected function canCreate(Staff $subject, User $user): bool
     {
         $submitterStaff = $user->getCurrentStaff();
 
@@ -68,24 +67,24 @@ class StaffVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param Staff   $staff
-     * @param Clients $user
+     * @param Staff $staff
+     * @param User  $user
      *
      * @return bool
      */
-    protected function canAdminEdit(Staff $staff, Clients $user): bool
+    protected function canAdminEdit(Staff $staff, User $user): bool
     {
         // or is admin, already in isGrantedAll()
         return $user->getCurrentStaff() && $user->getCurrentStaff()->isManager() && $staff->getCompany() === $user->getCurrentStaff()->getCompany();
     }
 
     /**
-     * @param Staff   $subject
-     * @param Clients $user
+     * @param Staff $subject
+     * @param User  $user
      *
      * @return bool
      */
-    protected function canDelete(Staff $subject, Clients $user): bool
+    protected function canDelete(Staff $subject, User $user): bool
     {
         $submitterStaff = $user->getCurrentStaff();
 
@@ -93,12 +92,12 @@ class StaffVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param Staff   $subject
-     * @param Clients $user
+     * @param Staff $subject
+     * @param User  $user
      *
      * @return bool
      */
-    protected function canEdit(Staff $subject, Clients $user): bool
+    protected function canEdit(Staff $subject, User $user): bool
     {
         $submitterStaff = $user->getCurrentStaff();
 
@@ -145,12 +144,12 @@ class StaffVoter extends AbstractEntityVoter
     /**
      * TODO It might be interessing to return this data to the front.
      *
-     * @param Staff   $employee
-     * @param Clients $manager
+     * @param Staff $employee
+     * @param User  $manager
      *
      * @return bool
      */
-    private function ableToManage(Staff $employee, Clients $manager): bool
+    private function ableToManage(Staff $employee, User $manager): bool
     {
         $managerStaff = $manager->getCurrentStaff();
 

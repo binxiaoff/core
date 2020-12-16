@@ -7,9 +7,9 @@ namespace Unilend\Core\Listener\Doctrine\Lifecycle;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Exception;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\CompanyModuleLog;
+use Unilend\Core\Entity\User;
 
 /**
  * TODO Refactor because we should not use doctrine for automatic insert of log
@@ -37,7 +37,7 @@ class CompanyModuleUpdatedListener
         // Necessary to refetch updatedBy Here because preUpdate is after onFlush
         // TODO This code should be delete in CALS-2359
         $user = $this->security->getUser();
-        $currentStaff = $user instanceof Clients ? $user->getCurrentStaff() : null;
+        $currentStaff = $user instanceof User ? $user->getCurrentStaff() : null;
         $em = $args->getEntityManager();
         $uow = $em->getUnitOfWork();
 

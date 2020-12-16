@@ -8,22 +8,23 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
+use Unilend\Core\Entity\Interfaces\StatusInterface;
+use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Table(
- *     name="core_client_status",
+ *     name="core_user_status",
  *     indexes={
- *         @ORM\Index(columns={"id_client"}, name="idx_client_status_id_client"),
- *         @ORM\Index(columns={"status"}, name="idx_client_status_status")
+ *         @ORM\Index(columns={"id_user"}, name="idx_user_status_id_user"),
+ *         @ORM\Index(columns={"status"}, name="idx_user_status_status")
  *     }
  * )
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Core\Repository\UserStatusRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class ClientStatus implements StatusInterface
+class UserStatus implements StatusInterface
 {
     use ConstantsAwareTrait;
     use TimestampableAddedOnlyTrait;
@@ -38,17 +39,17 @@ class ClientStatus implements StatusInterface
     ];
 
     /**
-     * @var Clients
+     * @var User
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Clients", inversedBy="statuses")
-     * @ORM\JoinColumn(name="id_client", referencedColumnName="id", nullable=false)
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="statuses")
+     * @ORM\JoinColumn(name="id_user", referencedColumnName="id", nullable=false)
      */
-    private $client;
+    private $user;
 
     /**
      * @var int
      *
-     * @Groups({"client_status:read"})
+     * @Groups({"user_status:read"})
      *
      * @ORM\Column(type="smallint")
      */
@@ -64,12 +65,12 @@ class ClientStatus implements StatusInterface
     private $id;
 
     /**
-     * @param Clients $clients
-     * @param int     $status
+     * @param User $users
+     * @param int  $status
      *
      * @throws \Exception
      */
-    public function __construct(Clients $clients, int $status)
+    public function __construct(User $users, int $status)
     {
         if (!in_array($status, static::getPossibleStatuses(), true)) {
             throw new InvalidArgumentException(
@@ -77,18 +78,18 @@ class ClientStatus implements StatusInterface
             );
         }
         $this->status  = $status;
-        $this->client  = $clients;
+        $this->user  = $users;
         $this->added   = new DateTimeImmutable();
     }
 
     /**
-     * Get idClient.
+     * Get idUser.
      *
-     * @return Clients
+     * @return User
      */
-    public function getClient(): Clients
+    public function getUser(): User
     {
-        return $this->client;
+        return $this->user;
     }
 
     /**
@@ -116,10 +117,10 @@ class ClientStatus implements StatusInterface
     }
 
     /**
-     * @return Clients|TraceableStatusAwareInterface
+     * @return User|TraceableStatusAwareInterface
      */
     public function getAttachedObject()
     {
-        return $this->getClient();
+        return $this->getUser();
     }
 }

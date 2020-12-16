@@ -11,29 +11,28 @@ use Lexik\Bundle\JWTAuthenticationBundle\{Event\AuthenticationSuccessEvent, Even
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\{Staff};
-use Unilend\Core\Repository\ClientsRepository;
+use Unilend\Core\Entity\{Staff, User};
+use Unilend\Core\Repository\UserRepository;
 
-class ClientSubscriber implements EventSubscriberInterface
+class UserSubscriber implements EventSubscriberInterface
 {
-    /** @var ClientsRepository */
-    private ClientsRepository $clientsRepository;
+    /** @var UserRepository */
+    private UserRepository $userRepository;
     /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
     /** @var JWTTokenManagerInterface */
     private JWTTokenManagerInterface $jwtManager;
 
     /**
-     * @param ClientsRepository        $clientsRepository
+     * @param UserRepository           $userRepository
      * @param IriConverterInterface    $iriConverter
      * @param JWTTokenManagerInterface $JWTManager
      */
-    public function __construct(ClientsRepository $clientsRepository, IriConverterInterface $iriConverter, JWTTokenManagerInterface $JWTManager)
+    public function __construct(UserRepository $userRepository, IriConverterInterface $iriConverter, JWTTokenManagerInterface $JWTManager)
     {
-        $this->clientsRepository = $clientsRepository;
-        $this->iriConverter      = $iriConverter;
-        $this->jwtManager        = $JWTManager;
+        $this->userRepository  = $userRepository;
+        $this->iriConverter    = $iriConverter;
+        $this->jwtManager      = $JWTManager;
     }
 
     /**
@@ -82,8 +81,8 @@ class ClientSubscriber implements EventSubscriberInterface
     {
         $user = $event->getUser();
 
-        if ($user instanceof UserInterface && false === $user instanceof Clients) {
-            $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
+        if ($user instanceof UserInterface && false === $user instanceof User) {
+            $user = $this->userRepository->findOneBy(['email' => $user->getUsername()]);
         }
 
         $staffCollection = $user->getStaff();
@@ -124,11 +123,11 @@ class ClientSubscriber implements EventSubscriberInterface
         $payload = $event->getData();
         $user    = $event->getUser();
 
-        if ($user instanceof UserInterface && false === $user instanceof Clients) {
-            $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
+        if ($user instanceof UserInterface && false === $user instanceof User) {
+            $user = $this->userRepository->findOneBy(['email' => $user->getUsername()]);
         }
 
-        if ($user instanceof Clients) {
+        if ($user instanceof User) {
             $payload['user'] = $this->iriConverter->getIriFromItem($user);
             $currentStaff = $user->getCurrentStaff();
             if ($currentStaff) {

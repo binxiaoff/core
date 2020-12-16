@@ -9,10 +9,10 @@ use Exception;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\{EventDispatcher\EventSubscriberInterface, HttpFoundation\Request, HttpKernel\KernelEvents};
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\TemporaryTokenRepository;
 
-class ClientProfileUpdatedEventSubscriber implements EventSubscriberInterface
+class UserProfileUpdatedEventSubscriber implements EventSubscriberInterface
 {
     /** @var TemporaryTokenRepository */
     private $temporaryTokenRepository;
@@ -44,21 +44,21 @@ class ClientProfileUpdatedEventSubscriber implements EventSubscriberInterface
      */
     public function expireTemporaryToken(ViewEvent $event): void
     {
-        /** @var Clients $client */
-        $client = $event->getControllerResult();
+        /** @var User $user */
+        $user = $event->getControllerResult();
         $method = $event->getRequest()->getMethod();
 
         if (
-            false === $client instanceof Clients
+            false === $user instanceof User
             || false === in_array($method, [Request::METHOD_PUT, Request::METHOD_PATCH], true)
             || (
                 null !== $this->tokenStorage->getToken()
-                && $this->tokenStorage->getToken()->getUsername() !== $client->getUsername()
+                && $this->tokenStorage->getToken()->getUsername() !== $user->getUsername()
             )
         ) {
             return;
         }
 
-        $this->temporaryTokenRepository->expireTemporaryTokens($client);
+        $this->temporaryTokenRepository->expireTemporaryTokens($user);
     }
 }

@@ -7,29 +7,29 @@ namespace Unilend\Core\MessageHandler;
 use Exception;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Unilend\Core\Entity\Request\ResetPassword;
-use Unilend\Core\Repository\ClientsRepository;
-use Unilend\Core\Service\{Client\ClientNotifier, GoogleRecaptchaManager};
+use Unilend\Core\Repository\UserRepository;
+use Unilend\Core\Service\{GoogleRecaptchaManager, User\UserNotifier};
 
 class ResetPasswordHandler implements MessageHandlerInterface
 {
-    /** @var ClientsRepository */
-    private $clientsRepository;
-    /** @var ClientNotifier */
+    /** @var UserRepository */
+    private $userRepository;
+    /** @var UserNotifier */
     private $notifier;
     /** @var GoogleRecaptchaManager */
     private $googleRecaptchaManager;
 
     /**
-     * @param ClientsRepository      $clientsRepository
-     * @param ClientNotifier         $notifier
+     * @param UserRepository         $userRepository
+     * @param UserNotifier           $notifier
      * @param GoogleRecaptchaManager $googleRecaptchaManager
      */
     public function __construct(
-        ClientsRepository $clientsRepository,
-        ClientNotifier $notifier,
+        UserRepository $userRepository,
+        UserNotifier $notifier,
         GoogleRecaptchaManager $googleRecaptchaManager
     ) {
-        $this->clientsRepository      = $clientsRepository;
+        $this->userRepository         = $userRepository;
         $this->notifier               = $notifier;
         $this->googleRecaptchaManager = $googleRecaptchaManager;
     }
@@ -41,10 +41,10 @@ class ResetPasswordHandler implements MessageHandlerInterface
      */
     public function __invoke(ResetPassword $resetPasswordRequest): void
     {
-        $client = $this->clientsRepository->findOneBy(['email' => $resetPasswordRequest->email]);
+        $user = $this->userRepository->findOneBy(['email' => $resetPasswordRequest->email]);
 
-        if ($client && $this->googleRecaptchaManager->getResult($resetPasswordRequest->captchaValue)->valid) {
-            $this->notifier->notifyPasswordRequest($client);
+        if ($user && $this->googleRecaptchaManager->getResult($resetPasswordRequest->captchaValue)->valid) {
+            $this->notifier->notifyPasswordRequest($user);
         }
     }
 }

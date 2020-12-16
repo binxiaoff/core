@@ -12,10 +12,10 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
-use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Repository\ClientsRepository;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\StaffRepository;
+use Unilend\Core\Repository\UserRepository;
 use Unilend\Core\Security\Voter\StaffVoter;
 
 class StaffDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
@@ -27,8 +27,8 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
 
     /** @var Security */
     private Security $security;
-    /** @var ClientsRepository */
-    private ClientsRepository $clientsRepository;
+    /** @var UserRepository */
+    private UserRepository $userRepository;
     /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
     /** @var StaffRepository */
@@ -38,16 +38,16 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
 
     /**
      * @param Security              $security
-     * @param ClientsRepository     $clientsRepository
+     * @param UserRepository        $userRepository
      * @param StaffRepository       $staffRepository
      * @param IriConverterInterface $iriConverter
      */
-    public function __construct(Security $security, ClientsRepository $clientsRepository, StaffRepository $staffRepository, IriConverterInterface $iriConverter)
+    public function __construct(Security $security, UserRepository $userRepository, StaffRepository $staffRepository, IriConverterInterface $iriConverter)
     {
-        $this->security          = $security;
-        $this->clientsRepository = $clientsRepository;
-        $this->iriConverter      = $iriConverter;
-        $this->staffRepository   = $staffRepository;
+        $this->security        = $security;
+        $this->userRepository  = $userRepository;
+        $this->iriConverter    = $iriConverter;
+        $this->staffRepository = $staffRepository;
     }
 
     /**
@@ -58,10 +58,10 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     {
         $context[self::ALREADY_CALLED] = true;
 
-        /** @var Clients $user */
+        /** @var User $user */
         $user = $this->security->getUser();
 
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['addedBy'] = $user instanceof Clients ? $user->getCurrentStaff() : null;
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['addedBy'] = $user instanceof User ? $user->getCurrentStaff() : null;
 
         /** @var Staff $staff */
         $staff = $this->extractObjectToPopulate(Staff::class, $context);
@@ -88,22 +88,22 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             $company = $this->iriConverter->getItemFromIri($data['company']);
         }
 
-        $email = $data['client']['email'] ?? null;
+        $email = $data['user']['email'] ?? null;
 
         if (null === $staff && $email && $company) {
-            unset($data['client']);
-            $staff         = $this->staffRepository->findOneByClientEmailAndCompany((string) $email, $company);
+            unset($data['user']);
+            $staff         = $this->staffRepository->findOneByUserEmailAndCompany((string) $email, $company);
             $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $staff;
 
             if (null === $staff) {
-                $existingClient  = self::$registeredEmails[$email] ?? $this->clientsRepository->findOneBy(['email' => $email]);
-                $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['client'] = $existingClient;
+                $existingUser  = self::$registeredEmails[$email] ?? $this->userRepository->findOneBy(['email' => $email]);
+                $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['user'] = $existingUser;
 
-                if (null === $existingClient) {
-                    // retrieve client from his email or create it
+                if (null === $existingUser) {
+                    // retrieve user from his email or create it
                     $context[AbstractNormalizer::GROUPS] = $context[AbstractNormalizer::GROUPS] ?? [];
-                    $context[AbstractNormalizer::GROUPS][] = 'client:create';
-                    $data['client']['email'] = $email;
+                    $context[AbstractNormalizer::GROUPS][] = 'user:create';
+                    $data['user']['email'] = $email;
                 }
             }
         }
@@ -117,7 +117,7 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         /** @var Staff $denormalized */
         $denormalized = $this->denormalizer->denormalize($data, $type, $format, $context);
 
-        self::$registeredEmails[$email] = $denormalized->getClient();
+        self::$registeredEmails[$email] = $denormalized->getUser();
 
         return $denormalized;
     }

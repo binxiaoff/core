@@ -6,9 +6,9 @@ namespace Unilend\Core\Service\CompanyModule;
 
 use Http\Client\Exception;
 use Nexy\Slack\{ Attachment, AttachmentField, Client as Slack, Exception\SlackApiException, MessageInterface};
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\CompanyModule;
-use Unilend\Core\Entity\{CompanyModuleLog};
+use Unilend\Core\Entity\CompanyModuleLog;
 
 class CompanyModuleNotifier
 {
@@ -53,7 +53,7 @@ class CompanyModuleNotifier
                 (new Attachment())
                     ->addField(new AttachmentField('Entité', $log->getCompanyModule()->getCompany()->getDisplayName(), true))
                     ->addField(new AttachmentField('Module', $this->getModuleHumanLabel($log->getCompanyModule()), true))
-                    ->addField(new AttachmentField('Utilisateur', $this->getClientDisplayIdentifier($log->getAddedBy()->getClient()), true))
+                    ->addField(new AttachmentField('Utilisateur', $this->getUserDisplayIdentifier($log->getAddedBy()->getUser()), true))
             );
     }
 
@@ -79,16 +79,16 @@ class CompanyModuleNotifier
     }
 
     /**
-     * @param Clients $client
+     * @param User $user
      *
      * @return string
      */
-    private function getClientDisplayIdentifier(Clients $client)
+    private function getUserDisplayIdentifier(User $user)
     {
-        if ($client->getFirstName() && $client->getLastName()) {
-            return $client->getFirstName() . ' ' . $client->getLastName();
+        if ($user->getFirstName() && $user->getLastName()) {
+            return $user->getFirstName() . ' ' . $user->getLastName();
         }
 
-        return $client->getEmail();
+        return $user->getEmail();
     }
 }

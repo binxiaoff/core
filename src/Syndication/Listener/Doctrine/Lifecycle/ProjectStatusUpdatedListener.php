@@ -7,7 +7,7 @@ namespace Unilend\Syndication\Listener\Doctrine\Lifecycle;
 use Doctrine\ORM\{EntityManager, Event\OnFlushEventArgs, ORMException};
 use Exception;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\{Embeddable\Offer, Project, ProjectParticipationStatus, ProjectParticipationTranche, ProjectStatus, Tranche};
 
 /**
@@ -116,7 +116,7 @@ class ProjectStatusUpdatedListener
      */
     private function createMissingArrangerParticipationTranche(Project $project, EntityManager $em): void
     {
-        /** @var Clients $user */
+        /** @var User $user */
         $user = $this->security->getUser();
 
         $staff = $user->getCurrentStaff();

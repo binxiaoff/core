@@ -11,10 +11,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\StaffStatus;
-use Unilend\Core\Repository\ClientsRepository;
+use Unilend\Core\Repository\UserRepository;
 use Unilend\Syndication\Entity\ProjectParticipationStatus;
 use Unilend\Syndication\Entity\ProjectStatus;
 
@@ -24,19 +24,19 @@ class CurrentStaff implements SerializerContextBuilderInterface
     private SerializerContextBuilderInterface $decorated;
     /** @var Security */
     private Security $security;
-    /** @var ClientsRepository */
-    private ClientsRepository $clientsRepository;
+    /** @var UserRepository */
+    private UserRepository $userRepository;
 
     /**
      * @param SerializerContextBuilderInterface $decorated
      * @param Security                          $security
-     * @param ClientsRepository                 $clientsRepository
+     * @param UserRepository                    $userRepository
      */
-    public function __construct(SerializerContextBuilderInterface $decorated, Security $security, ClientsRepository $clientsRepository)
+    public function __construct(SerializerContextBuilderInterface $decorated, Security $security, UserRepository $userRepository)
     {
-        $this->decorated         = $decorated;
-        $this->security          = $security;
-        $this->clientsRepository = $clientsRepository;
+        $this->decorated      = $decorated;
+        $this->security       = $security;
+        $this->userRepository = $userRepository;
     }
 
     /**
@@ -57,11 +57,11 @@ class CurrentStaff implements SerializerContextBuilderInterface
 
         $user = $this->security->getUser();
 
-        if ($user instanceof UserInterface && false === $user instanceof Clients) {
-            $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
+        if ($user instanceof UserInterface && false === $user instanceof User) {
+            $user = $this->userRepository->findOneBy(['email' => $user->getUsername()]);
         }
 
-        if ($user && $user instanceof Clients) {
+        if ($user && $user instanceof User) {
             $staff = $user->getCurrentStaff();
 
             if ($resourceClass) {

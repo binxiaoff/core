@@ -8,7 +8,7 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\ProjectOrganizer;
 
 class ProjectOrganizerNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
@@ -45,10 +45,10 @@ class ProjectOrganizerNormalizer implements ContextAwareNormalizerInterface, Nor
 
         $normalized = $this->normalizer->normalize($object, $format, $context);
 
-        /** @var Clients $user */
+        /** @var User $user */
         $user = $this->security->getUser();
 
-        $staff = $user instanceof Clients ? $user->getCurrentStaff() : null;
+        $staff = $user instanceof User ? $user->getCurrentStaff() : null;
 
         $company = null !== $staff ? $staff->getCompany() : null;
 

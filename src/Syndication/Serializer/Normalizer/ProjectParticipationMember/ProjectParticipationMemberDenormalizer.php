@@ -11,7 +11,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\Staff;
 use Unilend\Syndication\Entity\ProjectParticipation;
 use Unilend\Syndication\Entity\ProjectParticipationMember;
@@ -66,7 +66,7 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
             unset($data['staff']['company']);
         }
 
-        /** @var Clients $user */
+        /** @var User $user */
         $user = $this->security->getUser();
 
         /** @var ProjectParticipation $participation */
@@ -80,7 +80,7 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
 
         // permit to create staff from email (CALS-2023)
         if (null === $projectParticipationMember) {
-            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['role:write', 'staff:create', 'client:create']);
+            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['role:write', 'staff:create', 'user:create']);
         }
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationMember::class]['addedBy'] = $user->getCurrentStaff();
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'] = $participation->getParticipant();

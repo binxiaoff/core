@@ -6,7 +6,7 @@ namespace Unilend\Core\Service;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\{TemporaryToken};
 use Unilend\Core\Repository\TemporaryTokenRepository;
 
@@ -24,17 +24,18 @@ class TemporaryTokenGenerator
     }
 
     /**
-     * @param Clients $client
+     * @param User $user
      *
-     * @throws ORMException
+     * @return TemporaryToken
+     *
      * @throws OptimisticLockException
      * @throws Exception
      *
-     * @return TemporaryToken
+     * @throws ORMException
      */
-    public function generateMediumToken(Clients $client): TemporaryToken
+    public function generateMediumToken(User $user): TemporaryToken
     {
-        $temporaryToken = TemporaryToken::generateMediumToken($client);
+        $temporaryToken = TemporaryToken::generateMediumToken($user);
 
         $this->temporaryTokenRepository->save($temporaryToken);
 
@@ -42,17 +43,18 @@ class TemporaryTokenGenerator
     }
 
     /**
-     * @param Clients $client
+     * @param User $user
      *
-     * @throws ORMException
+     * @return TemporaryToken
+     *
      * @throws OptimisticLockException
      * @throws Exception
      *
-     * @return TemporaryToken
+     * @throws ORMException
      */
-    public function generateUltraLongToken(Clients $client): TemporaryToken
+    public function generateUltraLongToken(User $user): TemporaryToken
     {
-        $temporaryToken = TemporaryToken::generateUltraLongToken($client);
+        $temporaryToken = TemporaryToken::generateUltraLongToken($user);
 
         $this->temporaryTokenRepository->save($temporaryToken);
 

@@ -12,30 +12,30 @@ use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Core\Exception\AccountStatusException;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\{ClientSuccessfulLogin};
+use Unilend\Core\Entity\User;
+use Unilend\Core\Entity\{UserSuccessfulLogin};
 use Unilend\Core\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
-use Unilend\Core\Repository\{ClientFailedLoginRepository, ClientSuccessfulLoginRepository, ClientsRepository};
-use Unilend\Core\Service\User\ClientLoginFactory;
+use Unilend\Core\Repository\{UserFailedLoginRepository, UserSuccessfulLoginRepository, UserRepository};
+use Unilend\Core\Service\User\UserLoginFactory;
 
 class LoginLogSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var ClientLoginFactory
+     * @var UserLoginFactory
      */
-    private ClientLoginFactory $clientLoginHistoryFactory;
+    private UserLoginFactory $userLoginHistoryFactory;
     /**
-     * @var ClientsRepository
+     * @var UserRepository
      */
-    private ClientsRepository $clientsRepository;
+    private UserRepository $userRepository;
     /**
-     * @var ClientSuccessfulLoginRepository
+     * @var UserSuccessfulLoginRepository
      */
-    private ClientSuccessfulLoginRepository $clientSuccessfulLoginRepository;
+    private UserSuccessfulLoginRepository $userSuccessfulLoginRepository;
     /**
-     * @var ClientFailedLoginRepository
+     * @var UserFailedLoginRepository
      */
-    private ClientFailedLoginRepository $clientFailedLoginRepository;
+    private UserFailedLoginRepository $userFailedLoginRepository;
     /**
      * @var bool
      */
@@ -44,22 +44,22 @@ class LoginLogSubscriber implements EventSubscriberInterface
     /**
      * LoginLogSubscriber constructor.
      *
-     * @param ClientLoginFactory              $clientLoginHistoryFactory
-     * @param ClientsRepository               $clientsRepository
-     * @param ClientSuccessfulLoginRepository $clientSuccessfulLoginRepository
-     * @param ClientFailedLoginRepository     $clientFailedLoginRepository
+     * @param UserLoginFactory              $userLoginHistoryFactory
+     * @param UserRepository                $userRepository
+     * @param UserSuccessfulLoginRepository $userSuccessfulLoginRepository
+     * @param UserFailedLoginRepository     $userFailedLoginRepository
      */
     public function __construct(
-        ClientLoginFactory $clientLoginHistoryFactory,
-        ClientsRepository $clientsRepository,
-        ClientSuccessfulLoginRepository $clientSuccessfulLoginRepository,
-        ClientFailedLoginRepository $clientFailedLoginRepository
+        UserLoginFactory $userLoginHistoryFactory,
+        UserRepository $userRepository,
+        UserSuccessfulLoginRepository $userSuccessfulLoginRepository,
+        UserFailedLoginRepository $userFailedLoginRepository
     ) {
-        $this->clientsRepository               = $clientsRepository;
-        $this->clientLoginHistoryFactory       = $clientLoginHistoryFactory;
-        $this->clientSuccessfulLoginRepository = $clientSuccessfulLoginRepository;
-        $this->clientFailedLoginRepository     = $clientFailedLoginRepository;
-        $this->alreadyLogged                   = false;
+        $this->userRepository                = $userRepository;
+        $this->userLoginHistoryFactory       = $userLoginHistoryFactory;
+        $this->userSuccessfulLoginRepository = $userSuccessfulLoginRepository;
+        $this->userFailedLoginRepository     = $userFailedLoginRepository;
+        $this->alreadyLogged                 = false;
     }
 
     /**
@@ -88,12 +88,12 @@ class LoginLogSubscriber implements EventSubscriberInterface
         if ($this->alreadyLogged) {
             return;
         }
-        /** @var Clients $client */
-        $client = $this->clientsRepository->findOneBy(['email' => $event->getUser()->getUsername()]);
+        /** @var User $user */
+        $user = $this->userRepository->findOneBy(['email' => $event->getUser()->getUsername()]);
 
-        $successfulLogin = $this->clientLoginHistoryFactory->createClientLoginSuccess($client, ClientSuccessfulLogin::ACTION_JWT_LOGIN);
+        $successfulLogin = $this->userLoginHistoryFactory->createUserLoginSuccess($user, UserSuccessfulLogin::ACTION_JWT_LOGIN);
 
-        $this->clientSuccessfulLoginRepository->save($successfulLogin);
+        $this->userSuccessfulLoginRepository->save($successfulLogin);
 
         $this->alreadyLogged = true;
     }
@@ -110,11 +110,11 @@ class LoginLogSubscriber implements EventSubscriberInterface
         if ($this->alreadyLogged) {
             return;
         }
-        /** @var Clients $client */
-        $client = $this->clientsRepository->findOneBy(['email' => $event->getRefreshToken()->getUsername()]);
+        /** @var User $user */
+        $user = $this->userRepository->findOneBy(['email' => $event->getRefreshToken()->getUsername()]);
 
-        $successfulLogin = $this->clientLoginHistoryFactory->createClientLoginSuccess($client, ClientSuccessfulLogin::ACTION_JWT_REFRESH);
-        $this->clientSuccessfulLoginRepository->save($successfulLogin);
+        $successfulLogin = $this->userLoginHistoryFactory->createUserLoginSuccess($user, UserSuccessfulLogin::ACTION_JWT_REFRESH);
+        $this->userSuccessfulLoginRepository->save($successfulLogin);
 
         $this->alreadyLogged = true;
     }
@@ -128,8 +128,8 @@ class LoginLogSubscriber implements EventSubscriberInterface
     {
         $authenticationException = $event->getException();
 
-        $failedLogin = $this->clientLoginHistoryFactory->createClientLoginFailure($authenticationException, $this->getFailedLoginUsername($authenticationException));
-        $this->clientFailedLoginRepository->save($failedLogin);
+        $failedLogin = $this->userLoginHistoryFactory->createUserLoginFailure($authenticationException, $this->getFailedLoginUsername($authenticationException));
+        $this->userFailedLoginRepository->save($failedLogin);
     }
 
     /**
@@ -141,11 +141,11 @@ class LoginLogSubscriber implements EventSubscriberInterface
      */
     public function onTemporaryTokenLoginSuccess(TemporaryTokenAuthenticationSuccessEvent $event): void
     {
-        /** @var Clients $client */
-        $client = $this->clientsRepository->findOneBy(['email' => $event->getUser()->getUsername()]);
+        /** @var User $user */
+        $user = $this->userRepository->findOneBy(['email' => $event->getUser()->getUsername()]);
 
-        $successfulLogin = $this->clientLoginHistoryFactory->createClientLoginSuccess($client, ClientSuccessfulLogin::ACTION_TEMPORARY_TOKEN);
-        $this->clientSuccessfulLoginRepository->save($successfulLogin);
+        $successfulLogin = $this->userLoginHistoryFactory->createUserLoginSuccess($user, UserSuccessfulLogin::ACTION_TEMPORARY_TOKEN);
+        $this->userSuccessfulLoginRepository->save($successfulLogin);
     }
 
     /**
@@ -159,8 +159,8 @@ class LoginLogSubscriber implements EventSubscriberInterface
     {
         $authenticationException = $event->getException();
 
-        $failedLogin = $this->clientLoginHistoryFactory->createClientLoginFailure($authenticationException, $this->getFailedLoginUsername($authenticationException));
-        $this->clientFailedLoginRepository->save($failedLogin);
+        $failedLogin = $this->userLoginHistoryFactory->createUserLoginFailure($authenticationException, $this->getFailedLoginUsername($authenticationException));
+        $this->userFailedLoginRepository->save($failedLogin);
     }
 
     /**

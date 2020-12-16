@@ -11,7 +11,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\{Event\RequestEvent, KernelEvents};
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\{ProjectParticipation};
 use Unilend\Syndication\Repository\ProjectParticipationRepository;
 use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
@@ -73,11 +73,11 @@ class ProjectParticipationViewedSubscriber implements EventSubscriberInterface
         }
 
         $user  = $this->security->getUser();
-        $staff = $user instanceof Clients ? $user->getCurrentStaff() : null;
+        $staff = $user instanceof User ? $user->getCurrentStaff() : null;
 
         if (!$staff) {
-            $this->logger->warning('Cannot get the current staff for client', [
-                'id_client' => $user->getId(),
+            $this->logger->warning('Cannot get the current staff for user', [
+                'id_user' => $user->getId(),
                 'class'     => self::class,
             ]);
 

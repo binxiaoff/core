@@ -6,9 +6,9 @@ namespace Unilend\Syndication\Security\Voter;
 
 use Exception;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\Syndication\Entity\{ProjectMessage};
+use Unilend\Syndication\Entity\ProjectMessage;
 use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectMessageVoter extends AbstractEntityVoter
@@ -34,13 +34,14 @@ class ProjectMessageVoter extends AbstractEntityVoter
 
     /**
      * @param ProjectMessage $subject
-     * @param Clients        $user
-     *
-     * @throws Exception
+     * @param User           $user
      *
      * @return bool
+
+     **@throws Exception
+     *
      */
-    protected function canCreate(ProjectMessage $subject, Clients $user): bool
+    protected function canCreate(ProjectMessage $subject, User $user): bool
     {
         return $subject->getParticipation()->getProject()->getSubmitterCompany() === $user->getCompany()
             || (
@@ -50,22 +51,22 @@ class ProjectMessageVoter extends AbstractEntityVoter
 
     /**
      * @param ProjectMessage $subject
-     * @param Clients        $user
+     * @param User           $user
      *
      * @return bool
      */
-    protected function canEdit(ProjectMessage $subject, Clients $user): bool
+    protected function canEdit(ProjectMessage $subject, User $user): bool
     {
         return $user->getCurrentStaff() === $subject->getAddedBy();
     }
 
     /**
      * @param ProjectMessage $subject
-     * @param Clients        $user
+     * @param User           $user
      *
      * @return bool
      */
-    protected function canDelete(ProjectMessage $subject, Clients $user): bool
+    protected function canDelete(ProjectMessage $subject, User $user): bool
     {
         return $user->getCurrentStaff() === $subject->getAddedBy();
     }

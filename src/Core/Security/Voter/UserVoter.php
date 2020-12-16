@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Security\Voter;
 
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 
-class ClientsVoter extends AbstractEntityVoter
+class UserVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_VIEW = 'view';
     public const ATTRIBUTE_EDIT = 'edit';
 
     /**
-     * @param Clients $subject
-     * @param Clients $user
+     * @param User $subject
+     * @param User $user
      *
      * @return bool
      */
-    protected function isGrantedAll($subject, Clients $user): bool
+    protected function isGrantedAll($subject, User $user): bool
     {
         return $subject->getId() === $user->getId();
     }

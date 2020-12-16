@@ -9,10 +9,10 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Core\Entity\TemporaryToken, method: expireOldTemporaryToken }
 
-    Unilend\Core\Listener\Doctrine\Entity\ClientPlainPasswordSubmittedListener:
+    Unilend\Core\Listener\Doctrine\Entity\UserPlainPasswordSubmittedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Core\Entity\Clients, method: encodePlainPassword }
-            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Core\Entity\Clients, method: encodePlainPassword }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Core\Entity\User, method: encodePlainPassword }
+            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Core\Entity\User, method: encodePlainPassword }
 
     Unilend\Core\Listener\Doctrine\Entity\FileVersion\FileVersionCreatedListener:
         tags:
@@ -40,9 +40,9 @@ services:
 
 
     # Message Dispatcher
-    Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\Client\ClientUpdatedListener:
+    Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\User\UserUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Core\Entity\Clients }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Core\Entity\User }
 
     Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\Staff\StaffCreatedListener:
         tags:

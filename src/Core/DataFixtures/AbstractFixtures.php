@@ -87,7 +87,7 @@ abstract class AbstractFixtures extends Fixture
             $staff = $this->getReference($staff);
         }
 
-        $user = $staff->getClient();
+        $user = $staff->getUser();
 
         $user->setCurrentStaff($staff);
 
@@ -103,9 +103,10 @@ abstract class AbstractFixtures extends Fixture
         if (!is_string($entity)) {
             $entity = get_class($entity);
         }
+        /** @var string $entity */
         [$type, $generator] = $this->idGenerator[$entity];
         unset($this->idGenerator[$entity]);
-        $metadata = $manager->getClassMetaData($entity);
+        $metadata = $manager->getClassMetadata($entity);
         $metadata->setIdGeneratorType($type);
         $metadata->setIdGenerator($generator);
     }
@@ -118,7 +119,8 @@ abstract class AbstractFixtures extends Fixture
     {
         $entity = get_class($entity);
         /** @var ClassMetadata $metadata */
-        $metadata = $manager->getClassMetaData($entity);
+        $metadata = $manager->getClassMetadata($entity);
+        /** @var string $entity */
         if (!isset($this->idGenerator[$entity])) {
             $this->idGenerator[$entity] = [$metadata->generatorType, $metadata->idGenerator];
         }

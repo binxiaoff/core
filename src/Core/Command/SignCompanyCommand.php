@@ -65,7 +65,7 @@ class SignCompanyCommand extends Command
             $this->companyRepository->save($company);
 
             foreach ($company->getStaff() as $staff) {
-                $this->staffNotifier->notifyClientInitialisation($staff);
+                $this->staffNotifier->notifyUserInitialisation($staff);
             }
 
             $modules = $company->getModules()->toArray();

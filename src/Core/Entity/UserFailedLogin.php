@@ -9,15 +9,15 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Table(
- *     name="core_client_failed_login",
+ *     name="core_user_failed_login",
  *     indexes={
- *         @ORM\Index(name="idx_client_failed_login_username", columns={"username"}),
- *         @ORM\Index(name="idx_client_failed_login_ip", columns={"ip"})
+ *         @ORM\Index(name="idx_user_failed_login_username", columns={"username"}),
+ *         @ORM\Index(name="idx_user_failed_login_ip", columns={"ip"})
  *     }
  * )
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Core\Repository\UserFailedLoginRepository")
  */
-class ClientFailedLogin
+class UserFailedLogin
 {
     /**
      * @var string|null
@@ -98,9 +98,9 @@ class ClientFailedLogin
     /**
      * @param string|null $username
      *
-     * @return ClientFailedLogin
+     * @return UserFailedLogin
      */
-    public function setUsername(?string $username): ClientFailedLogin
+    public function setUsername(?string $username): UserFailedLogin
     {
         $this->username = $username;
 
@@ -118,9 +118,9 @@ class ClientFailedLogin
     /**
      * @param string|null $ip
      *
-     * @return ClientFailedLogin
+     * @return UserFailedLogin
      */
-    public function setIp(?string $ip): ClientFailedLogin
+    public function setIp(?string $ip): UserFailedLogin
     {
         $this->ip = $ip;
 
@@ -138,9 +138,9 @@ class ClientFailedLogin
     /**
      * @param string|null $error
      *
-     * @return ClientFailedLogin
+     * @return UserFailedLogin
      */
-    public function setError(?string $error): ClientFailedLogin
+    public function setError(?string $error): UserFailedLogin
     {
         $this->error = $error;
 
@@ -158,9 +158,9 @@ class ClientFailedLogin
     /**
      * @param float|null $recaptchaScore
      *
-     * @return ClientFailedLogin
+     * @return UserFailedLogin
      */
-    public function setRecaptchaScore(?float $recaptchaScore): ClientFailedLogin
+    public function setRecaptchaScore(?float $recaptchaScore): UserFailedLogin
     {
         $this->recaptchaScore = $recaptchaScore;
 

@@ -63,12 +63,12 @@ class AcceptationLegalDocsRepository extends ServiceEntityRepository
      *
      * @return AcceptationsLegalDocs|null
      */
-    public function findClientsLastSigned(UserInterface $user): ?AcceptationsLegalDocs
+    public function findUsersLastSigned(UserInterface $user): ?AcceptationsLegalDocs
     {
         $queryBuilder = $this->createQueryBuilder('ald');
-        $queryBuilder->where('ald.client = :client')
+        $queryBuilder->where('ald.user = :user')
             ->orderBy('ald.added', 'DESC')
-            ->setParameter('client', $user)
+            ->setParameter('user', $user)
             ->setMaxResults(1)
         ;
 

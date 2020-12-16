@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Serializer\Normalizer\Client;
+namespace Unilend\Core\Serializer\Normalizer\User;
 
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Service\ServiceTerms\ServiceTermsManager;
 
-class ClientNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class UserNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
     /**
      * @var NormalizerInterface
      */
     private NormalizerInterface $normalizer;
 
-    private const ALREADY_CALLED = 'CLIENT_NORMALIZER_ALREADY_CALLED';
+    private const ALREADY_CALLED = 'USER_NORMALIZER_ALREADY_CALLED';
 
     /** @var ServiceTermsManager */
     private ServiceTermsManager $serviceTermsManager;
@@ -35,15 +35,15 @@ class ClientNormalizer implements ContextAwareNormalizerInterface, NormalizerAwa
      */
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
-        return $data instanceof Clients && !isset($context[static::ALREADY_CALLED]);
+        return $data instanceof User && !isset($context[static::ALREADY_CALLED]);
     }
 
     /**
      * @param NormalizerInterface $normalizer
      *
-     * @return ClientNormalizer
+     * @return UserNormalizer
      */
-    public function setNormalizer(NormalizerInterface $normalizer): ClientNormalizer
+    public function setNormalizer(NormalizerInterface $normalizer): UserNormalizer
     {
         $this->normalizer = $normalizer;
 

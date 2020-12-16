@@ -13,9 +13,9 @@ use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\DataFixtures\UserFixtures;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\{CompanyStatus};
+use Unilend\Core\Entity\CompanyStatus;
 
 class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -78,7 +78,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
     public function load(ObjectManager $manager): void
     {
        // Main company
-        /** @var Clients $user */
+        /** @var User $user */
         $user    = $this->getReference(UserFixtures::ADMIN);
         $domain  = explode('@', $user->getEmail())[1];
         $company = $this->createCompany(Company::COMPANY_NAME_CALS, 'CALS')->setEmailDomain($domain)->setGroupName('Crédit Agricole');

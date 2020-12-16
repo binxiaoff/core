@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Syndication\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\Syndication\Entity\{ProjectParticipationMember};
 use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
@@ -32,33 +32,33 @@ class ProjectParticipationMemberVoter extends AbstractEntityVoter
 
     /**
      * @param ProjectParticipationMember $subject
-     * @param Clients                    $user
+     * @param User                       $user
      *
      * @return bool
      */
-    protected function canAcceptNda(ProjectParticipationMember $subject, Clients $user): bool
+    protected function canAcceptNda(ProjectParticipationMember $subject, User $user): bool
     {
         return $subject->getStaff() === $user->getCurrentStaff();
     }
 
     /**
      * @param ProjectParticipationMember $subject
-     * @param Clients                    $user
+     * @param User                       $user
      *
      * @return bool
      */
-    protected function canEdit(ProjectParticipationMember $subject, Clients $user): bool
+    protected function canEdit(ProjectParticipationMember $subject, User $user): bool
     {
         return $this->canCreate($subject, $user) || $this->canAcceptNda($subject, $user);
     }
 
     /**
      * @param ProjectParticipationMember $subject
-     * @param Clients                    $user
+     * @param User                       $user
      *
      * @return bool
      */
-    protected function canCreate(ProjectParticipationMember $subject, Clients $user): bool
+    protected function canCreate(ProjectParticipationMember $subject, User $user): bool
     {
         $currentCompany = $user->getCompany();
 

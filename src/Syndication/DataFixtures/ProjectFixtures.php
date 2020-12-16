@@ -11,7 +11,7 @@ use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
 use Unilend\Core\DataFixtures\{AbstractFixtures, MarketSegmentFixtures, StaffFixtures, UserFixtures};
-use Unilend\Core\Entity\{Clients, Embeddable\Money, Embeddable\NullablePerson, File, FileVersion, Staff};
+use Unilend\Core\Entity\{User, Embeddable\Money, Embeddable\NullablePerson, File, FileVersion, Staff};
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectStatus;
 
@@ -82,7 +82,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     public function load(ObjectManager $manager): void
     {
-        /** @var Clients $otherUser */
+        /** @var User $otherUser */
         $otherUser = $this->getReference(UserFixtures::PARTICIPANT);
         // We set the user in the tokenStorage to avoid conflict with ProjectStatusCreatedListener
         $this->login(StaffFixtures::ADMIN);
@@ -155,11 +155,11 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setAllocationDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+1 year', '+2 year')))
             ->setPrivilegedContactPerson(
                 (new NullablePerson())
-                    ->setEmail($staff->getClient()->getEmail())
-                    ->setFirstName($staff->getClient()->getFirstName())
-                    ->setLastName($staff->getClient()->getLastName())
-                    ->setPhone($staff->getClient()->getPhone())
-                    ->setOccupation($staff->getClient()->getJobFunction())
+                    ->setEmail($staff->getUser()->getEmail())
+                    ->setFirstName($staff->getUser()->getFirstName())
+                    ->setLastName($staff->getUser()->getLastName())
+                    ->setPhone($staff->getUser()->getPhone())
+                    ->setOccupation($staff->getUser()->getJobFunction())
                     ->setParentUnit('Unit')
             )
             ->setDescription($this->faker->sentence);

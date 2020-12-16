@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Security\Voter;
 
-use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\StaffStatus;
+use Unilend\Core\Entity\User;
 
 class StaffStatusVoter extends AbstractEntityVoter
 {
@@ -13,11 +13,11 @@ class StaffStatusVoter extends AbstractEntityVoter
 
     /**
      * @param StaffStatus $staffStatus
-     * @param Clients     $user
+     * @param User        $user
      *
      * @return bool
      */
-    protected function isGrantedAll($staffStatus, Clients $user): bool
+    protected function isGrantedAll($staffStatus, User $user): bool
     {
         $submitterStaff = $user->getCurrentStaff();
 

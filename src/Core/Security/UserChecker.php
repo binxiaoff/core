@@ -6,7 +6,7 @@ namespace Unilend\Core\Security;
 
 use Symfony\Component\Security\Core\Exception\DisabledException;
 use Symfony\Component\Security\Core\User\{UserCheckerInterface, UserInterface};
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 
 class UserChecker implements UserCheckerInterface
 {
@@ -15,7 +15,7 @@ class UserChecker implements UserCheckerInterface
      */
     public function checkPreAuth(UserInterface $user): void
     {
-        if (!$user instanceof Clients) {
+        if (!$user instanceof User) {
             return;
         }
 

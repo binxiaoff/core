@@ -16,8 +16,21 @@ use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\{Clients, Company, Embeddable\Money, Embeddable\NullableMoney, Embeddable\NullablePerson, File, Interfaces\MoneyInterface, Interfaces\StatusInterface,
-    Interfaces\TraceableStatusAwareInterface, MarketSegment, Staff, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Core\Entity\{
+    Company,
+    Embeddable\Money,
+    Embeddable\NullableMoney,
+    Embeddable\NullablePerson,
+    File,
+    Interfaces\MoneyInterface,
+    Interfaces\StatusInterface,
+    Interfaces\TraceableStatusAwareInterface,
+    MarketSegment,
+    Staff,
+    Traits\PublicizeIdentityTrait,
+    Traits\TimestampableTrait,
+    User
+};
 use Unilend\Core\Filter\ArrayFilter;
 use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Core\Traits\ConstantsAwareTrait;
@@ -93,7 +106,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                 "tranche_project:read",
  *                 "tranche:read",
  *                 "role:read",
- *                 "client:read",
+ *                 "user:read",
  *                 "timestampable:read",
  *                 "traceableStatus:read",
  *                 "lendingRate:read",
@@ -230,16 +243,16 @@ class Project implements TraceableStatusAwareInterface
     private Company $submitterCompany;
 
     /**
-     * @var Clients
+     * @var User
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client_submitter",  referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_user_submitter",  referencedColumnName="id", nullable=false)
      * })
      * @Assert\NotBlank
      * @Assert\Valid
      */
-    private Clients $submitterClient;
+    private User $submitterUser;
 
     /**
      * @var string
@@ -592,16 +605,16 @@ class Project implements TraceableStatusAwareInterface
         $this->organizers            = new ArrayCollection([new ProjectOrganizer($addedBy->getCompany(), $this, $addedBy)]);
         $this->added                 = new DateTimeImmutable();
         $this->marketSegment         = $marketSegment;
-        $this->submitterClient       = $addedBy->getClient();
+        $this->submitterUser       = $addedBy->getUser();
         $this->submitterCompany      = $addedBy->getCompany();
 
         $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_DRAFT, $addedBy));
         $contact = (new NullablePerson())
-            ->setFirstName($addedBy->getClient()->getFirstName())
-            ->setLastName($addedBy->getClient()->getLastName())
-            ->setEmail($addedBy->getClient()->getEmail())
-            ->setPhone($addedBy->getClient()->getPhone())
-            ->setOccupation($addedBy->getClient()->getJobFunction());
+            ->setFirstName($addedBy->getUser()->getFirstName())
+            ->setLastName($addedBy->getUser()->getLastName())
+            ->setEmail($addedBy->getUser()->getEmail())
+            ->setPhone($addedBy->getUser()->getPhone())
+            ->setOccupation($addedBy->getUser()->getJobFunction());
         $this->setPrivilegedContactPerson($contact);
 
         $this->offerVisibility    = static::OFFER_VISIBILITY_PRIVATE;
@@ -640,11 +653,11 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return Clients
+     * @return User
      */
-    public function getSubmitterClient(): Clients
+    public function getSubmitterUser(): User
     {
-        return $this->submitterClient;
+        return $this->submitterUser;
     }
 
     /**

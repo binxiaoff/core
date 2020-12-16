@@ -9,8 +9,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\{TemporaryToken};
+use Unilend\Core\Entity\User;
+use Unilend\Core\Entity\TemporaryToken;
 
 /**
  * @method TemporaryToken|null find($id, $lockMode = null, $lockVersion = null)
@@ -51,20 +51,20 @@ class TemporaryTokenRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Clients $client
+     * @param User $user
      *
      * @throws Exception
      */
-    public function expireTemporaryTokens(Clients $client): void
+    public function expireTemporaryTokens(User $user): void
     {
-        if ($client->getId()) {
+        if ($user->getId()) {
             $this->createQueryBuilder('t')
                 ->update(TemporaryToken::class, 't')
                 ->set('t.expires', ':now')
                 ->set('t.updated', ':now')
-                ->where('t.client = :client')
+                ->where('t.user = :user')
                 ->andWhere('t.expires > :now')
-                ->setParameter('client', $client)
+                ->setParameter('user', $user)
                 ->setParameter('now', new DateTimeImmutable())
                 ->getQuery()
                 ->execute()

@@ -12,9 +12,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\StaffStatus;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\StaffRepository;
 
 class ArchivedStaffSubscriber implements EventSubscriberInterface
@@ -55,14 +55,14 @@ class ArchivedStaffSubscriber implements EventSubscriberInterface
         $method         = $event->getRequest()->getMethod();
 
         $user         = $this->security->getUser();
-        $currentStaff = $user instanceof Clients ? $user->getCurrentStaff() : null;
+        $currentStaff = $user instanceof User ? $user->getCurrentStaff() : null;
 
         if (null === $currentStaff) {
             return;
         }
 
         if ($previousResult instanceof Staff && Request::METHOD_POST === $method) {
-            $existingStaff = $this->staffRepository->findOneByClientEmailAndCompany($previousResult->getClient()->getEmail(), $previousResult->getCompany());
+            $existingStaff = $this->staffRepository->findOneByUserEmailAndCompany($previousResult->getUser()->getEmail(), $previousResult->getCompany());
 
             if ($existingStaff && $existingStaff->isArchived()) {
                 $existingStaff->setCurrentStatus(new StaffStatus($existingStaff, StaffStatus::STATUS_ACTIVE, $currentStaff));

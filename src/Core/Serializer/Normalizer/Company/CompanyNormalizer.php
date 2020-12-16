@@ -5,8 +5,13 @@ declare(strict_types=1);
 namespace Unilend\Core\Serializer\Normalizer\Company;
 
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer, ContextAwareNormalizerInterface, NormalizerAwareInterface, NormalizerInterface};
-use Unilend\Core\Entity\{Clients, Company, Staff};
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 
 class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
@@ -57,7 +62,7 @@ class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
 
         $currentUser = $this->security->getUser();
 
-        $currentStaff = $currentUser instanceof Clients ? $currentUser->getCurrentStaff() : null;
+        $currentStaff = $currentUser instanceof User ? $currentUser->getCurrentStaff() : null;
 
         $currentCompany = $currentStaff instanceof Staff ? $currentStaff->getCompany() : null;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\Security\Voter;
 
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\Syndication\Entity\ProjectStatus;
 
@@ -14,11 +14,11 @@ class ProjectStatusVoter extends AbstractEntityVoter
 
     /**
      * @param ProjectStatus $projectStatus
-     * @param Clients       $user
+     * @param User          $user
      *
      * @return bool
      */
-    protected function isGrantedAll($projectStatus, Clients $user): bool
+    protected function isGrantedAll($projectStatus, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $projectStatus->getProject());
     }

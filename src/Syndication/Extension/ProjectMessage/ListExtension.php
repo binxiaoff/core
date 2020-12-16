@@ -6,13 +6,11 @@ namespace Unilend\Syndication\Extension\ProjectMessage;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
-use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\Staff;
 use Unilend\Syndication\Entity\ProjectMessage;
-use Unilend\Syndication\Entity\ProjectOrganizer;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
@@ -35,12 +33,12 @@ class ListExtension implements QueryCollectionExtensionInterface
      */
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
     {
-        if (ProjectMessage::class !== $resourceClass || $this->security->isGranted(Clients::ROLE_ADMIN)) {
+        if (ProjectMessage::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
-        /** @var Clients $user */
+        /** @var User $user */
         $user = $this->security->getUser();
-        if (!$user instanceof Clients) {
+        if (!$user instanceof User) {
             return;
         }
 

@@ -8,16 +8,16 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Repository\ClientsRepository;
+use Unilend\Core\Entity\User;
+use Unilend\Core\Repository\UserRepository;
 
 class ArchivedByListener
 {
     /** @var Security */
     private $security;
 
-    /** @var ClientsRepository $clientsRepository */
-    private $clientsRepository;
+    /** @var UserRepository $userRepository */
+    private $userRepository;
 
     /**
      * @param Security $security
@@ -37,11 +37,11 @@ class ArchivedByListener
         $em     = $args->getEntityManager();
         $uow    = $em->getUnitOfWork();
         $entity = $args->getEntity();
-        /** @var Clients $user */
+        /** @var User $user */
         $user = $this->security->getUser();
 
-        if ($user instanceof UserInterface && false === $user instanceof Clients) {
-            $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
+        if ($user instanceof UserInterface && false === $user instanceof User) {
+            $user = $this->userRepository->findOneBy(['email' => $user->getUsername()]);
         }
 
         if (method_exists($entity, 'setArchivedBy')) {

@@ -61,12 +61,12 @@ class ProjectParticipationMemberNotifier
             return;
         }
 
-        $client     = $projectParticipationMember->getStaff()->getClient();
+        $user       = $projectParticipationMember->getStaff()->getUser();
         $templateId = $this->getTemplateId($project, $projectParticipationMember->getStaff());
 
         $temporaryToken = null;
-        if ($client->isInitializationNeeded()) {
-            $temporaryToken = $this->temporaryTokenGenerator->generateUltraLongToken($client);
+        if ($user->isInitializationNeeded()) {
+            $temporaryToken = $this->temporaryTokenGenerator->generateUltraLongToken($user);
         }
 
         $context = [
@@ -81,7 +81,7 @@ class ProjectParticipationMemberNotifier
                 'front_initialAccount',
                 [
                     'temporaryTokenPublicId' => $temporaryToken->getToken(),
-                    'clientPublicId' => $client->getPublicId(),
+                    'userPublicId' => $user->getPublicId(),
                 ],
                 RouterInterface::ABSOLUTE_URL
             ) : null,
@@ -91,12 +91,12 @@ class ProjectParticipationMemberNotifier
             'project_title' => $project->getTitle(),
             'projectParticipation_participant_displayName' => $projectParticipation->getParticipant()->getDisplayName(),
             'arranger_displayName' => $project->getSubmitterCompany()->getDisplayName(),
-            'client_firstName' => $client->getFirstName(),
+            'client_firstName' => $user->getFirstName(),
         ];
 
         if ($templateId) {
             $message = (new MailjetMessage())
-                ->setTo($client->getEmail())
+                ->setTo($user->getEmail())
                 ->setTemplateId($this->getTemplateId($project, $projectParticipationMember->getStaff()))
                 ->setVars($context)
             ;
@@ -116,7 +116,7 @@ class ProjectParticipationMemberNotifier
         $templateId  = null;
         // In the actual habilitation context, the staff company is the same as the participant company
         $participant = $staff->getCompany();
-        $client      = $staff->getClient();
+        $user        = $staff->getUser();
 
         if (ProjectStatus::STATUS_INTEREST_EXPRESSION === $project->getCurrentStatus()->getStatus()) {
             if ($participant->isProspect()) {
@@ -124,7 +124,7 @@ class ProjectParticipationMemberNotifier
             }
 
             if ($participant->hasSigned()) {
-                $templateId = $client->isInitializationNeeded() ? MailjetMessage::TEMPLATE_PUBLICATION_UNINITIALIZED_USER : MailjetMessage::TEMPLATE_PUBLICATION;
+                $templateId = $user->isInitializationNeeded() ? MailjetMessage::TEMPLATE_PUBLICATION_UNINITIALIZED_USER : MailjetMessage::TEMPLATE_PUBLICATION;
             }
         }
 
@@ -135,7 +135,7 @@ class ProjectParticipationMemberNotifier
                 }
 
                 if ($participant->hasSigned()) {
-                    $templateId = $client->isInitializationNeeded() ? MailjetMessage::TEMPLATE_SYNDICATION_UNINITIALIZED_USER : MailjetMessage::TEMPLATE_SYNDICATION;
+                    $templateId = $user->isInitializationNeeded() ? MailjetMessage::TEMPLATE_SYNDICATION_UNINITIALIZED_USER : MailjetMessage::TEMPLATE_SYNDICATION;
                 }
             } else {
                 $templateId = MailjetMessage::TEMPLATE_ARRANGER_INVITATION_EXTERNAL_BANK;

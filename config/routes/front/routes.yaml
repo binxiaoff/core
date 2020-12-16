@@ -21,11 +21,11 @@ logout:
 login:
   path: /login
 resetPassword:
-  path: /mot-de-passe-oublie/{temporaryTokenPublicId}/{clientPublicId}
+  path: /mot-de-passe-oublie/{temporaryTokenPublicId}/{userPublicId}
 requestResetPassword:
   path: /mot-de-passe-oublie
 initialAccount:
-  path: /finalisation-inscription/{temporaryTokenPublicId}/{clientPublicId}
+  path: /finalisation-inscription/{temporaryTokenPublicId}/{userPublicId}
 privacyPolicy:
   path: /politique-de-confidentialite
 legalNotice:

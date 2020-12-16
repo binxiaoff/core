@@ -7,8 +7,8 @@ namespace Unilend\Syndication\Listener\Doctrine\Lifecycle;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Repository\ClientsRepository;
+use Unilend\Core\Entity\User;
+use Unilend\Core\Repository\UserRepository;
 use Unilend\Syndication\Entity\InvitationReplyVersion;
 use Unilend\Syndication\Entity\ProjectParticipationTranche;
 
@@ -17,20 +17,20 @@ class ProjectParticipationTrancheUpdatedListener
     /** @var Security */
     private Security $security;
 
-    /** @var ClientsRepository */
-    private ClientsRepository $clientsRepository;
+    /** @var UserRepository */
+    private UserRepository $userRepository;
 
     public array $idsProjectParticipations = [];
     public const INVITATION_REPLY_PROPERTY = 'invitationReply.money.amount';
 
     /**
-     * @param Security          $security
-     * @param ClientsRepository $clientsRepository
+     * @param Security       $security
+     * @param UserRepository $userRepository
      */
-    public function __construct(Security $security, ClientsRepository $clientsRepository)
+    public function __construct(Security $security, UserRepository $userRepository)
     {
-        $this->security          = $security;
-        $this->clientsRepository = $clientsRepository;
+        $this->security       = $security;
+        $this->userRepository = $userRepository;
     }
 
     /**
@@ -45,11 +45,11 @@ class ProjectParticipationTrancheUpdatedListener
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
             if ($entity instanceof ProjectParticipationTranche && array_key_exists(self::INVITATION_REPLY_PROPERTY, $uow->getEntityChangeSet($entity))) {
-                /** @var Clients $user */
+                /** @var User $user */
                 $user = $this->security->getUser();
 
-                if ($user instanceof UserInterface && false === $user instanceof Clients) {
-                    $user = $this->clientsRepository->findOneBy(['email' => $user->getUsername()]);
+                if ($user instanceof UserInterface && false === $user instanceof User) {
+                    $user = $this->userRepository->findOneBy(['email' => $user->getUsername()]);
                 }
 
                 $projectParticipation = $entity->getProjectParticipation();

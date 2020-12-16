@@ -83,7 +83,7 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
         $temporaryToken->setAccessed();
         $this->temporaryTokenRepository->save($temporaryToken);
 
-        return $temporaryToken->getClient();
+        return $temporaryToken->getUser();
     }
 
     /**

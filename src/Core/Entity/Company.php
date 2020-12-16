@@ -28,8 +28,8 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *              "companyStatus:read",
  *              "companyModule:read",
  *              "staff:read",
- *              "client:read",
- *              "client_status:read",
+ *              "user:read",
+ *              "user_status:read",
  *              "role:read",
  *              "nullableMoney:read"
  *         }
@@ -295,16 +295,16 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param Clients|null $client
+     * @param User|null $user
      *
      * @return Collection|Staff[]
      */
-    public function getStaff(?Clients $client = null): Collection
+    public function getStaff(?User $user = null): Collection
     {
         $criteria = new Criteria();
 
-        if ($client) {
-            $criteria->where(Criteria::expr()->eq('client', $client));
+        if ($user) {
+            $criteria->where(Criteria::expr()->eq('user', $user));
         }
 
         return $this->staff->matching($criteria);

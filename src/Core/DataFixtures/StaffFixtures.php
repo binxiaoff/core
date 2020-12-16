@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Core\DataFixtures;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -7,10 +9,10 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use JsonException;
-use Unilend\Core\Entity\Clients;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\StaffStatus;
+use Unilend\Core\Entity\User;
 
 class StaffFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -27,7 +29,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         // Create our main user
         /** @var Company $adminCompany */
         $adminCompany = $this->getReference(CompanyFixtures::CALS);
-        /** @var Clients $admin */
+        /** @var User $admin */
         $admin = $this->getReference(UserFixtures::ADMIN);
         $adminStaff = $this->insertStaff($admin, $adminCompany, $manager, [Staff::DUTY_STAFF_ADMIN], MarketSegmentFixtures::SEGMENTS);
 
@@ -60,7 +62,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         ];
 
         foreach ($data as $userReference => $datum) {
-            /** @var Clients $user */
+            /** @var User $user */
             $user = $this->getReference($userReference);
             $company = $datum['company'] ?? $adminCompany;
             $staff = $this->createStaff($user, $company, $datum['roles'] ?? null, $datum['marketSegments'] ?? null);
@@ -71,7 +73,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         // Attach other companies to the other user
         /** @var Company[] $companies */
         $companies = $this->getReferences(CompanyFixtures::COMPANIES);
-        /** @var Clients $participant */
+        /** @var User $participant */
         $participant = $this->getReference(UserFixtures::PARTICIPANT);
         foreach ($companies as $company) {
             if ($company !== $adminCompany) {
@@ -83,7 +85,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
 
         $manager->flush();
 
-        /** @var Clients $inactiveUser */
+        /** @var User $inactiveUser */
         $inactiveUser = $this->getReference(UserFixtures::INACTIVE);
 
         foreach ($inactiveUser->getStaff() as $staff) {
@@ -100,7 +102,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $manager->persist($manyStaffAdminStaff);
 
         foreach (range(0, 50) as $i) {
-            $user = new Clients($this->faker->email);
+            $user = new User($this->faker->email);
             $manager->persist($user);
             $manager->persist($this->createStaff($user, $manyStaffCompany, [Staff::DUTY_STAFF_OPERATOR], null, $manyStaffAdminStaff));
         }
@@ -121,20 +123,20 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
     }
 
     /**
-     * @param Clients $client
+     * @param User    $user
      * @param Company $company
      *
      * @return string
      */
-    public static function getStaffReferenceName(Clients $client, Company $company)
+    public static function getStaffReferenceName(User $user, Company $company)
     {
-        return 'staff_' . $client->getId() . '_' . $company->getId();
+        return 'staff_' . $user->getId() . '_' . $company->getId();
     }
 
     /**
      * Creates a new staff attached to the company
      *
-     * @param Clients       $user
+     * @param User          $user
      * @param Company       $company
      * @param ObjectManager $manager
      * @param array         $roles
@@ -145,19 +147,19 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
      *
      * @throws JsonException
      */
-    private function insertStaff(Clients $user, Company $company, ObjectManager $manager, array $roles = [], array $marketSegments = []): Staff
+    private function insertStaff(User $user, Company $company, ObjectManager $manager, array $roles = [], array $marketSegments = []): Staff
     {
         // We need to use SQL since we cannot instantiate Staff entity
         $rolesEncoded = json_encode($roles, JSON_THROW_ON_ERROR);
         $sql = <<<SQL
             INSERT INTO `core_staff` 
-                (id_company, id_client, roles, updated, added, public_id) VALUES 
+                (id_company, id_user, roles, updated, added, public_id) VALUES 
                 (
                     "{$company->getId()}", 
                     "{$user->getId()}", 
                     '{$rolesEncoded}', 
                     '2020-01-01', '2020-01-01', 
-                    "client{$user->getId()}-company{$company->getId()}-staff"
+                    "user{$user->getId()}-company{$company->getId()}-staff"
                 )
         SQL;
         $manager->getConnection()->exec($sql);
@@ -193,7 +195,7 @@ SQL;
     }
 
     /**
-     * @param Clients              $user
+     * @param User                 $user
      * @param Company|null         $company
      * @param array|null           $roles
      * @param ArrayCollection|null $markerSegments
@@ -205,7 +207,7 @@ SQL;
      * @throws Exception
      */
     private function createStaff(
-        Clients $user,
+        User $user,
         ?Company $company = null,
         ?array $roles = [Staff::DUTY_STAFF_OPERATOR],
         ?ArrayCollection $markerSegments = null,
@@ -227,6 +229,6 @@ SQL;
      */
     private function addStaffReference(Staff $staff)
     {
-        $this->addReference(static::getStaffReferenceName($staff->getClient(), $staff->getCompany()), $staff);
+        $this->addReference(static::getStaffReferenceName($staff->getUser(), $staff->getCompany()), $staff);
     }
 }

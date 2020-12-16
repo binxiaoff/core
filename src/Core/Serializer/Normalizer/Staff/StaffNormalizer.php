@@ -60,7 +60,7 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
 
         $currentUser = $this->security->getUser();
 
-        if ($currentUser === $object->getClient()) {
+        if ($currentUser === $object->getUser()) {
             $context[AbstractNormalizer::GROUPS] = $context[AbstractNormalizer::GROUPS] ?? [];
             $context[AbstractNormalizer::GROUPS][] = Staff::SERIALIZER_GROUP_OWNER_READ;
         }

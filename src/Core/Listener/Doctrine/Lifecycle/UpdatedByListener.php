@@ -6,7 +6,7 @@ namespace Unilend\Core\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Clients;
+use Unilend\Core\Entity\User;
 
 class UpdatedByListener
 {
@@ -27,10 +27,10 @@ class UpdatedByListener
     public function preUpdate(PreUpdateEventArgs $args)
     {
         $entity = $args->getEntity();
-        /** @var Clients $user */
+        /** @var User $user */
         $user = $this->security->getUser();
 
-        $currentStaff = $user instanceof Clients ? $user->getCurrentStaff() : null;
+        $currentStaff = $user instanceof User ? $user->getCurrentStaff() : null;
 
         if (method_exists($entity, 'setUpdatedBy')) {
             $entity->setUpdatedBy($currentStaff);
