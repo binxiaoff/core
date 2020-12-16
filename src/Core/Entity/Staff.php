@@ -105,7 +105,7 @@ class Staff implements TraceableStatusAwareInterface
      *
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"staff:read"})
+     * @Groups({"staff:read", "staff:create", "staff:update"})
      */
     private bool $manager;
 
@@ -137,6 +137,8 @@ class Staff implements TraceableStatusAwareInterface
      * @var bool
      *
      * @ORM\Column(type="boolean")
+     *
+     * @Groups({"staff:read", "staff:create", "staff:update"})
      */
     private bool $arrangementProjectCreationPermission;
 
@@ -144,6 +146,8 @@ class Staff implements TraceableStatusAwareInterface
      * @var bool
      *
      * @ORM\Column(type="boolean")
+     *
+     * @Groups({"staff:read", "staff:create", "staff:update"})
      */
     private bool $agencyProjectCreationPermission;
 
