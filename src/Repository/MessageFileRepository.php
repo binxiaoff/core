@@ -30,7 +30,7 @@ class MessageFileRepository extends ServiceEntityRepository
      */
     public function save(MessageFile $messageFile): void
     {
-        $this->persist($messageFile);
-        $this->flush();
+        $this->getEntityManager()->persist($messageFile);
+        $this->getEntityManager()->flush();
     }
 }
