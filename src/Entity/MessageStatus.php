@@ -16,6 +16,7 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
+ *  attributes={"pagination_enabled"=false},
  *  normalizationContext={"groups": {
  *     "messageStatus:read",
  *     "message:read"
