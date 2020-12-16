@@ -104,6 +104,8 @@ class Staff implements TraceableStatusAwareInterface
      * @var bool
      *
      * @ORM\Column(type="boolean")
+     *
+     * @Groups({"staff:read"})
      */
     private bool $manager;
 
@@ -357,6 +359,22 @@ class Staff implements TraceableStatusAwareInterface
         }
 
         return $this->isActive();
+    }
+
+    /**
+     * @return bool
+     *
+     * @Groups({"staff:read"})
+     */
+    public function isAdmin(): bool
+    {
+        foreach ($this->getCompany()->getAdmins() as $admin) {
+            if ($admin->getUser()->getPublicId() === $this->getUser()->getPublicId()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
