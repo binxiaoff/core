@@ -43,11 +43,12 @@ class MessageRepository extends ServiceEntityRepository
             ->where($queryBuilder->expr()->eq('msg.added', ':added'))
             ->andWhere($queryBuilder->expr()->eq('msg.sender', ':sender'))
             ->andWhere($queryBuilder->expr()->in('msg.messageThread', ':messageThreads'))
+            ->andWhere($queryBuilder->expr()->in('msg.broadcast', ':broadcast'))
             ->setParameters([
                 'added'          => $added,
                 'sender'         => $sender,
                 'messageThreads' => $messageThreads,
-                'broadcasted'    => true,
+                'broadcast'      => true,
             ])
             ->getQuery()
             ->getResult();
