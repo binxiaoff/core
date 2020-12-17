@@ -6,10 +6,26 @@ namespace Unilend\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Annotation\{ApiResource};
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
+ * @ApiResource(
+ *  normalizationContext={"groups": {
+ *     "messageFile:read",
+ *     "file:read",
+ *  }},
+ *  collectionOperations={
+ *  },
+ *  itemOperations={
+ *      "get": {
+ *          "security": "is_granted('view', object)"
+ *     }
+ *  }
+ * )
+ *
  * @ORM\Entity
  * @ORM\Table
  */
@@ -21,8 +37,10 @@ class MessageFile
     /**
      * @var File
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\File", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_file", unique=true, nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\File", cascade={"persist", "remove"})
+     * @ORM\JoinColumn(name="id_file", nullable=false)
+     *
+     * @Groups({"messageFile:read"})
      */
     private File $file;
 
@@ -63,4 +81,3 @@ class MessageFile
         return $this->message;
     }
 }
-

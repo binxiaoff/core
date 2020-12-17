@@ -32,3 +32,4 @@ class MessageCreated implements AsyncMessageInterface
         return $this->messageId;
     }
 }
+

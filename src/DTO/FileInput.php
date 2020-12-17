@@ -7,6 +7,7 @@ namespace Unilend\DTO;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Entity\Message;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectFile;
 use Unilend\Entity\ProjectParticipation;
@@ -105,6 +106,7 @@ class FileInput
         return [
             Project::class              => array_merge(Project::getProjectFileTypes(), ProjectFile::getProjectFileTypes()),
             ProjectParticipation::class => ProjectParticipation::getFileTypes(),
+            Message::class              => Message::getFileTypes(),
         ];
     }
 }

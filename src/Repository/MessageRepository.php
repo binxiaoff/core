@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Repository;
 
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\Message;
+use Unilend\Entity\Staff;
 
 /**
  * @method Message|null find($id, $lockMode = null, $lockVersion = null)
@@ -25,5 +27,30 @@ class MessageRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Message::class);
     }
-}
 
+    /**
+     * @param DateTimeImmutable $added
+     * @param Staff             $sender
+     * @param array             $messageThreads
+     *
+     * @return int|mixed|string
+     */
+    public function findBroadcastedMessagesByAddedSenderAndThreads(\DateTimeImmutable $added, Staff $sender, array $messageThreads)
+    {
+        $queryBuilder = $this->createQueryBuilder('msg');
+
+        return $queryBuilder
+            ->where($queryBuilder->expr()->eq('msg.added', ':added'))
+            ->andWhere($queryBuilder->expr()->eq('msg.sender', ':sender'))
+            ->andWhere($queryBuilder->expr()->in('msg.messageThread', ':messageThreads'))
+            ->andWhere($queryBuilder->expr()->in('msg.broadcast', ':broadcast'))
+            ->setParameters([
+                'added'          => $added,
+                'sender'         => $sender,
+                'messageThreads' => $messageThreads,
+                'broadcast'      => true,
+            ])
+            ->getQuery()
+            ->getResult();
+    }
+}

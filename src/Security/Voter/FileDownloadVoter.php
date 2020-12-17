@@ -8,8 +8,26 @@ use Doctrine\ORM\NonUniqueResultException;
 use InvalidArgumentException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\{Clients, Company, File, FileDownload, FileVersion, Project, ProjectFile, ProjectParticipation, ProjectParticipationMember, ProjectStatus, Staff};
-use Unilend\Repository\{FileVersionSignatureRepository, ProjectFileRepository, ProjectParticipationMemberRepository, ProjectParticipationRepository, ProjectRepository};
+use Unilend\Entity\{Clients,
+    Company,
+    File,
+    FileDownload,
+    FileVersion,
+    Message,
+    MessageFile,
+    Project,
+    ProjectFile,
+    ProjectParticipation,
+    ProjectParticipationMember,
+    ProjectStatus,
+    Staff};
+use Unilend\Repository\{
+    FileVersionSignatureRepository,
+    MessageFileRepository,
+    ProjectFileRepository,
+    ProjectParticipationMemberRepository,
+    ProjectParticipationRepository,
+    ProjectRepository};
 
 class FileDownloadVoter extends AbstractEntityVoter
 {
@@ -25,6 +43,8 @@ class FileDownloadVoter extends AbstractEntityVoter
     private ProjectRepository $projectRepository;
     /** @var ProjectParticipationRepository */
     private ProjectParticipationRepository $projectParticipationRepository;
+    /** @var MessageFileRepository */
+    private MessageFileRepository $messageFileRepository;
 
     /**
      * @param AuthorizationCheckerInterface        $authorizationChecker
@@ -40,7 +60,8 @@ class FileDownloadVoter extends AbstractEntityVoter
         ProjectParticipationMemberRepository $projectParticipationMemberRepository,
         ProjectFileRepository $projectFileRepository,
         ProjectRepository $projectRepository,
-        ProjectParticipationRepository $projectParticipationRepository
+        ProjectParticipationRepository $projectParticipationRepository,
+        MessageFileRepository $messageFileRepository
     ) {
         parent::__construct($authorizationChecker);
         $this->fileVersionSignatureRepository       = $fileVersionSignatureRepository;
@@ -48,6 +69,7 @@ class FileDownloadVoter extends AbstractEntityVoter
         $this->projectFileRepository                = $projectFileRepository;
         $this->projectRepository                    = $projectRepository;
         $this->projectParticipationRepository       = $projectParticipationRepository;
+        $this->messageFileRepository                = $messageFileRepository;
     }
 
     /**
@@ -108,6 +130,10 @@ class FileDownloadVoter extends AbstractEntityVoter
             }
         }
 
+        if(Message::FILE_TYPE_MESSAGE_ATTACHMENT === $type) {
+            return $this->isAllowedToDownloadMessageFile($file, $staff);
+        }
+
         if (ProjectParticipation::PROJECT_PARTICIPATION_FILE_TYPE_NDA === $type) {
             $project = $this->findProjectByNDAFile($file, $staff->getCompany());
         }
@@ -135,6 +161,24 @@ class FileDownloadVoter extends AbstractEntityVoter
             default:
                 throw new LogicException('This code should not be reached');
         }
+    }
+
+    /**
+     * @param File  $file
+     * @param Staff $staff
+     *
+     * @return bool
+     * @throws NonUniqueResultException
+     */
+    private function isAllowedToDownloadMessageFile(File $file, Staff $staff): bool
+    {
+        $messageFile = $this->messageFileRepository->getMessageFileByFileAndRecipient($file, $staff);
+
+        if ($messageFile instanceof MessageFile) {
+            return $this->authorizationChecker->isGranted(MessageVoter::ATTRIBUTE_VIEW, $messageFile->getMessage());
+        }
+
+        return false;
     }
 
     /**

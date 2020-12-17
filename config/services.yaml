@@ -182,3 +182,7 @@ services:
         arguments:
             $enableErrorDelivery: '%env(MAILJET_ERROR_DELIVERY)%'
             $errorReportingEmail: '%mailer.error_reporting_email%'
+    
+    Unilend\DataPersister\MessageDataPersister:
+        bind:
+            $decoratedDataPersister: '@api_platform.doctrine.orm.data_persister'
