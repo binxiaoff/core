@@ -94,8 +94,6 @@ class Company implements TraceableStatusAwareInterface
     public const VAT_METROPOLITAN = 'metropolitan'; // Default tva category : 20 %
     public const VAT_OVERSEAS     = 'overseas'; // Overseas tva category (Guadeloupe, Martinique, Reunion) : 8.5 %
 
-    public const GROUPNAME_CA = 'Crédit Agricole';
-
     public const COMPANY_NAME_CALS = 'CA Lending Services';
 
     public const SHORT_CODE_CASA = 'CASA';
@@ -150,13 +148,12 @@ class Company implements TraceableStatusAwareInterface
     private string $bankCode;
 
     /**
-     * @var string|null
+     * @var CompanyGroup|null
      *
-     * @ORM\Column(type="string", length=50, nullable=true)
-     *
-     * @Groups({"company:read"})
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroup")
+     * @ORM\JoinColumn(name="id_company_group")
      */
-    private ?string $groupName;
+    private ?CompanyGroup $companyGroup;
 
     /**
      * @var string|null
@@ -250,6 +247,7 @@ class Company implements TraceableStatusAwareInterface
         $this->statuses      = new ArrayCollection();
         $this->added         = new DateTimeImmutable();
         $this->admins        = new ArrayCollection();
+        $this->companyGroup  = null;
         $moduleCodes         = CompanyModule::getAvailableModuleCodes();
         $this->modules       = new ArrayCollection(array_map(function ($module) {
             return new CompanyModule($module, $this);
@@ -514,17 +512,25 @@ class Company implements TraceableStatusAwareInterface
      */
     public function getGroupName(): ?string
     {
-        return $this->groupName;
+        return $this->companyGroup ? $this->companyGroup->getName() : null;
     }
 
     /**
-     * @param string|null $groupName
+     * @return CompanyGroup|null
+     */
+    public function getCompanyGroup(): ?CompanyGroup
+    {
+        return $this->companyGroup;
+    }
+
+    /**
+     * @param CompanyGroup|null $companyGroup
      *
      * @return Company
      */
-    public function setGroupName(?string $groupName): Company
+    public function setCompanyGroup(?CompanyGroup $companyGroup): Company
     {
-        $this->groupName = $groupName;
+        $this->companyGroup = $companyGroup;
 
         return $this;
     }
@@ -576,7 +582,7 @@ class Company implements TraceableStatusAwareInterface
      */
     public function isCAGMember(): bool
     {
-        return $this->groupName === static::GROUPNAME_CA;
+        return $this->getGroupName() === CompanyGroup::GROUPNAME_CA;
     }
 
     /**

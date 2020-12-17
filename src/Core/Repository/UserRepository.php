@@ -119,10 +119,8 @@ class UserRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('users')
             ->innerJoin('users.staff', 'staff')
             ->where('staff.company = :company')
-            ->andWhere(':marketSegment MEMBER OF staff.marketSegments')
             ->setParameters([
                 'company'       => $projectParticipation->getParticipant(),
-                'marketSegment' => $projectParticipation->getProject()->getMarketSegment(),
             ])
         ;
 

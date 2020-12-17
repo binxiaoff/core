@@ -33,13 +33,6 @@ class StaffLog
     private $staffId;
 
     /**
-     * @var array
-     *
-     * @ORM\Column(type="json")
-     */
-    private $previousMarketSegment;
-
-    /**
      * @var DateTimeImmutable
      *
      * @ORM\Column(type="datetime_immutable")
@@ -57,26 +50,5 @@ class StaffLog
         $this->staffId = $staff->getId();
         $this->added   = new DateTimeImmutable();
         $this->addedBy = $addedBy;
-
-        $this->setPreviousMarketSegment($staff->getMarketSegments());
-    }
-
-    /**
-     * @param array $previousMarketSegment
-     *
-     * @return StaffLog
-     */
-    private function setPreviousMarketSegment(iterable $previousMarketSegment): StaffLog
-    {
-        $this->previousMarketSegment = [];
-
-        foreach ($previousMarketSegment as $marketSegment) {
-            if ($marketSegment instanceof MarketSegment) {
-                $marketSegment = $marketSegment->getLabel();
-            }
-            $this->previousMarketSegment[] = $marketSegment;
-        }
-
-        return $this;
     }
 }

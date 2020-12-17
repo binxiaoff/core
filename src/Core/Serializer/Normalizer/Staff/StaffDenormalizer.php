@@ -103,11 +103,6 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             }
         }
 
-        // External bank mandatory role and marketSegment
-        if (false === $company->isCAGMember()) {
-            $data['marketSegments'] = [];
-        }
-
         /** @var Staff $denormalized */
         $denormalized = $this->denormalizer->denormalize($data, $type, $format, $context);
 

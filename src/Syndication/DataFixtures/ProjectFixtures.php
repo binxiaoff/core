@@ -11,7 +11,6 @@ use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
 use Unilend\Core\DataFixtures\{AbstractFixtures,
-    MarketSegmentFixtures,
     StaffFixtures,
     UserFixtures};
 use Unilend\Core\Entity\Constant\CAInternalRating;
@@ -170,8 +169,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $project = (new Project(
             $staff,
             'RISK-GROUP-1',
-            new Money('EUR', '5000000'),
-            $this->getReference(MarketSegmentFixtures::SEGMENT1)
+            new Money('EUR', '5000000')
         ))
             ->setTitle($title)
             ->setNda($ndaFile)
@@ -220,7 +218,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         return [
             StaffFixtures::class,
-            MarketSegmentFixtures::class,
         ];
     }
 

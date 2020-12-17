@@ -9,7 +9,6 @@ use JsonException;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Core\Entity\MarketSegment;
 use Unilend\Core\Entity\{Staff};
 use Unilend\Core\Service\TemporaryTokenGenerator;
 use Unilend\Core\SwiftMailer\MailjetMessage;
@@ -72,9 +71,7 @@ class StaffNotifier
                             ['temporaryTokenPublicId' => $token, 'userPublicId' => $user->getPublicId()],
                             RouterInterface::ABSOLUTE_URL
                         ),
-                    'marketSegments' => implode(', ', $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
-                        return $this->translator->trans('market-segment.' . $marketSegment->getLabel());
-                    })->toArray()),
+                    'marketSegments' => implode(', ', []),
                     'roles' => $staff->isManager() ? 'manager' : '',
                     'company_displayName' => $staff->getCompany()->getDisplayName(),
                     'client_firstName' =>  $user->getFirstName(),

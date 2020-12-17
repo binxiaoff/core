@@ -10,7 +10,6 @@ use Exception;
 use Faker\Provider as Faker;
 use ReflectionException;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\MarketSegment;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Listener\Doctrine\Lifecycle\StatusCreatedListener;
 use Unilend\Syndication\Entity\Project;
@@ -32,6 +31,51 @@ abstract class AbstractProjectFixture extends AbstractFixture implements Depende
     final public function load(ObjectManager $manager)
     {
         $this->removeEventListenerByClass($manager, 'prePersist', StatusCreatedListener::class);
+
+        $project = new Project(
+            $this->getSubmitterStaff(),
+            $this->getRiskGroupName(),
+            $this->getGlobalFundingMoney()
+        );
+        $project->setTitle(static::getName());
+        $projectReference = 'project/' . static::getName();
+
+        $statuses = $this->getProjectStatuses($project, $this->getStatus(), $this->getSubmitterStaff());
+
+        foreach ($statuses as $status) {
+            $manager->persist($status);
+            $project->setCurrentStatus($status);
+        }
+
+        $this->setPublicId($project, $projectReference);
+
+
+        $tranches = $this->getTranches($project);
+        foreach ($tranches as $tranche) {
+            $manager->persist($tranche);
+        }
+
+        $projectParticipations = [...$this->getAdditionalProjectParticipations($project), $project->getArrangerProjectParticipation()];
+
+        foreach ($projectParticipations as $projectParticipation) {
+            foreach ($this->getProjectParticipationMembers($projectParticipation) as $projectParticipationMember) {
+                $manager->persist($projectParticipationMember);
+            }
+
+            $manager->persist($projectParticipation);
+        }
+
+        foreach ($projectParticipations as $projectParticipation) {
+            foreach ($tranches as $tranche) {
+                $projectParticipationTranche = $this->getProjectParticipationTranche($projectParticipation, $tranche);
+                if ($projectParticipationTranche) {
+                    $manager->persist($projectParticipationTranche);
+                }
+            }
+        }
+
+        $manager->persist($project);
+        $manager->flush();
     }
 
     /**
@@ -43,11 +87,6 @@ abstract class AbstractProjectFixture extends AbstractFixture implements Depende
      * @return string
      */
     abstract protected static function getName(): string;
-
-    /**
-     * @return MarketSegment
-     */
-    abstract protected function getMarketSegment(): MarketSegment;
 
     /**
      * @return Staff

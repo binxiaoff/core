@@ -78,15 +78,6 @@ class Staff implements TraceableStatusAwareInterface
      */
     private User $user;
 
-    /**
-     * @var Collection|MarketSegment[]
-     *
-     * @ORM\ManyToMany(targetEntity="Unilend\Core\Entity\MarketSegment")
-     * @ORM\JoinTable(name="core_staff_market_segment")
-     *
-     * @Groups({"staff:read", "staff:create", "staff:update"})
-     */
-    private Collection $marketSegments;
 
     /**
      * @var Team
@@ -150,8 +141,14 @@ class Staff implements TraceableStatusAwareInterface
     private bool $agencyProjectCreationPermission;
 
     /**
-     * Staff constructor.
+     * @var Collection
      *
+     * @ORM\ManyToMany(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
+     * @ORM\JoinTable(name="core_staff_company_group_tag")
+     */
+    private Collection $companyGroupTags;
+
+    /**
      * @param User       $user
      * @param Team       $team
      * @param Staff|null $addedBy
@@ -160,12 +157,12 @@ class Staff implements TraceableStatusAwareInterface
      */
     public function __construct(User $user, Team $team, ?Staff $addedBy = null)
     {
-        $this->marketSegments    = new ArrayCollection();
-        $this->added             = new DateTimeImmutable();
-        $this->user              = $user;
-        $this->team              = $team;
-        $this->manager           = false;
-        $this->statuses          = new ArrayCollection();
+        $this->companyGroupTags = new ArrayCollection();
+        $this->added            = new DateTimeImmutable();
+        $this->user             = $user;
+        $this->team             = $team;
+        $this->manager          = false;
+        $this->statuses         = new ArrayCollection();
         $this->arrangementProjectCreationPermission = false;
         $this->agencyProjectCreationPermission = false;
         $this->setCurrentStatus(new StaffStatus($this, StaffStatus::STATUS_ACTIVE, $addedBy ?? $this));
@@ -210,51 +207,13 @@ class Staff implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return Collection|MarketSegment[]
-     */
-    public function getMarketSegments(): Collection
-    {
-        return $this->marketSegments;
-    }
-
-    /**
-     * @param MarketSegment $marketSegment
+     * @param bool $manager
      *
      * @return Staff
      */
-    public function addMarketSegment(MarketSegment $marketSegment): Staff
+    public function setManager(bool $manager): Staff
     {
-        if (false === $this->marketSegments->contains($marketSegment)) {
-            $this->marketSegments[] = $marketSegment;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param MarketSegment $marketSegment
-     *
-     * @return Staff
-     */
-    public function removeMarketSegment(MarketSegment $marketSegment): Staff
-    {
-        $this->marketSegments->removeElement($marketSegment);
-
-        return $this;
-    }
-
-    /**
-     * @param Collection|MarketSegment[] $marketSegments
-     *
-     * @return Staff
-     */
-    public function setMarketSegments($marketSegments): Staff
-    {
-        if (\is_array($marketSegments)) {
-            $marketSegments = new ArrayCollection($marketSegments);
-        }
-
-        $this->marketSegments = $marketSegments;
+        $this->manager = $manager;
 
         return $this;
     }
@@ -265,18 +224,6 @@ class Staff implements TraceableStatusAwareInterface
     public function isManager(): bool
     {
         return $this->manager;
-    }
-
-    /**
-     * @param bool $manager
-     *
-     * @return Staff
-     */
-    public function setManager(bool $manager): Staff
-    {
-        $this->manager = $manager;
-
-        return $this;
     }
 
     /**
@@ -331,6 +278,50 @@ class Staff implements TraceableStatusAwareInterface
     public function getActivatedModules(): array
     {
         return $this->getCompany()->getActivatedModules();
+    }
+
+    /**
+     * @return iterable
+     */
+    public function getCompanyGroupTags(): iterable
+    {
+        return $this->companyGroupTags->toArray();
+    }
+
+    /**
+     * @param CompanyGroupTag $tag
+     *
+     * @return Staff
+     */
+    public function addCompanyGroupTag(CompanyGroupTag $tag): Staff
+    {
+        $companyGroup = $this->getCompany()->getCompanyGroup();
+
+        if (null === $companyGroup) {
+            return $this;
+        }
+
+        if ($companyGroup !== $tag->getCompanyGroup()) {
+            return $this;
+        }
+
+        if (false === $this->companyGroupTags->contains($tag)) {
+            $this->companyGroupTags[] = $tag;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param CompanyGroupTag $tag
+     *
+     * @return Staff
+     */
+    public function removeCompanyGroupTag(CompanyGroupTag $tag): Staff
+    {
+        $this->companyGroupTags->removeElement($tag);
+
+        return $this;
     }
 
     /**

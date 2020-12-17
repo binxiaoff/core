@@ -30,7 +30,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $adminCompany = $this->getReference(CompanyFixtures::CALS);
         /** @var User $admin */
         $admin = $this->getReference(UserFixtures::ADMIN);
-        $adminStaff = $this->insertStaff($admin, $adminCompany, $manager, [], MarketSegmentFixtures::SEGMENTS);
+        $adminStaff = $this->insertStaff($admin, $adminCompany, $manager, []);
 
         $this->addReference(self::ADMIN, $adminStaff);
         $this->addStaffReference($adminStaff);
@@ -44,9 +44,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
             UserFixtures::ACCOUNTANT => [
             ],
             UserFixtures::OPERATOR => [],
-            UserFixtures::MANAGER => [
-                'marketSegments' => new ArrayCollection(),
-            ],
+            UserFixtures::MANAGER => [],
             UserFixtures::UNITIALIZED => [],
             UserFixtures::EXTBANK_INITIALIZED => [
                 'company' => $this->getReference(CompanyFixtures::COMPANY_EXTERNAL),
@@ -61,7 +59,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
             /** @var User $user */
             $user = $this->getReference($userReference);
             $company = $datum['company'] ?? $adminCompany;
-            $staff = $this->createStaff($user, $company, $datum['roles'] ?? null, $datum['marketSegments'] ?? null);
+            $staff = $this->createStaff($user, $company, $datum['roles'] ?? null);
             $this->addStaffReference($staff);
             $manager->persist($staff);
         }
@@ -112,7 +110,6 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
     public function getDependencies(): array
     {
         return [
-            MarketSegmentFixtures::class,
             CompanyFixtures::class,
             UserFixtures::class,
         ];
@@ -137,13 +134,11 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
      * @param ObjectManager $manager
      * @param array         $roles
      *
-     * @param array         $marketSegments
-     *
      * @return Staff
      *
      * @throws JsonException
      */
-    private function insertStaff(User $user, Company $company, ObjectManager $manager, array $roles = [], array $marketSegments = []): Staff
+    private function insertStaff(User $user, Company $company, ObjectManager $manager, array $roles = []): Staff
     {
         // We need to use SQL since we cannot instantiate Staff entity
         $rolesEncoded = json_encode($roles, JSON_THROW_ON_ERROR);
@@ -177,28 +172,16 @@ SQL;
         $sql = "UPDATE core_staff SET id_current_status = {$staffStatusId} WHERE id = {$staffId}";
         $manager->getConnection()->exec($sql);
 
-        foreach ($marketSegments as $marketSegment) {
-            if (\is_string($marketSegment)) {
-                $marketSegment = $this->getReference($marketSegment);
-            }
-            $marketSegmentId = $marketSegment->getId();
-
-            $sql = "INSERT INTO core_staff_market_segment(staff_id, market_segment_id) VALUES ({$staffId}, {$marketSegmentId})";
-            $manager->getConnection()->exec($sql);
-        }
-
         /** @var Staff $staff */
 
         return $manager->getReference(Staff::class, $staffId);
     }
 
     /**
-     * @param User                 $user
-     * @param Company|null         $company
-     * @param array|null           $roles
-     * @param ArrayCollection|null $markerSegments
+     * @param User         $user
+     * @param Company|null $company
      *
-     * @param Staff|null           $addedBy
+     * @param Staff|null   $addedBy
      *
      * @return Staff
      *
@@ -207,17 +190,12 @@ SQL;
     private function createStaff(
         User $user,
         ?Company $company = null,
-        ?array $roles = [],
-        ?ArrayCollection $markerSegments = null,
         ?Staff $addedBy = null
     ): Staff {
         $company = $company ?? $this->getReference(CompanyFixtures::CALS);
         $addedBy = $addedBy ?? $this->getReference(self::ADMIN);
-        $markerSegments = $markerSegments ?? new ArrayCollection($this->getReferences(MarketSegmentFixtures::SEGMENTS));
-        $staff = new Staff($user, $company->getRootTeam(), $addedBy);
-        $staff->setMarketSegments($markerSegments);
 
-        return $staff;
+        return new Staff($user, $company->getRootTeam(), $addedBy);
     }
 
     /**

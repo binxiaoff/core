@@ -22,6 +22,7 @@ use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use Unilend\Core\Entity\{Company,
+    CompanyGroupTag,
     Embeddable\Money,
     Embeddable\NullableMoney,
     Embeddable\NullablePerson,
@@ -29,7 +30,6 @@ use Unilend\Core\Entity\{Company,
     Interfaces\MoneyInterface,
     Interfaces\StatusInterface,
     Interfaces\TraceableStatusAwareInterface,
-    MarketSegment,
     Staff,
     Traits\PublicizeIdentityTrait,
     Traits\TimestampableTrait,
@@ -238,21 +238,6 @@ class Project implements TraceableStatusAwareInterface
      * @Groups({"project:write", "project:read"})
      */
     private string $title;
-
-    /**
-     * @var MarketSegment
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\MarketSegment")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_market_segment", referencedColumnName="id", nullable=false)
-     * })
-     * @Assert\NotBlank
-     *
-     * @Gedmo\Versioned
-     *
-     * @Groups({"project:write", "project:read"})
-     */
-    private MarketSegment $marketSegment;
 
     /**
      * @var string|null
@@ -555,14 +540,21 @@ class Project implements TraceableStatusAwareInterface
     private NullablePerson $privilegedContactPerson;
 
     /**
-     * @param Staff         $addedBy
-     * @param string        $riskGroupName
-     * @param Money         $globalFundingMoney
-     * @param MarketSegment $marketSegment
+     * @var CompanyGroupTag|null
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
+     * @ORM\JoinColumn(name="id_company_group_tag")
+     */
+    private CompanyGroupTag $companyGroupTag;
+
+    /**
+     * @param Staff  $addedBy
+     * @param string $riskGroupName
+     * @param Money  $globalFundingMoney
      *
      * @throws Exception
      */
-    public function __construct(Staff $addedBy, string $riskGroupName, Money $globalFundingMoney, MarketSegment $marketSegment)
+    public function __construct(Staff $addedBy, string $riskGroupName, Money $globalFundingMoney)
     {
         $this->submitterCompany      = $addedBy->getCompany();
         $this->submitterUser         = $addedBy->getUser();
@@ -579,7 +571,6 @@ class Project implements TraceableStatusAwareInterface
         $this->tags                  = new ArrayCollection();
         $this->organizers            = new ArrayCollection([new ProjectOrganizer($addedBy->getCompany(), $this, $addedBy)]);
         $this->added                 = new DateTimeImmutable();
-        $this->marketSegment         = $marketSegment;
 
         $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_DRAFT, $addedBy));
         $contact = (new NullablePerson())
@@ -744,26 +735,6 @@ class Project implements TraceableStatusAwareInterface
     public function getStatuses(): Collection
     {
         return $this->statuses;
-    }
-
-    /**
-     * @return MarketSegment
-     */
-    public function getMarketSegment(): MarketSegment
-    {
-        return $this->marketSegment;
-    }
-
-    /**
-     * @param MarketSegment $marketSegment
-     *
-     * @return Project
-     */
-    public function setMarketSegment(MarketSegment $marketSegment): Project
-    {
-        $this->marketSegment = $marketSegment;
-
-        return $this;
     }
 
     /**
@@ -1542,6 +1513,25 @@ class Project implements TraceableStatusAwareInterface
         }
     }
 
+    /**
+     * @return CompanyGroupTag|null
+     */
+    public function getCompanyGroupTag(): ?CompanyGroupTag
+    {
+        return $this->companyGroupTag;
+    }
+
+    /**
+     * @param CompanyGroupTag|null $companyGroupTag
+     *
+     * @return Project
+     */
+    public function setCompanyGroupTag(?CompanyGroupTag $companyGroupTag): Project
+    {
+        $this->companyGroupTag = $companyGroupTag;
+
+        return $this;
+    }
 
     /**
      * @param string $role

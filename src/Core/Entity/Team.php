@@ -87,6 +87,14 @@ class Team
     private Collection $incomingEdges;
 
     /**
+     * @var Collection
+     *
+     * @ORM\ManyToMany(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
+     * @ORM\JoinTable(name="core_team_company_group_tag")
+     */
+    private Collection $companyGroupTags;
+
+    /**
      * Constructor
      *
      * Private to ensure correct object creation via static method
@@ -98,6 +106,7 @@ class Team
         $this->outgoingEdges = new ArrayCollection();
         $this->incomingEdges = new ArrayCollection();
         $this->staff = new ArrayCollection();
+        $this->companyGroupTags = new ArrayCollection();
     }
 
     /**
@@ -232,6 +241,50 @@ class Team
     public function setName(string $name): Team
     {
         $this->name = $this->isRoot() ? $this->name : $name;
+
+        return $this;
+    }
+
+    /**
+     * @return iterable
+     */
+    public function getCompanyGroupTags(): iterable
+    {
+        return $this->companyGroupTags->toArray();
+    }
+
+    /**
+     * @param CompanyGroupTag $tag
+     *
+     * @return Team
+     */
+    public function addCompanyGroupTag(CompanyGroupTag $tag): Team
+    {
+        $companyGroup = $this->getCompany()->getCompanyGroup();
+
+        if (null === $companyGroup) {
+            return $this;
+        }
+
+        if ($companyGroup !== $tag->getCompanyGroup()) {
+            return $this;
+        }
+
+        if (false === $this->companyGroupTags->contains($tag)) {
+            $this->companyGroupTags[] = $tag;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param CompanyGroupTag $tag
+     *
+     * @return Team
+     */
+    public function removeCompanyGroupTag(CompanyGroupTag $tag): Team
+    {
+        $this->companyGroupTags->removeElement($tag);
 
         return $this;
     }

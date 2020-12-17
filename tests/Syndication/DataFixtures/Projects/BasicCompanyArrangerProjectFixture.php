@@ -6,7 +6,6 @@ namespace Unilend\Test\Syndication\DataFixtures\Projects;
 
 use Exception;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\MarketSegment;
 use Unilend\Core\Entity\Staff;
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectParticipation;
@@ -38,14 +37,6 @@ class BasicCompanyArrangerProjectFixture extends AbstractProjectFixture
     protected static function getName(): string
     {
         return 'basic_arranger';
-    }
-
-    /**
-     * @return MarketSegment
-     */
-    protected function getMarketSegment(): MarketSegment
-    {
-        return $this->getReference('marketSegment/ppp');
     }
 
     /**

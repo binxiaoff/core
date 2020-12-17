@@ -11,6 +11,7 @@ use Exception;
 use ReflectionException;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyAdmin;
+use Unilend\Core\Entity\CompanyGroup;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Team;
 use Unilend\Core\Entity\User;
@@ -151,5 +152,13 @@ abstract class AbstractCompanyFixture extends AbstractFixture implements Depende
         return static function ($name) use ($parent) {
             return Team::createTeam((string) $name, $parent);
         };
+    }
+
+    /**
+     * @return CompanyGroup|null
+     */
+    protected function getCompanyGroup(): ?CompanyGroup
+    {
+        return null;
     }
 }

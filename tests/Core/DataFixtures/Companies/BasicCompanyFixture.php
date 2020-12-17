@@ -7,6 +7,7 @@ namespace Unilend\Test\Core\DataFixtures\Companies;
 use Exception;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyAdmin;
+use Unilend\Core\Entity\CompanyGroup;
 use Unilend\Core\Entity\Team;
 use Unilend\Core\Entity\User;
 
@@ -84,5 +85,13 @@ class BasicCompanyFixture extends AbstractCompanyFixture
         }
 
         return [];
+    }
+
+    /**
+     * @return CompanyGroup|null
+     */
+    protected function getCompanyGroup(): ?CompanyGroup
+    {
+        return $this->getReference('companyGroup/foo');
     }
 }
