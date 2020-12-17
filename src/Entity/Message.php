@@ -53,7 +53,7 @@ class Message
     /**
      * @var MessageThread
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MessageThread", cascade={"persist"}, inversedBy="messages")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MessageThread", inversedBy="messages")
      * @ORM\JoinColumn(name="id_message_thread", nullable=false)
      *
      * @Groups({"message:read"})
