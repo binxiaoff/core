@@ -10,8 +10,8 @@ use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\DTO\MessageInput;
 use Unilend\DTO\MessageBroadcastInput;
+use Unilend\DTO\MessageInput;
 use Unilend\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
