@@ -3,16 +3,10 @@
 namespace Unilend\Test\Unit\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Entity\Clients;
-use Unilend\Entity\Company;
-use Unilend\Entity\Embeddable\Money;
-use Unilend\Entity\MarketSegment;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectParticipation;
-use Unilend\Entity\ProjectParticipationMember;
-use Unilend\Entity\Staff;
-use Unilend\Security\Voter\ProjectParticipationMemberVoter;
-use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
+use Unilend\Core\Entity\{User, Company, Embeddable\Money, MarketSegment, Staff};
+use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectParticipationMember};
+use Unilend\Syndication\Security\Voter\ProjectParticipationMemberVoter;
+use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationMemberVoterTest extends AbstractVoterTestCase
 {
@@ -34,9 +28,9 @@ class ProjectParticipationMemberVoterTest extends AbstractVoterTestCase
         $arrangerStaff = $this->getMockBuilder(Staff::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $client = new Clients('email@demo.fr');
-        $staff = new Staff($company, $client, $arrangerStaff);
-        $client->setCurrentStaff($staff);
+        $user = new User('email@demo.fr');
+        $staff = new Staff($company, $user, $arrangerStaff);
+        $user->setCurrentStaff($staff);
         $company->addStaff($staff);
         $project = new Project($arrangerStaff, 'risk1', new Money('EUR', '10000'), new MarketSegment());
         $this->participation = new ProjectParticipation($company, $project, $arrangerStaff);
@@ -61,10 +55,10 @@ class ProjectParticipationMemberVoterTest extends AbstractVoterTestCase
             $staff,
             $staff
         );
-        $this->expectAccessAbstained('hello world', $staff->getClient(), $participationMember);
+        $this->expectAccessAbstained('hello world', $staff->getUser(), $participationMember);
         $this->expectAccessAbstained(
             ProjectParticipationMemberVoter::ATTRIBUTE_ACCEPT_NDA,
-            $staff->getClient(),
+            $staff->getUser(),
             $staff
         );
     }
@@ -76,8 +70,11 @@ class ProjectParticipationMemberVoterTest extends AbstractVoterTestCase
      */
     public function testExternalUserCannotAcceptNda()
     {
-        $externalClient = $this->getFakeClient();
-        $staff = $this->participation->getParticipant()->getStaff()[0];
+        $externalUser = $this->getFakeUser();
+        $arrangerStaff = $this->getMockBuilder(Staff::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $staff = new Staff($this->participation->getParticipant(), $externalUser, $arrangerStaff);
         $participationMember = new ProjectParticipationMember(
             $this->participation,
             $staff,
@@ -85,7 +82,7 @@ class ProjectParticipationMemberVoterTest extends AbstractVoterTestCase
         );
         $this->expectAccessDenied(
             ProjectParticipationMemberVoter::ATTRIBUTE_ACCEPT_NDA,
-            $externalClient,
+            $externalUser,
             $participationMember
         );
     }
@@ -105,7 +102,7 @@ class ProjectParticipationMemberVoterTest extends AbstractVoterTestCase
         );
         $this->expectAccessGranted(
             ProjectParticipationMemberVoter::ATTRIBUTE_ACCEPT_NDA,
-            $staff->getClient(),
+            $staff->getUser(),
             $participationMember
         );
     }
@@ -113,20 +110,20 @@ class ProjectParticipationMemberVoterTest extends AbstractVoterTestCase
     /**
      * Generates a new without relation for the current participation
      *
-     * @return Clients
+     * @return User
      *
      * @throws \Exception
      */
-    private function getFakeClient(): Clients
+    private function getFakeUser(): User
     {
-        $client = new Clients('email2@demo.fr');
+        $user = new User('email2@demo.fr');
         $company = new Company('B', 'b');
         $fakeStaff = $this->getMockBuilder(Staff::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $staff = new Staff($company, $client, $fakeStaff);
-        $client->setCurrentStaff($staff);
+        $staff = new Staff($company, $user, $fakeStaff);
+        $user->setCurrentStaff($staff);
 
-        return $client;
+        return $user;
     }
 }

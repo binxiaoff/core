@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<ruleset name="CALS rule set"
+<ruleset name="KLS rule set"
          xmlns="http://pmd.sf.net/ruleset/1.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd"
@@ -8,7 +8,7 @@
         CALS rule set.
     </description>
 
-    <exclude-pattern>src/Migrations</exclude-pattern>
+    <exclude-pattern>src/Core/Migrations</exclude-pattern>
     <exclude-pattern>tests</exclude-pattern>
 
     <!-- Clean code. -->

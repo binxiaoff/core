@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Unilend\Core\Entity\Request;
+
+use ApiPlatform\Core\Annotation\ApiResource;
+
+/**
+ * @ApiResource(
+ *     attributes={
+ *         "route_prefix"="/core"
+ *     },
+ *     messenger=true,
+ *     collectionOperations={
+ *         "post": {"status": 202}
+ *     },
+ *     itemOperations={},
+ *     output=false
+ * )
+ */
+class ResetPassword
+{
+    /** @var string */
+    public $email;
+
+    /** @var string */
+    public $captchaValue;
+}

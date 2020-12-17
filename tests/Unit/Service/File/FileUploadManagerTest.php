@@ -17,14 +17,17 @@ use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Entity\{Clients, Company, File, Staff};
-use Unilend\Message\File\FileUploaded;
-use Unilend\Repository\FileRepository;
-use Unilend\Service\File\FileUploadManager;
-use Unilend\Service\FileSystem\FileSystemHelper;
+use Unilend\Core\Entity\User;
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\File;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Message\File\FileUploaded;
+use Unilend\Core\Repository\FileRepository;
+use Unilend\Core\Service\File\FileUploadManager;
+use Unilend\Core\Service\FileSystem\FileSystemHelper;
 
 /**
- * @coversDefaultClass \Unilend\Service\File\FileUploadManager
+ * @coversDefaultClass \Unilend\Core\Service\File\FileUploadManager
  *
  * @internal
  */
@@ -70,11 +73,11 @@ class FileUploadManagerTest extends TestCase
      */
     public function testUpload(?File $file, array $context): void
     {
-        $idClientsReflectionProperty = new ReflectionProperty(Clients::class, 'id');
-        $idClientsReflectionProperty->setAccessible(true);
-        $uploader   = new Clients('test@' . Internet::safeEmailDomain());
+        $idUsersReflectionProperty = new ReflectionProperty(User::class, 'id');
+        $idUsersReflectionProperty->setAccessible(true);
+        $uploader   = new User('test@' . Internet::safeEmailDomain());
         $uploaderId = Base::randomDigitNotNull() + 1;
-        $idClientsReflectionProperty->setValue($uploader, $uploaderId);
+        $idUsersReflectionProperty->setValue($uploader, $uploaderId);
         $uploaderStaff = new Staff(new Company('test', 'test'), $uploader, $this->prophesize(Staff::class)->reveal());
 
         $filePath         = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';

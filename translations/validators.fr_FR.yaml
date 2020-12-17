@@ -1,9 +1,10 @@
 Staff:
-    client:
+    user:
         unique: Cet utilisateur dispose déjà d'un compte KLS
         empty: L'utilisateur est requis
     company:
-        empty: L'entité est requise
+        unicity: Un utilisateur ne peut être présent dans deux équipes de la même entité
+
 
 Roleable:
     roles:
@@ -11,10 +12,10 @@ Roleable:
         count: "Un rôle est requis"
         unique: "Les rôles doivent être uniques"
 
-Clients:
+Users:
     email:
         unique: Cet utilisateur dispose déjà d'un compte KLS
-        emailDomain: L'email fourni n'a pas pour domaine celui d'un de nos clients
+        emailDomain: L'email fourni n'a pas pour domaine celui d'un de nos users
     password:
         password: Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et au moins 8 caractères.
 

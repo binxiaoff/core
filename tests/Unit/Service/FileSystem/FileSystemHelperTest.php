@@ -10,11 +10,11 @@ use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use RuntimeException;
-use Unilend\Service\FileSystem\FileCrypto;
-use Unilend\Service\FileSystem\FileSystemHelper;
+use Unilend\Core\Service\FileSystem\FileCrypto;
+use Unilend\Core\Service\FileSystem\FileSystemHelper;
 
 /**
- * @coversDefaultClass \Unilend\Service\FileSystem\FileSystemHelper
+ * @coversDefaultClass \Unilend\Core\Service\FileSystem\FileSystemHelper
  *
  * @internal
  */
