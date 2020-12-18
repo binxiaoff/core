@@ -15,6 +15,8 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Syndication\Entity\ProjectParticipation;
 
 /**
+ * @ORM\Entity
+ * @ORM\Table(name="core_message_thread")
  *
  * @ApiResource(
  *  normalizationContext={"groups": {
@@ -53,9 +55,6 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  *  }
  * )
  * @ApiFilter(SearchFilter::class, properties={"projectParticipation": "exact"})
- *
- * @ORM\Entity
- * @ORM\Table
  */
 class MessageThread
 {
@@ -122,7 +121,9 @@ class MessageThread
     {
         $this->projectParticipation = $projectParticipation;
 
-        $projectParticipation->setMessageThread($this);
+        if ($projectParticipation instanceof ProjectParticipation) {
+            $projectParticipation->setMessageThread($this);
+        }
 
         return $this;
     }

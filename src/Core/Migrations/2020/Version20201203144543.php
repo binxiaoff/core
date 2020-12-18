@@ -26,7 +26,7 @@ final class Version20201203144543 extends AbstractMigration
     public function up(Schema $schema) : void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE message ADD broadcasted TINYINT(1) NOT NULL');
+        $this->addSql('ALTER TABLE core_message ADD broadcasted TINYINT(1) NOT NULL');
     }
 
     /**
@@ -35,6 +35,6 @@ final class Version20201203144543 extends AbstractMigration
     public function down(Schema $schema) : void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE message DROP broadcasted');
+        $this->addSql('ALTER TABLE core_message DROP broadcasted');
     }
 }

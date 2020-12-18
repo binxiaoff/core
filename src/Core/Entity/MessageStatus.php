@@ -15,6 +15,10 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
+ * @ORM\Entity
+ * @ORM\Table(name="core_message_status")
+ * @ORM\HasLifecycleCallbacks
+ *
  * @ApiResource(
  *  attributes={"pagination_enabled"=false},
  *  normalizationContext={"groups": {
@@ -26,10 +30,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *  }
  * )
  * @ApiFilter(SearchFilter::class, properties={"status": "exact"})
- *
- * @ORM\Entity
- * @ORM\Table
- * @ORM\HasLifecycleCallbacks
  */
 class MessageStatus
 {

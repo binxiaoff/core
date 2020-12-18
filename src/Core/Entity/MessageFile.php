@@ -12,6 +12,9 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
+ * @ORM\Entity
+ * @ORM\Table(name="core_message_file")
+ *
  * @ApiResource(
  *  normalizationContext={"groups": {
  *     "messageFile:read",
@@ -25,9 +28,6 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
  *     }
  *  }
  * )
- *
- * @ORM\Entity
- * @ORM\Table
  */
 class MessageFile
 {

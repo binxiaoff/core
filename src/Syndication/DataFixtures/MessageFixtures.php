@@ -48,7 +48,7 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         foreach ($projectsWithParticipations as $projectWithParticipation) {
             $staffSender = $this->staffRepository->findOneBy([
-                'client' => $projectWithParticipation->getSubmitterClient(),
+                'user'    => $projectWithParticipation->getSubmitterUser(),
                 'company' => $projectWithParticipation->getSubmitterCompany(),
             ]);
 
@@ -101,40 +101,17 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
                 $messageThread = $this->getProjectParticipationMessageThread($projectParticipation);
                 $projectParticipationMembers = $projectParticipation->getProjectParticipationMembers()->toArray();
 
-                if ($this->isProjectOrganisatorNotAProjectParticipationMember($projectParticipationMembers, $project->getOrganizers())) {
                     // If sender not set, pick one of projectParticipationMembers as a message sender
                     $sender = $sender ?: $projectParticipationMembers[array_rand($projectParticipationMembers, 1)]->getStaff();
                     $message = (new Message($sender, $messageThread, sprintf(
                         'Message from project "%s" organizer "%s" to company "%s" member\'s',
                         $project->getTitle(),
-                        $sender->getClient()->getEmail(),
+                        $sender->getUser()->getEmail(),
                         $projectParticipation->getParticipant()->getDisplayName()
                     )));
                     $this->manager->persist($message);
-                }
             }
         }
         $this->manager->flush();
-    }
-
-    /**
-     * @param array      $projectParticipationMembers
-     * @param Collection $projectOrganizers
-     *
-     * @return bool
-     */
-    private function isProjectOrganisatorNotAProjectParticipationMember(array $projectParticipationMembers, Collection $projectOrganizers): bool
-    {
-        $membersStaffIds = [];
-        foreach ($projectParticipationMembers as $projectParticipationMember) {
-            $membersStaffIds[] = $projectParticipationMember->getStaff()->getId();
-        }
-
-        $organizersStaffIds = [];
-        foreach ($projectOrganizers as $organizer) {
-            $organizersStaffIds[] = $organizer->getAddedBy()->getId();
-        }
-
-        return empty(array_intersect($membersStaffIds, $organizersStaffIds));
     }
 }

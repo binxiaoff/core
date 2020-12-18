@@ -15,6 +15,9 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
+ * @ORM\Entity
+ * @ORM\Table(name="core_message")
+ *
  * @ApiResource(
  *  normalizationContext={"groups": {
  *     "message:read",
@@ -38,9 +41,6 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
  *     }
  *  }
  * )
- *
- * @ORM\Table
- * @ORM\Entity
  */
 class Message
 {
