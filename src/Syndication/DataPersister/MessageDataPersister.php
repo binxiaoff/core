@@ -49,6 +49,7 @@ final class MessageDataPersister implements DataPersisterInterface
                 }
             }
         }
+        $this->messageRepository->save($data);
 
         return $data;
     }

@@ -28,6 +28,18 @@ class MessageRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param Message $message
+     *
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function save(Message $message): void
+    {
+        $this->getEntityManager()->persist($message);
+        $this->getEntityManager()->flush();
+    }
+
+    /**
      * @param DateTimeImmutable $added
      * @param Staff             $sender
      * @param array             $messageThreads
