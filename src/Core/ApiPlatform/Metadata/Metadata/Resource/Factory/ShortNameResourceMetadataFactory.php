@@ -6,6 +6,7 @@ namespace Unilend\Core\ApiPlatform\Metadata\Metadata\Resource\Factory;
 
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
+use Doctrine\Common\Inflector\Inflector;
 
 final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryInterface
 {
@@ -28,9 +29,9 @@ final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryI
 
         if (false !== $pos = strrpos($resourceClass, '\\')) {
             $exploded = explode('\\', $resourceClass);
-            $domain = $exploded[1];
-            $entity = end($exploded);
-            $shortName = (strtolower(($domain . '_' . $entity)));
+            $domain = strtolower($exploded[1]);
+            $entity = Inflector::tableize(end($exploded));
+            $shortName = $domain . '_' . $entity;
 
             return $resourceMetadata->withShortName($shortName);
         }
