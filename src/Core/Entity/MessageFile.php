@@ -16,6 +16,9 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
  * @ORM\Table(name="core_message_file")
  *
  * @ApiResource(
+ *  attributes={
+ *      "route_prefix"="/core"
+ *  },
  *  normalizationContext={"groups": {
  *     "messageFile:read",
  *     "file:read",

@@ -20,11 +20,19 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ORM\HasLifecycleCallbacks
  *
  * @ApiResource(
- *  attributes={"pagination_enabled"=false},
+ *  attributes={
+ *     "pagination_enabled"=false,
+ *     "route_prefix"="/core"
+ *  },
  *  normalizationContext={"groups": {
  *     "messageStatus:read",
  *     "message:read"
  *  }},
+ *  itemOperations={
+ *      "get": {
+ *          "security": "is_granted('view', object)"
+ *     }
+ *  },
  *  collectionOperations={
  *      "get"
  *  }
