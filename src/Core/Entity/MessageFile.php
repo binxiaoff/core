@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
+use ApiPlatform\Core\Annotation\{ApiResource};
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Core\Annotation\{ApiResource};
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
