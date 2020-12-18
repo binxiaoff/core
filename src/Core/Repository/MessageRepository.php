@@ -7,7 +7,7 @@ namespace Unilend\Core\Repository;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\{Message,Staff};
+use Unilend\Core\Entity\{Message, Staff};
 
 /**
  * @method Message|null find($id, $lockMode = null, $lockVersion = null)

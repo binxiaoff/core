@@ -4,63 +4,63 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\DataPersister;
 
-use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
+use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use Unilend\Core\Entity\Message;
+use Unilend\Core\Repository\MessageRepository;
 
-final class MessageDataPersister implements ContextAwareDataPersisterInterface
+/**
+ * Class MessageDataPersister
+ * @package Unilend\Syndication\DataPersister
+ */
+final class MessageDataPersister implements DataPersisterInterface
 {
-    /** @var ContextAwareDataPersisterInterface */
-    private ContextAwareDataPersisterInterface $decoratedDataPersister;
+    /** @var MessageRepository */
+    private MessageRepository $messageRepository;
 
     /**
      * MessageDataPersister constructor.
      *
-     * @param ContextAwareDataPersisterInterface $decoratedDataPersister
+     * @param MessageRepository $messageRepository
      */
-    public function __construct(
-        ContextAwareDataPersisterInterface $decoratedDataPersister
-    ) {
-        $this->decoratedDataPersister         = $decoratedDataPersister;
+    public function __construct(MessageRepository $messageRepository)
+    {
+        $this->messageRepository = $messageRepository;
     }
 
     /**
-     * @param       $data
-     * @param array $context
+     * @param $data
      *
      * @return bool
      */
-    public function supports($data, array $context = []): bool
+    public function supports($data): bool
     {
-        return (($context['collection_operation_name'] ?? null) === 'post' && $data instanceof Message);
+        return ($data instanceof Message);
     }
 
     /**
-     * @param       $data
-     * @param array $context
+     * @param $data
      *
      * @return object|void
      */
-    public function persist($data, array $context = [])
+    public function persist($data)
     {
         // If message is a broadcasted one, get each project projectParticipations and link a copy of this message to projectParticipation.thread
         if ($data->isBroadcast()) {
             $project = $data->getMessageThread()->getProjectParticipation()->getProject();
             foreach ($project->getProjectParticipations() as $projectParticipation) {
                 if ($projectParticipation->isActive() && $data->getMessageThread() !== $projectParticipation->getMessageThread()) {
-                    $this->decoratedDataPersister->persist(new Message($data->getSender(), $projectParticipation->getMessageThread(), $data->getBody(), true));
+                    $this->messageRepository->save(new Message($data->getSender(), $projectParticipation->getMessageThread(), $data->getBody(), true));
                 }
             }
         }
-        $this->decoratedDataPersister->persist($data);
 
         return $data;
     }
 
     /**
-     * @param       $data
-     * @param array $context
+     * @param $data
      */
-    public function remove($data, array $context = [])
+    public function remove($data)
     {
         // TODO: Implement remove() method.
     }

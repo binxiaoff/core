@@ -14,7 +14,8 @@ use Unilend\Core\DTO\MessageInput;
 use Unilend\Core\Entity\{Message, MessageThread, User};
 use Unilend\Core\Repository\MessageThreadRepository;
 use Unilend\Core\Security\Voter\MessageThreadVoter;
-use Unilend\Syndication\Entity\{Project,ProjectParticipation};
+use Unilend\Syndication\Entity\{Project, ProjectParticipation};
+use Unilend\Syndication\Service\Project\ProjectManager;
 
 class MessageInputDataTransformer implements DataTransformerInterface
 {
@@ -30,6 +31,9 @@ class MessageInputDataTransformer implements DataTransformerInterface
     /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
 
+    /** @var ProjectManager */
+    private ProjectManager $projectManager;
+
     /**
      * MessageInputDataTransformer constructor.
      *
@@ -37,13 +41,20 @@ class MessageInputDataTransformer implements DataTransformerInterface
      * @param Security                $security
      * @param MessageThreadRepository $messageThreadRepository
      * @param IriConverterInterface   $iriConverter
+     * @param ProjectManager          $projectManager
      */
-    public function __construct(ValidatorInterface $validator, Security $security, MessageThreadRepository $messageThreadRepository, IriConverterInterface $iriConverter)
-    {
+    public function __construct(
+        ValidatorInterface $validator,
+        Security $security,
+        MessageThreadRepository $messageThreadRepository,
+        IriConverterInterface $iriConverter,
+        ProjectManager $projectManager
+    ) {
         $this->validator                = $validator;
         $this->security                 = $security;
         $this->messageThreadRepository  = $messageThreadRepository;
         $this->iriConverter             = $iriConverter;
+        $this->projectManager           = $projectManager;
     }
 
     /**
@@ -83,7 +94,7 @@ class MessageInputDataTransformer implements DataTransformerInterface
             throw new AccessDeniedException();
         }
 
-        if (($entity instanceof Project) && false === $entity->isProjectOrganizer($this->security->getUser()->getCurrentStaff()->getCompany())) {
+        if (($entity instanceof Project) && false === $this->projectManager->isArranger($entity, $this->security->getUser()->getCurrentStaff())) {
             throw new AccessDeniedException();
         }
 
@@ -99,7 +110,7 @@ class MessageInputDataTransformer implements DataTransformerInterface
         return new Message($user->getCurrentStaff(), $messageThread, $object->body, true);
     }
 
-    /**
+    /***
      * @param Project $project
      *
      * @return MessageThread|null

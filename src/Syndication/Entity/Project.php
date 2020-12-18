@@ -1633,20 +1633,4 @@ class Project implements TraceableStatusAwareInterface
 
         return $this->getOrganizersByRole($role)->first() ?: null;
     }
-
-    /**
-     * @param Company $company
-     *
-     * @return bool
-     */
-    public function isProjectOrganizer(Company $company): bool
-    {
-        foreach ($this->getOrganizers() as $organizer) {
-            if ($organizer->getCompany() === $company) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }

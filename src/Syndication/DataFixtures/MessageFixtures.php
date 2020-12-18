@@ -8,9 +8,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\Entity\{Message,MessageThread,Staff};
+use Unilend\Core\Entity\{Message, MessageThread, Staff};
 use Unilend\Core\Repository\StaffRepository;
-use Unilend\Syndication\Entity\{Project,ProjectParticipation};
+use Unilend\Syndication\Entity\{Project, ProjectParticipation};
 
 class MessageFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

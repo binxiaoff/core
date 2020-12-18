@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Unilend\Core\EventSubscriber\ApiPlatform\MessageThread;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\HttpFoundation\Request;
-use Unilend\Core\Entity\{MessageStatus,MessageThread};
+use Unilend\Core\Entity\MessageThread;
 use Unilend\Core\Repository\MessageStatusRepository;
 
 class MessageThreadViewedSubscriber implements EventSubscriberInterface
@@ -22,21 +21,16 @@ class MessageThreadViewedSubscriber implements EventSubscriberInterface
     /** @var MessageStatusRepository */
     private MessageStatusRepository $messageStatusRepository;
 
-    /** @var EntityManagerInterface */
-    private EntityManagerInterface $entityManager;
-
     /**
      * MessageThreadViewedSubscriber constructor.
      *
      * @param Security                $security
      * @param MessageStatusRepository $messageStatusRepository
-     * @param EntityManagerInterface  $entityManager
      */
-    public function __construct(Security $security, MessageStatusRepository $messageStatusRepository, EntityManagerInterface $entityManager)
+    public function __construct(Security $security, MessageStatusRepository $messageStatusRepository)
     {
         $this->security                = $security;
         $this->messageStatusRepository = $messageStatusRepository;
-        $this->entityManager           = $entityManager;
     }
 
     /**
@@ -58,7 +52,7 @@ class MessageThreadViewedSubscriber implements EventSubscriberInterface
         }
 
         $messageThread = $request->attributes->get('data');
-        if (!$messageThread instanceof MessageThread) {
+        if (false === $messageThread instanceof MessageThread) {
             return;
         }
 

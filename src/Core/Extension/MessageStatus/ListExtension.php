@@ -6,10 +6,10 @@ namespace Unilend\Core\Extension\MessageStatus;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Core\Entity\{User, MessageStatus, MessageThread};
+use Unilend\Core\Entity\{MessageStatus, MessageThread, User};
 use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
 
 class ListExtension implements QueryCollectionExtensionInterface

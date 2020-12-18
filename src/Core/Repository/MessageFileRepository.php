@@ -7,7 +7,7 @@ namespace Unilend\Core\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Core\Entity\{File,Message,MessageFile,MessageStatus,Staff};
+use Unilend\Core\Entity\{File, Message, MessageFile, MessageStatus, Staff};
 
 /**
  * @method MessageFile|null find($id, $lockMode = null, $lockVersion = null)

@@ -8,8 +8,10 @@ use Doctrine\ORM\NonUniqueResultException;
 use InvalidArgumentException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\{User, Company, File, FileDownload, FileVersion, Staff};
+use Unilend\Core\Entity\{Company, File, FileDownload, FileVersion, Message, MessageFile, Staff, User};
 use Unilend\Core\Repository\FileVersionSignatureRepository;
+use Unilend\Core\Repository\MessageFileRepository;
+use Unilend\Core\Security\Voter\MessageVoter;
 use Unilend\Syndication\Entity\{Project, ProjectFile, ProjectParticipation, ProjectParticipationMember, ProjectStatus};
 use Unilend\Syndication\Repository\{ProjectFileRepository, ProjectParticipationMemberRepository, ProjectParticipationRepository, ProjectRepository};
 use Unilend\Syndication\Security\Voter\ProjectVoter;
@@ -32,12 +34,15 @@ class FileDownloadVoter extends AbstractEntityVoter
     private MessageFileRepository $messageFileRepository;
 
     /**
+     * FileDownloadVoter constructor.
+     *
      * @param AuthorizationCheckerInterface        $authorizationChecker
      * @param FileVersionSignatureRepository       $fileVersionSignatureRepository
      * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
      * @param ProjectFileRepository                $projectFileRepository
      * @param ProjectRepository                    $projectRepository
      * @param ProjectParticipationRepository       $projectParticipationRepository
+     * @param MessageFileRepository                $messageFileRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
@@ -116,7 +121,7 @@ class FileDownloadVoter extends AbstractEntityVoter
             }
         }
 
-        if(Message::FILE_TYPE_MESSAGE_ATTACHMENT === $type) {
+        if (Message::FILE_TYPE_MESSAGE_ATTACHMENT === $type) {
             return $this->isAllowedToDownloadMessageFile($file, $staff);
         }
 
@@ -154,7 +159,6 @@ class FileDownloadVoter extends AbstractEntityVoter
      * @param Staff $staff
      *
      * @return bool
-     * @throws NonUniqueResultException
      */
     private function isAllowedToDownloadMessageFile(File $file, Staff $staff): bool
     {

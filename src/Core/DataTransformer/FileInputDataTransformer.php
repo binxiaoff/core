@@ -13,9 +13,9 @@ use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
 use Unilend\Core\DTO\FileInput;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\{File, Message, MessageFile, Staff, User};
+use Unilend\Core\Repository\{MessageFileRepository, MessageRepository, MessageThreadRepository};
+use Unilend\Core\Security\Voter\MessageVoter;
 use Unilend\Core\Service\File\FileUploadManager;
 use Unilend\Syndication\Entity\{Project,
     ProjectFile,
@@ -45,8 +45,6 @@ class FileInputDataTransformer
     private MessageThreadRepository $messageThreadRepository;
     /** @var MessageRepository */
     private MessageRepository $messageRepository;
-    /** @var EntityManagerInterface */
-    private EntityManagerInterface $entityManager;
 
     /**
      * FileInputDataTransformer constructor.

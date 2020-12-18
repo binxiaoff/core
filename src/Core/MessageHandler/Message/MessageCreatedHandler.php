@@ -6,9 +6,9 @@ namespace Unilend\Core\MessageHandler\Message;
 
 use InvalidArgumentException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Unilend\Core\Entity\{Message,MessageStatus};
+use Unilend\Core\Entity\{Message, MessageStatus};
 use Unilend\Core\Message\Message\MessageCreated;
-use Unilend\Core\Repository\{MessageRepository,MessageStatusRepository};
+use Unilend\Core\Repository\{MessageRepository, MessageStatusRepository};
 use Unilend\Syndication\Repository\ProjectParticipationRepository;
 use Unilend\Syndication\Service\Project\ProjectManager;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Security\Voter;
 
-use Unilend\Core\Entity\{MessageFile,User};
+use Unilend\Core\Entity\{MessageFile, User};
 
 class MessageFileVoter extends AbstractEntityVoter
 {
@@ -12,7 +12,7 @@ class MessageFileVoter extends AbstractEntityVoter
 
     /**
      * @param MessageFile $messageFile
-     * @param User  $user
+     * @param User        $user
      *
      * @return bool
      */

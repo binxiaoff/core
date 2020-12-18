@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Security\Voter;
 
-use Unilend\Core\Entity\{MessageStatus,User};
+use Unilend\Core\Entity\{MessageStatus, User};
 
 class MessageStatusVoter extends AbstractEntityVoter
 {
