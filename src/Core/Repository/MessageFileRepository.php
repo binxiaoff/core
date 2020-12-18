@@ -19,6 +19,7 @@ class MessageFileRepository extends ServiceEntityRepository
 {
     /**
      * MessageFileRepository constructor.
+     *
      * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
@@ -27,23 +28,12 @@ class MessageFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param MessageFile $messageFile
-     *
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    public function save(MessageFile $messageFile): void
-    {
-        $this->getEntityManager()->persist($messageFile);
-        $this->getEntityManager()->flush();
-    }
-
-    /**
      * @param File  $file
      * @param Staff $recipient
      *
-     * @return int|mixed|string|null
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return int|mixed|string|null
      */
     public function getMessageFileByFileAndRecipient(File $file, Staff $recipient)
     {
@@ -62,4 +52,15 @@ class MessageFileRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * @param MessageFile $messageFile
+     *
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function save(MessageFile $messageFile): void
+    {
+        $this->getEntityManager()->persist($messageFile);
+        $this->getEntityManager()->flush();
+    }
 }

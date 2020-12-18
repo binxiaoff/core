@@ -113,9 +113,10 @@ class MessageInputDataTransformer implements DataTransformerInterface
     /***
      * @param Project $project
      *
-     * @return MessageThread|null
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
+     *
+     * @return MessageThread|null
      */
     private function getActiveProjectParticipationMessageThreadFromProject(Project $project): ?MessageThread
     {

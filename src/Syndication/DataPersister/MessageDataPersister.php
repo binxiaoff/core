@@ -8,10 +8,6 @@ use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use Unilend\Core\Entity\Message;
 use Unilend\Core\Repository\MessageRepository;
 
-/**
- * Class MessageDataPersister
- * @package Unilend\Syndication\DataPersister
- */
 final class MessageDataPersister implements DataPersisterInterface
 {
     /** @var MessageRepository */

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Core\Security\Voter;
 
 use Unilend\Core\Entity\{MessageThread, User};
+use Unilend\Syndication\Security\Voter\ProjectParticipationVoter;
 
 class MessageThreadVoter extends AbstractEntityVoter
 {
