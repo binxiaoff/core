@@ -16,9 +16,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/core"
- *     },
  *     normalizationContext={"groups": {"staffStatus:read"}},
  *     collectionOperations={
  *         "post": {

@@ -27,9 +27,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ORM\HasLifecycleCallbacks
  *
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/core"
- *     },
  *     normalizationContext={"groups": {"companyModule:read", "nullableMoney:read"}},
  *     denormalizationContext={"groups": {"companyModule:write"}},
  *     itemOperations={

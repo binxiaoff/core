@@ -21,9 +21,6 @@ use Unilend\Core\Entity\Traits\{ArchivableTrait, BlamableArchivedTrait, Publiciz
  * @Gedmo\SoftDeleteable(fieldName="archived")
  *
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/core"
- *     },
  *     normalizationContext={"groups": {"file:read", "fileVersion:read", "timestampable:read"}},
  *     collectionOperations={
  *         "post": {

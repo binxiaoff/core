@@ -20,9 +20,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ORM\Table(name="core_file_version")
  *
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/core"
- *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
