@@ -12,7 +12,7 @@ use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\DataFixtures\StaffFixtures;
 use Unilend\Core\Entity\{Message, MessageThread, Staff};
 use Unilend\Core\Repository\StaffRepository;
-use Unilend\Syndication\Entity\{Project, ProjectParticipation};
+use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
 
 class MessageFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -47,16 +47,18 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
         $projectsWithParticipations = $this->getReferences(ProjectFixtures::PROJECTS_WITH_PARTICIPATION);
 
         foreach ($projectsWithParticipations as $projectWithParticipation) {
-            $staffSender = $this->staffRepository->findOneBy([
-                'user'    => $projectWithParticipation->getSubmitterUser(),
-                'company' => $projectWithParticipation->getSubmitterCompany(),
-            ]);
+            if ($projectWithParticipation->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_DRAFT) {
+                $staffSender = $this->staffRepository->findOneBy([
+                    'user'    => $projectWithParticipation->getSubmitterUser(),
+                    'company' => $projectWithParticipation->getSubmitterCompany(),
+                ]);
 
-            // Create a projectOrganizer.staff message to each projectParticipationMember.staff
-            $this->createMessagesForProjectParticipations($projectWithParticipation, $staffSender);
+                // Create a projectOrganizer.staff message to each projectParticipationMember.staff
+                $this->createMessagesForProjectParticipations($projectWithParticipation, $staffSender);
 
-            // Create a random projectParticipation.member.staff message to each projectParticipationMember.staff
-            $this->createMessagesForProjectParticipations($projectWithParticipation);
+                // Create a random projectParticipation.member.staff message to each projectParticipationMember.staff
+                $this->createMessagesForProjectParticipations($projectWithParticipation);
+            }
         }
     }
 
