@@ -13,7 +13,6 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
- *     routePrefix="/agency",
  *     normalizationContext={
  *         "groups": {
  *             "timestampable:read",
