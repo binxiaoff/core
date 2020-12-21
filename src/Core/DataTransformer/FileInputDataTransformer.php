@@ -138,7 +138,7 @@ class FileInputDataTransformer
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
-     * 
+     *
      * @return File
      */
     private function uploadMessageFile(Message $message, FileInput $fileInput, Staff $currentStaff, ?File $file): File
