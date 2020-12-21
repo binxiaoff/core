@@ -131,20 +131,24 @@ class FileInputDataTransformer
      * @param Message   $message
      * @param FileInput $fileInput
      * @param Staff     $currentStaff
-     * @param File      $file
+     * @param File|null $file
      *
      * @throws EnvironmentIsBrokenException
      * @throws FileExistsException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
-     *
+     * 
      * @return File
      */
-    private function uploadMessageFile(Message $message, FileInput $fileInput, Staff $currentStaff, File $file): File
+    private function uploadMessageFile(Message $message, FileInput $fileInput, Staff $currentStaff, ?File $file): File
     {
         if (false === $this->security->isGranted(MessageVoter::ATTRIBUTE_ATTACH_FILE, $message)) {
             throw new AccessDeniedException();
+        }
+
+        if (false === $file instanceof File) {
+            $file        = new File();
         }
         $messageFile = new MessageFile($file, $message);
 
