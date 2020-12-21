@@ -567,7 +567,9 @@ class Project implements TraceableStatusAwareInterface
         $this->submitterCompany      = $addedBy->getCompany();
         $this->submitterUser         = $addedBy->getUser();
         $arrangerParticipation       = new ProjectParticipation($addedBy->getCompany(), $this, $addedBy);
-        $arrangerParticipation->addProjectParticipationMember(new ProjectParticipationMember($arrangerParticipation, $addedBy, $addedBy));
+        $projectParticipationMember = new ProjectParticipationMember($arrangerParticipation, $addedBy, $addedBy);
+        $projectParticipationMember->addPermission(ProjectParticipationMember::PERMISSION_WRITE);
+        $arrangerParticipation->addProjectParticipationMember($projectParticipationMember);
         $this->projectParticipations = new ArrayCollection([$arrangerParticipation]);
 
         $this->projectFiles          = new ArrayCollection();

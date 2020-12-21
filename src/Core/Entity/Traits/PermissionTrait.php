@@ -43,6 +43,18 @@ trait PermissionTrait
     }
 
     /**
+     * @param $permissions
+     *
+     * @return $this
+     */
+    public function addPermission($permissions): self
+    {
+        $this->permissions->add($permissions);
+
+        return $this;
+    }
+
+    /**
      * @return array|int[]
      */
     public function getAvailablePermissions(): array
