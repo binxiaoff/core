@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
@@ -79,6 +80,8 @@ class Team
      * @Groups({"team:create", "team:read"})
      *
      * @MaxDepth(1)
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
      */
     private ?Team $parent;
 
