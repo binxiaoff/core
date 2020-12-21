@@ -241,13 +241,13 @@ class Company implements TraceableStatusAwareInterface
      */
     public function __construct(string $displayName, string $companyName)
     {
-        $this->displayName   = $displayName;
-        $this->companyName   = $companyName;
-        $this->rootTeam      = Team::createRootTeam($this);
-        $this->statuses      = new ArrayCollection();
-        $this->added         = new DateTimeImmutable();
-        $this->admins        = new ArrayCollection();
-        $this->companyGroup  = null;
+        $this->displayName  = $displayName;
+        $this->companyName  = $companyName;
+        $this->rootTeam     = Team::createRootTeam($this);
+        $this->statuses     = new ArrayCollection();
+        $this->added        = new DateTimeImmutable();
+        $this->admins       = new ArrayCollection();
+        $this->companyGroup = null;
         $moduleCodes         = CompanyModule::getAvailableModuleCodes();
         $this->modules       = new ArrayCollection(array_map(function ($module) {
             return new CompanyModule($module, $this);
@@ -509,6 +509,8 @@ class Company implements TraceableStatusAwareInterface
 
     /**
      * @return string|null
+     *
+     * @Groups({"company:read"})
      */
     public function getGroupName(): ?string
     {
