@@ -6,7 +6,7 @@ namespace Unilend\Core\MessageHandler\Message;
 
 use InvalidArgumentException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Unilend\Core\Entity\{Message, MessageStatus};
+use Unilend\Core\Entity\{Message, MessageStatus, StaffStatus};
 use Unilend\Core\Message\Message\MessageCreated;
 use Unilend\Core\Repository\{MessageRepository, MessageStatusRepository};
 use Unilend\Syndication\Repository\ProjectParticipationRepository;
@@ -65,7 +65,10 @@ class MessageCreatedHandler implements MessageHandlerInterface
 
         // Add messageStatus unread for every projectParticipationMembers that received the message
         foreach ($projectParticipationMembers as $projectParticipationMember) {
-            if ($message->getSender() !== $projectParticipationMember->getStaff()) {
+            if (
+                $projectParticipationMember->getStaff()->getCompany() !== $projectParticipationMember->getProjectParticipation()->getProject()->getArranger()
+                && $message->getSender() !== $projectParticipationMember->getStaff()
+            ) {
                 $this->messageStatusRepository->save(new MessageStatus($message, $projectParticipationMember->getStaff()));
             }
         }
