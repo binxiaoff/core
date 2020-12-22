@@ -29,6 +29,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                  "company:read",
  *                  "companyStatus:read",
  *                  "companyModule:read",
+ *                  "companyGroupTag:read",
  *                  "staff:read",
  *                  "user:read",
  *                  "user_status:read",
@@ -48,9 +49,28 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                  "user:read",
  *                  "user_status:read",
  *                  "nullableMoney:read",
+ *                  "companyGroupTag:read",
  *                  "team:read"
  *              }
- *          }
+ *          },
+ *        }
+ *     },
+ *     itemOperations={
+ *         "get": {
+ *           "normalization_context": {
+ *              "groups": {
+ *                  "company:read",
+ *                  "companyStatus:read",
+ *                  "companyModule:read",
+ *                  "companyGroupTag:read",
+ *                  "staff:read",
+ *                  "user:read",
+ *                  "user_status:read",
+ *                  "nullableMoney:read",
+ *                  "companyGroupTag:read",
+ *                  "team:read"
+ *              }
+ *          },
  *        },
  *         "staff": {
  *              "method": "GET",
@@ -619,6 +639,16 @@ class Company implements TraceableStatusAwareInterface
         yield $this->rootTeam;
 
         yield from $this->rootTeam->getDescendents();
+    }
+
+    /**
+     * @return iterable
+     *
+     * @Groups({"company:read"})
+     */
+    public function getCompanyGroupTags(): iterable
+    {
+        return $this->companyGroup ? $this->companyGroup->getTags() : [];
     }
 
     /**

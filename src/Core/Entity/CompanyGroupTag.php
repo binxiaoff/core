@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
@@ -15,6 +17,20 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *          @ORM\UniqueConstraint(name="uniq_companyGroup_code", columns={"code", "id_company_group"})
  *    }
  * )
+ *
+ * @ApiResource(
+ *     attributes={
+ *         "route_prefix"="/core"
+ *     },
+ *     normalizationContext={"groups": {"companyGroupTag:read"}},
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     }
+ * )
  */
 class CompanyGroupTag
 {
@@ -24,6 +40,8 @@ class CompanyGroupTag
      * @var string
      *
      * @ORM\Column(type="string", nullable=false)
+     *
+     * @Groups({"companyGroupTag:read"})
      */
     private string $code;
 

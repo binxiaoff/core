@@ -407,6 +407,30 @@ class Staff implements TraceableStatusAwareInterface
     }
 
     /**
+     * @param bool $arrangementProjectCreationPermission
+     *
+     * @return Staff
+     */
+    public function setArrangementProjectCreationPermission(bool $arrangementProjectCreationPermission): Staff
+    {
+        $this->arrangementProjectCreationPermission = $arrangementProjectCreationPermission;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $agencyProjectCreationPermission
+     *
+     * @return Staff
+     */
+    public function setAgencyProjectCreationPermission(bool $agencyProjectCreationPermission): Staff
+    {
+        $this->agencyProjectCreationPermission = $agencyProjectCreationPermission;
+
+        return $this;
+    }
+
+    /**
      * Assert there is only one staff for each company for a given user
      *
      * @Assert\Callback
