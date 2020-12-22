@@ -78,7 +78,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         /** @var User $user */
         $user    = $this->getReference(UserFixtures::ADMIN);
         $domain  = explode('@', $user->getEmail())[1];
-        $company = $this->createCompany(Company::COMPANY_NAME_CALS, 'CALS')->setEmailDomain($domain)->setGroupName('Crédit Agricole');
+        $company = $this->createCompany(Company::COMPANY_NAME_CALS, 'CALS')->setEmailDomain($domain)->setCompanyGroup($this->getReference('companyGroup/CA'));
         $this->addReference(self::CALS, $company);
 
         $company = $this->createCompany('Crédit Agricole SA', Company::SHORT_CODE_CASA)->setEmailDomain('credit-agricole-sa.fr')->setGroupName('Crédit Agricole');
@@ -86,12 +86,12 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         // Fake bank
         for ($i = 1; $i <= 5; $i++) {
-            $company = $this->createCompany("CA Bank $i", static::CA_SHORTCODE[$i])->setGroupName('Crédit Agricole');
+            $company = $this->createCompany("CA Bank $i", static::CA_SHORTCODE[$i])->setCompanyGroup($this->getReference('companyGroup/CA'));
             $this->addReference(self::COMPANIES[$i - 1], $company);
         }
 
         for ($i = 6; $i <= 20; $i++) {
-            $this->createCompany("CA Bank $i", static::CA_SHORTCODE[$i])->setGroupName('Crédit Agricole');
+            $this->createCompany("CA Bank $i", static::CA_SHORTCODE[$i])->setCompanyGroup($this->getReference('companyGroup/CA'));
         }
 
         // External bank
@@ -105,16 +105,16 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         $this->addReference(
             self::COMPANY_NOT_SIGNED,
-            $this->createCompany('Not signed Bank', static::CA_SHORTCODE[21], CompanyStatus::STATUS_PROSPECT)->setGroupName('Crédit Agricole')
+            $this->createCompany('Not signed Bank', static::CA_SHORTCODE[21], CompanyStatus::STATUS_PROSPECT)->setCompanyGroup($this->getReference('companyGroup/CA'))
         );
         $this->addReference(
             self::COMPANY_NOT_SIGNED_NO_MEMBERS,
-            $this->createCompany('Not signed no member Bank', static::CA_SHORTCODE[22], CompanyStatus::STATUS_PROSPECT)->setGroupName('Crédit Agricole')
+            $this->createCompany('Not signed no member Bank', static::CA_SHORTCODE[22], CompanyStatus::STATUS_PROSPECT)->setCompanyGroup($this->getReference('companyGroup/CA'))
         );
 
         $this->addReference(
             self::COMPANY_MANY_STAFF,
-            $this->createCompany('Many staff', static::CA_SHORTCODE[23])->setGroupName('Crédit Agricole')
+            $this->createCompany('Many staff', static::CA_SHORTCODE[23])->setCompanyGroup($this->getReference('companyGroup/CA'))
         );
 
         $manager->flush();

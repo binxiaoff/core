@@ -59,7 +59,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
             /** @var User $user */
             $user = $this->getReference($userReference);
             $company = $datum['company'] ?? $adminCompany;
-            $staff = $this->createStaff($user, $company, $datum['roles'] ?? null);
+            $staff = $this->createStaff($user, $company);
             $this->addStaffReference($staff);
             $manager->persist($staff);
         }
@@ -71,7 +71,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $participant = $this->getReference(UserFixtures::PARTICIPANT);
         foreach ($companies as $company) {
             if ($company !== $adminCompany) {
-                $staff = $this->createStaff($participant, $company, []);
+                $staff = $this->createStaff($participant, $company);
                 $this->addStaffReference($staff);
                 $manager->persist($staff);
             }
@@ -92,13 +92,13 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         /** @var Company $manyStaffCompany */
         $manyStaffCompany = $this->getReference(CompanyFixtures::COMPANY_MANY_STAFF);
 
-        $manyStaffAdminStaff = $this->createStaff($admin, $manyStaffCompany, []);
+        $manyStaffAdminStaff = $this->createStaff($admin, $manyStaffCompany);
         $manager->persist($manyStaffAdminStaff);
 
         foreach (range(0, 50) as $i) {
             $user = new User($this->faker->email);
             $manager->persist($user);
-            $manager->persist($this->createStaff($user, $manyStaffCompany, [], null, $manyStaffAdminStaff));
+            $manager->persist($this->createStaff($user, $manyStaffCompany));
         }
 
         $manager->flush();
@@ -181,21 +181,17 @@ SQL;
      * @param User         $user
      * @param Company|null $company
      *
-     * @param Staff|null   $addedBy
-     *
      * @return Staff
      *
      * @throws Exception
      */
     private function createStaff(
         User $user,
-        ?Company $company = null,
-        ?Staff $addedBy = null
+        ?Company $company = null
     ): Staff {
         $company = $company ?? $this->getReference(CompanyFixtures::CALS);
-        $addedBy = $addedBy ?? $this->getReference(self::ADMIN);
 
-        return new Staff($user, $company->getRootTeam(), $addedBy);
+        return new Staff($user, $company->getRootTeam());
     }
 
     /**
