@@ -25,9 +25,6 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
 
 /**
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/syndication"
- *     },
  *     normalizationContext={"groups": {
  *         "projectParticipation:read",
  *         "projectParticipationMember:read",

@@ -19,9 +19,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ORM\Table(name="syndication_project_file")
  *
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/syndication"
- *     },
  *     normalizationContext={"groups": {"projectFile:read", "file:read", "fileVersion:read", "timestampable:read"}},
  *     itemOperations={
  *         "get": {

@@ -20,9 +20,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ORM\Table(name="core_file_version")
  *
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/core"
- *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -32,7 +29,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         "download": {
  *             "method": "GET",
  *             "controller": "Unilend\Core\Controller\File\Download",
- *             "path": "/file_versions/{id}/download/{type}"
+ *             "path": "/core/file_versions/{id}/download/{type}"
  *         }
  *     }
  * )

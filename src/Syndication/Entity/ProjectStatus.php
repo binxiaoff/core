@@ -20,9 +20,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/syndication"
- *     },
  *     normalizationContext={"groups": {"projectStatus:read", "timestampable:read"}},
  *     itemOperations={
  *         "get": {

@@ -13,9 +13,6 @@ use Unilend\Core\Entity\User;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/syndication"
- *     },
  *     collectionOperations={
  *         "get": {"security": "is_granted('view', object.getProject())"},
  *         "post": {"security_post_denormalize": "is_granted('view', object.getProject())"}

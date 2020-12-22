@@ -19,7 +19,6 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 /**
  * @ApiResource(
  *     attributes={
- *         "route_prefix"="/core",
  *         "pagination_enabled": false
  *     },
  *     normalizationContext={
