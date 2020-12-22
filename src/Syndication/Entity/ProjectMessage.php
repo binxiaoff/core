@@ -16,7 +16,6 @@ use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, Time
 /**
  * @ApiResource(
  *     attributes={
- *         "route_prefix"="/syndication",
  *         "order": {"added", "id"},
  *         "pagination_enabled": false
  *     },

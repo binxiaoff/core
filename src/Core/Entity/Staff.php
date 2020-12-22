@@ -20,7 +20,6 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, Timestamp
 /**
  * @ApiResource(
  *     attributes={
- *         "route_prefix"="/core",
  *         "pagination_client_enabled": true
  *     },
  *     normalizationContext={"groups": {"staff:read", "user:read", "user_status:read", "staffStatus:read", "timestampable:read", "traceableStatus:read"}},
