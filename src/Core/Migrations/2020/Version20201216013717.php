@@ -46,10 +46,8 @@ final class Version20201216013717 extends AbstractMigration
         $this->addSql('UPDATE core_company INNER JOIN core_company_group ON core_company.group_name = core_company_group.name SET core_company.id_company_group = core_company_group.id WHERE core_company.group_name IS NOT NULL');
         $this->addSql(<<<SQL
 INSERT INTO core_company_group_tag 
-SELECT NULL, core_company_group.id, label, $uuid 
+SELECT NULL, (SELECT id FROM core_company_group WHERE core_company_group.name = 'Crédit Agricole'), label, $uuid 
 FROM core_market_segment
-JOIN core_company_group 
-WHERE core_company_group.name = 'Crédit Agricole'
 SQL
 );
         $this->addSql(<<<'SQL'
