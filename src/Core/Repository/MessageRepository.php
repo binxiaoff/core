@@ -46,7 +46,7 @@ class MessageRepository extends ServiceEntityRepository
      *
      * @return int|mixed|string
      */
-    public function findBroadcastedMessagesByAddedSenderAndThreads(\DateTimeImmutable $added, Staff $sender, array $messageThreads)
+    public function findBroadcastMessagesByAddedSenderAndThreads(\DateTimeImmutable $added, Staff $sender, array $messageThreads)
     {
         $queryBuilder = $this->createQueryBuilder('msg');
 

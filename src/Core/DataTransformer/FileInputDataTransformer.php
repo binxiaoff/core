@@ -152,14 +152,14 @@ class FileInputDataTransformer
         }
         $messageFile = new MessageFile($file, $message);
 
-        // If it's a broadcasted message, then add messageFile to all broadcasted messages
+        // If it's a broadcast message, then add messageFile to all broadcast messages
         if ($message->isBroadcast()) {
             $messageThreads = $this->messageThreadRepository->findMessageThreadsByProject($message->getMessageThread()->getProjectParticipation()->getProject());
-            $messages = $this->messageRepository->findBroadcastedMessagesByAddedSenderAndThreads($message->getAdded(), $message->getSender(), $messageThreads);
+            $messages = $this->messageRepository->findBroadcastMessagesByAddedSenderAndThreads($message->getAdded(), $message->getSender(), $messageThreads);
             foreach ($messages as $messageToAddMessageFile) {
                 if ($messageToAddMessageFile !== $message) {
-                    $messageFileBroadcasted = new MessageFile($file, $messageToAddMessageFile);
-                    $this->messageFileRepository->save($messageFileBroadcasted);
+                    $messageFileBroadcast = new MessageFile($file, $messageToAddMessageFile);
+                    $this->messageFileRepository->save($messageFileBroadcast);
                 }
             }
         }
