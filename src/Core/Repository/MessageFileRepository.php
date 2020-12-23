@@ -28,31 +28,6 @@ class MessageFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param File  $file
-     * @param Staff $recipient
-     *
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     *
-     * @return int|mixed|string|null
-     */
-    public function getMessageFileByFileAndRecipient(File $file, Staff $recipient)
-    {
-        $queryBuilder = $this->createQueryBuilder('msgf');
-
-        return $queryBuilder
-            ->innerJoin(Message::class, 'msg', JOIN::WITH, 'msg.id = msgf.message')
-            ->innerJoin(MessageStatus::class, 'msgst', JOIN::WITH, 'msgst.message = msg.id')
-            ->where($queryBuilder->expr()->eq('msgf.file', ':file'))
-            ->andWhere($queryBuilder->expr()->eq('msgst.recipient', ':recipient'))
-            ->setParameters([
-                'file'      => $file,
-                'recipient' => $recipient,
-            ])
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
-
-    /**
      * @param MessageFile $messageFile
      *
      * @throws \Doctrine\ORM\ORMException

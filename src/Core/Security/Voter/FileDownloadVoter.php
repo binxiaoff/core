@@ -161,10 +161,12 @@ class FileDownloadVoter extends AbstractEntityVoter
      */
     private function isAllowedToDownloadMessageFile(File $file, Staff $staff): bool
     {
-        $messageFile = $this->messageFileRepository->getMessageFileByFileAndRecipient($file, $staff);
+        $messageFiles = $this->messageFileRepository->findBy(['file' => $file]);
 
-        if ($messageFile instanceof MessageFile) {
-            return $this->authorizationChecker->isGranted(MessageVoter::ATTRIBUTE_VIEW, $messageFile->getMessage());
+        foreach ($messageFiles as $messageFile) {
+            if ($messageFile->getMessage()->getMessageThread()->getProjectParticipation()->getParticipant() === $staff->getCompany()) {
+                return $this->authorizationChecker->isGranted(MessageVoter::ATTRIBUTE_VIEW, $messageFile->getMessage());
+            }
         }
 
         return false;
