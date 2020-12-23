@@ -6,19 +6,16 @@ namespace Unilend\Core\MessageHandler\Message;
 
 use InvalidArgumentException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Unilend\Core\Entity\{Message, MessageStatus, StaffStatus};
+use Unilend\Core\Entity\{Message, MessageStatus};
 use Unilend\Core\Message\Message\MessageCreated;
 use Unilend\Core\Repository\{MessageRepository, MessageStatusRepository};
-use Unilend\Syndication\Repository\ProjectParticipationRepository;
 use Unilend\Syndication\Service\Project\ProjectManager;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 
 class MessageCreatedHandler implements MessageHandlerInterface
 {
     /** @var MessageRepository */
     private MessageRepository $messageRepository;
-
-    /** @var ProjectParticipationRepository */
-    private ProjectParticipationRepository $projectParticipationRepository;
 
     /** @var ProjectManager */
     private ProjectManager $projectManager;
@@ -30,18 +27,15 @@ class MessageCreatedHandler implements MessageHandlerInterface
      * MessageCreatedHandler constructor.
      *
      * @param MessageRepository              $messageRepository
-     * @param ProjectParticipationRepository $projectParticipationRepository
      * @param ProjectManager                 $projectManager
      * @param MessageStatusRepository        $messageStatusRepository
      */
     public function __construct(
         MessageRepository $messageRepository,
-        ProjectParticipationRepository $projectParticipationRepository,
         ProjectManager $projectManager,
         MessageStatusRepository $messageStatusRepository
     ) {
         $this->messageRepository              = $messageRepository;
-        $this->projectParticipationRepository = $projectParticipationRepository;
         $this->projectManager                 = $projectManager;
         $this->messageStatusRepository        = $messageStatusRepository;
     }
@@ -49,8 +43,8 @@ class MessageCreatedHandler implements MessageHandlerInterface
     /**
      * @param MessageCreated $messageCreated
      *
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function __invoke(MessageCreated $messageCreated)
     {

@@ -11,7 +11,6 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Core\Entity\{Company, File, FileDownload, FileVersion, Message, MessageFile, Staff, User};
 use Unilend\Core\Repository\FileVersionSignatureRepository;
 use Unilend\Core\Repository\MessageFileRepository;
-use Unilend\Core\Security\Voter\MessageVoter;
 use Unilend\Syndication\Entity\{Project, ProjectFile, ProjectParticipation, ProjectParticipationMember, ProjectStatus};
 use Unilend\Syndication\Repository\{ProjectFileRepository, ProjectParticipationMemberRepository, ProjectParticipationRepository, ProjectRepository};
 use Unilend\Syndication\Security\Voter\ProjectVoter;

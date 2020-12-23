@@ -39,11 +39,6 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
  *       "post"={
  *          "input"=MessageInput::class
  *       }
- *  },
- *  itemOperations={
- *      "get": {
- *          "security": "is_granted('view', object)"
- *     }
  *  }
  * )
  */
