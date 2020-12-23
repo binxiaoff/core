@@ -6,6 +6,7 @@ namespace Unilend\Core\DataTransformer\Team;
 
 use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
+use Unilend\Core\DTO\Team\CreateTeam;
 use Unilend\Core\Entity\Team;
 
 class CreateTeamDataTransformer implements DataTransformerInterface
@@ -21,13 +22,21 @@ class CreateTeamDataTransformer implements DataTransformerInterface
     }
 
     /**
+     * @var CreateTeam $object
+     *
      * @inheritDoc
      */
     public function transform($object, string $to, array $context = [])
     {
         $this->validator->validate($object);
 
-        return Team::createTeam($object->name, $object->parent);
+        $team = Team::createTeam($object->name, $object->parent);
+
+        foreach ($object->companyGroupTags as $companyGroupTag) {
+            $team->addCompanyGroupTag($companyGroupTag);
+        }
+
+        return $team;
     }
 
     /**
