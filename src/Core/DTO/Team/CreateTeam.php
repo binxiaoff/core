@@ -33,6 +33,11 @@ class CreateTeam
      * @var CompanyGroupTag[]|iterable
      *
      * @Groups({"team:create"})
+     *
+     * @Assert\All(
+     *
+     *    @\Unilend\Core\Validator\Constraints\CompanyGroupTag(teamPropertyPath="parent")
+     * )
      */
     public iterable $companyGroupTags;
 

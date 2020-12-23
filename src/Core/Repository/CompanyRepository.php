@@ -61,7 +61,7 @@ class CompanyRepository extends ServiceEntityRepository
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
-    public function findByTeam(Team $team): Company
+    public function findOneByTeam(Team $team): Company
     {
         $alias = 'core_company';
 

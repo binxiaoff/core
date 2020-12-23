@@ -93,6 +93,12 @@ class Team
      * @ORM\JoinTable(name="core_team_company_group_tag")
      *
      * @Groups({"team:read", "team:update"})
+     *
+     * @Assert\Unique
+     * @Assert\All(
+     *
+     *    @\Unilend\Core\Validator\Constraints\CompanyGroupTag()
+     * )
      */
     private Collection $companyGroupTags;
 
@@ -262,19 +268,7 @@ class Team
      */
     public function addCompanyGroupTag(CompanyGroupTag $tag): Team
     {
-        $companyGroup = $this->getCompany()->getCompanyGroup();
-
-        if (null === $companyGroup) {
-            return $this;
-        }
-
-        if ($companyGroup !== $tag->getCompanyGroup()) {
-            return $this;
-        }
-
-        if (false === $this->companyGroupTags->contains($tag)) {
-            $this->companyGroupTags[] = $tag;
-        }
+        $this->companyGroupTags[] = $tag;
 
         return $this;
     }

@@ -38,7 +38,7 @@ class CompanyRepositoryTest extends KernelTestCase
         /** @var CompanyRepository $companyRepository */
         $companyRepository = static::$container->get(CompanyRepository::class);
 
-        $result = $companyRepository->findByTeam($team);
+        $result = $companyRepository->findOneByTeam($team);
 
         static::assertSame(
             $companyRepository->findOneBy(['publicId' => 'company/basic']),
