@@ -91,6 +91,8 @@ class Team
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
      * @ORM\JoinTable(name="core_team_company_group_tag")
+     *
+     * @Groups({"team:read", "team:update"})
      */
     private Collection $companyGroupTags;
 
