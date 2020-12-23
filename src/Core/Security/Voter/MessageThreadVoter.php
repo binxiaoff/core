@@ -17,7 +17,7 @@ class MessageThreadVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function isGrantedAll($messageThread, User $user): bool
+    protected function canView($messageThread, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $messageThread->getProjectParticipation());
     }
