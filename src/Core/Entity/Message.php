@@ -8,13 +8,13 @@ use ApiPlatform\Core\Annotation\{ApiResource};
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
+use Throwable;
 use Unilend\Core\DTO\MessageInput;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
-use Throwable;
 
 /**
  * @ORM\Entity

@@ -49,8 +49,6 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  *      "client:read",
  *      "staff:read"
  *  }},
- *  collectionOperations={
- *  },
  *  itemOperations={
  *      "get": {
  *          "security": "is_granted('view', object)"

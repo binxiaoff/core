@@ -32,9 +32,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *      "get": {
  *          "security": "is_granted('view', object)"
  *     }
- *  },
- *  collectionOperations={
- *      "get"
  *  }
  * )
  * @ApiFilter(SearchFilter::class, properties={"status": "exact"})
