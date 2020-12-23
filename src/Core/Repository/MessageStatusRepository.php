@@ -6,8 +6,9 @@ namespace Unilend\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Unilend\Core\Entity\{MessageStatus, MessageThread, Staff};
+use Unilend\Core\Entity\{Message, MessageStatus, MessageThread, Staff};
 
 /**
  * @method MessageStatus|null find($id, $lockMode = null, $lockVersion = null)
@@ -65,43 +66,22 @@ class MessageStatusRepository extends ServiceEntityRepository
      */
     public function setMessageStatusesToRead(Staff $recipient, MessageThread $messageThread)
     {
-        $messageStatuses = $this->findUnreadStatusByRecipientAndMessageThread($recipient, $messageThread);
-        $queryBuilder = $this->createQueryBuilder('msgst');
-
-        return $queryBuilder
+        return $this->createQueryBuilder('msgst')
             ->update(MessageStatus::class, 'msgst')
-            ->set('msgst.status', ':status')
-            ->where($queryBuilder->expr()->in('msgst.id', ':message_statuses'))
+            ->select('msg')
+            ->addSelect('msgst')
+            ->innerJoin(Message::class, 'msg', Join::WITH, 'msgst.message = msg.id')
+            ->innerJoin(MessageThread::class, 'msgth', Join::WITH, 'msg.messageThread = msgth.id')
+            ->andWhere('msgst.recipient = :recipient')
+            ->andWhere('msgst.status = :current_status')
+            ->andWhere('msg.messageThread = :message_thread')
             ->setParameters([
-                'status'           => true,
-                'message_statuses' => $messageStatuses,
+                'recipient'         => $recipient,
+                'current_status'    => MessageStatus::STATUS_UNREAD,
+                'message_thread'    => $messageThread->getId(),
             ])
+            ->set('msgst.status', MessageStatus::STATUS_READ)
             ->getQuery()
             ->execute();
-    }
-
-    /**
-     * @param Staff         $recipient
-     * @param MessageThread $messageThread
-     *
-     * @return int|mixed|string
-     */
-    public function findUnreadStatusByRecipientAndMessageThread(Staff $recipient, MessageThread $messageThread)
-    {
-        $queryBuilder = $this->createQueryBuilder('msgst');
-
-        return $queryBuilder
-            ->innerJoin('msgst.message', 'msg')
-            ->innerJoin('msg.messageThread', 'msgthd')
-            ->where($queryBuilder->expr()->eq('msgst.recipient', ':recipient'))
-            ->andWhere($queryBuilder->expr()->eq('msg.messageThread', ':message_thread'))
-            ->andWhere($queryBuilder->expr()->eq('msgst.status', ':message_status_status'))
-            ->setParameters([
-                'recipient'             => $recipient,
-                'message_thread'        => $messageThread,
-                'message_status_status' => MessageStatus::STATUS_UNREAD,
-            ])
-            ->getQuery()
-            ->getResult();
     }
 }
