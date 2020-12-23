@@ -38,30 +38,4 @@ class MessageRepository extends ServiceEntityRepository
         $this->getEntityManager()->persist($message);
         $this->getEntityManager()->flush();
     }
-
-    /**
-     * @param DateTimeImmutable $added
-     * @param Staff             $sender
-     * @param array             $messageThreads
-     *
-     * @return int|mixed|string
-     */
-    public function findBroadcastMessagesByAddedSenderAndThreads(\DateTimeImmutable $added, Staff $sender, array $messageThreads)
-    {
-        $queryBuilder = $this->createQueryBuilder('msg');
-
-        return $queryBuilder
-            ->where($queryBuilder->expr()->eq('msg.added', ':added'))
-            ->andWhere($queryBuilder->expr()->eq('msg.sender', ':sender'))
-            ->andWhere($queryBuilder->expr()->in('msg.messageThread', ':messageThreads'))
-            ->andWhere($queryBuilder->expr()->in('msg.broadcast', ':broadcast'))
-            ->setParameters([
-                'added'          => $added,
-                'sender'         => $sender,
-                'messageThreads' => $messageThreads,
-                'broadcast'      => true,
-            ])
-            ->getQuery()
-            ->getResult();
-    }
 }

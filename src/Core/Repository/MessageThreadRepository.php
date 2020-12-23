@@ -21,6 +21,7 @@ class MessageThreadRepository extends ServiceEntityRepository
 {
     /**
      * MessageThreadRepository constructor.
+     *
      * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
@@ -38,22 +39,5 @@ class MessageThreadRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($messageThread);
         $this->getEntityManager()->flush();
-    }
-
-    /**
-     * @param Project $project
-     *
-     * @return int|mixed|string
-     */
-    public function findMessageThreadsByProject(Project $project)
-    {
-        $queryBuilder = $this->createQueryBuilder('msgsthd');
-
-        return $queryBuilder
-            ->innerJoin('msgsthd.projectParticipation', 'pp')
-            ->where($queryBuilder->expr()->eq('pp.project', ':project'))
-            ->setParameters(['project' => $project])
-            ->getQuery()
-            ->getResult();
     }
 }

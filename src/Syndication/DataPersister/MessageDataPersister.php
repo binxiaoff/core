@@ -36,6 +36,9 @@ final class MessageDataPersister implements DataPersisterInterface
     /**
      * @param $data
      *
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     *
      * @return object|void
      */
     public function persist($data)
@@ -45,7 +48,8 @@ final class MessageDataPersister implements DataPersisterInterface
             $project = $data->getMessageThread()->getProjectParticipation()->getProject();
             foreach ($project->getProjectParticipations() as $projectParticipation) {
                 if ($projectParticipation->isActive() && $data->getMessageThread() !== $projectParticipation->getMessageThread()) {
-                    $this->messageRepository->save(new Message($data->getSender(), $projectParticipation->getMessageThread(), $data->getBody(), true));
+                    $message = (new Message($data->getSender(), $projectParticipation->getMessageThread(), $data->getBody()))->setBroadcast($data->getBroadcast());
+                    $this->messageRepository->save($message);
                 }
             }
         }

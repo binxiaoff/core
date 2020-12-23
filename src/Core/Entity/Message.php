@@ -9,10 +9,12 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\DTO\MessageInput;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use Throwable;
 
 /**
  * @ORM\Entity
@@ -105,13 +107,13 @@ class Message
     private Collection $messageStatuses;
 
     /**
-     * @var bool
+     * @var string|null
      *
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(length=36, nullable=true)
      *
      * @Groups({"message:read"})
      */
-    private bool $broadcast;
+    private ?string $broadcast = null;
 
     /**
      * Message constructor.
@@ -119,9 +121,8 @@ class Message
      * @param Staff         $sender
      * @param MessageThread $messageThread
      * @param string        $body
-     * @param bool          $broadcast
      */
-    public function __construct(Staff $sender, MessageThread $messageThread, string $body, bool $broadcast = false)
+    public function __construct(Staff $sender, MessageThread $messageThread, string $body)
     {
         $this->sender          = $sender;
         $this->messageThread   = $messageThread;
@@ -129,7 +130,6 @@ class Message
         $this->messageFiles    = new ArrayCollection();
         $this->added           = new DateTimeImmutable();
         $this->messageStatuses = new ArrayCollection();
-        $this->broadcast       = $broadcast;
     }
 
     /**
@@ -195,10 +195,36 @@ class Message
     }
 
     /**
+     * @return string|null
+     */
+    public function getBroadcast()
+    {
+        return $this->broadcast;
+    }
+
+    /**
+     * @param string|null $broadcast
+     *
+     * @return $this
+     */
+    public function setBroadcast(string $broadcast = null): Message
+    {
+        if (null === $this->broadcast) {
+            try {
+                $this->broadcast = $broadcast ?: (string) (Uuid::uuid4());
+            } catch (Throwable $e) {
+                $this->broadcast = md5(uniqid('', false));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * @return bool
      */
     public function isBroadcast(): bool
     {
-        return $this->broadcast;
+        return null !== $this->broadcast;
     }
 }

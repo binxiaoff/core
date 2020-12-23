@@ -107,7 +107,7 @@ class MessageInputDataTransformer implements DataTransformerInterface
         $messageThread = $this->getActiveProjectParticipationMessageThreadFromProject($entity);
 
         // If entity is a project, the message must be broadcast
-        return new Message($user->getCurrentStaff(), $messageThread, $object->body, true);
+        return (new Message($user->getCurrentStaff(), $messageThread, $object->body))->setBroadcast();
     }
 
     /***
