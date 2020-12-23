@@ -6,6 +6,7 @@ namespace Unilend\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\Core\Entity\{MessageStatus, MessageThread, Staff};
 
 /**
@@ -28,12 +29,31 @@ class MessageStatusRepository extends ServiceEntityRepository
     /**
      * @param MessageStatus $messageStatus
      *
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function save(MessageStatus $messageStatus): void
     {
         $this->getEntityManager()->persist($messageStatus);
+        $this->getEntityManager()->flush();
+    }
+
+    /**
+     * @param MessageStatus $messageStatus
+     *
+     * @throws ORMException
+     */
+    public function persist(MessageStatus $messageStatus): void
+    {
+        $this->getEntityManager()->persist($messageStatus);
+    }
+
+    /**
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function flush(): void
+    {
         $this->getEntityManager()->flush();
     }
 

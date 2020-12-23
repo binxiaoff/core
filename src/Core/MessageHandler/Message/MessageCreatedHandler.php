@@ -10,6 +10,7 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Unilend\Core\Entity\{Message, MessageStatus};
 use Unilend\Core\Message\Message\MessageCreated;
 use Unilend\Core\Repository\{MessageRepository, MessageStatusRepository};
+use Unilend\Syndication\Entity\ProjectParticipation;
 use Unilend\Syndication\Service\Project\ProjectManager;
 
 class MessageCreatedHandler implements MessageHandlerInterface
@@ -54,25 +55,32 @@ class MessageCreatedHandler implements MessageHandlerInterface
         }
 
         $projectParticipation         = $message->getMessageThread()->getProjectParticipation();
+        if (false === $projectParticipation instanceof ProjectParticipation) {
+            throw new InvalidArgumentException(sprintf('No participation related to the message thread with id %d.', $messageCreated->getMessageId()));
+        }
+
+        $project                      = $projectParticipation->getProject();
         $projectParticipationMembers  = $message->getMessageThread()->getProjectParticipation()->getProjectParticipationMembers();
         $participationArrangerMembers = $projectParticipation->getProject()->getArrangerProjectParticipation()->getActiveProjectParticipationMembers();
 
-        // Add messageStatus unread for every projectParticipationMembers that received the message
-        foreach ($projectParticipationMembers as $projectParticipationMember) {
-            if (
-                $projectParticipationMember->getStaff()->getCompany() !== $projectParticipationMember->getProjectParticipation()->getProject()->getArranger()
-                && $message->getSender() !== $projectParticipationMember->getStaff()
-            ) {
-                $this->messageStatusRepository->save(new MessageStatus($message, $projectParticipationMember->getStaff()));
+        // If the message is sent by arranger to the participant
+        if ($message->getSender()->getCompany() === $project->getArranger()) {
+            foreach ($projectParticipationMembers as $projectParticipationMember) {
+                if (
+                    $projectParticipationMember->getStaff()->isActive()
+                    && false === $projectParticipationMember->isArchived()
+                ) {
+                    $this->messageStatusRepository->persist(new MessageStatus($message, $projectParticipationMember->getStaff()));
+                }
             }
-        }
-
-        // Message sender is not an arranger, we have to set the message as unread for each arranger member
-        if (false === $this->projectManager->isArranger($projectParticipation->getProject(), $message->getSender())) {
+        } else {
+            // If the message is sent by a participant to the arranger
             foreach ($participationArrangerMembers as $participationArrangerMember) {
-                $this->messageStatusRepository->save(new MessageStatus($message, $participationArrangerMember->getStaff()));
+                if ($participationArrangerMember->getStaff()->isActive() && false === $participationArrangerMember->isArchived()) {
+                    $this->messageStatusRepository->persist(new MessageStatus($message, $participationArrangerMember->getStaff()));
+                }
             }
         }
-        $this->messageStatusRepository->save(new MessageStatus($message, $message->getSender(), MessageStatus::STATUS_READ));
+        $this->messageStatusRepository->flush();
     }
 }
