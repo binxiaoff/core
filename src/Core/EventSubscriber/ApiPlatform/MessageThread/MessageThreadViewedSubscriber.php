@@ -58,6 +58,6 @@ class MessageThreadViewedSubscriber implements EventSubscriberInterface
 
         $staff  = $this->security->getUser()->getCurrentStaff();
 
-        $this->messageStatusRepository->setMessageStatusesToReadForRecipientAndMessageThread($staff, $messageThread);
+        $this->messageStatusRepository->setMessageStatusesToRead($staff, $messageThread);
     }
 }

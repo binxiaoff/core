@@ -49,15 +49,13 @@ class ListExtension implements QueryCollectionExtensionInterface
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
-            ->andWhere($queryBuilder->expr()->eq($rootAlias . '.recipient', ':staff'))
-            ->setParameter('staff', $staff)
             ->innerJoin($rootAlias . '.message', 'msg')
             ->innerJoin(MessageThread::class, 'msgtd', Join::WITH, 'msg.messageThread = msgtd.id')
             ->innerJoin(ProjectParticipation::class, 'pp', Join::WITH, 'msgtd.projectParticipation = pp.id')
             ->innerJoin(Project::class, 'p', Join::WITH, 'pp.project = p.id')
             ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'p.currentStatus = pst.id')
-            ->andWhere($queryBuilder->expr()->eq($rootAlias . '.recipient', ':staff'))
-            ->andWhere($queryBuilder->expr()->gt('pst.status', ':project_current_status'))
+            ->andWhere($rootAlias . '.recipient = :staff')
+            ->andWhere('pst.status > :project_current_status')
             ->setParameters([
                 'staff' => $staff,
                 'project_current_status' => ProjectStatus::STATUS_DRAFT,

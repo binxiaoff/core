@@ -63,7 +63,7 @@ class MessageStatusRepository extends ServiceEntityRepository
      *
      * @return int|mixed|string
      */
-    public function setMessageStatusesToReadForRecipientAndMessageThread(Staff $recipient, MessageThread $messageThread)
+    public function setMessageStatusesToRead(Staff $recipient, MessageThread $messageThread)
     {
         $messageStatuses = $this->findUnreadStatusByRecipientAndMessageThread($recipient, $messageThread);
         $queryBuilder = $this->createQueryBuilder('msgst');
