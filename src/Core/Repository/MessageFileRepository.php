@@ -6,8 +6,8 @@ namespace Unilend\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Core\Entity\{File, Message, MessageFile, MessageStatus, Staff};
+use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Unilend\Core\Entity\MessageFile;
 
 /**
  * @method MessageFile|null find($id, $lockMode = null, $lockVersion = null)
@@ -30,8 +30,8 @@ class MessageFileRepository extends ServiceEntityRepository
     /**
      * @param MessageFile $messageFile
      *
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function save(MessageFile $messageFile): void
     {
