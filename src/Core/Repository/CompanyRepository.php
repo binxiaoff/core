@@ -67,6 +67,8 @@ class CompanyRepository extends ServiceEntityRepository
 
         $cteName = 'tree';
 
+        $team = $team->getId() ? $team : $team->getParent();
+
         $cte = $this->teamRepository->getRootPathTableCommonTableExpression($team, $cteName);
 
         $resultSetMapping = $this->createResultSetMappingBuilder($alias);
