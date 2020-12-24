@@ -29,7 +29,8 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "read": false,
  *             "output": false,
  *         }
- *     }
+ *     },
+ *     collectionOperations={}
  * )
  */
 class CompanyGroupTag
