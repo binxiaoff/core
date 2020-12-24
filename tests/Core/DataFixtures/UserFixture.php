@@ -20,6 +20,7 @@ class UserFixture extends AbstractFixture
      */
     public function load(ObjectManager $manager)
     {
+        $manager->getConnection()->getConfiguration()->setSQLLogger(null);
         foreach (range(1, 20) as $index) {
             $user = new User('user' . $index . '@' . Internet::safeEmailDomain());
 

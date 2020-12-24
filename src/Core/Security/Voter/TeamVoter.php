@@ -45,7 +45,13 @@ class TeamVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $this->teamRepository->isRootPathNode($submitterStaff->getTeam(), $team->getParent());
+        $parent = $team->getParent();
+
+        if (null === $parent) {
+            return false;
+        }
+
+        return $submitterStaff->getTeam() === $parent || \in_array($submitterStaff->getTeam(), $parent->getAncestors(), true);
     }
 
     /**
@@ -66,6 +72,6 @@ class TeamVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $this->teamRepository->isRootPathNode($submitterStaff->getTeam(), $team);
+        return $submitterStaff->getTeam() === $team || \in_array($submitterStaff->getTeam(), $team->getAncestors(), true);
     }
 }

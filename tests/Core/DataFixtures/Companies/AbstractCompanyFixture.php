@@ -10,6 +10,7 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use ReflectionException;
 use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\CompanyAdmin;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Team;
 use Unilend\Core\Entity\User;
@@ -34,7 +35,9 @@ abstract class AbstractCompanyFixture extends AbstractFixture implements Depende
      */
     final public function load(ObjectManager $manager)
     {
+        $manager->getConnection()->getConfiguration()->setSQLLogger(null);
         $company = new Company($this->getName(), $this->getName());
+        $manager->persist($company->getRootTeam());
         $company->setShortCode($this->getShortCode());
         $company->setBankCode($this->getBankCode());
         $companyReference = 'company/' . $this->getName();
@@ -53,6 +56,8 @@ abstract class AbstractCompanyFixture extends AbstractFixture implements Depende
             }
         }
 
+        unset($teams);
+
         foreach ($this->getAdmins($company) as $admin) {
             $manager->persist($admin);
         }
@@ -61,8 +66,8 @@ abstract class AbstractCompanyFixture extends AbstractFixture implements Depende
         $this->addReference($companyReference, $company);
 
         $manager->persist($company);
-
         $manager->flush();
+        $manager->clear();
     }
 
     /**

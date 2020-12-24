@@ -14,6 +14,7 @@ class MarketSegmentFixture extends AbstractFixture
      */
     public function load(ObjectManager $manager)
     {
+        $manager->getConnection()->getConfiguration()->setSQLLogger(null);
         foreach (['pro', 'ppp'] as $label) {
             $marketSegment = new MarketSegment();
 

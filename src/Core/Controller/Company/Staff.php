@@ -10,25 +10,12 @@ use Unilend\Core\Repository\StaffRepository;
 class Staff
 {
     /**
-     * @var StaffRepository
-     */
-    private StaffRepository $staffRepository;
-
-    /**
-     * @param StaffRepository $staff
-     */
-    public function __construct(StaffRepository $staff)
-    {
-        $this->staffRepository = $staff;
-    }
-
-    /**
      * @param Company $data
      *
-     * @return iterable
+     * @return Staff[]|iterable
      */
-    public function __invoke(Company $data)
+    public function __invoke(Company $data): iterable
     {
-        return $this->staffRepository->findByCompany($data);
+        return $data->getStaff();
     }
 }

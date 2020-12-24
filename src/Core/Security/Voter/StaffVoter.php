@@ -19,23 +19,18 @@ class StaffVoter extends AbstractEntityVoter
     public const ATTRIBUTE_DELETE     = 'delete';
     public const ATTRIBUTE_CREATE     = 'create';
 
-    /** @var StaffRepository */
-    private StaffRepository $staffRepository;
     /** @var CompanyAdminRepository */
     private CompanyAdminRepository $companyAdminRepository;
 
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param StaffRepository               $staffRepository
      * @param CompanyAdminRepository        $companyAdminRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
-        StaffRepository $staffRepository,
         CompanyAdminRepository $companyAdminRepository
     ) {
         parent::__construct($authorizationChecker);
-        $this->staffRepository = $staffRepository;
         $this->companyAdminRepository = $companyAdminRepository;
     }
 
@@ -110,7 +105,7 @@ class StaffVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $subject === $submitterStaff || $this->staffRepository->isSuperior($submitterStaff, $subject);
+        return $subject === $submitterStaff || $this->isSuperior($submitterStaff, $subject);
     }
 
     /**
@@ -127,6 +122,25 @@ class StaffVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $this->staffRepository->isSuperior($submitterStaff, $subject);
+        if (false === $submitterStaff->isManager()) {
+            return false;
+        }
+
+        return $this->isSuperior($submitterStaff, $subject);
+    }
+
+    /**
+     * @param $superior
+     * @param $subordinate
+     *
+     * @return bool
+     */
+    private function isSuperior($superior, $subordinate)
+    {
+        if (false === $superior->isManager()) {
+            return false;
+        }
+
+        return \in_array($superior->getTeam(), $subordinate->getTeam()->getAncestors(), true) || $superior->getTeam() === $subordinate->getTeam();
     }
 }

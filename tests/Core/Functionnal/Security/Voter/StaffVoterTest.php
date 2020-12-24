@@ -51,7 +51,7 @@ class StaffVoterTest extends KernelTestCase
 
         $voter = static::$container->get(StaffVoter::class);
 
-        static::assertSame($voter->vote($connectedToken, $subject, [$attribute]), $expected);
+        static::assertSame($expected, $voter->vote($connectedToken, $subject, [$attribute]));
     }
 
     /**
@@ -77,7 +77,7 @@ class StaffVoterTest extends KernelTestCase
      *
      * @return array[]
      */
-    private function providerEdit($staffs): array
+    public function providerEdit($staffs): array
     {
         return [
             'EDIT : non manager connected staff cannot edit staff' => [

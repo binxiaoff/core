@@ -24,8 +24,23 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *     },
  *     collectionOperations={
  *         "get": {
- *         "normalizationContext": {
+ *         "normalization_context": {
  *              "groups": {
+ *                  "company:read",
+ *                  "companyStatus:read",
+ *                  "companyModule:read",
+ *                  "staff:read",
+ *                  "user:read",
+ *                  "user_status:read",
+ *                  "nullableMoney:read"
+ *              }
+ *          }
+ *        }
+ *     },
+ *     itemOperations={
+ *         "get": {
+ *              "normalization_context": {
+ *                  "groups": {
  *                  "company:read",
  *                  "companyStatus:read",
  *                  "companyModule:read",
@@ -35,11 +50,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                  "nullableMoney:read",
  *                  "team:read"
  *              }
- *          },
- *        }
- *     },
- *     itemOperations={
- *         "get",
+ *          }
+ *        },
  *         "staff": {
  *              "method": "GET",
  *              "path": "/companies/{id}/staff",
@@ -51,7 +63,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                      "user_status:read",
  *                      "nullableMoney:read",
  *                  }
- *              },
+ *              }
  *         },
  *         "teams": {
  *              "method": "GET",
@@ -61,8 +73,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                  "groups": {
  *                      "team:read"
  *                  }
- *              },
- *         },
+ *              }
+ *         }
  *     }
  * )
  * @ApiFilter("Unilend\Core\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"})
@@ -300,16 +312,12 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
-     * @deprecated It is far better to pass by the repository to get the staff
-     *
-     * @return iterable|Staff[]
+     * @return Staff[]|iterable
      */
     public function getStaff(): iterable
     {
         foreach ($this->getTeams() as $team) {
-            foreach ($team->getStaff() as $staff) {
-                yield $staff;
-            }
+            yield from $team->getStaff();
         }
     }
 
@@ -596,7 +604,7 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return iterable|Team[]
+     * @return Team[]|iterable
      */
     public function getTeams(): iterable
     {

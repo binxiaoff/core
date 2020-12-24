@@ -92,7 +92,7 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
 
         if (null === $staff && $email && $company) {
             unset($data['user']);
-            $staff         = $this->staffRepository->findOneByUserEmailAndCompany((string) $email, $company);
+            $staff         = $this->staffRepository->findOneByEmailAndCompany((string) $email, $company);
             $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $staff;
 
             if (null === $staff) {

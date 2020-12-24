@@ -7,9 +7,11 @@ namespace Unilend\Core\Entity;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
@@ -72,25 +74,21 @@ class Team
     private iterable $staff;
 
     /**
-     * @var Team|null
+     * @var TeamEdge[]|Collection
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Team", inversedBy="children", fetch="EAGER")
-     * @ORM\JoinColumn(name="id_parent", nullable=true)
-     *
-     * @Groups({"team:create", "team:read"})
-     *
-     * @MaxDepth(1)
-     *
-     * @ApiProperty(readableLink=false, writableLink=false)
+     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\TeamEdge", mappedBy="ancestor")
      */
-    private ?Team $parent;
+    private Collection $outgoingEdges;
 
     /**
-     * @var iterable|Team[]
+     * @var TeamEdge[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\Team", mappedBy="parent")
+     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\TeamEdge", mappedBy="descendent", cascade={"persist"}, indexBy="depth")
+     *
+     * @Assert\Unique
+     * @Assert\Valid
      */
-    private iterable $children;
+    private Collection $incomingEdges;
 
     /**
      * Constructor
@@ -100,9 +98,9 @@ class Team
     private function __construct()
     {
         $this->name = '';
-        $this->parent = null;
         $this->company = null;
-        $this->children = new ArrayCollection();
+        $this->outgoingEdges = new ArrayCollection();
+        $this->incomingEdges = new ArrayCollection();
         $this->staff = new ArrayCollection();
     }
 
@@ -116,8 +114,16 @@ class Team
     {
         $team = new Team();
         $team->name = $name;
-        $team->parent = $parent;
-        $team->children->add($team);
+
+        foreach ($parent->getAncestors() as $level => $ancestor) {
+            $edge = new TeamEdge($ancestor, $team, $level + 1);
+            $team->incomingEdges[$level + 1] = $edge;
+            $ancestor->outgoingEdges[] = $edge;
+        }
+
+        $edge = new TeamEdge($parent, $team, 1);
+        $team->incomingEdges[1] = $edge;
+        $parent->outgoingEdges[] = $edge;
 
         return $team;
     }
@@ -145,6 +151,22 @@ class Team
     }
 
     /**
+     * @return Team[]|iterable
+     */
+    public function getAncestors(): array
+    {
+        return $this->incomingEdges->map(fn (TeamEdge $edge) => $edge->getAncestor())->toArray();
+    }
+
+    /**
+     * @return Team[]|iterable
+     */
+    public function getDescendents(): array
+    {
+        return $this->outgoingEdges->map(fn (TeamEdge $edge) => $edge->getDescendent())->toArray();
+    }
+
+    /**
      * @return Company
      */
     public function getCompany(): Company
@@ -154,14 +176,30 @@ class Team
 
     /**
      * @return Team|null
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
+     *
+     * @Groups({"team:read"})
      */
     public function getParent(): ?Team
     {
-        return $this->parent;
+        return false === $this->isRoot() ? $this->incomingEdges[1]->getAncestor() : null;
     }
 
     /**
-     * @return iterable|Staff[]
+     * @return iterable
+     */
+    public function getChildren(): iterable
+    {
+        foreach ($this->outgoingEdges as $edge) {
+            if (1 === $edge->getDepth()) {
+                yield $edge->getDescendent();
+            }
+        }
+    }
+
+    /**
+     * @return Staff[]|iterable
      */
     public function getStaff(): iterable
     {
@@ -169,37 +207,17 @@ class Team
     }
 
     /**
-     * @return iterable|Team[]
-     */
-    public function getChildren(): iterable
-    {
-        return $this->children;
-    }
-
-    /**
-     * @return iterable|Team[]
-     */
-    public function getDescendents(): iterable
-    {
-        yield from $this->children;
-
-        foreach ($this->children as $child) {
-            yield from $child->getDescendents();
-        }
-    }
-
-    /**
      * @return Team
      */
     public function getRoot(): Team
     {
-        $team = $this;
-
-        while (null !== $team->getParent()) {
-            $team = $team->getParent();
+        if ($this->isRoot()) {
+            return $this;
         }
 
-        return $team;
+        $depth = max($this->incomingEdges->map(fn (TeamEdge $edge) => $edge->getDepth())->toArray());
+
+        return $this->incomingEdges[$depth]->getAncestor();
     }
 
     /**
@@ -207,7 +225,7 @@ class Team
      */
     public function isRoot()
     {
-        return null === $this->parent;
+        return 0 === count($this->incomingEdges);
     }
 
     /**
