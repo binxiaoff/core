@@ -28,6 +28,9 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
  *     "message:read",
  *     "messageStatus:read",
  *     "messageThread:read",
+ *     "client:read",
+ *     "staff:read",
+ *     "company:read",
  *     "timestampable:read",
  *     "file:read",
  *     "fileVersion:read"
