@@ -96,8 +96,7 @@ class Team
      *
      * @Assert\Unique
      * @Assert\All(
-     *
-     *    @\Unilend\Core\Validator\Constraints\CompanyGroupTag()
+     *    @Assert\Choice(callback="getAvailableCompanyGroupTags")
      * )
      */
     private Collection $companyGroupTags;
@@ -254,11 +253,29 @@ class Team
     }
 
     /**
-     * @return iterable
+     * @return array
      */
-    public function getCompanyGroupTags(): iterable
+    public function getCompanyGroupTags(): array
     {
         return $this->companyGroupTags->toArray();
+    }
+
+    /**
+     * @return CompanyGroupTag[]|array
+     */
+    public function getAvailableCompanyGroupTags(): array
+    {
+        $parent = $this->getParent();
+
+        if (null === $parent) {
+            return null !== $this->getCompany() ? $this->getCompany()->getCompanyGroupTags() : [];
+        }
+
+        if ($parent->isRoot() && $parent->getCompany()) {
+            return $parent->getCompany()->getCompanyGroupTags();
+        }
+
+        return $parent->getCompanyGroupTags();
     }
 
     /**

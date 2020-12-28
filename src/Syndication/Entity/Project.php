@@ -546,8 +546,7 @@ class Project implements TraceableStatusAwareInterface
      * @ORM\JoinColumn(name="id_company_group_tag")
      *
      * @Assert\All(
-     *
-     *    @\Unilend\Core\Validator\Constraints\CompanyGroupTag(companyPropertyPath="submitterCompany")
+     *     @Assert\Choice(callback="getAvailableCompanyGroupTags")
      * )
      */
     private CompanyGroupTag $companyGroupTag;
@@ -1536,6 +1535,14 @@ class Project implements TraceableStatusAwareInterface
         $this->companyGroupTag = $companyGroupTag;
 
         return $this;
+    }
+
+    /**
+     * @return CompanyGroupTag[]|array
+     */
+    public function getAvailableCompanyGroupTags(): array
+    {
+        return $this->getArranger()->getCompanyGroupTags();
     }
 
     /**

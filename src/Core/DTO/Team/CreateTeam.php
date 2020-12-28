@@ -35,8 +35,7 @@ class CreateTeam
      * @Groups({"team:create"})
      *
      * @Assert\All(
-     *
-     *    @\Unilend\Core\Validator\Constraints\CompanyGroupTag(teamPropertyPath="parent")
+     *    @Assert\Choice(callback="getAvailableCompanyGroupTags")
      * )
      */
     public iterable $companyGroupTags;
@@ -51,5 +50,13 @@ class CreateTeam
         $this->name = $name;
         $this->parent = $parent;
         $this->companyGroupTags = $companyGroupTags;
+    }
+
+    /**
+     * @return iterable
+     */
+    public function getAvailableCompanyGroupTags(): iterable
+    {
+        return $this->parent->getAvailableCompanyGroupTags();
     }
 }

@@ -650,9 +650,9 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return CompanyGroupTag[]|iterable
+     * @return CompanyGroupTag[]|array
      */
-    public function getCompanyGroupTags(): iterable
+    public function getCompanyGroupTags(): array
     {
         return $this->companyGroup ? $this->companyGroup->getTags() : [];
     }

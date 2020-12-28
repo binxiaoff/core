@@ -148,8 +148,7 @@ class Staff implements TraceableStatusAwareInterface
      *
      * @Assert\Unique
      * @Assert\All(
-     *
-     *    @\Unilend\Core\Validator\Constraints\CompanyGroupTag(teamPropertyPath="team")
+     *     @Assert\Choice(callback="getAvailableCompanyGroupTags")
      * )
      */
     private Collection $companyGroupTags;
@@ -287,11 +286,19 @@ class Staff implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return iterable
+     * @return CompanyGroupTag[]|array
      */
     public function getCompanyGroupTags(): iterable
     {
         return $this->companyGroupTags->toArray();
+    }
+
+    /**
+     * @return CompanyGroupTag[]|array
+     */
+    public function getAvailableCompanyGroupTags(): array
+    {
+        return $this->team->getAvailableCompanyGroupTags();
     }
 
     /**

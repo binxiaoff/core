@@ -63,11 +63,11 @@ class CompanyGroup
     }
 
     /**
-     * @return iterable
+     * @return CompanyGroupTag[]|array
      */
-    public function getTags(): iterable
+    public function getTags(): array
     {
-        return $this->tags;
+        return $this->tags->toArray();
     }
 
     /**
