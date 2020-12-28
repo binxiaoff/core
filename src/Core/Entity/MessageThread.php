@@ -29,6 +29,7 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  *      "messageStatus:read",
  *      "messageFile:read",
  *      "projectParticipation:read",
+ *      "company:read",
  *      "nullableMoney:read",
  *      "money:read",
  *      "archivable:read",
