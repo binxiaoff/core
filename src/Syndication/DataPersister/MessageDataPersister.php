@@ -27,7 +27,6 @@ final class MessageDataPersister implements DataPersisterInterface
     {
         $this->messageRepository        = $messageRepository;
         $this->messageThreadRepository  = $messageThreadRepository;
-
     }
 
     /**

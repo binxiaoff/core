@@ -10,8 +10,8 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\{Message, MessageStatus, MessageThread, User};
-use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
 use Unilend\Core\Repository\MessageThreadRepository;
+use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
