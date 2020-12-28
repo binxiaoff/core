@@ -408,8 +408,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @var MessageThread|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\MessageThread", mappedBy="projectParticipation")
-     *
-     * @Groups({"projectParticipation:read"})
      */
     private ?MessageThread $messageThread = null;
 

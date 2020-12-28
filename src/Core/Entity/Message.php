@@ -26,8 +26,6 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
  *  },
  *  normalizationContext={"groups": {
  *     "message:read",
- *     "messageStatus:read",
- *     "messageThread:read",
  *     "client:read",
  *     "staff:read",
  *     "company:read",
