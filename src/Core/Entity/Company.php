@@ -49,7 +49,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                  "user:read",
  *                  "user_status:read",
  *                  "nullableMoney:read",
- *                  "companyGroupTag:read",
  *                  "team:read"
  *              }
  *          },
@@ -67,7 +66,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                  "user:read",
  *                  "user_status:read",
  *                  "nullableMoney:read",
- *                  "companyGroupTag:read",
  *                  "team:read"
  *              }
  *          },
@@ -82,6 +80,16 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                      "user:read",
  *                      "user_status:read",
  *                      "nullableMoney:read",
+ *                  }
+ *              }
+ *         },
+ *         "companyGroupTags": {
+ *              "method": "GET",
+ *              "path": "/companies/{id}/company_group_tags",
+ *              "controller": "\Unilend\Core\Controller\Company\CompanyGroupTag",
+ *              "normalization_context": {
+ *                  "groups": {
+ *                      "companyGroupTag:read"
  *                  }
  *              }
  *         },
@@ -642,9 +650,7 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return iterable
-     *
-     * @Groups({"company:read"})
+     * @return CompanyGroupTag[]|iterable
      */
     public function getCompanyGroupTags(): iterable
     {
