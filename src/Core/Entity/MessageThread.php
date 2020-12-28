@@ -32,6 +32,7 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  *      "nullableMoney:read",
  *      "money:read",
  *      "archivable:read",
+ *      "project:read",
  *      "timestampable:read",
  *      "file:read",
  *      "fileVersion:read"
@@ -40,6 +41,9 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  *      "get": {
  *          "security": "is_granted('view', object)"
  *      }
+ *  },
+ *  collectionOperations={
+ *      "get"
  *  }
  * )
  * @ApiFilter(SearchFilter::class, properties={"projectParticipation": "exact"})
