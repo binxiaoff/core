@@ -61,7 +61,7 @@ class CompanyGroupTagValidator extends ConstraintValidator
             $validatedObject = $this->propertyAccessor->getValue($this->context->getObject(), $constraint->teamPropertyPath);
         }
 
-        $company = $validatedObject instanceof Team ? $this->companyRepository->findOneByTeam($validatedObject) : $validatedObject;
+        $company = $validatedObject instanceof Team ? $validatedObject->getCompany() : $validatedObject;
 
         $expectedCompanyGroup = $company->getCompanyGroup();
 

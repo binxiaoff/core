@@ -31,14 +31,10 @@ class CompanyRepository extends ServiceEntityRepository
 
     /**
      * @param ManagerRegistry $registry
-     * @param TeamRepository  $teamRepository
      */
-    public function __construct(
-        ManagerRegistry $registry,
-        TeamRepository $teamRepository
-    ) {
+    public function __construct(ManagerRegistry $registry)
+    {
         parent::__construct($registry, Company::class);
-        $this->teamRepository = $teamRepository;
     }
 
     /**
@@ -51,35 +47,5 @@ class CompanyRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($company);
         $this->getEntityManager()->flush();
-    }
-
-    /**
-     * @param Team $team
-     *
-     * @return Company
-     *
-     * @throws NoResultException
-     * @throws NonUniqueResultException
-     */
-    public function findOneByTeam(Team $team): Company
-    {
-        $alias = 'core_company';
-
-        $cteName = 'tree';
-
-        $team = $team->getId() ? $team : $team->getParent();
-
-        $cte = $this->teamRepository->getRootPathTableCommonTableExpression($team, $cteName);
-
-        $resultSetMapping = $this->createResultSetMappingBuilder($alias);
-
-        $select = $resultSetMapping->generateSelectClause();
-
-        $sql = "{$cte} SELECT {$select} FROM {$cteName} INNER JOIN {$alias} ON {$alias}.id_root_team = {$cteName}.id";
-
-        return $this->getEntityManager()
-            ->createNativeQuery($sql, $resultSetMapping)
-            ->setResultSetMapping($resultSetMapping)
-            ->getSingleResult();
     }
 }
