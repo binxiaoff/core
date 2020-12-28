@@ -12,7 +12,7 @@ use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\DataFixtures\StaffFixtures;
 use Unilend\Core\Entity\{Message, MessageThread, Staff};
 use Unilend\Core\Repository\StaffRepository;
-use Unilend\Syndication\Entity\{Project, ProjectParticipation};
+use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
 
 class MessageFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -102,7 +102,8 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
                 $projectParticipationMembers = $projectParticipation->getProjectParticipationMembers()->toArray();
 
                 if (
-                    $projectParticipation->getParticipant() !== $project->getArranger()
+                    $project->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_DRAFT
+                    && $projectParticipation->getParticipant() !== $project->getArranger()
                     && $sender !== $project->getArranger()->getStaff()
                 ) {
                     // If sender not set, pick one of projectParticipationMembers as a message sender

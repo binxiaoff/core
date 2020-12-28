@@ -9,7 +9,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\{MessageThread, User};
+use Unilend\Core\Entity\{Message, MessageStatus, MessageThread, User};
 use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectParticipationMember, ProjectStatus};
 
 class ListExtension implements QueryCollectionExtensionInterface
@@ -52,11 +52,16 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->innerJoin(ProjectParticipation::class, 'pp', Join::WITH, $rootAlias . '.projectParticipation = pp.id')
             ->innerJoin(Project::class, 'p', Join::WITH, 'p.id = pp.project')
             ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'pst.project = p.id')
-            ->innerJoin(ProjectParticipationMember::class, 'ppm', Join::WITH, 'ppm.projectParticipation = pp.id')
-            ->andWhere('ppm.staff = :staff')
+            ->innerJoin(Message::class, 'msg', Join::WITH, $rootAlias . '.id = msg.messageThread')
+            ->leftJoin(MessageStatus::class, 'msgst', Join::WITH, 'msg.id = msgst.message')
+            ->andWhere($queryBuilder->expr()->orX(
+                $queryBuilder->expr()->eq('msgst.recipient', ':recipient'),
+                $queryBuilder->expr()->eq('msg.sender', ':sender')
+            ))
             ->andWhere('pst.status > :project_current_status')
             ->setParameters([
-                'staff' => $staff,
+                'recipient'              => $staff,
+                'sender'                 => $staff,
                 'project_current_status' => ProjectStatus::STATUS_DRAFT,
             ])
             ->orderBy('p.title', 'ASC');

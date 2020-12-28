@@ -20,6 +20,7 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  *
  * @ApiResource(
  *  attributes={
+ *      "pagination_enabled"=false,
  *      "route_prefix"="/core"
  *  },
  *  normalizationContext={"groups": {
@@ -28,26 +29,9 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  *      "messageStatus:read",
  *      "messageFile:read",
  *      "projectParticipation:read",
- *      "projectParticipationMember:read",
  *      "project:read",
- *      "role:read",
- *      "company:read",
- *      "nullableMoney:read",
- *      "money:read",
- *      "rangedOfferWithFee:read",
- *      "offerWithFee:read",
- *      "offer:read",
- *      "archivable:read",
- *      "timestampable:read",
  *      "file:read",
  *      "fileVersion:read",
- *      "tranche:read",
- *      "lendingRate:read",
- *      "companyStatus:read",
- *      "role:read",
- *      "invitationReplyVersion:read",
- *      "interestReplyVersion:read",
- *      "client:read",
  *      "staff:read"
  *  }},
  *  itemOperations={
