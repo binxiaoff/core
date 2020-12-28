@@ -25,6 +25,7 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  *  normalizationContext={"groups": {
  *      "messageThread:read",
  *      "message:read",
+ *      "messageStatus:read",
  *      "messageFile:read",
  *      "projectParticipation:read",
  *      "projectParticipationMember:read",

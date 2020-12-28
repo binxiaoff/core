@@ -98,6 +98,8 @@ class Message
      * @var MessageStatus[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\MessageStatus", mappedBy="message")
+     *
+     * @Groups({"message:read"})
      */
     private Collection $messageStatuses;
 
