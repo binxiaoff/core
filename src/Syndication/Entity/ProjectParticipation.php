@@ -16,7 +16,7 @@ use Symfony\Component\Validator\{Constraints as Assert, Context\ExecutionContext
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Core\Entity\{Company, File, MessageThread, Staff};
+use Unilend\Core\Entity\{Company, File, Staff};
 use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithFee};
@@ -405,13 +405,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private ?File $nda = null;
 
     /**
-     * @var MessageThread|null
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\MessageThread", mappedBy="projectParticipation")
-     */
-    private ?MessageThread $messageThread = null;
-
-    /**
      * @param Company $participant
      * @param Project $project
      * @param Staff   $addedBy
@@ -759,26 +752,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public function setNda(?File $nda): ProjectParticipation
     {
         $this->nda = $nda;
-
-        return $this;
-    }
-
-    /**
-     * @return MessageThread|null
-     */
-    public function getMessageThread(): ?MessageThread
-    {
-        return $this->messageThread;
-    }
-
-    /**
-     * @param MessageThread $messageThread
-     *
-     * @return $this
-     */
-    public function setMessageThread(MessageThread $messageThread): ProjectParticipation
-    {
-        $this->messageThread = $messageThread;
 
         return $this;
     }

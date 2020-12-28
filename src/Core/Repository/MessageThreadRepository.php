@@ -30,6 +30,14 @@ class MessageThreadRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return EntityManager|EntityManagerInterface
+     */
+    public function getEntityManager()
+    {
+        return parent::getEntityManager();
+    }
+
+    /**
      * @param MessageThread $messageThread
      *
      * @throws ORMException

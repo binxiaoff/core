@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiResource};
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -14,23 +13,6 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 /**
  * @ORM\Entity
  * @ORM\Table(name="core_message_file")
- *
- * @ApiResource(
- *  attributes={
- *      "route_prefix"="/core"
- *  },
- *  normalizationContext={"groups": {
- *     "messageFile:read",
- *     "file:read",
- *  }},
- *  collectionOperations={
- *  },
- *  itemOperations={
- *      "get": {
- *          "security": "is_granted('view', object)"
- *     }
- *  }
- * )
  */
 class MessageFile
 {

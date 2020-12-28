@@ -7,20 +7,27 @@ namespace Unilend\Syndication\DataPersister;
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use Unilend\Core\Entity\Message;
 use Unilend\Core\Repository\MessageRepository;
+use Unilend\Core\Repository\MessageThreadRepository;
 
 final class MessageDataPersister implements DataPersisterInterface
 {
     /** @var MessageRepository */
     private MessageRepository $messageRepository;
 
+    /** @var MessageThreadRepository */
+    private MessageThreadRepository $messageThreadRepository;
+
     /**
      * MessageDataPersister constructor.
      *
-     * @param MessageRepository $messageRepository
+     * @param MessageRepository       $messageRepository
+     * @param MessageThreadRepository $messageThreadRepository
      */
-    public function __construct(MessageRepository $messageRepository)
+    public function __construct(MessageRepository $messageRepository, MessageThreadRepository $messageThreadRepository)
     {
-        $this->messageRepository = $messageRepository;
+        $this->messageRepository        = $messageRepository;
+        $this->messageThreadRepository  = $messageThreadRepository;
+
     }
 
     /**
@@ -47,7 +54,8 @@ final class MessageDataPersister implements DataPersisterInterface
         if ($data->isBroadcast()) {
             $project = $data->getMessageThread()->getProjectParticipation()->getProject();
             foreach ($project->getProjectParticipations() as $projectParticipation) {
-                if ($projectParticipation->isActive() && $data->getMessageThread() !== $projectParticipation->getMessageThread()) {
+                $messageThread = $this->messageThreadRepository->findOneBy(['projectParticipation' => $projectParticipation]);
+                if ($projectParticipation->isActive() && $data->getMessageThread() !== $messageThread) {
                     $message = (new Message($data->getSender(), $projectParticipation->getMessageThread(), $data->getBody()))->setBroadcast($data->getBroadcast());
                     $this->messageRepository->save($message);
                 }

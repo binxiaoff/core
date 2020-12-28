@@ -140,9 +140,11 @@ class MessageInputDataTransformer implements DataTransformerInterface
      */
     private function getMessageThreadFromProjectParticipation(ProjectParticipation $projectParticipation): MessageThread
     {
-        if ($projectParticipation->getMessageThread() instanceof MessageThread) {
-            return $projectParticipation->getMessageThread();
+        $messageThread = $this->messageThreadRepository->findOneBy(['projectParticipation' => $projectParticipation]);
+        if ($messageThread instanceof MessageThread) {
+            return $messageThread;
         }
+
         $messageThread = (new MessageThread())->setProjectParticipation($projectParticipation);
         $this->messageThreadRepository->save($messageThread);
 

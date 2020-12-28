@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Repository;
 
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
@@ -81,6 +82,7 @@ class MessageStatusRepository extends ServiceEntityRepository
                 'message_thread'    => $messageThread->getId(),
             ])
             ->set('msgst.status', MessageStatus::STATUS_READ)
+            ->set('msgst.updated', new DateTimeImmutable())
             ->getQuery()
             ->execute();
     }

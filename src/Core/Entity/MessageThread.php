@@ -56,7 +56,7 @@ class MessageThread
     /**
      * @var ProjectParticipation|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation", inversedBy="messageThread")
+     * @ORM\OneToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation")
      * @ORM\JoinColumn(name="id_project_participation", referencedColumnName="id")
      *
      * @Groups({"messageThread:read"})
