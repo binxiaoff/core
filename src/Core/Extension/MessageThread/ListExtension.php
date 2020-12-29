@@ -75,9 +75,7 @@ class ListExtension implements QueryCollectionExtensionInterface
                         )
                     ),
                     // Participant condition
-                    $expressionBuilder->andX('ppc.staff = :staff'),
-                    $expressionBuilder->andX('msgst.recipient = :staff'),
-                    $expressionBuilder->andX('msg.sender = :staff')
+                    $expressionBuilder->andX('ppc.staff = :staff AND ppc.archived IS NULL')
                 )
             )
             ->setParameter('staff', $staff)
