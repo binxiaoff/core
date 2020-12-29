@@ -68,7 +68,6 @@ class ListExtension implements QueryCollectionExtensionInterface
                 $queryBuilder->expr()->eq('msgst.recipient', ':staff'),
                 $queryBuilder->expr()->eq('msg.sender', ':staff')
             ))
-//            ->andWhere($queryBuilder->expr()->eq('msg.sender', ':staff'))
             ->andWhere(
                 $expressionBuilder->orX(
                     // Submitter condition
