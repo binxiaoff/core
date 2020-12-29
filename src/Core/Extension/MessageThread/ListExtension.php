@@ -64,10 +64,6 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'pst.project = p.id')
             ->innerJoin(Message::class, 'msg', Join::WITH, $rootAlias . '.id = msg.messageThread')
             ->leftJoin(MessageStatus::class, 'msgst', Join::WITH, 'msg.id = msgst.message')
-            ->andWhere($queryBuilder->expr()->orX(
-                $queryBuilder->expr()->eq('msgst.recipient', ':staff'),
-                $queryBuilder->expr()->eq('msg.sender', ':staff')
-            ))
             ->andWhere(
                 $expressionBuilder->orX(
                     // Submitter condition
@@ -79,7 +75,9 @@ class ListExtension implements QueryCollectionExtensionInterface
                         )
                     ),
                     // Participant condition
-                    $expressionBuilder->andX('ppc.staff = :staff')
+                    $expressionBuilder->andX('ppc.staff = :staff'),
+                    $expressionBuilder->andX('msgst.recipient = :staff'),
+                    $expressionBuilder->andX('msg.sender = :staff')
                 )
             )
             ->setParameter('staff', $staff)
