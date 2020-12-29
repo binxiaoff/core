@@ -37,6 +37,7 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  *      "project:read",
  *      "timestampable:read",
  *      "file:read",
+ *      "user:read",
  *      "fileVersion:read"
  *  }},
  *  itemOperations={
