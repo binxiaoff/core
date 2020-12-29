@@ -114,10 +114,6 @@ class MessageThread
     {
         $this->projectParticipation = $projectParticipation;
 
-        if ($projectParticipation instanceof ProjectParticipation) {
-            $projectParticipation->setMessageThread($this);
-        }
-
         return $this;
     }
 
