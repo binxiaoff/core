@@ -55,7 +55,7 @@ final class MessageDataPersister implements DataPersisterInterface
             foreach ($project->getProjectParticipations() as $projectParticipation) {
                 $messageThread = $this->messageThreadRepository->findOneBy(['projectParticipation' => $projectParticipation]);
                 if ($projectParticipation->isActive() && $data->getMessageThread() !== $messageThread) {
-                    $message = (new Message($data->getSender(), $projectParticipation->getMessageThread(), $data->getBody()))->setBroadcast($data->getBroadcast());
+                    $message = (new Message($data->getSender(), $messageThread, $data->getBody()))->setBroadcast($data->getBroadcast());
                     $this->messageRepository->save($message);
                 }
             }
