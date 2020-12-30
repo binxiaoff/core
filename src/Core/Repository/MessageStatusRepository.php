@@ -63,27 +63,30 @@ class MessageStatusRepository extends ServiceEntityRepository
      * @param Staff         $recipient
      * @param MessageThread $messageThread
      *
-     * @return int|mixed|string
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function setMessageStatusesToRead(Staff $recipient, MessageThread $messageThread)
     {
-        return $this->createQueryBuilder('msgst')
-            ->update(MessageStatus::class, 'msgst')
-            ->select('msg')
-            ->addSelect('msgst')
+        // @todo set update query with subquery instead
+        $messageStatuses = $this->createQueryBuilder('msgst')
             ->innerJoin(Message::class, 'msg', Join::WITH, 'msgst.message = msg.id')
-            ->innerJoin(MessageThread::class, 'msgth', Join::WITH, 'msg.messageThread = msgth.id')
             ->andWhere('msgst.recipient = :recipient')
             ->andWhere('msgst.status = :current_status')
             ->andWhere('msg.messageThread = :message_thread')
             ->setParameters([
-                'recipient'         => $recipient,
-                'current_status'    => MessageStatus::STATUS_UNREAD,
-                'message_thread'    => $messageThread->getId(),
+                'recipient'      => $recipient,
+                'current_status' => MessageStatus::STATUS_UNREAD,
+                'message_thread' => $messageThread->getId(),
             ])
-            ->set('msgst.status', MessageStatus::STATUS_READ)
-            ->set('msgst.updated', new DateTimeImmutable())
             ->getQuery()
-            ->execute();
+            ->getResult();
+        foreach ($messageStatuses as $messageStatus) {
+            $messageStatus
+                ->setStatus(MessageStatus::STATUS_READ)
+                ->setUpdated(new DateTimeImmutable());
+            $this->persist($messageStatus);
+        }
+        $this->flush();
     }
 }
