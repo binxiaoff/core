@@ -95,9 +95,6 @@ class Team
      * @Groups({"team:read", "team:update"})
      *
      * @Assert\Unique
-     * @Assert\All(
-     *    @Assert\Choice(callback="getAvailableCompanyGroupTags")
-     * )
      */
     private Collection $companyGroupTags;
 

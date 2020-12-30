@@ -147,9 +147,6 @@ class Staff implements TraceableStatusAwareInterface
      * @ORM\JoinTable(name="core_staff_company_group_tag")
      *
      * @Assert\Unique
-     * @Assert\All(
-     *     @Assert\Choice(callback="getAvailableCompanyGroupTags")
-     * )
      */
     private Collection $companyGroupTags;
 
