@@ -49,7 +49,7 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  *      "get"
  *  }
  * )
- * @ApiFilter(SearchFilter::class, properties={"projectParticipation": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"projectParticipation.publicId": "exact"})
  */
 class MessageThread
 {
