@@ -58,7 +58,7 @@ class Team
     /**
      * @var Company|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Company", mappedBy="rootTeam", fetch="EAGER")
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Company", mappedBy="rootTeam")
      */
     private ?Company $company;
 
@@ -115,15 +115,15 @@ class Team
         $team = new Team();
         $team->name = $name;
 
-        foreach ($parent->getAncestors() as $level => $ancestor) {
-            $edge = new TeamEdge($ancestor, $team, $level + 1);
-            $team->incomingEdges[$level + 1] = $edge;
-            $ancestor->outgoingEdges[] = $edge;
-        }
-
         $edge = new TeamEdge($parent, $team, 1);
         $team->incomingEdges[1] = $edge;
         $parent->outgoingEdges[] = $edge;
+
+        foreach ($parent->getAncestors() as $depth => $ancestor) {
+            $edge = new TeamEdge($ancestor, $team, $depth + 1);
+            $team->incomingEdges[$depth + 1] = $edge;
+            $ancestor->outgoingEdges[] = $edge;
+        }
 
         return $team;
     }

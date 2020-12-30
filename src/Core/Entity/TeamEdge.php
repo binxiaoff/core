@@ -41,7 +41,7 @@ class TeamEdge
     /**
      * @var Team
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Team", inversedBy="outgoingEdges")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Team", inversedBy="outgoingEdges", fetch="EAGER")
      * @ORM\JoinColumn(name="id_ancestor")
      *
      * @Assert\NotBlank
