@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Syndication\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\Core\Entity\Message;
-use Unilend\Core\Repository\MessageRepository;
-use Unilend\Core\Repository\MessageThreadRepository;
+use Unilend\Core\Repository\{MessageRepository, MessageThreadRepository};
 
 final class MessageDataPersister implements DataPersisterInterface
 {
@@ -18,8 +18,6 @@ final class MessageDataPersister implements DataPersisterInterface
     private MessageThreadRepository $messageThreadRepository;
 
     /**
-     * MessageDataPersister constructor.
-     *
      * @param MessageRepository       $messageRepository
      * @param MessageThreadRepository $messageThreadRepository
      */
@@ -30,7 +28,7 @@ final class MessageDataPersister implements DataPersisterInterface
     }
 
     /**
-     * @param $data
+     * @param Message $data
      *
      * @return bool
      */
@@ -40,16 +38,16 @@ final class MessageDataPersister implements DataPersisterInterface
     }
 
     /**
-     * @param $data
+     * @param Message $data
      *
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ORMException
+     * @throws OptimisticLockException
      *
-     * @return object|void
+     * @return Message
      */
-    public function persist($data)
+    public function persist($data): Message
     {
-        // If message is a broadcasted one, get each project projectParticipations and link a copy of this message to projectParticipation.thread
+        // If message is a broadcast one, get each project projectParticipations and link a copy of this message to projectParticipation.thread
         if ($data->isBroadcast()) {
             $project = $data->getMessageThread()->getProjectParticipation()->getProject();
             foreach ($project->getProjectParticipations() as $projectParticipation) {
@@ -66,9 +64,9 @@ final class MessageDataPersister implements DataPersisterInterface
     }
 
     /**
-     * @param $data
+     * @param Message $data
      */
-    public function remove($data)
+    public function remove($data): void
     {
         // TODO: Implement remove() method.
     }

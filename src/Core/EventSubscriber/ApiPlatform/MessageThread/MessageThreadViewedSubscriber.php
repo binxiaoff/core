@@ -11,6 +11,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\MessageThread;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\MessageStatusRepository;
 
 class MessageThreadViewedSubscriber implements EventSubscriberInterface
@@ -56,7 +57,8 @@ class MessageThreadViewedSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $staff  = $this->security->getUser()->getCurrentStaff();
+        $user  = $this->security->getUser();
+        $staff = $user instanceof User ? $user->getCurrentStaff() : null;
         if (null === $staff) {
             return;
         }

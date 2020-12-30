@@ -20,7 +20,7 @@ class MessageVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function canView($message, User $user): bool
+    protected function canView(Message $message, User $user): bool
     {
         return $this->authorizationChecker->isGranted(MessageThreadVoter::ATTRIBUTE_VIEW, $message->getMessageThread());
     }
@@ -31,7 +31,7 @@ class MessageVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function canCreate($message, User $user): bool
+    protected function canCreate(Message $message, User $user): bool
     {
         return $this->authorizationChecker->isGranted(MessageThreadVoter::ATTRIBUTE_VIEW, $message->getMessageThread());
     }
@@ -42,7 +42,7 @@ class MessageVoter extends AbstractEntityVoter
      *
      * @return bool
      */
-    protected function canAttachFile($message, User $user): bool
+    protected function canAttachFile(Message $message, User $user): bool
     {
         return $message->getSender()->getUser() === $user;
     }

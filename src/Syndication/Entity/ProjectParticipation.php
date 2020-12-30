@@ -431,7 +431,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @return array
      */
-    public static function getFileTypes()
+    public static function getFileTypes(): array
     {
         return [static::PROJECT_PARTICIPATION_FILE_TYPE_NDA];
     }

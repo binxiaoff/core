@@ -7,7 +7,8 @@ namespace Unilend\Syndication\DataTransformer;
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
-use Symfony\Component\Security\Core\Exception\{AccessDeniedException, RuntimeException};
+use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Core\DTO\MessageInput;
@@ -76,8 +77,8 @@ class MessageInputDataTransformer implements DataTransformerInterface
      *
      * @return Message
      *
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function transform($object, string $to, array $context = [])
     {
@@ -87,7 +88,7 @@ class MessageInputDataTransformer implements DataTransformerInterface
         $user = $this->security->getUser();
 
         if (false === $user instanceof User) {
-            throw new RuntimeException();
+            throw new AccessDeniedException();
         }
 
         if (($entity instanceof ProjectParticipation) && false === $this->security->isGranted(MessageThreadVoter::ATTRIBUTE_VIEW, $entity)) {
@@ -113,8 +114,8 @@ class MessageInputDataTransformer implements DataTransformerInterface
     /***
      * @param Project $project
      *
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ORMException
+     * @throws OptimisticLockException
      *
      * @return MessageThread|null
      */
@@ -135,8 +136,8 @@ class MessageInputDataTransformer implements DataTransformerInterface
      *
      * @return MessageThread
      *
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     private function getMessageThreadFromProjectParticipation(ProjectParticipation $projectParticipation): MessageThread
     {

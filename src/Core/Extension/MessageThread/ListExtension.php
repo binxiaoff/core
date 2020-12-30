@@ -9,28 +9,21 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\{Message, MessageStatus, MessageThread, User};
-use Unilend\Core\Repository\MessageThreadRepository;
+use Unilend\Core\Entity\{MessageThread, User};
 use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
     /** @var Security */
-    private $security;
-
-    /** @var MessageThreadRepository */
-    private $messageThreadRepository;
-
+    private Security $security;
     /**
      * ListExtension constructor.
      *
-     * @param Security                $security
-     * @param MessageThreadRepository $messageThreadRepository
+     * @param Security $security
      */
-    public function __construct(Security $security, MessageThreadRepository $messageThreadRepository)
+    public function __construct(Security $security)
     {
         $this->security                = $security;
-        $this->messageThreadRepository = $messageThreadRepository;
     }
 
     /**
@@ -56,16 +49,15 @@ class ListExtension implements QueryCollectionExtensionInterface
         }
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
-        $expressionBuilder = $this->messageThreadRepository->getEntityManager()->getExpressionBuilder();
         $queryBuilder
             ->innerJoin(ProjectParticipation::class, 'pp', Join::WITH, $rootAlias . '.projectParticipation = pp.id')
             ->leftJoin("pp.projectParticipationMembers", 'ppc')
             ->innerJoin(Project::class, 'p', Join::WITH, 'p.id = pp.project')
             ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'pst.project = p.id')
             ->andWhere(
-                $expressionBuilder->orX(
+                $queryBuilder->expr()->orX(
                     // Submitter condition
-                    $expressionBuilder->andX(
+                    $queryBuilder->expr()->andX(
                         'p.submitterCompany = :company',
                         $queryBuilder->expr()->orX(
                             'p.marketSegment IN (:marketSegments)',
@@ -73,12 +65,12 @@ class ListExtension implements QueryCollectionExtensionInterface
                         )
                     ),
                     // Participant condition
-                    $expressionBuilder->andX('ppc.staff = :staff AND ppc.archived IS NULL')
+                    'ppc.staff = :staff AND ppc.archived IS NULL'
                 )
             )
             ->setParameter('staff', $staff)
-            ->setParameter('company', $user->getCompany())
-            ->setParameter('marketSegments', $user->getCurrentStaff()->getMarketSegments())
+            ->setParameter('company', $staff->getCompany())
+            ->setParameter('marketSegments', $staff->getMarketSegments())
             ->orderBy('p.title', 'ASC');
     }
 }

@@ -90,14 +90,13 @@ class MessageStatus
      *
      * @param Message $message
      * @param Staff   $recipient
-     * @param int     $status
      */
-    public function __construct(Message $message, Staff $recipient, int $status = self::STATUS_UNREAD)
+    public function __construct(Message $message, Staff $recipient)
     {
         $this->message   = $message;
         $this->recipient = $recipient;
-        $this->setStatus($status);
         $this->added     = new DateTimeImmutable();
+        $this->setStatus(self::STATUS_UNREAD);
     }
 
     /**

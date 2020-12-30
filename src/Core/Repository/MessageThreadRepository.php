@@ -6,10 +6,8 @@ namespace Unilend\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\Core\Entity\MessageThread;
-use Unilend\Syndication\Entity\Project;
 
 /**
  * @method MessageThread|null find($id, $lockMode = null, $lockVersion = null)
@@ -30,20 +28,12 @@ class MessageThreadRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return EntityManager|EntityManagerInterface
-     */
-    public function getEntityManager()
-    {
-        return parent::getEntityManager();
-    }
-
-    /**
      * @param MessageThread $messageThread
      *
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function save(MessageThread $messageThread)
+    public function save(MessageThread $messageThread): void
     {
         $this->getEntityManager()->persist($messageThread);
         $this->getEntityManager()->flush();

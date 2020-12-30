@@ -13,8 +13,7 @@ use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 use Unilend\Core\DTO\MessageInput;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 
 /**
  * @ORM\Entity
@@ -130,7 +129,7 @@ class Message
     /**
      * @return array
      */
-    public static function getFileTypes()
+    public static function getFileTypes(): array
     {
         return [static::FILE_TYPE_MESSAGE_ATTACHMENT];
     }

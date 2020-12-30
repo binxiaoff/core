@@ -66,17 +66,14 @@ class MessageCreatedHandler implements MessageHandlerInterface
         // If the message is sent by arranger to the participant
         if ($message->getSender()->getCompany() === $project->getArranger()) {
             foreach ($projectParticipationMembers as $projectParticipationMember) {
-                if (
-                    $projectParticipationMember->getStaff()->isActive()
-                    && false === $projectParticipationMember->isArchived()
-                ) {
+                if (false === $projectParticipationMember->isArchived() && $projectParticipationMember->getStaff()->isActive()) {
                     $this->messageStatusRepository->persist(new MessageStatus($message, $projectParticipationMember->getStaff()));
                 }
             }
         } else {
             // If the message is sent by a participant to the arranger
             foreach ($participationArrangerMembers as $participationArrangerMember) {
-                if ($participationArrangerMember->getStaff()->isActive() && false === $participationArrangerMember->isArchived()) {
+                if (false === $participationArrangerMember->isArchived() && $participationArrangerMember->getStaff()->isActive()) {
                     $this->messageStatusRepository->persist(new MessageStatus($message, $participationArrangerMember->getStaff()));
                 }
             }

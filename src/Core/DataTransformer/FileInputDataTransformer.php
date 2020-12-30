@@ -14,13 +14,10 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
 use Unilend\Core\DTO\FileInput;
 use Unilend\Core\Entity\{File, Message, MessageFile, Staff, User};
-use Unilend\Core\Repository\{MessageFileRepository, MessageRepository, MessageThreadRepository};
+use Unilend\Core\Repository\{MessageFileRepository, MessageRepository};
 use Unilend\Core\Security\Voter\MessageVoter;
 use Unilend\Core\Service\File\FileUploadManager;
-use Unilend\Syndication\Entity\{Project,
-    ProjectFile,
-    ProjectParticipation
-};
+use Unilend\Syndication\Entity\{Project, ProjectFile, ProjectParticipation};
 use Unilend\Syndication\Repository\{ProjectFileRepository, ProjectRepository};
 use Unilend\Syndication\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
 use Unilend\Syndication\Service\Project\ProjectManager;
@@ -41,23 +38,20 @@ class FileInputDataTransformer
     private MessageFileRepository $messageFileRepository;
     /** @var ProjectManager */
     private ProjectManager $projectManager;
-    /** @var MessageThreadRepository */
-    private MessageThreadRepository $messageThreadRepository;
     /** @var MessageRepository */
     private MessageRepository $messageRepository;
 
     /**
      * FileInputDataTransformer constructor.
      *
-     * @param ValidatorInterface      $validator
-     * @param Security                $security
-     * @param FileUploadManager       $fileUploadManager
-     * @param ProjectManager          $projectManager
-     * @param ProjectFileRepository   $projectFileRepository
-     * @param ProjectRepository       $projectRepository
-     * @param MessageFileRepository   $messageFileRepository
-     * @param MessageThreadRepository $messageThreadRepository
-     * @param MessageRepository       $messageRepository
+     * @param ValidatorInterface    $validator
+     * @param Security              $security
+     * @param FileUploadManager     $fileUploadManager
+     * @param ProjectManager        $projectManager
+     * @param ProjectFileRepository $projectFileRepository
+     * @param ProjectRepository     $projectRepository
+     * @param MessageFileRepository $messageFileRepository
+     * @param MessageRepository     $messageRepository
      */
     public function __construct(
         ValidatorInterface $validator,
@@ -67,7 +61,6 @@ class FileInputDataTransformer
         ProjectFileRepository $projectFileRepository,
         ProjectRepository $projectRepository,
         MessageFileRepository $messageFileRepository,
-        MessageThreadRepository $messageThreadRepository,
         MessageRepository $messageRepository
     ) {
         $this->validator                = $validator;
@@ -77,7 +70,6 @@ class FileInputDataTransformer
         $this->projectRepository        = $projectRepository;
         $this->messageFileRepository    = $messageFileRepository;
         $this->projectManager           = $projectManager;
-        $this->messageThreadRepository  = $messageThreadRepository;
         $this->messageRepository        = $messageRepository;
     }
 
@@ -148,22 +140,24 @@ class FileInputDataTransformer
         }
 
         if (false === $file instanceof File) {
-            $file        = new File();
+            $file = new File();
         }
-        $messageFile = new MessageFile($file, $message);
+
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file);
+
+        $messagesToBeAttached = [$message];
 
         // If it's a broadcast message, then add messageFile to all broadcast messages
         if ($message->isBroadcast()) {
-            $messages = $this->messageRepository->findBy(['broadcast' => $message->getBroadcast()]);
-            foreach ($messages as $messageToAddMessageFile) {
-                if ($messageToAddMessageFile !== $message) {
-                    $messageFileBroadcast = new MessageFile($file, $messageToAddMessageFile);
-                    $this->messageFileRepository->save($messageFileBroadcast);
-                }
-            }
+            $messagesToBeAttached = $this->messageRepository->findBy(['broadcast' => $message->getBroadcast()]);
         }
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, ['messageId' => $messageFile->getMessage()->getId()]);
-        $this->messageFileRepository->save($messageFile);
+
+        foreach ($messagesToBeAttached as $messageToAddMessageFile) {
+            $messageFile = new MessageFile($file, $messageToAddMessageFile);
+            $this->messageFileRepository->persist($messageFile);
+        }
+
+        $this->messageFileRepository->flush();
 
         return $file;
     }

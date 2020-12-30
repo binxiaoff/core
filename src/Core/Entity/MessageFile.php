@@ -7,8 +7,7 @@ namespace Unilend\Core\Entity;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 
 /**
  * @ORM\Entity
@@ -38,8 +37,6 @@ class MessageFile
     private Message $message;
 
     /**
-     * MessageFile constructor.
-     *
      * @param File    $file
      * @param Message $message
      */

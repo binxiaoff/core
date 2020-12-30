@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Repository;
 
-use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\{Message, Staff};
+use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Unilend\Core\Entity\Message;
 
 /**
  * @method Message|null find($id, $lockMode = null, $lockVersion = null)
@@ -30,8 +30,8 @@ class MessageRepository extends ServiceEntityRepository
     /**
      * @param Message $message
      *
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function save(Message $message): void
     {

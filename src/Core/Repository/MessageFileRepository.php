@@ -38,4 +38,23 @@ class MessageFileRepository extends ServiceEntityRepository
         $this->getEntityManager()->persist($messageFile);
         $this->getEntityManager()->flush();
     }
+
+    /**
+     * @param MessageFile $messageStatus
+     *
+     * @throws ORMException
+     */
+    public function persist(MessageFile $messageStatus): void
+    {
+        $this->getEntityManager()->persist($messageStatus);
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function flush(): void
+    {
+        $this->getEntityManager()->flush();
+    }
 }

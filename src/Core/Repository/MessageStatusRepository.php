@@ -51,8 +51,8 @@ class MessageStatusRepository extends ServiceEntityRepository
     }
 
     /**
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function flush(): void
     {

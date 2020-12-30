@@ -10,8 +10,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 use Unilend\Syndication\Entity\ProjectParticipation;
 
 /**
@@ -91,20 +90,6 @@ class MessageThread
     public function getMessages(): Collection
     {
         return $this->messages;
-    }
-
-    /**
-     * @param Message $message
-     *
-     * @return MessageThread
-     */
-    public function addMessage(Message $message): MessageThread
-    {
-        if (!$this->messages->contains($message)) {
-            $this->messages->add($message);
-        }
-
-        return $this;
     }
 
     /**

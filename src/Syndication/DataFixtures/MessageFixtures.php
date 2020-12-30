@@ -95,26 +95,25 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     private function createMessagesForProjectParticipations(Project $project, Staff $sender = null): void
     {
+        if ($project->getCurrentStatus()->getStatus() <= ProjectStatus::STATUS_DRAFT) {
+            return;
+        }
+
         $projectParticipations = $project->getProjectParticipations();
         foreach ($projectParticipations as $projectParticipation) {
-            if ($projectParticipation->getProjectParticipationMembers()->count() > 0) {
+            if ($projectParticipation->getProjectParticipationMembers()->count() > 0 && $projectParticipation->getParticipant() !== $project->getArranger()) {
                 $projectParticipationMembers = $projectParticipation->getProjectParticipationMembers()->toArray();
+                $messageThread               = $this->getProjectParticipationMessageThread($projectParticipation);
 
-                if (
-                    $project->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_DRAFT
-                    && $projectParticipation->getParticipant() !== $project->getArranger()
-                ) {
-                    $messageThread = $this->getProjectParticipationMessageThread($projectParticipation);
-                    // If sender not set, pick one of projectParticipationMembers as a message sender
-                    $sender = $sender ?: $projectParticipationMembers[array_rand($projectParticipationMembers, 1)]->getStaff();
-                    $message = (new Message($sender, $messageThread, sprintf(
-                        'Message on project "%s" from user "%s" to company "%s" member\'s',
-                        $project->getTitle(),
-                        $sender->getUser()->getEmail(),
-                        $projectParticipation->getParticipant()->getDisplayName()
-                    )));
-                    $this->manager->persist($message);
-                }
+                // If sender not set, pick one of projectParticipationMembers as a message sender
+                $sender  = $sender ?: $projectParticipationMembers[array_rand($projectParticipationMembers, 1)]->getStaff();
+                $message = (new Message($sender, $messageThread, sprintf(
+                    'Message on project "%s" from user "%s" to company "%s" member\'s',
+                    $project->getTitle(),
+                    $sender->getUser()->getEmail(),
+                    $projectParticipation->getParticipant()->getDisplayName()
+                )));
+                $this->manager->persist($message);
             }
         }
         $this->manager->flush();
