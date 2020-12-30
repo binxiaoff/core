@@ -62,8 +62,6 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->leftJoin("pp.projectParticipationMembers", 'ppc')
             ->innerJoin(Project::class, 'p', Join::WITH, 'p.id = pp.project')
             ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'pst.project = p.id')
-            ->innerJoin(Message::class, 'msg', Join::WITH, $rootAlias . '.id = msg.messageThread')
-            ->leftJoin(MessageStatus::class, 'msgst', Join::WITH, 'msg.id = msgst.message')
             ->andWhere(
                 $expressionBuilder->orX(
                     // Submitter condition

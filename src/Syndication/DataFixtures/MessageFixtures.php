@@ -98,14 +98,13 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
         $projectParticipations = $project->getProjectParticipations();
         foreach ($projectParticipations as $projectParticipation) {
             if ($projectParticipation->getProjectParticipationMembers()->count() > 0) {
-                $messageThread = $this->getProjectParticipationMessageThread($projectParticipation);
                 $projectParticipationMembers = $projectParticipation->getProjectParticipationMembers()->toArray();
 
                 if (
                     $project->getCurrentStatus()->getStatus() > ProjectStatus::STATUS_DRAFT
                     && $projectParticipation->getParticipant() !== $project->getArranger()
-                    && $sender !== $project->getArranger()->getStaff()
                 ) {
+                    $messageThread = $this->getProjectParticipationMessageThread($projectParticipation);
                     // If sender not set, pick one of projectParticipationMembers as a message sender
                     $sender = $sender ?: $projectParticipationMembers[array_rand($projectParticipationMembers, 1)]->getStaff();
                     $message = (new Message($sender, $messageThread, sprintf(
