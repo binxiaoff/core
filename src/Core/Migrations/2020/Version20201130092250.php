@@ -22,7 +22,6 @@ final class Version20201130092250 extends AbstractMigration
         $this->addSql('ALTER TABLE core_acceptations_legal_docs RENAME INDEX uniq_f1d2e4327f757bbcbd57fa7c TO UNIQ_4F817FFF7F757BBCBD57FA7C');
         $this->addSql('ALTER TABLE core_client_successful_login RENAME INDEX idx_94e06715e173b1b8 TO IDX_2AB3FCD8E173B1B8');
         $this->addSql('ALTER TABLE core_client_successful_login RENAME INDEX idx_94e0671561c3e712 TO IDX_2AB3FCD861C3E712');
-        $this->addSql('DROP INDEX IDX_C82E74D1B862B8 ON core_clients');
         $this->addSql('ALTER TABLE core_clients RENAME INDEX uniq_c82e74e7927c74 TO UNIQ_12DF9B47E7927C74');
         $this->addSql('ALTER TABLE core_clients RENAME INDEX uniq_c82e74b5b48b91 TO UNIQ_12DF9B47B5B48B91');
         $this->addSql('ALTER TABLE core_clients RENAME INDEX uniq_c82e7441af0274 TO UNIQ_12DF9B4741AF0274');
@@ -82,7 +81,6 @@ final class Version20201130092250 extends AbstractMigration
         $this->addSql('ALTER TABLE core_acceptations_legal_docs RENAME INDEX uniq_4f817fffb5b48b91 TO UNIQ_F1D2E432B5B48B91');
         $this->addSql('ALTER TABLE core_client_successful_login RENAME INDEX idx_2ab3fcd861c3e712 TO IDX_94E0671561C3E712');
         $this->addSql('ALTER TABLE core_client_successful_login RENAME INDEX idx_2ab3fcd8e173b1b8 TO IDX_94E06715E173B1B8');
-        $this->addSql('CREATE INDEX IDX_C82E74D1B862B8 ON core_clients (public_id)');
         $this->addSql('ALTER TABLE core_clients RENAME INDEX idx_12df9b47c808ba5a TO IDX_C82E74C808BA5A');
         $this->addSql('ALTER TABLE core_clients RENAME INDEX uniq_12df9b4741af0274 TO UNIQ_C82E7441AF0274');
         $this->addSql('ALTER TABLE core_clients RENAME INDEX uniq_12df9b47b5b48b91 TO UNIQ_C82E74B5B48B91');
