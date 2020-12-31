@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Repository;
 
-use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
@@ -64,7 +63,8 @@ class MessageStatusRepository extends ServiceEntityRepository
      */
     public function setMessageStatusesToRead(Staff $recipient, MessageThread $messageThread): void
     {
-        $subQuery = $this->createQueryBuilder('msgst')
+        // Doctrine update doesn't support inner joint, so we do a sub-query here.
+        $messageStatusToBeUpdated = $this->createQueryBuilder('msgst')
             ->select('msgst.id')
             ->innerJoin('msgst.message', 'msg')
             ->where('msgst.recipient = :recipient')
@@ -73,18 +73,17 @@ class MessageStatusRepository extends ServiceEntityRepository
             ->setParameters([
                 'recipient'     => $recipient,
                 'unread'        => MessageStatus::STATUS_UNREAD,
-                'messageThread' => $messageThread->getId(),
+                'messageThread' => $messageThread,
             ])
-            ->getDQL();
+            ->getQuery()->getArrayResult(); //Cannot use sub DQL query directly because of MySQL 1093 error (We could do a deeper nested query, but it doesn't worth it).
 
         $this->createQueryBuilder('ms')->update()
             ->set('ms.status', ':read')
-            ->set('ms.updated', ':now')
-            ->where('ms.id IN :unreadMessageStatus')
+            ->set('ms.updated', 'NOW()')
+            ->where('ms.id IN (:unreadMessageStatus)')
             ->setParameters([
                 'read'                => MessageStatus::STATUS_READ,
-                'now'                 => new DateTimeImmutable(),
-                'unreadMessageStatus' => $subQuery,
+                'unreadMessageStatus' => $messageStatusToBeUpdated,
             ])
             ->getQuery()
             ->execute();
