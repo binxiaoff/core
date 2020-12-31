@@ -17,9 +17,6 @@ use Unilend\Core\Filter\CountFilter;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/core"
- *     },
  *     normalizationContext={"groups": {"acceptationsLegalDocs:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"acceptationsLegalDocs:write"}},
  *     collectionOperations={

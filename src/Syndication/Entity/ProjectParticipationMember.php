@@ -19,9 +19,6 @@ use Unilend\Core\Entity\Traits\{ArchivableTrait, BlamableAddedTrait, BlamableArc
 
 /**
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/syndication"
- *     },
  *     normalizationContext={"groups": {"projectParticipationMember:read", "role:read"}},
  *     itemOperations={
  *         "get": {

@@ -8,9 +8,6 @@ use ApiPlatform\Core\Annotation\ApiResource;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/core"
- *     },
  *     messenger=true,
  *     collectionOperations={
  *         "post": {"status": 202}

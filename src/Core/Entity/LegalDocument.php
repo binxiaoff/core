@@ -14,9 +14,6 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/core"
- *     },
  *     normalizationContext={"groups": {"legalDocument:read", "timestampable:read"}},
  *     itemOperations={
  *         "get": {
@@ -29,7 +26,7 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
  *         "current_service_terms": {
  *             "method": "GET",
  *             "controller": "Unilend\Core\Controller\LegalDocument\CurrentServiceTerms",
- *             "path": "/legal_documents/current_service_terms",
+ *             "path": "/core/legal_documents/current_service_terms",
  *         }
  *     }
  * )

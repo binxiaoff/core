@@ -181,3 +181,7 @@ services:
         arguments:
             $enableErrorDelivery: '%env(MAILJET_ERROR_DELIVERY)%'
             $errorReportingEmail: '%mailer.error_reporting_email%'
+
+    Unilend\Core\ApiPlatform\Metadata\Metadata\Resource\Factory\ShortNameResourceMetadataFactory:
+        decorates: 'api_platform.metadata.resource.metadata_factory'
+        arguments: [ '@.inner' ]
