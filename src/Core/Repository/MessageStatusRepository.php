@@ -7,9 +7,8 @@ namespace Unilend\Core\Repository;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Unilend\Core\Entity\{Message, MessageStatus, MessageThread, Staff};
+use Unilend\Core\Entity\{MessageStatus, MessageThread, Staff};
 
 /**
  * @method MessageStatus|null find($id, $lockMode = null, $lockVersion = null)
@@ -62,31 +61,32 @@ class MessageStatusRepository extends ServiceEntityRepository
     /**
      * @param Staff         $recipient
      * @param MessageThread $messageThread
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
-    public function setMessageStatusesToRead(Staff $recipient, MessageThread $messageThread)
+    public function setMessageStatusesToRead(Staff $recipient, MessageThread $messageThread): void
     {
-        // @todo set update query with subquery instead
-        $messageStatuses = $this->createQueryBuilder('msgst')
-            ->innerJoin(Message::class, 'msg', Join::WITH, 'msgst.message = msg.id')
-            ->andWhere('msgst.recipient = :recipient')
-            ->andWhere('msgst.status = :current_status')
-            ->andWhere('msg.messageThread = :message_thread')
+        $subQuery = $this->createQueryBuilder('msgst')
+            ->select('msgst.id')
+            ->innerJoin('msgst.message', 'msg')
+            ->where('msgst.recipient = :recipient')
+            ->andWhere('msgst.status = :unread')
+            ->andWhere('msg.messageThread = :messageThread')
             ->setParameters([
-                'recipient'      => $recipient,
-                'current_status' => MessageStatus::STATUS_UNREAD,
-                'message_thread' => $messageThread->getId(),
+                'recipient'     => $recipient,
+                'unread'        => MessageStatus::STATUS_UNREAD,
+                'messageThread' => $messageThread->getId(),
+            ])
+            ->getDQL();
+
+        $this->createQueryBuilder('ms')->update()
+            ->set('ms.status', ':read')
+            ->set('ms.updated', ':now')
+            ->where('ms.id IN :unreadMessageStatus')
+            ->setParameters([
+                'read'                => MessageStatus::STATUS_READ,
+                'now'                 => new DateTimeImmutable(),
+                'unreadMessageStatus' => $subQuery,
             ])
             ->getQuery()
-            ->getResult();
-        foreach ($messageStatuses as $messageStatus) {
-            $messageStatus
-                ->setStatus(MessageStatus::STATUS_READ)
-                ->setUpdated(new DateTimeImmutable());
-            $this->persist($messageStatus);
-        }
-        $this->flush();
+            ->execute();
     }
 }
