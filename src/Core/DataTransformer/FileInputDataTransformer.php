@@ -13,14 +13,11 @@ use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
 use Unilend\Core\DTO\FileInput;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\{File, Message, MessageFile, Staff, User};
+use Unilend\Core\Repository\{MessageFileRepository, MessageRepository};
+use Unilend\Core\Security\Voter\MessageVoter;
 use Unilend\Core\Service\File\FileUploadManager;
-use Unilend\Syndication\Entity\{Project,
-    ProjectFile,
-    ProjectParticipation
-};
+use Unilend\Syndication\Entity\{Project, ProjectFile, ProjectParticipation};
 use Unilend\Syndication\Repository\{ProjectFileRepository, ProjectRepository};
 use Unilend\Syndication\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
 use Unilend\Syndication\Service\Project\ProjectManager;
@@ -37,16 +34,24 @@ class FileInputDataTransformer
     private ProjectFileRepository $projectFileRepository;
     /** @var ProjectRepository  */
     private ProjectRepository $projectRepository;
+    /** @var MessageFileRepository */
+    private MessageFileRepository $messageFileRepository;
     /** @var ProjectManager */
     private ProjectManager $projectManager;
+    /** @var MessageRepository */
+    private MessageRepository $messageRepository;
 
     /**
+     * FileInputDataTransformer constructor.
+     *
      * @param ValidatorInterface    $validator
      * @param Security              $security
      * @param FileUploadManager     $fileUploadManager
      * @param ProjectManager        $projectManager
      * @param ProjectFileRepository $projectFileRepository
      * @param ProjectRepository     $projectRepository
+     * @param MessageFileRepository $messageFileRepository
+     * @param MessageRepository     $messageRepository
      */
     public function __construct(
         ValidatorInterface $validator,
@@ -54,14 +59,18 @@ class FileInputDataTransformer
         FileUploadManager $fileUploadManager,
         ProjectManager $projectManager,
         ProjectFileRepository $projectFileRepository,
-        ProjectRepository $projectRepository
+        ProjectRepository $projectRepository,
+        MessageFileRepository $messageFileRepository,
+        MessageRepository $messageRepository
     ) {
-        $this->validator             = $validator;
-        $this->security              = $security;
-        $this->fileUploadManager     = $fileUploadManager;
-        $this->projectFileRepository = $projectFileRepository;
-        $this->projectRepository     = $projectRepository;
-        $this->projectManager = $projectManager;
+        $this->validator                = $validator;
+        $this->security                 = $security;
+        $this->fileUploadManager        = $fileUploadManager;
+        $this->projectFileRepository    = $projectFileRepository;
+        $this->projectRepository        = $projectRepository;
+        $this->messageFileRepository    = $messageFileRepository;
+        $this->projectManager           = $projectManager;
+        $this->messageRepository        = $messageRepository;
     }
 
     /**
@@ -102,6 +111,53 @@ class FileInputDataTransformer
         if ($targetEntity instanceof ProjectParticipation) {
             $file = $this->uploadProjectParticipationNda($targetEntity, $fileInput, $currentStaff, $file);
         }
+
+        if ($targetEntity instanceof Message) {
+            $file = $this->uploadMessageFile($targetEntity, $fileInput, $currentStaff, $file);
+        }
+
+        return $file;
+    }
+
+    /**
+     * @param Message   $message
+     * @param FileInput $fileInput
+     * @param Staff     $currentStaff
+     * @param File|null $file
+     *
+     * @throws EnvironmentIsBrokenException
+     * @throws FileExistsException
+     * @throws IOException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return File
+     */
+    private function uploadMessageFile(Message $message, FileInput $fileInput, Staff $currentStaff, ?File $file): File
+    {
+        if (false === $this->security->isGranted(MessageVoter::ATTRIBUTE_ATTACH_FILE, $message)) {
+            throw new AccessDeniedException();
+        }
+
+        if (false === $file instanceof File) {
+            $file = new File();
+        }
+
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file);
+
+        $messagesToBeAttached = [$message];
+
+        // If it's a broadcast message, then add messageFile to all broadcast messages
+        if ($message->isBroadcast()) {
+            $messagesToBeAttached = $this->messageRepository->findBy(['broadcast' => $message->getBroadcast()]);
+        }
+
+        foreach ($messagesToBeAttached as $messageToAddMessageFile) {
+            $messageFile = new MessageFile($file, $messageToAddMessageFile);
+            $this->messageFileRepository->persist($messageFile);
+        }
+
+        $this->messageFileRepository->flush();
 
         return $file;
     }
