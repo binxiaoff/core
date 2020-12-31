@@ -20,10 +20,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ORM\HasLifecycleCallbacks
  *
  * @ApiResource(
- *  attributes={
- *     "pagination_enabled"=false,
- *     "route_prefix"="/core"
- *  },
+ *  attributes={"pagination_enabled": false},
  *  normalizationContext={"groups": {
  *     "messageStatus:read",
  *     "message:read"
@@ -32,6 +29,9 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *      "get": {
  *          "security": "is_granted('view', object)"
  *     }
+ *  },
+ *  collectionOperations={
+ *      "get"
  *  }
  * )
  * @ApiFilter(SearchFilter::class, properties={"status": "exact"})

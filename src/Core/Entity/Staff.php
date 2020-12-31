@@ -37,7 +37,7 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, Timestamp
  *             "denormalization_context": {"groups": {"role:write", "staff:create"}}
  *         },
  *         "get",
- *         "api_companies_staff_get_subresource": {
+ *         "api_core_companies_staff_get_subresource": {
  *            "pagination_enabled":false
  *         }
  *     }

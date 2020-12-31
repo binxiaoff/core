@@ -18,10 +18,7 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  * @ORM\Table(name="core_message_thread")
  *
  * @ApiResource(
- *  attributes={
- *      "pagination_enabled"=false,
- *      "route_prefix"="/core"
- *  },
+ *  attributes={"pagination_enabled": false},
  *  normalizationContext={"groups": {
  *      "messageThread:read",
  *      "message:read",
