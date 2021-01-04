@@ -371,15 +371,6 @@
             "config/packages/lexik_jwt_authentication.yaml"
         ]
     },
-    "maennchen/zipstream-php": {
-        "version": "2.1.0"
-    },
-    "markbaker/complex": {
-        "version": "1.4.7"
-    },
-    "markbaker/matrix": {
-        "version": "1.1.4"
-    },
     "maxmind-db/reader": {
         "version": "v1.4.1"
     },
@@ -397,9 +388,6 @@
     },
     "myclabs/deep-copy": {
         "version": "1.9.3"
-    },
-    "myclabs/php-enum": {
-        "version": "1.7.6"
     },
     "namshi/jose": {
         "version": "7.2.3"
@@ -537,9 +525,6 @@
     "phpmd/phpmd": {
         "version": "2.6.0"
     },
-    "phpoffice/phpspreadsheet": {
-        "version": "1.7.0"
-    },
     "phpoption/phpoption": {
         "version": "1.5.0"
     },
@@ -587,9 +572,6 @@
     },
     "psr/log": {
         "version": "1.1.0"
-    },
-    "psr/simple-cache": {
-        "version": "1.0.1"
     },
     "queue-interop/amqp-interop": {
         "version": "0.8.1"
