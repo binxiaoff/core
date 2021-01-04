@@ -14,8 +14,13 @@ class PathSegmentNameWithDomainGenerator implements PathSegmentNameGeneratorInte
      */
     public function getSegmentName(string $name, bool $collection = true): string
     {
-        $name =  preg_replace('~_~', '/', $name, 1);
+        $fragments = explode('_', $name, 2);
 
-        return $collection ? Inflector::pluralize($name) : $name;
+        foreach ($fragments as $key => &$fragment) {
+            $fragment = Inflector::tableize($fragment);
+            $fragment = $collection && array_key_last($fragments) === $key ? Inflector::pluralize($fragment) : $fragment;
+        }
+
+        return implode('/', $fragments);
     }
 }
