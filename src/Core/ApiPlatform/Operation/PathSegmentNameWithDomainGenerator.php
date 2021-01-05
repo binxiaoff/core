@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Core\ApiPlatform\Operation;
 
 use ApiPlatform\Core\Operation\PathSegmentNameGeneratorInterface;
-use Doctrine\Common\Inflector\Inflector;
+use Doctrine\Inflector\InflectorFactory;
 
 class PathSegmentNameWithDomainGenerator implements PathSegmentNameGeneratorInterface
 {
@@ -14,11 +14,13 @@ class PathSegmentNameWithDomainGenerator implements PathSegmentNameGeneratorInte
      */
     public function getSegmentName(string $name, bool $collection = true): string
     {
+        $inflector = InflectorFactory::create()->build();
+
         $fragments = explode('_', $name, 2);
 
         foreach ($fragments as $key => &$fragment) {
-            $fragment = Inflector::tableize($fragment);
-            $fragment = $collection && array_key_last($fragments) === $key ? Inflector::pluralize($fragment) : $fragment;
+            $fragment = $inflector->tableize($fragment);
+            $fragment = $collection && array_key_last($fragments) === $key ? $inflector->pluralize($fragment) : $fragment;
         }
 
         return implode('/', $fragments);
