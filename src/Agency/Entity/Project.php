@@ -245,6 +245,27 @@ class Project
     }
 
     /**
+     * @return string|null
+     */
+    public function getHeadOffice(): ?string
+    {
+        return $this->headOffice;
+    }
+
+    /**
+     * @param string|null $headOffice
+     *
+     * @return Project
+     */
+    public function setHeadOffice(?string $headOffice): Project
+    {
+        $this->headOffice = $headOffice;
+
+        return $this;
+    }
+
+
+    /**
      * @return NullableMoney|null
      */
     public function getAgentCapital(): ?NullableMoney
