@@ -146,6 +146,10 @@ class Staff implements TraceableStatusAwareInterface
      * @ORM\ManyToMany(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
      * @ORM\JoinTable(name="core_staff_company_group_tag")
      *
+     * @Groups({"staff:read", "staff:create", "staff:update"})
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
+     *
      * @Assert\Unique
      */
     private Collection $companyGroupTags;
