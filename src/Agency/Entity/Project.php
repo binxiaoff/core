@@ -31,7 +31,8 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *     collectionOperations={
  *         "get",
  *         "post": {
- *             "security": "is_granted('create', object)",
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *             "denormalization_context": {"groups": {"project:create"}}
  *         }
  *     },
  *     itemOperations={
@@ -64,7 +65,7 @@ class Project
      *
      * @Assert\NotBlank()
      *
-     * @Groups({"project:read"})
+     * @Groups({"project:read", "project:create"})
      */
     private Company $agent;
 
