@@ -23,6 +23,11 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *             "project:read"
  *         }
  *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "project:write"
+ *         }
+ *     },
  *     collectionOperations={
  *         "get",
  *         "post": {
@@ -49,6 +54,11 @@ class Project
     use PublicizeIdentityTrait;
     use TimestampableTrait;
 
+    public const LEGAL_FORM_EURL = 'EURL';
+    public const LEGAL_FORM_SARL = 'SARL';
+    public const LEGAL_FORM_SAS  = 'SAS';
+    public const LEGAL_FORM_SASU = 'SASU';
+
     /**
      * @var Company
      *
@@ -63,7 +73,7 @@ class Project
      *
      * @ORM\Column(type="string", length=300, nullable=true)
      *
-     * @Groups({"project:read"})
+     * @Groups({"project:read", "project:write"})
      *
      * @Assert\NotBlank
      */
@@ -74,7 +84,7 @@ class Project
      *
      * @ORM\Column(type="string", length=9, nullable=true)
      *
-     * @Groups({"project:read"})
+     * @Groups({"project:read", "project:write"})
      *
      * @Assert\Length(9)
      * @Assert\Luhn
@@ -86,7 +96,9 @@ class Project
      *
      * @ORM\Column(type="string", nullable=true)
      *
-     * @Groups({"project:read"})
+     * @Groups({"project:read", "project:write"})
+     *
+     * @Assert\Choice({Project::LEGAL_FORM_EURL, Project::LEGAL_FORM_SARL, Project::LEGAL_FORM_SAS,  Project::LEGAL_FORM_SASU})
      */
     private ?string $agentLegalForm;
 
@@ -95,7 +107,7 @@ class Project
      *
      * @ORM\Column(type="string", nullable=true)
      *
-     * @Groups({"project:read"})
+     * @Groups({"project:read", "project:write"})
      */
     private ?string $headOffice;
 
@@ -104,7 +116,7 @@ class Project
      *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
-     * @Groups({"project:read"})
+     * @Groups({"project:read", "project:write"})
      */
     private ?NullableMoney $agentCapital;
 
@@ -113,7 +125,7 @@ class Project
      *
      * @ORM\Column(type="string", nullable=true)
      *
-     * @Groups({"project:read"})
+     * @Groups({"project:read", "project:write"})
      */
     private ?string $agentRCS;
 
@@ -122,7 +134,7 @@ class Project
      *
      * @ORM\Column(type="string", nullable=true)
      *
-     * @Groups({"project:read"})
+     * @Groups({"project:read", "project:write"})
      */
     private ?string $agentRegistrationCity;
 
