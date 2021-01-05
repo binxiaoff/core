@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Repository;
 
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
@@ -55,6 +56,28 @@ class MessageStatusRepository extends ServiceEntityRepository
     public function flush(): void
     {
         $this->getEntityManager()->flush();
+    }
+
+    /**
+     * @param DateTimeImmutable $from
+     * @param DateTimeImmutable $to
+     *
+     * @return int|mixed|string
+     */
+    public function getTotalUnreadMessageForDateBetween(DateTimeImmutable $from, DateTimeImmutable $to)
+    {
+        return $this->createQueryBuilder('msgst')
+            ->select(['DISTINCT(msgst.recipient) AS recipient', 'COUNT(msgst.recipient) AS unread'])
+            ->where('msgst.status = :status')
+            ->andWhere('msgst.added BETWEEN :from AND :to')
+            ->setParameters([
+                'status' => MessageStatus::STATUS_UNREAD,
+                'from'   => $from->format('Y-m-d H:i:s'),
+                'to'     => $to->format('Y-m-d H:i:s'),
+            ])
+            ->groupBy('msgst.recipient')
+            ->getQuery()
+            ->getResult();
     }
 
     /**
