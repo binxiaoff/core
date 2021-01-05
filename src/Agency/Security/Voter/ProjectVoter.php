@@ -11,9 +11,9 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class ProjectVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_VIEW                 = 'view';
+    public const ATTRIBUTE_EDIT                 = 'edit';
+    public const ATTRIBUTE_CREATE               = 'create';
 
     /**
      * @param Project $project
@@ -25,7 +25,6 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canView(Project $project, User $user): bool
     {
-        // TODO change after new habilitations are merged
         return true;
     }
 
@@ -37,7 +36,6 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canCreate(Project $project, User $user): bool
     {
-        // TODO change after new habilitations are merged
         return true;
     }
 
@@ -51,6 +49,6 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canEdit(Project $project, User $user): bool
     {
-        return $project->getAgent() === $user->getCompany();
+        return true;
     }
 }

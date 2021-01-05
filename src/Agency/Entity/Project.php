@@ -71,7 +71,7 @@ class Project
      *     @ORM\JoinColumn(name="id_agent", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"project:read"})
+     * @Groups({"project:read", "project:create"})
      *
      * @Assert\NotBlank()
      */
