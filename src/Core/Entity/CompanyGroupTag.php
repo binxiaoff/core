@@ -19,9 +19,6 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  * )
  *
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/core"
- *     },
  *     normalizationContext={"groups": {"companyGroupTag:read"}},
  *     itemOperations={
  *         "get": {
