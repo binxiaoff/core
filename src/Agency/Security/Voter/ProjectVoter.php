@@ -25,6 +25,7 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canView(Project $project, User $user): bool
     {
+        // TODO change after new habilitations are merged
         return true;
     }
 
@@ -36,6 +37,7 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canCreate(Project $project, User $user): bool
     {
+        // TODO change after new habilitations are merged
         return true;
     }
 
@@ -49,6 +51,6 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canEdit(Project $project, User $user): bool
     {
-        return true;
+        return $project->getAgent() === $user->getCompany();
     }
 }
