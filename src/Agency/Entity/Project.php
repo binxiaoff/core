@@ -13,7 +13,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
@@ -54,6 +55,7 @@ class Project
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+    use BlamableAddedTrait;
 
     public const LEGAL_FORM_EURL = 'EURL';
     public const LEGAL_FORM_SARL = 'SARL';
@@ -70,7 +72,7 @@ class Project
      *
      * @Assert\NotBlank()
      *
-     * @Groups({"project:read", "project:create"})
+     * @Groups({"project:read"})
      */
     private Company $agent;
 
@@ -146,14 +148,16 @@ class Project
 
 
     /**
-     * @param Company $agent
+     * @param Staff $addedBy
      *
      * @throws Exception
      */
-    public function __construct(Company $agent)
+    public function __construct(Staff $addedBy)
     {
-        $this->added = new DateTimeImmutable();
-        $this->agent = $agent;
+        $agent         = $addedBy->getCompany();
+        $this->added   = new DateTimeImmutable();
+        $this->addedBy = $addedBy;
+        $this->agent   = $agent;
 
         // This part is weird but compliant to figma models: those fields are editable
         $this->agentDisplayName = $agent->getDisplayName();
