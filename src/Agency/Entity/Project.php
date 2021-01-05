@@ -63,6 +63,11 @@ class Project
     /**
      * @var Company
      *
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\JoinColumns({
+     *     @ORM\JoinColumn(name="id_agent", referencedColumnName="id", nullable=false)
+     * })
+     *
      * @Assert\NotBlank()
      *
      * @Groups({"project:read", "project:create"})

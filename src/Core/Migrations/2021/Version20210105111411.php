@@ -16,11 +16,13 @@ final class Version20210105111411 extends AbstractMigration
 
     public function up(Schema $schema) : void
     {
-        $this->addSql('ALTER TABLE agency_project ADD agent_display_name VARCHAR(300) DEFAULT NULL, ADD agent_siren VARCHAR(9) DEFAULT NULL, ADD agent_legal_form VARCHAR(255) DEFAULT NULL, ADD head_office VARCHAR(255) DEFAULT NULL, ADD agent_rcs VARCHAR(255) DEFAULT NULL, ADD agent_registration_city VARCHAR(255) DEFAULT NULL, ADD agent_capital_amount NUMERIC(15, 2) DEFAULT NULL, ADD agent_capital_currency VARCHAR(3) DEFAULT NULL');
-    }
+        $this->addSql('ALTER TABLE agency_project ADD id_agent INT NOT NULL, ADD agent_display_name VARCHAR(300) DEFAULT NULL, ADD agent_siren VARCHAR(9) DEFAULT NULL, ADD agent_legal_form VARCHAR(255) DEFAULT NULL, ADD head_office VARCHAR(255) DEFAULT NULL, ADD agent_rcs VARCHAR(255) DEFAULT NULL, ADD agent_registration_city VARCHAR(255) DEFAULT NULL, ADD agent_capital_amount NUMERIC(15, 2) DEFAULT NULL, ADD agent_capital_currency VARCHAR(3) DEFAULT NULL');
+        $this->addSql('ALTER TABLE agency_project ADD CONSTRAINT FK_59B349BFC80EDDAD FOREIGN KEY (id_agent) REFERENCES core_company (id)');
+        $this->addSql('CREATE INDEX IDX_59B349BFC80EDDAD ON agency_project (id_agent)');    }
 
     public function down(Schema $schema) : void
     {
-        $this->addSql('ALTER TABLE agency_project DROP agent_display_name, DROP agent_siren, DROP agent_legal_form, DROP head_office, DROP agent_rcs, DROP agent_registration_city, DROP agent_capital_amount, DROP agent_capital_currency');
-    }
+        $this->addSql('ALTER TABLE agency_project DROP FOREIGN KEY FK_59B349BFC80EDDAD');
+        $this->addSql('DROP INDEX IDX_59B349BFC80EDDAD ON agency_project');
+        $this->addSql('ALTER TABLE agency_project DROP id_agent, DROP agent_display_name, DROP agent_siren, DROP agent_legal_form, DROP head_office, DROP agent_rcs, DROP agent_registration_city, DROP agent_capital_amount, DROP agent_capital_currency');    }
 }
