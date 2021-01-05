@@ -41,8 +41,8 @@ class ProjectParticipationMemberRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('ppm')
             ->innerJoin('ppm.staff', 's')
             ->innerJoin('s.team', 't')
-            ->innerJoin('t.descendentsEdges', 'de')
-            ->where('de.team = :team OR s.team = :team')
+            ->innerJoin('t.outgoingEdges', 'de')
+            ->where('de.descendent = :team OR s.team = :team')
             ->setParameter('team', $manager->getTeam())
             ->getQuery()
             ->getResult();

@@ -48,8 +48,8 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         foreach ($projectsWithParticipations as $projectWithParticipation) {
             $staffSender = $this->staffRepository->findOneBy([
-                'user'    => $projectWithParticipation->getSubmitterUser(),
-                'company' => $projectWithParticipation->getSubmitterCompany(),
+                'user' => $projectWithParticipation->getSubmitterUser(),
+                'team' => $projectWithParticipation->getSubmitterCompany()->getRootTeam(),
             ]);
 
             // Create a projectOrganizer.staff message to each projectParticipationMember.staff

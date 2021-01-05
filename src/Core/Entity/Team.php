@@ -16,9 +16,6 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "route_prefix"="/core"
- *     },
  *     normalizationContext={"groups": {"team:read"}},
  *     itemOperations={
  *         "get": {
