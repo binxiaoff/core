@@ -11,10 +11,7 @@ use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Swift_Mailer;
 use Symfony\Component\Console\{Command\Command, Input\InputArgument, Input\InputInterface, Output\OutputInterface, Question\ConfirmationQuestion, Style\SymfonyStyle};
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\MessageStatusRepository;
-use Unilend\Core\Repository\StaffRepository;
+use Unilend\Core\Repository\{MessageStatusRepository, StaffRepository};
 use Unilend\Core\SwiftMailer\MailjetMessage;
 
 class UnreadMessageEmailNotificationCommand extends Command
@@ -34,13 +31,13 @@ class UnreadMessageEmailNotificationCommand extends Command
     private Swift_Mailer $mailer;
 
     /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
     /** @var bool */
-    private $dryRun;
+    private bool $dryRun;
 
     /** @var SymfonyStyle */
-    private $io;
+    private SymfonyStyle $io;
 
     /**
      * UnreadMessageEmailNotificationCommand constructor.
@@ -99,22 +96,23 @@ class UnreadMessageEmailNotificationCommand extends Command
         $nbLoop                    = intval(ceil($nbStaffWithUnreadMessages / self::BATCH_SIZE));
 
         for ($i = 0; $i <= $nbLoop; $i++) {
-            $offset = $i * self::BATCH_SIZE;
-            $dryRunDataToDisplay = [];
+            $dryRunOutputRows               = [];
+            $offset                         = $i * self::BATCH_SIZE;
             $totalUnreadMessageByRecipients = $this->messageStatusRepository->getTotalUnreadMessageByRecipientForDateBetween($from, $to, self::BATCH_SIZE, $offset);
 
             foreach ($totalUnreadMessageByRecipients as $totalUnreadMessageByRecipient) {
                 $failedRecipient      = [];
                 $staff                = $this->staffRepository->findOneBy(['id' => $totalUnreadMessageByRecipient['recipient']]);
-                $user                 = ($staff instanceof Staff) ? $staff->getUser() : null;
+                $user                 = $staff->getUser();
                 $nbUserUnreadMessages = (int) $totalUnreadMessageByRecipient['unread'];
 
-                if ($this->dryRun && $user instanceof User) {
-                    $dryRunDataToDisplay[] = [
+                if ($this->dryRun) {
+                    $dryRunOutputRows[] = [
                         'staffId'          => $staff->getId(),
                         'email'            => $user->getEmail(),
                         'nbUnreadMessages' => $nbUserUnreadMessages,
                     ];
+                    continue;
                 }
 
                 try {
@@ -128,7 +126,7 @@ class UnreadMessageEmailNotificationCommand extends Command
                         ->setTo($user->getEmail())
                     ;
                     if (0 === $this->mailer->send($message, $failedRecipient)) {
-                        throw new RuntimeException(sprintf('Error on sending email to : "%s"', implode(',', $failedRecipient)));
+                        throw new RuntimeException(sprintf('Error on sending email to : "%s"', implode(', ', $failedRecipient)));
                     }
                 } catch (Exception $exception) {
                     $this->logger->error('Unable to send unread message(s) email notification with error : ' . $exception->getMessage(), [
@@ -140,10 +138,8 @@ class UnreadMessageEmailNotificationCommand extends Command
                 }
             }
 
-            if ($this->dryRun) {
-                if (empty($dryRunDataToDisplay) || Command::SUCCESS === $this->displayOutput($dryRunDataToDisplay, $nbStaffWithUnreadMessages, $input, $output)) {
-                    return Command::SUCCESS;
-                }
+            if ($this->dryRun && Command::SUCCESS === $this->displayDryRunOutput($dryRunOutputRows, $i + 1, $nbLoop, $input, $output)) {
+                return Command::SUCCESS;
             }
         }
 
@@ -151,29 +147,36 @@ class UnreadMessageEmailNotificationCommand extends Command
     }
 
     /**
-     * @param array           $dryRunDataToDisplay
-     * @param int             $nbTotalTodisplay
+     * @param array           $dryRunOutputRows
+     * @param int             $currentPageNum
+     * @param int             $totalPages
      * @param InputInterface  $input
      * @param OutputInterface $output
      *
-     * @return int
+     * @return int|null
      */
-    private function displayOutput(array $dryRunDataToDisplay, int $nbTotalTodisplay, InputInterface $input, OutputInterface $output)
+    private function displayDryRunOutput(array $dryRunOutputRows, int $currentPageNum, int $totalPages, InputInterface $input, OutputInterface $output): ?int
     {
+        if (empty($dryRunOutputRows)) {
+            return Command::SUCCESS;
+        }
+
         $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion(
-            'Display next page ? (y|n) ',
+            sprintf('%s/%s - Display next page ? (y|n) ', $currentPageNum, $totalPages),
             false,
             '/^(y)/i'
         );
 
         $this->io->table(
             ['staff id', 'user email', 'nb unread messages'],
-            $dryRunDataToDisplay
+            $dryRunOutputRows
         );
 
-        if (count($dryRunDataToDisplay) === $nbTotalTodisplay || !$helper->ask($input, $output, $question)) {
+        if ($currentPageNum === $totalPages || !$helper->ask($input, $output, $question)) {
             return Command::SUCCESS;
         }
+
+        return null;
     }
 }
