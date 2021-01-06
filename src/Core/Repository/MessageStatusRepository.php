@@ -63,10 +63,12 @@ class MessageStatusRepository extends ServiceEntityRepository
     /**
      * @param DateTimeImmutable $from
      * @param DateTimeImmutable $to
+     * @param int               $limit
+     * @param int               $offset
      *
      * @return int|mixed|string
      */
-    public function getTotalUnreadMessageForDateBetween(DateTimeImmutable $from, DateTimeImmutable $to)
+    public function getTotalUnreadMessageByRecipientForDateBetween(DateTimeImmutable $from, DateTimeImmutable $to, int $limit, int $offset)
     {
         return $this->createQueryBuilder('msgst')
             ->select(['DISTINCT(msgst.recipient) AS recipient', 'COUNT(msgst.recipient) AS unread'])
@@ -78,8 +80,43 @@ class MessageStatusRepository extends ServiceEntityRepository
                 'to'     => $to->format('Y-m-d H:i:s'),
             ])
             ->groupBy('msgst.recipient')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @param DateTimeImmutable $from
+     * @param DateTimeImmutable $to
+     *
+     * @return int
+     *
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function countTotalRecipientUnreadMessageForDateBetween(DateTimeImmutable $from, DateTimeImmutable $to)
+    {
+        return (int) $this->createQueryBuilder('msgst')
+            ->select('COUNT(DISTINCT(msgst.recipient))')
+            ->innerJoin(Message::class, 'msg', Join::WITH, 'msgst.message = msg.id')
+            ->innerJoin(MessageThread::class, 'msgtd', Join::WITH, 'msg.messageThread = msgtd.id')
+            ->innerJoin(ProjectParticipation::class, 'pp', Join::WITH, 'msgtd.projectParticipation = pp.id')
+            ->innerJoin(Project::class, 'p', Join::WITH, 'pp.project = p.id')
+            ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'p.currentStatus = pst.id')
+            ->where('msgst.status = :status')
+            ->andWhere('msgst.added BETWEEN :from AND :to')
+            ->andWhere('pst.status > :project_current_status')
+            ->setParameters([
+                'status'                 => MessageStatus::STATUS_UNREAD,
+                'from'                   => $from->format('Y-m-d H:i:s'),
+                'to'                     => $to->format('Y-m-d H:i:s'),
+                'project_current_status' => ProjectStatus::STATUS_DRAFT,
+            ])
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
