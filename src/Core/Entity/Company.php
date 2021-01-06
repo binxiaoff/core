@@ -85,7 +85,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         },
  *         "companyGroupTags": {
  *              "method": "GET",
- *              "path": "/companies/{id}/company_group_tags",
+ *              "path": "/core/companies/{id}/company_group_tags",
  *              "controller": "\Unilend\Core\Controller\Company\CompanyGroupTag",
  *              "normalization_context": {
  *                  "groups": {
