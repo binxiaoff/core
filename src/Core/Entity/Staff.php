@@ -39,10 +39,7 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {"groups": {"staff:create", "user:create"}}
  *         },
- *         "get",
- *         "api_core_companies_staff_get_subresource": {
- *            "pagination_enabled":false
- *         }
+ *         "get"
  *     }
  * )
  *
