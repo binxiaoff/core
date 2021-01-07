@@ -6,6 +6,8 @@ namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -15,6 +17,8 @@ use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Traits\ConstantsAwareTrait;
+use Unilend\Syndication\Entity\ProjectParticipation;
 
 /**
  * @ApiResource(
@@ -82,6 +86,8 @@ class Project
      * @ORM\Column(type="string", length=300, nullable=true)
      *
      * @Groups({"project:read", "project:write"})
+     *
+     * @Assert\NotBlank
      */
     private ?string $agentDisplayName;
 
@@ -145,6 +151,15 @@ class Project
     private ?string $agentRegistrationCity;
 
     /**
+     * @var ProjectParticipation[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Contact", mappedBy="project", orphanRemoval=true)
+     *
+     * @Groups({"project:read"})
+     */
+    private Collection $contacts;
+
+    /**
      * @var string|null
      *
      * @ORM\Column(type="string", nullable=true)
@@ -182,10 +197,11 @@ class Project
      */
     public function __construct(Staff $addedBy)
     {
-        $agent         = $addedBy->getCompany();
-        $this->added   = new DateTimeImmutable();
-        $this->addedBy = $addedBy;
-        $this->agent   = $agent;
+        $agent          = $addedBy->getCompany();
+        $this->added    = new DateTimeImmutable();
+        $this->addedBy  = $addedBy;
+        $this->contacts = new ArrayCollection();
+        $this->agent    = $agent;
 
         // This part is weird but compliant to figma models: those fields are editable
         $this->agentDisplayName = $agent->getDisplayName();
