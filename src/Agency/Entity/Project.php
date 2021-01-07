@@ -39,6 +39,7 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  *     },
  *     itemOperations={
  *         "get": {
+ *             "normalization_context": {"groups": {"timestampable:read","project:read","contact:read"}},
  *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
@@ -151,8 +152,6 @@ class Project
      * @var ProjectParticipation[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Contact", mappedBy="project", orphanRemoval=true)
-     *
-     * @Groups({"project:read"})
      */
     private Collection $contacts;
 
@@ -367,11 +366,15 @@ class Project
     }
 
     /**
-     * @return Collection|ProjectParticipation[]
+     * @Groups({"project:read"})
+     *
+     * @return Collection
      */
-    public function getContacts()
+    public function getBackOfficeContacts(): Collection
     {
-        return $this->contacts;
+        return $this->contacts->filter(function (Contact $contact) {
+            return $contact->getType() === Contact::TYPE_BACK_OFFICE;
+        });
     }
 
     /**

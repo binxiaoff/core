@@ -81,7 +81,7 @@ class Contact
      *
      * @ORM\Column(type="string")
      *
-     * @Groups({"contact:read", "contact:create"})
+     * @Groups({"contact:create"})
      *
      * @Assert\Choice(callback="getTypes")
      */
@@ -352,6 +352,14 @@ class Contact
     public function getProject(): Project
     {
         return $this->project;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
     }
 
     /**
