@@ -55,6 +55,7 @@ class MailHandler extends AbstractProcessingHandler
     {
         $message = new \Swift_Message();
         $message->setSubject('Log')
+            ->setFrom('support@kls-platfrom.com')
             ->setBody($this->twig->render('email/log.html.twig', $record))
             ->setTo($this->securityRecipients);
 
