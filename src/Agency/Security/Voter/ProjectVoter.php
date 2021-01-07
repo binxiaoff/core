@@ -11,9 +11,9 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class ProjectVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW                 = 'view';
-    public const ATTRIBUTE_EDIT                 = 'edit';
-    public const ATTRIBUTE_CREATE               = 'create';
+    public const ATTRIBUTE_VIEW   = 'view';
+    public const ATTRIBUTE_EDIT   = 'edit';
+    public const ATTRIBUTE_CREATE = 'create';
 
     /**
      * @param Project $project

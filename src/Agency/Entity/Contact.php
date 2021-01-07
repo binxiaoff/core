@@ -19,7 +19,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
- *             "blameable:read"
+ *             "blameable:read",
  *             "timestampable:read",
  *             "contact:read"
  *         }
@@ -36,6 +36,11 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         }
  *     },
  *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *         },
@@ -124,7 +129,7 @@ class Contact
      *
      * @Assert\NotBlank
      */
-    private string $function;
+    private string $office;
 
     /**
      * @var string
@@ -158,7 +163,7 @@ class Contact
      *
      * @Groups({"contact:read", "contact:write"})
      *
-     * @Assert\NotBlank
+     * @Assert\Type("bool")
      */
     private bool $referent;
 
@@ -169,7 +174,7 @@ class Contact
      * @param string  $firstName
      * @param string  $lastName
      * @param string  $direction
-     * @param string  $function
+     * @param string  $office
      * @param string  $email
      * @param string  $phone
      * @param bool    $referent
@@ -183,7 +188,7 @@ class Contact
         string $firstName,
         string $lastName,
         string $direction,
-        string $function,
+        string $office,
         string $email,
         string $phone,
         bool $referent = false
@@ -195,7 +200,7 @@ class Contact
         $this->firstName = $firstName;
         $this->lastName  = $lastName;
         $this->direction = $direction;
-        $this->function  = $function;
+        $this->office    = $office;
         $this->email     = $email;
         $this->phone     = $phone;
         $this->referent  = $referent;
@@ -211,10 +216,14 @@ class Contact
 
     /**
      * @param string $firstName
+     *
+     * @return Contact
      */
-    public function setFirstName(string $firstName): void
+    public function setFirstName(string $firstName): Contact
     {
         $this->firstName = $firstName;
+
+        return $this;
     }
 
     /**
@@ -227,10 +236,14 @@ class Contact
 
     /**
      * @param string $lastName
+     *
+     * @return Contact
      */
-    public function setLastName(string $lastName): void
+    public function setLastName(string $lastName): Contact
     {
         $this->lastName = $lastName;
+
+        return $this;
     }
 
     /**
@@ -243,26 +256,34 @@ class Contact
 
     /**
      * @param string $direction
+     *
+     * @return Contact
      */
-    public function setDirection(string $direction): void
+    public function setDirection(string $direction): Contact
     {
         $this->direction = $direction;
+
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getFunction(): string
+    public function getOffice(): string
     {
-        return $this->function;
+        return $this->office;
     }
 
     /**
-     * @param string $function
+     * @param string $office
+     *
+     * @return Contact
      */
-    public function setFunction(string $function): void
+    public function setOffice(string $office): Contact
     {
-        $this->function = $function;
+        $this->office = $office;
+
+        return $this;
     }
 
     /**
@@ -275,10 +296,14 @@ class Contact
 
     /**
      * @param string $email
+     *
+     * @return Contact
      */
-    public function setEmail(string $email): void
+    public function setEmail(string $email): Contact
     {
         $this->email = $email;
+
+        return $this;
     }
 
     /**
@@ -291,10 +316,14 @@ class Contact
 
     /**
      * @param string $phone
+     *
+     * @return Contact
      */
-    public function setPhone(string $phone): void
+    public function setPhone(string $phone): Contact
     {
         $this->phone = $phone;
+
+        return $this;
     }
 
     /**
@@ -307,10 +336,22 @@ class Contact
 
     /**
      * @param bool $referent
+     *
+     * @return Contact
      */
-    public function setReferent(bool $referent): void
+    public function setReferent(bool $referent): Contact
     {
         $this->referent = $referent;
+
+        return $this;
+    }
+
+    /**
+     * @return Project
+     */
+    public function getProject(): Project
+    {
+        return $this->project;
     }
 
     /**
