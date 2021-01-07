@@ -108,7 +108,7 @@ class UnreadMessageEmailNotificationCommand extends Command
 
                 if ($this->dryRun) {
                     $dryRunOutputRows[] = [
-                        'staffId'          => $staff->getId(),
+                        'userId'           => $staff->getUser()->getId(),
                         'email'            => $user->getEmail(),
                         'nbUnreadMessages' => $nbUserUnreadMessages,
                     ];
@@ -170,7 +170,7 @@ class UnreadMessageEmailNotificationCommand extends Command
         );
 
         $this->io->table(
-            ['staff id', 'user email', 'nb unread messages'],
+            ['User id', 'User email', 'nb unread messages'],
             $dryRunOutputRows
         );
 
