@@ -86,6 +86,13 @@ class MessageStatus
     private Staff $recipient;
 
     /**
+     * @var DateTimeImmutable|null
+     *
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private $notified;
+
+    /**
      * MessageStatus constructor.
      *
      * @param Message $message
@@ -105,23 +112,6 @@ class MessageStatus
     public function getId(): int
     {
         return $this->id;
-    }
-
-    /**
-     * @return Message
-     */
-    public function getMessage(): Message
-    {
-        return $this->message;
-    }
-
-
-    /**
-     * @return Staff
-     */
-    public function getRecipient(): Staff
-    {
-        return $this->recipient;
     }
 
     /**
@@ -155,5 +145,42 @@ class MessageStatus
     public static function getPossibleStatuses(): array
     {
         return static::getConstants('STATUS_');
+    }
+
+    /**
+     * @return Message
+     */
+    public function getMessage(): Message
+    {
+        return $this->message;
+    }
+
+
+    /**
+     * @return Staff
+     */
+    public function getRecipient(): Staff
+    {
+        return $this->recipient;
+    }
+
+    /**
+     * @param DateTimeImmutable|null $notified
+     *
+     * @return self
+     */
+    public function setNotified(?DateTimeImmutable $notified): self
+    {
+        $this->notified = $notified;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getNotified(): DateTimeImmutable
+    {
+        return $this->notified;
     }
 }

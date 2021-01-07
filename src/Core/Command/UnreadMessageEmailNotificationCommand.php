@@ -128,6 +128,7 @@ class UnreadMessageEmailNotificationCommand extends Command
                     if (0 === $this->mailer->send($message, $failedRecipient)) {
                         throw new RuntimeException(sprintf('Error on sending email to : "%s"', implode(', ', $failedRecipient)));
                     }
+                    $this->messageStatusRepository->setMessageStatusesToNotified($staff, $from, $to);
                 } catch (Exception $exception) {
                     $this->logger->error('Unable to send unread message(s) email notification with error : ' . $exception->getMessage(), [
                         'class'    => __CLASS__,

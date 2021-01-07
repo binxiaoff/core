@@ -61,6 +61,31 @@ class MessageStatusRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param Staff             $recipient
+     * @param DateTimeImmutable $from
+     * @param DateTimeImmutable $to
+     */
+    public function setMessageStatusesToNotified(Staff $recipient, DateTimeImmutable $from, DateTimeImmutable $to): void
+    {
+        $this->createQueryBuilder('msgst')
+            ->update()
+            ->set('msgst.notified', 'NOW()')
+            ->set('msgst.updated', 'NOW()')
+            ->where('msgst.status = :status')
+            ->andWhere('msgst.added BETWEEN :from AND :to')
+            ->andWhere('msgst.recipient = :recipient')
+            ->andWhere('msgst.notified is NULL')
+            ->setParameters([
+                'status'    => MessageStatus::STATUS_UNREAD,
+                'from'      => $from->format('Y-m-d H:i:s'),
+                'to'        => $to->format('Y-m-d H:i:s'),
+                'recipient' => $recipient,
+            ])
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
      * @param DateTimeImmutable $from
      * @param DateTimeImmutable $to
      * @param int               $limit
