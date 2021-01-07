@@ -6,18 +6,15 @@ namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Core\Traits\ConstantsAwareTrait;
+use Unilend\Core\Entity\{Company, Staff};
 use Unilend\Syndication\Entity\ProjectParticipation;
 
 /**
@@ -367,6 +364,14 @@ class Project
         $this->agentRegistrationCity = $agentRegistrationCity;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|ProjectParticipation[]
+     */
+    public function getContacts()
+    {
+        return $this->contacts;
     }
 
     /**

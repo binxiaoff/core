@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
@@ -15,6 +16,34 @@ use Unilend\Core\Entity\Traits\{BlamableAddedTrait, BlamableUpdatedTrait, Public
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={
+ *         "groups": {
+ *             "blameable:read"
+ *             "timestampable:read",
+ *             "contact:read"
+ *         }
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "contact:write"
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *             "denormalization_context": {"groups": {"contact:create", "contact:write"}}
+ *         }
+ *     },
+ *     itemOperations={
+ *         "patch": {
+ *             "security": "is_granted('edit', object)",
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)",
+ *         },
+ *     }
+ * )
  * @ORM\Table(name="agency_contact")
  * @ORM\Entity
  */
@@ -47,7 +76,7 @@ class Contact
      *
      * @ORM\Column(type="string")
      *
-     * @Groups({"contact:read", "contact:write"})
+     * @Groups({"contact:read", "contact:create"})
      *
      * @Assert\Choice(callback="getTypes")
      */
