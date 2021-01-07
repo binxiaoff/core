@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Command;
 
+use JsonException;
 use Psr\Log\LoggerInterface;
 use SensioLabs\Security\SecurityChecker;
 use Symfony\Component\Console\{Command\Command,
@@ -46,6 +47,8 @@ class SecurityCheckNotificationCommand extends Command
 
     /**
      * {@inheritdoc}
+     *
+     * @throws JsonException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -60,7 +63,7 @@ class SecurityCheckNotificationCommand extends Command
 
         $lockFile     = file_get_contents($this->composerlockPath);
         $composerLock = json_decode($lockFile, true, 512, JSON_THROW_ON_ERROR);
-        $testedHash   = $composerLock['hash'];
+        $testedHash   = $composerLock['content-hash'] ?? $composerLock['hash'];
 
         $vulnerabilities = json_decode((string) $result, true, 512, JSON_THROW_ON_ERROR);
 
@@ -71,7 +74,7 @@ class SecurityCheckNotificationCommand extends Command
             foreach ($vulnerability['advisories'] as $advisory) {
                 $cve   = $advisory['cve'];
                 $title = trim(str_replace($cve, '', $advisory['title']), ' \t\n\r\0\x0B:');
-                $content .= "\t•{$title}" . ($cve ? " ({$cve})" : '') . PHP_EOL;
+                $content .= "\t• {$title}" . ($cve ? " ({$cve})" : '') . PHP_EOL;
             }
         }
 
