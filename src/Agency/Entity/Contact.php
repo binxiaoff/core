@@ -11,7 +11,7 @@ use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumbe
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Entity\Traits\{BlamableAddedTrait, BlamableUpdatedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
@@ -23,6 +23,7 @@ class Contact
     use PublicizeIdentityTrait;
     use TimestampableTrait;
     use BlamableAddedTrait;
+    use BlamableUpdatedTrait;
     use ConstantsAwareTrait;
 
     public const TYPE_BACK_OFFICE = 'back_office';
