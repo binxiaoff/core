@@ -82,8 +82,6 @@ class Project
      * @ORM\Column(type="string", length=300, nullable=true)
      *
      * @Groups({"project:read", "project:write"})
-     *
-     * @Assert\NotBlank
      */
     private ?string $agentDisplayName;
 
@@ -146,6 +144,36 @@ class Project
      */
     private ?string $agentRegistrationCity;
 
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", nullable=true)
+     *
+     * @Groups({"project:read", "project:write"})
+     */
+    private ?string $bankInstitution;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", length=11, nullable=true)
+     *
+     * @Assert\Length(min=8, max=11)
+     *
+     * @Groups({"project:read", "project:write"})
+     */
+    private ?string $bic;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", length=34, nullable=true)
+     *
+     * @Assert\Length(min=14, max=34)
+     *
+     * @Groups({"project:read", "project:write"})
+     */
+    private ?string $iban;
 
     /**
      * @param Staff $addedBy
@@ -321,6 +349,66 @@ class Project
     public function setAgentRegistrationCity(?string $agentRegistrationCity): Project
     {
         $this->agentRegistrationCity = $agentRegistrationCity;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getBankInstitution(): ?string
+    {
+        return $this->bankInstitution;
+    }
+
+    /**
+     * @param string|null $bankInstitution
+     *
+     * @return Project
+     */
+    public function setBankInstitution(?string $bankInstitution): Project
+    {
+        $this->bankInstitution = $bankInstitution;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getBic(): ?string
+    {
+        return $this->bic;
+    }
+
+    /**
+     * @param string|null $bic
+     *
+     * @return Project
+     */
+    public function setBic(?string $bic): Project
+    {
+        $this->bic = $bic;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getIban(): ?string
+    {
+        return $this->iban;
+    }
+
+    /**
+     * @param string|null $iban
+     *
+     * @return Project
+     */
+    public function setIban(?string $iban): Project
+    {
+        $this->iban = $iban;
 
         return $this;
     }
