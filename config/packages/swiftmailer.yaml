@@ -4,7 +4,7 @@ swiftmailer:
   password: '%env(MAILJET_API_SECRET)%'
   host: 'in-v3.mailjet.com'
   port: '587' # Port 25 is not permitted by AWS by default
-  sender_address: 'support@kls-platfrom.com'
+  sender_address: '%mailer.sender_address%'
   delivery_addresses:
     - test@kls-platform.com
   spool:
