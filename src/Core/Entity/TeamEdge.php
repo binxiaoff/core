@@ -82,6 +82,14 @@ class TeamEdge
     }
 
     /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
      * @return Team
      */
     public function getAncestor(): Team

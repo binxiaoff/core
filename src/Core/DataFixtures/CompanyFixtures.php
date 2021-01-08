@@ -150,6 +150,16 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         $companyStatus = new CompanyStatus($company, $status);
         $company->setCurrentStatus($companyStatus);
 
+        $team1 = Team::createTeam('1', $company->getRootTeam());
+        $this->entityManager->persist($team1);
+        $team2 = Team::createTeam('2', $company->getRootTeam());
+        $this->entityManager->persist($team2);
+
+        $team21 = Team::createTeam('2-1', $team2);
+        $this->entityManager->persist($team21);
+        $team22 = Team::createTeam('2-2', $team2);
+        $this->entityManager->persist($team22);
+
         $this->entityManager->persist($company);
 
         return $company;
