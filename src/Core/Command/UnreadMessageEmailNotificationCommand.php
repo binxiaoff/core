@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Swift_Mailer;
 use Symfony\Component\Console\{Command\Command, Input\InputArgument, Input\InputInterface, Output\OutputInterface, Question\ConfirmationQuestion, Style\SymfonyStyle};
-use Unilend\Core\Repository\{MessageStatusRepository, StaffRepository};
+use Unilend\Core\Repository\{MessageStatusRepository, UserRepository};
 use Unilend\Core\SwiftMailer\MailjetMessage;
 
 class UnreadMessageEmailNotificationCommand extends Command
@@ -21,8 +21,8 @@ class UnreadMessageEmailNotificationCommand extends Command
     /** @var string */
     protected static $defaultName = 'kls:message:unread_email_notification';
 
-    /** @var StaffRepository */
-    private StaffRepository $staffRepository;
+    /** @var UserRepository */
+    private UserRepository $userRepository;
 
     /** @var MessageStatusRepository */
     private MessageStatusRepository $messageStatusRepository;
@@ -42,14 +42,14 @@ class UnreadMessageEmailNotificationCommand extends Command
     /**
      * UnreadMessageEmailNotificationCommand constructor.
      *
-     * @param StaffRepository         $staffRepository
+     * @param UserRepository          $userRepository
      * @param MessageStatusRepository $messageStatusRepository
      * @param Swift_Mailer            $mailer
      * @param LoggerInterface         $logger
      */
-    public function __construct(StaffRepository $staffRepository, MessageStatusRepository $messageStatusRepository, Swift_Mailer $mailer, LoggerInterface $logger)
+    public function __construct(UserRepository $userRepository, MessageStatusRepository $messageStatusRepository, Swift_Mailer $mailer, LoggerInterface $logger)
     {
-        $this->staffRepository         = $staffRepository;
+        $this->userRepository          = $userRepository;
         $this->messageStatusRepository = $messageStatusRepository;
         $this->mailer                  = $mailer;
         $this->logger                  = $logger;
@@ -92,23 +92,22 @@ class UnreadMessageEmailNotificationCommand extends Command
     {
         $to                        = new DateTimeImmutable();
         $from                      = $to->modify('-24 hours');
-        $nbStaffWithUnreadMessages = $this->messageStatusRepository->countTotalRecipientUnreadMessageForDateBetween($from, $to);
-        $nbLoop                    = intval(ceil($nbStaffWithUnreadMessages / self::BATCH_SIZE));
+        $nbUserWithUnreadMessages  = $this->messageStatusRepository->countTotalRecipientUnreadMessageForDateBetween($from, $to);
+        $nbLoop                    = intval(ceil($nbUserWithUnreadMessages / self::BATCH_SIZE));
 
         for ($i = 0; $i <= $nbLoop; $i++) {
             $dryRunOutputRows               = [];
             $offset                         = $i * self::BATCH_SIZE;
-            $totalUnreadMessageByRecipients = $this->messageStatusRepository->getTotalUnreadMessageByRecipientForDateBetween($from, $to, self::BATCH_SIZE, $offset);
+            $totalUnreadMessageByUsers      = $this->messageStatusRepository->getTotalUnreadMessageByRecipientForDateBetween($from, $to, self::BATCH_SIZE, $offset);
 
-            foreach ($totalUnreadMessageByRecipients as $totalUnreadMessageByRecipient) {
+            foreach ($totalUnreadMessageByUsers as $totalUnreadMessageByUser) {
                 $failedRecipient      = [];
-                $staff                = $this->staffRepository->findOneBy(['id' => $totalUnreadMessageByRecipient['recipient']]);
-                $user                 = $staff->getUser();
-                $nbUserUnreadMessages = (int) $totalUnreadMessageByRecipient['unread'];
+                $user                 = $this->userRepository->findOneBy(['id' => $totalUnreadMessageByUser['user_id']]);
+                $nbUserUnreadMessages = (int) $totalUnreadMessageByUser['nb_messages_unread'];
 
                 if ($this->dryRun) {
                     $dryRunOutputRows[] = [
-                        'userId'           => $staff->getUser()->getId(),
+                        'userId'           => $user->getId(),
                         'email'            => $user->getEmail(),
                         'nbUnreadMessages' => $nbUserUnreadMessages,
                     ];
@@ -128,7 +127,7 @@ class UnreadMessageEmailNotificationCommand extends Command
                     if (0 === $this->mailer->send($message, $failedRecipient)) {
                         throw new RuntimeException(sprintf('Error on sending email to : "%s"', implode(', ', $failedRecipient)));
                     }
-                    $this->messageStatusRepository->setMessageStatusesToNotified($staff, $from, $to);
+                    $this->messageStatusRepository->setMessageStatusesToNotified($user, $from, $to);
                 } catch (Exception $exception) {
                     $this->logger->error('Unable to send unread message(s) email notification with error : ' . $exception->getMessage(), [
                         'class'    => __CLASS__,
