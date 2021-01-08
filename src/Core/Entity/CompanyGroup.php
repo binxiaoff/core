@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class CompanyGroup
 {
-    public const GROUPNAME_CA = 'Crédit Agricole';
+    public const COMPANY_GROUP_CA = 'Crédit Agricole';
 
     /**
      * @var int|null

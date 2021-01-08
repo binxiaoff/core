@@ -34,24 +34,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                  "user:read",
  *                  "user_status:read",
  *                  "nullableMoney:read"
- *              }
+ *             }
  *          }
- *        }
- *     },
- *     itemOperations={
- *         "get": {
- *              "normalization_context": {
- *                  "groups": {
- *                  "company:read",
- *                  "companyStatus:read",
- *                  "companyModule:read",
- *                  "staff:read",
- *                  "user:read",
- *                  "user_status:read",
- *                  "nullableMoney:read",
- *                  "team:read"
- *              }
- *          },
  *        }
  *     },
  *     itemOperations={
@@ -612,7 +596,7 @@ class Company implements TraceableStatusAwareInterface
      */
     public function isCAGMember(): bool
     {
-        return $this->getGroupName() === CompanyGroup::GROUPNAME_CA;
+        return $this->getGroupName() === CompanyGroup::COMPANY_GROUP_CA;
     }
 
     /**
