@@ -18,11 +18,10 @@ class MailHandler extends AbstractProcessingHandler
     private Swift_Mailer $mailer;
     /** @var mixed */
     private $securityRecipients;
-
-    /**
-     * @var Environment
-     */
+    /** @var Environment */
     private Environment $twig;
+    /** @var string */
+    private string $senderAddress;
 
     /**
      * @param Swift_Mailer $mailer
@@ -30,18 +29,21 @@ class MailHandler extends AbstractProcessingHandler
      * @param mixed        $securityRecipients
      * @param int          $level
      * @param bool         $bubble
+     * @param string       $senderAddress
      */
     public function __construct(
         Swift_Mailer $mailer,
         Environment $twig,
         $securityRecipients,
         $level = Logger::CRITICAL, // @see https://github.com/symfony/monolog-bundle/issues/322
-        $bubble = true
+        $bubble = true,
+        $senderAddress = 'support@kls-platfrom.com'
     ) {
         parent::__construct($level, $bubble);
         $this->mailer                  = $mailer;
         $this->securityRecipients      = $securityRecipients;
         $this->twig = $twig;
+        $this->senderAddress = $senderAddress;
     }
 
     /**
@@ -55,6 +57,7 @@ class MailHandler extends AbstractProcessingHandler
     {
         $message = new \Swift_Message();
         $message->setSubject('Log')
+            ->setFrom($this->senderAddress)
             ->setBody($this->twig->render('email/log.html.twig', $record))
             ->setTo($this->securityRecipients);
 
