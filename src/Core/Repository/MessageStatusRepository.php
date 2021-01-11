@@ -7,10 +7,10 @@ namespace Unilend\Core\Repository;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\{NoResultException, NonUniqueResultException, ORMException, OptimisticLockException};
-use Unilend\Core\Entity\{Message, MessageStatus, MessageThread, Staff, User};
-use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
+use Unilend\Core\Entity\{MessageStatus, MessageThread, Staff};
+use Unilend\Syndication\Entity\ProjectStatus;
 
 /**
  * @method MessageStatus|null find($id, $lockMode = null, $lockVersion = null)
@@ -61,36 +61,19 @@ class MessageStatusRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param User              $user
+     * @param int               $userId
      * @param DateTimeImmutable $from
      * @param DateTimeImmutable $to
      */
-    public function setMessageStatusesToNotified(User $user, DateTimeImmutable $from, DateTimeImmutable $to): void
+    public function setMessageStatusesToUnreadNotified(int $userId, DateTimeImmutable $from, DateTimeImmutable $to): void
     {
-        $messageStatusToBeNotified = $this->createQueryBuilder('msgst')
-            ->select('msgst.id')
-            ->innerJoin(Message::class, 'msg', Join::WITH, 'msgst.message = msg.id')
-            ->innerJoin(MessageThread::class, 'msgtd', Join::WITH, 'msg.messageThread = msgtd.id')
-            ->innerJoin(ProjectParticipation::class, 'pp', Join::WITH, 'msgtd.projectParticipation = pp.id')
-            ->innerJoin(Project::class, 'p', Join::WITH, 'pp.project = p.id')
-            ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'p.currentStatus = pst.id')
-            ->innerJoin(Staff::class, 'stf', Join::WITH, 'msgst.recipient = stf.id')
-            ->innerJoin(User::class, 'u', Join::WITH, 'stf.user = u.id')
-            ->where('msgst.status = :status')
-            ->andWhere('msgst.added BETWEEN :from AND :to')
-            ->andWhere('pst.status > :project_current_status')
-            ->andWhere('u.id = :user_id')
-            ->setParameters([
-                'status'                 => MessageStatus::STATUS_UNREAD,
-                'from'                   => $from->format('Y-m-d H:i:s'),
-                'to'                     => $to->format('Y-m-d H:i:s'),
-                'project_current_status' => ProjectStatus::STATUS_DRAFT,
-                'user_id'                => $user->getId(),
-            ])
+        $messageStatusToBeNotified = $this->getQueryBuilderForPeriod($from, $to)
+            ->andWhere('stf.user = :user_id')
+            ->setParameter('user_id', $userId)
             ->getQuery()->getArrayResult();
 
         $this->createQueryBuilder('msgst')->update()
-            ->set('msgst.notified', 'NOW()')
+            ->set('msgst.unreadNotified', 'NOW()')
             ->set('msgst.updated', 'NOW()')
             ->where('msgst.id IN (:messageStatusToBeNotified)')
             ->setParameter('messageStatusToBeNotified', $messageStatusToBeNotified)
@@ -101,38 +84,26 @@ class MessageStatusRepository extends ServiceEntityRepository
     /**
      * @param DateTimeImmutable $from
      * @param DateTimeImmutable $to
-     * @param int               $limit
-     * @param int               $offset
+     * @param int|null          $limit
+     * @param int|null          $offset
      *
      * @return array
      */
-    public function getTotalUnreadMessageByRecipientForDateBetween(DateTimeImmutable $from, DateTimeImmutable $to, int $limit, int $offset): array
+    public function countUnreadMessageByRecipentForPeriod(DateTimeImmutable $from, DateTimeImmutable $to, int $limit = null, int $offset = null): array
     {
-        return $this->createQueryBuilder('msgst')
-            ->select(['DISTINCT(u.id) AS user_id', 'COUNT(msgst.id) AS nb_messages_unread'])
-            ->innerJoin(Message::class, 'msg', Join::WITH, 'msgst.message = msg.id')
-            ->innerJoin(MessageThread::class, 'msgtd', Join::WITH, 'msg.messageThread = msgtd.id')
-            ->innerJoin(ProjectParticipation::class, 'pp', Join::WITH, 'msgtd.projectParticipation = pp.id')
-            ->innerJoin(Project::class, 'p', Join::WITH, 'pp.project = p.id')
-            ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'p.currentStatus = pst.id')
-            ->innerJoin(Staff::class, 'stf', Join::WITH, 'msgst.recipient = stf.id')
-            ->innerJoin(User::class, 'u', Join::WITH, 'stf.user = u.id')
-            ->where('msgst.status = :status')
-            ->andWhere('msgst.added BETWEEN :from AND :to')
-            ->andWhere('pst.status > :project_current_status')
-            ->andWhere('msgst.notified IS NULL')
-            ->setParameters([
-                'status'                 => MessageStatus::STATUS_UNREAD,
-                'from'                   => $from->format('Y-m-d H:i:s'),
-                'to'                     => $to->format('Y-m-d H:i:s'),
-                'project_current_status' => ProjectStatus::STATUS_DRAFT,
-            ])
-            ->groupBy('u.id')
-            ->setMaxResults($limit)
-            ->setFirstResult($offset)
+        $queryBuilder = $this->getQueryBuilderForPeriod($from, $to)
+            ->select('DISTINCT(u.id) AS id', 'COUNT(msgst.id) AS nb_messages_unread', 'u.email AS email', 'u.firstName AS first_name', 'u.lastName AS last_name')
+            ->groupBy('u.id');
+
+        if (null !== $limit && null !== $offset) {
+            $queryBuilder
+                ->setMaxResults($limit)
+                ->setFirstResult($offset);
+        }
+
+        return $queryBuilder
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -144,33 +115,12 @@ class MessageStatusRepository extends ServiceEntityRepository
      *
      * @return int
      */
-    public function countTotalRecipientUnreadMessageForDateBetween(DateTimeImmutable $from, DateTimeImmutable $to): int
+    public function countRecipientsWithUnreadMessageForPeriod(DateTimeImmutable $from, DateTimeImmutable $to): int
     {
-        $queryBuilder = $this->createQueryBuilder('msgst');
-        $queryBuilder
+        return (int) $this->getQueryBuilderForPeriod($from, $to)
             ->select('COUNT(DISTINCT(u.id))')
-            ->innerJoin(Message::class, 'msg', Join::WITH, 'msgst.message = msg.id')
-            ->innerJoin(MessageThread::class, 'msgtd', Join::WITH, 'msg.messageThread = msgtd.id')
-            ->innerJoin(ProjectParticipation::class, 'pp', Join::WITH, 'msgtd.projectParticipation = pp.id')
-            ->innerJoin(Project::class, 'p', Join::WITH, 'pp.project = p.id')
-            ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'p.currentStatus = pst.id')
-            ->innerJoin(Staff::class, 'stf', Join::WITH, 'msgst.recipient = stf.id')
-            ->innerJoin(User::class, 'u', Join::WITH, 'stf.user = u.id')
-            ->where('msgst.status = :status')
-            ->andWhere('msgst.added BETWEEN :from AND :to')
-            ->andWhere('pst.status > :project_current_status')
-            ->andWhere('msgst.notified IS NULL')
-            ->setParameters([
-                'status'                 => MessageStatus::STATUS_UNREAD,
-                'from'                   => $from->format('Y-m-d H:i:s'),
-                'to'                     => $to->format('Y-m-d H:i:s'),
-                'project_current_status' => ProjectStatus::STATUS_DRAFT,
-            ]);
-
-        return (int) $queryBuilder
             ->getQuery()
-            ->getSingleScalarResult()
-        ;
+            ->getSingleScalarResult();
     }
 
     /**
@@ -203,5 +153,33 @@ class MessageStatusRepository extends ServiceEntityRepository
             ])
             ->getQuery()
             ->execute();
+    }
+
+    /**
+     * @param DateTimeImmutable $from
+     * @param DateTimeImmutable $to
+     *
+     * @return QueryBuilder
+     */
+    private function getQueryBuilderForPeriod(DateTimeImmutable $from, DateTimeImmutable $to): QueryBuilder
+    {
+        return $this->createQueryBuilder('msgst')
+            ->innerJoin('msgst.message', 'msg')
+            ->innerJoin('msg.messageThread', 'msgtd')
+            ->innerJoin('msgtd.projectParticipation', 'pp')
+            ->innerJoin('pp.project', 'p')
+            ->innerJoin('p.currentStatus', 'pst')
+            ->innerJoin('msgst.recipient', 'stf')
+            ->innerJoin('stf.user', 'u')
+            ->where('msgst.status = :status')
+            ->andWhere('msgst.added BETWEEN :from AND :to')
+            ->andWhere('pst.status > :project_current_status')
+            ->andWhere('msgst.unreadNotified IS NULL')
+            ->setParameters([
+                'status'                 => MessageStatus::STATUS_UNREAD,
+                'from'                   => $from->format('Y-m-d H:i:s'),
+                'to'                     => $to->format('Y-m-d H:i:s'),
+                'project_current_status' => ProjectStatus::STATUS_DRAFT,
+            ]);
     }
 }
