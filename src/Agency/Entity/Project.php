@@ -158,7 +158,7 @@ class Project
      *
      * @ORM\Column(type="string", length=11, nullable=true)
      *
-     * @Assert\Length(min=8, max=11)
+     * @Assert\Bic
      *
      * @Groups({"project:read", "project:write"})
      */
@@ -169,7 +169,7 @@ class Project
      *
      * @ORM\Column(type="string", length=34, nullable=true)
      *
-     * @Assert\Length(min=14, max=34)
+     * @Assert\Iban
      *
      * @Groups({"project:read", "project:write"})
      */
