@@ -6,9 +6,16 @@ namespace Unilend\Syndication\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\{EntityManager, Event\OnFlushEventArgs, ORMException};
 use Exception;
+use RuntimeException;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\{Embeddable\Offer, Project, ProjectParticipationStatus, ProjectParticipationTranche, ProjectStatus, Tranche};
+use Unilend\Syndication\Entity\{Embeddable\Offer,
+    Project,
+    ProjectParticipation,
+    ProjectParticipationStatus,
+    ProjectParticipationTranche,
+    ProjectStatus,
+    Tranche};
 
 /**
  * TODO Refactor because we should not use doctrine for automatic status action
@@ -65,6 +72,7 @@ class ProjectStatusUpdatedListener
 
         if (ProjectStatus::STATUS_ALLOCATION === $currentStatus->getStatus()) {
             $this->transferInvitationReply($project, $em);
+            $this->archiveUndecidedParticipant($project, $em);
         }
     }
 
@@ -143,6 +151,47 @@ class ProjectStatusUpdatedListener
                     $em->persist($projectParticipationTranche);
                     $uow->computeChangeSet($projectParticipationTrancheClassMetadata, $projectParticipationTranche);
                 }
+            }
+        }
+    }
+
+    /**
+     * @param Project       $project
+     * @param EntityManager $em
+     *
+     * @throws ORMException
+     * @throws Exception
+     */
+    private function archiveUndecidedParticipant(Project $project, EntityManager $em)
+    {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        $staff = $user->getCurrentStaff();
+
+        $participations = $project->getProjectParticipations();
+
+        $projectParticipationClassMetadata = $em->getClassMetadata(ProjectParticipation::class);
+        $projectParticipationStatusClassMetadata = $em->getClassMetadata(ProjectParticipationStatus::class);
+
+        $uow = $em->getUnitOfWork();
+
+        foreach ($participations as $participation) {
+            $currentStatus = $participation->getCurrentStatus();
+
+            if (null === $currentStatus) {
+                throw new RuntimeException(sprintf('The participation with the publicId %s should have a current status', $participation->getPublicId()));
+            }
+
+            $currentStatus->getStatus();
+
+            if (ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $currentStatus || ProjectParticipationStatus::STATUS_CREATED === $currentStatus) {
+                $archivedStatus = new ProjectParticipationStatus($participation, ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER, $staff);
+                $em->persist($archivedStatus);
+                $participation->setCurrentStatus($archivedStatus);
+                $uow->computeChangeSet($projectParticipationStatusClassMetadata, $archivedStatus);
+                $em->persist($participation);
+                $uow->computeChangeSet($projectParticipationClassMetadata, $participation);
             }
         }
     }
