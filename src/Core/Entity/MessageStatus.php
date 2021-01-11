@@ -90,7 +90,7 @@ class MessageStatus
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
-    private $notified;
+    private $unreadNotified;
 
     /**
      * MessageStatus constructor.
@@ -165,13 +165,13 @@ class MessageStatus
     }
 
     /**
-     * @param DateTimeImmutable|null $notified
+     * @param DateTimeImmutable|null $unreadNotified
      *
      * @return self
      */
-    public function setNotified(?DateTimeImmutable $notified): self
+    public function setUnreadNotified(?DateTimeImmutable $unreadNotified): self
     {
-        $this->notified = $notified;
+        $this->unreadNotified = $unreadNotified;
 
         return $this;
     }
@@ -179,8 +179,8 @@ class MessageStatus
     /**
      * @return DateTimeImmutable|null
      */
-    public function getNotified(): DateTimeImmutable
+    public function getUnreadNotified(): DateTimeImmutable
     {
-        return $this->notified;
+        return $this->unreadNotified;
     }
 }
