@@ -74,7 +74,6 @@ class Project
      *
      * @Assert\NotBlank()
      *
-     * @Groups({"project:read"})
      */
     private Company $agent;
 
@@ -366,15 +365,38 @@ class Project
     }
 
     /**
+     * @param string $type
+     *
+     * @return array
+     */
+    public function getContactsByType(string $type): array
+    {
+        $filteredContacts = $this->contacts->filter(function (Contact $contact) use ($type) {
+            return $contact->getType() === $type;
+        });
+
+        // necessary to reset array keys
+        return array_values($filteredContacts->toArray());
+    }
+
+    /**
      * @Groups({"project:read"})
      *
-     * @return Collection
+     * @return array
      */
-    public function getBackOfficeContacts(): Collection
+    public function getBackOfficeContacts(): array
     {
-        return $this->contacts->filter(function (Contact $contact) {
-            return $contact->getType() === Contact::TYPE_BACK_OFFICE;
-        });
+        return  $this->getContactsByType(Contact::TYPE_BACK_OFFICE);
+    }
+
+    /**
+     * @Groups({"project:read"})
+     *
+     * @return array
+     */
+    public function getLegalContacts(): array
+    {
+        return $this->getContactsByType(Contact::TYPE_LEGAL);
     }
 
     /**
