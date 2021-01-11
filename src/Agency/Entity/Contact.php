@@ -81,7 +81,7 @@ class Contact
      *
      * @Groups({"contact:create"})
      *
-     * @Assert\Choice({Contact::TYPE_BACK_OFFICE})
+     * @Assert\Choice(callback="getTypes")
      */
     private string $type;
 
@@ -358,5 +358,13 @@ class Contact
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getTypes(): array
+    {
+        return self::getConstants('TYPE_');
     }
 }
