@@ -97,7 +97,7 @@ class ProjectVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff
-            && $staff->hasArrangementProjectCreatePermissionEnabled()
+            && $staff->hasArrangementProjectCreatePermission()
             && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT);
     }
 

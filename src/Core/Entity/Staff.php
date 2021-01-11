@@ -336,7 +336,7 @@ class Staff implements TraceableStatusAwareInterface
     /**
      * @return bool
      */
-    public function hasArrangementProjectCreatePermissionEnabled(): bool
+    public function hasArrangementProjectCreationPermission(): bool
     {
         return $this->arrangementProjectCreationPermission;
     }
@@ -344,7 +344,7 @@ class Staff implements TraceableStatusAwareInterface
     /**
      * @return bool
      */
-    public function hasAgencyProjectCreatePermissionEnabled(): bool
+    public function hasAgencyProjectCreationPermission(): bool
     {
         return $this->agencyProjectCreationPermission;
     }
