@@ -61,8 +61,6 @@ class Contact
     use ConstantsAwareTrait;
 
     public const TYPE_BACK_OFFICE = 'back_office';
-    public const TYPE_LEGAL       = 'legal';
-    public const TYPE_VOTER       = 'voter';
 
     /**
      * @var Project
@@ -83,7 +81,7 @@ class Contact
      *
      * @Groups({"contact:create"})
      *
-     * @Assert\Choice(callback="getTypes")
+     * @Assert\Choice({Contact::TYPE_BACK_OFFICE})
      */
     private string $type;
 
@@ -118,7 +116,7 @@ class Contact
      *
      * @Assert\NotBlank
      */
-    private string $direction;
+    private string $department;
 
     /**
      * @var string
@@ -129,7 +127,7 @@ class Contact
      *
      * @Assert\NotBlank
      */
-    private string $office;
+    private string $jobFunction;
 
     /**
      * @var string
@@ -173,8 +171,8 @@ class Contact
      * @param Staff   $addedBy
      * @param string  $firstName
      * @param string  $lastName
-     * @param string  $direction
-     * @param string  $office
+     * @param string  $department
+     * @param string  $jobFunction
      * @param string  $email
      * @param string  $phone
      * @param bool    $referent
@@ -187,23 +185,23 @@ class Contact
         Staff $addedBy,
         string $firstName,
         string $lastName,
-        string $direction,
-        string $office,
+        string $department,
+        string $jobFunction,
         string $email,
         string $phone,
         bool $referent = false
     ) {
-        $this->added     = new DateTimeImmutable();
-        $this->addedBy   = $addedBy;
-        $this->project   = $project;
-        $this->type      = $type;
-        $this->firstName = $firstName;
-        $this->lastName  = $lastName;
-        $this->direction = $direction;
-        $this->office    = $office;
-        $this->email     = $email;
-        $this->phone     = $phone;
-        $this->referent  = $referent;
+        $this->added       = new DateTimeImmutable();
+        $this->addedBy     = $addedBy;
+        $this->project     = $project;
+        $this->type        = $type;
+        $this->firstName   = $firstName;
+        $this->lastName    = $lastName;
+        $this->department  = $department;
+        $this->jobFunction = $jobFunction;
+        $this->email       = $email;
+        $this->phone       = $phone;
+        $this->referent    = $referent;
     }
 
     /**
@@ -249,19 +247,19 @@ class Contact
     /**
      * @return string
      */
-    public function getDirection(): string
+    public function getDepartment(): string
     {
-        return $this->direction;
+        return $this->department;
     }
 
     /**
-     * @param string $direction
+     * @param string $department
      *
      * @return Contact
      */
-    public function setDirection(string $direction): Contact
+    public function setDepartment(string $department): Contact
     {
-        $this->direction = $direction;
+        $this->department = $department;
 
         return $this;
     }
@@ -269,19 +267,19 @@ class Contact
     /**
      * @return string
      */
-    public function getOffice(): string
+    public function getJobFunction(): string
     {
-        return $this->office;
+        return $this->jobFunction;
     }
 
     /**
-     * @param string $office
+     * @param string $jobFunction
      *
      * @return Contact
      */
-    public function setOffice(string $office): Contact
+    public function setJobFunction(string $jobFunction): Contact
     {
-        $this->office = $office;
+        $this->jobFunction = $jobFunction;
 
         return $this;
     }
@@ -360,13 +358,5 @@ class Contact
     public function getType(): string
     {
         return $this->type;
-    }
-
-    /**
-     * @return array
-     */
-    public static function getTypes(): array
-    {
-        return self::getConstants('TYPE_');
     }
 }

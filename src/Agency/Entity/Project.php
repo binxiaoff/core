@@ -149,7 +149,7 @@ class Project
     private ?string $agentRegistrationCity;
 
     /**
-     * @var ProjectParticipation[]|Collection
+     * @var Contact[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Contact", mappedBy="project", orphanRemoval=true)
      */

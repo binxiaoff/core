@@ -22,9 +22,6 @@ class ContactVoter extends AbstractEntityVoter
      */
     protected function isGrantedAll($contact, User $user): bool
     {
-        // TODO change after new habilitations are merged
-        $currentUserStaff = $user->getCurrentStaff();
-
-        return $contact->getProject()->getAgent() === $currentUserStaff->getCompany();
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $contact->getProject());
     }
 }
