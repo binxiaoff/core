@@ -8,7 +8,6 @@ use Doctrine\ORM\ORMException;
 use JsonException;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Core\Entity\{Staff};
 use Unilend\Core\Service\TemporaryTokenGenerator;
 use Unilend\Core\SwiftMailer\MailjetMessage;
@@ -17,8 +16,6 @@ class StaffNotifier
 {
     /** @var Swift_Mailer */
     private Swift_Mailer $mailer;
-    /** @var TranslatorInterface */
-    private TranslatorInterface $translator;
     /** @var TemporaryTokenGenerator */
     private TemporaryTokenGenerator $temporaryTokenGenerator;
     /**
@@ -28,18 +25,15 @@ class StaffNotifier
 
     /**
      * @param Swift_Mailer            $mailer
-     * @param TranslatorInterface     $translator
      * @param TemporaryTokenGenerator $temporaryTokenGenerator
      * @param RouterInterface         $router
      */
     public function __construct(
         Swift_Mailer $mailer,
-        TranslatorInterface $translator,
         TemporaryTokenGenerator $temporaryTokenGenerator,
         RouterInterface $router
     ) {
         $this->mailer                  = $mailer;
-        $this->translator              = $translator;
         $this->temporaryTokenGenerator = $temporaryTokenGenerator;
         $this->router = $router;
     }
@@ -71,7 +65,7 @@ class StaffNotifier
                             ['temporaryTokenPublicId' => $token, 'userPublicId' => $user->getPublicId()],
                             RouterInterface::ABSOLUTE_URL
                         ),
-                    'marketSegments' => implode(', ', []),
+                    'marketSegments' => ' ',
                     'roles' => $staff->isManager() ? 'manager' : '',
                     'company_displayName' => $staff->getCompany()->getDisplayName(),
                     'client_firstName' =>  $user->getFirstName(),

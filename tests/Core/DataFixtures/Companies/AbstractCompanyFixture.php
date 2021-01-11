@@ -41,6 +41,7 @@ abstract class AbstractCompanyFixture extends AbstractFixture implements Depende
         $manager->persist($company->getRootTeam());
         $company->setShortCode($this->getShortCode());
         $company->setBankCode($this->getBankCode());
+        $company->setCompanyGroup($this->getCompanyGroup());
         $companyReference = 'company/' . $this->getName();
 
         $teams = [...array_values($this->getTeams($company->getRootTeam())), $company->getRootTeam()];

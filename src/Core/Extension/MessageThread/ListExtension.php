@@ -10,20 +10,29 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\{MessageThread, User};
-use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
+use Unilend\Syndication\Entity\{Project,
+    ProjectParticipation,
+    ProjectParticipationMember,
+    ProjectStatus};
+use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
     /** @var Security */
     private Security $security;
+    /** @var ProjectParticipationMemberRepository */
+    private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
+
     /**
      * ListExtension constructor.
      *
-     * @param Security $security
+     * @param Security                             $security
+     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
      */
-    public function __construct(Security $security)
+    public function __construct(Security $security, ProjectParticipationMemberRepository $projectParticipationMemberRepository)
     {
         $this->security                = $security;
+        $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
     }
 
     /**
@@ -51,26 +60,29 @@ class ListExtension implements QueryCollectionExtensionInterface
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
             ->innerJoin(ProjectParticipation::class, 'pp', Join::WITH, $rootAlias . '.projectParticipation = pp.id')
-            ->leftJoin("pp.projectParticipationMembers", 'ppc')
+            ->leftJoin('pp.projectParticipationMembers', 'ppc')
             ->innerJoin(Project::class, 'p', Join::WITH, 'p.id = pp.project')
             ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'pst.project = p.id')
             ->andWhere(
                 $queryBuilder->expr()->orX(
-                    // Submitter condition
+                    // if you are the project owner
+                    'p.submitterUser = :user',
                     $queryBuilder->expr()->andX(
-                        'p.submitterCompany = :company',
                         $queryBuilder->expr()->orX(
-                            'p.marketSegment IN (:marketSegments)',
-                            ($staff && $staff->isAdmin() ? '1 = 1' : '0 = 1')
+                            $queryBuilder->expr()->andX('ppc.staff = :staff', 'ppc.archived IS NULL'), // You are non archived member of participation
+                            'ppc IN (:managedStaffMember)', // You managed a member of a participation
+                        ),
+                        $queryBuilder->expr()->orX(
+                            $rootAlias . '.submitterCompany = pp.participant', // you are in arranger company
+                            'pst.status in (:displayableStatus)' // or your participant and the project is in displayable status
                         )
-                    ),
-                    // Participant condition
-                    'ppc.staff = :staff AND ppc.archived IS NULL'
+                    )
                 )
             )
+            ->setParameter('user', $staff->getUser())
+            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
             ->setParameter('staff', $staff)
-            ->setParameter('company', $staff->getCompany())
-            ->setParameter('marketSegments', $staff->getMarketSegments())
+            ->setParameter('managedStaffMember', $this->projectParticipationMemberRepository->findByManager($staff))
             ->orderBy('p.title', 'ASC');
     }
 }

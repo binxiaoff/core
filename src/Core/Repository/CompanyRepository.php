@@ -26,9 +26,6 @@ class CompanyRepository extends ServiceEntityRepository
 {
     use OrderByHandlerTrait;
 
-    /** @var TeamRepository */
-    private TeamRepository $teamRepository;
-
     /**
      * @param ManagerRegistry $registry
      */
