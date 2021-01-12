@@ -183,15 +183,14 @@ class ProjectStatusUpdatedListener
                 throw new RuntimeException(sprintf('The participation with the publicId %s should have a current status', $participation->getPublicId()));
             }
 
-            $currentStatus->getStatus();
+            $status = $currentStatus->getStatus();
 
-            if (ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $currentStatus || ProjectParticipationStatus::STATUS_CREATED === $currentStatus) {
+            if (ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $status || ProjectParticipationStatus::STATUS_CREATED === $status) {
                 $archivedStatus = new ProjectParticipationStatus($participation, ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER, $staff);
-                $em->persist($archivedStatus);
                 $participation->setCurrentStatus($archivedStatus);
+                $em->persist($archivedStatus);
                 $uow->computeChangeSet($projectParticipationStatusClassMetadata, $archivedStatus);
-                $em->persist($participation);
-                $uow->computeChangeSet($projectParticipationClassMetadata, $participation);
+                $uow->recomputeSingleEntityChangeSet($projectParticipationClassMetadata, $participation);
             }
         }
     }
