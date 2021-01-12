@@ -68,7 +68,7 @@ class Project extends AbstractProject
      *     @ORM\JoinColumn(name="id_agent", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"project:read", "project:create"})
+     * @Groups({"project:read"})
      *
      * @Assert\NotBlank()
      */
@@ -179,6 +179,33 @@ class Project extends AbstractProject
      * @Groups({"project:read", "project:write"})
      */
     private ?string $iban;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", length=255, nullable=true)
+     *
+     * @Gedmo\Versioned
+     *
+     * @Groups({"project:write", "project:read"})
+     *
+     * @Assert\NotBlank
+     * @Assert\Length(max="255")
+     */
+    private ?string $riskGroupName;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(length=8, nullable=true)
+     *
+     * @Assert\Choice(callback="getInternalRatingScores")
+     *
+     * @Gedmo\Versioned
+     *
+     * @Groups({"project:write", "project:read"})
+     */
+    private ?string $internalRatingScore;
 
     /**
      * @var bool
@@ -563,6 +590,47 @@ class Project extends AbstractProject
     public function setIban(?string $iban): Project
     {
         $this->iban = $iban;
+
+        return $this;
+    }
+
+    /**
+     * @param string|null $riskGroupName
+     *
+     * @return Project
+     */
+    public function setRiskGroupName(?string $riskGroupName): Project
+    {
+        $this->riskGroupName = $riskGroupName;
+
+        return $this;
+    }
+
+    /**
+     * @return Company
+     */
+    public function getRiskGroupName(): ?string
+    {
+        return $this->riskGroupName;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getInternalRatingScore(): ?string
+    {
+        return $this->internalRatingScore;
+    }
+
+
+    /**
+     * @param string|null $internalRatingScore
+     *
+     * @return Project
+     */
+    public function setInternalRatingScore(?string $internalRatingScore): Project
+    {
+        $this->internalRatingScore = $internalRatingScore;
 
         return $this;
     }
