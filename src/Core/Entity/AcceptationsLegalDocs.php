@@ -44,7 +44,7 @@ use Unilend\Core\Filter\CountFilter;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity(fields={"legalDoc", "acceptedBy"}, message="AcceptationsLegalDocs.legalDoc.unique")
+ * @UniqueEntity(fields={"legalDoc", "acceptedBy"}, message="Core.AcceptationsLegalDocs.legalDoc.unique")
  */
 class AcceptationsLegalDocs
 {
@@ -59,7 +59,7 @@ class AcceptationsLegalDocs
      *
      * @Assert\Expression(
      *     "this.getLegalDoc().getId() === constant('Unilend\\Core\\Entity\\LegalDocument::CURRENT_SERVICE_TERMS')",
-     *     message="AcceptationsLegalDocs.legalDoc.notCurrent"
+     *     message="Core.AcceptationsLegalDocs.legalDoc.notCurrent"
      * )
      *
      * @Groups({"acceptationsLegalDocs:read", "acceptationsLegalDocs:write"})

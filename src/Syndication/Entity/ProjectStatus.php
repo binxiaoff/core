@@ -217,13 +217,13 @@ class ProjectStatus implements StatusInterface
     {
         if ($this->getStatus() > self::STATUS_DRAFT) {
             if (null === $this->getProject()->getSyndicationType()) {
-                $context->buildViolation('ProjectStatus.project.syndicationType.required')
+                $context->buildViolation('Syndication.ProjectStatus.project.syndicationType.required')
                     ->atPath('project.syndicationType')
                     ->addViolation()
                 ;
             }
             if (null === $this->getProject()->getParticipationType()) {
-                $context->buildViolation('ProjectStatus.project.participationType.required')
+                $context->buildViolation('Syndication.ProjectStatus.project.participationType.required')
                     ->atPath('project.participationType')
                     ->addViolation()
                 ;
@@ -240,7 +240,7 @@ class ProjectStatus implements StatusInterface
     public function validateOversubscription(ExecutionContextInterface $context, $payload)
     {
         if ($this->getStatus() > self::STATUS_ALLOCATION && $this->getProject()->isOversubscribed()) {
-            $context->buildViolation('ProjectStatus.project.oversubscribed')
+            $context->buildViolation('Syndication.ProjectStatus.project.oversubscribed')
                 ->atPath('status')
                 ->addViolation();
         }

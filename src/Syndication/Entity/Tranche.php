@@ -238,7 +238,7 @@ class Tranche
      * @Assert\PositiveOrZero
      * @Assert\Expression(
      *     "this.isCommissionRateValid()",
-     *     message="Tranche.commissionRate.expression"
+     *     message="Syndication.Tranche.commissionRate.expression"
      * )
      *
      * @Groups({"tranche:write", "tranche:read"})
@@ -270,7 +270,7 @@ class Tranche
      *
      * @Assert\Expression(
      *     expression="(!this.isSyndicated() && this.getUnsyndicatedFunderType()) || this.isSyndicated() && this.getUnsyndicatedFunderType() === null",
-     *     message="Tranche.unsyndicatedFunderType.expression"
+     *     message="Syndication.Tranche.unsyndicatedFunderType.expression"
      * )
      * @Assert\Choice(callback="getUnsyndicatedFunderTypes")
      *
@@ -285,7 +285,7 @@ class Tranche
      *
      * @Assert\Expression(
      *     expression="this.isThirdPartyFunderValid() === true",
-     *     message="Tranche.thirdPartyFunder.expression"
+     *     message="Syndication.Tranche.thirdPartyFunder.expression"
      * )
      *
      * @Groups({"tranche:write", "tranche:read"})
@@ -297,7 +297,7 @@ class Tranche
      *
      * @ORM\Column(type="string")
      *
-     * @Assert\Regex(pattern="/#[0-9a-f]{3}([0-9a-f]{3})?/i", message="Tranche.color.regex")
+     * @Assert\Regex(pattern="/#[0-9a-f]{3}([0-9a-f]{3})?/i", message="Syndication.Tranche.color.regex")
      * @Assert\NotBlank
      *
      * @Groups({"tranche:write", "tranche:read"})
@@ -808,7 +808,7 @@ class Tranche
         $globalFundingMoney = $this->getProject()->getGlobalFundingMoney();
 
         if (MoneyCalculator::isDifferentCurrency($this->getMoney(), $globalFundingMoney)) {
-            $context->buildViolation('Money.currency.inconsistent')
+            $context->buildViolation('Core.Money.currency.inconsistent')
                 ->atPath('money')
                 ->addViolation();
         }

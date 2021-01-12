@@ -808,13 +808,13 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     {
         if ($this->getProject()->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION)) {
             if ((null === $this->getInvitationRequest() || false === $this->invitationRequest->isValid())) {
-                $context->buildViolation('ProjectParticipation.invitationRequest.invalid')
+                $context->buildViolation('Core.Syndication.ProjectParticipation.invitationRequest.invalid')
                     ->atPath('invitationRequest')
                     ->addViolation();
             }
 
             if ($this->projectParticipationTranches->isEmpty() && $this->getCurrentStatus()->getStatus() > 0) {
-                $context->buildViolation('ProjectParticipation.projectParticipationTranches.required')
+                $context->buildViolation('Core.Syndication.ProjectParticipation.projectParticipationTranches.required')
                     ->atPath('projectParticipationTranches')
                     ->addViolation();
             }
@@ -830,7 +830,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     {
         foreach ($this->projectParticipationTranches as $index => $participationTranche) {
             if ($participationTranche->getProjectParticipation() !== $this) {
-                $context->buildViolation('ProjectParticipation.projectParticipationTranches.incorrectParticipation')
+                $context->buildViolation('Core.Syndication.ProjectParticipation.projectParticipationTranches.incorrectParticipation')
                     ->atPath("projectParticipationTranches[$index]")
                     ->addViolation();
             }
@@ -846,7 +846,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     {
         foreach ($this->projectParticipationMembers as $index => $participationMember) {
             if ($participationMember->getProjectParticipation() !== $this) {
-                $context->buildViolation('ProjectParticipation.projectParticipationMembers.incorrectParticipation')
+                $context->buildViolation('Core.Syndication.ProjectParticipation.projectParticipationMembers.incorrectParticipation')
                     ->atPath("projectParticipationMembers[$index]")
                     ->addViolation();
             }
@@ -861,7 +861,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public function validateCommitteeDeadline(ExecutionContextInterface $context): void
     {
         if (null === $this->committeeDeadline && ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $this->currentStatus->getStatus()) {
-            $context->buildViolation('ProjectParticipation.committeeDeadline.required')
+            $context->buildViolation('Core.Syndication.ProjectParticipation.committeeDeadline.required')
                 ->atPath('committeeDeadline')
                 ->addViolation();
         }
@@ -877,25 +877,25 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         $globalFundingMoney = $this->getProject()->getGlobalFundingMoney();
 
         if (MoneyCalculator::isDifferentCurrency($this->interestRequest->getMoney(), $globalFundingMoney)) {
-            $context->buildViolation('Money.currency.inconsistent')
+            $context->buildViolation('Core.Money.currency.inconsistent')
                 ->atPath('interestRequest.money')
                 ->addViolation();
         }
 
         if (MoneyCalculator::isDifferentCurrency($this->interestRequest->getMaxMoney(), $globalFundingMoney)) {
-            $context->buildViolation('Money.currency.inconsistent')
+            $context->buildViolation('Core.Money.currency.inconsistent')
                 ->atPath('interestRequest.maxMoney')
                 ->addViolation();
         }
 
         if (MoneyCalculator::isDifferentCurrency($this->interestReply->getMoney(), $globalFundingMoney)) {
-            $context->buildViolation('Money.currency.inconsistent')
+            $context->buildViolation('Core.Money.currency.inconsistent')
                 ->atPath('interestReply')
                 ->addViolation();
         }
 
         if (MoneyCalculator::isDifferentCurrency($this->invitationRequest->getMoney(), $globalFundingMoney)) {
-            $context->buildViolation('Money.currency.inconsistent')
+            $context->buildViolation('Core.Money.currency.inconsistent')
                 ->atPath('invitationRequest')
                 ->addViolation();
         }
@@ -910,7 +910,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     {
         $interestMaxAmount = $this->interestRequest->getMaxMoney();
         if ($interestMaxAmount->getAmount() !== null && 1 !== MoneyCalculator::compare($interestMaxAmount, $this->interestRequest->getMoney())) {
-            $context->buildViolation('Money.currency.maxMoney')
+            $context->buildViolation('Core.Money.currency.maxMoney')
                 ->atPath('interestRequest.maxMoney')
                 ->addViolation();
         }

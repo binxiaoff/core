@@ -54,7 +54,7 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, Timestamp
  * )
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity(fields={"company", "user"}, message="Staff.user.unique")
+ * @UniqueEntity(fields={"company", "user"}, message="Core.Staff.user.unique")
  */
 class Staff implements TraceableStatusAwareInterface
 {
@@ -99,7 +99,7 @@ class Staff implements TraceableStatusAwareInterface
      *     @ORM\JoinColumn(name="id_user", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Assert\NotBlank(message="Staff.user.empty")
+     * @Assert\NotBlank(message="Core.Staff.user.empty")
      * @Assert\Valid
      *
      * @Groups({"staff:read", "staff:create"})

@@ -20,9 +20,9 @@ trait RoleableTrait
      *
      * @Groups({"role:read", "role:write"})
      *
-     * @Assert\Choice(callback="getAvailableRoles", multiple=true, multipleMessage="Roleable.roles.choice")
-     * @Assert\Count(min="1", minMessage="Roleable.roles.count")
-     * @Assert\Unique(message="Roleable.roles.unique")
+     * @Assert\Choice(callback="getAvailableRoles", multiple=true, multipleMessage="Core.Roleable.roles.choice")
+     * @Assert\Count(min="1", minMessage="Core.Roleable.roles.count")
+     * @Assert\Unique(message="Core.Roleable.roles.unique")
      */
     private $roles = [];
 

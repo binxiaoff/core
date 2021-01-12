@@ -99,8 +99,8 @@ class ProjectOrganizer
      *
      * @Groups({"role:read", "role:write"})
      *
-     * @Assert\Choice(callback="getAvailableRoles", multiple=true, multipleMessage="Roleable.roles.choice")
-     * @Assert\Unique(message="Roleable.roles.unique")
+     * @Assert\Choice(callback="getAvailableRoles", multiple=true, multipleMessage="Core.Roleable.roles.choice")
+     * @Assert\Unique(message="Core.Roleable.roles.unique")
      */
     private $roles = [];
 
@@ -176,7 +176,7 @@ class ProjectOrganizer
                     $organizer = next($organizers);
                 }
                 if ($organizer) {
-                    $context->buildViolation('ProjectOrganizer.roles.duplicatedUniqueRole')
+                    $context->buildViolation('Syndication.ProjectOrganizer.roles.duplicatedUniqueRole')
                         ->atPath('roles')
                         ->setInvalidValue($role)
                         ->setParameters([
@@ -198,7 +198,7 @@ class ProjectOrganizer
     public function validateRunRole(ExecutionContextInterface $context): void
     {
         if ($this->hasRole(self::DUTY_PROJECT_ORGANIZER_RUN) && false === $this->company->isCAGMember()) {
-            $context->buildViolation('ProjectOrganizer.roles.runRole')
+            $context->buildViolation('Syndication.ProjectOrganizer.roles.runRole')
                 ->atPath('roles')
                 ->addViolation()
             ;
