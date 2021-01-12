@@ -88,7 +88,9 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     public function createContacts(Project $project, Staff $staff): void
     {
         foreach (Contact::getTypes() as $type) {
-            for ($i = 0; $i < 2; $i++) {
+            $nbContacts = $type === Contact::TYPE_AGENCY ? 1 : 3;
+
+            for ($i = 0; $i < $nbContacts; $i++) {
                 $contact = new Contact(
                     $project,
                     $type,
