@@ -16,7 +16,7 @@ use Unilend\Core\Entity\Constant\LegalForm;
 use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Core\Entity\{AbstractClass\AbstractProject, Company, Staff};
+use Unilend\Core\Entity\{Company, Embeddable\Money, Staff};
 
 /**
  * @ApiResource(
@@ -183,7 +183,7 @@ class Project extends AbstractProject
     /**
      * @var string|null
      *
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\Column(type="string", length=255)
      *
      * @Gedmo\Versioned
      *
@@ -192,7 +192,7 @@ class Project extends AbstractProject
      * @Assert\NotBlank
      * @Assert\Length(max="255")
      */
-    private ?string $riskGroupName;
+    private string $riskGroupName;
 
     /**
      * @var string|null
@@ -206,6 +206,31 @@ class Project extends AbstractProject
      * @Groups({"project:write", "project:read"})
      */
     private ?string $internalRatingScore;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(length=191)
+     *
+     * @Assert\NotBlank
+     *
+     * @Gedmo\Versioned
+     *
+     * @Groups({"project:write", "project:read"})
+     */
+    private string $title;
+
+    /**
+     * @var Money
+     *
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     *
+     * @Assert\NotBlank
+     * @Assert\Valid
+     *
+     * @Groups({"project:read", "project:write"})
+     */
+    private Money $globalFundingMoney;
 
     /**
      * @var bool
@@ -308,17 +333,20 @@ class Project extends AbstractProject
     private iterable $borrowers;
 
     /**
-     * @param Staff $addedBy
+     * @param Staff  $addedBy
+     * @param string $riskGroupName
+     * @param Money  $globalFundingMoney
      *
      * @throws Exception
      */
-    public function __construct(Staff $addedBy)
+    public function __construct(Staff $addedBy, string $riskGroupName, Money $globalFundingMoney)
     {
-        $agent                   = $addedBy->getCompany();
-        $this->added             = new DateTimeImmutable();
-        $this->addedBy           = $addedBy;
-        $this->contacts          = new ArrayCollection();
-        $this->agent             = $agent;
+        $agent                    = $addedBy->getCompany();
+        $this->added              = new DateTimeImmutable();
+        $this->addedBy            = $addedBy;
+        $this->contacts           = new ArrayCollection();
+        $this->riskGroupName      = $riskGroupName;
+        $this->globalFundingMoney = $globalFundingMoney;
 
         $this->borrowers = new ArrayCollection();
         $this->tranches  = new ArrayCollection();
@@ -334,6 +362,7 @@ class Project extends AbstractProject
         $this->secondaryRiskType = null;
 
         // This part is weird but compliant to figma models: those fields are editable
+        $this->agent             = $agent;
         $this->agentDisplayName = $agent->getDisplayName();
         $this->agentSiren       = $agent->getSiren();
     }
@@ -609,7 +638,7 @@ class Project extends AbstractProject
     /**
      * @return Company
      */
-    public function getRiskGroupName(): ?string
+    public function getRiskGroupName(): string
     {
         return $this->riskGroupName;
     }
@@ -829,5 +858,33 @@ class Project extends AbstractProject
         $this->tranches = $tranches;
 
         return $this;
+    }
+
+    /**
+     * @param string $title
+     *
+     * @return Project
+     */
+    public function setTitle(string $title): Project
+    {
+        $this->title = $title;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    /**
+     * @return Money
+     */
+    public function getGlobalFundingMoney(): Money
+    {
+        return $this->globalFundingMoney;
     }
 }

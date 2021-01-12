@@ -641,7 +641,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @return Project
      */
-    public function setTitle($title): Project
+    public function setTitle(string $title): Project
     {
         $this->title = $title;
 
