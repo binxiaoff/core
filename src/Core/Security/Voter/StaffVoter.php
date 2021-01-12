@@ -15,7 +15,6 @@ class StaffVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_VIEW       = 'view';
     public const ATTRIBUTE_EDIT       = 'edit';
-    public const ATTRIBUTE_ADMIN_EDIT = 'admin_edit';
     public const ATTRIBUTE_DELETE     = 'delete';
     public const ATTRIBUTE_CREATE     = 'create';
 

@@ -66,11 +66,6 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         /** @var Staff $staff */
         $staff = $this->extractObjectToPopulate(Staff::class, $context);
 
-        if ($staff) {
-            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalGroups($staff));
-        }
-
-
         $company = null;
 
         // Try to get from staff
@@ -127,19 +122,5 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     public function supportsDenormalization($data, $type, ?string $format = null, array $context = []): bool
     {
         return !isset($context[self::ALREADY_CALLED]) && Staff::class === $type;
-    }
-
-    /**
-     * @param Staff $staff
-     *
-     * @return array
-     */
-    private function getAdditionalGroups(Staff $staff): array
-    {
-        if ($this->security->isGranted(StaffVoter::ATTRIBUTE_ADMIN_EDIT, $staff)) {
-            return [Staff::SERIALIZER_GROUP_ADMIN_CREATE];
-        }
-
-        return [];
     }
 }

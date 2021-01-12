@@ -59,8 +59,6 @@ class Staff implements TraceableStatusAwareInterface
     use TimestampableTrait;
     use PublicizeIdentityTrait;
 
-    public const SERIALIZER_GROUP_ADMIN_CREATE = 'staff:admin:create';
-
     public const SERIALIZER_GROUP_OWNER_READ = 'staff:owner:read';
 
     /**
@@ -86,7 +84,7 @@ class Staff implements TraceableStatusAwareInterface
      * @ORM\ManyToMany(targetEntity="Unilend\Core\Entity\MarketSegment")
      * @ORM\JoinTable(name="core_staff_market_segment")
      *
-     * @Groups({"staff:read", "staff:create", "staff:update", Staff::SERIALIZER_GROUP_ADMIN_CREATE})
+     * @Groups({"staff:read", "staff:create", "staff:update"})
      */
     private Collection $marketSegments;
 
@@ -95,6 +93,8 @@ class Staff implements TraceableStatusAwareInterface
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Team", inversedBy="staff")
      * @ORM\JoinColumn(name="id_team", nullable=false)
+     *
+     * @Groups({"staff:read", "staff:create", "staff:update"})
      */
     private Team $team;
 
@@ -334,6 +334,18 @@ class Staff implements TraceableStatusAwareInterface
     }
 
     /**
+     * @param Team $team
+     *
+     * @return Staff
+     */
+    public function setTeam(Team $team): Staff
+    {
+        $this->team = $team;
+
+        return $this;
+    }
+
+    /**
      * @return bool
      */
     public function hasArrangementProjectCreationPermission(): bool
@@ -347,6 +359,30 @@ class Staff implements TraceableStatusAwareInterface
     public function hasAgencyProjectCreationPermission(): bool
     {
         return $this->agencyProjectCreationPermission;
+    }
+
+    /**
+     * @param bool $arrangementProjectCreationPermission
+     *
+     * @return Staff
+     */
+    public function setArrangementProjectCreationPermission(bool $arrangementProjectCreationPermission): Staff
+    {
+        $this->arrangementProjectCreationPermission = $arrangementProjectCreationPermission;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $agencyProjectCreationPermission
+     *
+     * @return Staff
+     */
+    public function setAgencyProjectCreationPermission(bool $agencyProjectCreationPermission): Staff
+    {
+        $this->agencyProjectCreationPermission = $agencyProjectCreationPermission;
+
+        return $this;
     }
 
     /**
