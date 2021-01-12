@@ -16,7 +16,7 @@ use Unilend\Core\Entity\Constant\LegalForm;
 use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Core\Entity\{Company, Staff};
+use Unilend\Core\Entity\{AbstractClass\AbstractProject, Company, Staff};
 
 /**
  * @ApiResource(
@@ -54,7 +54,7 @@ use Unilend\Core\Entity\{Company, Staff};
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Agency\Entity\Versioned\VersionedProject")
  */
-class Project
+class Project extends AbstractProject
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
