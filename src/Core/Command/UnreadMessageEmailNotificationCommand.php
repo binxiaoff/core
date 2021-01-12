@@ -16,7 +16,7 @@ use Unilend\Core\SwiftMailer\MailjetMessage;
 
 class UnreadMessageEmailNotificationCommand extends Command
 {
-    private const BATCH_SIZE = 20;
+    private const BATCH_SIZE = 2;
 
     /** @var string */
     protected static $defaultName = 'kls:message:unread_email_notification';
@@ -129,6 +129,7 @@ class UnreadMessageEmailNotificationCommand extends Command
         $io                        = new SymfonyStyle($input, $output);
         $nbUserWithUnreadMessages  = $this->messageStatusRepository->countRecipientsWithUnreadMessageForPeriod($from, $to);
         $nbLoop                    = intdiv($nbUserWithUnreadMessages, self::BATCH_SIZE) + (($nbUserWithUnreadMessages % self::BATCH_SIZE) !== 0 ? 1 : 0);
+        $helper                    = $this->getHelper('question');
 
         for ($i = 0; $i <= $nbLoop; $i++) {
             $currentPageNum            = $i + 1;
@@ -144,7 +145,6 @@ class UnreadMessageEmailNotificationCommand extends Command
                 ];
             }
 
-            $helper = $this->getHelper('question');
             $question = new ConfirmationQuestion(
                 sprintf('%s/%s - Display next page ? (y|n) ', $currentPageNum, $nbLoop),
                 false,
