@@ -70,7 +70,7 @@ class ProjectParticipationMemberNotifier
         }
 
         $context = [
-            'temporaryToken_token' => ($temporaryToken instanceof TemporaryToken) ? $temporaryToken->getToken() : null,
+            'temporaryToken_token' => ($temporaryToken instanceof TemporaryToken) ? $temporaryToken->getToken() : false,
             'front_viewParticipation_URL' => $this->router->generate(
                 'front_viewParticipation',
                 [
@@ -85,7 +85,7 @@ class ProjectParticipationMemberNotifier
                     'userPublicId' => $user->getPublicId(),
                 ],
                 RouterInterface::ABSOLUTE_URL
-            ) : null,
+            ) : false,
             'front_home' => $this->router->generate('front_home'),
             'front_home_URL' => $this->router->generate('front_home'),
             'project_riskGroupName' => $project->getRiskGroupName(),
