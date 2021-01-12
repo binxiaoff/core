@@ -151,7 +151,7 @@ class Project
     /**
      * @var Contact[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Contact", mappedBy="project", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Contact", mappedBy="project", orphanRemoval=true, cascade={"remove"})
      */
     private Collection $contacts;
 
