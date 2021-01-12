@@ -16,7 +16,7 @@ use Unilend\Core\SwiftMailer\MailjetMessage;
 
 class UnreadMessageEmailNotificationCommand extends Command
 {
-    private const BATCH_SIZE = 2;
+    private const BATCH_SIZE = 20;
 
     /** @var string */
     protected static $defaultName = 'kls:message:unread_email_notification';
