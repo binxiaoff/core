@@ -808,13 +808,13 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     {
         if ($this->getProject()->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION)) {
             if ((null === $this->getInvitationRequest() || false === $this->invitationRequest->isValid())) {
-                $context->buildViolation('Core.Syndication.ProjectParticipation.invitationRequest.invalid')
+                $context->buildViolation('Syndication.ProjectParticipation.invitationRequest.invalid')
                     ->atPath('invitationRequest')
                     ->addViolation();
             }
 
             if ($this->projectParticipationTranches->isEmpty() && $this->getCurrentStatus()->getStatus() > 0) {
-                $context->buildViolation('Core.Syndication.ProjectParticipation.projectParticipationTranches.required')
+                $context->buildViolation('Syndication.ProjectParticipation.projectParticipationTranches.required')
                     ->atPath('projectParticipationTranches')
                     ->addViolation();
             }
@@ -830,7 +830,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     {
         foreach ($this->projectParticipationTranches as $index => $participationTranche) {
             if ($participationTranche->getProjectParticipation() !== $this) {
-                $context->buildViolation('Core.Syndication.ProjectParticipation.projectParticipationTranches.incorrectParticipation')
+                $context->buildViolation('Syndication.ProjectParticipation.projectParticipationTranches.incorrectParticipation')
                     ->atPath("projectParticipationTranches[$index]")
                     ->addViolation();
             }
@@ -846,7 +846,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     {
         foreach ($this->projectParticipationMembers as $index => $participationMember) {
             if ($participationMember->getProjectParticipation() !== $this) {
-                $context->buildViolation('Core.Syndication.ProjectParticipation.projectParticipationMembers.incorrectParticipation')
+                $context->buildViolation('Syndication.ProjectParticipation.projectParticipationMembers.incorrectParticipation')
                     ->atPath("projectParticipationMembers[$index]")
                     ->addViolation();
             }
@@ -861,7 +861,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public function validateCommitteeDeadline(ExecutionContextInterface $context): void
     {
         if (null === $this->committeeDeadline && ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $this->currentStatus->getStatus()) {
-            $context->buildViolation('Core.Syndication.ProjectParticipation.committeeDeadline.required')
+            $context->buildViolation('Syndication.ProjectParticipation.committeeDeadline.required')
                 ->atPath('committeeDeadline')
                 ->addViolation();
         }
