@@ -11,6 +11,7 @@ use Exception;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, BlamableUpdatedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Traits\ConstantsAwareTrait;
@@ -60,6 +61,7 @@ class Contact
     use BlamableUpdatedTrait;
     use ConstantsAwareTrait;
 
+    public const TYPE_AGENCY      = 'agency';
     public const TYPE_BACK_OFFICE = 'back_office';
     public const TYPE_LEGAL       = 'legal';
 
@@ -367,5 +369,17 @@ class Contact
     public static function getTypes(): array
     {
         return self::getConstants('TYPE_');
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateAgencyTypeUnicity(ExecutionContextInterface $context): void
+    {
+        if ($this->type === self::TYPE_AGENCY && $this->project->getAgencyContact() !== null) {
+            $context->buildViolation('Agency.Contact.type.unique')->atPath('type')->addViolation();
+        }
     }
 }

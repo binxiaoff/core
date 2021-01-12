@@ -601,36 +601,46 @@ class Project
     /**
      * @param string $type
      *
-     * @return array
+     * @return Collection
      */
-    public function getContactsByType(string $type): array
+    public function getContactsByType(string $type): Collection
     {
         $filteredContacts = $this->contacts->filter(function (Contact $contact) use ($type) {
             return $contact->getType() === $type;
         });
 
-        // necessary to reset array keys
-        return array_values($filteredContacts->toArray());
+        // necessary to reset array keys and return a Collection
+        return new ArrayCollection($filteredContacts->getValues());
     }
 
     /**
      * @Groups({"project:read"})
      *
-     * @return array
+     * @return Collection
      */
-    public function getBackOfficeContacts(): array
+    public function getBackOfficeContacts(): Collection
     {
-        return  $this->getContactsByType(Contact::TYPE_BACK_OFFICE);
+        return $this->getContactsByType(Contact::TYPE_BACK_OFFICE);
     }
 
     /**
      * @Groups({"project:read"})
      *
-     * @return array
+     * @return Collection
      */
-    public function getLegalContacts(): array
+    public function getLegalContacts(): Collection
     {
         return $this->getContactsByType(Contact::TYPE_LEGAL);
+    }
+
+    /**
+     * @Groups({"project:read"})
+     *
+     * @return Contact|null
+     */
+    public function getAgencyContact(): ?Contact
+    {
+        return $this->getContactsByType(Contact::TYPE_AGENCY)->first() ?: null;
     }
 
     /**

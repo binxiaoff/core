@@ -1,3 +1,8 @@
+Agency:
+    Contact:
+        type:
+            unique: Il ne peut y avoir qu'un seul contact agency par projet
+
 Core:
     AcceptationsLegalDocs:
         legalDoc:
