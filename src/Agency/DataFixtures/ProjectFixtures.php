@@ -29,7 +29,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         /** @var Staff $staff */
         $staff   = $this->getReference(StaffFixtures::ADMIN);
-        $project = (new Project($staff));
+        $project = new Project($staff);
         $this->manager = $manager;
 
         $manager->persist($project);
