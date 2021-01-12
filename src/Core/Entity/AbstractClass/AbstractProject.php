@@ -26,6 +26,9 @@ abstract class AbstractProject
     public const INTERNAL_RATING_SCORE_F       = 'F';
     public const INTERNAL_RATING_SCORE_Z       = 'Z';
 
+    public const FUNDING_SPECIFICITY_FSA = 'FSA';
+    public const FUNDING_SPECIFICITY_LBO = 'LBO';
+
     /**
      * @return array
      */

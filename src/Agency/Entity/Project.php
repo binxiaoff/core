@@ -333,6 +333,17 @@ class Project extends AbstractProject
     private iterable $borrowers;
 
     /**
+     * @var string|null
+     *
+     * @Groups({"project:read", "project:write"})
+     *
+     * @ORM\Column(type="string", nullable=true, length=10)
+     *
+     * @Assert\Choice({AbstractProject::FUNDING_SPECIFICITY_FSA, AbstractProject::FUNDING_SPECIFICITY_LBO})
+     */
+    private ?string $fundingSpecificity;
+
+    /**
      * @param Staff  $addedBy
      * @param string $riskGroupName
      * @param Money  $globalFundingMoney
@@ -886,5 +897,25 @@ class Project extends AbstractProject
     public function getGlobalFundingMoney(): Money
     {
         return $this->globalFundingMoney;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getFundingSpecificity(): ?string
+    {
+        return $this->fundingSpecificity;
+    }
+
+    /**
+     * @param string|null $fundingSpecificity
+     *
+     * @return Project
+     */
+    public function setFundingSpecificity(?string $fundingSpecificity): Project
+    {
+        $this->fundingSpecificity = $fundingSpecificity;
+
+        return $this;
     }
 }
