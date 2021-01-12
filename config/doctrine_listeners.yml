@@ -94,10 +94,6 @@ services:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\Core\Listener\Doctrine\Lifecycle\StaffUpdatedListener:
-        tags:
-            - { name: doctrine.event_listener, event: onFlush }
-
     Unilend\Syndication\Listener\Doctrine\Lifecycle\ProjectStatusUpdatedListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
