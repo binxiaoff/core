@@ -125,6 +125,11 @@ class StaffVoter extends AbstractEntityVoter
             return false;
         }
 
+        // A staff cannot edit self
+        if ($submitterStaff->getPublicId() === $subject->getPublicId()) {
+            return false;
+        }
+
         return $this->isSuperior($submitterStaff, $subject);
     }
 
