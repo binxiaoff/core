@@ -58,7 +58,7 @@ SQL
 SQL
             );
 
-            $this->addSql("INSERT INTO syndication_project_participation_status VALUES (NULL, $fixableParticipation, $idStaff, -20, NOW(), $uuid)");
+            $this->addSql("INSERT INTO syndication_project_participation_status(id_project_participation, added_by, status, added, public_id) VALUES ($fixableParticipation, $idStaff, -20, NOW(), $uuid)");
 
             $this->addSql(<<<SQL
         UPDATE syndication_project_participation
