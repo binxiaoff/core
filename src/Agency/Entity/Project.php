@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Constant\LegalForm;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Core\Entity\{Company, Staff};
+use Unilend\Core\Entity\{Company, Constant\ParticipationType, Staff};
 
 /**
  * @ApiResource(
@@ -180,6 +180,92 @@ class Project
     private ?string $iban;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean")
+     *
+     * @Groups({"project:write", "project:read", "project:create"})
+     */
+    private bool $silentSyndication;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", length=30, nullable=true)
+     *
+     * @Assert\NotBlank()
+     * @Assert\Choice(callback={"Unilend\Core\Entity\Constant\SyndicationType", "getSyndicationTypes"})
+     *
+     * @Groups({"project:write", "project:read", "project:create"})
+     */
+    private ?string $principalSyndicationType;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", length=30, nullable=true)
+     *
+     * @Assert\NotBlank()
+     * @Assert\Choice(callback={"Unilend\Core\Entity\Constant\ParticipationType", "getParticipationTypes"})
+     *
+     * @Groups({"project:write", "project:read", "project:create"})
+     */
+    private ?string $principalParticipationType;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", nullable=true, length=30)
+     *
+     * @Assert\Expression("(false === this.isPrincipalSubParticipation() and null === value) or (this.isPrincipalSubParticipation() and value)")
+     *
+     * @Assert\Choice(callback={"Unilend\Core\Entity\Constant\RiskType", "getRiskTypes"})
+     *
+     * @Groups({"project:write", "project:read", "project:create"})
+     */
+    private ?string $principalRiskType;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", length=30, nullable=true)
+     *
+     * @Assert\Choice(callback={"Unilend\Core\Entity\Constant\SyndicationType", "getSyndicationTypes"})
+     *
+     * @Assert\Expression("(this.hasSilentSyndication() and value) or (false === this.hasSilentSyndication() and null === value)")
+     *
+     * @Groups({"project:write", "project:read", "project:create"})
+     */
+    private ?string $secondarySyndicationType;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", length=30, nullable=true)
+     *
+     * @Assert\Choice(callback={"Unilend\Core\Entity\Constant\ParticipationType", "getParticipationTypes"})
+     *
+     * @Assert\Expression("(this.hasSilentSyndication() and value) or (false === this.hasSilentSyndication() and null === value)")
+     *
+     * @Groups({"project:write", "project:read", "project:create"})
+     */
+    private ?string $secondaryParticipationType;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", nullable=true, length=30)
+     *
+     * @Assert\Choice(callback={"Unilend\Core\Entity\Constant\RiskType", "getRiskTypes"})
+     *
+     * @Assert\Expression("(false === this.isSecondarySubParticipation() and null === value) or (this.isSecondarySubParticipation() and value)"),
+     * @Assert\Expression("(this.hasSilentSyndication()) or (false === this.hasSilentSyndication() and null === value)")
+     *
+     * @Groups({"project:write", "project:read", "project:create"})
+     */
+    private ?string $secondaryRiskType;
+
+    /**
      * @var Borrower[]|iterable
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project")
@@ -193,12 +279,23 @@ class Project
      */
     public function __construct(Staff $addedBy)
     {
-        $agent           = $addedBy->getCompany();
-        $this->added     = new DateTimeImmutable();
-        $this->addedBy   = $addedBy;
-        $this->contacts  = new ArrayCollection();
-        $this->agent     = $agent;
+        $agent                   = $addedBy->getCompany();
+        $this->added             = new DateTimeImmutable();
+        $this->addedBy           = $addedBy;
+        $this->contacts          = new ArrayCollection();
+        $this->agent             = $agent;
+
         $this->borrowers = new ArrayCollection();
+
+        $this->silentSyndication = false;
+
+        $this->principalSyndicationType = null;
+        $this->principalParticipationType = null;
+        $this->principalRiskType = null;
+
+        $this->secondarySyndicationType = null;
+        $this->secondaryParticipationType = null;
+        $this->secondaryRiskType = null;
 
         // This part is weird but compliant to figma models: those fields are editable
         $this->agentDisplayName = $agent->getDisplayName();
@@ -457,6 +554,162 @@ class Project
     public function setIban(?string $iban): Project
     {
         $this->iban = $iban;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasSilentSyndication(): bool
+    {
+        return $this->silentSyndication;
+    }
+
+    /**
+     * @param bool $silentSyndication
+     *
+     * @return Project
+     */
+    public function setSilentSyndication(bool $silentSyndication): Project
+    {
+        $this->silentSyndication = $silentSyndication;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPrincipalSyndicationType(): ?string
+    {
+        return $this->principalSyndicationType;
+    }
+
+    /**
+     * @param string|null $principalSyndicationType
+     *
+     * @return Project
+     */
+    public function setPrincipalSyndicationType(?string $principalSyndicationType): Project
+    {
+        $this->principalSyndicationType = $principalSyndicationType;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPrincipalParticipationType(): ?string
+    {
+        return $this->principalParticipationType;
+    }
+
+    /**
+     * @param string|null $principalParticipationType
+     *
+     * @return Project
+     */
+    public function setPrincipalParticipationType(?string $principalParticipationType): Project
+    {
+        $this->principalParticipationType = $principalParticipationType;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPrincipalSubParticipation()
+    {
+        return ParticipationType::SUB_PARTICIPATION === $this->principalParticipationType;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPrincipalRiskType(): ?string
+    {
+        return $this->principalRiskType;
+    }
+
+    /**
+     * @param string|null $principalRiskType
+     *
+     * @return Project
+     */
+    public function setPrincipalRiskType(?string $principalRiskType): Project
+    {
+        $this->principalRiskType = $principalRiskType;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getSecondarySyndicationType(): ?string
+    {
+        return $this->secondarySyndicationType;
+    }
+
+    /**
+     * @param string|null $secondarySyndicationType
+     *
+     * @return Project
+     */
+    public function setSecondarySyndicationType(?string $secondarySyndicationType): Project
+    {
+        $this->secondarySyndicationType = $secondarySyndicationType;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getSecondaryParticipationType(): ?string
+    {
+        return $this->secondaryParticipationType;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSecondarySubParticipation()
+    {
+        return ParticipationType::SUB_PARTICIPATION === $this->secondaryParticipationType;
+    }
+
+    /**
+     * @param string|null $secondaryParticipationType
+     *
+     * @return Project
+     */
+    public function setSecondaryParticipationType(?string $secondaryParticipationType): Project
+    {
+        $this->secondaryParticipationType = $secondaryParticipationType;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getSecondaryRiskType(): ?string
+    {
+        return $this->secondaryRiskType;
+    }
+
+    /**
+     * @param string|null $secondaryRiskType
+     *
+     * @return Project
+     */
+    public function setSecondaryRiskType(?string $secondaryRiskType): Project
+    {
+        $this->secondaryRiskType = $secondaryRiskType;
 
         return $this;
     }
