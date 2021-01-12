@@ -15,7 +15,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Entity\{Company, Staff};
-use Unilend\Syndication\Entity\ProjectParticipation;
 
 /**
  * @ApiResource(
@@ -72,8 +71,9 @@ class Project
      *     @ORM\JoinColumn(name="id_agent", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Assert\NotBlank()
+     * @Groups({"project:read"})
      *
+     * @Assert\NotBlank()
      */
     private Company $agent;
 
@@ -83,8 +83,6 @@ class Project
      * @ORM\Column(type="string", length=300, nullable=true)
      *
      * @Groups({"project:read", "project:write"})
-     *
-     * @Assert\NotBlank
      */
     private ?string $agentDisplayName;
 

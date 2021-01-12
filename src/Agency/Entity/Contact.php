@@ -61,6 +61,7 @@ class Contact
     use ConstantsAwareTrait;
 
     public const TYPE_BACK_OFFICE = 'back_office';
+    public const TYPE_LEGAL       = 'legal';
 
     /**
      * @var Project
