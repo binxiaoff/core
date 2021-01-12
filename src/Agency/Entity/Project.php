@@ -17,6 +17,7 @@ use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskTyp
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Entity\{Company, Embeddable\Money, Staff};
+use Unilend\Core\Entity\MarketSegment;
 
 /**
  * @ApiResource(
@@ -344,13 +345,29 @@ class Project extends AbstractProject
     private ?string $fundingSpecificity;
 
     /**
-     * @param Staff  $addedBy
-     * @param string $riskGroupName
-     * @param Money  $globalFundingMoney
+     * @var MarketSegment
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\MarketSegment")
+     * @ORM\JoinColumns({
+     *     @ORM\JoinColumn(name="id_market_segment", referencedColumnName="id", nullable=false)
+     * })
+     * @Assert\NotBlank
+     *
+     * @Gedmo\Versioned
+     *
+     * @Groups({"project:write", "project:read"})
+     */
+    private MarketSegment $marketSegment;
+
+    /**
+     * @param Staff         $addedBy
+     * @param string        $riskGroupName
+     * @param Money         $globalFundingMoney
+     * @param MarketSegment $marketSegment
      *
      * @throws Exception
      */
-    public function __construct(Staff $addedBy, string $riskGroupName, Money $globalFundingMoney)
+    public function __construct(Staff $addedBy, string $riskGroupName, Money $globalFundingMoney, MarketSegment $marketSegment)
     {
         $agent                    = $addedBy->getCompany();
         $this->added              = new DateTimeImmutable();
@@ -358,6 +375,7 @@ class Project extends AbstractProject
         $this->contacts           = new ArrayCollection();
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
+        $this->marketSegment      = $marketSegment;
 
         $this->borrowers = new ArrayCollection();
         $this->tranches  = new ArrayCollection();
@@ -892,6 +910,18 @@ class Project extends AbstractProject
     }
 
     /**
+     * @param Money $globalFundingMoney
+     *
+     * @return Project
+     */
+    public function setGlobalFundingMoney(Money $globalFundingMoney): Project
+    {
+        $this->globalFundingMoney = $globalFundingMoney;
+
+        return $this;
+    }
+
+    /**
      * @return Money
      */
     public function getGlobalFundingMoney(): Money
@@ -915,6 +945,26 @@ class Project extends AbstractProject
     public function setFundingSpecificity(?string $fundingSpecificity): Project
     {
         $this->fundingSpecificity = $fundingSpecificity;
+
+        return $this;
+    }
+
+    /**
+     * @return MarketSegment
+     */
+    public function getMarketSegment(): MarketSegment
+    {
+        return $this->marketSegment;
+    }
+
+    /**
+     * @param MarketSegment $marketSegment
+     *
+     * @return Project
+     */
+    public function setMarketSegment(MarketSegment $marketSegment): Project
+    {
+        $this->marketSegment = $marketSegment;
 
         return $this;
     }
