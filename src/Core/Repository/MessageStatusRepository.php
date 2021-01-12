@@ -93,13 +93,9 @@ class MessageStatusRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->getQueryBuilderForPeriod($from, $to)
             ->select('DISTINCT(u.id) AS id', 'COUNT(msgst.id) AS nb_messages_unread', 'u.email AS email', 'u.firstName AS first_name', 'u.lastName AS last_name')
-            ->groupBy('u.id');
-
-        if (null !== $limit && null !== $offset) {
-            $queryBuilder
-                ->setMaxResults($limit)
-                ->setFirstResult($offset);
-        }
+            ->groupBy('u.id')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
 
         return $queryBuilder
             ->getQuery()
