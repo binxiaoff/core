@@ -9,7 +9,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\{NoResultException, NonUniqueResultException, ORMException, OptimisticLockException};
-use Unilend\Core\Entity\{MessageStatus, MessageThread, Staff};
+use Unilend\Core\Entity\{MessageStatus, MessageThread, Staff, UserStatus};
 use Unilend\Syndication\Entity\ProjectStatus;
 
 /**
@@ -167,15 +167,18 @@ class MessageStatusRepository extends ServiceEntityRepository
             ->innerJoin('p.currentStatus', 'pst')
             ->innerJoin('msgst.recipient', 'stf')
             ->innerJoin('stf.user', 'u')
+            ->innerJoin('u.currentStatus', 'us')
             ->where('msgst.status = :status')
             ->andWhere('msgst.added BETWEEN :from AND :to')
             ->andWhere('pst.status > :project_current_status')
             ->andWhere('msgst.unreadNotified IS NULL')
+            ->andWhere('us.status = :user_status')
             ->setParameters([
                 'status'                 => MessageStatus::STATUS_UNREAD,
                 'from'                   => $from->format('Y-m-d H:i:s'),
                 'to'                     => $to->format('Y-m-d H:i:s'),
                 'project_current_status' => ProjectStatus::STATUS_DRAFT,
+                'user_status'            => UserStatus::STATUS_CREATED,
             ]);
     }
 }
