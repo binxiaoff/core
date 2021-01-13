@@ -132,44 +132,42 @@ class UnreadMessageEmailNotificationCommand extends Command
     private function displayDryRunOutput(InputInterface $input, OutputInterface $output, DateTimeImmutable $from, DateTimeImmutable $to): ?int
     {
         /** @var SymfonyStyle */
-        $io                        = new SymfonyStyle($input, $output);
-        $nbUserWithUnreadMessages  = $this->messageStatusRepository->countRecipientsWithUnreadMessageForPeriod($from, $to);
-        $nbLoop                    = intdiv($nbUserWithUnreadMessages, self::BATCH_SIZE) + (($nbUserWithUnreadMessages % self::BATCH_SIZE) !== 0 ? 1 : 0);
-        $helper                    = $this->getHelper('question');
+        $io                       = new SymfonyStyle($input, $output);
+        $nbUserWithUnreadMessages = $this->messageStatusRepository->countRecipientsWithUnreadMessageForPeriod($from, $to);
+        $nbLoop                   = intdiv($nbUserWithUnreadMessages, self::BATCH_SIZE) + (($nbUserWithUnreadMessages % self::BATCH_SIZE) !== 0 ? 1 : 0);
+        $helper                   = $this->getHelper('question');
 
-        if (0 < $nbLoop) {
-            for ($i = 0; $i <= $nbLoop; $i++) {
-                $currentPageNum            = $i + 1;
-                $dryRunOutputRows          = [];
-                $offset                    = $i * self::BATCH_SIZE;
-                $totalUnreadMessageByUsers = $this->messageStatusRepository->countUnreadMessageByRecipentForPeriod($from, $to, self::BATCH_SIZE, $offset);
-                foreach ($totalUnreadMessageByUsers as $totalUnreadMessageByUser) {
-                    $nbUserUnreadMessages = (int) $totalUnreadMessageByUser['nb_messages_unread'];
-                    $dryRunOutputRows[] = [
-                        'userId'           => $totalUnreadMessageByUser['id'],
-                        'email'            => $totalUnreadMessageByUser['email'],
-                        'nbUnreadMessages' => $nbUserUnreadMessages,
-                    ];
-                }
+        for ($currentPageNum = 1; $currentPageNum <= $nbLoop; $currentPageNum++) {
+            $dryRunOutputRows          = [];
+            $offset                    = ($currentPageNum - 1) * self::BATCH_SIZE;
+            $totalUnreadMessageByUsers = $this->messageStatusRepository->countUnreadMessageByRecipentForPeriod($from, $to, self::BATCH_SIZE, $offset);
 
-                $question = new ConfirmationQuestion(
-                    sprintf('%s/%s - Display next page ? (y|n) ', $currentPageNum, $nbLoop),
-                    false,
-                    '/^(y)/i'
-                );
-
-                $io->table(
-                    ['User id', 'User email', 'nb unread messages'],
-                    $dryRunOutputRows
-                );
-
-                if ($currentPageNum === $nbLoop || !$helper->ask($input, $output, $question)) {
-                    return Command::SUCCESS;
-                }
-
-                // Clear screen between each page
-                $output->write(sprintf("\033\143"));
+            foreach ($totalUnreadMessageByUsers as $totalUnreadMessageByUser) {
+                $nbUserUnreadMessages = (int) $totalUnreadMessageByUser['nb_messages_unread'];
+                $dryRunOutputRows[] = [
+                    'userId'           => $totalUnreadMessageByUser['id'],
+                    'email'            => $totalUnreadMessageByUser['email'],
+                    'nbUnreadMessages' => $nbUserUnreadMessages,
+                ];
             }
+
+            $question = new ConfirmationQuestion(
+                sprintf('%s/%s - Display next page ? (y|n) ', $currentPageNum, $nbLoop),
+                false,
+                '/^(y)/i'
+            );
+
+            $io->table(
+                ['User id', 'User email', 'nb unread messages'],
+                $dryRunOutputRows
+            );
+
+            if ($currentPageNum === $nbLoop || !$helper->ask($input, $output, $question)) {
+                return Command::SUCCESS;
+            }
+
+            // Clear screen between each page
+            $output->write(sprintf("\033\143"));
         }
 
         return Command::SUCCESS;
