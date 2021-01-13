@@ -62,10 +62,9 @@ class UnreadMessageEmailNotificationCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
         /** @var ConsoleSectionOutput $section */
-        $section = $output->section();
-        $to      = (new DateTimeImmutable())->setTime(6, 0);
-        $from    = $to->modify('-24 hours');
-
+        $section                   = $output->section();
+        $to                        = (new DateTimeImmutable())->setTime(6, 0);
+        $from                      = $to->modify('-24 hours');
         $table                     = $this->createTable($section);
         $dryRun                    = $input->hasParameterOption('--dry-run');
         $totalUnreadMessageByUsers = $this->messageStatusRepository->countUnreadMessageByRecipentForPeriod($from, $to);
