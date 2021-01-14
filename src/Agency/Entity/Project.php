@@ -360,15 +360,41 @@ class Project extends AbstractProject
     private MarketSegment $marketSegment;
 
     /**
-     * @param Staff         $addedBy
-     * @param string        $riskGroupName
-     * @param Money         $globalFundingMoney
-     * @param MarketSegment $marketSegment
+     * @var DateTimeImmutable
+     *
+     * @ORM\Column(type="date_immutable")
+     *
+     * @Groups({"project:write", "project:read"})
+     */
+    private DateTimeImmutable $closingDate;
+
+    /**
+     * @var DateTimeImmutable
+     *
+     * @ORM\Column(type="date_immutable")
+     *
+     * @Groups({"project:write", "project:read"})
+     */
+    private DateTimeImmutable $endOfContractDate;
+
+    /**
+     * @param Staff             $addedBy
+     * @param string            $riskGroupName
+     * @param Money             $globalFundingMoney
+     * @param MarketSegment     $marketSegment
+     * @param DateTimeImmutable $closingDate
+     * @param DateTimeImmutable $endOfContractDate
      *
      * @throws Exception
      */
-    public function __construct(Staff $addedBy, string $riskGroupName, Money $globalFundingMoney, MarketSegment $marketSegment)
-    {
+    public function __construct(
+        Staff $addedBy,
+        string $riskGroupName,
+        Money $globalFundingMoney,
+        MarketSegment $marketSegment,
+        DateTimeImmutable $closingDate,
+        DateTimeImmutable $endOfContractDate
+    ) {
         $agent                    = $addedBy->getCompany();
         $this->added              = new DateTimeImmutable();
         $this->addedBy            = $addedBy;
@@ -376,6 +402,8 @@ class Project extends AbstractProject
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
         $this->marketSegment      = $marketSegment;
+        $this->closingDate        = $closingDate;
+        $this->endOfContractDate  = $endOfContractDate;
 
         $this->borrowers = new ArrayCollection();
         $this->tranches  = new ArrayCollection();
@@ -391,7 +419,7 @@ class Project extends AbstractProject
         $this->secondaryRiskType = null;
 
         // This part is weird but compliant to figma models: those fields are editable
-        $this->agent             = $agent;
+        $this->agent            = $agent;
         $this->agentDisplayName = $agent->getDisplayName();
         $this->agentSiren       = $agent->getSiren();
     }
@@ -965,6 +993,46 @@ class Project extends AbstractProject
     public function setMarketSegment(MarketSegment $marketSegment): Project
     {
         $this->marketSegment = $marketSegment;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable
+     */
+    public function getClosingDate(): DateTimeImmutable
+    {
+        return $this->closingDate;
+    }
+
+    /**
+     * @param DateTimeImmutable $closingDate
+     *
+     * @return Project
+     */
+    public function setClosingDate(DateTimeImmutable $closingDate): Project
+    {
+        $this->closingDate = $closingDate;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable
+     */
+    public function getEndOfContractDate(): DateTimeImmutable
+    {
+        return $this->endOfContractDate;
+    }
+
+    /**
+     * @param DateTimeImmutable $endOfContractDate
+     *
+     * @return Project
+     */
+    public function setEndOfContractDate(DateTimeImmutable $endOfContractDate): Project
+    {
+        $this->endOfContractDate = $endOfContractDate;
 
         return $this;
     }
