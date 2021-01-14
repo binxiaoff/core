@@ -61,13 +61,11 @@ class MessageStatusRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param int               $userId
-     * @param DateTimeImmutable $from
-     * @param DateTimeImmutable $to
+     * @param int $userId
      */
-    public function setMessageStatusesToUnreadNotified(int $userId, DateTimeImmutable $from, DateTimeImmutable $to): void
+    public function setMessageStatusesToUnreadNotified(int $userId): void
     {
-        $messageStatusToBeNotified = $this->getQueryBuilderForPeriod($from, $to)
+        $messageStatusToBeNotified = $this->getQueryBuilderForPeriod()
             ->andWhere('stf.user = :user_id')
             ->setParameter('user_id', $userId)
             ->getQuery()->getArrayResult();
@@ -82,16 +80,14 @@ class MessageStatusRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param DateTimeImmutable $from
-     * @param DateTimeImmutable $to
-     * @param int|null          $limit
-     * @param int|null          $offset
+     * @param int|null $limit
+     * @param int|null $offset
      *
      * @return array
      */
-    public function countUnreadMessageByRecipentForPeriod(DateTimeImmutable $from, DateTimeImmutable $to, int $limit = null, int $offset = null): array
+    public function countUnreadMessageByRecipentForPeriod(int $limit = null, int $offset = null): array
     {
-        $queryBuilder = $this->getQueryBuilderForPeriod($from, $to)
+        $queryBuilder = $this->getQueryBuilderForPeriod()
             ->select('DISTINCT(u.id) AS id', 'COUNT(msgst.id) AS nb_messages_unread', 'u.email AS email', 'u.firstName AS first_name', 'u.lastName AS last_name')
             ->groupBy('u.id')
             ->setMaxResults($limit)
@@ -103,17 +99,14 @@ class MessageStatusRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param DateTimeImmutable $from
-     * @param DateTimeImmutable $to
-     *
      * @throws NoResultException
      * @throws NonUniqueResultException
      *
      * @return int
      */
-    public function countRecipientsWithUnreadMessageForPeriod(DateTimeImmutable $from, DateTimeImmutable $to): int
+    public function countRecipientsWithUnreadMessageForPeriod(): int
     {
-        return (int) $this->getQueryBuilderForPeriod($from, $to)
+        return (int) $this->getQueryBuilderForPeriod()
             ->select('COUNT(DISTINCT(u.id))')
             ->getQuery()
             ->getSingleScalarResult();
@@ -152,12 +145,9 @@ class MessageStatusRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param DateTimeImmutable $from
-     * @param DateTimeImmutable $to
-     *
      * @return QueryBuilder
      */
-    private function getQueryBuilderForPeriod(DateTimeImmutable $from, DateTimeImmutable $to): QueryBuilder
+    private function getQueryBuilderForPeriod(): QueryBuilder
     {
         return $this->createQueryBuilder('msgst')
             ->innerJoin('msgst.message', 'msg')
@@ -169,14 +159,11 @@ class MessageStatusRepository extends ServiceEntityRepository
             ->innerJoin('stf.user', 'u')
             ->innerJoin('u.currentStatus', 'us')
             ->where('msgst.status = :status')
-            ->andWhere('msgst.added BETWEEN :from AND :to')
             ->andWhere('pst.status > :project_current_status')
             ->andWhere('msgst.unreadNotified IS NULL')
             ->andWhere('us.status = :user_status')
             ->setParameters([
                 'status'                 => MessageStatus::STATUS_UNREAD,
-                'from'                   => $from->format('Y-m-d H:i:s'),
-                'to'                     => $to->format('Y-m-d H:i:s'),
                 'project_current_status' => ProjectStatus::STATUS_DRAFT,
                 'user_status'            => UserStatus::STATUS_CREATED,
             ]);
