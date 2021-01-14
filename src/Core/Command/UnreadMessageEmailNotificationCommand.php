@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Command;
 
-use DateTimeImmutable;
 use Exception;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Swift_Mailer;
 use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\{Command\Command, Input\InputInterface, Input\InputOption, Output\ConsoleSectionOutput, Output\OutputInterface};
+use Symfony\Component\Console\{Command\Command, Input\InputDefinition, Input\InputInterface, Input\InputOption, Output\ConsoleSectionOutput, Output\OutputInterface};
 use Unilend\Core\Repository\MessageStatusRepository;
 use Unilend\Core\SwiftMailer\MailjetMessage;
 
@@ -50,7 +49,12 @@ class UnreadMessageEmailNotificationCommand extends Command
     {
         $this
             ->setDescription('Send email to notify user for unread message(s)')
-            ->addOption('--dry-run', null, InputOption::VALUE_NONE, 'Launch command on dry run mode with console display only.');
+            ->setDefinition(
+                new InputDefinition([
+                    new InputOption('--dry-run', null, InputOption::VALUE_NONE, 'Launch command on dry run mode with console display only.'),
+                    new InputOption('--limit', null, InputOption::VALUE_OPTIONAL, 'Set a limit of user to send messages.'),
+                ])
+            );
     }
 
     /**
@@ -63,11 +67,10 @@ class UnreadMessageEmailNotificationCommand extends Command
     {
         /** @var ConsoleSectionOutput $section */
         $section                   = $output->section();
-        $to                        = (new DateTimeImmutable())->setTime(6, 0);
-        $from                      = $to->modify('-24 hours');
         $table                     = $this->createTable($section);
         $dryRun                    = $input->hasParameterOption('--dry-run');
-        $totalUnreadMessageByUsers = $this->messageStatusRepository->countUnreadMessageByRecipentForPeriod($from, $to);
+        $limit                     = $input->getParameterOption('--limit', null);
+        $totalUnreadMessageByUsers = $this->messageStatusRepository->countUnreadMessageByRecipentForPeriod($limit ? (int) $limit : $limit);
 
         if ($dryRun && $totalUnreadMessageByUsers) {
             $table->render();
@@ -85,7 +88,7 @@ class UnreadMessageEmailNotificationCommand extends Command
 
             if (0 < $item['nb_messages_unread']) {
                 $this->sendUnreadMessagesNotification($item['email'], $item['first_name'], $item['last_name'], (int) $item['nb_messages_unread']);
-                $this->messageStatusRepository->setMessageStatusesToUnreadNotified((int) $item['id'], $from, $to);
+                $this->messageStatusRepository->setMessageStatusesToUnreadNotified((int) $item['id']);
             }
         }
 
