@@ -82,7 +82,7 @@ class ProjectParticipationMember
      * @Assert\NotBlank
      * @Assert\Expression(
      *     expression="this.getStaff().getCompany() === this.getProjectParticipation().getParticipant()",
-     *     message="ProjectParticipationMember.staff.incorrectCompany"
+     *     message="Syndication.ProjectParticipationMember.staff.incorrectCompany"
      * )
      */
     private Staff $staff;
@@ -173,17 +173,17 @@ class ProjectParticipationMember
         // Save the violation in $this->violations temporarily, so that it can be translated later in @Assert\Callback
         if ($this->acceptedNdaVersion) {
             // acceptedNdaVersion is only settable once
-            $this->violations[] = ['path' => 'acceptableNdaVersion', 'message' => 'ProjectParticipationMember.acceptedNdaVersion.accepted'];
+            $this->violations[] = ['path' => 'acceptableNdaVersion', 'message' => 'Syndication.ProjectParticipationMember.acceptedNdaVersion.accepted'];
         }
 
         if (null === $this->getAcceptableNdaVersion()) {
             // The acceptable version is not available
-            $this->violations[] = ['path' => 'acceptableNdaVersion', 'message' => 'ProjectParticipationMember.acceptableNdaVersion.empty'];
+            $this->violations[] = ['path' => 'acceptableNdaVersion', 'message' => 'Syndication.ProjectParticipationMember.acceptableNdaVersion.empty'];
         }
 
         if ($acceptedNDA->getFileVersionId() !== $this->getAcceptableNdaVersion()->getPublicId()) {
             // We can only accept the acceptable version
-            $this->violations[] = ['path' => 'acceptedNdaVersion', 'message' => 'ProjectParticipationMember.acceptedNdaVersion.unacceptableVersion'];
+            $this->violations[] = ['path' => 'acceptedNdaVersion', 'message' => 'Syndication.ProjectParticipationMember.acceptedNdaVersion.unacceptableVersion'];
         }
 
         if (
@@ -258,13 +258,13 @@ class ProjectParticipationMember
     {
         if ($this->isArchived()) {
             if ($this->getProjectParticipation()->getActiveProjectParticipationMembers()->count() < 1) {
-                $context->buildViolation('ProjectParticipationMember.archived.lastActiveMember')
+                $context->buildViolation('Syndication.ProjectParticipationMember.archived.lastActiveMember')
                     ->atPath('archived')
                     ->addViolation()
                 ;
             }
             if ($this->getStaff()->isManager()) {
-                $context->buildViolation('ProjectParticipationMember.archived.isManager')
+                $context->buildViolation('Syndication.ProjectParticipationMember.archived.isManager')
                     ->atPath('archived')
                     ->addViolation()
                 ;

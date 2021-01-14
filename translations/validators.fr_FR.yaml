@@ -1,114 +1,111 @@
-Staff:
-    user:
-        unique: Cet utilisateur dispose déjà d'un compte KLS
-        empty: L'utilisateur est requis
-    company:
-        unicity: Un utilisateur ne peut être présent dans deux équipes de la même entité
+Core:
+    AcceptationsLegalDocs:
+        legalDoc:
+            unique: Vous ne pouvez pas signé 2 fois les mêmes CGU.
+            notCurrent: Vous ne pouvez qu'accepter les dernières CGU.
 
+    LendingRate:
+        indexType:
+            empty: L'indexType est requis.
+        floor:
+            illegal: Vous ne pouvez pas définir une valeur pour le floor quand l'indexType est vide ou est "fixé".
+            empty: Le floor est requis.
+        floorType:
+            illegal: Vous ne pouvez pas définir une valeur pour le floorType quand l'indexType est vide ou est "fixé".
+            empty: Le floorType est requis.
 
-Roleable:
-    roles:
-        choice: "Un ou plusieurs des rôles donnés sont incorrects"
-        count: "Un rôle est requis"
-        unique: "Les rôles doivent être uniques"
+    Money:
+        currency:
+            inconsistent: La devise n'est pas cohérente avec celle du projet.
+            maxMoney: Le montant maximum est inférieur ou égal au montant minimum.
 
-Users:
-    email:
-        unique: Cet utilisateur dispose déjà d'un compte KLS
-        emailDomain: L'email fourni n'a pas pour domaine celui d'un de nos users
-    password:
-        password: Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et au moins 8 caractères.
+    Roleable:
+        roles:
+            choice: "Un ou plusieurs des rôles donnés sont incorrects"
+            count: "Un rôle est requis"
+            unique: "Les rôles doivent être uniques"
 
-Tranche:
-    color:
-        regex: Cette couleur ne correspond pas a un code RGB
-    unsyndicatedFunderType:
-        expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche
-    thirdPartyFunder:
-        expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche
-    commissionRate:
-        expression: Cette valeur n'est pas cohérente avec celui du type de la commission
+    Staff:
+        user:
+            unique: Cet utilisateur dispose déjà d'un compte KLS
+            empty: L'utilisateur est requis
+        company:
+            unicity: Un utilisateur ne peut être présent dans deux équipes de la même entité
+    StatusInterface:
+        duplicated: Le nouveau statut est en doublons avec le dernier.
+    Users:
+        email:
+            unique: Cet utilisateur dispose déjà d'un compte KLS
+            emailDomain: L'email fourni n'a pas pour domaine celui d'un de nos users
+        password:
+            password: Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et au moins 8 caractères.
 
-ProjectParticipation:
-    committeeDeadline:
-        required: Merci de saisir une date de réponse du comité si la réponse est en attente.
-    participant:
-        invalid: L'entité que vous avez choisie ne peut pas être un participant du projet.
-    invitationRequest:
-        invalid: L'invitation en réponse ferme est invalide.
-    projectParticipationTranches:
-        required: Il faut indiquer au minimum une tranche par participant.
-        incorrectParticipation: La participation de ce projectParticipationTranche est incorrect
-    projectParticipationMembers:
-        incorrectParticipation: La participation de ce projectParticipationMember est incorrect
+Syndication:
+    Project:
+        participantReplyDeadline:
+            required: La date limite de réponse aux invitations est requise.
+        projectParticipations:
+            incorrectProject: La participation ne fait pas partie du projet
 
-ProjectParticipationTranche:
-    tranche:
-        notOwn: Merci de choisir une tranche du projet.
-        unsyndicated: La tranche ne peut pas être syndiqué par ce participant.
-    allocation:
-        aboveInvitationReply: Le montant de l'allocation est au-dessus du montant de réponse du participant
+    ProjectOrganizer:
+        roles:
+            duplicatedUniqueRole: Le rôle {{ value }} est déjà assigné à {{ company }}
+            runRole: Le rôle RUN ne peut être assigné qu'à une banque du Crédit Agricole
 
+    ProjectParticipation:
+        committeeDeadline:
+            required: Merci de saisir une date de réponse du comité si la réponse est en attente.
+        participant:
+            invalid: L'entité que vous avez choisie ne peut pas être un participant du projet.
+        invitationRequest:
+            invalid: L'invitation en réponse ferme est invalide.
+        projectParticipationTranches:
+            required: Il faut indiquer au minimum une tranche par participant.
+            incorrectParticipation: La participation de ce projectParticipationTranche est incorrect
+        projectParticipationMembers:
+            incorrectParticipation: La participation de ce projectParticipationMember est incorrect
 
-ProjectParticipationStatus:
-    status:
-        invalid: Le statut n'est pas valide.
+    ProjectParticipationCollection:
+        projectParticipations:
+            duplicated: Merci de vérifier l'unicité des participants.
 
-StatusInterface:
-    duplicated: Le nouveau statut est en doublons avec le dernier.
+        ProjectParticipationMember:
+            staff:
+                incorrectCompany: Ce staff et la participation ne sont pas liés à la même entité
+            acceptedNdaVersion:
+                unacceptableVersion: Cette version de fichier n'est pas une de la lettre de confidentialité acceptable
+                accepted: Ce staff a déjà acception la lettre de confidentialité.
+            acceptableNdaVersion:
+                empty: La lettre de confidentialité acceptable n'est pas définie.
+            archived:
+                lastActiveMember: Vous ne pouvez pas archiver la dernier membre de la participation
+                isManager: Vous ne pouvez pas archiver un coordinateur
 
-ProjectOrganizer:
-    roles:
-        duplicatedUniqueRole: Le rôle {{ value }} est déjà assigné à {{ company }}
-        runRole: Le rôle RUN ne peut être assigné qu'à une banque du Crédit Agricole
+        ProjectParticipationStatus:
+            status:
+                invalid: Le statut n'est pas valide.
 
-ProjectParticipationMember:
-    staff:
-        incorrectCompany: Ce staff et la participation ne sont pas liés à la même entité
-    acceptedNdaVersion:
-        unacceptableVersion: Cette version de fichier n'est pas une de la lettre de confidentialité acceptable
-        accepted: Ce staff a déjà acception la lettre de confidentialité.
-    acceptableNdaVersion:
-        empty: La lettre de confidentialité acceptable n'est pas définie.
-    archived:
-        lastActiveMember: Vous ne pouvez pas archiver la dernier membre de la participation
-        isManager: Vous ne pouvez pas archiver un coordinateur
+        ProjectParticipationTranche:
+            tranche:
+                notOwn: Merci de choisir une tranche du projet.
+                unsyndicated: La tranche ne peut pas être syndiqué par ce participant.
+            allocation:
+                aboveInvitationReply: Le montant de l'allocation est au-dessus du montant de réponse du participant
 
-ProjectParticipationCollection:
-    projectParticipations:
-        duplicated: Merci de vérifier l'unicité des participants.
+    ProjectStatus:
+        project:
+            syndicationType:
+                required: Le type de syndication est requis.
+            participationType:
+                required: Le type de participation est requis.
+            oversubscribed: Le projet est en sursouscription.
 
-ProjectStatus:
-    project:
-        syndicationType:
-            required: Le type de syndication est requis.
-        participationType:
-            required: Le type de participation est requis.
-        oversubscribed: Le projet est en sursouscription.
-
-Project:
-    participantReplyDeadline:
-        required: La date limite de réponse aux invitations est requise.
-    projectParticipations:
-        incorrectProject: La participation ne fait pas partie du projet
-
-
-LendingRate:
-    indexType:
-        empty: L'indexType est requis.
-    floor:
-        illegal: Vous ne pouvez pas définir une valeur pour le floor quand l'indexType est vide ou est "fixé".
-        empty: Le floor est requis.
-    floorType:
-        illegal: Vous ne pouvez pas définir une valeur pour le floorType quand l'indexType est vide ou est "fixé".
-        empty: Le floorType est requis.
-
-AcceptationsLegalDocs:
-    legalDoc:
-        unique: Vous ne pouvez pas signé 2 fois les mêmes CGU.
-        notCurrent: Vous ne pouvez qu'accepter les dernières CGU.
-
-Money:
-    currency:
-        inconsistent: La devise n'est pas cohérente avec celle du projet.
-        maxMoney: Le montant maximum est inférieur ou égal au montant minimum.
+    Tranche:
+        color:
+            regex: Cette couleur ne correspond pas a un code RGB
+        unsyndicatedFunderType:
+            expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche
+        thirdPartyFunder:
+            expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche
+        commissionRate:
+            expression: Cette valeur n'est pas cohérente avec celui du type de la commission

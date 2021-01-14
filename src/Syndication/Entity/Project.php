@@ -1575,7 +1575,7 @@ class Project implements TraceableStatusAwareInterface
     public function validateParticipantReplyDeadline(ExecutionContextInterface $context)
     {
         if ($this->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION) && null === $this->getParticipantReplyDeadline()) {
-            $context->buildViolation('Project.participantReplyDeadline.required')
+            $context->buildViolation('Syndication.Project.participantReplyDeadline.required')
                 ->atPath('participantReplyDeadline')
                 ->addViolation();
         }
@@ -1590,7 +1590,7 @@ class Project implements TraceableStatusAwareInterface
     {
         foreach ($this->projectParticipations as $index => $projectParticipation) {
             if ($projectParticipation->getProject() !== $this) {
-                $context->buildViolation('Project.projectParticipations.incorrectProject')
+                $context->buildViolation('Syndication.Project.projectParticipations.incorrectProject')
                     ->atPath("projectParticipation[$index]")
                     ->addViolation();
             }
