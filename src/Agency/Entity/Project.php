@@ -378,6 +378,15 @@ class Project extends AbstractProject
     private DateTimeImmutable $endOfContractDate;
 
     /**
+     * @var string|null
+     *
+     * @ORM\Column(type="text", length=16777215, nullable=true)
+     *
+     * @Groups({"project:write", "project:read"})
+     */
+    private ?string $description = null;
+
+    /**
      * @param Staff             $addedBy
      * @param string            $riskGroupName
      * @param Money             $globalFundingMoney
@@ -1035,5 +1044,25 @@ class Project extends AbstractProject
         $this->endOfContractDate = $endOfContractDate;
 
         return $this;
+    }
+
+    /**
+     * @param string|null $description
+     *
+     * @return Project
+     */
+    public function setDescription(?string $description): Project
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDescription(): ?string
+    {
+        return $this->description;
     }
 }
