@@ -16,12 +16,12 @@ use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\Constant\CAInternalRating;
+use Unilend\Core\Entity\Constant\FundingSpecificity;
+use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
+use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
+use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use Unilend\Core\Entity\{Company,
-    Constant\CAInternalRating,
-    Constant\FundingSpecificity,
-    Constant\ParticipationType,
-    Constant\RiskType,
-    Constant\SyndicationType,
     Embeddable\Money,
     Embeddable\NullableMoney,
     Embeddable\NullablePerson,

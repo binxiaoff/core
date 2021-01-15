@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Constant;
+namespace Unilend\Core\Entity\Constant\Tranche;
+
+use Unilend\Core\Entity\Constant\AbstractEnum;
 
 final class LoanType extends AbstractEnum
 {
@@ -15,7 +17,7 @@ final class LoanType extends AbstractEnum
     /**
      * @return string[]|array
      */
-    public static function getChargeableLoadTypes(): array
+    public static function getChargeableLoanTypes(): array
     {
         return [
             self::SHORT_TERM,

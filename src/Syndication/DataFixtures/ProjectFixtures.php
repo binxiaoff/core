@@ -14,10 +14,11 @@ use Unilend\Core\DataFixtures\{AbstractFixtures,
     MarketSegmentFixtures,
     StaffFixtures,
     UserFixtures};
-use Unilend\Core\Entity\{Constant\CAInternalRating,
-    Constant\FundingSpecificity,
-    Constant\ParticipationType,
-    Constant\SyndicationType,
+use Unilend\Core\Entity\Constant\CAInternalRating;
+use Unilend\Core\Entity\Constant\FundingSpecificity;
+use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
+use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
+use Unilend\Core\Entity\{
     Embeddable\Money,
     Embeddable\NullablePerson,
     File,

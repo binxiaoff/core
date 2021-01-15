@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\{Constraints as Assert, Context\ExecutionContextInterface};
-use Unilend\Core\Entity\Constant\{CommissionType, LoanType, RepaymentType};
+use Unilend\Core\Entity\Constant\Tranche\{CommissionType, LoanType, RepaymentType};
 use Unilend\Core\Entity\Embeddable\{LendingRate, Money, NullableMoney};
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
@@ -390,7 +390,7 @@ class Tranche
      */
     public function setLoanType(string $loanType): Tranche
     {
-        if (false === \in_array($loanType, LoanType::getChargeableLoadTypes())) {
+        if (false === \in_array($loanType, LoanType::getChargeableLoanTypes())) {
             $this->setCommissionRate(null)
                 ->setCommissionType(null)
             ;
@@ -723,7 +723,7 @@ class Tranche
         return (null === $this->getCommissionType() && null === $this->getCommissionRate())
             || (
                 ($this->getCommissionRate() || '0' === $this->getCommissionRate())
-                && \in_array($this->getLoanType(), LoanType::getChargeableLoadTypes(), true)
+                && \in_array($this->getLoanType(), LoanType::getChargeableLoanTypes(), true)
                 && \in_array($this->getCommissionType(), CommissionType::getConstList(), true)
             );
     }
