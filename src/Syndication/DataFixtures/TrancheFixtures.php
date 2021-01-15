@@ -5,6 +5,7 @@ namespace Unilend\Syndication\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Unilend\Core\DataFixtures\{AbstractFixtures, CompanyFixtures};
+use Unilend\Core\Entity\Constant\LoanType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Syndication\Entity\{Project, Tranche};
@@ -28,13 +29,13 @@ class TrancheFixtures extends AbstractFixtures implements DependentFixtureInterf
                     "Tranche {$letters[$i]}",
                     $this->faker->randomDigit,
                     'constant_capital',
-                    'stand_by',
+                    LoanType::STAND_BY,
                     $this->faker->hexColor
                 ))
                 ->setDuration(1)
                 ->setRate(new LendingRate('EONIA', '0.0200', null, 'none'))
-                ->setUnsyndicatedFunderType($i === 2 ? Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER : null)
-                ->setSyndicated($i !== 2);
+                ->setUnsyndicatedFunderType(2 === $i ? Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER : null)
+                ->setSyndicated(2 !== $i);
                 $this->forcePublicId($tranche, "tranche-{$project->getPublicId()}-{$i}");
                 $project->addTranche($tranche);
                 $manager->persist($tranche);
