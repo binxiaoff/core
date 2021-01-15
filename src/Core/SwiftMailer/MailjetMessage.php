@@ -23,6 +23,7 @@ class MailjetMessage extends \Swift_Message
     public const TEMPLATE_PROJECT_FILE_UPLOADED = 1853491;
     public const TEMPLATE_PARTICIPANT_REPLY = 1853502;
     public const TEMPLATE_ARRANGER_INVITATION_EXTERNAL_BANK = 1853530;
+    public const TEMPLATE_MESSAGE_UNREAD_USER_NOTIFICATION = 2154702;
 
     /**
      * @param string|null $subject
