@@ -55,7 +55,16 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         $manager->persist($project);
 
-        $this->createContacts($project, $staff);
+        foreach (Contact::getTypes() as $type) {
+            if (Contact::TYPE_AGENCY === $type) {
+                $this->createContact($project, $staff, $type);
+                break;
+            }
+
+            for ($i = 0; $i < 3; $i++) {
+                $this->createContact($project, $staff, $type);
+            }
+        }
 
         $project->setPrincipalSyndicationType(SyndicationType::PRIMARY);
         $project->setPrincipalParticipationType(ParticipationType::DIRECT);
@@ -82,31 +91,25 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     /**
      * @param Project $project
      * @param Staff   $staff
+     * @param string  $type
      *
      * @throws Exception
      */
-    public function createContacts(Project $project, Staff $staff): void
+    public function createContact(Project $project, Staff $staff, string $type): void
     {
-        foreach (Contact::getTypes() as $type) {
-            $nbContacts = $type === Contact::TYPE_AGENCY ? 1 : 3;
-
-            for ($i = 0; $i < $nbContacts; $i++) {
-                $contact = new Contact(
-                    $project,
-                    $type,
-                    $staff,
-                    $this->faker->firstName,
-                    $this->faker->lastName,
-                    $staff->getCompany()->getDisplayName(),
-                    $this->faker->jobTitle,
-                    $this->faker->email,
-                    '+33600000000',
-                    $i === 0
-                );
-
-                $this->manager->persist($contact);
-            }
-        }
+        $contact = new Contact(
+            $project,
+            $type,
+            $staff,
+            $this->faker->firstName,
+            $this->faker->lastName,
+            $staff->getCompany()->getDisplayName(),
+            $this->faker->jobTitle,
+            $this->faker->email,
+            '+33600000000',
+            $this->faker->boolean
+        );
+        $this->manager->persist($contact);
     }
 
     /**
