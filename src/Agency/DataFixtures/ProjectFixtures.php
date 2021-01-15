@@ -56,13 +56,10 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $manager->persist($project);
 
         foreach (Contact::getTypes() as $type) {
-            if (Contact::TYPE_AGENCY === $type) {
-                $this->createContact($project, $staff, $type);
-                break;
-            }
-
-            for ($i = 0; $i < 3; $i++) {
-                $this->createContact($project, $staff, $type);
+            if (Contact::TYPE_AGENCY !== $type) {
+                for ($i = 0; $i < 3; $i++) {
+                    $this->createContact($project, $staff, $type);
+                }
             }
         }
 

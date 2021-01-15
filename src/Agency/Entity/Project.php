@@ -410,7 +410,22 @@ class Project
     ) {
         $this->added              = new DateTimeImmutable();
         $this->addedBy            = $addedBy;
-        $this->contacts           = new ArrayCollection();
+        $this->agent              = $addedBy->getCompany();
+
+        $currentUser   = $addedBy->getUser();
+        $agencyContact = new Contact(
+            $this,
+            Contact::TYPE_AGENCY,
+            $addedBy,
+            $currentUser->getFirstName(),
+            $currentUser->getLastName(),
+            $this->agent->getDisplayName(),
+            Contact::TYPE_AGENCY,
+            $currentUser->getEmail(),
+            $currentUser->getPhone()
+        );
+
+        $this->contacts           = new ArrayCollection([$agencyContact]);
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
         $this->marketSegment      = $marketSegment;
@@ -432,7 +447,6 @@ class Project
         $this->secondaryRiskType = null;
 
         // This part is weird but compliant to figma models: those fields are editable
-        $this->agent            = $addedBy->getCompany();
         $this->agentDisplayName = $this->agent->getDisplayName();
         $this->agentSiren       = $this->agent->getSiren();
     }
