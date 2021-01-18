@@ -12,6 +12,7 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\Constant\LegalForm;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Entity\{Company, Staff};
@@ -58,11 +59,6 @@ class Project
     use TimestampableTrait;
     use BlamableAddedTrait;
 
-    public const LEGAL_FORM_EURL = 'EURL';
-    public const LEGAL_FORM_SARL = 'SARL';
-    public const LEGAL_FORM_SAS  = 'SAS';
-    public const LEGAL_FORM_SASU = 'SASU';
-
     /**
      * @var Company
      *
@@ -105,7 +101,7 @@ class Project
      *
      * @Groups({"project:read", "project:write"})
      *
-     * @Assert\Choice({Project::LEGAL_FORM_EURL, Project::LEGAL_FORM_SARL, Project::LEGAL_FORM_SAS,  Project::LEGAL_FORM_SASU})
+     * @Assert\Choice(callback={LegalForm::class, "getConstList"})
      */
     private ?string $agentLegalForm;
 
