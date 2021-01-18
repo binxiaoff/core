@@ -389,6 +389,7 @@ class Project
 
     /**
      * @param Staff             $addedBy
+     * @param string            $title
      * @param string            $riskGroupName
      * @param Money             $globalFundingMoney
      * @param MarketSegment     $marketSegment
@@ -399,6 +400,7 @@ class Project
      */
     public function __construct(
         Staff $addedBy,
+        string $title,
         string $riskGroupName,
         Money $globalFundingMoney,
         MarketSegment $marketSegment,
@@ -414,6 +416,7 @@ class Project
         $this->marketSegment      = $marketSegment;
         $this->closingDate        = $closingDate;
         $this->endOfContractDate  = $endOfContractDate;
+        $this->title              = $title;
 
         $this->borrowers = new ArrayCollection();
         $this->tranches  = new ArrayCollection();

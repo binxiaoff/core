@@ -13,14 +13,14 @@ use Unilend\Agency\Entity\BorrowerTrancheShare;
 use Unilend\Agency\Entity\Contact;
 use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Entity\Tranche;
-use Unilend\Core\DataFixtures\{AbstractFixtures, StaffFixtures};
+use Unilend\Core\DataFixtures\{AbstractFixtures, MarketSegmentFixtures, StaffFixtures};
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\{Staff, MarketSegment};
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -39,8 +39,18 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     public function load(ObjectManager $manager)
     {
         /** @var Staff $staff */
-        $staff   = $this->getReference(StaffFixtures::ADMIN);
-        $project = new Project($staff);
+        $staff         = $this->getReference(StaffFixtures::ADMIN);
+        /** @var MarketSegment $marketSegment */
+        $marketSegment = $this->getReference(MarketSegmentFixtures::SEGMENT1);
+        $project = new Project(
+            $staff,
+            $this->faker->title,
+            $this->faker->name,
+            new Money('EUR', '5000000'),
+            $marketSegment,
+            new DateTimeImmutable('now'),
+            new DateTimeImmutable('+1 year')
+        );
         $this->manager = $manager;
 
         $manager->persist($project);
@@ -152,6 +162,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         return [
             StaffFixtures::class,
+            MarketSegmentFixtures::class,
         ];
     }
 
