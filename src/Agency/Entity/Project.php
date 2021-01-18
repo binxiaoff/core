@@ -14,6 +14,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Constant\LegalForm;
 use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
+use Unilend\Core\Entity\Constant\{CAInternalRating, FundingSpecificity};
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Entity\{Company, Embeddable\Money, Staff};
@@ -55,7 +56,7 @@ use Unilend\Core\Entity\MarketSegment;
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Agency\Entity\Versioned\VersionedProject")
  */
-class Project extends AbstractProject
+class Project
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -200,7 +201,7 @@ class Project extends AbstractProject
      *
      * @ORM\Column(length=8, nullable=true)
      *
-     * @Assert\Choice(callback="getInternalRatingScores")
+     * @Assert\Choice(callback={CAInternalRating::class, "getConstList"})
      *
      * @Gedmo\Versioned
      *
@@ -340,7 +341,7 @@ class Project extends AbstractProject
      *
      * @ORM\Column(type="string", nullable=true, length=10)
      *
-     * @Assert\Choice({AbstractProject::FUNDING_SPECIFICITY_FSA, AbstractProject::FUNDING_SPECIFICITY_LBO})
+     * @Assert\Choice(callback={FundingSpecificity::class, "getConstList"})
      */
     private ?string $fundingSpecificity;
 
