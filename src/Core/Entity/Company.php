@@ -134,18 +134,6 @@ class Company implements TraceableStatusAwareInterface
     private string $applicableVat;
 
     /**
-     * @var Company|null
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_parent_company", referencedColumnName="id")
-     * })
-     *
-     * @Groups({"company:read"})
-     */
-    private ?Company $parent;
-
-    /**
      * @var Collection|Staff[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\Staff", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
@@ -212,7 +200,7 @@ class Company implements TraceableStatusAwareInterface
         $this->staff         = new ArrayCollection();
         $this->statuses      = new ArrayCollection();
         $this->added         = new DateTimeImmutable();
-        $moduleCodes = CompanyModule::getAvailableModuleCodes();
+        $moduleCodes         = CompanyModule::getAvailableModuleCodes();
         $this->modules       = new ArrayCollection(array_map(function ($module) {
             return new CompanyModule($module, $this);
         }, array_combine($moduleCodes, $moduleCodes)));
@@ -269,26 +257,6 @@ class Company implements TraceableStatusAwareInterface
     public function setSiren(?string $siren): Company
     {
         $this->siren = $siren;
-
-        return $this;
-    }
-
-    /**
-     * @return Company|null
-     */
-    public function getParent(): ?Company
-    {
-        return $this->parent;
-    }
-
-    /**
-     * @param Company|null $parent
-     *
-     * @return Company
-     */
-    public function setParent(?Company $parent = null): Company
-    {
-        $this->parent = $parent;
 
         return $this;
     }
