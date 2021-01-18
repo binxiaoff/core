@@ -11,6 +11,8 @@ use Unilend\Agency\Entity\Borrower;
 use Unilend\Agency\Entity\Contact;
 use Unilend\Agency\Entity\Project;
 use Unilend\Core\DataFixtures\{AbstractFixtures, StaffFixtures};
+use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
+use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Staff;
 
@@ -42,6 +44,9 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         foreach (range(0, 3) as $i) {
             $manager->persist($this->createBorrower($project, $staff));
         }
+        $project->setPrincipalSyndicationType(SyndicationType::PRIMARY);
+        $project->setPrincipalParticipationType(ParticipationType::DIRECT);
+
         $manager->flush();
     }
 

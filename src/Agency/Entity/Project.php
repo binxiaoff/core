@@ -13,9 +13,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Constant\LegalForm;
+use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Core\Entity\{Company, Constant\ParticipationType, Staff};
+use Unilend\Core\Entity\{Company, Staff};
 
 /**
  * @ApiResource(
@@ -193,8 +194,8 @@ class Project
      *
      * @ORM\Column(type="string", length=30, nullable=true)
      *
+     * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
      * @Assert\NotBlank()
-     * @Assert\Choice(callback={"Unilend\Core\Entity\Constant\SyndicationType", "getSyndicationTypes"})
      *
      * @Groups({"project:write", "project:read", "project:create"})
      */
@@ -205,8 +206,8 @@ class Project
      *
      * @ORM\Column(type="string", length=30, nullable=true)
      *
+     * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
      * @Assert\NotBlank()
-     * @Assert\Choice(callback={"Unilend\Core\Entity\Constant\ParticipationType", "getParticipationTypes"})
      *
      * @Groups({"project:write", "project:read", "project:create"})
      */
@@ -217,9 +218,8 @@ class Project
      *
      * @ORM\Column(type="string", nullable=true, length=30)
      *
+     * @Assert\Choice(callback={RiskType::class, "getConstList"})
      * @Assert\Expression("(false === this.isPrincipalSubParticipation() and null === value) or (this.isPrincipalSubParticipation() and value)")
-     *
-     * @Assert\Choice(callback={"Unilend\Core\Entity\Constant\RiskType", "getRiskTypes"})
      *
      * @Groups({"project:write", "project:read", "project:create"})
      */
@@ -230,8 +230,7 @@ class Project
      *
      * @ORM\Column(type="string", length=30, nullable=true)
      *
-     * @Assert\Choice(callback={"Unilend\Core\Entity\Constant\SyndicationType", "getSyndicationTypes"})
-     *
+     * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
      * @Assert\Expression("(this.hasSilentSyndication() and value) or (false === this.hasSilentSyndication() and null === value)")
      *
      * @Groups({"project:write", "project:read", "project:create"})
@@ -243,8 +242,7 @@ class Project
      *
      * @ORM\Column(type="string", length=30, nullable=true)
      *
-     * @Assert\Choice(callback={"Unilend\Core\Entity\Constant\ParticipationType", "getParticipationTypes"})
-     *
+     * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
      * @Assert\Expression("(this.hasSilentSyndication() and value) or (false === this.hasSilentSyndication() and null === value)")
      *
      * @Groups({"project:write", "project:read", "project:create"})
@@ -256,8 +254,7 @@ class Project
      *
      * @ORM\Column(type="string", nullable=true, length=30)
      *
-     * @Assert\Choice(callback={"Unilend\Core\Entity\Constant\RiskType", "getRiskTypes"})
-     *
+     * @Assert\Choice(callback={RiskType::class, "getConstList"})
      * @Assert\Expression("(false === this.isSecondarySubParticipation() and null === value) or (this.isSecondarySubParticipation() and value)"),
      * @Assert\Expression("(this.hasSilentSyndication()) or (false === this.hasSilentSyndication() and null === value)")
      *
