@@ -184,17 +184,25 @@ class Project
     private ?string $iban;
 
     /**
+     * @var Borrower[]|iterable
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project")
+     */
+    private iterable $borrowers;
+
+    /**
      * @param Staff $addedBy
      *
      * @throws Exception
      */
     public function __construct(Staff $addedBy)
     {
-        $agent          = $addedBy->getCompany();
-        $this->added    = new DateTimeImmutable();
-        $this->addedBy  = $addedBy;
-        $this->contacts = new ArrayCollection();
-        $this->agent    = $agent;
+        $agent           = $addedBy->getCompany();
+        $this->added     = new DateTimeImmutable();
+        $this->addedBy   = $addedBy;
+        $this->contacts  = new ArrayCollection();
+        $this->agent     = $agent;
+        $this->borrowers = [];
 
         // This part is weird but compliant to figma models: those fields are editable
         $this->agentDisplayName = $agent->getDisplayName();
@@ -453,6 +461,26 @@ class Project
     public function setIban(?string $iban): Project
     {
         $this->iban = $iban;
+
+        return $this;
+    }
+
+    /**
+     * @return Borrower[]|iterable
+     */
+    public function getBorrowers(): iterable
+    {
+        return $this->borrowers;
+    }
+
+    /**
+     * @param Borrower[]|iterable $borrowers
+     *
+     * @return Project
+     */
+    public function setBorrowers($borrowers)
+    {
+        $this->borrowers = $borrowers;
 
         return $this;
     }
