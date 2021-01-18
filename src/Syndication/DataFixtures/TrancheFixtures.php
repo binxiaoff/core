@@ -1,10 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Syndication\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
+use ReflectionException;
 use Unilend\Core\DataFixtures\{AbstractFixtures, CompanyFixtures};
+use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Syndication\Entity\{Project, Tranche};
@@ -14,6 +19,9 @@ class TrancheFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     /**
      * @param ObjectManager $manager
+     *
+     * @throws ReflectionException
+     * @throws Exception
      */
     public function load(ObjectManager $manager): void
     {
@@ -24,17 +32,17 @@ class TrancheFixtures extends AbstractFixtures implements DependentFixtureInterf
             for ($i = 0; $i <= 4; $i++) {
                 $tranche = (new Tranche(
                     $project,
-                    new Money('EUR', 1000000 * count(CompanyFixtures::COMPANIES)),
+                    new Money('EUR', (string) (1000000 * count(CompanyFixtures::COMPANIES))),
                     "Tranche {$letters[$i]}",
                     $this->faker->randomDigit,
                     'constant_capital',
-                    'stand_by',
+                    LoanType::STAND_BY,
                     $this->faker->hexColor
                 ))
                 ->setDuration(1)
                 ->setRate(new LendingRate('EONIA', '0.0200', null, 'none'))
-                ->setUnsyndicatedFunderType($i === 2 ? Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER : null)
-                ->setSyndicated($i !== 2);
+                ->setUnsyndicatedFunderType(2 === $i ? Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER : null)
+                ->setSyndicated(2 !== $i);
                 $this->forcePublicId($tranche, "tranche-{$project->getPublicId()}-{$i}");
                 $project->addTranche($tranche);
                 $manager->persist($tranche);

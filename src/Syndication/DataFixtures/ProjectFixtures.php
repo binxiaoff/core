@@ -10,8 +10,20 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
-use Unilend\Core\DataFixtures\{AbstractFixtures, MarketSegmentFixtures, StaffFixtures, UserFixtures};
-use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullablePerson, File, FileVersion, Staff};
+use Unilend\Core\DataFixtures\{AbstractFixtures,
+    MarketSegmentFixtures,
+    StaffFixtures,
+    UserFixtures};
+use Unilend\Core\Entity\Constant\CAInternalRating;
+use Unilend\Core\Entity\Constant\FundingSpecificity;
+use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
+use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
+use Unilend\Core\Entity\{
+    Embeddable\Money,
+    Embeddable\NullablePerson,
+    File,
+    FileVersion,
+    Staff};
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectStatus;
 
@@ -163,10 +175,10 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         ))
             ->setTitle($title)
             ->setNda($ndaFile)
-            ->setInternalRatingScore(Project::INTERNAL_RATING_SCORE_B)
-            ->setFundingSpecificity(Project::FUNDING_SPECIFICITY_FSA)
-            ->setParticipationType(Project::PROJECT_PARTICIPATION_TYPE_DIRECT)
-            ->setSyndicationType(Project::PROJECT_SYNDICATION_TYPE_PRIMARY)
+            ->setInternalRatingScore(CAInternalRating::B)
+            ->setFundingSpecificity(FundingSpecificity::FSA)
+            ->setParticipationType(ParticipationType::DIRECT)
+            ->setSyndicationType(SyndicationType::PRIMARY)
             ->setInterestExpressionEnabled(ProjectStatus::STATUS_INTEREST_EXPRESSION === $status)
             ->setInterestExpressionDeadline(
                 ProjectStatus::STATUS_INTEREST_EXPRESSION === $status

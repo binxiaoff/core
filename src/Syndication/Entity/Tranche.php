@@ -6,14 +6,13 @@ namespace Unilend\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\{Constraints as Assert, Context\ExecutionContextInterface};
-use Unilend\Core\Entity\Embeddable\LendingRate;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\{NullableMoney};
+use Unilend\Core\Entity\Constant\Tranche\{CommissionType, LoanType, RepaymentType};
+use Unilend\Core\Entity\Embeddable\{LendingRate, Money, NullableMoney};
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Service\MoneyCalculator;
@@ -53,33 +52,8 @@ class Tranche
     use ConstantsAwareTrait;
     use PublicizeIdentityTrait;
 
-    public const AMORTIZABLE_REPAYMENT_TYPE = [
-        self::REPAYMENT_TYPE_CONSTANT_CAPITAL,
-        self::REPAYMENT_TYPE_FIXED,
-    ];
-
-    protected const LOAN_TYPE_TERM_LOAN            = 'term_loan';
-    protected const LOAN_TYPE_SHORT_TERM           = 'short_term';
-    protected const LOAN_TYPE_REVOLVING_CREDIT     = 'revolving_credit';
-    protected const LOAN_TYPE_STAND_BY             = 'stand_by';
-    protected const LOAN_TYPE_SIGNATURE_COMMITMENT = 'signature_commitment';
-
-    protected const CHARGEABLE_LOAN_TYPE = [
-        self::LOAN_TYPE_SHORT_TERM,
-        self::LOAN_TYPE_REVOLVING_CREDIT,
-        self::LOAN_TYPE_STAND_BY,
-    ];
-
-    protected const REPAYMENT_TYPE_ATYPICAL         = 'atypical';
-    protected const REPAYMENT_TYPE_IN_FINE          = 'in_fine';
-    protected const REPAYMENT_TYPE_CONSTANT_CAPITAL = 'constant_capital';
-    protected const REPAYMENT_TYPE_FIXED            = 'repayment_fixed';
-
     public const UNSYNDICATED_FUNDER_TYPE_ARRANGER    = 'arranger';
     public const UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY = 'third_party';
-
-    protected const COMMISSION_TYPE_NON_UTILISATION = 'non_utilisation';
-    protected const COMMISSION_TYPE_COMMITMENT      = 'commitment';
 
     /**
      * @var Project
@@ -110,7 +84,7 @@ class Tranche
      * @ORM\Column(length=30)
      *
      * @Assert\NotBlank
-     * @Assert\Choice(callback="getLoanTypes")
+     * @Assert\Choice(callback={LoanType::class, "getConstList"})
      *
      * @Gedmo\Versioned
      *
@@ -124,7 +98,7 @@ class Tranche
      * @ORM\Column(length=30)
      *
      * @Assert\NotBlank
-     * @Assert\Choice(callback="getRepaymentTypes")
+     * @Assert\Choice(callback={RepaymentType::class, "getConstList"})
      *
      * @Gedmo\Versioned
      *
@@ -222,7 +196,7 @@ class Tranche
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
-     * @Assert\Choice(callback="getCommissionTypes")
+     * @Assert\Choice(callback={CommissionType::class, "getConstList"})
      *
      * @Groups({"tranche:write", "tranche:read"})
      */
@@ -337,6 +311,8 @@ class Tranche
         $this->repaymentType                = $repaymentType;
         $this->loanType                     = $loanType;
         $this->color                        = $color;
+        $this->unsyndicatedFunderType       = null;
+        $this->thirdPartyFunder             = null;
     }
 
     /**
@@ -414,7 +390,7 @@ class Tranche
      */
     public function setLoanType(string $loanType): Tranche
     {
-        if (false === \in_array($loanType, self::CHARGEABLE_LOAN_TYPE)) {
+        if (false === \in_array($loanType, LoanType::getChargeableLoanTypes())) {
             $this->setCommissionRate(null)
                 ->setCommissionType(null)
             ;
@@ -566,22 +542,6 @@ class Tranche
     }
 
     /**
-     * @return array
-     */
-    public static function getLoanTypes(): array
-    {
-        return self::getConstants('LOAN_TYPE_');
-    }
-
-    /**
-     * @return array
-     */
-    public static function getRepaymentTypes(): array
-    {
-        return self::getConstants('REPAYMENT_TYPE_');
-    }
-
-    /**
      * @return string
      */
     public function getComment(): ?string
@@ -704,14 +664,6 @@ class Tranche
     /**
      * @return array
      */
-    public static function getCommissionTypes()
-    {
-        return static::getConstants('COMMISSION_TYPE_');
-    }
-
-    /**
-     * @return array
-     */
     public static function getUnsyndicatedFunderTypes()
     {
         return static::getConstants('UNSYNDICATED_FUNDER_TYPE_');
@@ -771,8 +723,8 @@ class Tranche
         return (null === $this->getCommissionType() && null === $this->getCommissionRate())
             || (
                 ($this->getCommissionRate() || '0' === $this->getCommissionRate())
-                && \in_array($this->getLoanType(), self::CHARGEABLE_LOAN_TYPE, true)
-                && \in_array($this->getCommissionType(), self::getCommissionTypes(), true)
+                && \in_array($this->getLoanType(), LoanType::getChargeableLoanTypes(), true)
+                && \in_array($this->getCommissionType(), CommissionType::getConstList(), true)
             );
     }
 
