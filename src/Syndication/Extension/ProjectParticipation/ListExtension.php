@@ -60,20 +60,21 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->leftJoin("{$rootAlias}.projectParticipationMembers", 'ppc')
             ->innerJoin("{$rootAlias}.project", 'p')
             ->innerJoin('p.currentStatus', 'cs')
-            ->andWhere($queryBuilder->expr()->orX(
+            ->andWhere(
+                // you fulfill both of the following conditions :
                 $queryBuilder->expr()->andX(
+                    // you are non archived member of participation OR you managed a member of a participation
                     $queryBuilder->expr()->orX(
-                        $queryBuilder->expr()->andX('ppc.staff = :staff', 'ppc.archived IS NULL'), // You are non archived member of participation
-                        'ppc IN (:managedStaffMember)' // You manage non archived member of participation
+                        $queryBuilder->expr()->andX('ppc.staff = :staff', 'ppc.archived IS NULL'),
+                        'ppc IN (:managedStaffMember)'
                     ),
+                    // you are in arranger company OR your participant and the project is in displayable status
                     $queryBuilder->expr()->orX(
-                        // you are in arranger company
                         'p.submitterCompany = ' . $rootAlias . '.participant',
-                        // or you are participant so you see participation of your own company
                         $queryBuilder->expr()->andX('cs.status IN (:displayableStatus)', $rootAlias . '.participant = :company')
                     ),
                 )
-            ))
+            )
             ->setParameter('company', $staff->getCompany())
             ->setParameter('staff', $staff)
             ->setParameter('managedStaffMember', $this->projectParticipationMemberRepository->findByManager($staff))

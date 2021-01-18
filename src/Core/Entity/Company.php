@@ -62,8 +62,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                  "groups": {
  *                      "staff:read",
  *                      "user:read",
- *                      "user_status:read",
- *                      "nullableMoney:read",
+ *                      "user_status:read"
  *                  }
  *              }
  *         },

@@ -25,29 +25,25 @@ class BitmaskType extends Type
     /**
      * @inheritdoc
      *
-     * @param $value
+     * @param int|null $value
      *
-     * @return Bitmask
+     * @return Bitmask|null
      */
     public function convertToPHPValue($value, AbstractPlatform $platform): ?Bitmask
     {
-        if (null === $value) {
-            return null;
-        }
-
-        return new Bitmask((int) $value);
+        return null === $value ? null : new Bitmask((int) $value);
     }
 
     /**
      * @inheritdoc
      *
-     * @param Bitmask $value
+     * @param Bitmask|null $value
      *
      * @return int
      */
-    public function convertToDatabaseValue($value, AbstractPlatform $platform): int
+    public function convertToDatabaseValue($value, AbstractPlatform $platform): ?int
     {
-        return $value->get();
+        return null === $value ? null : $value->get();
     }
 
     /**

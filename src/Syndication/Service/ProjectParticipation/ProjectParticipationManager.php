@@ -64,6 +64,6 @@ class ProjectParticipationManager
      */
     public function hasSignedNDA(ProjectParticipation $projectParticipation, Staff $staff): bool
     {
-        return null !== $this->NDASignatureRepository->findOneBy(['projectParticipation' => $projectParticipation, 'staff' => $staff]);
+        return null !== $this->NDASignatureRepository->findOneBy(['projectParticipation' => $projectParticipation, 'addedBy' => $staff]);
     }
 }

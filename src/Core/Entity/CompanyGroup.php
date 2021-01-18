@@ -69,12 +69,4 @@ class CompanyGroup
     {
         return $this->tags->toArray();
     }
-
-    /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->getName();
-    }
 }

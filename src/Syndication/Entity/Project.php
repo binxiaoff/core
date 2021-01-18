@@ -545,9 +545,7 @@ class Project implements TraceableStatusAwareInterface
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
      * @ORM\JoinColumn(name="id_company_group_tag")
      *
-     * @Assert\All(
-     *     @Assert\Choice(callback="getAvailableCompanyGroupTags")
-     * )
+     * @Assert\Choice(callback="getAvailableCompanyGroupTags")
      */
     private CompanyGroupTag $companyGroupTag;
 

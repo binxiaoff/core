@@ -63,17 +63,19 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->leftJoin($rootAlias . '.projectParticipations', 'pp')
             ->leftJoin('pp.projectParticipationMembers', 'ppc')
             ->andWhere($queryBuilder->expr()->orX(
-                // if you are owner
+                // you are the project owner
                 $rootAlias . '.submitterUser = :user',
-                // or you are non archived participant and the project is published
+                // or you fulfill the two following conditions :
                 $queryBuilder->expr()->andX(
+                    // you are non archived member of participation OR you managed a member of a participation
                     $queryBuilder->expr()->orX(
-                        $queryBuilder->expr()->andX('ppc.staff = :staff', 'ppc.archived IS NULL'), // You are non archived member of participation
-                        'ppc IN (:managedStaffMember)', // You managed a member of a participation
+                        $queryBuilder->expr()->andX('ppc.staff = :staff', 'ppc.archived IS NULL'),
+                        'ppc IN (:managedStaffMember)',
                     ),
+                    // you are in arranger company OR your participant and the project is in displayable status
                     $queryBuilder->expr()->orX(
-                        $rootAlias . '.submitterCompany = pp.participant', // you are in arranger company
-                        'cs.status in (:displayableStatus)' // or your participant and the project is in displayable status
+                        $rootAlias . '.submitterCompany = pp.participant',
+                        'cs.status in (:displayableStatus)'
                     )
                 )
             ))
