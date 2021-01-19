@@ -9,8 +9,9 @@ doctrine:
         default_connection: default
         connections:
             default:
-                schema_filter: '~^(?!messenger_messages)~'
-                url: '%env(DATABASE_URL)%&driverClass=%dbal_driver_class%'
+                schema_filter: '~^(?!core_messenger_messages)~'
+                url: '%env(DATABASE_URL)%'
+                driver_class: 'Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver'
                 default_table_options:
                     charset: utf8mb4
                     collate: utf8mb4_unicode_ci
@@ -20,8 +21,9 @@ doctrine:
                     x_reconnect_attempts: 3
             # connection dedicated to Doctrine Migration bundle
             migration:
-                schema_filter: '~^(?!messenger_messages)~'
-                url: '%env(DATABASE_URL_MIGRATION)%&driverClass=%dbal_driver_class%'
+                schema_filter: '~^(?!core_messenger_messages)~'
+                url: '%env(DATABASE_URL_MIGRATION)%'
+                driver_class: 'Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver'
                 default_table_options:
                     charset: utf8mb4
                     collate: utf8mb4_unicode_ci
@@ -29,19 +31,27 @@ doctrine:
                     enum: string
                 options:
                     x_reconnect_attempts: 3
+        types:
+            bitmask: Unilend\Core\Doctrine\Types\BitmaskType
     orm:
         auto_generate_proxy_classes: "%kernel.debug%"
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
         auto_mapping: true
         mappings:
-            Unilend:
+            Unilend\Syndication:
                 is_bundle: false
                 type: annotation
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'Unilend\Entity'
+                dir: '%kernel.project_dir%/src/Syndication/Entity'
+                prefix: 'Unilend\Syndication\Entity'
                 alias: Unilend
+            Unilend\Core:
+                is_bundle: false
+                type: annotation
+                dir: '%kernel.project_dir%/src/Core/Entity'
+                prefix: 'Unilend\Core\Entity'
+                alias: Unilend\Core
         hydrators:
-            HYDRATE_COLUMN: Unilend\Doctrine\ORM\ColumnHydrator
+            HYDRATE_COLUMN: Unilend\Core\Doctrine\ORM\ColumnHydrator
         filters:
             softdeletable:
                 class: 'Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter'

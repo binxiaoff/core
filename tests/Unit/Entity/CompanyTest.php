@@ -3,8 +3,7 @@
 namespace Unit\Entity;
 
 use PHPUnit\Framework\TestCase;
-use Unilend\Entity\Company;
-use Unilend\Entity\CompanyModule;
+use Unilend\Core\Entity\{Company, CompanyModule};
 
 class CompanyTest extends TestCase
 {

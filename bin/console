@@ -4,7 +4,7 @@
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\Debug;
-use Unilend\Console\Application;
+use Unilend\Core\Console\Application;
 use Unilend\Kernel;
 
 // With this mask default directory permissions are 775 and default file permissions are 664.

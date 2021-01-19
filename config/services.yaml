@@ -2,7 +2,6 @@ imports:
     - { resource: doctrine_listeners.yml }
 
 parameters:
-    dbal_driver_class: Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
     locale: fr_FR
     router.request_context.scheme: https
     directory.public: /data/sites/unilend/public
@@ -29,7 +28,7 @@ services:
             $consoleLogger: '@monolog.logger.console'
             $defaultLocale: '%locale%'
             $temporaryDirectory: '%directory.temporary%'
-            $templateMessageFQCN: 'Unilend\SwiftMailer\TemplateMessage'
+            $templateMessageFQCN: 'Unilend\Core\SwiftMailer\TemplateMessage'
             $numberFormatter: '@number_formatter'
             $currencyFormatter: '@currency_formatter'
             $percentageFormatter: '@percentage_formatter'
@@ -48,21 +47,20 @@ services:
     Unilend\:
         resource: '%kernel.project_dir%/src/*'
         # The directory Unilend contains the legacy bundles. The services are managed by their own configurations.
-        exclude: '%kernel.project_dir%/src/{Console,Entity,Migrations, Controller, Tests,Traits,Kernel.php,Listener/Doctrine}'
+        exclude: [
+            '%kernel.project_dir%/src/Kernel.php',
+            '%kernel.project_dir%/src/{Core,Syndication}/{Console,Entity,Migrations,Controller,Tests,Traits,Listener}'
+        ]
 
-    Unilend\Controller\:
-        resource: '%kernel.project_dir%/src/Controller'
+    Unilend\Core\Controller\:
+        resource: '%kernel.project_dir%/src/Core/Controller'
         tags:
             - { name: 'controller.service_arguments' }
 
-    Unilend\Service\Translation\TranslationLoader:
-        tags:
-            - { name: translation.loader, alias: db }
-
-    Unilend\Service\WebServiceClient\InseeManager:
+    Unilend\Core\Service\WebServiceClient\InseeManager:
         $client: '@eight_points_guzzle.client.insee'
 
-    Unilend\Service\GoogleRecaptchaManager:
+    Unilend\Core\Service\GoogleRecaptchaManager:
         $client: '@eight_points_guzzle.client.google_recaptcha'
         $secret: '%env(GOOGLE_RECAPTCHA_SECRET)%'
 
@@ -70,7 +68,7 @@ services:
         class: 'Symfony\Contracts\HttpClient\HttpClientInterface'
         factory: ['Symfony\Component\HttpClient\HttpClient', create]
 
-    Unilend\Service\ElectronicSignatureManager:
+    Unilend\Core\Service\ElectronicSignatureManager:
         $integratorKey: '%env(DOCUSIGN_INTEGRATOR_KEY)%'
         $userId: '%env(DOCUSIGN_USER_ID)%'
         $privateKey: '%env(file:DOCUSIGN_PRIVATE_KEY)%'
@@ -136,50 +134,53 @@ services:
             - '@UserAgentParser\Provider\WhichBrowser'
             - '@UserAgentParser\Provider\PiwikDeviceDetector'
 
-    Unilend\Swagger\SwaggerDecorator:
+    Unilend\Core\Swagger\SwaggerDecorator:
         decorates: 'api_platform.swagger.normalizer.api_gateway'
 
-    Unilend\Serializer\ContextBuilder\Staff\CurrentStaff:
+    Unilend\Core\Serializer\ContextBuilder\Staff\CurrentStaff:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Serializer\ContextBuilder\CurrentUser:
+    Unilend\Core\Serializer\ContextBuilder\CurrentUser:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Serializer\ContextBuilder\SkipNullValue:
+    Unilend\Core\Serializer\ContextBuilder\SkipNullValue:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Serializer\ContextBuilder\MaxDepth:
+    Unilend\Core\Serializer\ContextBuilder\MaxDepth:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Serializer\ContextBuilder\CircularReferenceHandler:
+    Unilend\Core\Serializer\ContextBuilder\CircularReferenceHandler:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Service\ElectronicSignature\XmlSigner:
+    Unilend\Core\Service\ElectronicSignature\XmlSigner:
         $publicKey: '%psn.public_key%'
         $privateKey: '%psn.private_key%'
 
-    Unilend\Service\DataCrypto:
+    Unilend\Core\Service\DataCrypto:
         $masterKeyPath: '%file_encryption.kek_file%'
         $masterKeyPassPhrase: '%file_encryption.kek_passphrase%'
 
-    Unilend\Security\UsernamePasswordRecaptchaAuthenticator:
+    Unilend\Core\Security\UsernamePasswordRecaptchaAuthenticator:
         $authenticationSuccessHandler: '@lexik_jwt_authentication.handler.authentication_success'
         $authenticationFailureHandler: '@lexik_jwt_authentication.handler.authentication_failure'
-        $path: '/authentication_token'
+        $path: '/core/authentication_token'
 
-    Unilend\Listener\MaintenanceListener:
+    Unilend\Core\Listener\MaintenanceListener:
         arguments: ["%maintenance%"]
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
 
-    Unilend\SwiftMailer\TemplateErrorReportingPlugin:
+    Unilend\Core\SwiftMailer\TemplateErrorReportingPlugin:
         tags:
             - { name: swiftmailer.default.plugin }
         arguments:
             $enableErrorDelivery: '%env(MAILJET_ERROR_DELIVERY)%'
             $errorReportingEmail: '%mailer.error_reporting_email%'
+
+    Unilend\Core\ApiPlatform\Metadata\Metadata\Resource\Factory\ShortNameResourceMetadataFactory:
+        decorates: 'api_platform.metadata.resource.metadata_factory'

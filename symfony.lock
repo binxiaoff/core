@@ -37,7 +37,7 @@
         "files": [
             "config/packages/api_platform.yaml",
             "config/routes/api_platform.yaml",
-            "src/Entity/.gitignore"
+            "src/Syndication/Entity/.gitignore"
         ]
     },
     "aws/aws-sdk-php": {
@@ -66,6 +66,18 @@
     },
     "cravler/maxmind-geoip-bundle": {
         "version": "v1.3.0"
+    },
+    "dama/doctrine-test-bundle": {
+        "version": "4.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "4.0",
+            "ref": "56eaa387b5e48ebcc7c95a893b47dfa1ad51449c"
+        },
+        "files": [
+            "config/packages/test/dama_doctrine_test_bundle.yaml"
+        ]
     },
     "defuse/php-encryption": {
         "version": "v2.2.1"
@@ -111,7 +123,7 @@
         "files": [
             "config/packages/doctrine.yaml",
             "config/packages/prod/doctrine.yaml",
-            "src/Entity/.gitignore",
+            "src/Syndication/Entity/.gitignore",
             "src/Repository/.gitignore"
         ]
     },
@@ -359,15 +371,6 @@
             "config/packages/lexik_jwt_authentication.yaml"
         ]
     },
-    "maennchen/zipstream-php": {
-        "version": "2.1.0"
-    },
-    "markbaker/complex": {
-        "version": "1.4.7"
-    },
-    "markbaker/matrix": {
-        "version": "1.1.4"
-    },
     "maxmind-db/reader": {
         "version": "v1.4.1"
     },
@@ -385,9 +388,6 @@
     },
     "myclabs/deep-copy": {
         "version": "1.9.3"
-    },
-    "myclabs/php-enum": {
-        "version": "1.7.6"
     },
     "namshi/jose": {
         "version": "7.2.3"
@@ -525,9 +525,6 @@
     "phpmd/phpmd": {
         "version": "2.6.0"
     },
-    "phpoffice/phpspreadsheet": {
-        "version": "1.7.0"
-    },
     "phpoption/phpoption": {
         "version": "1.5.0"
     },
@@ -575,9 +572,6 @@
     },
     "psr/log": {
         "version": "1.1.0"
-    },
-    "psr/simple-cache": {
-        "version": "1.0.1"
     },
     "queue-interop/amqp-interop": {
         "version": "0.8.1"
@@ -1039,18 +1033,6 @@
             "version": "1.0",
             "ref": "fe5a50faf580eb58f08ada2abe8afbd2d4941e05"
         }
-    },
-    "twig/extensions": {
-        "version": "1.0",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "master",
-            "version": "1.0",
-            "ref": "a86723ee8d8b2f9437c8ce60a5546a1c267da5ed"
-        },
-        "files": [
-            "config/packages/twig_extensions.yaml"
-        ]
     },
     "twig/twig": {
         "version": "v2.11.0"

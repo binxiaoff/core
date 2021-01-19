@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Test\Unit\Service\File;
 
+use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, IOException};
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Faker\Provider\{Base, Internet};
@@ -16,14 +17,17 @@ use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Entity\{Clients, Company, File, Staff};
-use Unilend\Message\File\FileUploaded;
-use Unilend\Repository\FileRepository;
-use Unilend\Service\File\FileUploadManager;
-use Unilend\Service\FileSystem\FileSystemHelper;
+use Unilend\Core\Entity\User;
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\File;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Message\File\FileUploaded;
+use Unilend\Core\Repository\FileRepository;
+use Unilend\Core\Service\File\FileUploadManager;
+use Unilend\Core\Service\FileSystem\FileSystemHelper;
 
 /**
- * @coversDefaultClass \Unilend\Service\File\FileUploadManager
+ * @coversDefaultClass \Unilend\Core\Service\File\FileUploadManager
  *
  * @internal
  */
@@ -57,23 +61,23 @@ class FileUploadManagerTest extends TestCase
      *
      * @dataProvider uploadDataProvider
      *
-     * @param File|null   $file
-     * @param string|null $description
-     * @param array       $context
+     * @param File|null $file
+     * @param array     $context
      *
      * @throws FileExistsException
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws ReflectionException
-     * @throws Exception
+     * @throws EnvironmentIsBrokenException
+     * @throws IOException
      */
-    public function testUpload(?File $file, ?string $description, array $context): void
+    public function testUpload(?File $file, array $context): void
     {
-        $idClientsReflectionProperty = new ReflectionProperty(Clients::class, 'id');
-        $idClientsReflectionProperty->setAccessible(true);
-        $uploader   = new Clients('test@' . Internet::safeEmailDomain());
+        $idUsersReflectionProperty = new ReflectionProperty(User::class, 'id');
+        $idUsersReflectionProperty->setAccessible(true);
+        $uploader   = new User('test@' . Internet::safeEmailDomain());
         $uploaderId = Base::randomDigitNotNull() + 1;
-        $idClientsReflectionProperty->setValue($uploader, $uploaderId);
+        $idUsersReflectionProperty->setValue($uploader, $uploaderId);
         $uploaderStaff = new Staff(new Company('test', 'test'), $uploader, $this->prophesize(Staff::class)->reveal());
 
         $filePath         = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';
@@ -101,7 +105,6 @@ class FileUploadManagerTest extends TestCase
             $uploadedFile,
             $uploaderStaff,
             $file,
-            $description,
             $context
         );
 
@@ -125,7 +128,6 @@ class FileUploadManagerTest extends TestCase
 
         static::assertSame($uploaderStaff, $file->getCurrentFileVersion()->getAddedBy());
         static::assertStringContainsString((string) $uploader->getId(), $file->getCurrentFileVersion()->getPath());
-        static::assertSame($description, $file->getDescription());
         static::assertSame('application/x-empty', $file->getCurrentFileVersion()->getMimeType());
         static::assertSame($encryptionKey, $file->getCurrentFileVersion()->getPlainEncryptionKey());
     }
@@ -137,7 +139,7 @@ class FileUploadManagerTest extends TestCase
      */
     public function uploadDataProvider(): array
     {
-        $file = (new File())->setDescription(Base::randomLetter());
+        $file = new File();
 
         $fileIdReflectionProperty = new ReflectionProperty(File::class, 'id');
         $fileIdReflectionProperty->setAccessible(true);
@@ -147,8 +149,7 @@ class FileUploadManagerTest extends TestCase
         $context = ['projectId' => Base::randomDigitNotNull() + 1];
 
         return [
-            'file without description' => [$file, null, $context],
-            'file with description'    => [$file, Base::randomLetter(), $context],
+            'file ' => [$file, $context],
         ];
     }
 

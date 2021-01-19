@@ -6,7 +6,7 @@ api_platform:
     enable_entrypoint: '%kernel.debug%'
     enable_docs: '%kernel.debug%'
     mapping:
-        paths: ['%kernel.project_dir%/src/Entity']
+        paths: ['%kernel.project_dir%/src/Syndication/Entity', '%kernel.project_dir%/src/Core/Entity']
     patch_formats:
         json:     ['application/merge-patch+json']
     swagger:
@@ -22,3 +22,4 @@ api_platform:
         Doctrine\ORM\OptimisticLockException: 409
         # Convert not found exception to 403 for security reason
         Symfony\Component\HttpKernel\Exception\NotFoundHttpException: 403
+    path_segment_name_generator: 'Unilend\Core\ApiPlatform\Operation\PathSegmentNameWithDomainGenerator'
