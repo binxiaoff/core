@@ -7,7 +7,7 @@ namespace Unilend\Syndication\Service\ProjectParticipationMember;
 use Exception;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\{Staff, TemporaryToken};
 use Unilend\Core\Service\TemporaryTokenGenerator;
 use Unilend\Core\SwiftMailer\MailjetMessage;
 use Unilend\Syndication\Entity\{Project, ProjectParticipationMember, ProjectStatus};
@@ -70,6 +70,7 @@ class ProjectParticipationMemberNotifier
         }
 
         $context = [
+            'temporaryToken_token' => ($temporaryToken instanceof TemporaryToken) ? $temporaryToken->getToken() : false,
             'front_viewParticipation_URL' => $this->router->generate(
                 'front_viewParticipation',
                 [
@@ -77,14 +78,14 @@ class ProjectParticipationMemberNotifier
                 ],
                 RouterInterface::ABSOLUTE_URL
             ),
-            'front_initialAccount_URL' => $temporaryToken ? $this->router->generate(
+            'front_initialAccount_URL' => ($temporaryToken instanceof TemporaryToken) ? $this->router->generate(
                 'front_initialAccount',
                 [
                     'temporaryTokenPublicId' => $temporaryToken->getToken(),
                     'userPublicId' => $user->getPublicId(),
                 ],
                 RouterInterface::ABSOLUTE_URL
-            ) : null,
+            ) : false,
             'front_home' => $this->router->generate('front_home'),
             'front_home_URL' => $this->router->generate('front_home'),
             'project_riskGroupName' => $project->getRiskGroupName(),
