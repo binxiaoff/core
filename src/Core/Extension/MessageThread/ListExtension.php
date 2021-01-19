@@ -65,16 +65,19 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'pst.project = p.id')
             ->andWhere(
                 $queryBuilder->expr()->orX(
-                    // if you are the project owner
+                    // you are the project owner
                     'p.submitterUser = :user',
+                    // or you fulfill the two following conditions :
                     $queryBuilder->expr()->andX(
+                        // you are non archived member of participation OR you managed a member of a participation
                         $queryBuilder->expr()->orX(
-                            $queryBuilder->expr()->andX('ppc.staff = :staff', 'ppc.archived IS NULL'), // You are non archived member of participation
-                            'ppc IN (:managedStaffMember)', // You managed a member of a participation
+                            $queryBuilder->expr()->andX('ppc.staff = :staff', 'ppc.archived IS NULL'),
+                            'ppc IN (:managedStaffMember)',
                         ),
+                        // you are in arranger company OR your participant and the project is in displayable status
                         $queryBuilder->expr()->orX(
-                            $rootAlias . '.submitterCompany = pp.participant', // you are in arranger company
-                            'pst.status in (:displayableStatus)' // or your participant and the project is in displayable status
+                            $rootAlias . '.submitterCompany = pp.participant',
+                            'pst.status in (:displayableStatus)'
                         )
                     )
                 )

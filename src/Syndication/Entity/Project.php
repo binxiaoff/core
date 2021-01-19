@@ -547,7 +547,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @Assert\Choice(callback="getAvailableCompanyGroupTags")
      */
-    private CompanyGroupTag $companyGroupTag;
+    private ?CompanyGroupTag $companyGroupTag;
 
     /**
      * @param Staff  $addedBy
@@ -566,6 +566,7 @@ class Project implements TraceableStatusAwareInterface
         $arrangerParticipation->addProjectParticipationMember($projectParticipationMember);
         $this->projectParticipations = new ArrayCollection([$arrangerParticipation]);
 
+        $this->companyGroupTag       = null;
         $this->projectFiles          = new ArrayCollection();
         $this->projectComments       = new ArrayCollection();
         $this->statuses              = new ArrayCollection();
