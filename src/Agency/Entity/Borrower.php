@@ -552,7 +552,7 @@ class Borrower
         [ , $city, , $siren] = array_pad(explode(' ', $this->matriculationNumber), 4, null);
 
         if ($city !== $this->getMatriculationCity()) {
-            $context->buildViolation('Agency.Borrower.matriculationNumber.incoherentCity')
+            $context->buildViolation('Agency.Borrower.matriculationNumber.inconsistentCity')
                 ->setInvalidValue($this->matriculationCity)
                 ->setParameter('city', $city ?? '')
                 ->atPath('matriculationNumber')
@@ -560,7 +560,7 @@ class Borrower
         }
 
         if ($siren !== $this->getSiren()) {
-            $context->buildViolation('Agency.Borrower.matriculationNumber.incoherentSiren')
+            $context->buildViolation('Agency.Borrower.matriculationNumber.inconsistentSiren')
                 ->setInvalidValue($this->matriculationNumber)
                 ->setParameter('siren', $siren ?? '')
                 ->atPath('matriculationNumber')
