@@ -198,7 +198,7 @@ class Project
         $this->addedBy   = $addedBy;
         $this->contacts  = new ArrayCollection();
         $this->agent     = $agent;
-        $this->borrowers = [];
+        $this->borrowers = new ArrayCollection();
 
         // This part is weird but compliant to figma models: those fields are editable
         $this->agentDisplayName = $agent->getDisplayName();
@@ -474,7 +474,7 @@ class Project
      *
      * @return Project
      */
-    public function setBorrowers($borrowers)
+    public function setBorrowers(iterable $borrowers)
     {
         $this->borrowers = $borrowers;
 

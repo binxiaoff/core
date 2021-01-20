@@ -110,5 +110,5 @@ ProjectParticipationMember:
 Agency:
     Borrower:
         matriculationNumber:
-            inconsistentSiren: Les SIREN ne sont pas consistants dans cet emprunteur
-            inconsistentCity: Les villes d'immatriculation ne sont pas consistantes dans cet emprunteur
+            inconsistentSiren: Les SIREN ne sont pas cohérents dans cet emprunteur
+            inconsistentCity: Les villes d'immatriculation ne sont pas cohérents dans cet emprunteur

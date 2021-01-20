@@ -14,7 +14,7 @@ use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Validator\Constraints as KlsAssert;
+use Unilend\Core\Validator\Constraints\{Rcs as AssertRcs, Siren as AssertSiren};
 
 /**
  * @ApiResource(
@@ -33,7 +33,7 @@ use Unilend\Core\Validator\Constraints as KlsAssert;
  *     collectionOperations={
  *         "post": {
  *              "denormalization_context": {
- *                  "groups": {"borrower:create", "borrower:create", "money:write"}
+ *                  "groups": {"borrower:create", "money:write"}
  *              },
  *             "security_post_denormalize": "is_granted('create', object)",
  *         }
@@ -118,7 +118,7 @@ class Borrower
      * @Assert\NotBlank
      * @Assert\Length(max="100")
      *
-     * @KlsAssert\Rcs
+     * @AssertRcs
      *
      * @Groups({"borrower:read", "borrower:create", "borrower:write"})
      */
@@ -143,7 +143,7 @@ class Borrower
      *
      * @Assert\NotBlank
      *
-     * @KlsAssert\Siren
+     * @AssertSiren
      *
      * @Groups({"borrower:read", "borrower:create", "borrower:write"})
      */
@@ -549,7 +549,10 @@ class Borrower
      */
     public function validateMatriculationNumberConsistency(ExecutionContextInterface $context)
     {
-        [ , $city, , $siren] = array_pad(explode(' ', $this->matriculationNumber), 4, null);
+        $tokens = explode(' ', $this->matriculationNumber);
+
+        $city = array_filter($tokens, static fn ($token) => false === preg_match("/^(RCS|A|B|\d+)$/", $token));
+        $city = implode(' ', $city);
 
         if ($city !== $this->getMatriculationCity()) {
             $context->buildViolation('Agency.Borrower.matriculationNumber.inconsistentCity')
@@ -558,6 +561,8 @@ class Borrower
                 ->atPath('matriculationNumber')
                 ->addViolation();
         }
+
+        $siren = end($tokens);
 
         if ($siren !== $this->getSiren()) {
             $context->buildViolation('Agency.Borrower.matriculationNumber.inconsistentSiren')
