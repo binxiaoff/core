@@ -245,7 +245,7 @@ class Team
      */
     public function setName(string $name): Team
     {
-        $this->name = $this->isRoot() ? $this->name : $name;
+        $this->name = $name;
 
         return $this;
     }
