@@ -11,4 +11,6 @@ class Portfolio
     private string $name;
 
     private Money $funds;
+
+    private string $gradeType;
 }
