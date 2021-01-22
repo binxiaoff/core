@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -222,6 +223,13 @@ class Borrower
      * @Groups({"borrower:read", "borrower:create", "borrower:write"})
      */
     private string $referentEmail;
+
+    /**
+     * @var Collection|BorrowerTrancheShare[]
+     *
+     * @ORM\OneToMany(targetEntity="BorrowerTrancheShare", mappedBy="borrower", indexBy="tranche.id")
+     */
+    private Collection $trancheShares;
 
     /**
      * @param Project $project

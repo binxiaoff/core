@@ -112,3 +112,11 @@ Agency:
         matriculationNumber:
             inconsistentSiren: Les SIREN ne sont pas cohérents dans cet emprunteur
             inconsistentCity: Les villes d'immatriculation ne sont pas cohérents dans cet emprunteur
+
+    Tranche:
+        commission:
+            incomplete: Ce champ est manquant pour valider la commission de la tranche
+            invalidLoanType: Le type de prêt ne permet d'avoir une commission
+
+        thirdPartySyndicate:
+            invalid: Ce champ ne peut être rempli que si la tranche n'est pas syndiquée

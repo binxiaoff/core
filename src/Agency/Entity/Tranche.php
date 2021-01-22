@@ -1,0 +1,608 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Unilend\Agency\Entity;
+
+use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\Constant\Tranche\{CommissionType, LoanType, RepaymentType};
+use Unilend\Core\Entity\Embeddable\LendingRate;
+use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+
+/**
+ * @ORM\Entity
+ * @ORM\Table(name="agency_tranche")
+ */
+class Tranche
+{
+    use PublicizeIdentityTrait;
+
+    /**
+     * @var Project
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="tranches")
+     * @ORM\JoinColumn(name="id_project", onDelete="CASCADE")
+     *
+     * @Assert\NotBlank
+     *
+     * @Groups({"tranche:read", "tranche:create"})
+     */
+    private Project $project;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(length=30)
+     *
+     * @Assert\NotBlank
+     * @Assert\Length(max=30)
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private string $name;
+
+    /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean")
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private bool $syndicated;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(length=255, nullable=true)
+     *
+     * @Assert\NotBlank(allowNull=true)
+     * @Assert\Length(max="255")
+     * @Assert\Expression(expression="this.isSyndicated() && value || !value", message="Agency.Tranche.thirdPartySyndicate.invalid")
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private ?string $thirdPartySyndicate;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(length=30, nullable=true)
+     *
+     * @Assert\Length(max="30")
+     * @Assert\Regex(pattern="/#[0-9a-f]{3}([0-9a-f]{3})?/i", message="Syndication.Tranche.color.regex")
+     * @Assert\NotBlank
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private string $color;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(length=30)
+     *
+     * @Assert\NotBlank
+     * @Assert\Choice(callback={LoanType::class, "getConstList"})
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private string $loanType;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(length=30)
+     *
+     * @Assert\NotBlank
+     * @Assert\Choice(callback={RepaymentType::class, "getConstList"})
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private string $repaymentType;
+
+    /**
+     * Duration in month. It is used to calculate the maturity date once the project is funded.
+     *
+     * @var int
+     *
+     * @ORM\Column(type="smallint")
+     *
+     * @Assert\GreaterThanOrEqual(1)
+     * @Assert\NotBlank
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private int $duration;
+
+    /**
+     * @var Money
+     *
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     *
+     * @Assert\NotBlank
+     * @Assert\Valid
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private Money $money;
+
+    /**
+     * @var Money
+     *
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     *
+     * @Assert\NotBlank
+     * @Assert\Valid
+     */
+    private Money $pull;
+
+    /**
+     * @var LendingRate
+     *
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\LendingRate")
+     *
+     * @Assert\NotBlank
+     * @Assert\Valid
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private LendingRate $rate;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="string", length=30, nullable=true)
+     *
+     * @Assert\NotBlank(allowNull=true)
+     * @Assert\Choice(callback={CommissionType::class, "getConstList"})
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private ?string $commissionType;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
+     *
+     * @Assert\NotBlank(allowNull=true)
+     * @Assert\Type("numeric")
+     * @Assert\PositiveOrZero
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private ?string $commissionRate;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="text", nullable=true)
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private ?string $comment;
+
+    /**
+     * @var Collection|BorrowerTrancheShare[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche", indexBy="borrower.id")
+     *
+     * @Assert\Count(min="1")
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private Collection $borrowerShares;
+
+    /**
+     * @var DateTimeImmutable
+     *
+     * @ORM\Column(type="date_immutable")
+     *
+     * @Assert\GreaterThanOrEqual(value="now")
+     *
+     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     */
+    private DateTimeImmutable $validityDate;
+
+    /**
+     * @param Project           $project
+     * @param string            $name
+     * @param bool              $syndicated
+     * @param string            $color
+     * @param string            $loanType
+     * @param string            $repaymentType
+     * @param int               $duration
+     * @param Money             $money
+     * @param Money             $pull
+     * @param LendingRate       $rate
+     * @param DateTimeImmutable $validityDate
+     */
+    public function __construct(
+        Project $project,
+        string $name,
+        bool $syndicated,
+        string $color,
+        string $loanType,
+        string $repaymentType,
+        int $duration,
+        Money $money,
+        Money $pull,
+        LendingRate $rate,
+        DateTimeImmutable $validityDate
+    ) {
+        $this->project = $project;
+        $this->name = $name;
+        $this->syndicated = $syndicated;
+        $this->thirdPartySyndicate = null;
+        $this->color = $color;
+        $this->loanType = $loanType;
+        $this->repaymentType = $repaymentType;
+        $this->duration = $duration;
+        $this->money = $money;
+        $this->rate = $rate;
+        $this->pull = $pull;
+        $this->commissionType = null;
+        $this->commissionRate = null;
+        $this->comment = null;
+        $this->borrowerShares = new ArrayCollection();
+        $this->validityDate = $validityDate;
+    }
+
+    /**
+     * @return Project
+     */
+    public function getProject(): Project
+    {
+        return $this->project;
+    }
+
+    /**
+     * @param Project $project
+     *
+     * @return Tranche
+     */
+    public function setProject(Project $project): Tranche
+    {
+        $this->project = $project;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return Tranche
+     */
+    public function setName(string $name): Tranche
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSyndicated(): bool
+    {
+        return $this->syndicated;
+    }
+
+    /**
+     * @param bool $syndicated
+     *
+     * @return Tranche
+     */
+    public function setSyndicated(bool $syndicated): Tranche
+    {
+        $this->syndicated = $syndicated;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getThirdPartySyndicate(): ?string
+    {
+        return $this->thirdPartySyndicate;
+    }
+
+    /**
+     * @param string|null $thirdPartySyndicate
+     *
+     * @return Tranche
+     */
+    public function setThirdPartySyndicate(?string $thirdPartySyndicate): Tranche
+    {
+        $this->thirdPartySyndicate = $thirdPartySyndicate;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isArrangerFullyFinanced()
+    {
+        return false === $this->isSyndicated() && null === $this->thirdPartySyndicate;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getColor(): string
+    {
+        return $this->color;
+    }
+
+    /**
+     * @param string $color
+     *
+     * @return Tranche
+     */
+    public function setColor(string $color): Tranche
+    {
+        $this->color = $color;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLoanType(): string
+    {
+        return $this->loanType;
+    }
+
+    /**
+     * @param string $loanType
+     *
+     * @return Tranche
+     */
+    public function setLoanType(string $loanType): Tranche
+    {
+        $this->loanType = $loanType;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRepaymentType(): string
+    {
+        return $this->repaymentType;
+    }
+
+    /**
+     * @param string $repaymentType
+     *
+     * @return Tranche
+     */
+    public function setRepaymentType(string $repaymentType): Tranche
+    {
+        $this->repaymentType = $repaymentType;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDuration(): int
+    {
+        return $this->duration;
+    }
+
+    /**
+     * @param int $duration
+     *
+     * @return Tranche
+     */
+    public function setDuration(int $duration): Tranche
+    {
+        $this->duration = $duration;
+
+        return $this;
+    }
+
+    /**
+     * @return Money
+     */
+    public function getMoney(): Money
+    {
+        return $this->money;
+    }
+
+    /**
+     * @param Money $money
+     *
+     * @return Tranche
+     */
+    public function setMoney(Money $money): Tranche
+    {
+        $this->money = $money;
+
+        return $this;
+    }
+
+    /**
+     * @return LendingRate
+     */
+    public function getRate(): LendingRate
+    {
+        return $this->rate;
+    }
+
+    /**
+     * @param LendingRate $rate
+     *
+     * @return Tranche
+     */
+    public function setRate(LendingRate $rate): Tranche
+    {
+        $this->rate = $rate;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCommissionType(): ?string
+    {
+        return $this->commissionType;
+    }
+
+    /**
+     * @param string|null $commissionType
+     *
+     * @return Tranche
+     */
+    public function setCommissionType(?string $commissionType): Tranche
+    {
+        $this->commissionType = $commissionType;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCommissionRate(): ?string
+    {
+        return $this->commissionRate;
+    }
+
+    /**
+     * @param string|null $commissionRate
+     *
+     * @return Tranche
+     */
+    public function setCommissionRate(?string $commissionRate): Tranche
+    {
+        $this->commissionRate = $commissionRate;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    /**
+     * @param string|null $comment
+     *
+     * @return Tranche
+     */
+    public function setComment(?string $comment): Tranche
+    {
+        $this->comment = $comment;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|BorrowerTrancheShare[]
+     */
+    public function getBorrowerShares()
+    {
+        return $this->borrowerShares;
+    }
+
+    /**
+     * @param Collection|BorrowerTrancheShare[] $borrowerShares
+     *
+     * @return Tranche
+     */
+    public function setBorrowerShares($borrowerShares)
+    {
+        $this->borrowerShares = $borrowerShares;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable
+     */
+    public function getValidityDate(): DateTimeImmutable
+    {
+        return $this->validityDate;
+    }
+
+    /**
+     * @param DateTimeImmutable $validityDate
+     *
+     * @return Tranche
+     */
+    public function setValidityDate(DateTimeImmutable $validityDate): Tranche
+    {
+        $this->validityDate = $validityDate;
+
+        return $this;
+    }
+
+    /**
+     * @return Money
+     */
+    public function getPull(): Money
+    {
+        return $this->pull;
+    }
+
+    /**
+     * @param Money $pull
+     *
+     * @return Tranche
+     */
+    public function setPull(Money $pull): Tranche
+    {
+        $this->pull = $pull;
+
+        return $this;
+    }
+
+    /**
+     * @param ExecutionContextInterface $context
+     *
+     * @Assert\Callback()
+     */
+    public function validateCommission(ExecutionContextInterface $context)
+    {
+        if (
+            ($this->getCommissionRate() || '0' === $this->getCommissionRate() || $this->getCommissionType())
+            && false === \in_array($this->getLoanType(), LoanType::getChargeableLoanTypes(), true)
+        ) {
+            $context->buildViolation('Agency.Tranche.commission.invalidLoanType')
+                ->addViolation();
+        }
+
+        if (($this->getCommissionRate() || '0' === $this->getCommissionRate()) xor $this->getCommissionType()) {
+            $context->buildViolation('Agency.Tranche.commission.incomplete')
+                ->atPath($this->getCommissionType() ? 'commissionRate' : 'commissionType')
+                ->addViolation();
+        }
+    }
+}

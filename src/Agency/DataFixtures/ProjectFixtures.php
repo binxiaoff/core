@@ -4,15 +4,22 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\DataFixtures;
 
+use DateTimeImmutable;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Unilend\Agency\Entity\Borrower;
+use Unilend\Agency\Entity\BorrowerTrancheShare;
 use Unilend\Agency\Entity\Contact;
 use Unilend\Agency\Entity\Project;
+use Unilend\Agency\Entity\Tranche;
 use Unilend\Core\DataFixtures\{AbstractFixtures, StaffFixtures};
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
+use Unilend\Core\Entity\Constant\Tranche\LoanType;
+use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
+use Unilend\Core\Entity\Constant\Warranty;
+use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Staff;
 
@@ -41,11 +48,24 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         $this->createContacts($project, $staff);
 
-        foreach (range(0, 3) as $i) {
-            $manager->persist($this->createBorrower($project, $staff));
-        }
         $project->setPrincipalSyndicationType(SyndicationType::PRIMARY);
         $project->setPrincipalParticipationType(ParticipationType::DIRECT);
+
+        /** @var Borrower[]|array $borrowers */
+        $borrowers = array_map(fn () => $this->createBorrower($project, $staff), range(0, 3));
+
+        /** @var Tranche[]|array $tranches */
+        $tranches = array_map(fn () => $this->createTranche($project, $staff), range(0, 2));
+
+        $borrowerTrancheShares = [
+            new BorrowerTrancheShare($borrowers[0], $tranches[0], Warranty::BPI, new Money('EUR', '2000000')),
+            new BorrowerTrancheShare($borrowers[1], $tranches[0], Warranty::BPI, new Money('EUR', '2000000')),
+            new BorrowerTrancheShare($borrowers[2], $tranches[0], Warranty::BPI, new Money('EUR', '2000000')),
+            new BorrowerTrancheShare($borrowers[1], $tranches[1], Warranty::BPI, new Money('EUR', '2000000')),
+            new BorrowerTrancheShare($borrowers[2], $tranches[2], Warranty::BPI, new Money('EUR', '2000000')),
+        ];
+
+        array_map([$manager, 'persist'], [...$borrowers, ...$tranches, ...$borrowerTrancheShares]);
 
         $manager->flush();
     }
@@ -113,7 +133,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     public function generateSiren()
     {
-        // A siren use the Luhn algorithm to validate. Its final lenght (number + checksum must be 9)
+        // A siren use the Luhn algorithm to validate. Its final length (number + checksum must be 9)
         // https://fr.wikipedia.org/wiki/Luhn_algorithm
         // https://fr.wikipedia.org/wiki/Syst%C3%A8me_d%27identification_du_r%C3%A9pertoire_des_entreprises#Calcul_et_validit%C3%A9_d'un_num%C3%A9ro_SIREN
         $siren = $this->faker->randomNumber(8); // First we generate a 8 digit long number
@@ -134,5 +154,29 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         return [
             StaffFixtures::class,
         ];
+    }
+
+    /**
+     * @param Project $project
+     *
+     * @return Tranche
+     *
+     * @throws Exception
+     */
+    private function createTranche(Project $project)
+    {
+        return new Tranche(
+            $project,
+            $this->faker->name,
+            true,
+            $this->faker->hexColor,
+            LoanType::TERM_LOAN,
+            RepaymentType::ATYPICAL,
+            $this->faker->numberBetween(1, 40),
+            new Money('EUR', (string) $this->faker->numberBetween(3000000, 4000000)),
+            new Money('EUR', (string) $this->faker->numberBetween(3000000, 4000000)),
+            new LendingRate(LendingRate::INDEX_FIXED, (string) $this->faker->randomFloat(4, 0.1, 0.90)),
+            new DateTimeImmutable($this->faker->dateTimeBetween('now', '3 months')->format('Y-m-d'))
+        );
     }
 }

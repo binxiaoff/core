@@ -8,10 +8,10 @@ use Unilend\Core\Entity\Constant\AbstractEnum;
 
 final class RepaymentType extends AbstractEnum
 {
-    protected const ATYPICAL         = 'atypical';
-    protected const IN_FINE          = 'in_fine';
-    protected const CONSTANT_CAPITAL = 'constant_capital';
-    protected const FIXED            = 'repayment_fixed';
+    public const ATYPICAL         = 'atypical';
+    public const IN_FINE          = 'in_fine';
+    public const CONSTANT_CAPITAL = 'constant_capital';
+    public const FIXED            = 'repayment_fixed';
 
     /**
      * @return string[]|array

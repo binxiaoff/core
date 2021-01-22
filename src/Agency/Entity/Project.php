@@ -263,9 +263,20 @@ class Project
     private ?string $secondaryRiskType;
 
     /**
+     * @var iterable|Tranche[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Tranche", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
+     *
+     * Add rule to ensure at least one tranche
+     */
+    private iterable $tranches;
+
+    /**
      * @var Borrower[]|iterable
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project")
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true)
+     *
+     * Add rule to ensure at least one borrower
      */
     private iterable $borrowers;
 
@@ -283,6 +294,7 @@ class Project
         $this->agent             = $agent;
 
         $this->borrowers = new ArrayCollection();
+        $this->tranches  = new ArrayCollection();
 
         $this->silentSyndication = false;
 
@@ -727,6 +739,26 @@ class Project
     public function setBorrowers(iterable $borrowers)
     {
         $this->borrowers = $borrowers;
+
+        return $this;
+    }
+
+    /**
+     * @return iterable|Tranche[]
+     */
+    public function getTranches()
+    {
+        return $this->tranches;
+    }
+
+    /**
+     * @param iterable|Tranche[] $tranches
+     *
+     * @return Project
+     */
+    public function setTranches($tranches)
+    {
+        $this->tranches = $tranches;
 
         return $this;
     }
