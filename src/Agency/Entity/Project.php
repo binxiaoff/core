@@ -48,6 +48,7 @@ use Unilend\Core\Entity\{Company, Staff};
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
+ *             "denormalization_context": {"groups": {"project:write", "projectStatus:create"}}
  *         },
  *     }
  * )
@@ -408,6 +409,27 @@ class Project
     private iterable $participations;
 
     /**
+     * @var ProjectStatus
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Agency\Entity\ProjectStatus", cascade={"persist"})
+     * @ORM\JoinColumn(name="id_current_status")
+     *
+     * @Assert\NotBlank
+     * @Assert\Valid
+     * @Assert\Expression("this === value.getProject()")
+     *
+     * @Groups({"project:read", "project:write"})
+     */
+    private ProjectStatus $currentStatus;
+
+    /**
+     * @var iterable|ProjectStatus[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\ProjectStatus", orphanRemoval=true, cascade={"persist"}, mappedBy="project", fetch="EAGER")
+     */
+    private iterable $statuses;
+
+    /**
      * @param Staff             $addedBy
      * @param string            $title
      * @param string            $riskGroupName
@@ -459,6 +481,9 @@ class Project
         $this->secondarySyndicationType = null;
         $this->secondaryParticipationType = null;
         $this->secondaryRiskType = null;
+
+        $this->currentStatus = new ProjectStatus($this, $addedBy, ProjectStatus::DRAFT);
+        $this->statuses      = new ArrayCollection([$this->currentStatus]);
 
         // This part is weird but compliant to figma models: those fields are editable
         $this->agentDisplayName = $this->agent->getDisplayName();
@@ -946,7 +971,7 @@ class Project
     /**
      * @return iterable|Tranche[]
      */
-    public function getTranches(): iterable
+    public function getTranches()
     {
         return $this->tranches;
     }
@@ -956,7 +981,7 @@ class Project
      *
      * @return Project
      */
-    public function setTranches($tranches): Project
+    public function setTranches($tranches)
     {
         $this->tranches = $tranches;
 
@@ -1109,6 +1134,34 @@ class Project
     public function getParticipations()
     {
         return $this->participations;
+    }
+
+    /**
+     * @return ProjectStatus
+     */
+    public function getCurrentStatus(): ProjectStatus
+    {
+        return $this->currentStatus;
+    }
+
+    /**
+     * @param ProjectStatus $currentStatus
+     *
+     * @return Project
+     */
+    public function setCurrentStatus(ProjectStatus $currentStatus): Project
+    {
+        $this->currentStatus = $currentStatus;
+
+        return $this;
+    }
+
+    /**
+     * @return iterable|ProjectStatus[]
+     */
+    public function getStatuses()
+    {
+        return $this->statuses;
     }
 
 

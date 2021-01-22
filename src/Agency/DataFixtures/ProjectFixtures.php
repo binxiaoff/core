@@ -225,4 +225,28 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $secondary
         );
     }
+
+    /**
+     * @param Project $project
+     *
+     * @return Tranche
+     *
+     * @throws Exception
+     */
+    private function createTranche(Project $project)
+    {
+        return new Tranche(
+            $project,
+            $this->faker->name,
+            true,
+            $this->faker->hexColor,
+            LoanType::TERM_LOAN,
+            RepaymentType::ATYPICAL,
+            $this->faker->numberBetween(1, 40),
+            new Money('EUR', (string) $this->faker->numberBetween(3000000, 4000000)),
+            new Money('EUR', (string) $this->faker->numberBetween(3000000, 4000000)),
+            new LendingRate(LendingRate::INDEX_FIXED, (string) $this->faker->randomFloat(4, 0.1, 0.90)),
+            new DateTimeImmutable($this->faker->dateTimeBetween('now', '3 months')->format('Y-m-d'))
+        );
+    }
 }

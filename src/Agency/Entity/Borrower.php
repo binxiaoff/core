@@ -225,6 +225,13 @@ class Borrower
     private string $referentEmail;
 
     /**
+     * @var Collection|BorrowerTrancheShare[]
+     *
+     * @ORM\OneToMany(targetEntity="BorrowerTrancheShare", mappedBy="borrower", indexBy="tranche.id")
+     */
+    private Collection $trancheShares;
+
+    /**
      * @param Project $project
      * @param Staff   $addedBy
      * @param string  $corporateName
