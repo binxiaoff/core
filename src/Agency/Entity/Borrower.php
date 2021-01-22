@@ -96,6 +96,8 @@ class Borrower
      * @Assert\NotBlank
      *
      * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
+     *
+     * @ORM\Embedded(class=Money::class)
      */
     private Money $capital;
 
