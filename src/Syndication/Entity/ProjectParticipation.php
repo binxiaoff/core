@@ -43,7 +43,8 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *         "file:read",
  *         "fileVersion:read",
  *         "invitationReplyVersion:read",
- *         "interestReplyVersion:read"
+ *         "interestReplyVersion:read",
+ *         "tranche:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
