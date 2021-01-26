@@ -3,6 +3,16 @@ Agency:
         type:
             unique: Il ne peut y avoir qu'un seul contact agency par projet
 
+    Borrower:
+        matriculationNumber:
+            inconsistentSiren: Les SIREN ne sont pas cohérents dans cet emprunteur
+            inconsistentCity: Les villes d'immatriculation ne sont pas cohérents dans cet emprunteur
+
+    Tranche:
+        commission:
+            incomplete: Ce champ est manquant pour valider la commission de la tranche
+            invalidLoanType: Le type de prêt ne permet d'avoir une commission
+
 Core:
     AcceptationsLegalDocs:
         legalDoc:
@@ -111,17 +121,3 @@ ProjectParticipationMember:
             expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche
         commissionRate:
             expression: Cette valeur n'est pas cohérente avec celui du type de la commission
-
-Agency:
-    Borrower:
-        matriculationNumber:
-            inconsistentSiren: Les SIREN ne sont pas cohérents dans cet emprunteur
-            inconsistentCity: Les villes d'immatriculation ne sont pas cohérents dans cet emprunteur
-
-    Tranche:
-        commission:
-            incomplete: Ce champ est manquant pour valider la commission de la tranche
-            invalidLoanType: Le type de prêt ne permet d'avoir une commission
-
-        thirdPartySyndicate:
-            invalid: Ce champ ne peut être rempli que si la tranche n'est pas syndiquée
