@@ -85,6 +85,8 @@ class Staff implements TraceableStatusAwareInterface
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Team", inversedBy="staff")
      * @ORM\JoinColumn(name="id_team", nullable=false)
      *
+     * @Assert\NotBlank
+     *
      * @Groups({"staff:read", "staff:create", "staff:update"})
      */
     private Team $team;
