@@ -17,15 +17,11 @@ class Program
 
     /**
      * @ORM\Column(length=100)
-     *
-     * @Groups({"creditGuaranty:program:write", "creditGuaranty:program:read"})
      */
     private string $name;
 
     /**
      * @ORM\Column(type="text", length=16777215, nullable=true)
-     *
-     * @Groups({"creditGuaranty:program:write", "creditGuaranty:program:read"})
      */
     private ?string $description;
 
@@ -34,8 +30,6 @@ class Program
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_market_segment", nullable=false)
      * })
-     *
-     * @Groups({"creditGuaranty:program:write", "creditGuaranty:program:read"})
      */
     private MarketSegment $marketSegment;
 
