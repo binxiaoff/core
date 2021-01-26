@@ -18,7 +18,6 @@ use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
-use Unilend\Core\Entity\Constant\Warranty;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Staff;
@@ -55,14 +54,14 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $borrowers = array_map(fn () => $this->createBorrower($project, $staff), range(0, 3));
 
         /** @var Tranche[]|array $tranches */
-        $tranches = array_map(fn () => $this->createTranche($project, $staff), range(0, 2));
+        $tranches = array_map(fn () => $this->createTranche($project), range(0, 2));
 
         $borrowerTrancheShares = [
-            new BorrowerTrancheShare($borrowers[0], $tranches[0], Warranty::BPI, new Money('EUR', '2000000')),
-            new BorrowerTrancheShare($borrowers[1], $tranches[0], Warranty::BPI, new Money('EUR', '2000000')),
-            new BorrowerTrancheShare($borrowers[2], $tranches[0], Warranty::BPI, new Money('EUR', '2000000')),
-            new BorrowerTrancheShare($borrowers[1], $tranches[1], Warranty::BPI, new Money('EUR', '2000000')),
-            new BorrowerTrancheShare($borrowers[2], $tranches[2], Warranty::BPI, new Money('EUR', '2000000')),
+            new BorrowerTrancheShare($borrowers[0], $tranches[0], new Money('EUR', '2000000')),
+            new BorrowerTrancheShare($borrowers[1], $tranches[0], new Money('EUR', '2000000')),
+            new BorrowerTrancheShare($borrowers[2], $tranches[0], new Money('EUR', '2000000')),
+            new BorrowerTrancheShare($borrowers[1], $tranches[1], new Money('EUR', '2000000')),
+            new BorrowerTrancheShare($borrowers[2], $tranches[2], new Money('EUR', '2000000')),
         ];
 
         array_map([$manager, 'persist'], [...$borrowers, ...$tranches, ...$borrowerTrancheShares]);
@@ -173,7 +172,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             LoanType::TERM_LOAN,
             RepaymentType::ATYPICAL,
             $this->faker->numberBetween(1, 40),
-            new Money('EUR', (string) $this->faker->numberBetween(3000000, 4000000)),
             new Money('EUR', (string) $this->faker->numberBetween(3000000, 4000000)),
             new LendingRate(LendingRate::INDEX_FIXED, (string) $this->faker->randomFloat(4, 0.1, 0.90)),
             new DateTimeImmutable($this->faker->dateTimeBetween('now', '3 months')->format('Y-m-d'))

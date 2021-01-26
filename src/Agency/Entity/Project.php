@@ -267,7 +267,7 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Tranche", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
-     * Add rule to ensure at least one tranche
+     * @Groups({"project:read"})
      */
     private iterable $tranches;
 
@@ -746,7 +746,7 @@ class Project
     /**
      * @return iterable|Tranche[]
      */
-    public function getTranches()
+    public function getTranches(): iterable
     {
         return $this->tranches;
     }
@@ -756,7 +756,7 @@ class Project
      *
      * @return Project
      */
-    public function setTranches($tranches)
+    public function setTranches($tranches): Project
     {
         $this->tranches = $tranches;
 

@@ -6,7 +6,6 @@ namespace Unilend\Agency\Entity;
 
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -14,6 +13,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Constant\Tranche\{CommissionType, LoanType, RepaymentType};
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
@@ -32,7 +32,7 @@ class Tranche
      *
      * @Assert\NotBlank
      *
-     * @Groups({"tranche:read", "tranche:create"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create"})
      */
     private Project $project;
 
@@ -44,7 +44,7 @@ class Tranche
      * @Assert\NotBlank
      * @Assert\Length(max=30)
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private string $name;
 
@@ -53,7 +53,7 @@ class Tranche
      *
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private bool $syndicated;
 
@@ -66,7 +66,7 @@ class Tranche
      * @Assert\Length(max="255")
      * @Assert\Expression(expression="this.isSyndicated() && value || !value", message="Agency.Tranche.thirdPartySyndicate.invalid")
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private ?string $thirdPartySyndicate;
 
@@ -79,7 +79,7 @@ class Tranche
      * @Assert\Regex(pattern="/#[0-9a-f]{3}([0-9a-f]{3})?/i", message="Syndication.Tranche.color.regex")
      * @Assert\NotBlank
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private string $color;
 
@@ -91,7 +91,7 @@ class Tranche
      * @Assert\NotBlank
      * @Assert\Choice(callback={LoanType::class, "getConstList"})
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private string $loanType;
 
@@ -103,7 +103,7 @@ class Tranche
      * @Assert\NotBlank
      * @Assert\Choice(callback={RepaymentType::class, "getConstList"})
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private string $repaymentType;
 
@@ -117,7 +117,7 @@ class Tranche
      * @Assert\GreaterThanOrEqual(1)
      * @Assert\NotBlank
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private int $duration;
 
@@ -129,19 +129,18 @@ class Tranche
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private Money $money;
 
     /**
-     * @var Money
+     * @var NullableMoney
      *
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
-     * @Assert\NotBlank
      * @Assert\Valid
      */
-    private Money $pull;
+    private NullableMoney $draw;
 
     /**
      * @var LendingRate
@@ -151,7 +150,7 @@ class Tranche
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private LendingRate $rate;
 
@@ -163,7 +162,7 @@ class Tranche
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Choice(callback={CommissionType::class, "getConstList"})
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private ?string $commissionType;
 
@@ -176,7 +175,7 @@ class Tranche
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private ?string $commissionRate;
 
@@ -185,20 +184,20 @@ class Tranche
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private ?string $comment;
 
     /**
-     * @var Collection|BorrowerTrancheShare[]
+     * @var iterable|BorrowerTrancheShare[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche", indexBy="borrower.id")
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche")
      *
      * @Assert\Count(min="1")
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
-    private Collection $borrowerShares;
+    private iterable $borrowerShares;
 
     /**
      * @var DateTimeImmutable
@@ -207,7 +206,7 @@ class Tranche
      *
      * @Assert\GreaterThanOrEqual(value="now")
      *
-     * @Groups({"tranche:read", "tranche:create", "tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private DateTimeImmutable $validityDate;
 
@@ -220,7 +219,6 @@ class Tranche
      * @param string            $repaymentType
      * @param int               $duration
      * @param Money             $money
-     * @param Money             $pull
      * @param LendingRate       $rate
      * @param DateTimeImmutable $validityDate
      */
@@ -233,7 +231,6 @@ class Tranche
         string $repaymentType,
         int $duration,
         Money $money,
-        Money $pull,
         LendingRate $rate,
         DateTimeImmutable $validityDate
     ) {
@@ -247,10 +244,10 @@ class Tranche
         $this->duration = $duration;
         $this->money = $money;
         $this->rate = $rate;
-        $this->pull = $pull;
         $this->commissionType = null;
         $this->commissionRate = null;
         $this->comment = null;
+        $this->draw = new NullableMoney();
         $this->borrowerShares = new ArrayCollection();
         $this->validityDate = $validityDate;
     }
@@ -525,19 +522,19 @@ class Tranche
     }
 
     /**
-     * @return Collection|BorrowerTrancheShare[]
+     * @return iterable|BorrowerTrancheShare[]
      */
-    public function getBorrowerShares()
+    public function getBorrowerShares(): iterable
     {
         return $this->borrowerShares;
     }
 
     /**
-     * @param Collection|BorrowerTrancheShare[] $borrowerShares
+     * @param iterable|BorrowerTrancheShare[] $borrowerShares
      *
      * @return Tranche
      */
-    public function setBorrowerShares($borrowerShares)
+    public function setBorrowerShares(iterable $borrowerShares)
     {
         $this->borrowerShares = $borrowerShares;
 
@@ -565,21 +562,21 @@ class Tranche
     }
 
     /**
-     * @return Money
+     * @return NullableMoney
      */
-    public function getPull(): Money
+    public function getDraw(): NullableMoney
     {
-        return $this->pull;
+        return $this->draw;
     }
 
     /**
-     * @param Money $pull
+     * @param Money $draw
      *
      * @return Tranche
      */
-    public function setPull(Money $pull): Tranche
+    public function setDraw(Money $draw): Tranche
     {
-        $this->pull = $pull;
+        $this->draw = $draw;
 
         return $this;
     }

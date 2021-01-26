@@ -30,6 +30,8 @@ final class Version20210121175038 extends AbstractMigration
         $this->addSql('ALTER TABLE agency_borrower_tranche_share ADD share_amount NUMERIC(15, 2) NOT NULL, ADD share_currency VARCHAR(3) NOT NULL');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1B75C8DD8B4BA121B8FAF130 ON agency_borrower_tranche_share (id_borrower, id_tranche)');
         $this->addSql('ALTER TABLE agency_tranche ADD pull_amount NUMERIC(15, 2) NOT NULL, ADD pull_currency VARCHAR(3) NOT NULL');
+        $this->addSql('ALTER TABLE agency_borrower_tranche_share ADD guaranty VARCHAR(40) DEFAULT NULL, DROP warranty');
+        $this->addSql('ALTER TABLE agency_tranche CHANGE pull_amount draw_amount NUMERIC(15, 2) DEFAULT NULL, CHANGE pull_currency draw_currency VARCHAR(3) DEFAULT NULL');
     }
 
     /**
@@ -37,6 +39,8 @@ final class Version20210121175038 extends AbstractMigration
      */
     public function down(Schema $schema) : void
     {
+        $this->addSql('ALTER TABLE agency_borrower_tranche_share ADD warranty VARCHAR(40) CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`, DROP guaranty');
+        $this->addSql('ALTER TABLE agency_tranche CHANGE draw_amount pull_amount NUMERIC(15, 2) NOT NULL, CHANGE draw_currency pull_currency VARCHAR(3) CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`');
         $this->addSql('ALTER TABLE agency_borrower_tranche_share DROP FOREIGN KEY FK_1B75C8DDB8FAF130');
         $this->addSql('DROP TABLE agency_borrower_tranche_share');
         $this->addSql('DROP TABLE agency_tranche');
