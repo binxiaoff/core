@@ -16,9 +16,9 @@ use Unilend\Core\Entity\Constant\LegalForm;
 use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
 use Unilend\Core\Entity\Constant\{CAInternalRating, FundingSpecificity};
 use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\MarketSegment;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Entity\{Company, Embeddable\Money, Staff};
-use Unilend\Core\Entity\MarketSegment;
 
 /**
  * @ApiResource(
@@ -215,6 +215,7 @@ class Project
      * @ORM\Column(length=191)
      *
      * @Assert\NotBlank
+     * @Assert\Length(max="191")
      *
      * @Gedmo\Versioned
      *
@@ -376,7 +377,7 @@ class Project
      *
      * @Groups({"project:write", "project:read"})
      */
-    private DateTimeImmutable $endOfContractDate;
+    private DateTimeImmutable $contractEndDate;
 
     /**
      * @var string|null
@@ -394,7 +395,7 @@ class Project
      * @param Money             $globalFundingMoney
      * @param MarketSegment     $marketSegment
      * @param DateTimeImmutable $closingDate
-     * @param DateTimeImmutable $endOfContractDate
+     * @param DateTimeImmutable $contractEndDate
      *
      * @throws Exception
      */
@@ -405,7 +406,7 @@ class Project
         Money $globalFundingMoney,
         MarketSegment $marketSegment,
         DateTimeImmutable $closingDate,
-        DateTimeImmutable $endOfContractDate
+        DateTimeImmutable $contractEndDate
     ) {
         $agent                    = $addedBy->getCompany();
         $this->added              = new DateTimeImmutable();
@@ -415,7 +416,7 @@ class Project
         $this->globalFundingMoney = $globalFundingMoney;
         $this->marketSegment      = $marketSegment;
         $this->closingDate        = $closingDate;
-        $this->endOfContractDate  = $endOfContractDate;
+        $this->contractEndDate    = $contractEndDate;
         $this->title              = $title;
 
         $this->borrowers = new ArrayCollection();
@@ -1033,19 +1034,19 @@ class Project
     /**
      * @return DateTimeImmutable
      */
-    public function getEndOfContractDate(): DateTimeImmutable
+    public function getContractEndDate(): DateTimeImmutable
     {
-        return $this->endOfContractDate;
+        return $this->contractEndDate;
     }
 
     /**
-     * @param DateTimeImmutable $endOfContractDate
+     * @param DateTimeImmutable $contractEndDate
      *
      * @return Project
      */
-    public function setEndOfContractDate(DateTimeImmutable $endOfContractDate): Project
+    public function setContractEndDate(DateTimeImmutable $contractEndDate): Project
     {
-        $this->endOfContractDate = $endOfContractDate;
+        $this->contractEndDate = $contractEndDate;
 
         return $this;
     }

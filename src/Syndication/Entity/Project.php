@@ -18,7 +18,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\FundingSpecificity;
-use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
+use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
+use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
+use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use Unilend\Core\Entity\{Company,
     CompanyGroupTag,
     Embeddable\Money,
@@ -639,7 +641,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @return Project
      */
-    public function setTitle(string $title): Project
+    public function setTitle($title): Project
     {
         $this->title = $title;
 
