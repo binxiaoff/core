@@ -12,7 +12,6 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\Syndication\Entity\{Project, ProjectStatus};
 use Unilend\Syndication\Repository\ProjectParticipationRepository;
 use Unilend\Syndication\Service\Project\ProjectManager;
-use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectVoter extends AbstractEntityVoter
 {
@@ -26,21 +25,22 @@ class ProjectVoter extends AbstractEntityVoter
 
     /** @var ProjectManager */
     private ProjectManager $projectManager;
-    /** @var ProjectParticipationManager */
-    private ProjectParticipationManager $projectParticipationManager;
     /** @var ProjectParticipationRepository */
     private ProjectParticipationRepository $projectParticipationRepository;
 
     /**
      * @param AuthorizationCheckerInterface  $authorizationChecker
      * @param ProjectParticipationRepository $projectParticipationRepository
+     * @param ProjectManager                 $projectManager
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
-        ProjectParticipationRepository $projectParticipationRepository
+        ProjectParticipationRepository $projectParticipationRepository,
+        ProjectManager $projectManager
     ) {
         parent::__construct($authorizationChecker);
         $this->projectParticipationRepository = $projectParticipationRepository;
+        $this->projectManager = $projectManager;
     }
 
     /**
@@ -97,7 +97,7 @@ class ProjectVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff
-            && $staff->hasArrangementProjectCreatePermission()
+            && $staff->hasArrangementProjectCreationPermission()
             && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT);
     }
 
