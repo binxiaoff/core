@@ -6,14 +6,14 @@ namespace Unilend\CreditGuaranty\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, MarketSegment, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, MarketSegment, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 
 class Program
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+    use BlamableAddedTrait;
 
     /**
      * @ORM\Column(length=100)
@@ -75,8 +75,6 @@ class Program
     private ?int $guarantyDuration;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
@@ -115,6 +113,18 @@ class Program
     }
 
     /**
+     * @param string $name
+     *
+     * @return Program
+     */
+    public function setName(string $name): Program
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    /**
      * @return string|null
      */
     public function getDescription(): ?string
@@ -143,6 +153,18 @@ class Program
     }
 
     /**
+     * @param MarketSegment $marketSegment
+     *
+     * @return Program
+     */
+    public function setMarketSegment(MarketSegment $marketSegment): Program
+    {
+        $this->marketSegment = $marketSegment;
+
+        return $this;
+    }
+
+    /**
      * @return NullableMoney
      */
     public function getCappedAt(): NullableMoney
@@ -168,6 +190,18 @@ class Program
     public function getFunds(): Money
     {
         return $this->funds;
+    }
+
+    /**
+     * @param Money $funds
+     *
+     * @return Program
+     */
+    public function setFunds(Money $funds): Program
+    {
+        $this->funds = $funds;
+
+        return $this;
     }
 
     /**
