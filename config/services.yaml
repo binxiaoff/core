@@ -19,7 +19,7 @@ parameters:
     psn.private_key: '%env(base64:PSN_PRIVATE_KEY)%'
     psn.base_uri: '%env(PSN_BASE_URI)%'
     mailer.error_reporting_email: tech@kls-platform.com
-    mailer.sender_address: support@kls-platfrom.com
+    mailer.sender_address: support@kls-platform.com
 
 services:
     _defaults:

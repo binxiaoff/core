@@ -37,7 +37,7 @@ class MailHandler extends AbstractProcessingHandler
         $securityRecipients,
         $level = Logger::CRITICAL, // @see https://github.com/symfony/monolog-bundle/issues/322
         $bubble = true,
-        $senderAddress = 'support@kls-platfrom.com'
+        $senderAddress = 'support@kls-platform.com'
     ) {
         parent::__construct($level, $bubble);
         $this->mailer                  = $mailer;
