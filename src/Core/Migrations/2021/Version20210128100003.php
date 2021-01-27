@@ -7,7 +7,7 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-final class Version20201224144409 extends AbstractMigration
+final class Version20210128100003 extends AbstractMigration
 {
     /**
      * @return string

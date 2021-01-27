@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20201211214528 extends AbstractMigration
+final class Version20210128100001 extends AbstractMigration
 {
     // Previous roles
     public const DUTY_STAFF_MANAGER    = 'DUTY_STAFF_MANAGER';

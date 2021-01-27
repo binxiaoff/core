@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20201216013717 extends AbstractMigration
+final class Version20210128100002 extends AbstractMigration
 {
     /**
      * @return string
