@@ -43,19 +43,15 @@ class ProjectParticipationFixtures extends AbstractFixtures implements Dependent
             }
 
             foreach ($companies as $company) {
-                $manager->persist($this->createParticipation($project, $company, $staff));
-            }
-        }
+                /** @var ProjectParticipation $participation */
+                $participation = $this->createParticipation($project, $company, $staff);
+                $projectParticipationStatus = $this->getParticipationStatus($project, $reference);
 
-        $manager->flush();
-
-        foreach ($projectsWithParticipations as $reference => $project) {
-            $projectParticipationStatus = $this->getParticipationStatus($project, $reference);
-            foreach ($project->getProjectParticipations() as $participation) {
                 if (ProjectParticipationStatus::STATUS_CREATED !== $projectParticipationStatus) {
                     $this->applyProjectParticipationStatus($participation, $projectParticipationStatus);
-                    $manager->persist($participation);
                 }
+
+                $manager->persist($participation);
             }
         }
 
@@ -95,6 +91,8 @@ class ProjectParticipationFixtures extends AbstractFixtures implements Dependent
         $participation->getProject()->isInInterestCollectionStep()
             ? $participation->setInterestRequest($this->createRangedOffer(1000000, 2000000))->setInterestReply($this->createOffer(2000000))
             : $participation->setInvitationRequest($this->createOfferWithFee(1000000));
+
+
 
         return $participation;
     }
