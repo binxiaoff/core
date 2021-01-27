@@ -401,6 +401,13 @@ class Project
     private NullablePerson $agencyContact;
 
     /**
+     * @var Participation[]|iterable
+     *
+     * @ORM\OneToMany(targetEntity=Participation::class, mappedBy="project", orphanRemoval=true)
+     */
+    private iterable $participations;
+
+    /**
      * @param Staff             $addedBy
      * @param string            $title
      * @param string            $riskGroupName
@@ -441,6 +448,7 @@ class Project
 
         $this->borrowers = new ArrayCollection();
         $this->tranches  = new ArrayCollection();
+        $this->participations = new ArrayCollection();
 
         $this->silentSyndication = false;
 
@@ -1093,6 +1101,14 @@ class Project
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    /**
+     * @return iterable|Participation[]
+     */
+    public function getParticipations()
+    {
+        return $this->participations;
     }
 
 

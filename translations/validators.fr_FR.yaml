@@ -13,6 +13,19 @@ Agency:
             incomplete: Ce champ est manquant pour valider la commission de la tranche
             invalidLoanType: Le type de prêt ne permet d'avoir une commission
 
+    Participation:
+        responsabilities:
+            agent: Vous devez être l'agent du projet pour sélectionner activer le bit
+            secondary: Etant dans la syndication silencieuse, vous ne pouvez pas avoir de responsabilité
+            arranger: Vous ne pouvez pas être arranger et co-arrangeur
+        commission:
+            agent: Vous devez être agent pour remplir cette commission
+            arrangeur: Vous devez être arrangeur pour remplir cette commission
+            deputyArrangeur: Vous devez être co-arrangeur pour remplir cette commission
+
+    ParticipantTrancheAllocation:
+        project: La tranche et la participation n'ont pas le même projet
+
 Core:
     AcceptationsLegalDocs:
         legalDoc:

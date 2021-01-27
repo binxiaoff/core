@@ -11,9 +11,13 @@ use Exception;
 use Unilend\Agency\Entity\Borrower;
 use Unilend\Agency\Entity\BorrowerTrancheShare;
 use Unilend\Agency\Entity\Contact;
+use Unilend\Agency\Entity\Participation;
+use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Entity\Tranche;
-use Unilend\Core\DataFixtures\{AbstractFixtures, MarketSegmentFixtures, StaffFixtures};
+use Unilend\Core\DataFixtures\{AbstractFixtures, MarketSegmentFixtures, StaffFixtures, CompanyFixtures};
+use Unilend\Core\DTO\Bitmask;
+use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use Unilend\Core\Entity\Constant\Tranche\LoanType;
@@ -74,7 +78,25 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             new BorrowerTrancheShare($borrowers[2], $tranches[2], new Money('EUR', '2000000')),
         ];
 
-        array_map([$manager, 'persist'], [...$borrowers, ...$tranches, ...$borrowerTrancheShares]);
+        $agentParticipation = $this->createParticipation($project, $this->getReference(CompanyFixtures::CALS));
+        $agentParticipation->setResponsibilities((new Bitmask(0))->add(Participation::RESPONSIBILITY_AGENT));
+        $agentParticipation->setAllocations([
+            new ParticipationTrancheAllocation($agentParticipation, $tranches[0], new Money('EUR', '2000000')),
+        ]);
+
+        $participations = [
+            $agentParticipation,
+            ...array_map(
+                fn ($company) => $this->createParticipation($project, $this->getReference($company)),
+                [CompanyFixtures::COMPANY1, CompanyFixtures::COMPANY2]
+            ),
+            ...array_map(
+                fn ($company) => $this->createParticipation($project, $this->getReference($company), true),
+                [CompanyFixtures::COMPANY3, CompanyFixtures::COMPANY4]
+            ),
+        ];
+
+        array_map([$manager, 'persist'], [...$borrowers, ...$tranches, ...$borrowerTrancheShares, ...$participations]);
 
         $manager->flush();
     }
@@ -184,6 +206,23 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             new Money('EUR', (string) $this->faker->numberBetween(3000000, 4000000)),
             new LendingRate(LendingRate::INDEX_FIXED, (string) $this->faker->randomFloat(4, 0.1, 0.90)),
             new DateTimeImmutable($this->faker->dateTimeBetween('now', '3 months')->format('Y-m-d'))
+        );
+    }
+
+    /**
+     * @param Project $project
+     * @param Company $participant
+     * @param bool    $secondary
+     *
+     * @return Participation
+     */
+    private function createParticipation(Project $project, Company $participant, bool $secondary = false)
+    {
+        return new Participation(
+            $project,
+            $participant,
+            new Money('EUR', (string) $this->faker->numberBetween(100000)),
+            $secondary
         );
     }
 }
