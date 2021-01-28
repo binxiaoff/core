@@ -31,7 +31,7 @@ class Participation
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity=Project::class)
+     * @ORM\ManyToOne(targetEntity=Project::class, inversedBy="participations")
      * @ORM\JoinColumn(name="id_project", nullable=false)
      *
      * @Assert\NotBlank
