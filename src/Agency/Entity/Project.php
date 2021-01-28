@@ -20,6 +20,7 @@ use Unilend\Core\Entity\Embeddable\{Money, NullablePerson};
 use Unilend\Core\Entity\MarketSegment;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Entity\{Company, Staff};
+use Unilend\Core\Validator\Constraints\Siren;
 
 /**
  * @ApiResource(
@@ -38,7 +39,8 @@ use Unilend\Core\Entity\{Company, Staff};
  *         "get",
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"project:create", "money:write"}}
+ *             "denormalization_context": {"groups": {"project:create", "money:write"}},
+ *              "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         }
  *     },
  *     itemOperations={
@@ -48,7 +50,8 @@ use Unilend\Core\Entity\{Company, Staff};
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {"project:write", "projectStatus:create"}}
+ *             "denormalization_context": {"groups": {"project:write", "projectStatus:create"}},
+ *              "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
  *     }
  * )
@@ -83,6 +86,8 @@ class Project
      *
      * @ORM\Column(type="string", length=300, nullable=true)
      *
+     * @Assert\NotBlank(groups={"published"})
+     *
      * @Groups({"project:read", "project:write"})
      */
     private ?string $agentDisplayName;
@@ -92,10 +97,11 @@ class Project
      *
      * @ORM\Column(type="string", length=9, nullable=true)
      *
-     * @Groups({"project:read", "project:write"})
+     * @Siren
      *
-     * @Assert\Length(9)
-     * @Assert\Luhn
+     * @Assert\NotBlank(groups={"published"})
+     *
+     * @Groups({"project:read", "project:write"})
      */
     private ?string $agentSiren;
 
@@ -104,9 +110,10 @@ class Project
      *
      * @ORM\Column(type="string", nullable=true)
      *
-     * @Groups({"project:read", "project:write"})
-     *
      * @Assert\Choice(callback={LegalForm::class, "getConstList"})
+     * @Assert\NotBlank(groups={"published"})
+     *
+     * @Groups({"project:read", "project:write"})
      */
     private ?string $agentLegalForm;
 
@@ -114,6 +121,8 @@ class Project
      * @var string|null
      *
      * @ORM\Column(type="string", nullable=true)
+     *
+     * @Assert\NotBlank(groups={"published"})
      *
      * @Groups({"project:read", "project:write"})
      */
@@ -133,6 +142,8 @@ class Project
      *
      * @ORM\Column(type="string", nullable=true)
      *
+     * @Assert\NotBlank(groups={"published"})
+     *
      * @Groups({"project:read", "project:write"})
      */
     private ?string $agentRCS;
@@ -141,6 +152,8 @@ class Project
      * @var string|null
      *
      * @ORM\Column(type="string", nullable=true)
+     *
+     * @Assert\NotBlank(groups={"published"})
      *
      * @Groups({"project:read", "project:write"})
      */
@@ -158,6 +171,8 @@ class Project
      *
      * @ORM\Column(type="string", nullable=true)
      *
+     * @Assert\NotBlank(groups={"published"})
+     *
      * @Groups({"project:read", "project:write"})
      */
     private ?string $bankInstitution;
@@ -168,6 +183,7 @@ class Project
      * @ORM\Column(type="string", length=11, nullable=true)
      *
      * @Assert\Bic
+     * @Assert\NotBlank(groups={"published"})
      *
      * @Groups({"project:read", "project:write"})
      */
@@ -179,6 +195,7 @@ class Project
      * @ORM\Column(type="string", length=34, nullable=true)
      *
      * @Assert\Iban
+     * @Assert\NotBlank(groups={"published"})
      *
      * @Groups({"project:read", "project:write"})
      */
@@ -252,7 +269,7 @@ class Project
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(groups={"published"})
      *
      * @Groups({"project:write", "project:read", "project:create"})
      */
@@ -264,7 +281,7 @@ class Project
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(groups={"published"})
      *
      * @Groups({"project:write", "project:read", "project:create"})
      */
@@ -276,7 +293,10 @@ class Project
      * @ORM\Column(type="string", nullable=true, length=30)
      *
      * @Assert\Choice(callback={RiskType::class, "getConstList"})
-     * @Assert\Expression("(false === this.isPrincipalSubParticipation() and null === value) or (this.isPrincipalSubParticipation() and value)")
+     * @Assert\Expression(
+     *     expression="(false === this.isPrincipalSubParticipation() and null === value) or (this.isPrincipalSubParticipation() and value)",
+     *     groups={"published"}
+     * )
      *
      * @Groups({"project:write", "project:read", "project:create"})
      */
@@ -288,7 +308,10 @@ class Project
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
-     * @Assert\Expression("(this.hasSilentSyndication() and value) or (false === this.hasSilentSyndication() and null === value)")
+     * @Assert\Expression(
+     *     expression="(this.hasSilentSyndication() and value) or (false === this.hasSilentSyndication() and null === value)",
+     *     groups={"published"}
+     * )
      *
      * @Groups({"project:write", "project:read", "project:create"})
      */
@@ -300,7 +323,10 @@ class Project
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
-     * @Assert\Expression("(this.hasSilentSyndication() and value) or (false === this.hasSilentSyndication() and null === value)")
+     * @Assert\Expression(
+     *     expression="(this.hasSilentSyndication() and value) or (false === this.hasSilentSyndication() and null === value)",
+     *     groups={"published"}
+     * )
      *
      * @Groups({"project:write", "project:read", "project:create"})
      */
@@ -312,8 +338,14 @@ class Project
      * @ORM\Column(type="string", nullable=true, length=30)
      *
      * @Assert\Choice(callback={RiskType::class, "getConstList"})
-     * @Assert\Expression("(false === this.isSecondarySubParticipation() and null === value) or (this.isSecondarySubParticipation() and value)"),
-     * @Assert\Expression("(this.hasSilentSyndication()) or (false === this.hasSilentSyndication() and null === value)")
+     * @Assert\Expression(
+     *     expression="(false === this.isSecondarySubParticipation() and null === value) or (this.isSecondarySubParticipation() and value)",
+     *     groups={"published"}
+     * ),
+     * @Assert\Expression(
+     *     expression="(this.hasSilentSyndication()) or (false === this.hasSilentSyndication() and null === value)"),
+     *     groups={"published"}
+     * )
      *
      * @Groups({"project:write", "project:read", "project:create"})
      */
@@ -333,7 +365,7 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true)
      *
-     * Add rule to ensure at least one borrower
+     * @Assert\Count(min="1", groups={"published"})
      */
     private iterable $borrowers;
 
@@ -426,6 +458,8 @@ class Project
      * @var iterable|ProjectStatus[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\ProjectStatus", orphanRemoval=true, cascade={"persist"}, mappedBy="project", fetch="EAGER")
+     *
+     * @Assert\Count(min="1")
      */
     private iterable $statuses;
 
@@ -1162,6 +1196,32 @@ class Project
     public function getStatuses()
     {
         return $this->statuses;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPublished(): bool
+    {
+        return ProjectStatus::DRAFT > $this->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups
+     *
+     * @param Project $project
+     *
+     * @return array|string[]
+     */
+    public static function getCurrentValidationGroups(self $project): array
+    {
+        $validationGroups = ['Default', 'Project'];
+
+        if ($project->isPublished()) {
+            $validationGroups[] = ['published'];
+        }
+
+        return $validationGroups;
     }
 
 
