@@ -1,0 +1,24 @@
+mail-identity-updated:
+  firstName: Prénom
+  lastName: Nom
+  jobFunction: Fonction professionnelle
+  mobile: Téléphone mobile
+  phone: Téléphone fixe
+  content-message-plural: Ces informations personnelles ont été modifiées
+  content-message-singular: Cette information personnelle a été modifiée
+market-segment:
+  corporate: Entreprises
+  public_collectivity: Collectivités publiques
+  agriculture: Agriculture
+  real_estate_development: Promotion immobilière
+  ppp: PPP
+  energy: EnR
+  patrimonial: Patrimonial
+  pro: Pro
+staff-roles:
+  duty_staff_operator: collaborateur
+  duty_staff_manager: coordinateur
+  duty_staff_admin: administrateur
+  duty_staff_accountant: contact de facturation
+  duty_staff_signatory: signataire
+  duty_staff_auditor: Auditeur
