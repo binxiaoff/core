@@ -130,7 +130,7 @@ class Contact
      *
      * @Assert\NotBlank
      */
-    private string $jobFunction;
+    private string $occupation;
 
     /**
      * @var string
@@ -175,7 +175,7 @@ class Contact
      * @param string  $firstName
      * @param string  $lastName
      * @param string  $department
-     * @param string  $jobFunction
+     * @param string  $occupation
      * @param string  $email
      * @param string  $phone
      * @param bool    $referent
@@ -189,7 +189,7 @@ class Contact
         string $firstName,
         string $lastName,
         string $department,
-        string $jobFunction,
+        string $occupation,
         string $email,
         string $phone,
         bool $referent = false
@@ -201,7 +201,7 @@ class Contact
         $this->firstName   = $firstName;
         $this->lastName    = $lastName;
         $this->department  = $department;
-        $this->jobFunction = $jobFunction;
+        $this->occupation  = $occupation;
         $this->email       = $email;
         $this->phone       = $phone;
         $this->referent    = $referent;
@@ -270,19 +270,19 @@ class Contact
     /**
      * @return string
      */
-    public function getJobFunction(): string
+    public function getOccupation(): string
     {
-        return $this->jobFunction;
+        return $this->occupation;
     }
 
     /**
-     * @param string $jobFunction
+     * @param string $occupation
      *
      * @return Contact
      */
-    public function setJobFunction(string $jobFunction): Contact
+    public function setOccupation(string $occupation): Contact
     {
-        $this->jobFunction = $jobFunction;
+        $this->occupation = $occupation;
 
         return $this;
     }
