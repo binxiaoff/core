@@ -37,7 +37,7 @@ use Unilend\Core\Entity\{Company, Embeddable\Money, Staff};
  *         "get",
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"project:create"}}
+ *             "denormalization_context": {"groups": {"project:create", "money:write"}}
  *         }
  *     },
  *     itemOperations={
@@ -189,7 +189,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", "project:read"})
+     * @Groups({"project:write", "project:read", "project:create"})
      *
      * @Assert\NotBlank
      * @Assert\Length(max="255")
@@ -219,7 +219,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", "project:read"})
+     * @Groups({"project:write", "project:read", "project:create"})
      */
     private string $title;
 
@@ -231,7 +231,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"project:read", "project:write", "project:create"})
      */
     private Money $globalFundingMoney;
 
@@ -357,7 +357,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", "project:read"})
+     * @Groups({"project:write", "project:read", "project:create"})
      */
     private MarketSegment $marketSegment;
 
@@ -366,7 +366,7 @@ class Project
      *
      * @ORM\Column(type="date_immutable")
      *
-     * @Groups({"project:write", "project:read"})
+     * @Groups({"project:write", "project:read", "project:create"})
      */
     private DateTimeImmutable $closingDate;
 
@@ -375,7 +375,7 @@ class Project
      *
      * @ORM\Column(type="date_immutable")
      *
-     * @Groups({"project:write", "project:read"})
+     * @Groups({"project:write", "project:read", "project:create"})
      */
     private DateTimeImmutable $contractEndDate;
 
