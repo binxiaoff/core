@@ -408,7 +408,6 @@ class Project
         DateTimeImmutable $closingDate,
         DateTimeImmutable $contractEndDate
     ) {
-        $agent                    = $addedBy->getCompany();
         $this->added              = new DateTimeImmutable();
         $this->addedBy            = $addedBy;
         $this->contacts           = new ArrayCollection();
@@ -433,9 +432,9 @@ class Project
         $this->secondaryRiskType = null;
 
         // This part is weird but compliant to figma models: those fields are editable
-        $this->agent            = $agent;
-        $this->agentDisplayName = $agent->getDisplayName();
-        $this->agentSiren       = $agent->getSiren();
+        $this->agent            = $addedBy->getCompany();
+        $this->agentDisplayName = $this->agent->getDisplayName();
+        $this->agentSiren       = $this->agent->getSiren();
     }
 
     /**
@@ -695,11 +694,11 @@ class Project
     }
 
     /**
-     * @param string|null $riskGroupName
+     * @param string $riskGroupName
      *
      * @return Project
      */
-    public function setRiskGroupName(?string $riskGroupName): Project
+    public function setRiskGroupName(string $riskGroupName): Project
     {
         $this->riskGroupName = $riskGroupName;
 
