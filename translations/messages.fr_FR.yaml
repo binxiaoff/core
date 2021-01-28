@@ -1,11 +1,3 @@
-mail-identity-updated:
-  firstName: Prénom
-  lastName: Nom
-  jobFunction: Fonction professionnelle
-  mobile: Téléphone mobile
-  phone: Téléphone fixe
-  content-message-plural: Ces informations personnelles ont été modifiées
-  content-message-singular: Cette information personnelle a été modifiée
 market-segment:
   corporate: Entreprises
   public_collectivity: Collectivités publiques
