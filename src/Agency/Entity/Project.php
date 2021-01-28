@@ -18,7 +18,8 @@ use Unilend\Core\Entity\Constant\{CAInternalRating, FundingSpecificity};
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\MarketSegment;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Core\Entity\{Company, Embeddable\Money, Staff};
+use Unilend\Core\Entity\{Company, Staff};
+use Unilend\Core\Entity\Embeddable\{NullablePerson, Money};
 
 /**
  * @ApiResource(
@@ -42,7 +43,7 @@ use Unilend\Core\Entity\{Company, Embeddable\Money, Staff};
  *     },
  *     itemOperations={
  *         "get": {
- *             "normalization_context": {"groups": {"timestampable:read","project:read","contact:read"}},
+ *             "normalization_context": {"groups": {"timestampable:read","project:read","contact:read", "nullablePerson:read"}},
  *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
@@ -389,6 +390,17 @@ class Project
     private ?string $description = null;
 
     /**
+     * @var NullablePerson
+     *
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullablePerson", columnPrefix="agency_contact_")
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"project:read", "project:write"})
+     */
+    private NullablePerson $agencyContact;
+
+    /**
      * @param Staff             $addedBy
      * @param string            $title
      * @param string            $riskGroupName
@@ -412,20 +424,14 @@ class Project
         $this->addedBy            = $addedBy;
         $this->agent              = $addedBy->getCompany();
 
-        $currentUser   = $addedBy->getUser();
-        $agencyContact = new Contact(
-            $this,
-            Contact::TYPE_AGENCY,
-            $addedBy,
-            $currentUser->getFirstName(),
-            $currentUser->getLastName(),
-            $this->agent->getDisplayName(),
-            Contact::TYPE_AGENCY,
-            $currentUser->getEmail(),
-            $currentUser->getPhone()
-        );
+        $currentUser         = $addedBy->getUser();
+        $this->agencyContact = (new NullablePerson())
+            ->setFirstName($currentUser->getFirstName())
+            ->setLastName($currentUser->getLastName())
+            ->setEmail($currentUser->getEmail())
+            ->setPhone($currentUser->getPhone());
 
-        $this->contacts           = new ArrayCollection([$agencyContact]);
+        $this->contacts           = new ArrayCollection();
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
         $this->marketSegment      = $marketSegment;
@@ -648,13 +654,23 @@ class Project
     }
 
     /**
-     * @Groups({"project:read"})
-     *
-     * @return Contact|null
+     * @return NullablePerson
      */
-    public function getAgencyContact(): ?Contact
+    public function getAgencyContact(): NullablePerson
     {
-        return $this->getContactsByType(Contact::TYPE_AGENCY)->first() ?: null;
+        return $this->agencyContact;
+    }
+
+    /**
+     * @param NullablePerson $agencyContact
+     *
+     * @return Project
+     */
+    public function setAgencyContact(NullablePerson $agencyContact): Project
+    {
+        $this->agencyContact = $agencyContact;
+
+        return $this;
     }
 
     /**
