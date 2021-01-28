@@ -6,14 +6,17 @@ namespace Unilend\CreditGuaranty\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
 class PortfolioGradeAllocation
 {
+    use PublicizeIdentityTrait;
+    use TimestampableTrait;
+
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Portfolio")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_portfolio", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_portfolio", nullable=false)
+     *
      */
     private Portfolio $portfolio;
 

@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Unilend\CreditGuaranty\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
 class PortfolioEligibilityItemConfiguration
 {
+    use PublicizeIdentityTrait;
+    use TimestampableTrait;
+
     private const OPERATION_EQUAL_TO = '=';
     private const OPERATION_GREATER_THAN = '>';
     private const OPERATION_GREATER_OR_EQUAL_THAN = '>=';
@@ -19,9 +23,7 @@ class PortfolioEligibilityItemConfiguration
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\PortfolioEligibilityItem")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_portfolio_eligibility_item", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_portfolio_eligibility_item", nullable=false)
      */
     private PortfolioEligibilityItem $portfolioEligibilityItem;
 

@@ -7,7 +7,7 @@ namespace Unilend\CreditGuaranty\Entity;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, MarketSegment, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, MarketSegment, Staff, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 
 class Program
 {
@@ -27,9 +27,7 @@ class Program
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\MarketSegment")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_market_segment", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_market_segment", nullable=false)
      */
     private MarketSegment $marketSegment;
 
@@ -95,13 +93,15 @@ class Program
      * @param string        $name
      * @param MarketSegment $marketSegment
      * @param Money         $funds
+     * @param Staff         $addedBy
      */
-    public function __construct(string $name, MarketSegment $marketSegment, Money $funds)
+    public function __construct(string $name, MarketSegment $marketSegment, Money $funds, Staff $addedBy)
     {
         $this->name          = $name;
         $this->marketSegment = $marketSegment;
         $this->funds         = $funds;
         $this->cappedAt      = new NullableMoney();
+        $this->addedBy       = $addedBy;
     }
 
     /**

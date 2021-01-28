@@ -7,8 +7,7 @@ namespace Unilend\CreditGuaranty\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
 class ProgramContact
 {
@@ -17,9 +16,7 @@ class ProgramContact
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_program", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_program", nullable=false)
      */
     private Program $program;
 

@@ -6,7 +6,7 @@ namespace Unilend\CreditGuaranty\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\{Embeddable\Money, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Core\Entity\{Embeddable\Money, Staff, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 class Portfolio
@@ -38,11 +38,13 @@ class Portfolio
     /**
      * @param string $name
      * @param Money  $funds
+     * @param Staff  $addedBy
      */
-    public function __construct(string $name, Money $funds)
+    public function __construct(string $name, Money $funds, Staff $addedBy)
     {
-        $this->name  = $name;
-        $this->funds = $funds;
+        $this->name    = $name;
+        $this->funds   = $funds;
+        $this->addedBy = $addedBy;
     }
 
     /**

@@ -5,23 +5,23 @@ declare(strict_types=1);
 namespace Unilend\CreditGuaranty\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCondition;
 
 class PortfolioEligibility
 {
+    use PublicizeIdentityTrait;
+    use TimestampableTrait;
+
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Portfolio")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_portfolio", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_portfolio", nullable=false)
      */
     private Portfolio $portfolio;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCondition")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_eligibility_condition", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_eligibility_condition", nullable=false)
      */
     private EligibilityCondition $eligibilityCondition;
 

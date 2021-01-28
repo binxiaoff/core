@@ -6,7 +6,7 @@ namespace Unilend\CreditGuaranty\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\{File, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableAddedOnlyTrait};
+use Unilend\Core\Entity\{File, Staff, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableAddedOnlyTrait};
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 class ProgramFile
@@ -18,17 +18,13 @@ class ProgramFile
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_program", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_program", nullable=false)
      */
     private Program $program;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\File")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_program", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_program", nullable=false)
      */
     private File $file;
 
@@ -43,12 +39,14 @@ class ProgramFile
      * @param Program $program
      * @param File    $file
      * @param string  $type
+     * @param Staff   $addedBy
      */
-    public function __construct(Program $program, File $file, string $type)
+    public function __construct(Program $program, File $file, string $type, Staff $addedBy)
     {
         $this->program = $program;
         $this->file    = $file;
         $this->type    = $type;
+        $this->addedBy = $addedBy;
     }
 
     /**

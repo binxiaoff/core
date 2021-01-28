@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Unilend\CreditGuaranty\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
 class PortfolioEligibilityItem
 {
+    use PublicizeIdentityTrait;
+    use TimestampableTrait;
+
     /**
      * @ORM\Column(length=100)
      */
@@ -15,9 +19,7 @@ class PortfolioEligibilityItem
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\PortfolioEligibility")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_portfolio_eligibility", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_portfolio_eligibility", nullable=false)
      */
     private PortfolioEligibility $portfolioEligibility;
 

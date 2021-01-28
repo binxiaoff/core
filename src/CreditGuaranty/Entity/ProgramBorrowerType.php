@@ -14,9 +14,7 @@ class ProgramBorrowerType
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_program", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_program", nullable=false)
      */
     private Program $program;
 
