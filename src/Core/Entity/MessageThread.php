@@ -24,8 +24,6 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  *      "message:read",
  *      "messageStatus:read",
  *      "messageFile:read",
- *      "projectParticipation:read",
- *      "projectParticipationMember:read",
  *      "staff:read",
  *      "company:read",
  *      "nullableMoney:read",
@@ -108,5 +106,75 @@ class MessageThread
     public function getProjectParticipation(): ?ProjectParticipation
     {
         return $this->projectParticipation;
+    }
+
+    /**
+     * @Groups({"messageThread:read"})
+     *
+     * @return string
+     */
+    public function getProjectPublicId(): string
+    {
+        return $this->projectParticipation->getProject()->getPublicId();
+    }
+
+    /**
+     * @Groups({"messageThread:read"})
+     *
+     * @return string
+     */
+    public function getProjectTitle(): string
+    {
+        return $this->projectParticipation->getProject()->getTitle();
+    }
+
+    /**
+     * @Groups({"messageThread:read"})
+     *
+     * @return string
+     */
+    public function getProjectParticipationPublicId(): string
+    {
+        return $this->projectParticipation->getPublicId();
+    }
+
+    /**
+     * @Groups({"messageThread:read"})
+     *
+     * @return string
+     */
+    public function getParticipantName(): string
+    {
+        return $this->projectParticipation->getParticipant()->getCompanyName();
+    }
+
+    /**
+     * @Groups({"messageThread:read"})
+     *
+     * @return string
+     */
+    public function getParticipantPublicId(): string
+    {
+        return $this->projectParticipation->getParticipant()->getPublicId();
+    }
+
+    /**
+     * @Groups({"messageThread:read"})
+     *
+     * @return string
+     */
+    public function getProjectSubmitterCompanyName(): string
+    {
+        return $this->projectParticipation->getProject()->getSubmitterCompany()->getDisplayName();
+    }
+
+    /**
+     * @Groups({"messageThread:read"})
+     *
+     * @return string
+     */
+    public function getProjectSubmitterCompanyPublicId(): string
+    {
+        return $this->projectParticipation->getProject()->getSubmitterCompany()->getPublicId();
     }
 }
