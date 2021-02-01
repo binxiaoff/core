@@ -98,7 +98,7 @@ class ProjectParticipationMemberNotifier
         if ($templateId) {
             $message = (new MailjetMessage())
                 ->setTo($user->getEmail())
-                ->setTemplateId($this->getTemplateId($project, $projectParticipationMember->getStaff()))
+                ->setTemplateId($templateId)
                 ->setVars($context)
             ;
 
@@ -107,6 +107,8 @@ class ProjectParticipationMemberNotifier
     }
 
     /**
+     * @todo needs to be refactored
+
      * @param Project $project
      * @param Staff   $staff
      *
@@ -120,16 +122,20 @@ class ProjectParticipationMemberNotifier
         $user        = $staff->getUser();
 
         if (ProjectStatus::STATUS_INTEREST_EXPRESSION === $project->getCurrentStatus()->getStatus()) {
-            if ($participant->isProspect()) {
-                $templateId = MailjetMessage::TEMPLATE_PUBLICATION_PROSPECT_COMPANY;
-            }
+            $templateId = MailjetMessage::TEMPLATE_ARRANGER_INVITATION_EXTERNAL_BANK;
+            if ($participant->isCAGMember()) {
+                if ($participant->isProspect()) {
+                    $templateId = MailjetMessage::TEMPLATE_PUBLICATION_PROSPECT_COMPANY;
+                }
 
-            if ($participant->hasSigned()) {
-                $templateId = $user->isInitializationNeeded() ? MailjetMessage::TEMPLATE_PUBLICATION_UNINITIALIZED_USER : MailjetMessage::TEMPLATE_PUBLICATION;
+                if ($participant->hasSigned()) {
+                    $templateId = $user->isInitializationNeeded() ? MailjetMessage::TEMPLATE_PUBLICATION_UNINITIALIZED_USER : MailjetMessage::TEMPLATE_PUBLICATION;
+                }
             }
         }
 
         if (ProjectStatus::STATUS_PARTICIPANT_REPLY === $project->getCurrentStatus()->getStatus()) {
+            $templateId = MailjetMessage::TEMPLATE_ARRANGER_INVITATION_EXTERNAL_BANK;
             if ($participant->isCAGMember()) {
                 if ($participant->isProspect()) {
                     $templateId = MailjetMessage::TEMPLATE_SYNDICATION_PROSPECT_COMPANY;
@@ -138,8 +144,6 @@ class ProjectParticipationMemberNotifier
                 if ($participant->hasSigned()) {
                     $templateId = $user->isInitializationNeeded() ? MailjetMessage::TEMPLATE_SYNDICATION_UNINITIALIZED_USER : MailjetMessage::TEMPLATE_SYNDICATION;
                 }
-            } else {
-                $templateId = MailjetMessage::TEMPLATE_ARRANGER_INVITATION_EXTERNAL_BANK;
             }
         }
 
