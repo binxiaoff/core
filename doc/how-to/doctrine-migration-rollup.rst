@@ -8,9 +8,7 @@ This process is done on the local environment, except if there is a specific ind
 1. Create a release branch for the API project from the master branch.
 #. Check that the local environment database is up to date with the command ``doctrine:migrations:migrate``, then ``doctrine: migration: diff``.
 #. Remove all migrations that are in the branch.
-#. Prepare an SQL script to update the core_migration_versions table of other environments (preprod, demo, develop, local, etc...),
-which explicitly deletes the lines of old migration and inserts the new new migration from the next step.
-For example:
+#. Prepare an SQL script to update the ``core_migration_versions`` table of other environments (preprod, demo, develop, local, etc...), which explicitly deletes the lines of old migrations and inserts a new migration generated from the next step. For example:
 
  .. code-block:: SQL
 
@@ -18,7 +16,7 @@ For example:
   DELETE ...
   INSERT INTO core_migration_versions (version, executed_at, execution_time) VALUES ('DoctrineMigrations\\Version20210201101314', null, null);
 
-#. Generate a new migration with ``doctrine:migrations:dump-schema``.
+5. Generate a new migration with ``doctrine:migrations:dump-schema``.
 #. Commit and push the change.
 #. Backup ``core_migration_versions`` table on prod into ``core_migration_versions_backup``.
 
@@ -27,5 +25,5 @@ For example:
   CREATE TABLE core_migration_versions_backup LIKE core_migration_versions;
   INSERT INTO core_migration_versions_backup SELECT * FROM core_migration_versions;
 
-#. Deploy the code in prod by running the Ansible playbook named ``migration-rollup.yml``.
+8. Deploy the code in prod by running the Ansible playbook named ``migration-rollup.yml``.
 #. Delete the core_migration_versions_backup table if all goes well.
