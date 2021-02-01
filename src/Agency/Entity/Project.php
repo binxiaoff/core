@@ -16,10 +16,10 @@ use Unilend\Core\Entity\Constant\LegalForm;
 use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
 use Unilend\Core\Entity\Constant\{CAInternalRating, FundingSpecificity};
 use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Embeddable\{Money, NullablePerson};
 use Unilend\Core\Entity\MarketSegment;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Entity\{Company, Staff};
-use Unilend\Core\Entity\Embeddable\{NullablePerson, Money};
 
 /**
  * @ApiResource(
@@ -619,21 +619,6 @@ class Project
     }
 
     /**
-     * @param string $type
-     *
-     * @return Collection
-     */
-    public function getContactsByType(string $type): Collection
-    {
-        $filteredContacts = $this->contacts->filter(function (Contact $contact) use ($type) {
-            return $contact->getType() === $type;
-        });
-
-        // necessary to reset array keys and return a Collection
-        return new ArrayCollection($filteredContacts->getValues());
-    }
-
-    /**
      * @Groups({"project:read"})
      *
      * @return Collection
@@ -1108,5 +1093,21 @@ class Project
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+
+    /**
+     * @param string $type
+     *
+     * @return Collection
+     */
+    private function getContactsByType(string $type): Collection
+    {
+        $filteredContacts = $this->contacts->filter(function (Contact $contact) use ($type) {
+            return $contact->getType() === $type;
+        });
+
+        // necessary to reset array keys and return a Collection
+        return new ArrayCollection($filteredContacts->getValues());
     }
 }

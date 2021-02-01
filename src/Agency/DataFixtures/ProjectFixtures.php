@@ -20,17 +20,10 @@ use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\{Staff, MarketSegment};
+use Unilend\Core\Entity\{Embeddable\NullablePerson, MarketSegment, Staff};
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    public const BASIC_PROJECT = 'BASIC_PROJECT';
-
-    /**
-     * @var ObjectManager
-     */
-    private ObjectManager $manager;
-
     /**
      * @inheritDoc
      *
@@ -51,15 +44,18 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             new DateTimeImmutable('now'),
             new DateTimeImmutable('+1 year')
         );
-        $this->manager = $manager;
 
         $manager->persist($project);
 
         foreach (Contact::getTypes() as $type) {
             for ($i = 0; $i < 3; $i++) {
-                $this->createContact($project, $staff, $type);
+                $contact = $this->createContact($project, $staff, $type);
+                $manager->persist($contact);
             }
         }
+
+        $agencyContact = (new NullablePerson())->setFirstName($this->faker->firstName)->setLastName($this->faker->lastName);
+        $project->setAgencyContact($agencyContact);
 
         $project->setPrincipalSyndicationType(SyndicationType::PRIMARY);
         $project->setPrincipalParticipationType(ParticipationType::DIRECT);
@@ -83,16 +79,30 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $manager->flush();
     }
 
+
+    /**
+     * @return string[]
+     */
+    public function getDependencies(): array
+    {
+        return [
+            StaffFixtures::class,
+            MarketSegmentFixtures::class,
+        ];
+    }
+
     /**
      * @param Project $project
      * @param Staff   $staff
      * @param string  $type
      *
+     * @return Contact
+     *
      * @throws Exception
      */
-    public function createContact(Project $project, Staff $staff, string $type): void
+    private function createContact(Project $project, Staff $staff, string $type): Contact
     {
-        $contact = new Contact(
+        return new Contact(
             $project,
             $type,
             $staff,
@@ -104,7 +114,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             '+33600000000',
             $this->faker->boolean
         );
-        $this->manager->persist($contact);
     }
 
     /**
@@ -113,7 +122,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      *
      * @return Borrower
      */
-    public function createBorrower(Project $project, Staff $staff)
+    private function createBorrower(Project $project, Staff $staff)
     {
         $siren = $this->generateSiren();
         $city = $this->faker->city;
@@ -140,7 +149,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     /**
      * @return string
      */
-    public function generateSiren()
+    private function generateSiren()
     {
         // A siren use the Luhn algorithm to validate. Its final length (number + checksum must be 9)
         // https://fr.wikipedia.org/wiki/Luhn_algorithm
@@ -153,17 +162,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $checksum %= 10; // Checksum is the last digit of the sum
 
         return implode('', [...$siren, $checksum]);
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getDependencies(): array
-    {
-        return [
-            StaffFixtures::class,
-            MarketSegmentFixtures::class,
-        ];
     }
 
     /**
