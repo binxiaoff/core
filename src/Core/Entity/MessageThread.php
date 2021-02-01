@@ -56,8 +56,6 @@ class MessageThread
      *
      * @ORM\OneToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation")
      * @ORM\JoinColumn(name="id_project_participation", referencedColumnName="id")
-     *
-     * @Groups({"messageThread:read"})
      */
     private ?ProjectParticipation $projectParticipation = null;
 
