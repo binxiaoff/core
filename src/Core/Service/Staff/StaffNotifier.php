@@ -72,10 +72,10 @@ class StaffNotifier
                             ['temporaryTokenPublicId' => $token, 'userPublicId' => $user->getPublicId()],
                             RouterInterface::ABSOLUTE_URL
                         ),
-                    'marketSegments' => implode(' ,', $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
+                    'marketSegments' => implode(', ', $staff->getMarketSegments()->map(function (MarketSegment $marketSegment) {
                         return $this->translator->trans('market-segment.' . $marketSegment->getLabel());
                     })->toArray()),
-                    'roles' => implode(' ,', array_map(
+                    'roles' => implode(', ', array_map(
                         function (string $role) {
                             return $this->translator->trans('staff-roles.' . mb_strtolower($role));
                         },

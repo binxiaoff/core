@@ -36,7 +36,7 @@ class MailjetMessage extends \Swift_Message
         parent::__construct($subject, $body, $contentType, $charset);
 
         // This address is required to respect the SMTP RFC but it is not used by mailjet (set in Mailjet template)
-        $this->setFrom('support@kls-platfrom.com');
+        $this->setFrom('support@kls-platform.com');
         $this->enableTemplatingLanguage();
     }
 

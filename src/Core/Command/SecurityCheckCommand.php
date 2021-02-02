@@ -4,34 +4,34 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Command;
 
+use Enlightn\SecurityChecker\SecurityChecker;
+use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use Psr\Log\LoggerInterface;
-use SensioLabs\Security\SecurityChecker;
 use Symfony\Component\Console\{Command\Command,
     Input\InputInterface,
     Output\OutputInterface,
     Style\SymfonyStyle};
 
-class SecurityCheckNotificationCommand extends Command
+class SecurityCheckCommand extends Command
 {
     /** @var string */
     private string $composerlockPath;
-    /** @var SecurityChecker */
-    private SecurityChecker $securityChecker;
     /** @var LoggerInterface */
     private LoggerInterface $securityLogger;
+    /** @var SecurityChecker */
+    private SecurityChecker $securityChecker;
 
     /**
      * @param string          $projectDirectory
-     * @param SecurityChecker $securityChecker
      * @param LoggerInterface $securityLogger
      */
-    public function __construct(string $projectDirectory, SecurityChecker $securityChecker, LoggerInterface $securityLogger)
+    public function __construct(string $projectDirectory, LoggerInterface $securityLogger)
     {
         parent::__construct();
         $this->composerlockPath = $projectDirectory . DIRECTORY_SEPARATOR . 'composer.lock';
-        $this->securityChecker  = $securityChecker;
         $this->securityLogger   = $securityLogger;
+        $this->securityChecker = new SecurityChecker();
     }
 
     /**
@@ -41,21 +41,34 @@ class SecurityCheckNotificationCommand extends Command
     {
         $this
             ->setName('kls:security:check')
-            ->setDescription('Check known security issues in the packages managed by Composer using SensioLabs Security Advisories Checker')
+            ->setDescription('Check known security issues in the packages managed by Composer')
+            ->setHelp(<<<HELP
+The command is successful if no installed packages (at their currently installed version) 
+are present in the security advisories database <href=https://github.com/FriendsOfPHP/security-advisories>PHP Security Advisories Database</>
+
+It uses <href=https://github.com/enlightn/security-checker>Enlightn Security Checker</>
+HELP
+            )
         ;
     }
 
     /**
      * {@inheritdoc}
      *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     *
+     * @return int
+     *
      * @throws JsonException
+     * @throws GuzzleException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io     = new SymfonyStyle($input, $output);
         $result = $this->securityChecker->check($this->composerlockPath);
 
-        if (0 === $result->count()) {
+        if (0 === count($result)) {
             $io->success('No vulnerability detected');
 
             return 0;
@@ -65,16 +78,18 @@ class SecurityCheckNotificationCommand extends Command
         $composerLock = json_decode($lockFile, true, 512, JSON_THROW_ON_ERROR);
         $testedHash   = $composerLock['content-hash'] ?? $composerLock['hash'];
 
-        $vulnerabilities = json_decode((string) $result, true, 512, JSON_THROW_ON_ERROR);
 
         $content = '';
 
-        foreach ($vulnerabilities as $package => $vulnerability) {
-            $content .= "{$package} ({$vulnerability['version']})" . PHP_EOL;
+
+        foreach ($result as $package => $vulnerability) {
+            $content .= "{$package} ({$vulnerability['version']}) ({$vulnerability['time']})" . PHP_EOL;
             foreach ($vulnerability['advisories'] as $advisory) {
-                $cve   = $advisory['cve'];
-                $title = trim(str_replace($cve, '', $advisory['title']), ' \t\n\r\0\x0B:');
-                $content .= "\t• {$title}" . ($cve ? " ({$cve})" : '') . PHP_EOL;
+                $content .= "\t";
+                $content .= implode(' ', array_filter(
+                    [$advisory['title'], $advisory['cve'] ? '(' . $advisory['cve'] . ')' : null, $advisory['link'] ? '(' . $advisory['link'] . ')' : null]
+                ));
+                $content .= PHP_EOL;
             }
         }
 
