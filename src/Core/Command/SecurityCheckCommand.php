@@ -41,7 +41,14 @@ class SecurityCheckCommand extends Command
     {
         $this
             ->setName('kls:security:check')
-            ->setDescription('Check known security issues in the packages managed by Composer using SensioLabs Security Advisories Checker')
+            ->setDescription('Check known security issues in the packages managed by Composer')
+            ->setHelp(<<<HELP
+The command is successful if no installed packages (at their currently installed version) 
+are present in the security advisories database <href=https://github.com/FriendsOfPHP/security-advisories>PHP Security Advisories Database</>
+
+It uses <href=https://github.com/enlightn/security-checker>Enlightn Security Checker</>
+HELP
+            )
         ;
     }
 
