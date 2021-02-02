@@ -8,7 +8,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 
-final class Version20210201101314 extends AbstractMigration
+final class Version20200201101314 extends AbstractMigration
 {
     public function getDescription() : string
     {

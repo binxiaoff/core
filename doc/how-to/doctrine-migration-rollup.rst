@@ -14,9 +14,10 @@ This process is done on the local environment, except if there is a specific ind
 
   DELETE FROM core_migration_versions WHERE version = 'DoctrineMigrations\\Version20200212145951';
   DELETE ...
-  INSERT INTO core_migration_versions (version, executed_at, execution_time) VALUES ('DoctrineMigrations\\Version20210201101314', null, null);
+  INSERT INTO core_migration_versions (version, executed_at, execution_time) VALUES ('DoctrineMigrations\\Version00000000000000', null, null);
 
-5. Generate a new migration with ``doctrine:migrations:dump-schema``.
+5. Generate a new migration with ``doctrine:migrations:dump-schema``. Then, rename this migration class to ``Version00000000000000``, its file name to ``Version00000000000000.php``,
+so that the migration will always be executed at first.
 #. Commit and push the change.
 #. Backup ``core_migration_versions`` table on prod into ``core_migration_versions_backup``.
 
