@@ -5,6 +5,9 @@ We do the rollup in a production release apart from regular releases.
 In a "rollup" release, there is no new migration. So, in general, we do it immediately after a regular release.
 This process is done on the local environment, except if there is a specific indication. Here is the process:
 
+Preparation
+-----------
+
 1. Create a release branch for the API project from the master branch.
 #. Check that the local environment database is up to date with the command ``doctrine:migrations:migrate``, then ``doctrine: migration: diff``.
 #. Remove all migrations that are in the branch.
@@ -19,12 +22,16 @@ This process is done on the local environment, except if there is a specific ind
 5. Generate a new migration with ``doctrine:migrations:dump-schema``. Then, rename this migration class to ``Version00000000000000``, its file name to ``Version00000000000000.php``,
 so that the migration will always be executed at first.
 #. Commit and push the change.
-#. Backup ``core_migration_versions`` table on prod into ``core_migration_versions_backup``.
+
+Deployment
+----------
+
+1. Backup ``core_migration_versions`` table on prod into ``core_migration_versions_backup``.
 
  .. code-block:: SQL
 
   CREATE TABLE core_migration_versions_backup LIKE core_migration_versions;
   INSERT INTO core_migration_versions_backup SELECT * FROM core_migration_versions;
 
-8. Deploy the code in prod by running the Ansible playbook named ``migration-rollup.yml``.
+2. Deploy the code in prod by running the Ansible playbook named ``migration-rollup.yml``.
 #. Delete the core_migration_versions_backup table if all goes well.
