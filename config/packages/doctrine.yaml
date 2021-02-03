@@ -9,7 +9,7 @@ doctrine:
         default_connection: default
         connections:
             default:
-                schema_filter: '~^(?!core_messenger_messages)~'
+                schema_filter: '~^(?!messenger_messages)~'
                 url: '%env(DATABASE_URL)%'
                 driver_class: 'Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver'
                 default_table_options:
@@ -21,7 +21,7 @@ doctrine:
                     x_reconnect_attempts: 3
             # connection dedicated to Doctrine Migration bundle
             migration:
-                schema_filter: '~^(?!core_messenger_messages)~'
+                schema_filter: '~^(?!messenger_messages)~'
                 url: '%env(DATABASE_URL_MIGRATION)%'
                 driver_class: 'Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver'
                 default_table_options:
