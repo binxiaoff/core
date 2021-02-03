@@ -15,7 +15,7 @@ use Unilend\Agency\Entity\Participation;
 use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Entity\Tranche;
-use Unilend\Core\DataFixtures\{AbstractFixtures, MarketSegmentFixtures, StaffFixtures, CompanyFixtures};
+use Unilend\Core\DataFixtures\{AbstractFixtures, CompanyFixtures, MarketSegmentFixtures, StaffFixtures};
 use Unilend\Core\DTO\Bitmask;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
@@ -223,30 +223,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $participant,
             new Money('EUR', (string) $this->faker->numberBetween(100000)),
             $secondary
-        );
-    }
-
-    /**
-     * @param Project $project
-     *
-     * @return Tranche
-     *
-     * @throws Exception
-     */
-    private function createTranche(Project $project)
-    {
-        return new Tranche(
-            $project,
-            $this->faker->name,
-            true,
-            $this->faker->hexColor,
-            LoanType::TERM_LOAN,
-            RepaymentType::ATYPICAL,
-            $this->faker->numberBetween(1, 40),
-            new Money('EUR', (string) $this->faker->numberBetween(3000000, 4000000)),
-            new Money('EUR', (string) $this->faker->numberBetween(3000000, 4000000)),
-            new LendingRate(LendingRate::INDEX_FIXED, (string) $this->faker->randomFloat(4, 0.1, 0.90)),
-            new DateTimeImmutable($this->faker->dateTimeBetween('now', '3 months')->format('Y-m-d'))
         );
     }
 }
