@@ -44,7 +44,7 @@ use Unilend\Core\Validator\Constraints\{Password as AssertPassword};
  * @ORM\Entity(repositoryClass="Unilend\Core\Repository\UserRepository")
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity({"email"}, message="Users.email.unique")
+ * @UniqueEntity({"email"}, message="Core.Users.email.unique")
  *
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={"email": "exact"})
  */
@@ -121,7 +121,7 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
      *
      * @SerializedName("password")
      *
-     * @AssertPassword(message="Users.password.password")
+     * @AssertPassword(message="Core.Users.password.password")
      */
     private ?string $plainPassword = null;
 

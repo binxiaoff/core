@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Repository;
 
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Unilend\Core\Entity\{MessageStatus, MessageThread, Staff};
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\{NoResultException, NonUniqueResultException, ORMException, OptimisticLockException};
+use Unilend\Core\Entity\{MessageStatus, MessageThread, Staff, UserStatus};
+use Unilend\Syndication\Entity\ProjectStatus;
 
 /**
  * @method MessageStatus|null find($id, $lockMode = null, $lockVersion = null)
@@ -58,6 +61,58 @@ class MessageStatusRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param int $userId
+     */
+    public function setMessageStatusesToUnreadNotified(int $userId): void
+    {
+        $messageStatusToBeNotified = $this->getQueryBuilderForPeriod()
+            ->andWhere('stf.user = :user_id')
+            ->setParameter('user_id', $userId)
+            ->getQuery()->getArrayResult();
+
+        $this->createQueryBuilder('msgst')->update()
+            ->set('msgst.unreadNotified', 'NOW()')
+            ->set('msgst.updated', 'NOW()')
+            ->where('msgst.id IN (:messageStatusToBeNotified)')
+            ->setParameter('messageStatusToBeNotified', $messageStatusToBeNotified)
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * @param int|null $limit
+     * @param int|null $offset
+     *
+     * @return array
+     */
+    public function countUnreadMessageByRecipentForPeriod(int $limit = null, int $offset = null): array
+    {
+        $queryBuilder = $this->getQueryBuilderForPeriod()
+            ->select('DISTINCT(u.id) AS id', 'COUNT(msgst.id) AS nb_messages_unread', 'u.email AS email', 'u.firstName AS first_name', 'u.lastName AS last_name')
+            ->groupBy('u.id')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
+
+        return $queryBuilder
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     *
+     * @return int
+     */
+    public function countRecipientsWithUnreadMessageForPeriod(): int
+    {
+        return (int) $this->getQueryBuilderForPeriod()
+            ->select('COUNT(DISTINCT(u.id))')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
      * @param Staff         $recipient
      * @param MessageThread $messageThread
      */
@@ -87,5 +142,30 @@ class MessageStatusRepository extends ServiceEntityRepository
             ])
             ->getQuery()
             ->execute();
+    }
+
+    /**
+     * @return QueryBuilder
+     */
+    private function getQueryBuilderForPeriod(): QueryBuilder
+    {
+        return $this->createQueryBuilder('msgst')
+            ->innerJoin('msgst.message', 'msg')
+            ->innerJoin('msg.messageThread', 'msgtd')
+            ->innerJoin('msgtd.projectParticipation', 'pp')
+            ->innerJoin('pp.project', 'p')
+            ->innerJoin('p.currentStatus', 'pst')
+            ->innerJoin('msgst.recipient', 'stf')
+            ->innerJoin('stf.user', 'u')
+            ->innerJoin('u.currentStatus', 'us')
+            ->where('msgst.status = :status')
+            ->andWhere('pst.status > :project_current_status')
+            ->andWhere('msgst.unreadNotified IS NULL')
+            ->andWhere('us.status = :user_status')
+            ->setParameters([
+                'status'                 => MessageStatus::STATUS_UNREAD,
+                'project_current_status' => ProjectStatus::STATUS_DRAFT,
+                'user_status'            => UserStatus::STATUS_CREATED,
+            ]);
     }
 }

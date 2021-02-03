@@ -30,10 +30,7 @@ abstract class AbstractEntityVoter extends Voter
      */
     final protected function supports($attribute, $subject): bool
     {
-        $domain = explode('\\', static::class)[1];
-
-        $entityClass = 'Unilend\\' . $domain . '\\Entity\\'
-            . str_replace(['Unilend\\Core\\Security\\Voter\\', 'Unilend\\Syndication\\Security\\Voter\\', 'Voter'], '', static::class);
+        $entityClass = str_replace(['Security\\Voter\\', 'Voter'], ['Entity\\', ''], static::class);
 
         return $subject instanceof $entityClass && \in_array($attribute, static::getConstants('ATTRIBUTE_'), true);
     }

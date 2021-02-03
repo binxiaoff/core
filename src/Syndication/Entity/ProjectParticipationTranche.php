@@ -80,7 +80,7 @@ class ProjectParticipationTranche
      *
      * @Assert\Expression(
      *     "this.isOwnTranche(value)",
-     *     message="ProjectParticipationTranche.tranche.notOwn"
+     *     message="Syndication.ProjectParticipationTranche.tranche.notOwn"
      * )
      *
      * @Groups({"projectParticipationTranche:read", "projectParticipationTranche:create"})
@@ -254,7 +254,7 @@ class ProjectParticipationTranche
             $this->getInvitationReply()->isValid() &&
             MoneyCalculator::compare($this->getInvitationReply()->getMoney(), $this->getAllocation()->getMoney()) < 0
         ) {
-            $context->buildViolation('ProjectParticipationTranche.allocation.aboveInvitationReply')
+            $context->buildViolation('Syndication.ProjectParticipationTranche.allocation.aboveInvitationReply')
                 ->atPath('allocation')
                 ->setParameters([
                     'invitationReplyAmount' => $this->getInvitationReply()->getMoney()->getAmount(),
@@ -274,13 +274,13 @@ class ProjectParticipationTranche
         $globalFundingMoney = $this->getProjectParticipation()->getProject()->getGlobalFundingMoney();
 
         if (MoneyCalculator::isDifferentCurrency($this->invitationReply->getMoney(), $globalFundingMoney)) {
-            $context->buildViolation('Money.currency.inconsistent')
+            $context->buildViolation('Core.Money.currency.inconsistent')
                 ->atPath('invitationReply')
                 ->addViolation();
         }
 
         if (MoneyCalculator::isDifferentCurrency($this->allocation->getMoney(), $globalFundingMoney)) {
-            $context->buildViolation('Money.currency.inconsistent')
+            $context->buildViolation('Core.Money.currency.inconsistent')
                 ->atPath('allocation')
                 ->addViolation();
         }
@@ -303,7 +303,7 @@ class ProjectParticipationTranche
             return;
         }
 
-        $context->buildViolation('ProjectParticipationTranche.tranche.unsyndicated')
+        $context->buildViolation('Syndication.ProjectParticipationTranche.tranche.unsyndicated')
             ->atPath('tranche')
             ->addViolation();
     }

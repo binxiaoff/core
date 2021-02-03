@@ -10,8 +10,20 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
-use Unilend\Core\DataFixtures\{AbstractFixtures, MarketSegmentFixtures, StaffFixtures, UserFixtures};
-use Unilend\Core\Entity\{User, Embeddable\Money, Embeddable\NullablePerson, File, FileVersion, Staff};
+use Unilend\Core\DataFixtures\{AbstractFixtures,
+    MarketSegmentFixtures,
+    StaffFixtures,
+    UserFixtures};
+use Unilend\Core\Entity\Constant\CAInternalRating;
+use Unilend\Core\Entity\Constant\FundingSpecificity;
+use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
+use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
+use Unilend\Core\Entity\{
+    Embeddable\Money,
+    Embeddable\NullablePerson,
+    File,
+    FileVersion,
+    Staff};
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectStatus;
 
@@ -76,39 +88,61 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     private ObjectManager $manager;
 
     /**
+     * @return \string[][]
+     */
+    public static function getProjectNamesByStatus()
+    {
+        return [
+            ProjectStatus::STATUS_DRAFT => [
+                'Project created' => self::PROJECT_DRAFT,
+                'Project draft' => self::PROJECT_DRAFT_PARTICIPATION,
+                'Project other user' => self::PROJECT_OTHER_USER,
+            ],
+            ProjectStatus::STATUS_INTEREST_EXPRESSION => [
+                'Project interest' => self::PROJECT_INTEREST,
+            ],
+            ProjectStatus::STATUS_PARTICIPANT_REPLY => [
+                'Project reply' => self::PROJECT_REPLY,
+                'Project reply c acc' => self::PROJECT_REPLY_COMMITTEE_ACCEPTED,
+                'Project reply c ref' => self::PROJECT_REPLY_COMMITTEE_REFUSED,
+                'Project reply c pen' => self::PROJECT_REPLY_COMMITTEE_PENDING,
+            ],
+            ProjectStatus::STATUS_ALLOCATION => [
+                'Project allocation' => self::PROJECT_ALLOCATION,
+            ],
+            ProjectStatus::STATUS_SYNDICATION_FINISHED => [
+                'Project finished' => self::PROJECT_FINISHED,
+            ],
+            ProjectStatus::STATUS_SYNDICATION_CANCELLED => [
+                'Project archived' => self::PROJECT_ARCHIVED,
+            ],
+        ];
+    }
+
+    /**
      * @param ObjectManager $manager
      *
      * @throws ReflectionException
      */
     public function load(ObjectManager $manager): void
     {
-        /** @var User $otherUser */
-        $otherUser = $this->getReference(UserFixtures::PARTICIPANT);
-        // We set the user in the tokenStorage to avoid conflict with ProjectStatusCreatedListener
+        // We set the user in the tokenStorage to avoid conflict with ProjectStatusCreatedListener. This should be executed first because it set user.CurrentStaff
         $this->login(StaffFixtures::ADMIN);
+
         $this->manager = $manager;
-        $projectDraft = $this->createProject('Project created', ProjectStatus::STATUS_DRAFT);
-        $projectDraftParticipation = $this->createProject('Project draft', ProjectStatus::STATUS_DRAFT);
-        $projectInterest = $this->createProject('Project interest', ProjectStatus::STATUS_INTEREST_EXPRESSION);
-        $projectReply = $this->createProject('Project reply', ProjectStatus::STATUS_PARTICIPANT_REPLY);
-        $projectReplyCommitteeAccepted = $this->createProject('Project reply c acc', ProjectStatus::STATUS_PARTICIPANT_REPLY);
-        $projectReplyCommitteeRefused = $this->createProject('Project reply c ref', ProjectStatus::STATUS_PARTICIPANT_REPLY);
-        $projectReplyCommitteePending = $this->createProject('Project reply c pen', ProjectStatus::STATUS_PARTICIPANT_REPLY);
-        $projectAllocation = $this->createProject('Project allocation', ProjectStatus::STATUS_ALLOCATION);
-        $projectFinished = $this->createProject('Project finished', ProjectStatus::STATUS_SYNDICATION_FINISHED);
-        $projectArchived = $this->createProject('Project archived', ProjectStatus::STATUS_SYNDICATION_CANCELLED);
-        $projectDraftOtherUser = $this->createProject('Project other user', ProjectStatus::STATUS_DRAFT, $otherUser->getCurrentStaff());
-        $this->addReference(self::PROJECT_DRAFT, $projectDraft);
-        $this->addReference(self::PROJECT_DRAFT_PARTICIPATION, $projectDraftParticipation);
-        $this->addReference(self::PROJECT_INTEREST, $projectInterest);
-        $this->addReference(self::PROJECT_REPLY, $projectReply);
-        $this->addReference(self::PROJECT_REPLY_COMMITTEE_ACCEPTED, $projectReplyCommitteeAccepted);
-        $this->addReference(self::PROJECT_REPLY_COMMITTEE_REFUSED, $projectReplyCommitteeRefused);
-        $this->addReference(self::PROJECT_REPLY_COMMITTEE_PENDING, $projectReplyCommitteePending);
-        $this->addReference(self::PROJECT_ALLOCATION, $projectAllocation);
-        $this->addReference(self::PROJECT_FINISHED, $projectFinished);
-        $this->addReference(self::PROJECT_ARCHIVED, $projectArchived);
-        $this->addReference(self::PROJECT_OTHER_USER, $projectDraftOtherUser);
+
+        foreach (self::getProjectNamesByStatus() as $status => $projectNames) {
+            foreach ($projectNames as $projectName => $fixtureReferenceStatus) {
+                /** @var Staff $staff */
+                $staff = (self::PROJECT_OTHER_USER === $fixtureReferenceStatus) ?
+                    $this->getReference(UserFixtures::PARTICIPANT)->getCurrentStaff() :
+                    $this->getReference(StaffFixtures::ADMIN);
+
+                $project = $this->createProject($projectName, $status, $staff);
+
+                $this->addReference($fixtureReferenceStatus, $project);
+            }
+        }
         $manager->flush();
     }
 
@@ -141,10 +175,10 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         ))
             ->setTitle($title)
             ->setNda($ndaFile)
-            ->setInternalRatingScore(Project::INTERNAL_RATING_SCORE_B)
-            ->setFundingSpecificity(Project::FUNDING_SPECIFICITY_FSA)
-            ->setParticipationType(Project::PROJECT_PARTICIPATION_TYPE_DIRECT)
-            ->setSyndicationType(Project::PROJECT_SYNDICATION_TYPE_PRIMARY)
+            ->setInternalRatingScore(CAInternalRating::B)
+            ->setFundingSpecificity(FundingSpecificity::FSA)
+            ->setParticipationType(ParticipationType::DIRECT)
+            ->setSyndicationType(SyndicationType::PRIMARY)
             ->setInterestExpressionEnabled(ProjectStatus::STATUS_INTEREST_EXPRESSION === $status)
             ->setInterestExpressionDeadline(
                 ProjectStatus::STATUS_INTEREST_EXPRESSION === $status
@@ -165,16 +199,16 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setDescription($this->faker->sentence);
         $this->forcePublicId($project, Urlizer::urlize($title));
 
-        // Project Status
-        $this->createPreviousStatuses($project, $staff);
-        $projectStatus = new ProjectStatus($project, $status, $staff);
-        $project->setCurrentStatus($projectStatus);
-
         // Persist
-        // Need to repersist the correct status because of listener  Unilend\Core\Listener\Doctrine\Lifecycle\StatusCreatedListener
-        $this->manager->persist($projectStatus);
         $this->manager->persist($ndaFile);
         $this->manager->persist($project);
+
+        // This step create each project status the project had been. For each status, the listener StatusCreatedListener set project.currentStatus with.
+        $this->createPreviousStatuses($project, $staff);
+
+        // Then we add the project last Status we want and the listener  Unilend\Core\Listener\Doctrine\Lifecycle\StatusCreatedListener set the project.currentStatus with that one.
+        $projectStatus = new ProjectStatus($project, $status, $staff);
+        $this->manager->persist($projectStatus);
 
         return $project;
     }
@@ -203,5 +237,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         foreach (static::PREVIOUS_STATUSES[$project->getCurrentStatus()->getStatus()] ?? [] as $index => $previousStatus) {
             $this->manager->persist(new ProjectStatus($project, $previousStatus, $addedBy));
         }
+        $this->manager->flush();
     }
 }

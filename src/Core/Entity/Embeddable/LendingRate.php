@@ -208,25 +208,25 @@ class LendingRate
         switch ($this->getIndexType()) {
             case null:
                 if ($floorType || $this->getMargin() || $this->getFloor()) {
-                    $context->buildViolation('LendingRate.indexType.empty')->atPath('indexType')->addViolation();
+                    $context->buildViolation('Core.LendingRate.indexType.empty')->atPath('indexType')->addViolation();
                 }
                 break;
             case self::INDEX_FIXED:
                 if (null !== $this->getFloor()) {
-                    $context->buildViolation('LendingRate.floor.illegal')->atPath('floor')->addViolation();
+                    $context->buildViolation('Core.LendingRate.floor.illegal')->atPath('floor')->addViolation();
                 }
 
                 if (null !== $floorType) {
-                    $context->buildViolation('LendingRate.floorType.illegal')->atPath('floorType')->addViolation();
+                    $context->buildViolation('Core.LendingRate.floorType.illegal')->atPath('floorType')->addViolation();
                 }
                 break;
             default:
                 if (null !== $floorType && null === $this->getFloor()) {
-                    $context->buildViolation('LendingRate.floor.empty')->atPath('floor')->addViolation();
+                    $context->buildViolation('Core.LendingRate.floor.empty')->atPath('floor')->addViolation();
                 }
 
                 if (null === $floorType && null !== $this->getFloor()) {
-                    $context->buildViolation('LendingRate.floorType.empty')->atPath('floorType')->addViolation();
+                    $context->buildViolation('Core.LendingRate.floorType.empty')->atPath('floorType')->addViolation();
                 }
         }
     }

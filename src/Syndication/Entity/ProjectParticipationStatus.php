@@ -78,7 +78,7 @@ class ProjectParticipationStatus implements StatusInterface
      * @Assert\Choice(callback="getPossibleStatuses")
      * @Assert\Expression(
      *     "this.isStatusValid()",
-     *     message="ProjectParticipationStatus.status.invalid"
+     *     message="Syndication.ProjectParticipationStatus.status.invalid"
      * )
      *
      * @Groups({"projectParticipationStatus:read", "projectParticipationStatus:create"})

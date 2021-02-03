@@ -16,8 +16,12 @@ use RuntimeException;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\{
-    Company,
+use Unilend\Core\Entity\Constant\CAInternalRating;
+use Unilend\Core\Entity\Constant\FundingSpecificity;
+use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
+use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
+use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
+use Unilend\Core\Entity\{Company,
     Embeddable\Money,
     Embeddable\NullableMoney,
     Embeddable\NullablePerson,
@@ -29,8 +33,7 @@ use Unilend\Core\Entity\{
     Staff,
     Traits\PublicizeIdentityTrait,
     Traits\TimestampableTrait,
-    User
-};
+    User};
 use Unilend\Core\Filter\ArrayFilter;
 use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Core\Traits\ConstantsAwareTrait;
@@ -174,31 +177,6 @@ class Project implements TraceableStatusAwareInterface
     public const OFFER_VISIBILITY_PARTICIPANT = 'participant';
     public const OFFER_VISIBILITY_PUBLIC      = 'public';
 
-    public const INTERNAL_RATING_SCORE_A_PLUS  = 'A+';
-    public const INTERNAL_RATING_SCORE_A       = 'A';
-    public const INTERNAL_RATING_SCORE_B_PLUS  = 'B+';
-    public const INTERNAL_RATING_SCORE_B       = 'B';
-    public const INTERNAL_RATING_SCORE_C_PLUS  = 'C+';
-    public const INTERNAL_RATING_SCORE_C       = 'C';
-    public const INTERNAL_RATING_SCORE_C_MINUS = 'C-';
-    public const INTERNAL_RATING_SCORE_D_PLUS  = 'D+';
-    public const INTERNAL_RATING_SCORE_D       = 'D';
-    public const INTERNAL_RATING_SCORE_D_MINUS = 'D-';
-    public const INTERNAL_RATING_SCORE_E_PLUS  = 'E+';
-    public const INTERNAL_RATING_SCORE_E       = 'E';
-    public const INTERNAL_RATING_SCORE_E_MINUS = 'E-';
-    public const INTERNAL_RATING_SCORE_F       = 'F';
-    public const INTERNAL_RATING_SCORE_Z       = 'Z';
-
-    public const PROJECT_SYNDICATION_TYPE_PRIMARY   = 'primary';
-    public const PROJECT_SYNDICATION_TYPE_SECONDARY = 'secondary';
-
-    public const PROJECT_PARTICIPATION_TYPE_DIRECT            = 'direct';
-    public const PROJECT_PARTICIPATION_TYPE_SUB_PARTICIPATION = 'sub_participation';
-
-    public const PROJECT_RISK_TYPE_RISK     = 'risk';
-    public const PROJECT_RISK_TYPE_TREASURY = 'risk_treasury';
-
     public const SERIALIZER_GROUP_ADMIN_READ = 'project:admin:read'; // Additional group that is available for admin (admin user or arranger)
     public const SERIALIZER_GROUP_GCA_READ = 'project:gca:read'; // Additional group that is available for gca (crédit agricole group) staff member
 
@@ -207,9 +185,6 @@ class Project implements TraceableStatusAwareInterface
 
     public const PROJECT_FILE_TYPE_DESCRIPTION = 'project_file_description';
     public const PROJECT_FILE_TYPE_NDA         = 'project_file_nda';
-
-    public const FUNDING_SPECIFICITY_FSA = 'FSA';
-    public const FUNDING_SPECIFICITY_LBO = 'LBO';
 
     /**
      * @var string
@@ -380,7 +355,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @ORM\Column(length=8, nullable=true)
      *
-     * @Assert\Choice(callback="getInternalRatingScores")
+     * @Assert\Choice(callback={CAInternalRating::class, "getConstList"})
      *
      * @Gedmo\Versioned
      *
@@ -472,7 +447,7 @@ class Project implements TraceableStatusAwareInterface
      * @ORM\Column(type="string", length=80, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
-     * @Assert\Choice(callback="getSyndicationTypes")
+     * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
      *
      * @Gedmo\Versioned
      *
@@ -486,7 +461,7 @@ class Project implements TraceableStatusAwareInterface
      * @ORM\Column(type="string", length=80, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
-     * @Assert\Choice(callback="getParticipationTypes")
+     * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
      *
      * @Gedmo\Versioned
      *
@@ -500,7 +475,7 @@ class Project implements TraceableStatusAwareInterface
      * @ORM\Column(type="string", nullable=true, length=80)
      *
      * @Assert\Expression("(!this.isSubParticipation() and !value) or (this.isSubParticipation() and value)")
-     * @Assert\Choice(callback="getRiskTypes")
+     * @Assert\Choice(callback={RiskType::class, "getConstList"})
      *
      * @Gedmo\Versioned
      *
@@ -564,7 +539,7 @@ class Project implements TraceableStatusAwareInterface
      *
      * @ORM\Column(type="string", nullable=true, length=10)
      *
-     * @Assert\Choice({Project::FUNDING_SPECIFICITY_FSA, Project::FUNDING_SPECIFICITY_LBO})
+     * @Assert\Choice(callback={FundingSpecificity::class, "getConstList"})
      */
     private ?string $fundingSpecificity;
 
@@ -872,14 +847,6 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return array
-     */
-    public function getInternalRatingScores(): array
-    {
-        return self::getConstants('INTERNAL_RATING_SCORE_');
-    }
-
-    /**
      * @return string
      */
     public function getOfferVisibility(): string
@@ -1070,35 +1037,11 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return array|string[]
-     */
-    public static function getSyndicationTypes(): array
-    {
-        return static::getConstants('PROJECT_SYNDICATION_TYPE_');
-    }
-
-    /**
-     * @return array|string[]
-     */
-    public static function getParticipationTypes(): array
-    {
-        return static::getConstants('PROJECT_PARTICIPATION_TYPE_');
-    }
-
-    /**
-     * @return array|string[]
-     */
-    public static function getRiskTypes(): array
-    {
-        return static::getConstants('PROJECT_RISK_TYPE_');
-    }
-
-    /**
      * @return bool
      */
     public function isPrimary(): bool
     {
-        return $this->syndicationType === static::PROJECT_SYNDICATION_TYPE_PRIMARY;
+        return SyndicationType::PRIMARY === $this->syndicationType;
     }
 
     /**
@@ -1106,7 +1049,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function isSecondary(): bool
     {
-        return $this->syndicationType === static::PROJECT_SYNDICATION_TYPE_SECONDARY;
+        return SyndicationType::SECONDARY === $this->syndicationType;
     }
 
     /**
@@ -1114,7 +1057,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function isDirect(): bool
     {
-        return $this->participationType === static::PROJECT_PARTICIPATION_TYPE_DIRECT;
+        return ParticipationType::DIRECT === $this->participationType;
     }
 
     /**
@@ -1122,7 +1065,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function isSubParticipation(): bool
     {
-        return $this->participationType === static::PROJECT_PARTICIPATION_TYPE_SUB_PARTICIPATION;
+        return ParticipationType::SUB_PARTICIPATION === $this->participationType;
     }
 
     /**
@@ -1130,7 +1073,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function isRisk(): bool
     {
-        return $this->isSubParticipation() && $this->riskType === static::PROJECT_RISK_TYPE_RISK;
+        return $this->isSubParticipation() && (RiskType::RISK === $this->riskType);
     }
 
     /**
@@ -1138,7 +1081,7 @@ class Project implements TraceableStatusAwareInterface
      */
     public function isRiskAndTreasury(): bool
     {
-        return $this->isSubParticipation() && $this->riskType === static::PROJECT_RISK_TYPE_TREASURY;
+        return $this->isSubParticipation() && (RiskType::RISK_TREASURY === $this->riskType);
     }
 
     /**
@@ -1575,7 +1518,7 @@ class Project implements TraceableStatusAwareInterface
     public function validateParticipantReplyDeadline(ExecutionContextInterface $context)
     {
         if ($this->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION) && null === $this->getParticipantReplyDeadline()) {
-            $context->buildViolation('Project.participantReplyDeadline.required')
+            $context->buildViolation('Syndication.Project.participantReplyDeadline.required')
                 ->atPath('participantReplyDeadline')
                 ->addViolation();
         }
@@ -1590,7 +1533,7 @@ class Project implements TraceableStatusAwareInterface
     {
         foreach ($this->projectParticipations as $index => $projectParticipation) {
             if ($projectParticipation->getProject() !== $this) {
-                $context->buildViolation('Project.projectParticipations.incorrectProject')
+                $context->buildViolation('Syndication.Project.projectParticipations.incorrectProject')
                     ->atPath("projectParticipation[$index]")
                     ->addViolation();
             }

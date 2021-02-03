@@ -111,7 +111,7 @@ class ProjectParticipationCollection
         }
 
         if (count($companyIds) !== count(array_unique($companyIds))) {
-            $context->buildViolation('ProjectParticipationCollection.projectParticipations.duplicated')
+            $context->buildViolation('Syndication.ProjectParticipationCollection.projectParticipations.duplicated')
                 ->atPath('projectParticipations')
                 ->addViolation()
             ;

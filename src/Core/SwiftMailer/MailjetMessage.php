@@ -23,6 +23,7 @@ class MailjetMessage extends \Swift_Message
     public const TEMPLATE_PROJECT_FILE_UPLOADED = 1853491;
     public const TEMPLATE_PARTICIPANT_REPLY = 1853502;
     public const TEMPLATE_ARRANGER_INVITATION_EXTERNAL_BANK = 1853530;
+    public const TEMPLATE_MESSAGE_UNREAD_USER_NOTIFICATION = 2154702;
 
     /**
      * @param string|null $subject
@@ -34,6 +35,8 @@ class MailjetMessage extends \Swift_Message
     {
         parent::__construct($subject, $body, $contentType, $charset);
 
+        // This address is required to respect the SMTP RFC but it is not used by mailjet (set in Mailjet template)
+        $this->setFrom('support@kls-platform.com');
         $this->enableTemplatingLanguage();
     }
 
