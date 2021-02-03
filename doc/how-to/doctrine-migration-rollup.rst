@@ -19,9 +19,9 @@ Preparation
   INSERT INTO core_migration_versions (version, executed_at, execution_time) VALUES ('DoctrineMigrations\\Version00000000000000', null, null);
 
 4. Generate a new migration which contains the creation of the whole schema. Then, rename this migration class to ``Version00000000000000``, its file name to ``Version00000000000000.php``,
-so that the migration will always be executed at first. There are 2 different way of doing so :
-  a. with ``bin/console doctrine:schema:create --dump-sql`` and put it into the migration manually (see the `issue <https://github.com/doctrine/migrations/issues/820>`_ on github)
-  b. drop all the tables in the local dev enc, and execute ``doctrine:migrations:diff`` (``doctrine/doctrine-migrations-bundle`` doesn't support the option ``--from-empty-schema``)
+so that the migration will always be executed at first. There are 2 different ways of doing so :
+  - with ``bin/console doctrine:schema:create --dump-sql`` and put it into the migration manually (see the `issue <https://github.com/doctrine/migrations/issues/820>`_ on github)
+  - drop all the tables in the local dev enc, and execute ``doctrine:migrations:diff`` (``doctrine/doctrine-migrations-bundle`` doesn't support the option ``--from-empty-schema``)
 #. Commit and push the change.
 
 Deployment
