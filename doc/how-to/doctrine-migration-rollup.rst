@@ -9,9 +9,8 @@ Preparation
 -----------
 
 1. Create a release branch for the API project from the master branch.
-#. Check that the local environment database is up to date with the command ``doctrine:migrations:migrate``, then ``doctrine: migration: diff``.
 #. Remove all migrations that are in the branch.
-#. Prepare an SQL script to update the ``core_migration_versions`` table of other environments (preprod, demo, develop, local, etc...), which explicitly deletes the lines of old migrations and inserts a new migration generated from the next step. For example:
+#. Prepare an SQL script to update the ``core_migration_versions`` table of other environments (preprod, demo, develop, local, etc...), which explicitly deletes the lines of old migrations and inserts the new migration named ``Version00000000000000``. For example:
 
  .. code-block:: SQL
 
@@ -19,26 +18,28 @@ Preparation
   DELETE ...
   INSERT INTO core_migration_versions (version, executed_at, execution_time) VALUES ('DoctrineMigrations\\Version00000000000000', null, null);
 
-5. Generate a new migration with ``doctrine:migrations:dump-schema``. Then, rename this migration class to ``Version00000000000000``, its file name to ``Version00000000000000.php``,
-so that the migration will always be executed at first.
+4. Generate a new migration which contains the creation of the whole schema. Then, rename this migration class to ``Version00000000000000``, its file name to ``Version00000000000000.php``,
+so that the migration will always be executed at first. There are 2 different way of doing so :
+  a. with ``bin/console doctrine:schema:create --dump-sql`` and put it into the migration manually (see the `issue <https://github.com/doctrine/migrations/issues/820>`_ on github)
+  b. drop all the tables in the local dev enc, and execute ``doctrine:migrations:diff`` (``doctrine/doctrine-migrations-bundle`` doesn't support the option ``--from-empty-schema``)
 #. Commit and push the change.
 
 Deployment
 ----------
 
-1. Backup ``core_migration_versions`` table on prod into ``core_migration_versions_backup``.
+1. Backup ``core_migration_versions`` table on the production into ``core_migration_versions_backup``.
 
  .. code-block:: SQL
 
   CREATE TABLE core_migration_versions_backup LIKE core_migration_versions;
   INSERT INTO core_migration_versions_backup SELECT * FROM core_migration_versions;
 
-2. Deploy the code in prod by running the Ansible playbook named ``migration-rollup.yml``.
+2. Deploy the code on the production by running the Ansible playbook named ``migration-rollup.yml``.
 #. Delete the core_migration_versions_backup table if all goes well.
 
 Post-deployment
 ---------------
-1. Update the local dev of other developers: they need to update their DB. And then, execute the SQL script generated in step 4
+1. Ask other developers to update the local dev. To do so, they need first update their DB to the last version. Then, execute the SQL script generated in preparation section.
 #. Update the other envs :
-  - If it's a normal evns attached to ``develop`` branche : deploy the last release before the "rollup", then, deployer ``develop `` with the Ansible playbook named ``migration-rollup.yml``
+  - If it's a normal envs attached to ``develop`` branche : deploy the last release before the "rollup", then, deployer ``develop `` with the Ansible playbook named ``migration-rollup.yml``
   - If it's a epic branche : Update the env to the last version of the epic, then, execute the SQL script generated in step 4
