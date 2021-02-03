@@ -35,3 +35,10 @@ Deployment
 
 2. Deploy the code in prod by running the Ansible playbook named ``migration-rollup.yml``.
 #. Delete the core_migration_versions_backup table if all goes well.
+
+Post-deployment
+---------------
+1. Update the local dev of other developers: they need to update their DB. And then, execute the SQL script generated in step 4
+#. Update the other envs :
+  - If it's a normal evns attached to ``develop`` branche : deploy the last release before the "rollup", then, deployer ``develop `` with the Ansible playbook named ``migration-rollup.yml``
+  - If it's a epic branche : Update the env to the last version of the epic, then, execute the SQL script generated in step 4
