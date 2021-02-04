@@ -150,7 +150,7 @@ class MailjetMessage extends \Swift_Message
     private function filterVars(array $vars): array
     {
         // MailJet do not let var with null value, empty value has to be false instead
-        array_walk($vars, function (&$value) {
+        array_walk_recursive($vars, function (&$value) {
             $value = (null === $value) ? false : $value;
         });
 
