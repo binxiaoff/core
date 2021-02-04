@@ -1499,6 +1499,7 @@ class Project implements TraceableStatusAwareInterface
             // ensure interestExpressionDeadline is present only if interest expression is enabled
             && is_bool($this->interestExpressionEnabled)
             && false === $this->interestExpressionEnabled xor null !== $this->interestExpressionDeadline
+            && $this->participationType
             ;
     }
 
