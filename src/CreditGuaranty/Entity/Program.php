@@ -4,11 +4,30 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, MarketSegment, Staff, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 
+/**
+ * @ApiResource(
+ *      itemOperations={
+ *          "get",
+ *          "patch"
+ *      },
+ *      collectionOperations={
+ *         "post"
+ *     }
+ * )
+ *
+ * @ORM\Entity
+ * @ORM\Table(name="credit_guaranty_program")
+ * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity({"name"}, message="CreditGuaranty.Program.name.unique")
+ */
 class Program
 {
     use PublicizeIdentityTrait;
@@ -16,7 +35,7 @@ class Program
     use BlamableAddedTrait;
 
     /**
-     * @ORM\Column(length=100)
+     * @ORM\Column(length=100, unique=true)
      */
     private string $name;
 
@@ -28,6 +47,11 @@ class Program
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\MarketSegment")
      * @ORM\JoinColumn(name="id_market_segment", nullable=false)
+     *
+     * @Assert\Expression(
+     *     expression="this.getMarketSegment().getLabel() in ([MarketSegment::LABEL_CORPORATE, MarketSegment::LABEL_AGRICULTURE])",
+     *     message="CreditGuaranty.Program.marketSegment.invalid"
+     * )
      */
     private MarketSegment $marketSegment;
 
@@ -44,11 +68,6 @@ class Program
      * @Assert\Valid
      */
     private Money $funds;
-
-    /**
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     */
-    private ?DateTimeImmutable $distributionStartAt;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
@@ -113,18 +132,6 @@ class Program
     }
 
     /**
-     * @param string $name
-     *
-     * @return Program
-     */
-    public function setName(string $name): Program
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
      * @return string|null
      */
     public function getDescription(): ?string
@@ -150,18 +157,6 @@ class Program
     public function getMarketSegment(): MarketSegment
     {
         return $this->marketSegment;
-    }
-
-    /**
-     * @param MarketSegment $marketSegment
-     *
-     * @return Program
-     */
-    public function setMarketSegment(MarketSegment $marketSegment): Program
-    {
-        $this->marketSegment = $marketSegment;
-
-        return $this;
     }
 
     /**
@@ -200,26 +195,6 @@ class Program
     public function setFunds(Money $funds): Program
     {
         $this->funds = $funds;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeImmutable|null
-     */
-    public function getDistributionStartAt(): ?DateTimeImmutable
-    {
-        return $this->distributionStartAt;
-    }
-
-    /**
-     * @param DateTimeImmutable|null $distributionStartAt
-     *
-     * @return Program
-     */
-    public function setDistributionStartAt(?DateTimeImmutable $distributionStartAt): Program
-    {
-        $this->distributionStartAt = $distributionStartAt;
 
         return $this;
     }
