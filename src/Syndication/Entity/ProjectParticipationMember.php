@@ -147,6 +147,18 @@ class ProjectParticipationMember
     }
 
     /**
+     * @return FileVersion|null
+     *
+     * @Groups({"projectParticipationMember:read"})
+     */
+    public function getAcceptableNdaVersion(): ?FileVersion
+    {
+        $file = $this->projectParticipation->getNda() ?? $this->getProjectParticipation()->getProject()->getNda();
+
+        return $file ? $file->getCurrentFileVersion() : null;
+    }
+
+    /**
      * @return bool
      */
     public function isArchived(): bool
