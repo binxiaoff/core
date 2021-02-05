@@ -36,6 +36,9 @@ class MailjetMessage extends \Swift_Message
         parent::__construct($subject, $body, $contentType, $charset);
 
         // This address is required to respect the SMTP RFC but it is not used by mailjet (set in Mailjet template)
+        // This email and name are defined on MailJet template too and should be the same.
+        // If email domain defined here is not the same as template sender, template email and name are used.
+        // If email domain defined here is the same as template, email and name defined below are used.
         $this->setFrom('support@kls-platform.com', 'KLS');
         $this->enableTemplatingLanguage();
     }
