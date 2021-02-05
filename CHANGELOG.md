@@ -1,3 +1,6 @@
+## 3.5.0 (05/02/2021)
+[Release note](https://lafabriquebyca.atlassian.net/browse/CALS/fixforversion/10059)
+
 ## 3.5.1 (03/02/2021)
 Release note: CALS-2985 Rollup migration
 
