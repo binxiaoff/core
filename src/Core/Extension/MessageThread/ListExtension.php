@@ -75,9 +75,10 @@ class ListExtension implements QueryCollectionExtensionInterface
                             'ppc IN (:managedStaffMember)',
                         ),
                         // you are in arranger company OR your participant and the project is in displayable status
+                        // part of the condition is in inner join
                         $queryBuilder->expr()->orX(
-                            $rootAlias . '.submitterCompany = pp.participant',
-                            'pst.status in (:displayableStatus)'
+                            'pst.status in (:displayableStatus)',
+                            'pp.participant = p.submitterCompany'
                         )
                     )
                 )
