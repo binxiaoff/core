@@ -34,8 +34,8 @@ final class Version20210128100002 extends AbstractMigration
                 HEX(RANDOM_BYTES(6))
             )
         )";
-        $this->addSql('ALTER TABLE core_staff_market_segment DROP FOREIGN KEY FK_523D18F2B5D73EB1');
-        $this->addSql('ALTER TABLE syndication_project DROP FOREIGN KEY FK_2FB3D0EE2C71A0E3');
+        $this->addSql('ALTER TABLE core_staff_market_segment DROP FOREIGN KEY FK_A055377AB5D73EB1');
+        $this->addSql('ALTER TABLE syndication_project DROP FOREIGN KEY FK_7E9E0E6F2C71A0E3');
         $this->addSql('CREATE TABLE core_company_group_tag (id INT AUTO_INCREMENT NOT NULL, id_company_group INT NOT NULL, code VARCHAR(255) NOT NULL, public_id VARCHAR(36) NOT NULL, UNIQUE INDEX UNIQ_B408DC36B5B48B91 (public_id), INDEX IDX_B408DC36941937C5 (id_company_group), UNIQUE INDEX uniq_companyGroup_code (code, id_company_group), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE core_company_group (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, UNIQUE INDEX UNIQ_A2940CFF5E237E06 (name), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE staff_company_group_tag (staff_id INT NOT NULL, company_group_tag_id INT NOT NULL, INDEX IDX_CA55D2FD4D57CD (staff_id), INDEX IDX_CA55D2F9799710F (company_group_tag_id), PRIMARY KEY(staff_id, company_group_tag_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
@@ -153,14 +153,14 @@ SQL
         $this->addSql('ALTER TABLE staff_company_group_tag DROP FOREIGN KEY FK_CA55D2F9799710F');
         $this->addSql('ALTER TABLE team_company_group_tag DROP FOREIGN KEY FK_FFDE5B569799710F');
         $this->addSql('ALTER TABLE syndication_project DROP FOREIGN KEY FK_7E9E0E6F4237BD1D');
-        $this->addSql('ALTER TABLE core_staff_market_segment ADD CONSTRAINT FK_523D18F2B5D73EB1 FOREIGN KEY (market_segment_id) REFERENCES core_market_segment (id) ON UPDATE NO ACTION ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE core_staff_market_segment ADD CONSTRAINT FK_A055377AB5D73EB1 FOREIGN KEY (market_segment_id) REFERENCES core_market_segment (id) ON UPDATE NO ACTION ON DELETE CASCADE');
         $this->addSql('ALTER TABLE core_staff_market_segment ADD CONSTRAINT FK_523D18F2D4D57CD FOREIGN KEY (staff_id) REFERENCES core_staff (id) ON UPDATE NO ACTION ON DELETE CASCADE');
         $this->addSql('DROP INDEX IDX_5DA8BC7C941937C5 ON core_company');
         $this->addSql('ALTER TABLE core_company DROP id_company_group');
         $this->addSql('ALTER TABLE core_staff_log ADD previous_market_segment JSON NOT NULL');
         $this->addSql('DROP INDEX IDX_7E9E0E6F4237BD1D ON syndication_project');
         $this->addSql('ALTER TABLE syndication_project DROP id_company_group_tag');
-        $this->addSql('ALTER TABLE syndication_project ADD CONSTRAINT FK_2FB3D0EE2C71A0E3 FOREIGN KEY (id_market_segment) REFERENCES core_market_segment (id) ON UPDATE NO ACTION ON DELETE NO ACTION');
+        $this->addSql('ALTER TABLE syndication_project ADD CONSTRAINT FK_7E9E0E6F2C71A0E3 FOREIGN KEY (id_market_segment) REFERENCES core_market_segment (id) ON UPDATE NO ACTION ON DELETE NO ACTION');
         $this->addSql('CREATE INDEX IDX_7E9E0E6F2C71A0E3 ON syndication_project (id_market_segment)');
         $this->addSql('DROP TABLE core_company_group');
         $this->addSql('DROP TABLE core_company_group_tag');

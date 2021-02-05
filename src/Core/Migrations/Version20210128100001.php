@@ -52,7 +52,7 @@ final class Version20210128100001 extends AbstractMigration
         $this->addSql("UPDATE team SET name = 'root' WHERE TRUE");
         $this->addSql('ALTER TABLE core_company ADD CONSTRAINT FK_5DA8BC7C308A30F FOREIGN KEY (id_root_team) REFERENCES team (id)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_5DA8BC7C308A30F ON core_company (id_root_team)');
-        $this->addSql('ALTER TABLE core_staff DROP FOREIGN KEY FK_426EF3929122A03F');
+        $this->addSql('ALTER TABLE core_staff DROP FOREIGN KEY FK_14EFD2729122A03F');
         $this->addSql('DROP INDEX IDX_14EFD2729122A03F ON core_staff');
         $this->addSql('DROP INDEX UNIQ_14EFD2726B3CA4B9122A03F ON core_staff');
         $this->addSql('ALTER TABLE core_staff ADD manager TINYINT(1) NOT NULL, ADD arrangement_project_creation_permission TINYINT(1) NOT NULL, ADD agency_project_creation_permission TINYINT(1) NOT NULL, ADD id_team INT NOT NULL');
@@ -64,7 +64,7 @@ final class Version20210128100001 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_14EFD2724FC0BA1D ON core_staff (id_team)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_14EFD2726B3CA4B4FC0BA1D ON core_staff (id_user, id_team)');
         $this->addSql('ALTER TABLE core_staff_log DROP previous_roles');
-        $this->addSql('ALTER TABLE syndication_project_participation_member DROP FOREIGN KEY FK_41530AB3EFC7EA74');
+        $this->addSql('ALTER TABLE syndication_project_participation_member DROP FOREIGN KEY FK_4CEF2D05EFC7EA74');
         $this->addSql('DROP INDEX IDX_4CEF2D05EFC7EA74 ON syndication_project_participation_member');
         $this->addSql('ALTER TABLE syndication_project_participation_member ADD permissions INT NOT NULL COMMENT \'(DC2Type:bitmask)\', DROP id_accepted_nda_version, DROP nda_accepted, DROP accepted_nda_term');
         $this->addSql('UPDATE syndication_project_participation_member SET permissions = 1 WHERE TRUE');
@@ -147,12 +147,12 @@ SQL);
         $this->addSql('DROP INDEX IDX_14EFD2724FC0BA1D ON core_staff');
         $this->addSql('DROP INDEX UNIQ_14EFD2726B3CA4B4FC0BA1D ON core_staff');
         $this->addSql('ALTER TABLE core_staff DROP manager, DROP arrangement_project_creation_permission, DROP agency_project_creation_permission, CHANGE id_team id_company INT NOT NULL');
-        $this->addSql('ALTER TABLE core_staff ADD CONSTRAINT FK_426EF3929122A03F FOREIGN KEY (id_company) REFERENCES core_company (id) ON UPDATE NO ACTION ON DELETE NO ACTION');
+        $this->addSql('ALTER TABLE core_staff ADD CONSTRAINT FK_14EFD2729122A03F FOREIGN KEY (id_company) REFERENCES core_company (id) ON UPDATE NO ACTION ON DELETE NO ACTION');
         $this->addSql('CREATE INDEX IDX_14EFD2729122A03F ON core_staff (id_company)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_14EFD2726B3CA4B9122A03F ON core_staff (id_user, id_company)');
         $this->addSql('ALTER TABLE core_staff_log ADD previous_roles JSON NOT NULL');
         $this->addSql('ALTER TABLE syndication_project_participation_member ADD id_accepted_nda_version INT DEFAULT NULL, ADD nda_accepted DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', ADD accepted_nda_term TEXT CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, DROP permissions');
-        $this->addSql('ALTER TABLE syndication_project_participation_member ADD CONSTRAINT FK_41530AB3EFC7EA74 FOREIGN KEY (id_accepted_nda_version) REFERENCES core_file_version (id) ON UPDATE NO ACTION ON DELETE NO ACTION');
+        $this->addSql('ALTER TABLE syndication_project_participation_member ADD CONSTRAINT FK_4CEF2D05EFC7EA74 FOREIGN KEY (id_accepted_nda_version) REFERENCES core_file_version (id) ON UPDATE NO ACTION ON DELETE NO ACTION');
         $this->addSql(<<<'SQL'
 UPDATE syndication_project_participation_member 
     INNER JOIN nda_signature ns on syndication_project_participation_member.id_staff = ns.added_by 
