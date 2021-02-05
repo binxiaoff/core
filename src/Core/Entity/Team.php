@@ -88,18 +88,6 @@ class Team
     private Collection $incomingEdges;
 
     /**
-     * @var Collection
-     *
-     * @ORM\ManyToMany(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
-     * @ORM\JoinTable(name="core_team_company_group_tag")
-     *
-     * @Groups({"team:read", "team:update"})
-     *
-     * @Assert\Unique
-     */
-    private Collection $companyGroupTags;
-
-    /**
      * Constructor
      *
      * Private to ensure correct object creation via static method
@@ -111,7 +99,6 @@ class Team
         $this->outgoingEdges = new ArrayCollection();
         $this->incomingEdges = new ArrayCollection();
         $this->staff = new ArrayCollection();
-        $this->companyGroupTags = new ArrayCollection();
     }
 
     /**
@@ -246,56 +233,6 @@ class Team
     public function setName(string $name): Team
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getCompanyGroupTags(): array
-    {
-        return $this->companyGroupTags->toArray();
-    }
-
-    /**
-     * @return CompanyGroupTag[]|array
-     */
-    public function getAvailableCompanyGroupTags(): array
-    {
-        $parent = $this->getParent();
-
-        if (null === $parent) {
-            return null !== $this->getCompany() ? $this->getCompany()->getCompanyGroupTags() : [];
-        }
-
-        if ($parent->isRoot() && $parent->getCompany()) {
-            return $parent->getCompany()->getCompanyGroupTags();
-        }
-
-        return $parent->getCompanyGroupTags();
-    }
-
-    /**
-     * @param CompanyGroupTag $tag
-     *
-     * @return Team
-     */
-    public function addCompanyGroupTag(CompanyGroupTag $tag): Team
-    {
-        $this->companyGroupTags[] = $tag;
-
-        return $this;
-    }
-
-    /**
-     * @param CompanyGroupTag $tag
-     *
-     * @return Team
-     */
-    public function removeCompanyGroupTag(CompanyGroupTag $tag): Team
-    {
-        $this->companyGroupTags->removeElement($tag);
 
         return $this;
     }
