@@ -30,7 +30,7 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *             "output": false,
  *         },
  *         "patch": {
- *              "security_post_denormalize": "is_granted('edit', object)",
+ *              "security": "is_granted('edit', object)",
  *              "denormalization_context": {"groups": {"staff:update", "staffStatus:create"}}
  *         }
  *     },

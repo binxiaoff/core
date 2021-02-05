@@ -134,12 +134,12 @@ class StaffVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param $superior
-     * @param $subordinate
+     * @param Staff $superior
+     * @param Staff $subordinate
      *
      * @return bool
      */
-    private function isSuperior($superior, $subordinate)
+    private function isSuperior(Staff $superior, Staff $subordinate)
     {
         if (false === $superior->isManager()) {
             return false;
