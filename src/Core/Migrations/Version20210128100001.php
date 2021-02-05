@@ -7,9 +7,6 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
 final class Version20210128100001 extends AbstractMigration
 {
     // Previous roles
@@ -80,10 +77,12 @@ final class Version20210128100001 extends AbstractMigration
         $this->addSql('ALTER TABLE syndication_nda_signature RENAME INDEX idx_41f146c9ae73e249 TO IDX_9DFE73E8AE73E249');
         $this->addSql('ALTER TABLE syndication_nda_signature RENAME INDEX idx_41f146c9c7bb1f8a TO IDX_9DFE73E8C7BB1F8A');
         $this->addSql('ALTER TABLE syndication_nda_signature RENAME INDEX idx_41f146c9699b6baf TO IDX_9DFE73E8699B6BAF');
+        $this->addSql('ALTER TABLE syndication_nda_signature CHANGE term term TEXT NOT NULL');
     }
 
     public function down(Schema $schema): void
     {
+        $this->addSql('ALTER TABLE syndication_nda_signature CHANGE term term TEXT CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`');
         $this->addSql('ALTER TABLE core_company_admin RENAME INDEX idx_475a454c6b3ca4b TO IDX_CFFFAF136B3CA4B');
         $this->addSql('ALTER TABLE core_company_admin RENAME INDEX idx_475a454c9122a03f TO IDX_CFFFAF139122A03F');
         $this->addSql('ALTER TABLE core_company_admin RENAME INDEX uniq_475a454cb5b48b91 TO UNIQ_CFFFAF13B5B48B91');
