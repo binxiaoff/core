@@ -54,7 +54,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {"agency:project:write", "agency:projectStatus:create"}},
+ *             "denormalization_context": {"groups": {"agency:project:write", "agency:projectStatus:create", "money:write"}},
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
  *     }
