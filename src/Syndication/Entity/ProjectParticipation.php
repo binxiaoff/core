@@ -44,7 +44,8 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *         "fileVersion:read",
  *         "invitationReplyVersion:read",
  *         "interestReplyVersion:read",
- *         "tranche:read"
+ *         "tranche:read",
+ *         "companyGroupTag:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
@@ -72,7 +73,8 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *                 "offer:read",
  *                 "archivable:read",
  *                 "timestampable:read",
- *                 "companyStatus:read"
+ *                 "companyStatus:read",
+ *                 "companyGroupTag:read"
  *             }}
  *         },
  *         "post": {
@@ -112,7 +114,8 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *                     "lendingRate:read",
  *                     "companyStatus:read",
  *                     "invitationReplyVersion:read",
- *                     "interestReplyVersion:read"
+ *                     "interestReplyVersion:read",
+ *                     "companyGroupTag:read"
  *                 }
  *             }
  *         },
