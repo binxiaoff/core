@@ -30,7 +30,8 @@ use Unilend\Syndication\Entity\{Project, ProjectParticipation};
  *      "timestampable:read",
  *      "file:read",
  *      "user:read",
- *      "fileVersion:read"
+ *      "fileVersion:read",
+ *      "companyGroupTag:read"
  *  }},
  *  itemOperations={
  *      "get": {
