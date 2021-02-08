@@ -4,9 +4,8 @@ cache:
         - vendor/
 
 before_script:
-    - yarn install
     - composer install
 
 test:application:
     script:
-        - bin/phpunit
+        - php -dpcov.enabled=1  bin/phpunit --coverage-text --colors=never
