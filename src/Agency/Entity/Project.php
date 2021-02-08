@@ -27,12 +27,17 @@ use Unilend\Core\Validator\Constraints\Siren;
  *     normalizationContext={
  *         "groups": {
  *             "timestampable:read",
- *             "project:read"
+ *             "project:read",
+ *             "money:read",
+ *             "timestampable:read",
+ *             "nullablePerson:read",
+ *             "contact:read"
  *         }
  *     },
  *     denormalizationContext={
  *         "groups": {
- *             "project:write"
+ *             "project:write",
+ *             "money:write"
  *         }
  *     },
  *     collectionOperations={
@@ -40,18 +45,17 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {"groups": {"project:create", "money:write"}},
- *              "validation_groups": {Project::class, "getCurrentValidationGroups"}
+ *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         }
  *     },
  *     itemOperations={
  *         "get": {
- *             "normalization_context": {"groups": {"timestampable:read","project:read","contact:read", "nullablePerson:read"}},
  *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {"groups": {"project:write", "projectStatus:create"}},
- *              "validation_groups": {Project::class, "getCurrentValidationGroups"}
+ *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
  *     }
  * )
