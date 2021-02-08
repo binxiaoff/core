@@ -51,7 +51,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *             "nullablePerson:read",
  *             "projectStatus:read",
  *             "projectOrganizer:read",
- *             "role:read"
+ *             "role:read",
+ *             "companyGroupTag:read"
  *         }
  *     },
  *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "tag:write", "nullablePerson:write"}},
@@ -68,7 +69,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                     "projectParticipationTranche:read",
  *                     "money:read",
  *                     "nullableMoney:read",
- *                     "nullablePerson:read"
+ *                     "nullablePerson:read",
+ *                     "companyGroupTag:read"
  *                 }
  *             }
  *         },
@@ -82,7 +84,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                     "money:write",
  *                     "nullableMoney:write",
  *                     "tag:write",
- *                     "nullablePerson:write"
+ *                     "nullablePerson:write",
+ *                     "companyGroupTag:read"
  *                 }
  *             }
  *         }
@@ -117,7 +120,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                 "rangedOfferWithFee:read",
  *                 "offerWithFee:read",
  *                 "offer:read",
- *                 "companyStatus:read"
+ *                 "companyStatus:read",
+ *                 "companyGroupTag:read"
  *             }}
  *         },
  *         "project_nda": {
@@ -147,7 +151,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                     "rangedOfferWithFee:read",
  *                     "offerWithFee:read",
  *                     "offer:read",
- *                     "companyStatus:read"
+ *                     "companyStatus:read",
+ *                     "companyGroupTag:read"
  *                 }
  *             }
  *         },
