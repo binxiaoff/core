@@ -165,7 +165,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $ndaFileVersion = (new FileVersion('/fake.pdf', $staff, $ndaFile, 'user_attachment', '', 'application/pdf'))->setOriginalName($title . ' NDA.pdf');
         $ndaFile->setCurrentFileVersion($ndaFileVersion);
 
-        $companyGroupTags = $staff->getCompanyGroupTags();
+        $companyGroupTags = $staff->getCompany()->getCompanyGroupTags();
 
         // Project
         $project = (new Project(
@@ -185,7 +185,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
                     ? DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+10 days', '+1 year'))
                     : null
             )
-            ->setCompanyGroupTag(reset($companyGroupTags))
+            ->setCompanyGroupTag(reset($companyGroupTags) ?: null)
             ->setParticipantReplyDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+70 days', '+1 year')))
             ->setAllocationDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+1 year', '+2 year')))
             ->setPrivilegedContactPerson(

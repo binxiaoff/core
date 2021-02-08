@@ -291,7 +291,7 @@ class Staff implements TraceableStatusAwareInterface
     /**
      * @return CompanyGroupTag[]|array
      */
-    public function getCompanyGroupTags(): iterable
+    public function getCompanyGroupTags(): array
     {
         return $this->companyGroupTags->toArray();
     }
