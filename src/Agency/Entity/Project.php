@@ -228,7 +228,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"agency:project:write", "agency:project:read"})
+     * @Groups({"agency:project:write", "agency:project:read", "project:create"})
      */
     private ?string $internalRatingScore;
 
@@ -376,7 +376,7 @@ class Project
     /**
      * @var string|null
      *
-     * @Groups({"agency:project:read", "agency:project:write"})
+     * @Groups({"agency:project:read", "agency:project:write", "project:create"})
      *
      * @ORM\Column(type="string", nullable=true, length=10)
      *
@@ -422,7 +422,7 @@ class Project
      *
      * @ORM\Column(type="text", length=16777215, nullable=true)
      *
-     * @Groups({"agency:project:write", "agency:project:read"})
+     * @Groups({"agency:project:write", "agency:project:read", "project:create"})
      */
     private ?string $description = null;
 
