@@ -23,9 +23,9 @@ class Covenant
     public const NATURE_DOCUMENT = "document";
     public const NATURE_CONTROL  = "control";
 
-    public const PERIODICITY_3M = '3m';
-    public const PERIODICITY_6M = '6m';
-    public const PERIODICITY_12M = '12m';
+    public const PERIODICITY_3M = 'P3M';
+    public const PERIODICITY_6M = 'P6M';
+    public const PERIODICITY_12M = 'P12M';
 
     /**
      * @var Project
@@ -111,6 +111,8 @@ class Covenant
      *
      * @ORM\Column(name="endDate", type="datetime_immutable")
      *
+     * @Assert\GreaterThan(propertyPath="startDate")
+     *
      * @Groups({"covenant:read"})
      */
     private DateTimeImmutable $endDate;
@@ -136,10 +138,14 @@ class Covenant
 
     /**
      * @param Project $project
+     *
+     * @return Project
      */
-    public function setProject(Project $project): void
+    public function setProject(Project $project): Project
     {
         $this->project = $project;
+
+        return $this;
     }
 
     /**
@@ -152,10 +158,14 @@ class Covenant
 
     /**
      * @param string $name
+     *
+     * @return Project
      */
-    public function setName(string $name): void
+    public function setName(string $name): Project
     {
         $this->name = $name;
+
+        return $this;
     }
 
     /**
@@ -168,10 +178,14 @@ class Covenant
 
     /**
      * @param string|null $article
+     *
+     * @return Project
      */
-    public function setArticle(?string $article): void
+    public function setArticle(?string $article): Project
     {
         $this->article = $article;
+
+        return $this;
     }
 
     /**
@@ -184,10 +198,14 @@ class Covenant
 
     /**
      * @param string|null $extract
+     *
+     * @return Project
      */
-    public function setExtract(?string $extract): void
+    public function setExtract(?string $extract): Project
     {
         $this->extract = $extract;
+
+        return $this;
     }
 
     /**
@@ -200,10 +218,14 @@ class Covenant
 
     /**
      * @param string|null $description
+     *
+     * @return Project
      */
-    public function setDescription(?string $description): void
+    public function setDescription(?string $description): Project
     {
         $this->description = $description;
+
+        return $this;
     }
 
     /**
@@ -216,10 +238,14 @@ class Covenant
 
     /**
      * @param string $nature
+     *
+     * @return Project
      */
-    public function setNature(string $nature): void
+    public function setNature(string $nature): Project
     {
         $this->nature = $nature;
+
+        return $this;
     }
 
     /**
@@ -232,10 +258,14 @@ class Covenant
 
     /**
      * @param DateTimeImmutable $startDate
+     *
+     * @return Project
      */
-    public function setStartDate(DateTimeImmutable $startDate): void
+    public function setStartDate(DateTimeImmutable $startDate): Project
     {
         $this->startDate = $startDate;
+
+        return $this;
     }
 
     /**
@@ -248,10 +278,14 @@ class Covenant
 
     /**
      * @param int $delay
+     *
+     * @return Project
      */
-    public function setDelay(int $delay): void
+    public function setDelay(int $delay): Project
     {
         $this->delay = $delay;
+
+        return $this;
     }
 
     /**
@@ -264,10 +298,14 @@ class Covenant
 
     /**
      * @param DateTimeImmutable $endDate
+     *
+     * @return Project
      */
-    public function setEndDate(DateTimeImmutable $endDate): void
+    public function setEndDate(DateTimeImmutable $endDate): Project
     {
         $this->endDate = $endDate;
+
+        return $this;
     }
 
     /**
@@ -280,14 +318,18 @@ class Covenant
 
     /**
      * @param string $periodicity
+     *
+     * @return Project
      */
-    public function setPeriodicity(string $periodicity): void
+    public function setPeriodicity(string $periodicity): Project
     {
         $this->periodicity = $periodicity;
+
+        return $this;
     }
 
     /**
-     * @return array
+     * @return string[]|array
      */
     private function getNatures(): array
     {
@@ -295,7 +337,7 @@ class Covenant
     }
 
     /**
-     * @return array
+     * @return string[]|array
      */
     private function getPeriodicities(): array
     {
