@@ -11,6 +11,7 @@ use Exception;
 use Unilend\Agency\Entity\Borrower;
 use Unilend\Agency\Entity\BorrowerTrancheShare;
 use Unilend\Agency\Entity\Contact;
+use Unilend\Agency\Entity\Covenant;
 use Unilend\Agency\Entity\Participation;
 use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 use Unilend\Agency\Entity\Project;
@@ -64,6 +65,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $project->setPrincipalSyndicationType(SyndicationType::PRIMARY);
         $project->setPrincipalParticipationType(ParticipationType::DIRECT);
 
+        $covenants = array_map(fn () => $this->createCovenant($project), range(0, 3));
+
         /** @var Borrower[]|array $borrowers */
         $borrowers = array_map(fn () => $this->createBorrower($project, $staff), range(0, 3));
 
@@ -89,7 +92,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ),
         ];
 
-        array_map([$manager, 'persist'], [...$borrowers, ...$tranches, ...$borrowerTrancheShares, ...$participations]);
+        array_map([$manager, 'persist'], [...$borrowers, ...$tranches, ...$borrowerTrancheShares, ...$participations, ...$covenants]);
 
         $manager->flush();
     }
@@ -213,6 +216,26 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $participant,
             new Money('EUR', (string) $this->faker->numberBetween(100000)),
             $secondary
+        );
+    }
+
+    /**
+     * @param Project $project
+     *
+     * @return Covenant
+     *
+     * @throws Exception
+     */
+    private function createCovenant(Project $project)
+    {
+        return new Covenant(
+            $project,
+            $this->faker->title,
+            Covenant::NATURE_CONTROL,
+            new DateTimeImmutable('now'),
+            90,
+            DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+6 months', '+6 years')),
+            'P6M'
         );
     }
 }
