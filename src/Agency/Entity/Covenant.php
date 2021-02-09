@@ -23,6 +23,10 @@ class Covenant
     public const NATURE_DOCUMENT = "document";
     public const NATURE_CONTROL  = "control";
 
+    public const PERIODICITY_3M = '3m';
+    public const PERIODICITY_6M = '6m';
+    public const PERIODICITY_12M = '12m';
+
     /**
      * @var Project
      *
@@ -115,6 +119,8 @@ class Covenant
      * @var string
      *
      * @ORM\Column(type="string")
+     *
+     * @Assert\Choice(callback="getPeriodicities")
      *
      * @Groups({"covenant:read"})
      */
@@ -286,5 +292,13 @@ class Covenant
     private function getNatures(): array
     {
         return static::getConstants('NATURE_');
+    }
+
+    /**
+     * @return array
+     */
+    private function getPeriodicities(): array
+    {
+        return static::getConstants('PERIODICITY_');
     }
 }
