@@ -21,6 +21,9 @@ Agency:
     ParticipantTrancheAllocation:
         project: La tranche et la participation n'ont pas le même projet
 
+    CovenantRule:
+        inconsistentCovenant: On ne peut ajouter de règle qu'aux engagements de nature financière
+
 Core:
     AcceptationsLegalDocs:
         legalDoc:

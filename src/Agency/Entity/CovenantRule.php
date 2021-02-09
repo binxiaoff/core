@@ -7,6 +7,7 @@ namespace Unilend\Agency\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
@@ -85,9 +86,26 @@ class CovenantRule
 
     /**
      * @param string $expression
+     *
+     * @return CovenantRule
      */
-    public function setExpression(string $expression): void
+    public function setExpression(string $expression): CovenantRule
     {
         $this->expression = $expression;
+
+        return $this;
+    }
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateCovenantIsFinancial(ExecutionContextInterface $context)
+    {
+        if (false === in_array($this->covenant->getNature(), Covenant::FINANCIAL_NATURES)) {
+            $context->buildViolation('Agency.CovenantRule.inconsistentCovenant')
+                ->atPath('covenant')
+                ->addViolation();
+        }
     }
 }

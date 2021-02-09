@@ -28,6 +28,11 @@ class Covenant
     public const NATURE_FINANCIAL_ELEMENT  = "financial_element";
     public const NATURE_FINANCIAL_RATIO    = "financial_ratio";
 
+    public const FINANCIAL_NATURES = [
+        self::NATURE_FINANCIAL_ELEMENT,
+        self::NATURE_FINANCIAL_RATIO,
+    ];
+
     public const PERIODICITY_3M = 'P3M';
     public const PERIODICITY_6M = 'P6M';
     public const PERIODICITY_12M = 'P12M';
@@ -136,7 +141,9 @@ class Covenant
     /**
      * @var iterable
      *
-     * @ORM\OneToMany(targetEntity="CovenantRule", mappedBy="parent")
+     * @ORM\OneToMany(targetEntity="CovenantRule", mappedBy="covenant")
+     *
+     * @Groups({"covenant:read"})
      */
     private iterable $financialRules;
 
@@ -361,6 +368,14 @@ class Covenant
         $this->periodicity = $periodicity;
 
         return $this;
+    }
+
+    /**
+     * @return iterable
+     */
+    public function getFinancialRules(): iterable
+    {
+        return $this->financialRules;
     }
 
     /**
