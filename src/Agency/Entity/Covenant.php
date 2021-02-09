@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Table(name="agency_covenant")
@@ -16,6 +17,10 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 class Covenant
 {
     use PublicizeIdentityTrait;
+    use ConstantsAwareTrait;
+
+    public const NATURE_DOCUMENT = "document";
+    public const NATURE_CONTROL  = "control";
 
     /**
      * @var Project
@@ -29,6 +34,8 @@ class Covenant
      * @var string
      *
      * @ORM\Column(type="string")
+     *
+     * @Assert\NotBlank
      *
      * @Groups({"covenant:read"})
      */
@@ -66,6 +73,9 @@ class Covenant
      *
      * @ORM\Column(type="string")
      *
+     * @Assert\NotBlank
+     * @Assert\Choice(callback="getNatures")
+     *
      * @Groups({"covenant:read"})
      */
     private string $nature;
@@ -83,6 +93,9 @@ class Covenant
      * @var int
      *
      * @ORM\Column(type="smallint")
+     *
+     * @Assert\Type("integer")
+     * @Assert\Positive
      *
      * @Groups({"covenant:read"})
      */
@@ -264,5 +277,13 @@ class Covenant
     public function setPeriodicity(string $periodicity): void
     {
         $this->periodicity = $periodicity;
+    }
+
+    /**
+     * @return array
+     */
+    private function getNatures(): array
+    {
+        return static::getConstants('NATURE_');
     }
 }

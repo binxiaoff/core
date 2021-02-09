@@ -1195,9 +1195,17 @@ class Project
     /**
      * @return iterable|ProjectStatus[]
      */
-    public function getStatuses()
+    public function getStatuses(): iterable
     {
         return $this->statuses;
+    }
+
+    /**
+     * @return iterable|Covenant[]
+     */
+    public function getCovenants(): iterable
+    {
+        return $this->covenants;
     }
 
     /**
@@ -1225,7 +1233,6 @@ class Project
 
         return $validationGroups;
     }
-
 
     /**
      * @param string $type
