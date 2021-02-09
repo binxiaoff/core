@@ -23,8 +23,10 @@ class Covenant
     use ConstantsAwareTrait;
     use TimestampableAddedOnlyTrait;
 
-    public const NATURE_DOCUMENT = "document";
-    public const NATURE_CONTROL  = "control";
+    public const NATURE_DOCUMENT           = "document";
+    public const NATURE_CONTROL            = "control";
+    public const NATURE_FINANCIAL_ELEMENT  = "financial_element";
+    public const NATURE_FINANCIAL_RATIO    = "financial_ratio";
 
     public const PERIODICITY_3M = 'P3M';
     public const PERIODICITY_6M = 'P6M';
@@ -130,6 +132,13 @@ class Covenant
      * @Groups({"covenant:read"})
      */
     private string $periodicity;
+
+    /**
+     * @var iterable
+     *
+     * @ORM\OneToMany(targetEntity="CovenantRule", mappedBy="parent")
+     */
+    private iterable $financialRules;
 
     /**
      * @param Project           $project
