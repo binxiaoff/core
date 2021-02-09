@@ -52,7 +52,7 @@ class ProgramStatus implements StatusInterface
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="statuses")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
-     * @Groups({"programStatus:read"})
+     * @Groups({"programStatus:read", "programStatus:write"})
      */
     private Program $program;
 
@@ -63,7 +63,7 @@ class ProgramStatus implements StatusInterface
      *
      * @Assert\Choice(callback="getPossibleStatuses")
      *
-     * @Groups({"programStatus:read"})
+     * @Groups({"programStatus:read", "programStatus:write"})
      */
     private int $status;
 
@@ -74,9 +74,8 @@ class ProgramStatus implements StatusInterface
      */
     public function __construct(Program $program, int $status, Staff $addedBy)
     {
-        $this->status  = $status;
         $this->program = $program;
-        $this->added   = new DateTimeImmutable();
+        $this->status  = $status;
         $this->addedBy = $addedBy;
         $this->added   = new DateTimeImmutable();
     }
