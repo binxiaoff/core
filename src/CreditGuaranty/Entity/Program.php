@@ -6,13 +6,18 @@ namespace Unilend\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, MarketSegment, Staff, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface, MarketSegment, Staff,
+    Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 
 /**
  * @ApiResource(
+ *     normalizationContext={"groups":{"program:read", "programStatus:read", "timestampable:read", "money:read", "nullableMoney:read"}},
+ *     denormalizationContext={"groups": {"program:write", "money:write", "nullableMoney:write"}},
  *      itemOperations={
  *          "get",
  *          "patch"
@@ -28,7 +33,7 @@ use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, MarketSegme
  *
  * @UniqueEntity({"name"}, message="CreditGuaranty.Program.name.unique")
  */
-class Program
+class Program implements TraceableStatusAwareInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -36,11 +41,15 @@ class Program
 
     /**
      * @ORM\Column(length=100, unique=true)
+     *
+     * @Groups({"program:read", "program:write"})
      */
     private string $name;
 
     /**
      * @ORM\Column(type="text", length=16777215, nullable=true)
+     *
+     * @Groups({"program:read", "program:write"})
      */
     private ?string $description;
 
@@ -49,9 +58,11 @@ class Program
      * @ORM\JoinColumn(name="id_market_segment", nullable=false)
      *
      * @Assert\Expression(
-     *     expression="this.getMarketSegment().getLabel() in ([MarketSegment::LABEL_CORPORATE, MarketSegment::LABEL_AGRICULTURE])",
-     *     message="CreditGuaranty.Program.marketSegment.invalid"
+     *      "this.isMarketSegmentValid()",
+     *      message="CreditGuaranty.Program.marketSegment.invalid"
      * )
+     *
+     * @Groups({"program:read", "program:write"})
      */
     private MarketSegment $marketSegment;
 
@@ -59,6 +70,8 @@ class Program
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
      * @Assert\Valid
+     *
+     * @Groups({"program:read", "program:write"})
      */
     private NullableMoney $cappedAt;
 
@@ -66,11 +79,15 @@ class Program
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
      *
      * @Assert\Valid
+     *
+     * @Groups({"program:read", "program:write"})
      */
     private Money $funds;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"program:read", "program:write"})
      */
     private ?DateTimeImmutable $distributionDeadline;
 
@@ -78,6 +95,8 @@ class Program
      * @ORM\Column(type="json", nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
+     *
+     * @Groups({"program:read", "program:write"})
      */
     private ?array $distributionProcess;
 
@@ -88,6 +107,8 @@ class Program
      *
      * @Assert\NotBlank(allowNull=true)
      * @Assert\GreaterThanOrEqual(1)
+     *
+     * @Groups({"program:read", "program:write"})
      */
     private ?int $guarantyDuration;
 
@@ -97,16 +118,43 @@ class Program
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      * @Assert\Range(min="0", max="0.9999")
+     *
+     * @Groups({"program:read", "program:write"})
      */
     private ?string $guarantyCoverage;
 
     /**
-     * @ORM\Column(type="decimal", precision=15, scale=2, nullable=true)
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
-     * @Assert\Type("numeric")
-     * @Assert\PositiveOrZero
+     * @Assert\Valid
+     *
+     * @Groups({"program:read", "program:write"})
      */
-    private ?string $guarantyCost;
+    private NullableMoney $guarantyCost;
+
+    /**
+     * @var ProgramStatus|null
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramStatus", cascade={"persist"})
+     * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
+     *
+     * @Assert\NotBlank
+     * @Assert\Valid
+     *
+     * @MaxDepth(1)
+     *
+     * @Groups({"program:read"})
+     */
+    private ?ProgramStatus $currentStatus;
+
+    /**
+     * @var Collection|ProgramStatus[]
+     *
+     * @Assert\Valid
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramStatus", mappedBy="program", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     */
+    private Collection $statuses;
 
     /**
      * @param string        $name
@@ -119,8 +167,12 @@ class Program
         $this->name          = $name;
         $this->marketSegment = $marketSegment;
         $this->funds         = $funds;
-        $this->cappedAt      = new NullableMoney();
         $this->addedBy       = $addedBy;
+        $this->cappedAt      = new NullableMoney();
+        $this->statuses      = new ArrayCollection();
+        $this->guarantyCost  = new NullableMoney();
+        $this->added         = new DateTimeImmutable();
+        $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_DRAFT, $addedBy));
     }
 
     /**
@@ -280,22 +332,60 @@ class Program
     }
 
     /**
-     * @return string|null
+     * @return NullableMoney
      */
-    public function getGuarantyCost(): ?string
+    public function getGuarantyCost(): NullableMoney
     {
         return $this->guarantyCost;
     }
 
     /**
-     * @param string|null $guarantyCost
+     * @param NullableMoney $guarantyCost
      *
      * @return Program
      */
-    public function setGuarantyCost(?string $guarantyCost): Program
+    public function setGuarantyCost(NullableMoney $guarantyCost): Program
     {
         $this->guarantyCost = $guarantyCost;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|ProgramStatus[]
+     */
+    public function getStatuses(): Collection
+    {
+        return $this->statuses;
+    }
+
+    /**
+     * @return StatusInterface
+     */
+    public function getCurrentStatus(): StatusInterface
+    {
+        return $this->currentStatus;
+    }
+
+    /**
+     * @param StatusInterface|ProgramStatus $status
+     *
+     * @return $this
+     */
+    public function setCurrentStatus(StatusInterface $status): Program
+    {
+        $this->currentStatus = $status;
+
+        return $this;
+    }
+
+    /**
+     * Used in an expression constraints.
+     *
+     * @return bool
+     */
+    public function isMarketSegmentValid(): bool
+    {
+        return in_array($this->getMarketSegment()->getLabel(), [MarketSegment::LABEL_AGRICULTURE, MarketSegment::LABEL_CORPORATE], true);
     }
 }

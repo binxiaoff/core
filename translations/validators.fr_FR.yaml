@@ -106,3 +106,10 @@ ProjectParticipationMember:
             expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche
         commissionRate:
             expression: Cette valeur n'est pas cohérente avec celui du type de la commission
+
+CreditGuaranty:
+    Program:
+        name:
+            unique: Le nom d'une programme doit être unique.
+        marketSegment:
+            invalid: Le marché choisi n'est pas valable.

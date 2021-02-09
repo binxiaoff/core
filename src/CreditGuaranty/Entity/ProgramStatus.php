@@ -1,0 +1,115 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Unilend\CreditGuaranty\Entity;
+
+use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\{Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface, Staff, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait,
+    Traits\TimestampableAddedOnlyTrait};
+use Unilend\Core\Traits\ConstantsAwareTrait;
+
+/**
+ * @ApiResource(
+ *     normalizationContext={"groups":{"programStatus:read", "timestampable:read"}},
+ *     denormalizationContext={"groups": {"programStatus:write"}},
+ *      collectionOperations={
+ *         "post"
+ *     },
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *     }
+ * )
+ * @ORM\Entity
+ * @ORM\Table(name="credit_guaranty_program_status")
+ *
+ * @Assert\Callback(
+ *     callback={"Unilend\Core\Validator\Constraints\TraceableStatusValidator", "validate"},
+ *     payload={ "path": "status" }
+ * )
+ */
+class ProgramStatus implements StatusInterface
+{
+    use ConstantsAwareTrait;
+    use TimestampableAddedOnlyTrait;
+    use PublicizeIdentityTrait;
+    use BlamableAddedTrait;
+
+    public const STATUS_CANCELLED      = -10;
+    public const STATUS_DRAFT          = 10;
+    public const STATUS_COMMERCIALIZED = 20;
+    public const STATUS_PAUSED         = 30;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="statuses")
+     * @ORM\JoinColumn(name="id_program", nullable=false)
+     *
+     * @Groups({"programStatus:read"})
+     */
+    private Program $program;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(type="smallint")
+     *
+     * @Assert\Choice(callback="getPossibleStatuses")
+     *
+     * @Groups({"programStatus:read"})
+     */
+    private int $status;
+
+    /**
+     * @param Program $program
+     * @param int     $status
+     * @param Staff   $addedBy
+     */
+    public function __construct(Program $program, int $status, Staff $addedBy)
+    {
+        $this->status  = $status;
+        $this->program = $program;
+        $this->added   = new DateTimeImmutable();
+        $this->addedBy = $addedBy;
+        $this->added   = new DateTimeImmutable();
+    }
+
+    /**
+     * @return Program
+     */
+    public function getProgram(): Program
+    {
+        return $this->program;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getPossibleStatuses(): array
+    {
+        return static::getConstants('STATUS_');
+    }
+
+    /**
+     * @return Program|TraceableStatusAwareInterface
+     */
+    public function getAttachedObject()
+    {
+        return $this->getProgram();
+    }
+}
