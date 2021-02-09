@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
@@ -19,6 +20,7 @@ class Covenant
 {
     use PublicizeIdentityTrait;
     use ConstantsAwareTrait;
+    use TimestampableAddedOnlyTrait;
 
     public const NATURE_DOCUMENT = "document";
     public const NATURE_CONTROL  = "control";

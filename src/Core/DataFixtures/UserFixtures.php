@@ -31,9 +31,9 @@ class UserFixtures extends AbstractFixtures
         $this->passwordEncoder = $passwordEncoder;
     }
 
-    public const ADMIN = 'a';
-    public const PARTICIPANT = 'b';
-    public const AUDITOR = 'c';
+    public const ADMIN = 'admin';
+    public const PARTICIPANT = 'participant';
+    public const AUDITOR = 'auditor';
     public const ACCOUNTANT = 'accountant';
     public const OPERATOR = 'operator';
     public const MANAGER = 'manager';
@@ -67,7 +67,7 @@ class UserFixtures extends AbstractFixtures
         $users = array_flip($users);
 
         foreach (array_keys($users) as $value) {
-            $user = new User($value . '@x.xx');
+            $user = new User($value . '@' . $this->getEmailDomain($value));
             $this->forcePublicId($user, $value);
             $manager->persist($user);
             $this->addReference($value, $user);
