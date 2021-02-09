@@ -474,6 +474,15 @@ class Project
     private iterable $statuses;
 
     /**
+     * @var Covenant[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Covenant", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
+     *
+     * @Groups({"project:read"})
+     */
+    private Collection $covenants;
+
+    /**
      * @param Staff             $addedBy
      * @param string            $title
      * @param string            $riskGroupName
