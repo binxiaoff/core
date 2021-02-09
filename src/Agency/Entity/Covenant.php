@@ -129,6 +129,26 @@ class Covenant
     private string $periodicity;
 
     /**
+     * @param Project           $project
+     * @param string            $name
+     * @param string            $nature
+     * @param DateTimeImmutable $startDate
+     * @param int               $delay
+     * @param DateTimeImmutable $endDate
+     * @param string            $periodicity
+     */
+    public function __construct(Project $project, string $name, string $nature, DateTimeImmutable $startDate, int $delay, DateTimeImmutable $endDate, string $periodicity)
+    {
+        $this->project     = $project;
+        $this->name        = $name;
+        $this->nature      = $nature;
+        $this->startDate   = $startDate;
+        $this->delay       = $delay;
+        $this->endDate     = $endDate;
+        $this->periodicity = $periodicity;
+    }
+
+    /**
      * @return Project
      */
     public function getProject(): Project
@@ -139,9 +159,9 @@ class Covenant
     /**
      * @param Project $project
      *
-     * @return Project
+     * @return Covenant
      */
-    public function setProject(Project $project): Project
+    public function setProject(Project $project): Covenant
     {
         $this->project = $project;
 
@@ -159,9 +179,9 @@ class Covenant
     /**
      * @param string $name
      *
-     * @return Project
+     * @return Covenant
      */
-    public function setName(string $name): Project
+    public function setName(string $name): Covenant
     {
         $this->name = $name;
 
@@ -179,9 +199,9 @@ class Covenant
     /**
      * @param string|null $article
      *
-     * @return Project
+     * @return Covenant
      */
-    public function setArticle(?string $article): Project
+    public function setArticle(?string $article): Covenant
     {
         $this->article = $article;
 
@@ -199,9 +219,9 @@ class Covenant
     /**
      * @param string|null $extract
      *
-     * @return Project
+     * @return Covenant
      */
-    public function setExtract(?string $extract): Project
+    public function setExtract(?string $extract): Covenant
     {
         $this->extract = $extract;
 
@@ -219,9 +239,9 @@ class Covenant
     /**
      * @param string|null $description
      *
-     * @return Project
+     * @return Covenant
      */
-    public function setDescription(?string $description): Project
+    public function setDescription(?string $description): Covenant
     {
         $this->description = $description;
 
@@ -239,9 +259,9 @@ class Covenant
     /**
      * @param string $nature
      *
-     * @return Project
+     * @return Covenant
      */
-    public function setNature(string $nature): Project
+    public function setNature(string $nature): Covenant
     {
         $this->nature = $nature;
 
@@ -259,9 +279,9 @@ class Covenant
     /**
      * @param DateTimeImmutable $startDate
      *
-     * @return Project
+     * @return Covenant
      */
-    public function setStartDate(DateTimeImmutable $startDate): Project
+    public function setStartDate(DateTimeImmutable $startDate): Covenant
     {
         $this->startDate = $startDate;
 
@@ -279,9 +299,9 @@ class Covenant
     /**
      * @param int $delay
      *
-     * @return Project
+     * @return Covenant
      */
-    public function setDelay(int $delay): Project
+    public function setDelay(int $delay): Covenant
     {
         $this->delay = $delay;
 
@@ -299,9 +319,9 @@ class Covenant
     /**
      * @param DateTimeImmutable $endDate
      *
-     * @return Project
+     * @return Covenant
      */
-    public function setEndDate(DateTimeImmutable $endDate): Project
+    public function setEndDate(DateTimeImmutable $endDate): Covenant
     {
         $this->endDate = $endDate;
 
@@ -319,9 +339,9 @@ class Covenant
     /**
      * @param string $periodicity
      *
-     * @return Project
+     * @return Covenant
      */
-    public function setPeriodicity(string $periodicity): Project
+    public function setPeriodicity(string $periodicity): Covenant
     {
         $this->periodicity = $periodicity;
 
