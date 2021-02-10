@@ -15,8 +15,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups":{"programStatus:read", "timestampable:read"}},
- *     denormalizationContext={"groups": {"programStatus:write"}},
+ *     normalizationContext={"groups":{"creditGuaranty:programStatus:read", "timestampable:read"}},
+ *     denormalizationContext={"groups": {"creditGuaranty:programStatus:write"}},
  *      collectionOperations={
  *         "post"
  *     },
@@ -52,7 +52,7 @@ class ProgramStatus implements StatusInterface
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="statuses")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
-     * @Groups({"programStatus:read", "programStatus:write"})
+     * @Groups({"creditGuaranty:programStatus:read", "creditGuaranty:programStatus:write"})
      */
     private Program $program;
 
@@ -63,7 +63,7 @@ class ProgramStatus implements StatusInterface
      *
      * @Assert\Choice(callback="getPossibleStatuses")
      *
-     * @Groups({"programStatus:read", "programStatus:write"})
+     * @Groups({"creditGuaranty:programStatus:read", "creditGuaranty:programStatus:write"})
      */
     private int $status;
 

@@ -16,8 +16,8 @@ use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, Interfaces\
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups":{"program:read", "programStatus:read", "timestampable:read", "money:read", "nullableMoney:read"}},
- *     denormalizationContext={"groups": {"program:write", "money:write", "nullableMoney:write"}},
+ *     normalizationContext={"groups":{"creditGuaranty:program:read", "creditGuaranty:programStatus:read", "timestampable:read", "money:read", "nullableMoney:read"}},
+ *     denormalizationContext={"groups": {"creditGuaranty:program:write", "money:write", "nullableMoney:write"}},
  *      itemOperations={
  *          "get",
  *          "patch"
@@ -42,14 +42,14 @@ class Program implements TraceableStatusAwareInterface
     /**
      * @ORM\Column(length=100, unique=true)
      *
-     * @Groups({"program:read", "program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private string $name;
 
     /**
      * @ORM\Column(type="text", length=16777215, nullable=true)
      *
-     * @Groups({"program:read", "program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private ?string $description;
 
@@ -62,7 +62,7 @@ class Program implements TraceableStatusAwareInterface
      *      message="CreditGuaranty.Program.marketSegment.invalid"
      * )
      *
-     * @Groups({"program:read", "program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private MarketSegment $marketSegment;
 
@@ -71,7 +71,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @Assert\Valid
      *
-     * @Groups({"program:read", "program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private NullableMoney $cappedAt;
 
@@ -80,14 +80,14 @@ class Program implements TraceableStatusAwareInterface
      *
      * @Assert\Valid
      *
-     * @Groups({"program:read", "program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private Money $funds;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"program:read", "program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private ?DateTimeImmutable $distributionDeadline;
 
@@ -96,7 +96,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @Assert\NotBlank(allowNull=true)
      *
-     * @Groups({"program:read", "program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private ?array $distributionProcess;
 
@@ -108,7 +108,7 @@ class Program implements TraceableStatusAwareInterface
      * @Assert\NotBlank(allowNull=true)
      * @Assert\GreaterThanOrEqual(1)
      *
-     * @Groups({"program:read", "program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private ?int $guarantyDuration;
 
@@ -119,7 +119,7 @@ class Program implements TraceableStatusAwareInterface
      * @Assert\PositiveOrZero
      * @Assert\Range(min="0", max="0.9999")
      *
-     * @Groups({"program:read", "program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private ?string $guarantyCoverage;
 
@@ -128,7 +128,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @Assert\Valid
      *
-     * @Groups({"program:read", "program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private NullableMoney $guarantyCost;
 
@@ -143,7 +143,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @MaxDepth(1)
      *
-     * @Groups({"program:read"})
+     * @Groups({"creditGuaranty:program:read"})
      */
     private ?ProgramStatus $currentStatus;
 
