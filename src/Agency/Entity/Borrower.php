@@ -82,8 +82,11 @@ class Borrower
     /**
      * @var string
      *
+     * @ORM\Column(type="string", length=100)
+     *
      * @Assert\NotBlank
      * @Assert\Choice(callback={LegalForm::class, "getConstList"})
+     * @Assert\Length(max="100")
      *
      * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
