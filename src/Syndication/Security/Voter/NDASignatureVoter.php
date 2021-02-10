@@ -25,6 +25,6 @@ class NDASignatureVoter extends AbstractEntityVoter
 
         return $staff &&
                $staff->getCompany() === $signature->getProjectParticipation()->getParticipant() &&
-               $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $signature->getProjectParticipation());
+               $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $signature->getProjectParticipation());
     }
 }
