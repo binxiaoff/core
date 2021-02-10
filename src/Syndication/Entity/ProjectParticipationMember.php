@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\{ArchivableTrait,
@@ -24,7 +27,7 @@ use Unilend\Core\Model\Bitmask;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectParticipationMember:read", "role:read"}},
+ *     normalizationContext={"groups": {"projectParticipationMember:read", "role:read", "companyGroupTag:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -216,6 +219,26 @@ class ProjectParticipationMember
         $email = $this->staff->getUser()->getEmail();
 
         return (!$firstName || !$lastName) ? $email : ($firstName . ' ' . $lastName);
+    }
+
+    /**
+     * @return bool
+     *
+     * @Groups({"projectParticipationMember:read"})
+     */
+    public function isManager(): bool
+    {
+        return $this->staff->isManager();
+    }
+
+    /**
+     * @return iterable|CompanyGroupTag[]
+     *
+     * @Groups({"projectParticipationMember:read"})
+     */
+    public function getCompanyGroupTags(): iterable
+    {
+        return $this->staff->getCompanyGroupTags();
     }
 
     /**
