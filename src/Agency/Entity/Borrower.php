@@ -137,31 +137,6 @@ class Borrower
      *
      * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
-    private string $matriculationCity;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=9)
-     *
-     * @Assert\NotBlank
-     *
-     * @AssertSiren
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
-     */
-    private string $siren;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=50)
-     *
-     * @Assert\NotBlank
-     * @Assert\Length(max="50")
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
-     */
     private string $signatoryFirstName;
 
     /**
@@ -241,8 +216,6 @@ class Borrower
      * @param Money   $capital
      * @param string  $headquarterAddress
      * @param string  $matriculationNumber
-     * @param string  $matriculationCity
-     * @param string  $siren
      * @param string  $signatoryFirstName
      * @param string  $signatoryLastName
      * @param string  $signatoryEmail
@@ -258,8 +231,6 @@ class Borrower
         Money $capital,
         string $headquarterAddress,
         string $matriculationNumber,
-        string $matriculationCity,
-        string $siren,
         string $signatoryFirstName,
         string $signatoryLastName,
         string $signatoryEmail,
@@ -274,8 +245,6 @@ class Borrower
         $this->capital = $capital;
         $this->headquarterAddress = $headquarterAddress;
         $this->matriculationNumber = $matriculationNumber;
-        $this->matriculationCity = $matriculationCity;
-        $this->siren = $siren;
         $this->signatoryFirstName = $signatoryFirstName;
         $this->signatoryLastName = $signatoryLastName;
         $this->signatoryEmail = $signatoryEmail;
@@ -388,46 +357,6 @@ class Borrower
     public function setMatriculationNumber(string $matriculationNumber): Borrower
     {
         $this->matriculationNumber = $matriculationNumber;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getMatriculationCity(): string
-    {
-        return $this->matriculationCity;
-    }
-
-    /**
-     * @param string $matriculationCity
-     *
-     * @return Borrower
-     */
-    public function setMatriculationCity(string $matriculationCity): Borrower
-    {
-        $this->matriculationCity = $matriculationCity;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSiren(): string
-    {
-        return $this->siren;
-    }
-
-    /**
-     * @param string $siren
-     *
-     * @return Borrower
-     */
-    public function setSiren(string $siren): Borrower
-    {
-        $this->siren = $siren;
 
         return $this;
     }
@@ -550,36 +479,5 @@ class Borrower
         $this->referentEmail = $referentEmail;
 
         return $this;
-    }
-
-    /**
-     * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
-     */
-    public function validateMatriculationNumberConsistency(ExecutionContextInterface $context)
-    {
-        $tokens = explode(' ', $this->matriculationNumber);
-
-        $city = array_filter($tokens, static fn ($token) => false === preg_match("/^(RCS|A|B|\d+)$/", $token));
-        $city = implode(' ', $city);
-
-        if ($city !== $this->getMatriculationCity()) {
-            $context->buildViolation('Agency.Borrower.matriculationNumber.inconsistentCity')
-                ->setInvalidValue($this->matriculationCity)
-                ->setParameter('city', $city ?? '')
-                ->atPath('matriculationNumber')
-                ->addViolation();
-        }
-
-        $siren = end($tokens);
-
-        if ($siren !== $this->getSiren()) {
-            $context->buildViolation('Agency.Borrower.matriculationNumber.inconsistentSiren')
-                ->setInvalidValue($this->matriculationNumber)
-                ->setParameter('siren', $siren ?? '')
-                ->atPath('matriculationNumber')
-                ->addViolation();
-        }
     }
 }

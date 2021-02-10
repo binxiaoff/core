@@ -3,11 +3,6 @@ Agency:
         type:
             unique: Il ne peut y avoir qu'un seul contact agency par projet
 
-    Borrower:
-        matriculationNumber:
-            inconsistentSiren: Les SIREN ne sont pas cohérents dans cet emprunteur
-            inconsistentCity: Les villes d'immatriculation ne sont pas cohérents dans cet emprunteur
-
     Tranche:
         commission:
             incomplete: Ce champ est manquant pour valider la commission de la tranche

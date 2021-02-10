@@ -157,8 +157,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             new Money('EUR', (string) $this->faker->randomFloat(0, 100000)),
             $this->faker->address,
             implode(' ', ['RCS', strtoupper($city), $this->faker->randomDigit % 2 ? 'A' : 'B', $siren]),
-            $city,
-            $siren,
             $this->faker->firstName,
             $this->faker->lastName,
             $this->faker->email,
