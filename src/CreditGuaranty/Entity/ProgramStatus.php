@@ -50,7 +50,7 @@ class ProgramStatus implements StatusInterface
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="statuses")
-     * @ORM\JoinColumn(name="id_program", nullable=false)
+     * @ORM\JoinColumn(name="id_program", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"creditGuaranty:programStatus:read", "creditGuaranty:programStatus:write"})
      */

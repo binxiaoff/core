@@ -20,10 +20,11 @@ use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, Interfaces\
  *     denormalizationContext={"groups": {"creditGuaranty:program:write", "money:write", "nullableMoney:write"}},
  *      itemOperations={
  *          "get",
- *          "patch"
+ *          "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"},
+ *          "delete": {"security": "is_granted('delete', object)"}
  *      },
  *      collectionOperations={
- *         "post"
+ *         "post": {"security_post_denormalize": "is_granted('create', object)"}
  *     }
  * )
  *
