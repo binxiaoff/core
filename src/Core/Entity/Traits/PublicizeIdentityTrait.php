@@ -12,26 +12,22 @@ use Throwable;
 trait PublicizeIdentityTrait
 {
     /**
-     * @var int
-     *
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      *
      * @ApiProperty(identifier=false)
      */
-    private $id;
+    private ?int $id = null;
 
     /**
      * @see https://github.com/ramsey/uuid-doctrine/issues/13
-     *
-     * @var string
      *
      * @ORM\Column(length=36, unique=true)
      *
      * @ApiProperty(identifier=true)
      */
-    private $publicId;
+    private ?string $publicId = null;
 
     /**
      * @return int|null
