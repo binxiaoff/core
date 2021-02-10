@@ -66,7 +66,11 @@ class ProjectVoter extends AbstractEntityVoter
 
         return $projectParticipation &&
             $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $projectParticipation) &&
-            ($this->projectManager->hasSignedNDA($project, $staff) || $project->getArranger() === $staff->getCompany());
+            (
+                $this->projectManager->hasSignedNDA($project, $staff) ||
+                null === $projectParticipation->getAcceptableNdaVersion() ||
+                $project->getArranger() === $staff->getCompany()
+            );
     }
 
     /**
