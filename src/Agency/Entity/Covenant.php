@@ -173,6 +173,17 @@ class Covenant
     private Collection $terms;
 
     /**
+     * @var Collection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginRule", mappedBy="covenant")
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"covenant:read"})
+     */
+    private Collection $marginRules;
+
+    /**
      * @param Project           $project
      * @param string            $name
      * @param string            $nature
@@ -185,16 +196,16 @@ class Covenant
      */
     public function __construct(Project $project, string $name, string $nature, DateTimeImmutable $startDate, int $delay, DateTimeImmutable $endDate, string $periodicity)
     {
-        $this->project     = $project;
-        $this->name        = $name;
-        $this->nature      = $nature;
-        $this->startDate   = $startDate;
-        $this->delay       = $delay;
-        $this->endDate     = $endDate;
-        $this->periodicity = $periodicity;
-        $this->added       = new DateTimeImmutable();
+        $this->project           = $project;
+        $this->name              = $name;
+        $this->nature            = $nature;
+        $this->startDate         = $startDate;
+        $this->delay             = $delay;
+        $this->endDate           = $endDate;
+        $this->periodicity       = $periodicity;
+        $this->added             = new DateTimeImmutable();
         $this->publicationDate   = null;
-        $this->terms = new ArrayCollection();
+        $this->terms             = new ArrayCollection();
     }
 
     /**
@@ -445,6 +456,14 @@ class Covenant
     public function getPeriodicities(): iterable
     {
         return static::getConstants('PERIODICITY_');
+    }
+
+    /**
+     * @return int
+     */
+    private function getCovenantYearsDuration(): int
+    {
+        return (int) $this->getEndYear() - (int) $this->getStartYear();
     }
 
     /**
