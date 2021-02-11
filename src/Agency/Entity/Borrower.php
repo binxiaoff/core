@@ -45,6 +45,9 @@ use Unilend\Core\Validator\Constraints\{Rcs as AssertRcs, Siren as AssertSiren};
  *             "read": false,
  *             "output": false,
  *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)",
+ *          },
  *         "patch": {
  *              "denormalization_context": {
  *                  "groups": {"borrower:write", "money:write"}
