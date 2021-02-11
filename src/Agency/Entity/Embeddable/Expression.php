@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity\Embeddable;
 
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
@@ -27,7 +29,7 @@ class Expression
      * @ORM\Column(type="string", length=2)
      *
      * @Assert\NotBlank
-    * @Assert\Choice(callback="getOperators")
+     * @Assert\Choice(callback="getOperators")
      *
      * @Groups({
      *     "agency:expression:read",
