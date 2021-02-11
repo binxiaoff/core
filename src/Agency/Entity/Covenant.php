@@ -388,6 +388,22 @@ class Covenant
     }
 
     /**
+     * @return string
+     */
+    public function getEndYear()
+    {
+        return $this->endDate->format('Y');
+    }
+
+    /**
+     * @return string
+     */
+    public function getStartYear()
+    {
+        return $this->startDate->format('Y');
+    }
+
+    /**
      * @return string[]|iterable
      */
     private function getNatures(): iterable
@@ -404,20 +420,32 @@ class Covenant
     }
 
     /**
+     * @return int
+     */
+    private function getCovenantYearsDuration(): int
+    {
+        return (int) $this->getEndYear() - (int) $this->getStartYear();
+    }
+
+    /**
      * @Assert\Callback
      *
      * @param ExecutionContextInterface $context
      */
     private function validateCovenantRules(ExecutionContextInterface $context)
     {
-        if (false === $this->isFinancial() && $this->covenantRules->count() !== 0) {
+        $covenantRulesCount = $this->covenantRules->count();
+
+        // non financial covenant must not have rules
+        if (false === $this->isFinancial() && 0 !== $covenantRulesCount) {
             $context->buildViolation('Agency.CovenantRule.inconsistentCovenant')
                 ->atPath('covenantRules')
                 ->addViolation();
         }
 
-        if ($this->isFinancial() && $this->covenantRules->count() === 0) {
-            $context->buildViolation('Agency.CovenantRule.requiredRules')
+        // financial covenant must have 1 rule per year (including starting year)
+        if ($this->isFinancial() && ($this->getCovenantYearsDuration() + 1) !== $covenantRulesCount) {
+            $context->buildViolation('Agency.CovenantRule.inconsistentCovenant')
                 ->atPath('covenantRules')
                 ->addViolation();
         }

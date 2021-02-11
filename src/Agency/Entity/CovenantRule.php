@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -13,6 +14,8 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 /**
  * @ORM\Table(name="agency_covenant_rule")
  * @ORM\Entity
+ *
+ * @UniqueEntity(fields={"year", "covenant"}, message="Agency.CovenantRule.yearUnicity")
  */
 class CovenantRule
 {
@@ -29,15 +32,16 @@ class CovenantRule
     private Covenant $covenant;
 
     /**
-     * @var string
+     * @var int
      *
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="int")
      *
      * @Assert\NotBlank
+     * @Assert\Positive
      *
      * @Groups({"covenantRule:read"})
      */
-    private string $year;
+    private int $year;
 
     /**
      * @var string
@@ -53,13 +57,13 @@ class CovenantRule
 
     /**
      * @param Covenant $covenant
-     * @param string   $year
+     * @param int      $year
      * @param string   $expression
      */
-    public function __construct(Covenant $covenant, string $year, string $expression)
+    public function __construct(Covenant $covenant, int $year, string $expression)
     {
-        $this->covenant = $covenant;
-        $this->year = $year;
+        $this->covenant   = $covenant;
+        $this->year       = $year;
         $this->expression = $expression;
     }
 
@@ -72,9 +76,9 @@ class CovenantRule
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getYear(): string
+    public function getYear(): int
     {
         return $this->year;
     }
@@ -108,6 +112,20 @@ class CovenantRule
     {
         if (false === $this->covenant->isFinancial()) {
             $context->buildViolation('Agency.CovenantRule.inconsistentCovenant')
+                ->atPath('covenant')
+                ->addViolation();
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    private function validateYear(ExecutionContextInterface $context)
+    {
+        if ($this->year < $this->covenant->getStartYear() || $this->year > $this->covenant->getEndYear()) {
+            $context->buildViolation('Agency.CovenantRule.inconsistentYear')
                 ->atPath('covenant')
                 ->addViolation();
         }
