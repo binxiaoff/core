@@ -6,6 +6,7 @@ namespace Unilend\Agency\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
@@ -138,6 +139,8 @@ class Covenant
      * @param int               $delay
      * @param DateTimeImmutable $endDate
      * @param string            $periodicity
+     *
+     * @throws Exception
      */
     public function __construct(Project $project, string $name, string $nature, DateTimeImmutable $startDate, int $delay, DateTimeImmutable $endDate, string $periodicity)
     {
@@ -148,6 +151,7 @@ class Covenant
         $this->delay       = $delay;
         $this->endDate     = $endDate;
         $this->periodicity = $periodicity;
+        $this->added       = new DateTimeImmutable();
     }
 
     /**
