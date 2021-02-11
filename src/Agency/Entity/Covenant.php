@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use DateTimeImmutable;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
@@ -27,11 +29,6 @@ class Covenant
     public const NATURE_CONTROL            = "control";
     public const NATURE_FINANCIAL_ELEMENT  = "financial_element";
     public const NATURE_FINANCIAL_RATIO    = "financial_ratio";
-
-    public const FINANCIAL_NATURES = [
-        self::NATURE_FINANCIAL_ELEMENT,
-        self::NATURE_FINANCIAL_RATIO,
-    ];
 
     public const PERIODICITY_3M = 'P3M';
     public const PERIODICITY_6M = 'P6M';
@@ -139,13 +136,15 @@ class Covenant
     private string $periodicity;
 
     /**
-     * @var iterable
+     * @var Collection
      *
-     * @ORM\OneToMany(targetEntity="CovenantRule", mappedBy="covenant")
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\CovenantRule", mappedBy="covenant", indexBy="year")
+     *
+     * @Assert\Valid
      *
      * @Groups({"covenant:read"})
      */
-    private iterable $financialRules;
+    private Collection $covenantRules;
 
     /**
      * @param Project           $project
@@ -371,26 +370,56 @@ class Covenant
     }
 
     /**
-     * @return iterable
+     * @return bool
      */
-    public function getFinancialRules(): iterable
+    public function isFinancial(): bool
     {
-        return $this->financialRules;
+        $financialNatures = [self::NATURE_FINANCIAL_RATIO, self::NATURE_FINANCIAL_ELEMENT];
+
+        return in_array($this->nature, $financialNatures);
     }
 
     /**
-     * @return string[]|array
+     * @return CovenantRule[]\iterable
      */
-    private function getNatures(): array
+    public function getCovenantRules(): iterable
+    {
+        return $this->covenantRules;
+    }
+
+    /**
+     * @return string[]|iterable
+     */
+    private function getNatures(): iterable
     {
         return static::getConstants('NATURE_');
     }
 
     /**
-     * @return string[]|array
+     * @return string[]|iterable
      */
-    private function getPeriodicities(): array
+    private function getPeriodicities(): iterable
     {
         return static::getConstants('PERIODICITY_');
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    private function validateCovenantRules(ExecutionContextInterface $context)
+    {
+        if (false === $this->isFinancial() && $this->covenantRules->count() !== 0) {
+            $context->buildViolation('Agency.CovenantRule.inconsistentCovenant')
+                ->atPath('covenantRules')
+                ->addViolation();
+        }
+
+        if ($this->isFinancial() && $this->covenantRules->count() === 0) {
+            $context->buildViolation('Agency.CovenantRule.requiredRules')
+                ->atPath('covenantRules')
+                ->addViolation();
+        }
     }
 }

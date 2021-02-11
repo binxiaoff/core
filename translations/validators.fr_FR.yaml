@@ -23,6 +23,7 @@ Agency:
 
     CovenantRule:
         inconsistentCovenant: On ne peut ajouter de règle qu'aux engagements de nature financière
+        requiredRules: Un engagement de nature financière doit posséder au moins une règle
 
 Core:
     AcceptationsLegalDocs:

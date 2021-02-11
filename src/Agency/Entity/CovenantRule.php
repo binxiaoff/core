@@ -44,6 +44,9 @@ class CovenantRule
      *
      * @ORM\Column(type="string")
      *
+     * @Assert\ExpressionLanguageSyntax
+     * @Assert\NotBlank
+     *
      * @Groups({"covenant:read", "covenant:write"})
      */
     private string $expression;
@@ -95,14 +98,15 @@ class CovenantRule
 
         return $this;
     }
+
     /**
      * @Assert\Callback
      *
      * @param ExecutionContextInterface $context
      */
-    public function validateCovenantIsFinancial(ExecutionContextInterface $context)
+    private function validateCovenant(ExecutionContextInterface $context)
     {
-        if (false === in_array($this->covenant->getNature(), Covenant::FINANCIAL_NATURES)) {
+        if (false === $this->covenant->isFinancial()) {
             $context->buildViolation('Agency.CovenantRule.inconsistentCovenant')
                 ->atPath('covenant')
                 ->addViolation();

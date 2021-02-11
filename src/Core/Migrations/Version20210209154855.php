@@ -16,14 +16,12 @@ final class Version20210209154855 extends AbstractMigration
 
     public function up(Schema $schema) : void
     {
-        // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE agency_covenant_rule (id INT AUTO_INCREMENT NOT NULL, id_covenant INT DEFAULT NULL, year VARCHAR(255) NOT NULL, expression VARCHAR(255) NOT NULL, public_id VARCHAR(36) NOT NULL, UNIQUE INDEX UNIQ_926F7788B5B48B91 (public_id), INDEX IDX_926F7788A4306C62 (id_covenant), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('ALTER TABLE agency_covenant_rule ADD CONSTRAINT FK_926F7788A4306C62 FOREIGN KEY (id_covenant) REFERENCES agency_covenant (id)');
     }
 
     public function down(Schema $schema) : void
     {
-        // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('DROP TABLE agency_covenant_rule');
     }
 }
