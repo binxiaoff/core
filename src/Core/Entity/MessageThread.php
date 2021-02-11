@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource};
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
-use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\{Project, ProjectParticipation};
 
 /**
  * @ORM\Entity
@@ -26,10 +27,6 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  *      "messageFile:read",
  *      "staff:read",
  *      "company:read",
- *      "nullableMoney:read",
- *      "money:read",
- *      "archivable:read",
- *      "project:read",
  *      "timestampable:read",
  *      "file:read",
  *      "user:read",
@@ -56,6 +53,10 @@ class MessageThread
      *
      * @ORM\OneToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation")
      * @ORM\JoinColumn(name="id_project_participation", referencedColumnName="id")
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
+     *
+     * @Groups({"messageThread:read"})
      */
     private ?ProjectParticipation $projectParticipation = null;
 
@@ -107,13 +108,15 @@ class MessageThread
     }
 
     /**
+     * @ApiProperty(readableLink=false, writableLink=false)
+     *
      * @Groups({"messageThread:read"})
      *
-     * @return string
+     * @return Project
      */
-    public function getProjectPublicId(): string
+    public function getProject(): Project
     {
-        return $this->projectParticipation->getProject()->getPublicId();
+        return $this->projectParticipation->getProject();
     }
 
     /**
@@ -131,29 +134,33 @@ class MessageThread
      *
      * @return string
      */
-    public function getProjectParticipationPublicId(): string
-    {
-        return $this->projectParticipation->getPublicId();
-    }
-
-    /**
-     * @Groups({"messageThread:read"})
-     *
-     * @return string
-     */
     public function getParticipantName(): string
     {
         return $this->projectParticipation->getParticipant()->getCompanyName();
     }
 
     /**
+     * @ApiProperty(readableLink=false, writableLink=false)
+     *
      * @Groups({"messageThread:read"})
      *
-     * @return string
+     * @return Company
      */
-    public function getParticipantPublicId(): string
+    public function getParticipant(): Company
     {
-        return $this->projectParticipation->getParticipant()->getPublicId();
+        return $this->projectParticipation->getParticipant();
+    }
+
+    /**
+     * @ApiProperty(readableLink=false, writableLink=false)
+     *
+     * @Groups({"messageThread:read"})
+     *
+     * @return Company
+     */
+    public function getProjectSubmitterCompany(): Company
+    {
+        return $this->projectParticipation->getProject()->getSubmitterCompany();
     }
 
     /**
@@ -164,15 +171,5 @@ class MessageThread
     public function getProjectSubmitterCompanyName(): string
     {
         return $this->projectParticipation->getProject()->getSubmitterCompany()->getDisplayName();
-    }
-
-    /**
-     * @Groups({"messageThread:read"})
-     *
-     * @return string
-     */
-    public function getProjectSubmitterCompanyPublicId(): string
-    {
-        return $this->projectParticipation->getProject()->getSubmitterCompany()->getPublicId();
     }
 }
