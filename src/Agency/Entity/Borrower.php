@@ -44,6 +44,12 @@ use Unilend\Core\Validator\Constraints\{Rcs as AssertRcs, Siren as AssertSiren};
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *         },
+ *         "patch": {
+ *              "denormalization_context": {
+ *                  "groups": {"borrower:write", "money:write"}
+ *              },
+ *             "security_post_denormalize": "is_granted('edit', object)",
  *         }
  *     }
  * )
