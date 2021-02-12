@@ -12,6 +12,10 @@ use Unilend\Agency\Entity\Borrower;
 use Unilend\Agency\Entity\BorrowerTrancheShare;
 use Unilend\Agency\Entity\Contact;
 use Unilend\Agency\Entity\Covenant;
+use Unilend\Agency\Entity\CovenantRule;
+use Unilend\Agency\Entity\Embeddable\Expression;
+use Unilend\Agency\Entity\MarginImpact;
+use Unilend\Agency\Entity\MarginRule;
 use Unilend\Agency\Entity\Participation;
 use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 use Unilend\Agency\Entity\Project;
@@ -65,7 +69,11 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $project->setPrincipalSyndicationType(SyndicationType::PRIMARY);
         $project->setPrincipalParticipationType(ParticipationType::DIRECT);
 
-        $covenants = array_map(fn () => $this->createCovenant($project), range(0, 3));
+        $otherCovenant     = $this->createCovenant($project, Covenant::NATURE_DOCUMENT);
+        $financialCovenant = $this->createCovenant($project, Covenant::NATURE_FINANCIAL_ELEMENT);
+
+        $covenantRules = array_map(fn ($index) => $this->createCovenantRule($financialCovenant, $index), range(0, $financialCovenant->getCovenantYearsDuration()));
+        $marginRule = $this->createMarginRule($financialCovenant);
 
         /** @var Borrower[]|array $borrowers */
         $borrowers = array_map(fn () => $this->createBorrower($project, $staff), range(0, 3));
@@ -92,7 +100,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ),
         ];
 
-        array_map([$manager, 'persist'], [...$borrowers, ...$tranches, ...$borrowerTrancheShares, ...$participations, ...$covenants]);
+        array_map([$manager, 'persist'], [...$borrowers, ...$tranches, ...$borrowerTrancheShares, ...$participations, ...$otherCovenant, ...$covenantRules, ...$marginRule]);
 
         $manager->flush();
     }
@@ -221,21 +229,54 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     /**
      * @param Project $project
+     * @param string  $nature
      *
      * @return Covenant
      *
      * @throws Exception
      */
-    private function createCovenant(Project $project)
+    private function createCovenant(Project $project, string $nature)
     {
         return new Covenant(
             $project,
             $this->faker->title,
-            Covenant::NATURE_CONTROL,
+            $nature,
             new DateTimeImmutable('now'),
             90,
-            DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+6 months', '+6 years')),
+            DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+2 years', '+6 years')),
             'P6M'
         );
+    }
+
+    /**
+     * @param Covenant $covenant
+     * @param int      $year
+     *
+     * @return CovenantRule
+     */
+    private function createCovenantRule(Covenant $covenant, int $year)
+    {
+        return new CovenantRule(
+            $covenant,
+            $covenant->getStartYear() + $year,
+            new Expression('>=', '0.9')
+        );
+    }
+
+    /**
+     * @param Covenant $covenant
+     *
+     * @return MarginRule
+     */
+    private function createMarginRule(Covenant $covenant)
+    {
+        $marginRule = new MarginRule($covenant, new Expression('>=', '0.9'));
+
+        foreach ($covenant->getProject()->getTranches() as $tranche) {
+            $marginImpact = new MarginImpact($marginRule, $tranche, '0.9');
+            $marginRule->addImpact($marginImpact);
+        }
+
+        return $marginRule;
     }
 }

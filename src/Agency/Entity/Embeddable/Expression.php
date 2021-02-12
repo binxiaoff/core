@@ -71,6 +71,18 @@ class Expression
     private ?string $maxValue = null;
 
     /**
+     * @param string      $operator
+     * @param string      $value
+     * @param string|null $maxValue
+     */
+    public function __construct(string $operator, string $value, ?string $maxValue = null)
+    {
+        $this->operator = $operator;
+        $this->value    = $value;
+        $this->maxValue = $maxValue;
+    }
+
+    /**
      * @return string
      */
     public function getOperator(): string

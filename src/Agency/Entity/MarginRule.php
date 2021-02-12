@@ -45,7 +45,7 @@ class MarginRule
     /**
      * @var MarginImpact[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginImpact", mappedBy="marginRule")
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginImpact", mappedBy="marginRule", cascade={"persist"})
      *
      * @Assert\Valid
      *
@@ -87,6 +87,28 @@ class MarginRule
     public function setExpression(Expression $expression): MarginRule
     {
         $this->expression = $expression;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|MarginImpact[]
+     */
+    public function getImpacts()
+    {
+        return $this->impacts;
+    }
+
+    /**
+     * @param MarginImpact $impact
+     *
+     * @return MarginRule
+     */
+    public function addImpact(MarginImpact $impact): MarginRule
+    {
+        if (false === $this->impacts->contains($impact)) {
+            $this->impacts->add($impact);
+        }
 
         return $this;
     }

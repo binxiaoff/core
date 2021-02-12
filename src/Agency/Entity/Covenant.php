@@ -175,7 +175,7 @@ class Covenant
     /**
      * @var MarginRule[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginRule", mappedBy="covenant")
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginRule", mappedBy="covenant", cascade={"persist"})
      *
      * @Assert\Valid
      *
@@ -427,19 +427,49 @@ class Covenant
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getEndYear()
+    public function getEndYear(): int
     {
-        return $this->endDate->format('Y');
+        return (int) $this->endDate->format('Y');
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getStartYear()
+    public function getStartYear(): int
     {
-        return $this->startDate->format('Y');
+        return (int) $this->startDate->format('Y');
+    }
+
+    /**
+     * @return int
+     */
+    public function getCovenantYearsDuration(): int
+    {
+        return ($this->getEndYear() - $this->getStartYear());
+    }
+
+    /**
+     * @return MarginRule[]\iterable
+     */
+    public function getMarginRules(): iterable
+    {
+        return $this->marginRules;
+    }
+
+    /**
+     * @param MarginRule $rule
+     *
+     * @return Covenant
+     */
+    public function addMarginRule(MarginRule $rule): Covenant
+    {
+        if (false === $this->marginRules->contains($rule)) {
+            $this->marginRules->add($rule);
+        }
+
+        return $this;
     }
 
     /**
@@ -456,14 +486,6 @@ class Covenant
     public function getPeriodicities(): iterable
     {
         return static::getConstants('PERIODICITY_');
-    }
-
-    /**
-     * @return int
-     */
-    private function getCovenantYearsDuration(): int
-    {
-        return (int) $this->getEndYear() - (int) $this->getStartYear();
     }
 
     /**
