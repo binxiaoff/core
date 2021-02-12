@@ -75,18 +75,6 @@ class Term
     }
 
     /**
-     * @param DateTimeImmutable $start
-     *
-     * @return Term
-     */
-    public function setStart(DateTimeImmutable $start): Term
-    {
-        $this->start = $start;
-
-        return $this;
-    }
-
-    /**
      * @return DateTimeImmutable
      */
     public function getEnd(): DateTimeImmutable

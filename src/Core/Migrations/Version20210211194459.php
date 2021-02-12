@@ -14,7 +14,7 @@ final class Version20210211194459 extends AbstractMigration
      */
     public function getDescription() : string
     {
-        return '[Agency] Add term and publicationDate to covenant';
+        return '[Agency] CALS-3300 Add term and publicationDate to covenant';
     }
 
     /**

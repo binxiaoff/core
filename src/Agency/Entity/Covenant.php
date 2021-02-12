@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
-use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiResource;
 use DateInterval;
 use DatePeriod;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -156,7 +154,7 @@ class Covenant
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"covenant:read"})
+     * @Groups({"agency:covenant:read"})
      */
     private ?DateTimeImmutable $publicationDate;
 
@@ -164,8 +162,9 @@ class Covenant
      * @var Collection|Term[]
      *
      * @ORM\OneToMany(targetEntity=Term::class, cascade={"persist", "remove"}, mappedBy="covenant")
+     * @ORM\OrderBy({"start"="ASC"})
      *
-     * @Groups({"covenant:read"})
+     * @Groups({"agency:covenant:read"})
      */
     private Collection $terms;
 
@@ -420,6 +419,9 @@ class Covenant
         return $this->endDate->format('Y');
     }
 
+    /**
+     * @return string
+     */
     public function getStartYear()
     {
         return $this->startDate->format('Y');
@@ -428,7 +430,7 @@ class Covenant
     /**
      * @return string[]|iterable
      */
-    private function getNatures(): iterable
+    public function getNatures(): iterable
     {
         return static::getConstants('NATURE_');
     }
@@ -442,24 +444,16 @@ class Covenant
     }
 
     /**
-     * @return int
-     */
-    private function getCovenantYearsDuration(): int
-    {
-        return (int) $this->getEndYear() - (int) $this->getStartYear();
-    }
-
-    /**
      * @Assert\Callback
      *
      * @param ExecutionContextInterface $context
      */
-    private function validateCovenantRules(ExecutionContextInterface $context)
+    public function validateCovenantRules(ExecutionContextInterface $context)
     {
         $covenantRulesCount = count($this->covenantRules);
 
         // non financial covenant must not have rules
-        if (false === $this->isFinancial() && 0 !== $covenantRulesCount) {
+        if (0 !== $covenantRulesCount && false === $this->isFinancial()) {
             $context->buildViolation('Agency.CovenantRule.inconsistentCovenant')
                 ->atPath('covenantRules')
                 ->addViolation();
@@ -476,9 +470,7 @@ class Covenant
     /**
      * @return bool
      *
-     * @ApiProperty(readable=true)
-     *
-     * @Groups({"covenant:read"})
+     * @Groups({"agency:covenant:read"})
      */
     public function isPublished(): bool
     {
@@ -486,17 +478,30 @@ class Covenant
     }
 
     /**
-     * @ApiProperty(writable=true)
+     * This method actually publish a covenant
      *
      * @throws Exception
+     *
+     * @return Covenant
      */
-    public function publish()
+    public function publish(): Covenant
     {
+        if ($this->isPublished()) {
+            return $this;
+        }
+
         $this->publicationDate = new DateTimeImmutable();
 
-        foreach ((new DatePeriod($this->startDate, new DateInterval($this->periodicity), $this->endDate)) as $termStart) {
-            $this->terms[] = new Term($this, $termStart, DateTimeImmutable::createFromFormat('U', (string) strtotime('+' . $this->delay . ' days', $termStart->getTimestamp())));
+        // This create an iterable with each of the term start date
+        // https://www.php.net/manual/fr/class.dateperiod.php
+        $datePeriod = new DatePeriod($this->startDate, new DateInterval($this->periodicity), $this->endDate);
+
+        foreach ($datePeriod as $termStart) {
+            $termEnd = DateTimeImmutable::createFromFormat('U', (string) strtotime('+' . $this->delay . ' days', $termStart->getTimestamp()));
+            $this->terms[] = new Term($this, $termStart, $termEnd);
         }
+
+        return $this;
     }
 
     /**
@@ -505,5 +510,13 @@ class Covenant
     public function getPublicationDate(): ?DateTimeImmutable
     {
         return $this->publicationDate;
+    }
+
+    /**
+     * @return int
+     */
+    private function getCovenantYearsDuration(): int
+    {
+        return (int) $this->getEndYear() - (int) $this->getStartYear();
     }
 }
