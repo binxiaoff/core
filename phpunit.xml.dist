@@ -18,21 +18,47 @@
     </php>
 
     <extensions>
-        <extension class="Unilend\Test\Hook\BypassFinalHook"/>
+        <extension class="Unilend\Test\Core\Hook\BypassFinalHook"/>
         <extension class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension" />
     </extensions>
 
     <testsuites>
         <testsuite name="all">
-            <directory suffix="Test.php">tests</directory>
-        </testsuite>
-
-        <testsuite name="functional">
-            <directory suffix="Test.php">tests/Functional</directory>
+            <directory>tests</directory>
         </testsuite>
 
         <testsuite name="unit">
-            <directory suffix="Test.php">tests/Unit</directory>
+            <directory>tests/Core/Unit</directory>
+            <directory>tests/Syndication/Unit</directory>
+        </testsuite>
+
+        <testsuite name="functional">
+            <directory>tests/Core/Functional</directory>
+            <directory>tests/Syndication/Functional</directory>
+        </testsuite>
+
+        <testsuite name="core">
+            <directory>tests/Core</directory>
+        </testsuite>
+
+        <testsuite name="core\unit">
+            <directory>tests/Core/Unit</directory>
+        </testsuite>
+
+        <testsuite name="core\functional">
+            <directory>tests/Core/Functional</directory>
+        </testsuite>
+
+        <testsuite name="syndication">
+            <directory>tests/Syndication</directory>
+        </testsuite>
+
+        <testsuite name="syndication\unit">
+            <directory>tests/Syndication/Unit</directory>
+        </testsuite>
+
+        <testsuite name="syndication\functional">
+            <directory>tests/Syndication/Functional</directory>
         </testsuite>
     </testsuites>
 
