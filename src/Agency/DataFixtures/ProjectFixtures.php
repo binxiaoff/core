@@ -69,12 +69,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $project->setPrincipalSyndicationType(SyndicationType::PRIMARY);
         $project->setPrincipalParticipationType(ParticipationType::DIRECT);
 
-        $otherCovenant     = $this->createCovenant($project, Covenant::NATURE_DOCUMENT);
-        $financialCovenant = $this->createCovenant($project, Covenant::NATURE_FINANCIAL_ELEMENT);
-
-        $covenantRules = array_map(fn ($index) => $this->createCovenantRule($financialCovenant, $index), range(0, $financialCovenant->getCovenantYearsDuration()));
-        $marginRule = $this->createMarginRule($financialCovenant);
-
         /** @var Borrower[]|array $borrowers */
         $borrowers = array_map(fn () => $this->createBorrower($project, $staff), range(0, 3));
 
@@ -89,6 +83,18 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             new BorrowerTrancheShare($borrowers[2], $tranches[2], new Money('EUR', '2000000')),
         ];
 
+        $otherCovenant     = $this->createCovenant($project, Covenant::NATURE_DOCUMENT);
+        $financialCovenant = $this->createCovenant($project, Covenant::NATURE_FINANCIAL_ELEMENT);
+
+        $covenantRules = array_map(fn ($index) => $this->createCovenantRule($financialCovenant, $index), range(0, $financialCovenant->getCovenantYearsDuration()));
+        $marginRule = $this->createMarginRule($financialCovenant, $tranches);
+
+        $agentParticipation = $this->createParticipation($project, $this->getReference(CompanyFixtures::CALS));
+        $agentParticipation->setResponsibilities((new Bitmask(0))->add(Participation::RESPONSIBILITY_AGENT));
+        $agentParticipation->setAllocations([
+            new ParticipationTrancheAllocation($agentParticipation, $tranches[0], new Money('EUR', '2000000')),
+        ]);
+
         $participations = [
             ...array_map(
                 fn ($company) => $this->createParticipation($project, $this->getReference($company)),
@@ -100,7 +106,16 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ),
         ];
 
-        array_map([$manager, 'persist'], [...$borrowers, ...$tranches, ...$borrowerTrancheShares, ...$participations, ...$otherCovenant, ...$covenantRules, ...$marginRule]);
+        array_map([$manager, 'persist'], [
+            ...$borrowers,
+            ...$tranches,
+            ...$borrowerTrancheShares,
+            ...$participations,
+            $otherCovenant,
+            $financialCovenant,
+            ...$covenantRules,
+            $marginRule,
+        ]);
 
         $manager->flush();
     }
@@ -264,15 +279,16 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
-     * @param Covenant $covenant
+     * @param Covenant           $covenant
+     * @param Tranche[]|iterable $tranches
      *
      * @return MarginRule
      */
-    private function createMarginRule(Covenant $covenant)
+    private function createMarginRule(Covenant $covenant, iterable $tranches)
     {
         $marginRule = new MarginRule($covenant, new Expression('>=', '0.9'));
 
-        foreach ($covenant->getProject()->getTranches() as $tranche) {
+        foreach ($tranches as $tranche) {
             $marginImpact = new MarginImpact($marginRule, $tranche, '0.9');
             $marginRule->addImpact($marginImpact);
         }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -48,6 +49,7 @@ class MarginRule
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginImpact", mappedBy="marginRule", cascade={"persist"})
      *
      * @Assert\Valid
+     * @Assert\Count(min="1")
      *
      * @Groups({"marginRule:read"})
      */
@@ -61,6 +63,7 @@ class MarginRule
     {
         $this->covenant   = $covenant;
         $this->expression = $expression;
+        $this->impacts    = new ArrayCollection();
     }
 
     /**
