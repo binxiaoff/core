@@ -21,20 +21,20 @@ use Unilend\Core\Validator\Constraints\{Rcs as AssertRcs, Siren as AssertSiren};
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
- *             "borrower:read",
+ *             "agency:borrower:read",
  *             "money:read"
  *         }
  *     },
  *     denormalizationContext={
  *         "groups": {
- *             "borrower:write",
+ *             "agency:borrower:write",
  *             "money:write"
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
  *              "denormalization_context": {
- *                  "groups": {"borrower:create", "money:write"}
+ *                  "groups": {"agency:borrower:create", "money:write"}
  *              },
  *             "security_post_denormalize": "is_granted('create', object)",
  *         }
@@ -63,7 +63,7 @@ class Borrower
      *
      * @Assert\NotBlank
      *
-     * @Groups({"borrower:read", "borrower:create"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create"})
      */
     private Project $project;
 
@@ -75,7 +75,7 @@ class Borrower
      * @Assert\NotBlank
      * @Assert\Length(max="100")
      *
-     * @Groups({"borrower:read", "borrower:create", "borrower:write"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
     private string $corporateName;
 
@@ -85,7 +85,7 @@ class Borrower
      * @Assert\NotBlank
      * @Assert\Choice(callback={LegalForm::class, "getConstList"})
      *
-     * @Groups({"borrower:read", "borrower:create", "borrower:write"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
     private string $legalForm;
 
@@ -95,7 +95,7 @@ class Borrower
      * @Assert\Valid
      * @Assert\NotBlank
      *
-     * @Groups({"borrower:read", "borrower:create", "borrower:write"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
     private Money $capital;
 
@@ -107,7 +107,7 @@ class Borrower
      * @Assert\Length(max="100")
      * @Assert\NotBlank
      *
-     * @Groups({"borrower:read", "borrower:create", "borrower:write"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
     private string $headquarterAddress;
 
@@ -121,7 +121,7 @@ class Borrower
      *
      * @AssertRcs
      *
-     * @Groups({"borrower:read", "borrower:create", "borrower:write"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
     private string $matriculationNumber;
 
@@ -133,7 +133,7 @@ class Borrower
      * @Assert\NotBlank
      * @Assert\Length(max="50")
      *
-     * @Groups({"borrower:read", "borrower:create", "borrower:write"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
     private string $matriculationCity;
 
@@ -146,7 +146,7 @@ class Borrower
      *
      * @AssertSiren
      *
-     * @Groups({"borrower:read", "borrower:create", "borrower:write"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
     private string $siren;
 
@@ -158,7 +158,7 @@ class Borrower
      * @Assert\NotBlank
      * @Assert\Length(max="50")
      *
-     * @Groups({"borrower:read", "borrower:create", "borrower:write"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
     private string $signatoryFirstName;
 
@@ -170,7 +170,7 @@ class Borrower
      * @Assert\NotBlank
      * @Assert\Length(max="50")
      *
-     * @Groups({"borrower:read", "borrower:create", "borrower:write"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
     private string $signatoryLastName;
 
@@ -183,7 +183,7 @@ class Borrower
      * @Assert\Length(max="50")
      * @Assert\Email
      *
-     * @Groups({"borrower:read", "borrower:create", "borrower:write"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
     private string $signatoryEmail;
 
@@ -195,7 +195,7 @@ class Borrower
      * @Assert\NotBlank
      * @Assert\Length(max="50")
      *
-     * @Groups({"borrower:read", "borrower:create", "borrower:write"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
     private string $referentFirstName;
 
@@ -207,7 +207,7 @@ class Borrower
      * @Assert\NotBlank
      * @Assert\Length(max="50")
      *
-     * @Groups({"borrower:read", "borrower:create", "borrower:write"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
     private string $referentLastName;
 
@@ -220,7 +220,7 @@ class Borrower
      * @Assert\Length(max="50")
      * @Assert\Email
      *
-     * @Groups({"borrower:read", "borrower:create", "borrower:write"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */
     private string $referentEmail;
 

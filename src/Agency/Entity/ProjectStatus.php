@@ -49,7 +49,7 @@ class ProjectStatus
      *
      * @ORM\Column(type="integer")
      *
-     * @Groups({"projectStatus:create"})
+     * @Groups({"agency:projectStatus:create"})
      */
     private int $status;
 

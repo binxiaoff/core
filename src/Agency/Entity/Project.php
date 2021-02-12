@@ -27,16 +27,16 @@ use Unilend\Core\Validator\Constraints\Siren;
  *     normalizationContext={
  *         "groups": {
  *             "timestampable:read",
- *             "project:read",
+ *             "agency:project:read",
  *             "money:read",
  *             "timestampable:read",
  *             "nullablePerson:read",
- *             "contact:read"
+ *             "agency:contact:read"
  *         }
  *     },
  *     denormalizationContext={
  *         "groups": {
- *             "project:write",
+ *             "agency:project:write",
  *             "money:write"
  *         }
  *     },
@@ -44,7 +44,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         "get",
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"project:create", "money:write"}},
+ *             "denormalization_context": {"groups": {"agency:project:create", "money:write"}},
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         }
  *     },
@@ -54,7 +54,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {"project:write", "projectStatus:create"}},
+ *             "denormalization_context": {"groups": {"agency:project:write", "agency:projectStatus:create"}},
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
  *     }
@@ -79,7 +79,7 @@ class Project
      *     @ORM\JoinColumn(name="id_agent", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"project:read"})
+     * @Groups({"agency:project:read"})
      *
      * @Assert\NotBlank()
      */
@@ -92,7 +92,7 @@ class Project
      *
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ?string $agentDisplayName;
 
@@ -105,7 +105,7 @@ class Project
      *
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ?string $agentSiren;
 
@@ -117,7 +117,7 @@ class Project
      * @Assert\Choice(callback={LegalForm::class, "getConstList"})
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ?string $agentLegalForm;
 
@@ -128,7 +128,7 @@ class Project
      *
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ?string $headOffice;
 
@@ -137,7 +137,7 @@ class Project
      *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ?NullableMoney $agentCapital;
 
@@ -148,7 +148,7 @@ class Project
      *
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ?string $agentRCS;
 
@@ -159,7 +159,7 @@ class Project
      *
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ?string $agentRegistrationCity;
 
@@ -177,7 +177,7 @@ class Project
      *
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ?string $bankInstitution;
 
@@ -189,7 +189,7 @@ class Project
      * @Assert\Bic
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ?string $bic;
 
@@ -201,7 +201,7 @@ class Project
      * @Assert\Iban
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ?string $iban;
 
@@ -212,7 +212,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", "project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      *
      * @Assert\NotBlank
      * @Assert\Length(max="255")
@@ -228,7 +228,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", "project:read"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private ?string $internalRatingScore;
 
@@ -242,7 +242,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", "project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private string $title;
 
@@ -254,7 +254,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"project:read", "project:write", "project:create"})
+     * @Groups({"agency:project:read", "agency:project:write", "agency:project:create"})
      */
     private Money $globalFundingMoney;
 
@@ -263,7 +263,7 @@ class Project
      *
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"project:write", "project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private bool $silentSyndication;
 
@@ -275,7 +275,7 @@ class Project
      * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"project:write", "project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private ?string $principalSyndicationType;
 
@@ -287,7 +287,7 @@ class Project
      * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"project:write", "project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private ?string $principalParticipationType;
 
@@ -302,7 +302,7 @@ class Project
      *     groups={"published"}
      * )
      *
-     * @Groups({"project:write", "project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private ?string $principalRiskType;
 
@@ -317,7 +317,7 @@ class Project
      *     groups={"published"}
      * )
      *
-     * @Groups({"project:write", "project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private ?string $secondarySyndicationType;
 
@@ -332,7 +332,7 @@ class Project
      *     groups={"published"}
      * )
      *
-     * @Groups({"project:write", "project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private ?string $secondaryParticipationType;
 
@@ -351,7 +351,7 @@ class Project
      *     groups={"published"}
      * )
      *
-     * @Groups({"project:write", "project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private ?string $secondaryRiskType;
 
@@ -360,7 +360,7 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Tranche", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
-     * @Groups({"project:read"})
+     * @Groups({"agency:project:read"})
      */
     private iterable $tranches;
 
@@ -376,7 +376,7 @@ class Project
     /**
      * @var string|null
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      *
      * @ORM\Column(type="string", nullable=true, length=10)
      *
@@ -395,7 +395,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", "project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private MarketSegment $marketSegment;
 
@@ -404,7 +404,7 @@ class Project
      *
      * @ORM\Column(type="date_immutable")
      *
-     * @Groups({"project:write", "project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private DateTimeImmutable $closingDate;
 
@@ -413,7 +413,7 @@ class Project
      *
      * @ORM\Column(type="date_immutable")
      *
-     * @Groups({"project:write", "project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private DateTimeImmutable $contractEndDate;
 
@@ -422,7 +422,7 @@ class Project
      *
      * @ORM\Column(type="text", length=16777215, nullable=true)
      *
-     * @Groups({"project:write", "project:read"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private ?string $description = null;
 
@@ -433,7 +433,7 @@ class Project
      *
      * @Assert\Valid
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      */
     private NullablePerson $agencyContact;
 
@@ -454,7 +454,7 @@ class Project
      * @Assert\Valid
      * @Assert\Expression("this === value.getProject()")
      *
-     * @Groups({"project:read", "project:write"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ProjectStatus $currentStatus;
 
@@ -690,7 +690,7 @@ class Project
     }
 
     /**
-     * @Groups({"project:read"})
+     * @Groups({"agency:project:read"})
      *
      * @return Collection
      */
@@ -700,7 +700,7 @@ class Project
     }
 
     /**
-     * @Groups({"project:read"})
+     * @Groups({"agency:project:read"})
      *
      * @return Collection
      */

@@ -22,18 +22,18 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         "groups": {
  *             "blameable:read",
  *             "timestampable:read",
- *             "contact:read"
+ *             "agency:contact:read"
  *         }
  *     },
  *     denormalizationContext={
  *         "groups": {
- *             "contact:write"
+ *             "agency:contact:write"
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"contact:create", "contact:write"}}
+ *             "denormalization_context": {"groups": {"agency:contact:create", "agency:contact:write"}}
  *         }
  *     },
  *     itemOperations={
@@ -70,7 +70,7 @@ class Contact
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="contacts")
      * @ORM\JoinColumn(name="id_project", nullable=false)
      *
-     * @Groups({"contact:create"})
+     * @Groups({"agency:contact:create"})
      *
      * @Assert\NotBlank
      */
@@ -81,7 +81,7 @@ class Contact
      *
      * @ORM\Column(type="string")
      *
-     * @Groups({"contact:create"})
+     * @Groups({"agency:contact:create"})
      *
      * @Assert\Choice(callback="getTypes")
      */
@@ -92,7 +92,7 @@ class Contact
      *
      * @ORM\Column(type="string")
      *
-     * @Groups({"contact:read", "contact:write"})
+     * @Groups({"agency:contact:read", "agency:contact:write"})
      *
      * @Assert\NotBlank
      */
@@ -103,7 +103,7 @@ class Contact
      *
      * @ORM\Column(type="string")
      *
-     * @Groups({"contact:read", "contact:write"})
+     * @Groups({"agency:contact:read", "agency:contact:write"})
      *
      * @Assert\NotBlank
      */
@@ -114,7 +114,7 @@ class Contact
      *
      * @ORM\Column(type="string")
      *
-     * @Groups({"contact:read", "contact:write"})
+     * @Groups({"agency:contact:read", "agency:contact:write"})
      *
      * @Assert\NotBlank
      */
@@ -125,7 +125,7 @@ class Contact
      *
      * @ORM\Column(type="string")
      *
-     * @Groups({"contact:read", "contact:write"})
+     * @Groups({"agency:contact:read", "agency:contact:write"})
      *
      * @Assert\NotBlank
      */
@@ -136,7 +136,7 @@ class Contact
      *
      * @ORM\Column(type="string")
      *
-     * @Groups({"contact:read", "contact:write"})
+     * @Groups({"agency:contact:read", "agency:contact:write"})
      *
      * @Assert\NotBlank
      * @Assert\Email
@@ -148,7 +148,7 @@ class Contact
      *
      * @ORM\Column(type="string")
      *
-     * @Groups({"contact:read", "contact:write"})
+     * @Groups({"agency:contact:read", "agency:contact:write"})
      *
      * @Assert\NotBlank
      *
@@ -161,7 +161,7 @@ class Contact
      *
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"contact:read", "contact:write"})
+     * @Groups({"agency:contact:read", "agency:contact:write"})
      *
      * @Assert\Type("bool")
      */
