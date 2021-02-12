@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
@@ -42,6 +43,7 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  * )
  * @ApiFilter("Unilend\Core\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"})
  * @ApiFilter(SearchFilter::class, properties={"groupName"})
+ * @ApiFilter("Unilend\Core\Filter\Company\ParticipantCandidateFilter")
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
@@ -51,6 +53,7 @@ class Company implements TraceableStatusAwareInterface
 {
     use TimestampableTrait;
     use PublicizeIdentityTrait;
+    use ConstantsAwareTrait;
 
     public const VAT_METROPOLITAN = 'metropolitan'; // Default tva category : 20 %
     public const VAT_OVERSEAS     = 'overseas'; // Overseas tva category (Guadeloupe, Martinique, Reunion) : 8.5 %
@@ -58,6 +61,10 @@ class Company implements TraceableStatusAwareInterface
     public const GROUPNAME_CA = 'Crédit Agricole';
 
     public const COMPANY_NAME_CALS = 'CA Lending Services';
+
+    public const COMPANY_SHORT_CODE_CASA = 'CASA';
+
+    public const COMPANIES_NON_ELIGIBLE_TO_PARTICIPANT = ['CASA'];
 
     public const SERIALIZER_GROUP_COMPANY_STAFF_READ      = 'company:staff:read';
     public const SERIALIZER_GROUP_COMPANY_ADMIN_READ      = 'company:admin:read';
@@ -557,6 +564,14 @@ class Company implements TraceableStatusAwareInterface
     public function isCAGMember(): bool
     {
         return $this->groupName === static::GROUPNAME_CA;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getPossibleVatTypes(): array
+    {
+        return self::getConstants('VAT_');
     }
 
     /**
