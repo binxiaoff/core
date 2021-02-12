@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
+use DateInterval;
+use DatePeriod;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -147,6 +152,24 @@ class Covenant
     private Collection $covenantRules;
 
     /**
+     * @var DateTimeImmutable|null
+     *
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"covenant:read"})
+     */
+    private ?DateTimeImmutable $publicationDate;
+
+    /**
+     * @var Collection|Term[]
+     *
+     * @ORM\OneToMany(targetEntity=Term::class, cascade={"persist", "remove"}, mappedBy="covenant")
+     *
+     * @Groups({"covenant:read"})
+     */
+    private Collection $terms;
+
+    /**
      * @param Project           $project
      * @param string            $name
      * @param string            $nature
@@ -167,6 +190,8 @@ class Covenant
         $this->endDate     = $endDate;
         $this->periodicity = $periodicity;
         $this->added       = new DateTimeImmutable();
+        $this->publicationDate   = null;
+        $this->terms = new ArrayCollection();
     }
 
     /**
@@ -395,9 +420,6 @@ class Covenant
         return $this->endDate->format('Y');
     }
 
-    /**
-     * @return string
-     */
     public function getStartYear()
     {
         return $this->startDate->format('Y');
@@ -414,7 +436,7 @@ class Covenant
     /**
      * @return string[]|iterable
      */
-    private function getPeriodicities(): iterable
+    public function getPeriodicities(): iterable
     {
         return static::getConstants('PERIODICITY_');
     }
@@ -449,5 +471,39 @@ class Covenant
                 ->atPath('covenantRules')
                 ->addViolation();
         }
+    }
+
+    /**
+     * @return bool
+     *
+     * @ApiProperty(readable=true)
+     *
+     * @Groups({"covenant:read"})
+     */
+    public function isPublished(): bool
+    {
+        return null !== $this->publicationDate;
+    }
+
+    /**
+     * @ApiProperty(writable=true)
+     *
+     * @throws Exception
+     */
+    public function publish()
+    {
+        $this->publicationDate = new DateTimeImmutable();
+
+        foreach ((new DatePeriod($this->startDate, new DateInterval($this->periodicity), $this->endDate)) as $termStart) {
+            $this->terms[] = new Term($this, $termStart, DateTimeImmutable::createFromFormat('U', (string) strtotime('+' . $this->delay . ' days', $termStart->getTimestamp())));
+        }
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getPublicationDate(): ?DateTimeImmutable
+    {
+        return $this->publicationDate;
     }
 }
