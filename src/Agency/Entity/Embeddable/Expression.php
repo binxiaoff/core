@@ -60,7 +60,7 @@ class Expression
      * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
-     * @Assert\Expression("(this.getOperator() !== self::OPERATOR_BETWEEN && value) or !value")
+     * @Assert\Expression("(this.getOperator() === self::OPERATOR_BETWEEN && value) or !value")
      *
      * @Groups({
      *     "agency:expression:read",

@@ -27,6 +27,12 @@ Agency:
         yearUnicity: Il ne peut y avoir qu'une règle par année
         inconsistentYear: L'année doit être comprise entre la date de départ du covenant et sa date de fin
 
+    MarginImpact:
+        unicity: Il ne peut y avoir qu'une marge par tranche
+
+    MarginRule:
+        inconsistentCovenant: On ne peut ajouter de règle d'impact sur les marges qu'aux engagements de nature financière
+
 Core:
     AcceptationsLegalDocs:
         legalDoc:

@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Agency\Entity\Embeddable\Expression;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
@@ -42,7 +43,7 @@ class MarginRule
     private Expression $expression;
 
     /**
-     * @var Collection
+     * @var MarginImpact[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginImpact", mappedBy="marginRule")
      *
@@ -88,5 +89,20 @@ class MarginRule
         $this->expression = $expression;
 
         return $this;
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    private function validateCovenant(ExecutionContextInterface $context)
+    {
+        // non financial covenant must not have margin rules
+        if (false === $this->covenant->isFinancial()) {
+            $context->buildViolation('Agency.MarginRule.inconsistentCovenant')
+                ->atPath('covenant')
+                ->addViolation();
+        }
     }
 }

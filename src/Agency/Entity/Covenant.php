@@ -139,7 +139,7 @@ class Covenant
     private string $periodicity;
 
     /**
-     * @var Collection
+     * @var CovenantRule[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\CovenantRule", mappedBy="covenant", indexBy="year")
      *
@@ -173,7 +173,7 @@ class Covenant
     private Collection $terms;
 
     /**
-     * @var Collection
+     * @var MarginRule[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginRule", mappedBy="covenant")
      *
@@ -554,10 +554,17 @@ class Covenant
     }
 
     /**
-     * @return int
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
      */
-    private function getCovenantYearsDuration(): int
+    private function validateMarginRules(ExecutionContextInterface $context)
     {
-        return (int) $this->getEndYear() - (int) $this->getStartYear();
+        // non financial covenant must not have margin rules
+        if (false === $this->isFinancial() && 0 !== $this->marginRules->count()) {
+            $context->buildViolation('Agency.CovenantRule.inconsistentCovenant')
+                ->atPath('marginRules')
+                ->addViolation();
+        }
     }
 }

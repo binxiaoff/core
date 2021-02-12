@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ORM\Table(name="agency_margin_impact")
  * @ORM\Entity
+ *
+ * @UniqueEntity(fields={"rule", "tranche"}, message="Agency.MarginImpact.unicity")
  */
 class MarginImpact
 {
@@ -23,6 +27,7 @@ class MarginImpact
      * @ORM\JoinColumn(name="id_margin_rule")
      *
      * @Assert\NotBlank
+     * @Assert\Valid
      */
     private MarginRule $rule;
 
@@ -33,6 +38,8 @@ class MarginImpact
      * @ORM\JoinColumn(name="id_tranche")
      *
      * @Assert\NotBlank
+     *
+     * @Groups({"marginImpact:read", "marginImpact:create"})
      */
     private Tranche $tranche;
 
@@ -44,6 +51,7 @@ class MarginImpact
      * @Assert\Type("numeric")
      * @Assert\NotBlank
      *
+     * @Groups({"marginImpact:read", "marginImpact:create", "marginImpact:write"})
      */
     private string $margin;
 
