@@ -49,7 +49,7 @@ class Covenant
      *
      * @Assert\NotBlank
      *
-     * @Groups({"covenant:read"})
+     * @Groups({"agency:covenant:read"})
      */
     private string $name;
 
@@ -58,7 +58,7 @@ class Covenant
      *
      * @ORM\Column(type="string", nullable=true)
      *
-     * @Groups({"covenant:read"})
+     * @Groups({"agency:covenant:read"})
      */
     private ?string $article = null;
 
@@ -67,7 +67,7 @@ class Covenant
      *
      * @ORM\Column(type="string", nullable=true)
      *
-     * @Groups({"covenant:read"})
+     * @Groups({"agency:covenant:read"})
      */
     private ?string $extract = null;
 
@@ -76,7 +76,7 @@ class Covenant
      *
      * @ORM\Column(type="string", nullable=true)
      *
-     * @Groups({"covenant:read"})
+     * @Groups({"agency:covenant:read"})
      */
     private ?string $description = null;
 
@@ -88,7 +88,7 @@ class Covenant
      * @Assert\NotBlank
      * @Assert\Choice(callback="getNatures")
      *
-     * @Groups({"covenant:read"})
+     * @Groups({"agency:covenant:read"})
      */
     private string $nature;
 
@@ -97,7 +97,7 @@ class Covenant
      *
      * @ORM\Column(name="startDate", type="datetime_immutable")
      *
-     * @Groups({"covenant:read"})
+     * @Groups({"agency:covenant:read"})
      */
     private DateTimeImmutable $startDate;
 
@@ -109,7 +109,7 @@ class Covenant
      * @Assert\Type("integer")
      * @Assert\Positive
      *
-     * @Groups({"covenant:read"})
+     * @Groups({"agency:covenant:read"})
      */
     private int $delay;
 
@@ -120,7 +120,7 @@ class Covenant
      *
      * @Assert\GreaterThan(propertyPath="startDate")
      *
-     * @Groups({"covenant:read"})
+     * @Groups({"agency:covenant:read"})
      */
     private DateTimeImmutable $endDate;
 
@@ -131,7 +131,7 @@ class Covenant
      *
      * @Assert\Choice(callback="getPeriodicities")
      *
-     * @Groups({"covenant:read"})
+     * @Groups({"agency:covenant:read"})
      */
     private string $periodicity;
 
@@ -142,7 +142,7 @@ class Covenant
      *
      * @Assert\Valid
      *
-     * @Groups({"covenant:read"})
+     * @Groups({"agency:covenant:read"})
      */
     private Collection $covenantRules;
 

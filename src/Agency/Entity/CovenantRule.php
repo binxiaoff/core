@@ -41,7 +41,7 @@ class CovenantRule
      * @Assert\Positive
      * @Assert\Expression("value >= this.getCovenant().getStartYear() and value <= this.getCovenant().getEndYear()")
      *
-     * @Groups({"covenantRule:read"})
+     * @Groups({"agency:covenantRule:read"})
      */
     private int $year;
 
@@ -53,7 +53,7 @@ class CovenantRule
      * @Assert\ExpressionLanguageSyntax
      * @Assert\NotBlank
      *
-     * @Groups({"covenant:read", "covenant:write"})
+     * @Groups({"agency:covenantRule:read", "agency:covenantRule:write"})
      */
     private string $expression;
 

@@ -478,7 +478,7 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Covenant", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
      *
-     * @Groups({"project:read"})
+     * @Groups({"agency:project:read"})
      */
     private Collection $covenants;
 
