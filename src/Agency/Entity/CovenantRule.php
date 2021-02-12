@@ -28,6 +28,7 @@ class CovenantRule
      * @ORM\JoinColumn(name="id_covenant")
      *
      * @Assert\NotBlank
+     * @Assert\Expression("this.getCovenant().isFinancial()")
      */
     private Covenant $covenant;
 
@@ -38,6 +39,7 @@ class CovenantRule
      *
      * @Assert\NotBlank
      * @Assert\Positive
+     * @Assert\Expression("value >= this.getCovenant().getStartYear() and value <= this.getCovenant().getEndYear()")
      *
      * @Groups({"covenantRule:read"})
      */
@@ -101,33 +103,5 @@ class CovenantRule
         $this->expression = $expression;
 
         return $this;
-    }
-
-    /**
-     * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
-     */
-    private function validateCovenant(ExecutionContextInterface $context)
-    {
-        if (false === $this->covenant->isFinancial()) {
-            $context->buildViolation('Agency.CovenantRule.inconsistentCovenant')
-                ->atPath('covenant')
-                ->addViolation();
-        }
-    }
-
-    /**
-     * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
-     */
-    private function validateYear(ExecutionContextInterface $context)
-    {
-        if ($this->year < $this->covenant->getStartYear() || $this->year > $this->covenant->getEndYear()) {
-            $context->buildViolation('Agency.CovenantRule.inconsistentYear')
-                ->atPath('covenant')
-                ->addViolation();
-        }
     }
 }

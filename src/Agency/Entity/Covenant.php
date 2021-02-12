@@ -380,7 +380,7 @@ class Covenant
     }
 
     /**
-     * @return CovenantRule[]\iterable
+     * @return CovenantRule[]|iterable
      */
     public function getCovenantRules(): iterable
     {
@@ -434,7 +434,7 @@ class Covenant
      */
     private function validateCovenantRules(ExecutionContextInterface $context)
     {
-        $covenantRulesCount = $this->covenantRules->count();
+        $covenantRulesCount = count($this->covenantRules);
 
         // non financial covenant must not have rules
         if (false === $this->isFinancial() && 0 !== $covenantRulesCount) {
