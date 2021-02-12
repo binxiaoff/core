@@ -10,6 +10,7 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use JsonException;
 use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\CompanyGroup;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\StaffStatus;
 use Unilend\Core\Entity\User;
@@ -84,6 +85,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
 
         foreach ($inactiveUser->getStaff() as $staff) {
             $staff->setCurrentStatus(new StaffStatus($staff, StaffStatus::STATUS_INACTIVE, $adminStaff));
+            $this->addRandomCompanyGroupTag($staff);
             $manager->persist($staff);
         }
 
@@ -93,12 +95,16 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $manyStaffCompany = $this->getReference(CompanyFixtures::COMPANY_MANY_STAFF);
 
         $manyStaffAdminStaff = $this->createStaff($admin, $manyStaffCompany);
+        $manyStaffAdminStaff->setManager(true);
+        $this->addAllCompanyGroupTag($manyStaffAdminStaff);
         $manager->persist($manyStaffAdminStaff);
 
         foreach (range(0, 50) as $i) {
             $user = new User($this->faker->email);
             $manager->persist($user);
-            $manager->persist($this->createStaff($user, $manyStaffCompany));
+            $staff = $this->createStaff($user, $manyStaffCompany);
+            $this->addRandomCompanyGroupTag($staff);
+            $manager->persist($staff);
         }
 
         $manager->flush();
@@ -172,6 +178,10 @@ SQL;
         $sql = "UPDATE core_staff SET id_current_status = {$staffStatusId} WHERE id = {$staffId}";
         $manager->getConnection()->exec($sql);
 
+        if ($company->getCompanyGroup()) {
+            $sql = "INSERT INTO core_staff_company_group_tag SELECT {$staffId}, id FROM core_company_group_tag WHERE id_company_group = {$company->getCompanyGroup()->getId()}";
+            $manager->getConnection()->exec($sql);
+        }
         /** @var Staff $staff */
 
         return $manager->getReference(Staff::class, $staffId);
@@ -192,6 +202,32 @@ SQL;
         $company = $company ?? $this->getReference(CompanyFixtures::CALS);
 
         return new Staff($user, $company->getRootTeam());
+    }
+
+    /**
+     * @param Staff $staff
+     */
+    private function addRandomCompanyGroupTag(Staff $staff)
+    {
+        $companyGroupTags = $staff->getCompany()->getCompanyGroupTags();
+
+        foreach ($companyGroupTags as $companyGroupTag) {
+            if (1 === $this->faker->randomNumber() % 2) {
+                $staff->addCompanyGroupTag($companyGroupTag);
+            }
+        }
+    }
+
+    /**
+     * @param Staff $staff
+     */
+    private function addAllCompanyGroupTag(Staff $staff)
+    {
+        $companyGroupTags = $staff->getCompany()->getCompanyGroupTags();
+
+        foreach ($companyGroupTags as $companyGroupTag) {
+            $staff->addCompanyGroupTag($companyGroupTag);
+        }
     }
 
     /**

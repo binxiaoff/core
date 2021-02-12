@@ -11,7 +11,7 @@ use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\Entity\{Company, CompanyStatus, User};
+use Unilend\Core\Entity\{Company, CompanyStatus, User, Team, CompanyGroup};
 
 class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -125,7 +125,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     public function getDependencies(): array
     {
-        return [UserFixtures::class];
+        return [UserFixtures::class, CompanyGroupFixture::class];
     }
 
     /**
