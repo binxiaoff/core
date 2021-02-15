@@ -178,10 +178,10 @@ class Covenant
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginRule", mappedBy="covenant", cascade={"persist"})
      *
      * @Assert\Valid
-     * @Assert\AtLeastOneOf(
-     *   @Assert\True('isFinancial'),
-     *   @Assert\Count(0)
-     * )
+     * @Assert\AtLeastOneOf({
+     *   @Assert\Expression("this.isFinancial()"),
+     *   @Assert\Count(0),
+     * })
      *
      * @Groups({"covenant:read"})
      */

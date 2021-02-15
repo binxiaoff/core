@@ -49,7 +49,7 @@ class CovenantRule
     /**
      * @var Inequality
      *
-     * @ORM\Embedded(class="Inequality")
+     * @ORM\Embedded(class="Unilend\Agency\Entity\Embeddable\Inequality")
      *
      * @Assert\NotBlank
      * @Assert\Valid

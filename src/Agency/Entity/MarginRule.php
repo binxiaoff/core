@@ -28,6 +28,7 @@ class MarginRule
      * @ORM\JoinColumn(name="id_covenant")
      *
      * @Assert\NotBlank
+     * @Assert\Expression(expression="this.getCovenant().isFinancial()", message="Agency.MarginRule.inconsistentCovenant")
      */
     private Covenant $covenant;
 
@@ -114,20 +115,5 @@ class MarginRule
         }
 
         return $this;
-    }
-
-    /**
-     * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
-     */
-    private function validateCovenant(ExecutionContextInterface $context)
-    {
-        // non financial covenant must not have margin rules
-        if (false === $this->covenant->isFinancial()) {
-            $context->buildViolation('Agency.MarginRule.inconsistentCovenant')
-                ->atPath('covenant')
-                ->addViolation();
-        }
     }
 }

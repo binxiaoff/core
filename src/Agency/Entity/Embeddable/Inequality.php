@@ -60,7 +60,7 @@ class Inequality
      * @ORM\Column(type="decimal", precision=65, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
-     * @Assert\Expression("(this.getOperator() === self::OPERATOR_BETWEEN && value) or !value")
+     * @Assert\Expression("(this.getOperator() === constant('Unilend\\Agency\\Entity\\Embeddable\\Inequality::OPERATOR_BETWEEN') && value) or !value")
      *
      * @Groups({
      *     "agency:inequality:read",
