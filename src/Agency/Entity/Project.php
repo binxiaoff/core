@@ -23,32 +23,36 @@ use Unilend\Core\Entity\{Company, Staff};
 use Unilend\Core\Validator\Constraints\Siren;
 
 /**
+ * TODO Add group filter to give more front control (below nullablePerson:read)
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
  *             "timestampable:read",
  *             "agency:project:read",
  *             "money:read",
+ *             "nullableMoney:read",
  *             "timestampable:read",
  *             "nullablePerson:read",
  *             "agency:contact:read",
- *             "agency:borrower:read"
- *         }
+ *             "agency:borrower:read",
+ *             "agency:tranche:read",
+ *             "agency:borrower_tranche_share:read",
+ *         },
  *     },
  *     denormalizationContext={
  *         "groups": {
  *             "agency:project:write",
  *             "money:write",
- *             "nullablePerson:write"
- *         }
+ *             "nullablePerson:write",
+ *         },
  *     },
  *     collectionOperations={
  *         "get",
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {"groups": {"agency:project:create", "money:write", "nullablePerson:write"}},
- *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
- *         }
+ *             "validation_groups": {Project::class, "getCurrentValidationGroups"},
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
@@ -363,6 +367,8 @@ class Project
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Tranche", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
      * @Groups({"agency:project:read"})
+     *
+     * @MaxDepth(1)
      */
     private iterable $tranches;
 

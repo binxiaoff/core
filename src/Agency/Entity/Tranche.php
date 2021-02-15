@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
@@ -17,6 +18,31 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
+ * TODO Add group filter to give more front control (below nullableMoney:read)
+ * @ApiResource(
+ *     normalizationContext={
+ *         "groups": {
+ *             "timestampable:read",
+ *             "agency:tranche:read",
+ *             "money:read",
+ *             "nullableMoney:read",
+ *             "agency:borrower_tranche_share:read"
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "get",
+ *         "post": {
+ *             "denormalization_context": {"groups": {"agency:tranche:create", "money:write", "nullableMoney:write"}},
+ *         }
+ *     },
+ *     itemOperations={
+ *         "get",
+ *         "patch": {
+ *             "denormalization_context": {"groups": {"agency:tranche:update", "money:write", "nullableMoney:write"}},
+ *         },
+ *     }
+ * )
+ *
  * @ORM\Entity
  * @ORM\Table(name="agency_tranche")
  */
@@ -191,36 +217,33 @@ class Tranche
     /**
      * @var iterable|BorrowerTrancheShare[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche")
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche", cascade={"persist"})
      *
-     * @Assert\Count(min="1")
-     *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read"})
      */
     private iterable $borrowerShares;
 
     /**
-     * @var DateTimeImmutable
+     * @var DateTimeImmutable|null
      *
-     * @ORM\Column(type="date_immutable")
+     * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Assert\GreaterThanOrEqual(value="now")
      *
      * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
-    private DateTimeImmutable $validityDate;
+    private ?DateTimeImmutable $validityDate;
 
     /**
-     * @param Project           $project
-     * @param string            $name
-     * @param bool              $syndicated
-     * @param string            $color
-     * @param string            $loanType
-     * @param string            $repaymentType
-     * @param int               $duration
-     * @param Money             $money
-     * @param LendingRate       $rate
-     * @param DateTimeImmutable $validityDate
+     * @param Project     $project
+     * @param string      $name
+     * @param bool        $syndicated
+     * @param string      $color
+     * @param string      $loanType
+     * @param string      $repaymentType
+     * @param int         $duration
+     * @param Money       $money
+     * @param LendingRate $rate
      */
     public function __construct(
         Project $project,
@@ -231,8 +254,7 @@ class Tranche
         string $repaymentType,
         int $duration,
         Money $money,
-        LendingRate $rate,
-        DateTimeImmutable $validityDate
+        LendingRate $rate
     ) {
         $this->project = $project;
         $this->name = $name;
@@ -249,7 +271,7 @@ class Tranche
         $this->comment = null;
         $this->draw = new NullableMoney();
         $this->borrowerShares = new ArrayCollection();
-        $this->validityDate = $validityDate;
+        $this->validityDate = null;
     }
 
     /**
@@ -542,19 +564,19 @@ class Tranche
     }
 
     /**
-     * @return DateTimeImmutable
+     * @return ?DateTimeImmutable
      */
-    public function getValidityDate(): DateTimeImmutable
+    public function getValidityDate(): ?DateTimeImmutable
     {
         return $this->validityDate;
     }
 
     /**
-     * @param DateTimeImmutable $validityDate
+     * @param ?DateTimeImmutable $validityDate
      *
      * @return Tranche
      */
-    public function setValidityDate(DateTimeImmutable $validityDate): Tranche
+    public function setValidityDate(?DateTimeImmutable $validityDate): Tranche
     {
         $this->validityDate = $validityDate;
 
@@ -577,6 +599,20 @@ class Tranche
     public function setDraw(Money $draw): Tranche
     {
         $this->draw = $draw;
+
+        return $this;
+    }
+
+    /**
+     * @param BorrowerTrancheShare $borrowerTrancheShare
+     *
+     * @return Tranche
+     */
+    public function addBorrowerTrancheShare(BorrowerTrancheShare $borrowerTrancheShare): Tranche
+    {
+        if (false === $this->borrowerShares->contains($borrowerTrancheShare)) {
+            $this->borrowerShares->add($borrowerTrancheShare);
+        }
 
         return $this;
     }

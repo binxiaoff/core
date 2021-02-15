@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Money;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
@@ -28,7 +29,9 @@ class BorrowerTrancheShare
      * @var Borrower
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Borrower", inversedBy="trancheShares")
-     * @ORM\JoinColumn(name="id_borrower", onDelete="CASCADE")
+     * @ORM\JoinColumn(name="id_borrower", nullable=false, onDelete="CASCADE")
+     *
+     * @Groups({"agency:borrower_tranche_share:read", "agency:borrower_tranche_share:write"})
      *
      * @Assert\NotBlank
      */
@@ -38,7 +41,9 @@ class BorrowerTrancheShare
      * @var Tranche
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Tranche", inversedBy="borrowerShares")
-     * @ORM\JoinColumn(name="id_tranche", onDelete="CASCADE")
+     * @ORM\JoinColumn(name="id_tranche", nullable=false, onDelete="CASCADE")
+     *
+     * @Groups({"agency:borrower_tranche_share:read", "agency:borrower_tranche_share:write"})
      *
      * @Assert\NotBlank
      */
@@ -49,6 +54,8 @@ class BorrowerTrancheShare
      *
      * @ORM\Column(type="string", length=40, nullable=true)
      *
+     * @Groups({"agency:borrower_tranche_share:read", "agency:borrower_tranche_share:write"})
+     *
      * @Assert\Length(max=40)
      * @Assert\NotBlank
      */
@@ -58,6 +65,8 @@ class BorrowerTrancheShare
      * @var Money
      *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     *
+     * @Groups({"agency:borrower_tranche_share:read", "agency:borrower_tranche_share:write"})
      *
      * @Assert\NotBlank
      * @Assert\Valid
