@@ -62,9 +62,9 @@ class Company implements TraceableStatusAwareInterface
 
     public const COMPANY_NAME_CALS = 'CA Lending Services';
 
-    public const COMPANY_SHORT_CODE_CASA = 'CASA';
+    public const SHORT_CODE_CASA = 'CASA';
 
-    public const COMPANIES_NON_ELIGIBLE_TO_PARTICIPANT = ['CASA'];
+    public const NON_ELIGIBLE_TO_PARTICIPANT = ['CASA'];
 
     public const SERIALIZER_GROUP_COMPANY_STAFF_READ      = 'company:staff:read';
     public const SERIALIZER_GROUP_COMPANY_ADMIN_READ      = 'company:admin:read';

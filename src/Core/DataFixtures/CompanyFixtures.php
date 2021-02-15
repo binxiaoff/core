@@ -81,7 +81,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         $company = $this->createCompany(Company::COMPANY_NAME_CALS, 'CALS')->setEmailDomain($domain)->setGroupName('Crédit Agricole');
         $this->addReference(self::CALS, $company);
 
-        $company = $this->createCompany('Crédit Agricole SA', Company::COMPANY_SHORT_CODE_CASA)->setEmailDomain('credit-agricole-sa.fr')->setGroupName('Crédit Agricole');
+        $company = $this->createCompany('Crédit Agricole SA', Company::SHORT_CODE_CASA)->setEmailDomain('credit-agricole-sa.fr')->setGroupName('Crédit Agricole');
         $this->addReference(self::CASA, $company);
 
         // Fake bank

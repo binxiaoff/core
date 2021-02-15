@@ -42,7 +42,7 @@ class ParticipantCandidateFilter extends AbstractContextAwareFilter
             $alias = $queryBuilder->getRootAliases()[0];
             $queryBuilder
                 ->andWhere($alias . '.shortCode not in (:nonEligibleCompanies)')
-                ->setParameter('nonEligibleCompanies', Company::COMPANIES_NON_ELIGIBLE_TO_PARTICIPANT)
+                ->setParameter('nonEligibleCompanies', Company::NON_ELIGIBLE_TO_PARTICIPANT)
             ;
         }
     }
