@@ -40,7 +40,7 @@ class MarginImpact
      * @Assert\NotBlank
      * @Assert\Expression("value in this.getRule().getCovenant().getProject().getTranches()")
      *
-     * @Groups({"marginImpact:read", "marginImpact:create"})
+     * @Groups({"agency:marginImpact:read", "agency:marginImpact:create"})
      */
     private Tranche $tranche;
 
@@ -52,7 +52,7 @@ class MarginImpact
      * @Assert\Type("numeric")
      * @Assert\NotBlank
      *
-     * @Groups({"marginImpact:read", "marginImpact:create", "marginImpact:write"})
+     * @Groups({"agency:marginImpact:read", "agency:marginImpact:create", "agency:marginImpact:write"})
      */
     private string $margin;
 

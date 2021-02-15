@@ -39,7 +39,7 @@ class MarginRule
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"marginRule:read", "marginRule:write"})
+     * @Groups({"agency:marginRule:read", "agency:marginRule:write"})
      */
     private Inequality $inequality;
 
@@ -51,7 +51,7 @@ class MarginRule
      * @Assert\Valid
      * @Assert\Count(min="1")
      *
-     * @Groups({"marginRule:read"})
+     * @Groups({"agency:marginRule:read"})
      */
     private Collection $impacts;
 
