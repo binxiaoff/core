@@ -10,7 +10,7 @@ use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Constant\LegalForm;
 use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
@@ -31,20 +31,22 @@ use Unilend\Core\Validator\Constraints\Siren;
  *             "money:read",
  *             "timestampable:read",
  *             "nullablePerson:read",
- *             "agency:contact:read"
+ *             "agency:contact:read",
+ *             "agency:borrower:read"
  *         }
  *     },
  *     denormalizationContext={
  *         "groups": {
  *             "agency:project:write",
- *             "money:write"
+ *             "money:write",
+ *             "nullablePerson:write"
  *         }
  *     },
  *     collectionOperations={
  *         "get",
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"agency:project:create", "money:write"}},
+ *             "denormalization_context": {"groups": {"agency:project:create", "money:write", "nullablePerson:write"}},
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         }
  *     },
@@ -54,7 +56,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {"agency:project:write", "agency:projectStatus:create", "money:write"}},
+ *             "denormalization_context": {"groups": {"agency:project:write", "agency:projectStatus:create", "money:write", "nullablePerson:write"}},
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
  *     }
@@ -228,7 +230,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"agency:project:write", "agency:project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private ?string $internalRatingScore;
 
@@ -369,6 +371,10 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true)
      *
+     * @Groups({"agency:project:read"})
+     *
+     * @MaxDepth(1)
+     *
      * @Assert\Count(min="1", groups={"published"})
      */
     private iterable $borrowers;
@@ -376,7 +382,7 @@ class Project
     /**
      * @var string|null
      *
-     * @Groups({"agency:project:read", "agency:project:write", "project:create"})
+     * @Groups({"agency:project:read", "agency:project:write", "agency:project:create"})
      *
      * @ORM\Column(type="string", nullable=true, length=10)
      *
@@ -422,7 +428,7 @@ class Project
      *
      * @ORM\Column(type="text", length=16777215, nullable=true)
      *
-     * @Groups({"agency:project:write", "agency:project:read", "project:create"})
+     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private ?string $description = null;
 

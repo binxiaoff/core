@@ -50,7 +50,7 @@ use Unilend\Core\Validator\Constraints\{Rcs as AssertRcs, Siren as AssertSiren};
  *          },
  *         "patch": {
  *              "denormalization_context": {
- *                  "groups": {"borrower:write", "money:write"}
+ *                  "groups": {"agency:borrower:write", "money:write"}
  *              },
  *             "security_post_denormalize": "is_granted('edit', object)",
  *         }
