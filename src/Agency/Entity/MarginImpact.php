@@ -38,6 +38,7 @@ class MarginImpact
      * @ORM\JoinColumn(name="id_tranche")
      *
      * @Assert\NotBlank
+     * @Assert\Expression("value in this.getRule().getCovenant().getProject().getTranches()")
      *
      * @Groups({"marginImpact:read", "marginImpact:create"})
      */

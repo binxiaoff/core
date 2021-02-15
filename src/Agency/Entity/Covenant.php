@@ -178,6 +178,10 @@ class Covenant
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginRule", mappedBy="covenant", cascade={"persist"})
      *
      * @Assert\Valid
+     * @Assert\AtLeastOneOf(
+     *   @Assert\True('isFinancial'),
+     *   @Assert\Count(0)
+     * )
      *
      * @Groups({"covenant:read"})
      */
@@ -206,6 +210,8 @@ class Covenant
         $this->added             = new DateTimeImmutable();
         $this->publicationDate   = null;
         $this->terms             = new ArrayCollection();
+        $this->covenantRules = new ArrayCollection();
+        $this->marginRules   = new ArrayCollection();
     }
 
     /**
@@ -447,11 +453,11 @@ class Covenant
      */
     public function getCovenantYearsDuration(): int
     {
-        return ($this->getEndYear() - $this->getStartYear());
+        return $this->getEndYear() - $this->getStartYear();
     }
 
     /**
-     * @return MarginRule[]\iterable
+     * @return MarginRule[]|iterable
      */
     public function getMarginRules(): iterable
     {

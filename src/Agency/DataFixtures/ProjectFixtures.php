@@ -13,7 +13,7 @@ use Unilend\Agency\Entity\BorrowerTrancheShare;
 use Unilend\Agency\Entity\Contact;
 use Unilend\Agency\Entity\Covenant;
 use Unilend\Agency\Entity\CovenantRule;
-use Unilend\Agency\Entity\Embeddable\Expression;
+use Unilend\Agency\Entity\Embeddable\Inequality;
 use Unilend\Agency\Entity\MarginImpact;
 use Unilend\Agency\Entity\MarginRule;
 use Unilend\Agency\Entity\Participation;
@@ -274,7 +274,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         return new CovenantRule(
             $covenant,
             $covenant->getStartYear() + $year,
-            new Expression('>=', '0.9')
+            new Inequality('>=', '0.9')
         );
     }
 
@@ -286,7 +286,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     private function createMarginRule(Covenant $covenant, iterable $tranches)
     {
-        $marginRule = new MarginRule($covenant, new Expression('>=', '0.9'));
+        $marginRule = new MarginRule($covenant, new Inequality('>=', '0.9'));
 
         foreach ($tranches as $tranche) {
             $marginImpact = new MarginImpact($marginRule, $tranche, '0.9');

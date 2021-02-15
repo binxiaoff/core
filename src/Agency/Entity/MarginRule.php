@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Agency\Entity\Embeddable\Expression;
+use Unilend\Agency\Entity\Embeddable\Inequality;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
@@ -32,16 +32,16 @@ class MarginRule
     private Covenant $covenant;
 
     /**
-     * @var Expression
+     * @var Inequality
      *
-     * @ORM\Embedded(class="Unilend\Agency\Entity\Embeddable\Expression")
+     * @ORM\Embedded(class="Unilend\Agency\Entity\Embeddable\Inequality")
      *
      * @Assert\NotBlank
      * @Assert\Valid
      *
      * @Groups({"marginRule:read", "marginRule:write"})
      */
-    private Expression $expression;
+    private Inequality $inequality;
 
     /**
      * @var MarginImpact[]|Collection
@@ -57,12 +57,12 @@ class MarginRule
 
     /**
      * @param Covenant   $covenant
-     * @param Expression $expression
+     * @param Inequality $inequality
      */
-    public function __construct(Covenant $covenant, Expression $expression)
+    public function __construct(Covenant $covenant, Inequality $inequality)
     {
         $this->covenant   = $covenant;
-        $this->expression = $expression;
+        $this->inequality = $inequality;
         $this->impacts    = new ArrayCollection();
     }
 
@@ -75,21 +75,21 @@ class MarginRule
     }
 
     /**
-     * @return Expression
+     * @return Inequality
      */
-    public function getExpression(): Expression
+    public function getInequality(): Inequality
     {
-        return $this->expression;
+        return $this->inequality;
     }
 
     /**
-     * @param Expression $expression
+     * @param Inequality $inequality
      *
      * @return MarginRule
      */
-    public function setExpression(Expression $expression): MarginRule
+    public function setInequality(Inequality $inequality): MarginRule
     {
-        $this->expression = $expression;
+        $this->inequality = $inequality;
 
         return $this;
     }

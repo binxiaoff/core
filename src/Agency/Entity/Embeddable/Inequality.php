@@ -12,7 +12,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 /**
  * @ORM\Embeddable
  */
-class Expression
+class Inequality
 {
     use ConstantsAwareTrait;
 
@@ -32,8 +32,8 @@ class Expression
      * @Assert\Choice(callback="getOperators")
      *
      * @Groups({
-     *     "agency:expression:read",
-     *     "agency:expression:write",
+     *     "agency:inequality:read",
+     *     "agency:inequality:write",
      * })
      */
     private string $operator;
@@ -41,30 +41,30 @@ class Expression
     /**
      * @var string
      *
-     * @ORM\Column(type="decimal", precision=5, scale=4)
+     * @ORM\Column(type="decimal", precision=65, scale=4)
      *
      * @Assert\Type("numeric")
-     * @Assert\NotBlank(allowNull=true)
+     * @Assert\NotBlank()
      *
      * @Groups({
-     *     "agency:expression:read",
-     *     "agency:expression:write",
+     *     "agency:inequality:read",
+     *     "agency:inequality:write",
      * })
      *
      */
-    private string $value;
+    private string $minValue;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
+     * @ORM\Column(type="decimal", precision=65, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
      * @Assert\Expression("(this.getOperator() === self::OPERATOR_BETWEEN && value) or !value")
      *
      * @Groups({
-     *     "agency:expression:read",
-     *     "agency:expression:write",
+     *     "agency:inequality:read",
+     *     "agency:inequality:write",
      * })
      *
      */
@@ -72,13 +72,13 @@ class Expression
 
     /**
      * @param string      $operator
-     * @param string      $value
+     * @param string      $minValue
      * @param string|null $maxValue
      */
-    public function __construct(string $operator, string $value, ?string $maxValue = null)
+    public function __construct(string $operator, string $minValue, ?string $maxValue = null)
     {
         $this->operator = $operator;
-        $this->value    = $value;
+        $this->minValue = $minValue;
         $this->maxValue = $maxValue;
     }
 
@@ -93,9 +93,9 @@ class Expression
     /**
      * @param string $operator
      *
-     * @return Expression
+     * @return Inequality
      */
-    public function setOperator(string $operator): Expression
+    public function setOperator(string $operator): Inequality
     {
         $this->operator = $operator;
 
@@ -105,19 +105,19 @@ class Expression
     /**
      * @return string
      */
-    public function getValue(): string
+    public function getMinValue(): string
     {
-        return $this->value;
+        return $this->minValue;
     }
 
     /**
-     * @param string $value
+     * @param string $minValue
      *
-     * @return Expression
+     * @return Inequality
      */
-    public function setValue(string $value): Expression
+    public function setMinValue(string $minValue): Inequality
     {
-        $this->value = $value;
+        $this->minValue = $minValue;
 
         return $this;
     }
@@ -133,9 +133,9 @@ class Expression
     /**
      * @param string|null $maxValue
      *
-     * @return Expression
+     * @return Inequality
      */
-    public function setMaxValue(?string $maxValue): Expression
+    public function setMaxValue(?string $maxValue): Inequality
     {
         $this->maxValue = $maxValue;
 

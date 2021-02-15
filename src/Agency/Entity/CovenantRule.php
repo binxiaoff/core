@@ -9,7 +9,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Agency\Entity\Embeddable\Expression;
+use Unilend\Agency\Entity\Embeddable\Inequality;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
@@ -47,27 +47,27 @@ class CovenantRule
     private int $year;
 
     /**
-     * @var Expression
+     * @var Inequality
      *
-     * @ORM\Embedded(class="Unilend\Agency\Entity\Embeddable\Expression")
+     * @ORM\Embedded(class="Inequality")
      *
      * @Assert\NotBlank
      * @Assert\Valid
      *
      * @Groups({"agency:covenantRule:read", "agency:covenantRule:write"})
      */
-    private Expression $expression;
+    private Inequality $inequality;
 
     /**
      * @param Covenant   $covenant
      * @param int        $year
-     * @param Expression $expression
+     * @param Inequality $inequality
      */
-    public function __construct(Covenant $covenant, int $year, Expression $expression)
+    public function __construct(Covenant $covenant, int $year, Inequality $inequality)
     {
         $this->covenant   = $covenant;
         $this->year       = $year;
-        $this->expression = $expression;
+        $this->inequality = $inequality;
     }
 
     /**
@@ -87,21 +87,21 @@ class CovenantRule
     }
 
     /**
-     * @return Expression
+     * @return Inequality
      */
-    public function getExpression(): Expression
+    public function getInequality(): Inequality
     {
-        return $this->expression;
+        return $this->inequality;
     }
 
     /**
-     * @param Expression $expression
+     * @param Inequality $inequality
      *
      * @return CovenantRule
      */
-    public function setExpression(Expression $expression): CovenantRule
+    public function setInequality(Inequality $inequality): CovenantRule
     {
-        $this->expression = $expression;
+        $this->inequality = $inequality;
 
         return $this;
     }
