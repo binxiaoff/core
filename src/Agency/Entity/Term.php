@@ -7,6 +7,7 @@ namespace Unilend\Agency\Entity;
 use DateInterval;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
@@ -46,6 +47,15 @@ class Term
      * @ORM\Column(type="datetime_immutable")
      */
     private DateTimeImmutable $end;
+
+    /**
+     * @var DateTimeImmutable|null
+     *
+     * @Assert\GreaterThan(propertyPath="start")
+     *
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private ?DateTimeImmutable $sharingDate;
 
     /**
      * @param Covenant               $covenant
@@ -91,6 +101,38 @@ class Term
     public function setEnd(DateTimeImmutable $end): Term
     {
         $this->end = $end;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getSharingDate(): ?DateTimeImmutable
+    {
+        return $this->sharingDate;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isShared(): bool
+    {
+        return null !== $this->sharingDate;
+    }
+
+    /**
+     * @return Term
+     *
+     * @throws Exception
+     */
+    public function share(): Term
+    {
+        if ($this->isShared()) {
+            return $this;
+        }
+
+        $this->sharingDate = new DateTimeImmutable();
 
         return $this;
     }
