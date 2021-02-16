@@ -24,6 +24,10 @@ class TermAnswer
     /**
      * @var bool
      *
+     * True if borrower fulfill contract conditions
+     * False if borrower fail to fulfill it
+     * Null if answer is pending
+     *
      * @ORM\Column(type="boolean", nullable=true)
      *
      * @Assert\Type("bool")
@@ -81,9 +85,9 @@ class TermAnswer
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
-    public function isValid(): bool
+    public function getValid(): ?bool
     {
         return $this->valid;
     }
@@ -130,25 +134,54 @@ class TermAnswer
 
     /**
      * @param File|null $document
+     *
+     * @return TermAnswer
      */
-    public function setDocument(?File $document): void
+    public function setDocument(?File $document): TermAnswer
     {
         $this->document = $document;
+
+        return $this;
     }
 
     /**
      * @param string|null $borrowerComment
+     *
+     * @return TermAnswer
      */
-    public function setBorrowerComment(?string $borrowerComment): void
+    public function setBorrowerComment(?string $borrowerComment): TermAnswer
     {
         $this->borrowerComment = $borrowerComment;
+
+        return $this;
     }
 
     /**
      * @param string|null $agentComment
+     *
+     * @return TermAnswer
      */
-    public function setAgentComment(?string $agentComment): void
+    public function setAgentComment(?string $agentComment): TermAnswer
     {
         $this->agentComment = $agentComment;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $valid
+     *
+     * @return TermAnswer
+     *
+     * @throws Exception
+     */
+    public function setValid(bool $valid): TermAnswer
+    {
+        if ($this->valid === null) {
+            $this->valid = $valid;
+            $this->validated = new DateTimeImmutable();
+        }
+
+        return $this;
     }
 }

@@ -62,6 +62,7 @@ class Term
      * @var TermAnswer[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\TermAnswer", mappedBy="term")
+     * @ORM\OrderBy({"added": "DESC"})
      *
      * @Assert\Valid
      */
@@ -153,5 +154,37 @@ class Term
     public function getAnswers()
     {
         return $this->answers;
+    }
+
+    /**
+     * @return TermAnswer|null;
+     */
+    public function getLastAnswer(): ?TermAnswer
+    {
+        return $this->answers->first();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValid()
+    {
+        return $this->getLastAnswer()->getValid() === true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInvalid()
+    {
+        return $this->getLastAnswer()->getValid() === false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPending()
+    {
+        return $this->getLastAnswer()->getValid() === null;
     }
 }
