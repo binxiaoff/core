@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Syndication\Unit\Service\File;
+namespace Unilend\Test\Syndication\Unit\Entity;
 
 use Exception;
 use PHPUnit\Framework\TestCase;

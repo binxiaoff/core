@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Unit\DTO;
+namespace Unilend\Test\Core\Unit\Model;
 
 use PHPUnit\Framework\TestCase;
 use Unilend\Core\DTO\Bitmask;
