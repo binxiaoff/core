@@ -31,7 +31,7 @@ class BorrowerTrancheShare
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Borrower", inversedBy="trancheShares")
      * @ORM\JoinColumn(name="id_borrower", nullable=false, onDelete="CASCADE")
      *
-     * @Groups({"agency:borrower_tranche_share:read", "agency:borrower_tranche_share:write"})
+     * @Groups({"agency:borrowerTrancheShare:read", "agency:borrowerTrancheShare:write"})
      *
      * @Assert\NotBlank
      */
@@ -43,7 +43,7 @@ class BorrowerTrancheShare
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Tranche", inversedBy="borrowerShares")
      * @ORM\JoinColumn(name="id_tranche", nullable=false, onDelete="CASCADE")
      *
-     * @Groups({"agency:borrower_tranche_share:read", "agency:borrower_tranche_share:write"})
+     * @Groups({"agency:borrowerTrancheShare:read", "agency:borrowerTrancheShare:write"})
      *
      * @Assert\NotBlank
      */
@@ -54,7 +54,7 @@ class BorrowerTrancheShare
      *
      * @ORM\Column(type="string", length=40, nullable=true)
      *
-     * @Groups({"agency:borrower_tranche_share:read", "agency:borrower_tranche_share:write"})
+     * @Groups({"agency:borrowerTrancheShare:read", "agency:borrowerTrancheShare:write"})
      *
      * @Assert\Length(max=40)
      * @Assert\NotBlank
@@ -66,7 +66,7 @@ class BorrowerTrancheShare
      *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
      *
-     * @Groups({"agency:borrower_tranche_share:read", "agency:borrower_tranche_share:write"})
+     * @Groups({"agency:borrowerTrancheShare:read", "agency:borrowerTrancheShare:write"})
      *
      * @Assert\NotBlank
      * @Assert\Valid

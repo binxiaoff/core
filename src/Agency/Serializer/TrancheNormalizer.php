@@ -100,7 +100,7 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             BorrowerTrancheShare::class,
             'array',
             [
-                AbstractNormalizer::GROUPS => ['agency:borrower_tranche_share:write', 'money:write'],
+                AbstractNormalizer::GROUPS => ['agency:borrowerTrancheShare:write', 'money:write'],
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     BorrowerTrancheShare::class => [
                         'tranche' => $tranche,
@@ -135,7 +135,7 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             'array',
             [
                 AbstractNormalizer::OBJECT_TO_POPULATE => $borrowerTrancheShare,
-                AbstractNormalizer::GROUPS => ['agency:borrower_tranche_share:write', 'money:write'],
+                AbstractNormalizer::GROUPS => ['agency:borrowerTrancheShare:write', 'money:write'],
             ]
         );
 

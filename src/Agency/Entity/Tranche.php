@@ -26,7 +26,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "agency:tranche:read",
  *             "money:read",
  *             "nullableMoney:read",
- *             "agency:borrower_tranche_share:read"
+ *             "agency:borrowerTrancheShare:read"
  *         }
  *     },
  *     collectionOperations={

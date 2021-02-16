@@ -36,7 +36,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *             "agency:contact:read",
  *             "agency:borrower:read",
  *             "agency:tranche:read",
- *             "agency:borrower_tranche_share:read",
+ *             "agency:borrowerTrancheShare:read",
  *         },
  *     },
  *     denormalizationContext={
