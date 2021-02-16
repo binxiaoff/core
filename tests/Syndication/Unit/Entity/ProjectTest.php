@@ -1,15 +1,16 @@
 <?php
 
-namespace Unilend\Test\Unit\Service\File;
+declare(strict_types=1);
+
+namespace Unilend\Test\Syndication\Unit\Entity;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\Entity\{User, Company, Embeddable\Money, MarketSegment, Staff};
+use Unilend\Core\Entity\{Company, Embeddable\Money, MarketSegment, Staff, User};
 use Unilend\Syndication\Entity\Project;
 
 class ProjectTest extends TestCase
 {
-
     /**
      * @throws Exception
      */

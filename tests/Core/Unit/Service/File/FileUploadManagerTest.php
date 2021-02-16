@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Unit\Service\File;
+namespace Unilend\Test\Core\Unit\Service\File;
 
 use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, IOException};
 use Doctrine\ORM\{ORMException, OptimisticLockException};
@@ -17,10 +17,10 @@ use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Message\File\FileUploaded;
 use Unilend\Core\Repository\FileRepository;
 use Unilend\Core\Service\File\FileUploadManager;
@@ -78,7 +78,8 @@ class FileUploadManagerTest extends TestCase
         $uploader   = new User('test@' . Internet::safeEmailDomain());
         $uploaderId = Base::randomDigitNotNull() + 1;
         $idUsersReflectionProperty->setValue($uploader, $uploaderId);
-        $uploaderStaff = new Staff(new Company('test', 'test'), $uploader, $this->prophesize(Staff::class)->reveal());
+        $company = new Company('test', 'test');
+        $uploaderStaff = new Staff($company, $uploader, $this->prophesize(Staff::class)->reveal());
 
         $filePath         = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';
         $originalFileName = Base::asciify(str_repeat('*', 20));

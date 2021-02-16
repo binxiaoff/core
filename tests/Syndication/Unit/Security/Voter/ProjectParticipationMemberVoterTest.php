@@ -1,9 +1,11 @@
 <?php
 
-namespace Unilend\Test\Unit\Security\Voter;
+declare(strict_types=1);
+
+namespace Unilend\Test\Syndication\Unit\Security\Voter;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\{User, Company, Embeddable\Money, MarketSegment, Staff};
+use Unilend\Core\Entity\{Company, Embeddable\Money, MarketSegment, Staff, User};
 use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectParticipationMember};
 use Unilend\Syndication\Security\Voter\ProjectParticipationMemberVoter;
 use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;

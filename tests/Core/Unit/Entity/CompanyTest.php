@@ -1,13 +1,14 @@
 <?php
 
-namespace Unit\Entity;
+declare(strict_types=1);
+
+namespace Unilend\Test\Core\Unit\Entity;
 
 use PHPUnit\Framework\TestCase;
 use Unilend\Core\Entity\{Company, CompanyModule};
 
 class CompanyTest extends TestCase
 {
-
     /**
      * Tests that modules are indexed by module name
      */
@@ -15,9 +16,9 @@ class CompanyTest extends TestCase
     {
         $codes = CompanyModule::getAvailableModuleCodes();
         $company = new Company('Fake', 'fake');
-        $this->assertEquals(count($codes), $company->getModules()->count());
+        static::assertEquals(count($codes), $company->getModules()->count());
         // We expect the array of module to be indexed by module name
-        $this->assertArrayHasKey(CompanyModule::MODULE_PARTICIPATION, $company->getModules()->toArray());
-        $this->assertEquals(CompanyModule::MODULE_PARTICIPATION, $company->getModule(CompanyModule::MODULE_PARTICIPATION)->getCode());
+        static::assertArrayHasKey(CompanyModule::MODULE_PARTICIPATION, $company->getModules()->toArray());
+        static::assertEquals(CompanyModule::MODULE_PARTICIPATION, $company->getModule(CompanyModule::MODULE_PARTICIPATION)->getCode());
     }
 }
