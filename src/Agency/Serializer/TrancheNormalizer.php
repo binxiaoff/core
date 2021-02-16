@@ -6,7 +6,6 @@ namespace Unilend\Agency\Serializer;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
@@ -23,8 +22,6 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
 
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
-    private Security $security;
-
     private IriConverterInterface $iriConverter;
 
     private ValidatorInterface $validator;
@@ -32,13 +29,11 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     /**
      * @param IriConverterInterface $iriConverter
      * @param ValidatorInterface    $validator
-     * @param Security              $security
      */
-    public function __construct(IriConverterInterface $iriConverter, ValidatorInterface $validator, Security $security)
+    public function __construct(IriConverterInterface $iriConverter, ValidatorInterface $validator)
     {
         $this->iriConverter = $iriConverter;
         $this->validator = $validator;
-        $this->security = $security;
     }
 
     /**
@@ -64,7 +59,7 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         $borrowerTrancheShares = $data['borrowerShares'] ?? [];
 
         foreach ($borrowerTrancheShares as $borrowerTrancheShare) {
-            if (!is_array($borrowerTrancheShare)) {
+            if (false === is_array($borrowerTrancheShare)) {
                 continue;
             }
 

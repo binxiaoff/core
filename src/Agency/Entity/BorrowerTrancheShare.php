@@ -6,9 +6,9 @@ namespace Unilend\Agency\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Money;
-use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
@@ -57,7 +57,6 @@ class BorrowerTrancheShare
      * @Groups({"agency:borrowerTrancheShare:read", "agency:borrowerTrancheShare:write"})
      *
      * @Assert\Length(max=40)
-     * @Assert\NotBlank
      */
     private ?string $guaranty;
 
@@ -106,7 +105,7 @@ class BorrowerTrancheShare
     /**
      * @return string
      */
-    public function getGuaranty(): string
+    public function getGuaranty(): ?string
     {
         return $this->guaranty;
     }
