@@ -23,7 +23,7 @@ class MarginImpact
     /**
      * @var MarginRule
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\MarginRule", inversedBy="marginImpact")
+     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\MarginRule", inversedBy="impacts")
      * @ORM\JoinColumn(name="id_margin_rule")
      *
      * @Assert\NotBlank

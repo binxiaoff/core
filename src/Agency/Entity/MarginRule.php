@@ -47,7 +47,7 @@ class MarginRule
     /**
      * @var MarginImpact[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginImpact", mappedBy="marginRule", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginImpact", mappedBy="rule", cascade={"persist"})
      *
      * @Assert\Valid
      * @Assert\Count(min="1")
