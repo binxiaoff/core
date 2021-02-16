@@ -11,15 +11,12 @@ use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\Core\DataFixtures\UserFixtures;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\CompanyStatus;
+use Unilend\Core\Entity\{Company, CompanyStatus, User};
 
 class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     public const CALS = 'COMPANY_CALS';
+    public const CASA = 'COMPANY_CASA';
     public const COMPANY1 = 'COMPANY1';
     public const COMPANY2 = 'COMPANY2';
     public const COMPANY3 = 'COMPANY3';
@@ -84,6 +81,9 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         $company = $this->createCompany(Company::COMPANY_NAME_CALS, 'CALS')->setEmailDomain($domain)->setGroupName('Crédit Agricole');
         $this->addReference(self::CALS, $company);
 
+        $company = $this->createCompany('Crédit Agricole SA', Company::SHORT_CODE_CASA)->setEmailDomain('credit-agricole-sa.fr')->setGroupName('Crédit Agricole');
+        $this->addReference(self::CASA, $company);
+
         // Fake bank
         for ($i = 1; $i <= 5; $i++) {
             $company = $this->createCompany("CA Bank $i", static::CA_SHORTCODE[$i])->setGroupName('Crédit Agricole');
@@ -141,10 +141,11 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
     private function createCompany(string $name = null, string $shortcode = null, int $status = CompanyStatus::STATUS_SIGNED): Company
     {
         $companyName = $name ?: $this->faker->company;
+        $vatTypes = Company::getPossibleVatTypes();
         $company     = (new Company($companyName, $companyName))
             ->setBankCode((string) $this->faker->randomNumber(8, true))
             ->setShortCode($shortcode ?: $this->faker->regexify('[A-Za-z0-9]{10}'))
-            ->setApplicableVat($this->faker->vat);
+            ->setApplicableVat($vatTypes[array_rand($vatTypes)]);
         $this->forcePublicId($company, Urlizer::urlize($companyName));
         $companyStatus = new CompanyStatus($company, $status);
         $company->setCurrentStatus($companyStatus);
