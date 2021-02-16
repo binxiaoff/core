@@ -11,7 +11,7 @@ final class Version20210211162552 extends AbstractMigration
 {
     public function getDescription() : string
     {
-        return 'CALS-3299 Add Expression embeddable and create MarginImpect && MarginRule';
+        return 'CALS-3299 Add Inequality embeddable and create MarginImpect && MarginRule';
     }
 
     public function up(Schema $schema) : void
