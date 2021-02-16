@@ -30,7 +30,6 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *         }
  *     },
  *     collectionOperations={
- *         "get",
  *         "post": {
  *             "denormalization_context": {"groups": {"agency:tranche:create", "money:write", "nullableMoney:write"}},
  *         }
