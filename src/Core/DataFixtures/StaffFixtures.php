@@ -18,6 +18,7 @@ use Unilend\Core\Entity\User;
 class StaffFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     public const ADMIN = 'STAFF_ADMIN';
+    public const CASA  = 'STAFF_CASA';
 
     /**
      * @param ObjectManager $manager
@@ -38,6 +39,18 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
 
         // We set the user in the tokenStorage to avoid conflict with StaffLogListener
         $this->login($adminStaff);
+
+        // Create a CASA staff
+        /** @var Company $casaCompany */
+        $casaCompany = $this->getReference(CompanyFixtures::CASA);
+        /** @var User $admin */
+        $admin = $this->getReference(UserFixtures::ADMIN);
+        $this->insertStaff($admin, $casaCompany, $manager, [Staff::DUTY_STAFF_ADMIN], MarketSegmentFixtures::SEGMENTS);
+
+        /** @var User $managerUser */
+        $managerUser = $this->getReference(UserFixtures::MANAGER);
+        $managerStaff = $this->insertStaff($managerUser, $casaCompany, $manager, [Staff::DUTY_STAFF_MANAGER], MarketSegmentFixtures::SEGMENTS);
+        $this->addReference(self::CASA, $managerStaff);
 
         $data = [
             UserFixtures::AUDITOR => [
