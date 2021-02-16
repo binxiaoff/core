@@ -127,4 +127,28 @@ class TermAnswer
     {
         return $this->agentComment;
     }
+
+    /**
+     * @param File|null $document
+     */
+    public function setDocument(?File $document): void
+    {
+        $this->document = $document;
+    }
+
+    /**
+     * @param string|null $borrowerComment
+     */
+    public function setBorrowerComment(?string $borrowerComment): void
+    {
+        $this->borrowerComment = $borrowerComment;
+    }
+
+    /**
+     * @param string|null $agentComment
+     */
+    public function setAgentComment(?string $agentComment): void
+    {
+        $this->agentComment = $agentComment;
+    }
 }
