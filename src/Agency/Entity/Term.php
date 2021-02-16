@@ -6,6 +6,7 @@ namespace Unilend\Agency\Entity;
 
 use DateInterval;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -56,6 +57,15 @@ class Term
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
     private ?DateTimeImmutable $sharingDate;
+
+    /**
+     * @var TermAnswer[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\TermAnswer", mappedBy="term")
+     *
+     * @Assert\Valid
+     */
+    private Collection $answers;
 
     /**
      * @param Covenant               $covenant
@@ -135,5 +145,13 @@ class Term
         $this->sharingDate = new DateTimeImmutable();
 
         return $this;
+    }
+
+    /**
+     * @return Collection|TermAnswer[]
+     */
+    public function getAnswers()
+    {
+        return $this->answers;
     }
 }
