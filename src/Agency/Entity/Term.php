@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use DateInterval;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -47,15 +48,15 @@ class Term
     private DateTimeImmutable $end;
 
     /**
-     * @param Covenant          $covenant
-     * @param DateTimeImmutable $start
-     * @param DateTimeImmutable $end
+     * @param Covenant               $covenant
+     * @param DateTimeImmutable      $start
+     * @param DateTimeImmutable|null $end
      */
-    public function __construct(Covenant $covenant, DateTimeImmutable $start, DateTimeImmutable $end)
+    public function __construct(Covenant $covenant, DateTimeImmutable $start, ?DateTimeImmutable $end = null)
     {
         $this->covenant = $covenant;
         $this->start = $start;
-        $this->end = $end;
+        $this->end = $end ?? $start->add(DateInterval::createFromDateString('+ ' . $covenant->getDelay() . ' days'));
     }
 
     /**

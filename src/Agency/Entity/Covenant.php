@@ -154,6 +154,8 @@ class Covenant
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
+     * @Assert\NotBlank(groups={"published"})
+     *
      * @Groups({"agency:covenant:read"})
      */
     private ?DateTimeImmutable $publicationDate;
@@ -163,6 +165,8 @@ class Covenant
      *
      * @ORM\OneToMany(targetEntity=Term::class, cascade={"persist", "remove"}, mappedBy="covenant")
      * @ORM\OrderBy({"start"="ASC"})
+     *
+     * @Assert\Count(min=1, groups={"published"})
      *
      * @Groups({"agency:covenant:read"})
      */
@@ -510,6 +514,24 @@ class Covenant
     public function getPublicationDate(): ?DateTimeImmutable
     {
         return $this->publicationDate;
+    }
+
+    /**
+     * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups
+     *
+     * @param Covenant $covenant
+     *
+     * @return array|string[]
+     */
+    public static function getCurrentValidationGroups(self $covenant): array
+    {
+        $validationGroups = ['Default', 'Covenant'];
+
+        if ($covenant->isPublished()) {
+            $validationGroups[] = ['published'];
+        }
+
+        return $validationGroups;
     }
 
     /**
