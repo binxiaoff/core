@@ -35,7 +35,7 @@ class CovenantRule
     /**
      * @var int
      *
-     * @ORM\Column(type="int")
+     * @ORM\Column(type="integer")
      *
      * @Assert\NotBlank
      * @Assert\Positive
