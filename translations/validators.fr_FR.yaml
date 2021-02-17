@@ -113,3 +113,5 @@ CreditGuaranty:
             unique: Le nom d'une programme doit être unique.
         marketSegment:
             invalid: Le marché choisi n'est pas valable.
+        distributionProcess:
+            textMax: Les textes de chaque étape ne peut excéder une longeur de %limit%.

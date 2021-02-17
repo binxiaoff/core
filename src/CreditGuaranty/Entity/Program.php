@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface, MarketSegment, Staff,
     Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 
@@ -39,6 +40,8 @@ class Program implements TraceableStatusAwareInterface
     use PublicizeIdentityTrait;
     use TimestampableTrait;
     use BlamableAddedTrait;
+
+    private const MAX_STRING_LENGTH = 200;
 
     /**
      * @ORM\Column(length=100, unique=true)
@@ -96,6 +99,7 @@ class Program implements TraceableStatusAwareInterface
      * @ORM\Column(type="json", nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
+     * @Assert\Count(max="10")
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
@@ -388,5 +392,23 @@ class Program implements TraceableStatusAwareInterface
     public function isMarketSegmentValid(): bool
     {
         return in_array($this->getMarketSegment()->getLabel(), [MarketSegment::LABEL_AGRICULTURE, MarketSegment::LABEL_CORPORATE], true);
+    }
+
+    /**
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateDistributionProcess(ExecutionContextInterface $context): void
+    {
+        foreach ($this->getDistributionProcess() as $distributionProcess) {
+            if (mb_strlen($distributionProcess) > self::MAX_STRING_LENGTH) {
+                $context->buildViolation('CreditGuaranty.Program.distributionProcess.textMax')
+                    ->atPath('distributionProcess')
+                    ->setParameter('%limit%', (string) self::MAX_STRING_LENGTH)
+                    ->addViolation()
+                ;
+            }
+        }
     }
 }
