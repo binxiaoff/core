@@ -11,8 +11,9 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class TermVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW                 = 'view';
-    public const ATTRIBUTE_EDIT                 = 'edit';
+    public const ATTRIBUTE_VIEW   = 'view';
+    public const ATTRIBUTE_EDIT   = 'edit';
+    public const ATTRIBUTE_DELETE = 'delete';
 
     /**
      * @param Term $term
@@ -37,6 +38,20 @@ class TermVoter extends AbstractEntityVoter
      */
     protected function canEdit(Term $term, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_EDIT, $term->getCovenant());
+        return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_EDIT, $term->getCovenant()) && false === $term->isArchived();
+    }
+
+    /**
+     * @param Term $term
+     * @param User $user
+     *
+     * @throws Exception
+     *
+     * @return bool
+     */
+    protected function canDelete(Term $term, User $user): bool
+    {
+        return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_EDIT, $term->getCovenant())
+            && false === $term->isArchived() && $term->isShared();
     }
 }

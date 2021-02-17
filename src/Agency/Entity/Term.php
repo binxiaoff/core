@@ -53,7 +53,7 @@ class Term
     /**
      * @var DateTimeImmutable|null
      *
-     * @Assert\GreaterThan(propertyPath="start")
+     * @Assert\GreaterThanOrEqual(propertyPath="start")
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
@@ -68,6 +68,15 @@ class Term
      * @Assert\Valid
      */
     private Collection $answers;
+
+    /**
+     * @var DateTimeImmutable|null
+     *
+     * @Assert\GreaterThanOrEqual(propertyPath="start")
+     *
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private ?DateTimeImmutable $archivingDate;
 
     /**
      * @param Covenant               $covenant
@@ -146,6 +155,38 @@ class Term
         }
 
         $this->sharingDate = new DateTimeImmutable();
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getArchivingDate(): ?DateTimeImmutable
+    {
+        return $this->archivingDate;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isArchived(): bool
+    {
+        return null !== $this->archivingDate;
+    }
+
+    /**
+     * @return Term
+     *
+     * @throws Exception
+     */
+    public function archive(): Term
+    {
+        if ($this->isArchived() || false === $this->isShared()) {
+            return $this;
+        }
+
+        $this->archivingDate = new DateTimeImmutable();
 
         return $this;
     }
