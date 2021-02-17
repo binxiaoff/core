@@ -62,7 +62,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                  "groups": {
  *                      "staff:read",
  *                      "user:read",
- *                      "user_status:read"
+ *                      "user_status:read",
+ *                      "staffStatus:read"
  *                  }
  *              }
  *         },
@@ -259,8 +260,8 @@ class Company implements TraceableStatusAwareInterface
         $this->added        = new DateTimeImmutable();
         $this->admins       = new ArrayCollection();
         $this->companyGroup = null;
-        $moduleCodes         = CompanyModule::getAvailableModuleCodes();
-        $this->modules       = new ArrayCollection(array_map(function ($module) {
+        $moduleCodes        = CompanyModule::getAvailableModuleCodes();
+        $this->modules      = new ArrayCollection(array_map(function ($module) {
             return new CompanyModule($module, $this);
         }, array_combine($moduleCodes, $moduleCodes)));
         $this->applicableVat = static::VAT_METROPOLITAN;
@@ -400,7 +401,7 @@ class Company implements TraceableStatusAwareInterface
      */
     public function isSameGroup(Company $company): bool
     {
-        return $this->getGroupName() === $company->getGroupName();
+        return $this->getCompanyGroup() && ($this->getCompanyGroup() === $company->getCompanyGroup());
     }
 
     /**
