@@ -6,6 +6,7 @@ namespace Unilend\Agency\Entity;
 
 use DateInterval;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
@@ -76,8 +77,9 @@ class Term
     public function __construct(Covenant $covenant, DateTimeImmutable $start, ?DateTimeImmutable $end = null)
     {
         $this->covenant = $covenant;
-        $this->start = $start;
-        $this->end = $end ?? $start->add(DateInterval::createFromDateString('+ ' . $covenant->getDelay() . ' days'));
+        $this->start    = $start;
+        $this->end      = $end ?? $start->add(DateInterval::createFromDateString('+ ' . $covenant->getDelay() . ' days'));
+        $this->answers  = new ArrayCollection();
     }
 
     /**
@@ -167,24 +169,42 @@ class Term
     /**
      * @return bool
      */
-    public function isValid()
+    public function isValid(): bool
     {
-        return $this->getLastAnswer()->getValidation() === true;
+        $lastAnswer = $this->getLastAnswer();
+
+        if (null === $lastAnswer) {
+            return false;
+        }
+
+        return $lastAnswer->getValidation() === true;
     }
 
     /**
      * @return bool
      */
-    public function isInvalid()
+    public function isInvalid(): bool
     {
-        return $this->getLastAnswer()->getValidation() === false;
+        $lastAnswer = $this->getLastAnswer();
+
+        if (null === $lastAnswer) {
+            return false;
+        }
+
+        return $lastAnswer->getValidation() === false;
     }
 
     /**
      * @return bool
      */
-    public function isPending()
+    public function isPending(): bool
     {
+        $lastAnswer = $this->getLastAnswer();
+
+        if (null === $lastAnswer) {
+            return true;
+        }
+
         return $this->getLastAnswer()->getValidation() === null;
     }
 }
