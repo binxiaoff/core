@@ -41,7 +41,7 @@ class ListExtension implements QueryCollectionExtensionInterface
         $staff = $user instanceof User ? $user->getCurrentStaff() : null;
 
         // External banks can't access to KYC files
-        if (!$staff->getCompany()->isCAGMember()) {
+        if ($staff && false === $staff->getCompany()->isCAGMember()) {
             $rootAlias = $queryBuilder->getRootAliases()[0];
             $queryBuilder
                 ->andWhere($rootAlias . '.type != :kyc')

@@ -69,14 +69,14 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
     }
 
     /**
-     * @covers ::findByManager
+     * @covers ::findActiveByManager
      *
      * @dataProvider providerFindByManager
      *
      * @param string $managerPublicId
      * @param $expected
      */
-    public function testFindByManager(string $managerPublicId, $expected): void
+    public function testFindActiveByManager(string $managerPublicId, $expected): void
     {
         /** @var StaffRepository $staffRepository */
         $staffRepository = static::$container->get(StaffRepository::class);
@@ -90,10 +90,10 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
         /** @var ProjectParticipationMemberRepository $projectParticipationMemberRepository */
         $projectParticipationMemberRepository = static::$container->get(ProjectParticipationMemberRepository::class);
 
-        $result = $projectParticipationMemberRepository->findByManager($manager);
+        $result = $projectParticipationMemberRepository->findActiveByManager($manager);
 
         static::assertIsArray($result);
-        static::assertCount(count($result), $expected);
+        static::assertCount(count($expected), $result);
         static::assertContainsOnlyInstancesOf(ProjectParticipationMember::class, $result);
 
         foreach ($result as $item) {
@@ -142,10 +142,10 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
             return $this->projectParticipationMembers[$key]->getPublicId();
         }, $expected);
 
-        $result = $projectParticipationMemberRepository->findByProjectParticipationAndManagerAndPermissionEnabled($projectParticipation, $manager, $permission);
+        $result = $projectParticipationMemberRepository->findActiveByProjectParticipationAndManagerAndPermissionEnabled($projectParticipation, $manager, $permission);
 
         static::assertIsArray($result);
-        static::assertCount(count($result), $expected);
+        static::assertCount(count($expected), $result);
         static::assertContainsOnlyInstancesOf(ProjectParticipationMember::class, $result);
 
         /** @var ProjectParticipationMember $item */

@@ -77,7 +77,7 @@ class ListExtension implements QueryCollectionExtensionInterface
             )
             ->setParameter('company', $staff->getCompany())
             ->setParameter('staff', $staff)
-            ->setParameter('managedStaffMember', $this->projectParticipationMemberRepository->findByManager($staff))
+            ->setParameter('managedStaffMember', $this->projectParticipationMemberRepository->findActiveByManager($staff))
             ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
         ;
     }

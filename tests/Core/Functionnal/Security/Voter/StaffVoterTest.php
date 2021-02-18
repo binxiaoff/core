@@ -96,7 +96,7 @@ class StaffVoterTest extends KernelTestCase
                 StaffVoter::ATTRIBUTE_EDIT,
                 $this->createToken($staffs['staff_company/basic_user/2']),
                 $staffs['staff_company/basic_user/2'],
-                VoterInterface::ACCESS_GRANTED,
+                VoterInterface::ACCESS_DENIED,
             ],
             'EDIT : manager cannot edit staff outside of its managed team' => [
                 StaffVoter::ATTRIBUTE_EDIT,

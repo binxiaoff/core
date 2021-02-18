@@ -220,7 +220,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
                 'archived'             => null,
             ]);
 
-            if ($member && $member->getPermissions()->has($permission)) {
+            if ($member && false === $member->isArchived() && $member->getPermissions()->has($permission)) {
                 return true;
             }
 
@@ -228,7 +228,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
                 return false;
             }
 
-            if (0 < count($this->projectParticipationMemberRepository->findByProjectParticipationAndManagerAndPermissionEnabled($testedParticipation, $staff, $permission))) {
+            if (0 < count($this->projectParticipationMemberRepository->findActiveByProjectParticipationAndManagerAndPermissionEnabled($testedParticipation, $staff, $permission))) {
                 return true;
             }
         }

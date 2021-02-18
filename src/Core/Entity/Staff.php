@@ -311,7 +311,19 @@ class Staff implements TraceableStatusAwareInterface
      */
     public function addCompanyGroupTag(CompanyGroupTag $tag): Staff
     {
-        $this->companyGroupTags[] = $tag;
+        $companyGroup = $this->getCompany()->getCompanyGroup();
+
+        if (null === $companyGroup) {
+            return $this;
+        }
+
+        if ($companyGroup !== $tag->getCompanyGroup()) {
+            return $this;
+        }
+
+        if (false === $this->companyGroupTags->contains($tag)) {
+            $this->companyGroupTags[] = $tag;
+        }
 
         return $this;
     }
