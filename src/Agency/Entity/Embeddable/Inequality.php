@@ -52,15 +52,18 @@ class Inequality
      * })
      *
      */
-    private string $minValue;
+    private string $value;
 
     /**
+     * Only usable with between operator
+     *
      * @var string|null
      *
      * @ORM\Column(type="decimal", precision=65, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
      * @Assert\Expression("(this.getOperator() === constant('Unilend\\Agency\\Entity\\Embeddable\\Inequality::OPERATOR_BETWEEN') && value) or !value")
+     * @Assert\GreaterThan("value")
      *
      * @Groups({
      *     "agency:inequality:read",
@@ -72,13 +75,13 @@ class Inequality
 
     /**
      * @param string      $operator
-     * @param string      $minValue
+     * @param string      $value
      * @param string|null $maxValue
      */
-    public function __construct(string $operator, string $minValue, ?string $maxValue = null)
+    public function __construct(string $operator, string $value, ?string $maxValue = null)
     {
         $this->operator = $operator;
-        $this->minValue = $minValue;
+        $this->value    = $value;
         $this->maxValue = $maxValue;
     }
 
@@ -105,19 +108,19 @@ class Inequality
     /**
      * @return string
      */
-    public function getMinValue(): string
+    public function getValue(): string
     {
-        return $this->minValue;
+        return $this->value;
     }
 
     /**
-     * @param string $minValue
+     * @param string $value
      *
      * @return Inequality
      */
-    public function setMinValue(string $minValue): Inequality
+    public function setValue(string $value): Inequality
     {
-        $this->minValue = $minValue;
+        $this->value = $value;
 
         return $this;
     }

@@ -580,19 +580,4 @@ class Covenant
 
         return $validationGroups;
     }
-
-    /**
-     * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
-     */
-    private function validateMarginRules(ExecutionContextInterface $context)
-    {
-        // non financial covenant must not have margin rules
-        if (false === $this->isFinancial() && 0 !== $this->marginRules->count()) {
-            $context->buildViolation('Agency.CovenantRule.inconsistentCovenant')
-                ->atPath('marginRules')
-                ->addViolation();
-        }
-    }
 }
