@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace Unilend\Core\Validator\Constraints;
 
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
-use Unilend\Core\Service\MoneyCalculator;
 
-class MoneyGreaterThanOrEqualValidator extends AbstractMoneyPreviousValueComparisonValidator
+class MoneyNotResettableValidator extends AbstractMoneyPreviousValueComparisonValidator
 {
     /**
      * @inheritDoc
      */
     protected function compareValues(MoneyInterface $value, MoneyInterface $previousValue): bool
     {
-        return -1 !== MoneyCalculator::compare($value, $previousValue);
+        return null !== $value->getAmount() || null === $previousValue->getAmount();
     }
 }
