@@ -56,86 +56,43 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
          */
         $denormalized = $this->denormalizer->denormalize($data, $type, $format, $context);
 
-        $borrowerTrancheShares = $data['borrowerShares'] ?? [];
+        $borrowerTrancheShares = array_map(function ($datum) use ($denormalized) {
+            $borrowerTrancheShare = null;
 
-        foreach ($borrowerTrancheShares as $borrowerTrancheShare) {
-            if (false === is_array($borrowerTrancheShare)) {
-                continue;
+            if (\is_string($datum)) {
+                $borrowerTrancheShare = $this->iriConverter->getItemFromIri($datum);
             }
 
-            if (isset($borrowerTrancheShare['@id'])) {
-                $borrowerTrancheShare = $this->updateBorrowerTrancheShare($borrowerTrancheShare);
-            } else {
-                $borrowerTrancheShare = $this->createBorrowerTrancheShare($borrowerTrancheShare, $denormalized);
+            if (\is_array($datum)) {
+                unset($datum['tranche']);
+
+                /** @var BorrowerTrancheShare $updatedBorrowerTrancheShare */
+                $borrowerTrancheShare = $this->denormalizer->denormalize(
+                    $datum,
+                    BorrowerTrancheShare::class,
+                    'array',
+                    [
+                        AbstractNormalizer::OBJECT_TO_POPULATE =>
+                            isset($datum['@id']) ? $this->iriConverter->getItemFromIri($datum['@id'], [AbstractNormalizer::GROUPS => []]) : null,
+                        AbstractNormalizer::GROUPS => ['agency:borrowerTrancheShare:write', 'money:write'],
+                        AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
+                            BorrowerTrancheShare::class => [
+                                'tranche' => $denormalized,
+                            ],
+                        ],
+                    ]
+                );
             }
 
-            if ($borrowerTrancheShare) {
-                $denormalized->addBorrowerTrancheShare($borrowerTrancheShare);
+            if ($borrowerTrancheShare ?? false) {
+                $this->validator->validate($borrowerTrancheShare);
             }
-        }
+
+            return $borrowerTrancheShare;
+        }, $data['borrowerShares'] ?? []);
+
+        $denormalized->setBorrowerShares(array_filter($borrowerTrancheShares));
 
         return $denormalized;
-    }
-
-    /**
-     * @param array   $data
-     * @param Tranche $tranche
-     *
-     * @return BorrowerTrancheShare
-     *
-     * @throws ExceptionInterface
-     */
-    private function createBorrowerTrancheShare(array $data, Tranche $tranche): BorrowerTrancheShare
-    {
-        unset($data['tranche']);
-
-        /** @var BorrowerTrancheShare $borrowerTrancheShare */
-        $borrowerTrancheShare = $this->denormalizer->denormalize(
-            $data,
-            BorrowerTrancheShare::class,
-            'array',
-            [
-                AbstractNormalizer::GROUPS => ['agency:borrowerTrancheShare:write', 'money:write'],
-                AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
-                    BorrowerTrancheShare::class => [
-                        'tranche' => $tranche,
-                    ],
-                ],
-            ]
-        );
-
-        $this->validator->validate($borrowerTrancheShare);
-
-        return $borrowerTrancheShare;
-    }
-
-    /**
-     * @param array $data
-     *
-     * @return BorrowerTrancheShare
-     *
-     * @throws ExceptionInterface
-     */
-    private function updateBorrowerTrancheShare(array $data)
-    {
-        unset($data['tranche']);
-
-        /** @var BorrowerTrancheShare $borrowerTrancheShare */
-        $borrowerTrancheShare = $this->iriConverter->getItemFromIri($data['@id'], [AbstractNormalizer::GROUPS => []]);
-
-        /** @var BorrowerTrancheShare $updatedBorrowerTrancheShare */
-        $updatedBorrowerTrancheShare = $this->denormalizer->denormalize(
-            $data,
-            BorrowerTrancheShare::class,
-            'array',
-            [
-                AbstractNormalizer::OBJECT_TO_POPULATE => $borrowerTrancheShare,
-                AbstractNormalizer::GROUPS => ['agency:borrowerTrancheShare:write', 'money:write'],
-            ]
-        );
-
-        $this->validator->validate($updatedBorrowerTrancheShare);
-
-        return $updatedBorrowerTrancheShare;
     }
 }

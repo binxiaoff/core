@@ -33,6 +33,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *             "nullableMoney:read",
  *             "timestampable:read",
  *             "nullablePerson:read",
+ *             "lendingRate:read",
  *             "agency:contact:read",
  *             "agency:borrower:read",
  *             "agency:tranche:read",

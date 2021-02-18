@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -12,6 +13,26 @@ use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={
+ *         "groups": {
+ *             "agency:borrowerTrancheShare:read"
+ *         }
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "agency:borrowerTrancheShare:write"
+ *         }
+ *     },
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     }
+ * )
+ *
  * @ORM\Entity
  * @ORM\Table(name="agency_borrower_tranche_share", uniqueConstraints={
  *    @ORM\UniqueConstraint(columns={"id_borrower", "id_tranche"})

@@ -7,8 +7,10 @@ namespace Unilend\Agency\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Constant\Tranche\{CommissionType, LoanType, RepaymentType};
@@ -26,19 +28,25 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "agency:tranche:read",
  *             "money:read",
  *             "nullableMoney:read",
- *             "agency:borrowerTrancheShare:read"
+ *             "agency:borrowerTrancheShare:read",
+ *             "lendingRate:read"
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
- *             "denormalization_context": {"groups": {"agency:tranche:create", "money:write", "nullableMoney:write"}},
+ *             "denormalization_context": {"groups": {"agency:tranche:create", "money:write", "nullableMoney:write", "lendingRate:write"}},
+ *             "security_post_denormalize": "is_granted('create', object)",
  *         }
  *     },
  *     itemOperations={
  *         "get",
  *         "patch": {
- *             "denormalization_context": {"groups": {"agency:tranche:update", "money:write", "nullableMoney:write"}},
+ *             "denormalization_context": {"groups": {"agency:tranche:update", "money:write", "nullableMoney:write", "lendingRate:write"}},
+ *             "security": "is_granted('edit', object)",
  *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)",
+ *         }
  *     }
  * )
  *
@@ -58,6 +66,8 @@ class Tranche
      * @Assert\NotBlank
      *
      * @Groups({"agency:tranche:read", "agency:tranche:create"})
+     *
+     * @MaxDepth(1)
      */
     private Project $project;
 
@@ -89,7 +99,7 @@ class Tranche
      *
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Length(max="255")
-     * @Assert\Expression(expression="this.isSyndicated() && value || !value", message="Agency.Tranche.thirdPartySyndicate.invalid")
+     * @Assert\Expression(expression="(this.isSyndicated() && !value) || value", message="Agency.Tranche.thirdPartySyndicate.invalid")
      *
      * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
@@ -214,20 +224,20 @@ class Tranche
     private ?string $comment;
 
     /**
-     * @var iterable|BorrowerTrancheShare[]
+     * @var BorrowerTrancheShare[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
      *
      * @Groups({"agency:tranche:read"})
      */
-    private iterable $borrowerShares;
+    private Collection $borrowerShares;
 
     /**
      * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
-     * @Assert\GreaterThanOrEqual(value="now")
+     * @Assert\GreaterThanOrEqual(value="today")
      *
      * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
@@ -557,7 +567,12 @@ class Tranche
      */
     public function setBorrowerShares(iterable $borrowerShares)
     {
-        $this->borrowerShares = $borrowerShares;
+        // This convoluted way of setting the borrowerShares is needed because orphanRemoval doesn't handle
+        $this->borrowerShares->clear();
+
+        foreach ($borrowerShares as $borrowerShare) {
+            $this->borrowerShares->add($borrowerShare);
+        }
 
         return $this;
     }
