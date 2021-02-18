@@ -61,15 +61,14 @@ abstract class AbstractMoneyPreviousValueComparisonValidator extends ConstraintV
         $previousMoney  = new $moneyClass($previousEntity[$propertyPath . '.currency'], $previousEntity[$propertyPath . '.amount']);
 
         if (
-            null === $constraint->monitoredStatus || $entity->getCurrentStatus()->getStatus() === $constraint->monitoredStatus
+            false === $this->compareValues($value, $previousMoney)
+            && (null === $constraint->monitoredStatus || $entity->getCurrentStatus()->getStatus() === $constraint->monitoredStatus)
         ) {
-            if (false === $this->compareValues($value, $previousMoney)) {
-                $this->context
-                    ->buildViolation($constraint->message)
-                    ->atPath($propertyPath)
-                    ->addViolation()
-                ;
-            }
+            $this->context
+                ->buildViolation($constraint->message)
+                ->atPath($propertyPath)
+                ->addViolation()
+            ;
         }
     }
 
