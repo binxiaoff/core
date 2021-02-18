@@ -6,7 +6,7 @@ namespace Unilend\Test\Syndication\Unit\Entity;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\Entity\{Company, Embeddable\Money, MarketSegment, Staff, User};
+use Unilend\Core\Entity\{Company, Embeddable\Money, Staff, User};
 use Unilend\Syndication\Entity\Project;
 
 class ProjectTest extends TestCase
@@ -24,9 +24,9 @@ class ProjectTest extends TestCase
         $user->setLastName('Lastname');
         $user->setJobFunction('JobFunction');
         $user->setPhone('05000000');
-        $staff = new Staff($company, $user, $mockedStaff);
+        $staff = new Staff($user, $company->getRootTeam(), $mockedStaff);
 
-        $project = new Project($staff, 'risk1', new Money('EUR', '100'), new MarketSegment());
+        $project = new Project($staff, 'risk1', new Money('EUR', '100'));
 
         // Contact should be hydrated
         $contact = $project->getPrivilegedContactPerson();
@@ -47,9 +47,9 @@ class ProjectTest extends TestCase
         $rootStaff = $this->getMockBuilder(Staff::class)->disableOriginalConstructor()->getMock();
         $company = new Company('Company', 'company');
         $user = new User('email@email.fr');
-        $staff = new Staff($company, $user, $rootStaff);
+        $staff = new Staff($user, $company->getRootTeam(), $rootStaff);
         $user->setCurrentStaff($staff);
-        $project = new Project($staff, 'risk1', new Money('EUR', '10000'), new MarketSegment());
+        $project = new Project($staff, 'risk1', new Money('EUR', '10000'));
         self::assertCount(1, $project->getProjectParticipations());
         self::assertCount(1, $project->getProjectParticipations()[0]->getProjectParticipationMembers());
         self::assertSame(

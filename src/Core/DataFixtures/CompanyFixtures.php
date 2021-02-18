@@ -11,7 +11,7 @@ use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\Entity\{Company, CompanyStatus, User, Team, CompanyGroup};
+use Unilend\Core\Entity\{Company, CompanyGroup, CompanyStatus, Team, User};
 
 class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -81,7 +81,9 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         $company = $this->createCompany(Company::COMPANY_NAME_CALS, 'CALS')->setEmailDomain($domain)->setCompanyGroup($this->getReference('companyGroup/CA'));
         $this->addReference(self::CALS, $company);
 
-        $company = $this->createCompany('Crédit Agricole SA', Company::SHORT_CODE_CASA)->setEmailDomain('credit-agricole-sa.fr')->setGroupName('Crédit Agricole');
+        $company = $this->createCompany('Crédit Agricole SA', Company::SHORT_CODE_CASA)
+            ->setEmailDomain('credit-agricole-sa.fr')
+            ->setCompanyGroup($this->getReference('companyGroup/CA'));
         $this->addReference(self::CASA, $company);
 
         // Fake bank
