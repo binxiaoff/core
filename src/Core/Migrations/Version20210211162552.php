@@ -21,7 +21,7 @@ final class Version20210211162552 extends AbstractMigration
         $this->addSql('ALTER TABLE agency_margin_impact ADD CONSTRAINT FK_BE66DFA32384C64D FOREIGN KEY (id_margin_rule) REFERENCES agency_margin_rule (id)');
         $this->addSql('ALTER TABLE agency_margin_impact ADD CONSTRAINT FK_BE66DFA3B8FAF130 FOREIGN KEY (id_tranche) REFERENCES agency_tranche (id)');
         $this->addSql('ALTER TABLE agency_margin_rule ADD CONSTRAINT FK_383340BA4306C62 FOREIGN KEY (id_covenant) REFERENCES agency_covenant (id)');
-        $this->addSql('ALTER TABLE agency_covenant_rule ADD inequality_operator VARCHAR(2) NOT NULL, ADD inequality_value NUMERIC(65, 4) NOT NULL, ADD inequality_max_value NUMERIC(65, 4) DEFAULT NULL, DROP expression, CHANGE year year INT NOT NULL');
+        $this->addSql('ALTER TABLE agency_covenant_rule ADD inequality_operator VARCHAR(2) NOT NULL, ADD inequality_value NUMERIC(65, 4) NOT NULL, ADD inequality_max_value NUMERIC(65, 4) DEFAULT NULL, DROP expression');
     }
 
     public function down(Schema $schema) : void
@@ -29,6 +29,6 @@ final class Version20210211162552 extends AbstractMigration
         $this->addSql('ALTER TABLE agency_margin_impact DROP FOREIGN KEY FK_BE66DFA32384C64D');
         $this->addSql('DROP TABLE agency_margin_impact');
         $this->addSql('DROP TABLE agency_margin_rule');
-        $this->addSql('ALTER TABLE agency_covenant_rule ADD expression VARCHAR(255) CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`, DROP inequality_operator, DROP inequality_value, DROP inequality_max_value, CHANGE year year VARCHAR(255) CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`');
+        $this->addSql('ALTER TABLE agency_covenant_rule ADD expression VARCHAR(255) CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`, DROP inequality_operator, DROP inequality_value, DROP inequality_max_value');
     }
 }
