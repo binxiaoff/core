@@ -32,14 +32,14 @@ class TermAnswer
      *
      * @Assert\Type("bool")
      */
-    private ?bool $valid = null;
+    private ?bool $validation = null;
 
     /**
      * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
-    private ?DateTimeImmutable $validated = null;
+    private ?DateTimeImmutable $validationDate = null;
 
     /**
      * @var Term
@@ -62,14 +62,14 @@ class TermAnswer
     /**
      * @var string|null
      *
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="text", nullable=true)
      */
     private ?string $borrowerComment = null;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="text", nullable=true)
      */
     private ?string $agentComment = null;
 
@@ -87,17 +87,17 @@ class TermAnswer
     /**
      * @return bool|null
      */
-    public function getValid(): ?bool
+    public function getValidation(): ?bool
     {
-        return $this->valid;
+        return $this->validation;
     }
 
     /**
      * @return DateTimeImmutable|null
      */
-    public function getValidated(): ?DateTimeImmutable
+    public function getValidationDate(): ?DateTimeImmutable
     {
-        return $this->validated;
+        return $this->validationDate;
     }
 
     /**
@@ -169,17 +169,17 @@ class TermAnswer
     }
 
     /**
-     * @param bool $valid
+     * @param bool $validation
      *
      * @return TermAnswer
      *
      * @throws Exception
      */
-    public function setValid(bool $valid): TermAnswer
+    public function setValidation(bool $validation): TermAnswer
     {
-        if ($this->valid === null) {
-            $this->valid = $valid;
-            $this->validated = new DateTimeImmutable();
+        if ($this->validation === null) {
+            $this->validation     = $validation;
+            $this->validationDate = new DateTimeImmutable();
         }
 
         return $this;

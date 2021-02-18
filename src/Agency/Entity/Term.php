@@ -169,7 +169,7 @@ class Term
      */
     public function isValid()
     {
-        return $this->getLastAnswer()->getValid() === true;
+        return $this->getLastAnswer()->getValidation() === true;
     }
 
     /**
@@ -177,7 +177,7 @@ class Term
      */
     public function isInvalid()
     {
-        return $this->getLastAnswer()->getValid() === false;
+        return $this->getLastAnswer()->getValidation() === false;
     }
 
     /**
@@ -185,6 +185,6 @@ class Term
      */
     public function isPending()
     {
-        return $this->getLastAnswer()->getValid() === null;
+        return $this->getLastAnswer()->getValidation() === null;
     }
 }
