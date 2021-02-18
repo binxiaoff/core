@@ -30,8 +30,8 @@ class ProjectNotifier
     private RouterInterface $router;
 
     /**
-     * @param Slack             $client
-     * @param ProjectRepository $projectRepository
+     * @param Slack                   $client
+     * @param ProjectRepository       $projectRepository
      * @param Swift_Mailer      $mailer
      * @param RouterInterface   $router
      */

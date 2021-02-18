@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Service\Entity;
+namespace Unilend\Test\Core\Unit\Entity;
 
 use PHPUnit\Framework\TestCase;
 use Unilend\Core\Entity\{Company, CompanyModule};
