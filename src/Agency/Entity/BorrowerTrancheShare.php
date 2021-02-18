@@ -27,7 +27,7 @@ class BorrowerTrancheShare
     /**
      * @var Borrower
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Borrower")
+     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Borrower", inversedBy="trancheShares")
      * @ORM\JoinColumn(name="id_borrower", onDelete="CASCADE")
      *
      * @Assert\NotBlank

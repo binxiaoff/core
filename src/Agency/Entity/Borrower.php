@@ -227,7 +227,7 @@ class Borrower
     /**
      * @var Collection|BorrowerTrancheShare[]
      *
-     * @ORM\OneToMany(targetEntity="BorrowerTrancheShare", mappedBy="borrower", indexBy="tranche.id")
+     * @ORM\OneToMany(targetEntity="BorrowerTrancheShare", mappedBy="borrower")
      */
     private Collection $trancheShares;
 
