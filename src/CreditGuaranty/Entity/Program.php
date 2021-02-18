@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface, MarketSegment, Staff,
     Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Core\Validator\Constraints\MoneyGreaterThanOrEqual;
 
 /**
  * @ApiResource(
@@ -81,6 +82,8 @@ class Program implements TraceableStatusAwareInterface
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
      *
      * @Assert\Valid
+     *
+     * @MoneyGreaterThanOrEqual(message="CreditGuaranty.Program.funds.greater")
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
@@ -394,5 +397,37 @@ class Program implements TraceableStatusAwareInterface
     public function isMarketSegmentValid(): bool
     {
         return in_array($this->getMarketSegment()->getLabel(), [MarketSegment::LABEL_AGRICULTURE, MarketSegment::LABEL_CORPORATE], true);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInDraft(): bool
+    {
+        return $this->getCurrentStatus()->getStatus() === ProgramStatus::STATUS_DRAFT;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPaused(): bool
+    {
+        return $this->getCurrentStatus()->getStatus() === ProgramStatus::STATUS_PAUSED;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCommercialized(): bool
+    {
+        return $this->getCurrentStatus()->getStatus() === ProgramStatus::STATUS_COMMERCIALIZED;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCancelled(): bool
+    {
+        return $this->getCurrentStatus()->getStatus() === ProgramStatus::STATUS_CANCELLED;
     }
 }
