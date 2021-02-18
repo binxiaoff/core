@@ -15,6 +15,7 @@ use Unilend\Syndication\Entity\ProjectParticipation;
 class FileInput
 {
     public const ACCEPTED_MEDIA_TYPE = [
+        'application/zip',
         'application/pdf',
         'application/vnd.ms-excel',
         'application/vnd.ms-powerpoint',

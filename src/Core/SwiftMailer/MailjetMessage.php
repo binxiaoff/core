@@ -36,7 +36,10 @@ class MailjetMessage extends \Swift_Message
         parent::__construct($subject, $body, $contentType, $charset);
 
         // This address is required to respect the SMTP RFC but it is not used by mailjet (set in Mailjet template)
-        $this->setFrom('support@kls-platform.com');
+        // This email and name are defined on MailJet template too and should be the same.
+        // If email domain defined here is not the same as template sender, template email and name are used.
+        // If email domain defined here is the same as template, email and name defined below are used.
+        $this->setFrom('support@kls-platform.com', 'KLS');
         $this->enableTemplatingLanguage();
     }
 
@@ -79,6 +82,8 @@ class MailjetMessage extends \Swift_Message
      */
     public function setVars(array $vars = []): self
     {
+        $vars = $this->filterVars($vars);
+
         $this->getHeaders()->addTextHeader('X-MJ-Vars', json_encode($vars, JSON_THROW_ON_ERROR));
 
         return $this;
@@ -138,5 +143,20 @@ class MailjetMessage extends \Swift_Message
         $this->getHeaders()->addTextHeader('X-MJ-TemplateLanguage', '1');
 
         return $this;
+    }
+
+    /**
+     * @param array $vars
+     *
+     * @return array
+     */
+    private function filterVars(array $vars): array
+    {
+        // MailJet do not let var with null value, empty value has to be false instead
+        array_walk_recursive($vars, function (&$value) {
+            $value = (null === $value) ? false : $value;
+        });
+
+        return $vars;
     }
 }

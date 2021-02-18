@@ -10,7 +10,7 @@ use Doctrine\Inflector\InflectorFactory;
 
 final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryInterface
 {
-    private $decorated;
+    private ResourceMetadataFactoryInterface $decorated;
 
     /**
      * @param ResourceMetadataFactoryInterface $decorated

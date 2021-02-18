@@ -6,6 +6,7 @@ namespace Unilend\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Core\Entity\Traits\IdentityTrait;
 
 /**
  * @ORM\Entity
@@ -23,25 +24,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class MarketSegment
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    use IdentityTrait;
 
     /**
      * @ORM\Column(type="string", length=30)
      */
-    private $label;
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
-    }
+    private string $label;
 
     /**
      * @return string|null
