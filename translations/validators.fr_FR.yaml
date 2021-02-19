@@ -116,5 +116,9 @@ CreditGuaranty:
         distributionProcess:
             textMax: Les textes de chaque étape ne peut excéder une longeur de %limit%.
         funds:
-            greater: Vous ne pouvez pas réduire le montant total du programme.
-            draft: Vous ne pouvez que réduire le montant total du programme quand il est en statut brouillon.
+            greater: Vous ne pouvez pas réduire le montant total sur un programme en cours.
+            draft: Vous ne pouvez que réduire le montant total sur un programme en brouillon.
+        cappedAt:
+            notChangeable: Vous ne pouvez pas modifier le CAP sur un programme en cours.
+            greater: Vous ne pouvez pas réduire le montant du CAP sur un programme en cours.
+            draft: Vous ne pouvez que modifier le CAP ou réduire son montant sur un programme en brouillon.

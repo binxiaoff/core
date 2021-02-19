@@ -72,6 +72,15 @@ class Program implements TraceableStatusAwareInterface
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
      * @Assert\Valid
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Expression("this.isInDraft()", message="CreditGuaranty.Program.cappedAt.draft"),
+     *     @Assert\Sequentially({
+     *
+     *         @PreviousValue\MoneyNotAssignable(message="CreditGuaranty.Program.cappedAt.notChangeable"),
+     *         @PreviousValue\MoneyNotResettable(message="CreditGuaranty.Program.cappedAt.notChangeable"),
+     *         @PreviousValue\MoneyGreaterThanOrEqual(message="CreditGuaranty.Program.cappedAt.greater")
+     *     })
+     * })
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
