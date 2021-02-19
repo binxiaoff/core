@@ -41,8 +41,6 @@ class Program implements TraceableStatusAwareInterface
     use TimestampableTrait;
     use BlamableAddedTrait;
 
-    private const MAX_STRING_LENGTH = 200;
-
     /**
      * @ORM\Column(length=100, unique=true)
      *
@@ -100,6 +98,10 @@ class Program implements TraceableStatusAwareInterface
      *
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Count(max="10")
+     * @Assert\All({
+     *     @Assert\NotBlank,
+     *     @Assert\Length(max=200)
+     * })
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
@@ -392,23 +394,5 @@ class Program implements TraceableStatusAwareInterface
     public function isMarketSegmentValid(): bool
     {
         return in_array($this->getMarketSegment()->getLabel(), [MarketSegment::LABEL_AGRICULTURE, MarketSegment::LABEL_CORPORATE], true);
-    }
-
-    /**
-     * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
-     */
-    public function validateDistributionProcess(ExecutionContextInterface $context): void
-    {
-        foreach ($this->getDistributionProcess() as $distributionProcess) {
-            if (mb_strlen($distributionProcess) > self::MAX_STRING_LENGTH) {
-                $context->buildViolation('CreditGuaranty.Program.distributionProcess.textMax')
-                    ->atPath('distributionProcess')
-                    ->setParameter('%limit%', (string) self::MAX_STRING_LENGTH)
-                    ->addViolation()
-                ;
-            }
-        }
     }
 }
