@@ -11,10 +11,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface, MarketSegment, Staff,
     Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
-use Unilend\Core\Validator\Constraints\MoneyGreaterThanOrEqual;
+use Unilend\Core\Validator\Constraints\PreviousValue;
 
 /**
  * @ApiResource(
@@ -82,8 +81,11 @@ class Program implements TraceableStatusAwareInterface
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
      *
      * @Assert\Valid
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Expression("this.isInDraft()"),
      *
-     * @MoneyGreaterThanOrEqual(message="CreditGuaranty.Program.funds.greater")
+     *     @PreviousValue\MoneyGreaterThanOrEqual()
+     * })
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
