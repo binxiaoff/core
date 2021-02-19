@@ -174,6 +174,8 @@ class Tranche
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
      * @Assert\Valid
+     *
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
     private NullableMoney $draw;
 
@@ -606,11 +608,11 @@ class Tranche
     }
 
     /**
-     * @param Money $draw
+     * @param NullableMoney $draw
      *
      * @return Tranche
      */
-    public function setDraw(Money $draw): Tranche
+    public function setDraw(NullableMoney $draw): Tranche
     {
         $this->draw = $draw;
 
