@@ -39,7 +39,11 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *         }
  *     },
  *     itemOperations={
- *         "get",
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
  *         "patch": {
  *             "denormalization_context": {"groups": {"agency:tranche:update", "money:write", "nullableMoney:write", "lendingRate:write"}},
  *             "security": "is_granted('edit', object)",
