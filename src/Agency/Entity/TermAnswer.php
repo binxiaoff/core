@@ -184,4 +184,19 @@ class TermAnswer
 
         return $this;
     }
+
+    /**
+     * @return bool
+     */
+    public function isFulfilled(): bool
+    {
+        switch ($this->getTerm()->getNature()) {
+            case Covenant::NATURE_CONTROL:
+                return true;
+            case Covenant::NATURE_DOCUMENT:
+                return null !== $this->getDocument();
+        }
+
+        return false;
+    }
 }

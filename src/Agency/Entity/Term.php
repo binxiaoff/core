@@ -207,4 +207,20 @@ class Term
 
         return $this->getLastAnswer()->getValidation() === null;
     }
+
+    /**
+     * @return string
+     */
+    public function getNature(): string
+    {
+        return $this->getCovenant()->getNature();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFulfilled(): bool
+    {
+        return $this->getLastAnswer() && $this->getLastAnswer()->isFulfilled();
+    }
 }
