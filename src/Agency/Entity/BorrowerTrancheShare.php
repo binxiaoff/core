@@ -30,7 +30,8 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "read": false,
  *             "output": false,
  *         }
- *     }
+ *     },
+ *     collectionOperations={}
  * )
  *
  * @ORM\Entity
