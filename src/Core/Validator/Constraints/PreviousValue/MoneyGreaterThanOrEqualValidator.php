@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Validator\Constraints;
+namespace Unilend\Core\Validator\Constraints\PreviousValue;
 
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Service\MoneyCalculator;
+use Unilend\Core\Validator\Constraints\AbstractMoneyPreviousValueComparisonValidator;
 
 class MoneyGreaterThanOrEqualValidator extends AbstractMoneyPreviousValueComparisonValidator
 {

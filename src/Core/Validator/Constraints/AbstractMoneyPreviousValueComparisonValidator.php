@@ -7,7 +7,7 @@ namespace Unilend\Core\Validator\Constraints;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Validator\{Constraint, ConstraintValidator, Exception\ConstraintDefinitionException, Exception\UnexpectedTypeException};
-use Unilend\Core\Entity\Interfaces\{MoneyInterface, TraceableStatusAwareInterface};
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
 
 abstract class AbstractMoneyPreviousValueComparisonValidator extends ConstraintValidator
 {
@@ -41,14 +41,6 @@ abstract class AbstractMoneyPreviousValueComparisonValidator extends ConstraintV
             return;
         }
 
-        if (null !== $constraint->monitoredStatus && false === $entity instanceof TraceableStatusAwareInterface) {
-            throw new ConstraintDefinitionException(sprintf(
-                'monitoredStatus is defined, but the class "%s" doesn\'t implement "%s".',
-                \get_class($entity),
-                TraceableStatusAwareInterface::class
-            ));
-        }
-
         $entityManager = $this->managerRegistry->getManagerForClass(\get_class($entity));
 
         if (false === $entityManager instanceof EntityManagerInterface) {
@@ -60,10 +52,7 @@ abstract class AbstractMoneyPreviousValueComparisonValidator extends ConstraintV
         $moneyClass     = \get_class($value);
         $previousMoney  = new $moneyClass($previousEntity[$propertyPath . '.currency'], $previousEntity[$propertyPath . '.amount']);
 
-        if (
-            false === $this->compareValues($value, $previousMoney)
-            && (null === $constraint->monitoredStatus || $entity->getCurrentStatus()->getStatus() === $constraint->monitoredStatus)
-        ) {
+        if (false === $this->compareValues($value, $previousMoney)) {
             $this->context
                 ->buildViolation($constraint->message)
                 ->atPath($propertyPath)
