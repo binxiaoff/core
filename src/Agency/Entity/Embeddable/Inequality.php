@@ -152,4 +152,33 @@ class Inequality
     {
         return self::getConstants('OPERATOR_');
     }
+
+    /**
+     * @param $evaluatedNumber
+     *
+     * @return bool
+     */
+    public function isConform(string $evaluatedNumber)
+    {
+        $comp = bccomp($this->value, $evaluatedNumber, 4);
+
+        $maxValueComp = $this->maxValue ? bccomp($this->maxValue, $evaluatedNumber, 4) : false;
+
+        switch ($this->operator) {
+            case static::OPERATOR_EQUAL:
+                return 0 === $comp;
+            case static::OPERATOR_INFERIOR:
+                return 1 === $comp ;
+            case static::OPERATOR_INFERIOR_OR_EQUAL:
+                return 0 === $comp || 1 === $comp;
+            case static::OPERATOR_SUPERIOR:
+                return -1 === $comp;
+            case static::OPERATOR_SUPERIOR_OR_EQUAL:
+                return -1 === $comp || 0 === $comp;
+            case static::OPERATOR_BETWEEN:
+                return $this->maxValue && ((1 === $maxValueComp && -1 === $comp) || 0 === $maxValueComp || 0 === $comp);
+        }
+
+        return false;
+    }
 }

@@ -421,13 +421,13 @@ class Covenant
     {
         $financialNatures = [self::NATURE_FINANCIAL_RATIO, self::NATURE_FINANCIAL_ELEMENT];
 
-        return in_array($this->nature, $financialNatures);
+        return \in_array($this->nature, $financialNatures);
     }
 
     /**
-     * @return CovenantRule[]|iterable
+     * @return CovenantRule[]|Collection
      */
-    public function getCovenantRules(): iterable
+    public function getCovenantRules(): Collection
     {
         return $this->covenantRules;
     }

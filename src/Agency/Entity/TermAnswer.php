@@ -74,6 +74,16 @@ class TermAnswer
     private ?string $agentComment = null;
 
     /**
+     * @var string|null
+     *
+     * @Assert\Length(max="255")
+     * @Assert\Type("numeric")
+     *
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private ?string $borrowerInput;
+
+    /**
      * @param Term $term
      *
      * @throws Exception
@@ -177,10 +187,30 @@ class TermAnswer
      */
     public function setValidation(bool $validation): TermAnswer
     {
-        if ($this->validation === null) {
+        if (null === $this->validation) {
             $this->validation     = $validation;
             $this->validationDate = new DateTimeImmutable();
         }
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getBorrowerInput(): ?string
+    {
+        return $this->borrowerInput;
+    }
+
+    /**
+     * @param string|null $borrowerInput
+     *
+     * @return TermAnswer
+     */
+    public function setBorrowerInput(?string $borrowerInput): TermAnswer
+    {
+        $this->borrowerInput = $borrowerInput;
 
         return $this;
     }
@@ -190,11 +220,24 @@ class TermAnswer
      */
     public function isFulfilled(): bool
     {
-        switch ($this->getTerm()->getNature()) {
+        switch ($this->getTerm()->getCovenant()->getNature()) {
             case Covenant::NATURE_CONTROL:
                 return true;
             case Covenant::NATURE_DOCUMENT:
                 return null !== $this->getDocument();
+            case Covenant::NATURE_FINANCIAL_ELEMENT:
+            case Covenant::NATURE_FINANCIAL_RATIO:
+                if (null === $this->borrowerInput || false === is_numeric($this->borrowerInput)) {
+                    return false;
+                }
+
+                $rule = $this->getTerm()->getFinancialRule();
+
+                if (null === $rule) {
+                    return false;
+                }
+
+                return $rule->getInequality()->isConform($this->borrowerInput);
         }
 
         return false;

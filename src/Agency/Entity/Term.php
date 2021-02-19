@@ -177,7 +177,7 @@ class Term
             return false;
         }
 
-        return $lastAnswer->getValidation() === true;
+        return true === $lastAnswer->getValidation();
     }
 
     /**
@@ -191,7 +191,7 @@ class Term
             return false;
         }
 
-        return $lastAnswer->getValidation() === false;
+        return false === $lastAnswer->getValidation();
     }
 
     /**
@@ -205,7 +205,29 @@ class Term
             return true;
         }
 
-        return $this->getLastAnswer()->getValidation() === null;
+        return null === $lastAnswer->getValidation();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFinancial(): bool
+    {
+        return $this->getCovenant()->isFinancial();
+    }
+
+    /**
+     * @return CovenantRule|null
+     */
+    public function getFinancialRule(): ?CovenantRule
+    {
+        if (false === $this->isFinancial()) {
+            return null;
+        }
+
+        $year = (int) $this->getStart()->format('Y');
+
+        return $this->getCovenant()->getCovenantRules()[$year];
     }
 
     /**
