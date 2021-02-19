@@ -4,11 +4,35 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\{ApiResource};
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\{Groups};
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
+/**
+ * @ApiResource(
+ *     normalizationContext={"groups":{"creditGuaranty:programContact:read", "creditGuaranty:program:read", "timestampable:read"}},
+ *     denormalizationContext={"groups": {"creditGuaranty:programContact:write"}},
+ *      itemOperations={
+ *          "get",
+ *          "patch": {"security": "is_granted('edit', object)"},
+ *          "delete": {"security": "is_granted('delete', object)"}
+ *      },
+ *      collectionOperations={
+ *         "post": {"security_post_denormalize": "is_granted('create', object)"}
+ *     }
+ * )
+ *
+ * @ORM\Entity
+ * @ORM\Table(name="credit_guaranty_program_contact")
+ * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity({"email"}, message="CreditGuaranty.ProgramContact.email.unique")
+ */
 class ProgramContact
 {
     use PublicizeIdentityTrait;
@@ -17,21 +41,29 @@ class ProgramContact
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
      * @ORM\JoinColumn(name="id_program", nullable=false)
+     *
+     * @Groups({"creditGuaranty:programContact:read"})
      */
     private Program $program;
 
     /**
      * @ORM\Column(length=100)
+     *
+     * @Groups({"creditGuaranty:programContact:read", "creditGuaranty:programContact:write"})
      */
     private string $firstName;
 
     /**
      * @ORM\Column(length=100)
+     *
+     * @Groups({"creditGuaranty:programContact:read", "creditGuaranty:programContact:write"})
      */
     private string $lastName;
 
     /**
      * @ORM\Column(length=100)
+     *
+     * @Groups({"creditGuaranty:programContact:read", "creditGuaranty:programContact:write"})
      */
     private string $workingScope;
 
@@ -39,6 +71,8 @@ class ProgramContact
      * @ORM\Column(length=100)
      *
      * @Assert\Email
+     *
+     * @Groups({"creditGuaranty:programContact:read", "creditGuaranty:programContact:write"})
      */
     private string $email;
 
@@ -46,8 +80,10 @@ class ProgramContact
      * @ORM\Column(length=35)
      *
      * @AssertPhoneNumber(defaultRegion="Users::PHONE_NUMBER_DEFAULT_REGION", type="any")
+     *
+     * @Groups({"creditGuaranty:programContact:read", "creditGuaranty:programContact:write"})
      */
-    private string $telephone;
+    private string $phone;
 
     /**
      * @param Program $program
@@ -55,16 +91,17 @@ class ProgramContact
      * @param string  $lastName
      * @param string  $workingScope
      * @param string  $email
-     * @param string  $telephone
+     * @param string  $phone
      */
-    public function __construct(Program $program, string $firstName, string $lastName, string $workingScope, string $email, string $telephone)
+    public function __construct(Program $program, string $firstName, string $lastName, string $workingScope, string $email, string $phone)
     {
         $this->program      = $program;
         $this->firstName    = $firstName;
         $this->lastName     = $lastName;
         $this->workingScope = $workingScope;
         $this->email        = $email;
-        $this->telephone    = $telephone;
+        $this->phone        = $phone;
+        $this->added        = new DateTimeImmutable();
     }
 
     /**
@@ -158,19 +195,19 @@ class ProgramContact
     /**
      * @return string
      */
-    public function getTelephone(): string
+    public function getPhone(): string
     {
-        return $this->telephone;
+        return $this->phone;
     }
 
     /**
-     * @param string $telephone
+     * @param string $phone
      *
      * @return ProgramContact
      */
-    public function setTelephone(string $telephone): ProgramContact
+    public function setPhone(string $phone): ProgramContact
     {
-        $this->telephone = $telephone;
+        $this->phone = $phone;
 
         return $this;
     }
