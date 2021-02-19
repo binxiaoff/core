@@ -82,9 +82,9 @@ class Program implements TraceableStatusAwareInterface
      *
      * @Assert\Valid
      * @Assert\AtLeastOneOf({
-     *     @Assert\Expression("this.isInDraft()"),
+     *     @Assert\Expression("this.isInDraft()", message="CreditGuaranty.Program.funds.draft"),
      *
-     *     @PreviousValue\MoneyGreaterThanOrEqual()
+     *     @PreviousValue\MoneyGreaterThanOrEqual(message="CreditGuaranty.Program.funds.greater")
      * })
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})

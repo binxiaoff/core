@@ -115,3 +115,6 @@ CreditGuaranty:
             invalid: Le marché choisi n'est pas valable.
         distributionProcess:
             textMax: Les textes de chaque étape ne peut excéder une longeur de %limit%.
+        funds:
+            greater: Vous ne pouvez pas réduire le montant total du programme.
+            draft: Vous ne pouvez que réduire le montant total du programme quand il est en statut brouillon.
