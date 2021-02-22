@@ -177,7 +177,7 @@ class Term
             return false;
         }
 
-        return true === $lastAnswer->getValidation();
+        return $lastAnswer->isValid();
     }
 
     /**
@@ -191,7 +191,7 @@ class Term
             return false;
         }
 
-        return false === $lastAnswer->getValidation();
+        return $lastAnswer->isInvalid();
     }
 
     /**
@@ -205,7 +205,7 @@ class Term
             return true;
         }
 
-        return null === $lastAnswer->getValidation();
+        return $lastAnswer->isPending();
     }
 
     /**

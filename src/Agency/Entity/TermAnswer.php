@@ -24,9 +24,9 @@ class TermAnswer
     /**
      * @var bool
      *
-     * True if borrower fulfill contract conditions
-     * False if borrower fail to fulfill it
-     * Null if answer is pending
+     * True if agent deems borrower answer correct
+     * False if agent deems borrower answer incorrect (incorrectDocument, late answer, etc.) => breach of covenant if shared, risk of breach if not shared
+     * Null if agent has not yet express validation on answer
      *
      * @ORM\Column(type="boolean", nullable=true)
      *
@@ -84,6 +84,30 @@ class TermAnswer
     private ?string $borrowerInput;
 
     /**
+     * true if agent granted waiver following this answer
+     * can only be true if agent declared $validation to be false (incorrect)
+     *
+     * @var bool
+     *
+     * @Assert\Expression("this.isInvalid() || value === false")
+     *
+     * @ORM\Column(type="boolean")
+     */
+    private bool $waiver;
+
+    /**
+     * granted delay by the agent to the borrower for the next
+     * @var int|null
+     *
+     * @Assert\Positive
+     *
+     * @Assert\Expression("this.isInvalid() || value === null")
+     *
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private ?int $grantedDelay;
+
+    /**
      * @param Term $term
      *
      * @throws Exception
@@ -92,6 +116,7 @@ class TermAnswer
     {
         $this->added = new DateTimeImmutable();
         $this->term  = $term;
+        $this->waiver = false;
     }
 
     /**
@@ -241,5 +266,69 @@ class TermAnswer
         }
 
         return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasWaiver(): bool
+    {
+        return $this->waiver;
+    }
+
+    /**
+     * @param bool $waiver
+     *
+     * @return TermAnswer
+     */
+    public function setWaiver(bool $waiver): TermAnswer
+    {
+        $this->waiver = $waiver;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getGrantedDelay(): ?int
+    {
+        return $this->grantedDelay;
+    }
+
+    /**
+     * @param int|null $grantedDelay
+     *
+     * @return TermAnswer
+     */
+    public function setGrantedDelay(?int $grantedDelay): TermAnswer
+    {
+        $this->grantedDelay = $grantedDelay;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValid(): bool
+    {
+        return true === $this->validation || (false === $this->validation && $this->waiver);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInvalid(): bool
+    {
+        return false === $this->validation;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPending(): bool
+    {
+        return null === $this->validation;
     }
 }
