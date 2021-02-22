@@ -148,7 +148,7 @@ class Team
     }
 
     /**
-     * @return Team[]|iterable
+     * @return Team[]|array
      */
     public function getAncestors(): array
     {
@@ -156,7 +156,7 @@ class Team
     }
 
     /**
-     * @return Team[]|iterable
+     * @return Team[]|array
      */
     public function getDescendents(): array
     {
@@ -184,15 +184,11 @@ class Team
     }
 
     /**
-     * @return iterable
+     * @return array
      */
-    public function getChildren(): iterable
+    public function getChildren(): array
     {
-        foreach ($this->outgoingEdges as $edge) {
-            if (1 === $edge->getDepth()) {
-                yield $edge->getDescendent();
-            }
-        }
+        return $this->outgoingEdges->filter(fn (TeamEdge $edge) => 1 === $edge->getDepth())->map(fn (TeamEdge $edge) => $edge->getDescendent())->toArray();
     }
 
     /**
