@@ -9,14 +9,8 @@ use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\Syndication\Entity\{Project,
-    ProjectParticipation,
-    ProjectParticipationMember,
-    ProjectStatus
-};
+use Unilend\Syndication\Entity\{ProjectParticipation, ProjectParticipationMember, ProjectStatus};
 use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
-use Unilend\Syndication\Service\Project\ProjectManager;
-use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationVoter extends AbstractEntityVoter
 {
