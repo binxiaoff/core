@@ -1,6 +1,6 @@
 grumphp:
     git_hook_variables:
-        EXEC_GRUMPHP_COMMAND: 'docker exec api_php_1 php'
+        EXEC_GRUMPHP_COMMAND: 'docker exec --user $(id -u):$(id -g) api_php_1 php'
     tasks:
         git_blacklist:
             keywords: ['dump(', '>>>>', '<<<<']
