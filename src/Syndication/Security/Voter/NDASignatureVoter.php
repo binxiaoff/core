@@ -7,7 +7,6 @@ namespace Unilend\Syndication\Security\Voter;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\Syndication\Entity\NDASignature;
-use Unilend\Syndication\Security\Voter\ProjectParticipationVoter;
 
 class NDASignatureVoter extends AbstractEntityVoter
 {
