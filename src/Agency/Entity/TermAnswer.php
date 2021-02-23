@@ -220,7 +220,7 @@ class TermAnswer
      */
     public function isFulfilled(): bool
     {
-        switch ($this->getTerm()->getCovenant()->getNature()) {
+        switch ($this->getTerm()->getNature()) {
             case Covenant::NATURE_CONTROL:
                 return true;
             case Covenant::NATURE_DOCUMENT:
