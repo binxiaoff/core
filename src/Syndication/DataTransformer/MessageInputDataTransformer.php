@@ -14,8 +14,8 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Core\DTO\MessageInput;
 use Unilend\Core\Entity\{Message, MessageThread, User};
 use Unilend\Core\Repository\MessageThreadRepository;
-use Unilend\Core\Security\Voter\MessageThreadVoter;
 use Unilend\Syndication\Entity\{Project, ProjectParticipation};
+use Unilend\Syndication\Security\Voter\ProjectParticipationVoter;
 use Unilend\Syndication\Service\Project\ProjectManager;
 
 class MessageInputDataTransformer implements DataTransformerInterface
@@ -91,7 +91,7 @@ class MessageInputDataTransformer implements DataTransformerInterface
             throw new AccessDeniedException();
         }
 
-        if (($entity instanceof ProjectParticipation) && false === $this->security->isGranted(MessageThreadVoter::ATTRIBUTE_VIEW, $entity)) {
+        if (($entity instanceof ProjectParticipation) && false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $entity)) {
             throw new AccessDeniedException();
         }
 
