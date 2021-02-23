@@ -125,10 +125,10 @@ class TeamTest extends TestCase
     {
         $teams = $this->getTestTree();
 
-        static::assertSame($teams['root'], $teams['root']->getParent());
-        static::assertSame($teams['root'], $teams['C']->getParent());
-        static::assertSame($teams['root'], $teams['3']->getParent());
-        static::assertSame($teams['root'], $teams['#']->getParent());
+        static::assertSame($teams['root'], $teams['root']->getRoot());
+        static::assertSame($teams['root'], $teams['C']->getRoot());
+        static::assertSame($teams['root'], $teams['3']->getRoot());
+        static::assertSame($teams['root'], $teams['#']->getRoot());
     }
 
     /**
