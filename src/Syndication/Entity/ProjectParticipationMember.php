@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\Entity;
 
-use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\CompanyGroupTag;
@@ -27,7 +25,7 @@ use Unilend\Core\Model\Bitmask;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectParticipationMember:read", "role:read", "companyGroupTag:read"}},
+ *     normalizationContext={"groups": {"projectParticipationMember:read", "role:read", "companyGroupTag:read", "permission:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -36,13 +34,13 @@ use Unilend\Core\Model\Bitmask;
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {"archivable:write"}}
+ *             "denormalization_context": {"groups": {"archivable:write", "permission:write"}}
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"projectParticipationMember:create", "projectParticipationMember:write"}}
+ *             "denormalization_context": {"groups": {"projectParticipationMember:create", "projectParticipationMember:write", "permission:write"}}
  *         }
  *     }
  * )
