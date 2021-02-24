@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -13,6 +14,41 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Model\Bitmask;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={
+ *         "groups": {
+ *             "agency:participation:read",
+ *             "money:read"
+ *         }
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "agency:participation:write",
+ *             "money:write"
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *              "denormalization_context": {
+ *                  "groups": {"agency:participation:create", "money:write"}
+ *              },
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *         }
+ *     },
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *         "patch": {
+ *              "denormalization_context": {
+ *                  "groups": {"agency:participation:write", "money:write"}
+ *              },
+ *             "security_post_denormalize": "is_granted('edit', object)",
+ *         }
+ *     }
+ * )
  * @ORM\Entity()
  * @ORM\Table(name="agency_participation", uniqueConstraints={
  *    @ORM\UniqueConstraint(columns={"id_project", "id_participant"})
@@ -295,7 +331,7 @@ class Participation
      *
      * @return Participation
      */
-    public function setAllocations($allocations)
+    public function setAllocations(iterable $allocations)
     {
         $this->allocations = $allocations;
 

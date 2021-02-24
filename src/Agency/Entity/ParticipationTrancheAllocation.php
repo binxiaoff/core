@@ -4,12 +4,26 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
+ * @ApiResource(
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     },
+ *     collectionOperations={}
+ * )
+ *
  * @ORM\Entity
  * @ORM\Table(name="agency_participation_tranche_allocation", uniqueConstraints={
  *      @ORM\UniqueConstraint(columns={"id_participation", "id_tranche"})
@@ -21,14 +35,7 @@ use Unilend\Core\Entity\Embeddable\Money;
  */
 class ParticipationTrancheAllocation
 {
-    /**
-     * @var int|null
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private ?int $id;
+    use PublicizeIdentityTrait;
 
     /**
      * @var Participation
@@ -37,6 +44,8 @@ class ParticipationTrancheAllocation
      * @ORM\JoinColumn(name="id_participation", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
+     *
+     * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:create"})
      */
     private Participation $participation;
 
@@ -47,6 +56,8 @@ class ParticipationTrancheAllocation
      * @ORM\JoinColumn(name="id_tranche", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
+     *
+     * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:create"})
      */
     private Tranche $tranche;
 
@@ -57,6 +68,8 @@ class ParticipationTrancheAllocation
      * @Assert\Valid
      *
      * @ORM\Embedded(class=Money::class)
+     *
+     * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:write"})
      */
     private Money $allocation;
 

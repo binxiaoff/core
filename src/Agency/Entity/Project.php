@@ -453,7 +453,7 @@ class Project
     /**
      * @var Participation[]|iterable
      *
-     * @ORM\OneToMany(targetEntity=Participation::class, mappedBy="project", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=Participation::class, mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      */
     private iterable $participations;
 
@@ -521,7 +521,7 @@ class Project
 
         $this->borrowers = new ArrayCollection();
         $this->tranches  = new ArrayCollection();
-        $this->participations = new ArrayCollection();
+        $this->participations = new ArrayCollection([new Participation($this, $this->agent, new Money($this->globalFundingMoney->getCurrency()))]);
 
         $this->silentSyndication = false;
 
