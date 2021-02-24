@@ -18,7 +18,7 @@ use Unilend\Core\Entity\Constant\{CAInternalRating, FundingSpecificity};
 use Unilend\Core\Entity\Embeddable\{Money, NullableMoney, NullablePerson};
 use Unilend\Core\Entity\MarketSegment;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Core\Entity\{Company, Staff};
+use Unilend\Core\Entity\{Company, Drive, Staff};
 use Unilend\Core\Model\Bitmask;
 use Unilend\Core\Validator\Constraints\Siren;
 
@@ -491,6 +491,30 @@ class Project
     private Collection $covenants;
 
     /**
+     * @var Drive
+     *
+     * @ORM\OneToOne(targetEntity=Drive::class)
+     * @ORM\JoinColumn(name="id_agent_borrower_drive", nullable=false, unique=true)
+     */
+    private Drive $agentBorrowerDrive;
+
+    /**
+     * @var Drive
+     *
+     * @ORM\OneToOne(targetEntity=Drive::class)
+     * @ORM\JoinColumn(name="id_agent_principal_borrower_drive", nullable=false, unique=true)
+     */
+    private Drive $agentPrincipalParticipantDrive;
+
+    /**
+     * @var Drive
+     *
+     * @ORM\OneToOne(targetEntity=Drive::class)
+     * @ORM\JoinColumn(name="id_agent_secondary_borrower_drive", nullable=false, unique=true)
+     */
+    private Drive $agentSecondaryParticipantDrive;
+
+    /**
      * @param Staff             $addedBy
      * @param string            $title
      * @param string            $riskGroupName
@@ -552,6 +576,10 @@ class Project
         // This part is weird but compliant to figma models: those fields are editable
         $this->agentDisplayName = $this->agent->getDisplayName();
         $this->agentSiren       = $this->agent->getSiren();
+
+        $this->agentBorrowerDrive = new Drive();
+        $this->agentPrincipalParticipantDrive = new Drive();
+        $this->agentSecondaryParticipantDrive = new Drive();
     }
 
     /**
@@ -1265,6 +1293,30 @@ class Project
         }
 
         return $validationGroups;
+    }
+
+    /**
+     * @return Drive
+     */
+    public function getAgentBorrowerDrive(): Drive
+    {
+        return $this->agentBorrowerDrive;
+    }
+
+    /**
+     * @return Drive
+     */
+    public function getAgentPrincipalParticipantDrive(): Drive
+    {
+        return $this->agentPrincipalParticipantDrive;
+    }
+
+    /**
+     * @return Drive
+     */
+    public function getAgentSecondaryParticipantDrive(): Drive
+    {
+        return $this->agentSecondaryParticipantDrive;
     }
 
     /**
