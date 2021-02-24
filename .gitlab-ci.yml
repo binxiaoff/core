@@ -1,9 +1,6 @@
 # Select what we should cache
-cache:
-    paths:
-        - vendor/
-
 before_script:
+    - rm -rf vendor
     - composer install
 
 test:application:
