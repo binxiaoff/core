@@ -9,38 +9,33 @@ use Psr\Log\LoggerInterface;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\UserAgent;
 use Unilend\Core\Repository\UserAgentRepository;
-use UserAgentParser\Model\UserAgent as Model;
-use UserAgentParser\Provider\Chain as UserAgentParser;
+use WhichBrowser\Parser;
 
 class UserAgentManager
 {
-    /** @var UserAgentParser */
-    private $chain;
     /** @var LoggerInterface */
     private $logger;
+
     /** @var UserAgentRepository */
     private $userAgentRepository;
 
     /**
-     * @param UserAgentParser     $chain
+     * UserAgentManager constructor.
+     *
      * @param UserAgentRepository $userAgentRepository
      * @param LoggerInterface     $logger
      */
-    public function __construct(UserAgentParser $chain, UserAgentRepository $userAgentRepository, LoggerInterface $logger)
+    public function __construct(UserAgentRepository $userAgentRepository, LoggerInterface $logger)
     {
-        $this->chain               = $chain;
         $this->logger              = $logger;
         $this->userAgentRepository = $userAgentRepository;
     }
 
     /**
-     * @param User        $user
-     * @param string|null $userAgent
+     * @param User   $user
+     * @param string $userAgent
      *
-     *@return UserAgent|null
-
-     **@throws Exception
-     *
+     * @return UserAgent|null
      */
     public function getUserUserAgent(User $user, string $userAgent): ?UserAgent
     {
@@ -48,9 +43,8 @@ class UserAgentManager
             return null;
         }
 
-        $browser = $parsedUserAgent->getBrowser();
-        $device  = $parsedUserAgent->getDevice();
-
+        $browser        = $parsedUserAgent->browser;
+        $device         = $parsedUserAgent->device;
         $knownUserAgent = $this->userAgentRepository->findOneByUserAndBrowserAndDevice($user, $browser, $device);
 
         if (null !== $knownUserAgent) {
@@ -59,11 +53,11 @@ class UserAgentManager
 
         return (new UserAgent())
             ->setUser($user)
-            ->setBrowserName($browser->getName())
-            ->setBrowserVersion($browser->getVersion() ? $browser->getVersion()->getComplete() : null)
-            ->setDeviceModel($device->getModel())
-            ->setDeviceBrand($device->getBrand())
-            ->setDeviceType($device->getType() ? mb_strtolower($device->getType()) : null)
+            ->setBrowserName($browser->name)
+            ->setBrowserVersion($browser->version ? $browser->version->toString() : null)
+            ->setDeviceModel($device->model)
+            ->setDeviceBrand($device->getManufacturer() ?: null)
+            ->setDeviceType($device->type ? mb_strtolower($device->type) : null)
             ->setUserAgentString($userAgent)
             ;
     }
@@ -71,12 +65,12 @@ class UserAgentManager
     /**
      * @param string $userAgent
      *
-     * @return Model|null
+     * @return Parser|null
      */
-    public function parse(string $userAgent): ?Model
+    public function parse(string $userAgent): ?Parser
     {
         try {
-            return $this->chain->parse($userAgent);
+            return new Parser(['User-Agent' => $userAgent]);
         } catch (Exception $exception) {
             $this->logger->warning('Could not initialize user agent parser. Error: ' . $exception->getMessage(), [
                 'user_agent' => $userAgent,
