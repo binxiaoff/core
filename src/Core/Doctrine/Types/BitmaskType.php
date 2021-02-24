@@ -6,7 +6,7 @@ namespace Unilend\Core\Doctrine\Types;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
-use Unilend\Core\DTO\Bitmask;
+use Unilend\Core\Model\Bitmask;
 
 class BitmaskType extends Type
 {
