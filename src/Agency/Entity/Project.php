@@ -493,7 +493,7 @@ class Project
     /**
      * @var Drive
      *
-     * @ORM\OneToOne(targetEntity=Drive::class)
+     * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_agent_borrower_drive", nullable=false, unique=true)
      */
     private Drive $agentBorrowerDrive;
@@ -501,7 +501,7 @@ class Project
     /**
      * @var Drive
      *
-     * @ORM\OneToOne(targetEntity=Drive::class)
+     * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_agent_principal_borrower_drive", nullable=false, unique=true)
      */
     private Drive $agentPrincipalParticipantDrive;
@@ -509,7 +509,7 @@ class Project
     /**
      * @var Drive
      *
-     * @ORM\OneToOne(targetEntity=Drive::class)
+     * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_agent_secondary_borrower_drive", nullable=false, unique=true)
      */
     private Drive $agentSecondaryParticipantDrive;
