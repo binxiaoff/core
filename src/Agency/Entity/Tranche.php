@@ -103,7 +103,7 @@ class Tranche
      *
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Length(max="255")
-     * @Assert\Expression(expression="(this.isSyndicated() && !value) || value", message="Agency.Tranche.thirdPartySyndicate.invalid")
+     * @Assert\Expression(expression="(!this.isSyndicated() && value) || !value", message="Agency.Tranche.thirdPartySyndicate.invalid")
      *
      * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      */
