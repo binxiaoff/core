@@ -10,6 +10,7 @@ use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\UserAgent;
 use WhichBrowser\Model\Browser;
 use WhichBrowser\Model\Device;
+use WhichBrowser\Model\Version;
 
 /**
  * @method UserAgent|null find($id, $lockMode = null, $lockVersion = null)
@@ -42,7 +43,7 @@ class UserAgentRepository extends ServiceEntityRepository
         return $this->findOneBy([
             'user'         => $user,
             'browserName'    => $browser->name,
-            'browserVersion' => $browser->version->toString() ?: null,
+            'browserVersion' => ($browser->version instanceof Version) ? $browser->version->toString() : null,
             'deviceModel'    => $device->model,
             'deviceBrand'    => $device->getManufacturer() ?: null,
             'deviceType'     => $device->type,
