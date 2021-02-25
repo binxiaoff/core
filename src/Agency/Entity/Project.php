@@ -15,8 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Constant\LegalForm;
 use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
 use Unilend\Core\Entity\Constant\{CAInternalRating, FundingSpecificity};
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Embeddable\{Money, NullablePerson};
+use Unilend\Core\Entity\Embeddable\{Money, NullableMoney, NullablePerson};
 use Unilend\Core\Entity\MarketSegment;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Entity\{Company, Staff};
@@ -44,6 +43,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         "groups": {
  *             "agency:project:write",
  *             "money:write",
+ *             "nullableMoney:write",
  *             "nullablePerson:write",
  *         },
  *     },
@@ -51,9 +51,9 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         "get",
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"agency:project:create", "money:write", "nullablePerson:write"}},
- *             "validation_groups": {Project::class, "getCurrentValidationGroups"},
- *         },
+ *             "denormalization_context": {"groups": {"agency:project:create", "money:write", "nullablePerson:write", "nullableMoney:write"}},
+ *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
+ *         }
  *     },
  *     itemOperations={
  *         "get": {
@@ -61,7 +61,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {"agency:project:write", "agency:projectStatus:create", "money:write", "nullablePerson:write"}},
+ *             "denormalization_context": {"groups": {"agency:project:write", "agency:projectStatus:create", "money:write", "nullablePerson:write", "nullableMoney:write"}},
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
  *     }
@@ -158,17 +158,6 @@ class Project
      * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ?string $agentRCS;
-
-    /**
-     * @var string|null
-     *
-     * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $agentRegistrationCity;
 
     /**
      * @var Contact[]|Collection
@@ -678,26 +667,6 @@ class Project
     public function setAgentRCS(?string $agentRCS): Project
     {
         $this->agentRCS = $agentRCS;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getAgentRegistrationCity(): ?string
-    {
-        return $this->agentRegistrationCity;
-    }
-
-    /**
-     * @param string|null $agentRegistrationCity
-     *
-     * @return Project
-     */
-    public function setAgentRegistrationCity(?string $agentRegistrationCity): Project
-    {
-        $this->agentRegistrationCity = $agentRegistrationCity;
 
         return $this;
     }
