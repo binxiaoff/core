@@ -278,7 +278,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var File|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File", orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File")
      * @ORM\JoinColumn(name="id_nda", unique=true)
      *
      * @Groups({"project:write", "project:read"})
