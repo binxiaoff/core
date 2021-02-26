@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource};
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
@@ -12,7 +13,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
 use Unilend\Syndication\Entity\{Project, ProjectParticipation};
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource};
 
 /**
  * @ORM\Entity
