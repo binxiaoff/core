@@ -138,8 +138,8 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                 AbstractNormalizer::GROUPS =>
                     // These group should be analog to ProjectParticipationMember::post operation and ProjectParticipationMember:patch operation and Staff::post operation
                     isset($projectParticipationMember['@id'])
-                        ? ['archivable:write'] // PATCH
-                        : ['projectParticipationMember:create', 'projectParticipationMember:write'], // POST
+                        ? ['archivable:write', 'permission:write'] // PATCH
+                        : ['projectParticipationMember:create', 'projectParticipationMember:write', 'permission:write'], // POST
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     ProjectParticipationMember::class => [
                         'projectParticipation' => $projectParticipation,

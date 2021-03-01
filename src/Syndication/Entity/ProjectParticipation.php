@@ -45,14 +45,16 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *         "invitationReplyVersion:read",
  *         "interestReplyVersion:read",
  *         "tranche:read",
- *         "companyGroupTag:read"
+ *         "companyGroupTag:read",
+ *         "permission:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "projectParticipation:write",
  *         "nullableMoney:write",
  *         "rangedOfferWithFee:write",
  *         "offerWithFee:write",
- *         "offer:write"
+ *         "offer:write",
+ *         "permission:write"
  *     }},
  *     collectionOperations={
  *         "get": {
@@ -74,7 +76,8 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *                 "archivable:read",
  *                 "timestampable:read",
  *                 "companyStatus:read",
- *                 "companyGroupTag:read"
+ *                 "companyGroupTag:read",
+ *                 "permission:read"
  *             }}
  *         },
  *         "post": {
@@ -84,7 +87,8 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *                 "nullableMoney:write",
  *                 "rangedOfferWithFee:write",
  *                 "offerWithFee:write",
- *                 "offer:write"
+ *                 "offer:write",
+ *                 "permission:write"
  *             }},
  *             "security_post_denormalize": "is_granted('create', object)"
  *         }
@@ -115,7 +119,8 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *                     "companyStatus:read",
  *                     "invitationReplyVersion:read",
  *                     "interestReplyVersion:read",
- *                     "companyGroupTag:read"
+ *                     "companyGroupTag:read",
+ *                     "permission:read"
  *                 }
  *             }
  *         },
@@ -131,7 +136,8 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *                 "nullableMoney:write",
  *                 "rangedOfferWithFee:write",
  *                 "offerWithFee:write",
- *                 "offer:write"
+ *                 "offer:write",
+ *                 "permission:write"
  *             }},
  *         }
  *     }

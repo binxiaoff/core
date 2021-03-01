@@ -14,7 +14,7 @@ class Bitmask
     /**
      * @param mixed $bitmask
      */
-    public function __construct(int $bitmask)
+    public function __construct($bitmask)
     {
         $this->bitmask = $this->normalize($bitmask);
     }
