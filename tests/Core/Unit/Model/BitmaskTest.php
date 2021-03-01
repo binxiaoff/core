@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Unilend\Test\Core\Unit\Model;
 
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\DTO\Bitmask;
+use Unilend\Core\Model\Bitmask;
 
 /**
- * @coversDefaultClass \Unilend\Core\DTO\Bitmask
+ * @coversDefaultClass \Unilend\Core\Model\Bitmask
  */
 class BitmaskTest extends TestCase
 {

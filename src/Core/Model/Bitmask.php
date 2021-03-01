@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\DTO;
+namespace Unilend\Core\Model;
 
 class Bitmask
 {
@@ -10,11 +10,11 @@ class Bitmask
     private int $bitmask;
 
     /**
-     * @param int $bitmask
+     * @param mixed $bitmask
      */
-    public function __construct(int $bitmask)
+    public function __construct($bitmask)
     {
-        $this->bitmask = $bitmask;
+        $this->bitmask = $bitmask instanceof static ? $bitmask->get() : $bitmask;
     }
 
     /**
