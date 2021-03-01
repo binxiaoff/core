@@ -590,6 +590,16 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
+     * @Groups({"company:read"})
+     *
+     * @return bool
+     */
+    public function isEligibleParticipant(): bool
+    {
+        return !in_array($this->shortCode, self::NON_ELIGIBLE_TO_PARTICIPANT);
+    }
+
+    /**
      * CAG means Crédit Agricole Group
      *
      * @return bool
