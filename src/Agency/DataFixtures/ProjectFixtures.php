@@ -16,7 +16,6 @@ use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Entity\Tranche;
 use Unilend\Core\DataFixtures\{AbstractFixtures, CompanyFixtures, MarketSegmentFixtures, StaffFixtures};
-use Unilend\Core\DTO\Bitmask;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
@@ -25,6 +24,7 @@ use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\{Embeddable\NullablePerson, MarketSegment, Staff};
+use Unilend\Core\Model\Bitmask;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
