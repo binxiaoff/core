@@ -19,6 +19,7 @@ use Unilend\Core\Entity\Embeddable\{Money, NullableMoney, NullablePerson};
 use Unilend\Core\Entity\MarketSegment;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Entity\{Company, Staff};
+use Unilend\Core\Model\Bitmask;
 use Unilend\Core\Validator\Constraints\Siren;
 
 /**
@@ -515,7 +516,10 @@ class Project
 
         $this->borrowers = new ArrayCollection();
         $this->tranches  = new ArrayCollection();
-        $this->participations = new ArrayCollection([new Participation($this, $this->agent, new Money($this->globalFundingMoney->getCurrency()))]);
+        $participation = new Participation($this, $this->agent, new Money($this->globalFundingMoney->getCurrency()));
+        $participation->setResponsibilities(new Bitmask(Participation::RESPONSIBILITY_AGENT));
+        $participation->setAgentCommission('0');
+        $this->participations = new ArrayCollection([$participation]);
 
         $this->silentSyndication = false;
 

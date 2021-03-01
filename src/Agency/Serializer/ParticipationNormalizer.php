@@ -64,7 +64,7 @@ class ParticipationNormalizer implements ContextAwareDenormalizerInterface, Deno
          */
         $denormalized = $this->denormalizer->denormalize($data, $type, $format, $context);
 
-        if (\array_key_exists('allocations', $data) && \is_array($data['allocations'])) {
+        if (array_key_exists('allocations', $data) && \is_array($data['allocations'])) {
             $allocations = array_map(function ($datum) use ($denormalized) {
                 $borrowerTrancheShare = null;
 

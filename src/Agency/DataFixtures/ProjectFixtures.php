@@ -78,14 +78,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             new BorrowerTrancheShare($borrowers[2], $tranches[2], new Money('EUR', '2000000')),
         ];
 
-        $agentParticipation = $this->createParticipation($project, $this->getReference(CompanyFixtures::CALS));
-        $agentParticipation->setResponsibilities((new Bitmask(0))->add(Participation::RESPONSIBILITY_AGENT));
-        $agentParticipation->setAllocations([
-            new ParticipationTrancheAllocation($agentParticipation, $tranches[0], new Money('EUR', '2000000')),
-        ]);
-
         $participations = [
-            $agentParticipation,
             ...array_map(
                 fn ($company) => $this->createParticipation($project, $this->getReference($company)),
                 [CompanyFixtures::COMPANY1, CompanyFixtures::COMPANY2]
@@ -203,7 +196,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $this->faker->numberBetween(1, 40),
             new Money('EUR', (string) $this->faker->numberBetween(3000000, 4000000)),
             new LendingRate(LendingRate::INDEX_FIXED, (string) $this->faker->randomFloat(4, 0.1, 0.90)),
-            new DateTimeImmutable($this->faker->dateTimeBetween('now', '3 months')->format('Y-m-d'))
         );
     }
 
