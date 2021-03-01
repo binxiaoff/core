@@ -37,6 +37,9 @@ use Unilend\Core\Validator\Constraints\Siren;
  *             "agency:borrower:read",
  *             "agency:tranche:read",
  *             "agency:borrowerTrancheShare:read",
+ *             "agency:participation:read",
+ *             "agency:participationTrancheAllocation:read",
+ *             "company:read"
  *         },
  *     },
  *     denormalizationContext={
@@ -443,6 +446,8 @@ class Project
      * @var Participation[]|iterable
      *
      * @ORM\OneToMany(targetEntity=Participation::class, mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
+     *
+     * @Groups({"agency:project:read"})
      */
     private iterable $participations;
 
