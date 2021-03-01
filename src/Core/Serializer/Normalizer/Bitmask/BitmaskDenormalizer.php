@@ -15,8 +15,8 @@ class BitmaskDenormalizer implements DenormalizerInterface
      */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
-        if (false === is_numeric($data)) {
-            throw new InvalidArgumentException();
+        if (false === \is_numeric($data)) {
+            throw new InvalidArgumentException('Given data for normalization is not numeric');
         }
 
         return new Bitmask((int) $data);
@@ -27,6 +27,6 @@ class BitmaskDenormalizer implements DenormalizerInterface
      */
     public function supportsDenormalization($data, string $type, string $format = null)
     {
-        return $type === Bitmask::class;
+        return Bitmask::class === $type;
     }
 }
