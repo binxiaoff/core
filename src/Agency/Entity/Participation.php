@@ -7,10 +7,10 @@ namespace Unilend\Agency\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\DTO\Bitmask;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Model\Bitmask;
 
 /**
  * @ORM\Entity()
