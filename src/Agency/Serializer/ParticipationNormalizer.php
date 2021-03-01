@@ -8,13 +8,15 @@ use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
 use Unilend\Agency\Entity\BorrowerTrancheShare;
 use Unilend\Agency\Entity\Participation;
 use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 
-class ParticipationNormalizer
+class ParticipationNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
     use ObjectToPopulateTrait;
     use DenormalizerAwareTrait;
@@ -73,6 +75,15 @@ class ParticipationNormalizer
                 if (\is_array($datum)) {
                     unset($datum['participation']);
 
+                    $groups = [
+                        'agency:participationTrancheAllocation:write',
+                        'money:write',
+                    ];
+
+                    if (false === isset($datum['@id'])) {
+                        $groups[] = 'agency:participationTrancheAllocation:create';
+                    }
+
                     /** @var BorrowerTrancheShare $updatedBorrowerTrancheShare */
                     $borrowerTrancheShare = $this->denormalizer->denormalize(
                         $datum,
@@ -81,12 +92,10 @@ class ParticipationNormalizer
                         [
                             AbstractNormalizer::OBJECT_TO_POPULATE =>
                                 isset($datum['@id']) ? $this->iriConverter->getItemFromIri($datum['@id'], [AbstractNormalizer::GROUPS => []]) : null,
-                            AbstractNormalizer::GROUPS => [
-                                'agency:participationTrancheAllocation:write',
-                            ] + (false === isset($datum['@id']) ? ['agency:participationTrancheAllocation:create'] : []) ,
+                            AbstractNormalizer::GROUPS => $groups,
                             AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                                 ParticipationTrancheAllocation::class => [
-                                    'tranche' => $denormalized,
+                                    'participant' => $denormalized,
                                 ],
                             ],
                         ]

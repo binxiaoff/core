@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Company;
+use Symfony\Component\Serializer\Annotation\{Groups};
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Model\Bitmask;
@@ -70,6 +71,8 @@ class Participation
      * @ORM\ManyToOne(targetEntity=Project::class, inversedBy="participations")
      * @ORM\JoinColumn(name="id_project", nullable=false)
      *
+     * @Groups({"agency:participation:read", "agency:participation:create"})
+     *
      * @Assert\NotBlank
      */
     private Project $project;
@@ -79,6 +82,8 @@ class Participation
      *
      * @ORM\ManyToOne(targetEntity=Company::class)
      * @ORM\JoinColumn(name="id_participant", nullable=false)
+     *
+     * @Groups({"agency:participation:read", "agency:participation:create"})
      *
      * @Assert\NotBlank
      */
@@ -92,6 +97,8 @@ class Participation
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
+     *
+     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
      */
     private ?string $participantCommission;
 
@@ -106,6 +113,8 @@ class Participation
      *     expression="(this.isAgent() && this.getParticipant() === this.getProject().getAgent()) || (false === this.isAgent())",
      *     message="Agency.Participation.responsabilities.agent"
      * )
+     *
+     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
      */
     private Bitmask $responsibilities;
 
@@ -117,7 +126,10 @@ class Participation
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
+     *
      * @Assert\Expression(expression="null === value || false === this.isAgent()", message="Agency.Participant.commission.agent")
+     *
+     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
      */
     private ?string $agentCommission;
 
@@ -129,7 +141,10 @@ class Participation
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
+     *
      * @Assert\Expression(expression="null === value || false === this.isArranger()", message="Agency.Participant.commission.arranger")
+     *
+     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
      */
     private ?string $arrangerCommission;
 
@@ -141,7 +156,10 @@ class Participation
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
+     *
      * @Assert\Expression(expression="null === value || false === this.isCoArranger()", message="Agency.Participant.commission.deputyArranger")
+     *
+     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
      */
     private ?string $deputyArrangerCommission;
 
@@ -149,6 +167,8 @@ class Participation
      * @var Money
      *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     *
+     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
      *
      * @Assert\Valid
      */
@@ -158,6 +178,8 @@ class Participation
      * @var bool
      *
      * @ORM\Column(type="boolean")
+     *
+     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
      */
     private bool $prorata;
 
@@ -168,6 +190,8 @@ class Participation
      *
      * @Assert\Count(min="1")
      * @Assert\Valid
+     *
+     * @Groups({"agency:participation:read"})
      */
     private iterable $allocations;
 
@@ -175,25 +199,27 @@ class Participation
      * @var bool
      *
      * @ORM\Column(type="boolean")
+     *
+     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
      */
     private bool $secondary;
 
     /**
      * @param Project $project
-     * @param Company $company
+     * @param Company $participant
      * @param Money   $finalAllocation
      * @param bool    $secondary
      */
     public function __construct(
         Project $project,
-        Company $company,
+        Company $participant,
         Money $finalAllocation,
         bool $secondary = false
     ) {
         $this->responsibilities = new Bitmask(0);
         $this->project = $project;
         $this->finalAllocation = $finalAllocation;
-        $this->participant = $company;
+        $this->participant = $participant;
         $this->secondary = $secondary;
         $this->prorata = false;
     }
