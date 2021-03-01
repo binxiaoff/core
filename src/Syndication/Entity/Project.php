@@ -104,6 +104,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                 "fileVersion:read",
  *                 "projectStatus:read",
  *                 "projectParticipationMember:read",
+ *                 "permission:read",
  *                 "archivable:read",
  *                 "projectOrganizer:read",
  *                 "tranche_project:read",
