@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Represent a collection of folders akin to a filesystem with a base folder root who has path /.
@@ -29,6 +30,8 @@ class Drive
     /**
      * @var Folder[]|Collection
      *
+     * @Assert\Count(min="1")
+     *
      * @ORM\OneToMany(targetEntity=Folder::class, indexBy="path", mappedBy="drive", cascade={"persist", "remove"})
      */
     private Collection $folders;
@@ -38,7 +41,7 @@ class Drive
      */
     public function __construct()
     {
-        $this->folders = new ArrayCollection(['/' => new Folder('root', $this, '/')]);
+        $this->folders = new ArrayCollection(['/' => new Folder('', $this, '/')]);
     }
 
     public function getId(): ?int

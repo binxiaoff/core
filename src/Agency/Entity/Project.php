@@ -107,6 +107,66 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             },
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
+ *         "dataroom_shared_agency_borrower": {
+ *             "method": "GET",
+ *             "path": "/agency/projects/{id}/dataroom/shared/agentBorrower/{path?}",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "sharedDrive": "agentBorrower"
+ *             },
+ *             "normalization_context": {
+ *                  "groups": {"folder:read"}
+ *             }
+ *         },
+ *         "dataroom_shared_agency_principal_participant": {
+ *             "method": "GET",
+ *             "path": "/agency/projects/{id}/dataroom/shared/agentPrincipalParticipant/{path?}",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "sharedDrive": "agentPrincipalParticipant"
+ *             },
+ *             "normalization_context": {
+ *                  "groups": {"folder:read"}
+ *             }
+ *         },
+ *         "dataroom_shared_agency_secondary_participant": {
+ *             "method": "GET",
+ *             "path": "/agency/projects/{id}/dataroom/shared/agentSecondaryParticipant/{path?}",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "sharedDrive": "agentSecondaryParticipant"
+ *             },
+ *             "normalization_context": {
+ *                  "groups": {"folder:read"}
+ *             }
+ *         },
+ *         "dataroom_confidential": {
+ *             "method": "GET",
+ *             "path": "/agency/projects/{id}/dataroom/confidential/{path?}",
+ *             "controller": Get::class,
+ *             "security": "is_granted('view', object)",
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             },
+ *             "normalization_context": {
+ *                  "groups": {"folder:read"}
+ *             }
+ *         }
  *     }
  * )
  *

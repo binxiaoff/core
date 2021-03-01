@@ -196,3 +196,6 @@ services:
     Unilend\Core\EventSubscriber\Jwt\PayloadManagerSubscriber:
         calls:
             - addPayloadManager: ['@Unilend\Core\Service\Jwt\StaffPayloadManager']
+### Agency
+    Unilend\Agency\Swagger\ProjectDecorator:
+        decorates: 'api_platform.swagger.normalizer.api_gateway'

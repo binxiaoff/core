@@ -58,6 +58,10 @@ class Folder
 
     /**
      * @Assert\Length(max="100")
+     * @Assert\AtLeastOneOf({
+     *     @Assert\NotBlank(),
+     *     @Assert\Expression("'/' == this.getPath()")
+     * })
      *
      * @ORM\Column(type="string", length=50, nullable=false)
      *
@@ -92,7 +96,7 @@ class Folder
         $path        = '/' === $path ? null : $path;
 
         if ('/' !== $path && null === $this->drive->getFolder($path)) {
-            throw new InvalidArgumentException(sprintf('Given path %s does not exist in drive', $path));
+            throw new InvalidArgumentException(sprintf('Given path %s is not a folder in drive', $path));
         }
 
         $this->name     = $name;
@@ -124,7 +128,7 @@ class Folder
     public function getChildrenFolders(): Collection
     {
         return $this->drive->getFolders()->filter(function (Folder $folder) {
-            return 0 === mb_strpos($folder->getPath(), $this->getPath());
+            return $this !== $folder && 0 === mb_strpos($folder->getPath(), $this->getPath());
         });
     }
 
