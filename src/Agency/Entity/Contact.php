@@ -81,7 +81,7 @@ class Contact
      *
      * @ORM\Column(type="string")
      *
-     * @Groups({"agency:contact:create"})
+     * @Groups({"agency:contact:read", "agency:contact:create"})
      *
      * @Assert\Choice(callback="getTypes")
      */
