@@ -1019,12 +1019,6 @@
     "symfony/yaml": {
         "version": "v4.3.0"
     },
-    "thadafinser/package-info": {
-        "version": "v1.0.0"
-    },
-    "thadafinser/user-agent-parser": {
-        "version": "v2.0.0"
-    },
     "theofidry/alice-data-fixtures": {
         "version": "1.0",
         "recipe": {

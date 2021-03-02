@@ -125,17 +125,6 @@ services:
                   - !php/const \NumberFormatter::FRACTION_DIGITS
                   - 2
 
-    UserAgentParser\Provider\WhichBrowser:
-        class: UserAgentParser\Provider\WhichBrowser
-
-    UserAgentParser\Provider\PiwikDeviceDetector:
-        class: UserAgentParser\Provider\PiwikDeviceDetector
-
-    UserAgentParser\Provider\Chain:
-        $providers:
-            - '@UserAgentParser\Provider\WhichBrowser'
-            - '@UserAgentParser\Provider\PiwikDeviceDetector'
-
     Unilend\Core\Swagger\SwaggerDecorator:
         decorates: 'api_platform.swagger.normalizer.api_gateway'
 
