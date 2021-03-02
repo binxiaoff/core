@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -223,6 +224,10 @@ class Participation
         $this->secondary = $secondary;
         $this->prorata = false;
         $this->participantCommission = '0';
+        $this->arrangerCommission = null;
+        $this->agentCommission = null;
+        $this->deputyArrangerCommission = null;
+        $this->allocations = new ArrayCollection();
     }
 
     /**
