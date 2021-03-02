@@ -104,7 +104,7 @@
     "hautelook/alice-bundle": "^2.5",
     "pheromone/phpcs-security-audit": "^2.0",
     "phpmd/phpmd": "^2.6",
-    "phpro/grumphp": "^0.19",
+    "phpro/grumphp": "^1.2.0",
     "phpspec/prophecy": "^1.8",
     "phpstan/phpstan": "^0.12",
     "phpstan/phpstan-doctrine": "^0.12",
