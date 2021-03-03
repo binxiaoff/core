@@ -284,6 +284,9 @@ class Term
      */
     public function isFulfilled(): bool
     {
-        return $this->getLastAnswer() && $this->getLastAnswer()->isFulfilled();
+        return $this->getLastAnswer()
+            && $this->getLastAnswer()->isFulfilled()
+            && $this->getStart() <= $this->getLastAnswer()->getAdded()
+            && $this->getLastAnswer()->getAdded() <= $this->getEnd() ;
     }
 }
