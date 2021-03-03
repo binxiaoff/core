@@ -22,6 +22,50 @@ class TermAnswer
     use TimestampableAddedOnlyTrait;
 
     /**
+     * @var Term
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Term", inversedBy="answers")
+     * @ORM\JoinColumn(name="id_term", onDelete="CASCADE")
+     *
+     * @Assert\NotBlank
+     */
+    private Term $term;
+
+    /**
+     * @var File|null
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\File")
+     * @ORM\JoinColumn(name="id_document", nullable=true)
+     */
+    private ?File $document;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private ?string $borrowerComment;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private ?string $agentComment;
+
+    /**
+     * @var string|null
+     *
+     * @Assert\Length(max="255")
+     * @Assert\Type("numeric")
+     *
+     * @Assert\Expression("(this.getTerm().isFinancial() && value) || (!this.getTerm().isFinancial() && !value)")
+     *
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private ?string $borrowerInput;
+
+    /**
      * @var bool
      *
      * True if agent deems borrower answer correct
@@ -42,61 +86,50 @@ class TermAnswer
     private ?DateTimeImmutable $validationDate = null;
 
     /**
-     * @var Term
+     * @var bool
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Term", inversedBy="answers")
-     * @ORM\JoinColumn(name="id_term", onDelete="CASCADE")
+     * @ORM\Column(type="boolean", nullable=false)
      *
-     * @Assert\NotBlank
+     * @Assert\Expression("(value && this.isInvalid()) || !value")
      */
-    private Term $term;
-
-    /**
-     * @var File|null
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\File")
-     * @ORM\JoinColumn(name="id_document", nullable=true)
-     */
-    private ?File $document = null;
+    private bool $breach;
 
     /**
      * @var string|null
+     *
+     * @Assert\Expression("(this.hasBreach) && value) || null === value")
      *
      * @ORM\Column(type="text", nullable=true)
      */
-    private ?string $borrowerComment = null;
+    private ?string $breachComment;
 
     /**
-     * @var string|null
+     * true if waiver is granted
+     * false if waiver is refused
+     * null otherwise
      *
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private ?string $agentComment = null;
-
-    /**
-     * @var string|null
-     *
-     * @Assert\Length(max="255")
-     * @Assert\Type("numeric")
-     *
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $borrowerInput;
-
-    /**
-     * true if agent granted waiver following this answer
-     * can only be true if agent declared $validation to be false (incorrect)
+     * can only be true or false if agent declared breach (TermAnswer::hasBreach() === true)
      *
      * @var bool
      *
-     * @Assert\Expression("this.isInvalid() || value === false")
+     * @Assert\Expression("this.hasBreach() || value === null")
      *
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="boolean", nullable=true)
      */
-    private bool $waiver;
+    private ?bool $waiver;
 
     /**
-     * granted delay by the agent to the borrower for the next
+     * @var string|null
+     *
+     * @Assert\Expression("((this.isWaiverGranted() || this.isWaiverRefused()) && value) || null === value")
+     *
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private ?string $waiverComment;
+
+    /**
+     * granted delay by the agent to the borrower for the next answer
+     *
      * @var int|null
      *
      * @Assert\Positive
@@ -116,7 +149,20 @@ class TermAnswer
     {
         $this->added = new DateTimeImmutable();
         $this->term  = $term;
-        $this->waiver = false;
+        $this->document = null;
+        $this->borrowerComment = null;
+        $this->borrowerInput = null;
+        $this->agentComment = null;
+
+        $this->validation = null;
+        $this->validationDate = null;
+
+        // Irregularity fields
+        $this->grantedDelay = null;
+        $this->breach = false;
+        $this->breachComment = null;
+        $this->waiver = null;
+        $this->waiverComment = null;
     }
 
     /**
@@ -313,7 +359,7 @@ class TermAnswer
      */
     public function isValid(): bool
     {
-        return true === $this->validation || (false === $this->validation && $this->waiver);
+        return true === $this->validation;
     }
 
     /**
