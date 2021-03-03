@@ -8,16 +8,16 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
-class PortfolioBorrowerTypeAllocation
+class ProgramBorrowerTypeAllocation
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Portfolio")
-     * @ORM\JoinColumn(name="id_portfolio", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
+     * @ORM\JoinColumn(name="id_program", nullable=false)
      */
-    private Portfolio $portfolio;
+    private Program $program;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramBorrowerType")
@@ -35,23 +35,23 @@ class PortfolioBorrowerTypeAllocation
     private string $maxAllocationRate;
 
     /**
-     * @param Portfolio           $portfolio
+     * @param Program             $program
      * @param ProgramBorrowerType $programBorrowerType
      * @param string              $maxAllocationRate
      */
-    public function __construct(Portfolio $portfolio, ProgramBorrowerType $programBorrowerType, string $maxAllocationRate)
+    public function __construct(Program $program, ProgramBorrowerType $programBorrowerType, string $maxAllocationRate)
     {
-        $this->portfolio           = $portfolio;
+        $this->program             = $program;
         $this->programBorrowerType = $programBorrowerType;
         $this->maxAllocationRate   = $maxAllocationRate;
     }
 
     /**
-     * @return Portfolio
+     * @return Program
      */
-    public function getPortfolio(): Portfolio
+    public function getProgram(): Program
     {
-        return $this->portfolio;
+        return $this->program;
     }
 
     /**
@@ -65,9 +65,9 @@ class PortfolioBorrowerTypeAllocation
     /**
      * @param ProgramBorrowerType $programBorrowerType
      *
-     * @return PortfolioBorrowerTypeAllocation
+     * @return ProgramBorrowerTypeAllocation
      */
-    public function setProgramBorrowerType(ProgramBorrowerType $programBorrowerType): PortfolioBorrowerTypeAllocation
+    public function setProgramBorrowerType(ProgramBorrowerType $programBorrowerType): ProgramBorrowerTypeAllocation
     {
         $this->programBorrowerType = $programBorrowerType;
 
@@ -85,9 +85,9 @@ class PortfolioBorrowerTypeAllocation
     /**
      * @param string $maxAllocationRate
      *
-     * @return PortfolioBorrowerTypeAllocation
+     * @return ProgramBorrowerTypeAllocation
      */
-    public function setMaxAllocationRate(string $maxAllocationRate): PortfolioBorrowerTypeAllocation
+    public function setMaxAllocationRate(string $maxAllocationRate): ProgramBorrowerTypeAllocation
     {
         $this->maxAllocationRate = $maxAllocationRate;
 

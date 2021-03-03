@@ -7,7 +7,7 @@ namespace Unilend\CreditGuaranty\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
-class PortfolioEligibilityItem
+class ProgramEligibilityItem
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -18,10 +18,10 @@ class PortfolioEligibilityItem
     private string $name;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\PortfolioEligibility")
-     * @ORM\JoinColumn(name="id_portfolio_eligibility", nullable=false)
+     * @ORM\ManyToOne(targetEntity="ProgramEligibility")
+     * @ORM\JoinColumn(name="id_program_eligibility", nullable=false)
      */
-    private PortfolioEligibility $portfolioEligibility;
+    private ProgramEligibility $programEligibility;
 
     /**
      * @ORM\Column(type="boolean")
@@ -29,21 +29,21 @@ class PortfolioEligibilityItem
     private bool $enabled;
 
     /**
-     * @param PortfolioEligibility $portfolioEligibility
-     * @param bool                 $enabled
+     * @param ProgramEligibility $programEligibility
+     * @param bool               $enabled
      */
-    public function __construct(PortfolioEligibility $portfolioEligibility, bool $enabled = true)
+    public function __construct(ProgramEligibility $programEligibility, bool $enabled = true)
     {
-        $this->portfolioEligibility = $portfolioEligibility;
+        $this->programEligibility = $programEligibility;
         $this->enabled = $enabled;
     }
 
     /**
-     * @return PortfolioEligibility
+     * @return ProgramEligibility
      */
-    public function getPortfolioEligibility(): PortfolioEligibility
+    public function getProgramEligibility(): ProgramEligibility
     {
-        return $this->portfolioEligibility;
+        return $this->programEligibility;
     }
 
     /**
@@ -57,9 +57,9 @@ class PortfolioEligibilityItem
     /**
      * @param string $name
      *
-     * @return PortfolioEligibilityItem
+     * @return ProgramEligibilityItem
      */
-    public function setName(string $name): PortfolioEligibilityItem
+    public function setName(string $name): ProgramEligibilityItem
     {
         $this->name = $name;
 
@@ -69,9 +69,9 @@ class PortfolioEligibilityItem
     /**
      * @param bool $enabled
      *
-     * @return PortfolioEligibilityItem
+     * @return ProgramEligibilityItem
      */
-    public function setEnabled(bool $enabled): PortfolioEligibilityItem
+    public function setEnabled(bool $enabled): ProgramEligibilityItem
     {
         $this->enabled = $enabled;
 

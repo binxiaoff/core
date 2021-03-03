@@ -8,16 +8,16 @@ use Doctrine\ORM\Mapping as ORM;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCondition;
 
-class PortfolioEligibility
+class ProgramEligibility
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Portfolio")
-     * @ORM\JoinColumn(name="id_portfolio", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
+     * @ORM\JoinColumn(name="id_program", nullable=false)
      */
-    private Portfolio $portfolio;
+    private Program $program;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCondition")
@@ -33,23 +33,23 @@ class PortfolioEligibility
     private ?string $data;
 
     /**
-     * @param Portfolio            $portfolio
+     * @param Program              $program
      * @param EligibilityCondition $eligibilityCondition
      * @param string|null          $data
      */
-    public function __construct(Portfolio $portfolio, EligibilityCondition $eligibilityCondition, ?string $data)
+    public function __construct(Program $program, EligibilityCondition $eligibilityCondition, ?string $data)
     {
-        $this->portfolio            = $portfolio;
+        $this->program              = $program;
         $this->eligibilityCondition = $eligibilityCondition;
         $this->data                 = $data;
     }
 
     /**
-     * @return Portfolio
+     * @return Program
      */
-    public function getPortfolio(): Portfolio
+    public function getProgram(): Program
     {
-        return $this->portfolio;
+        return $this->program;
     }
 
     /**
@@ -71,9 +71,9 @@ class PortfolioEligibility
     /**
      * @param string|null $data
      *
-     * @return PortfolioEligibility
+     * @return ProgramEligibility
      */
-    public function setData(?string $data): PortfolioEligibility
+    public function setData(?string $data): ProgramEligibility
     {
         $this->data = $data;
 

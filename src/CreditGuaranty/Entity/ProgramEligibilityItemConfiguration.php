@@ -7,7 +7,7 @@ namespace Unilend\CreditGuaranty\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
-class PortfolioEligibilityItemConfiguration
+class ProgramEligibilityItemConfiguration
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -22,10 +22,10 @@ class PortfolioEligibilityItemConfiguration
     private const DATA_TYPE_VALUE = 'value';
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\PortfolioEligibilityItem")
-     * @ORM\JoinColumn(name="id_portfolio_eligibility_item", nullable=false)
+     * @ORM\ManyToOne(targetEntity="ProgramEligibilityItem")
+     * @ORM\JoinColumn(name="id_program_eligibility_item", nullable=false)
      */
-    private PortfolioEligibilityItem $portfolioEligibilityItem;
+    private ProgramEligibilityItem $programEligibilityItem;
 
     /**
      * @ORM\Column(length=200)
@@ -53,16 +53,16 @@ class PortfolioEligibilityItemConfiguration
     private string $data;
 
     /**
-     * @param PortfolioEligibilityItem $portfolioEligibilityItem
-     * @param string                   $leftOperand
-     * @param string                   $rightOperand
-     * @param string                   $operation
-     * @param string                   $valueType
-     * @param string                   $data
+     * @param ProgramEligibilityItem $programEligibilityItem
+     * @param string                 $leftOperand
+     * @param string                 $rightOperand
+     * @param string                 $operation
+     * @param string                 $valueType
+     * @param string                 $data
      */
-    public function __construct(PortfolioEligibilityItem $portfolioEligibilityItem, string $leftOperand, string $rightOperand, string $operation, string $valueType, string $data)
+    public function __construct(ProgramEligibilityItem $programEligibilityItem, string $leftOperand, string $rightOperand, string $operation, string $valueType, string $data)
     {
-        $this->portfolioEligibilityItem = $portfolioEligibilityItem;
+        $this->programEligibilityItem = $programEligibilityItem;
         $this->leftOperand              = $leftOperand;
         $this->rightOperand             = $rightOperand;
         $this->operation                = $operation;
@@ -71,11 +71,11 @@ class PortfolioEligibilityItemConfiguration
     }
 
     /**
-     * @return PortfolioEligibilityItem
+     * @return ProgramEligibilityItem
      */
-    public function getPortfolioEligibilityItem(): PortfolioEligibilityItem
+    public function getProgramEligibilityItem(): ProgramEligibilityItem
     {
-        return $this->portfolioEligibilityItem;
+        return $this->programEligibilityItem;
     }
 
     /**
@@ -89,9 +89,9 @@ class PortfolioEligibilityItemConfiguration
     /**
      * @param string $leftOperand
      *
-     * @return PortfolioEligibilityItemConfiguration
+     * @return ProgramEligibilityItemConfiguration
      */
-    public function setLeftOperand(string $leftOperand): PortfolioEligibilityItemConfiguration
+    public function setLeftOperand(string $leftOperand): ProgramEligibilityItemConfiguration
     {
         $this->leftOperand = $leftOperand;
 
@@ -109,9 +109,9 @@ class PortfolioEligibilityItemConfiguration
     /**
      * @param string $rightOperand
      *
-     * @return PortfolioEligibilityItemConfiguration
+     * @return ProgramEligibilityItemConfiguration
      */
-    public function setRightOperand(string $rightOperand): PortfolioEligibilityItemConfiguration
+    public function setRightOperand(string $rightOperand): ProgramEligibilityItemConfiguration
     {
         $this->rightOperand = $rightOperand;
 
@@ -129,9 +129,9 @@ class PortfolioEligibilityItemConfiguration
     /**
      * @param string $operation
      *
-     * @return PortfolioEligibilityItemConfiguration
+     * @return ProgramEligibilityItemConfiguration
      */
-    public function setOperation(string $operation): PortfolioEligibilityItemConfiguration
+    public function setOperation(string $operation): ProgramEligibilityItemConfiguration
     {
         $this->operation = $operation;
 
@@ -149,9 +149,9 @@ class PortfolioEligibilityItemConfiguration
     /**
      * @param string $valueType
      *
-     * @return PortfolioEligibilityItemConfiguration
+     * @return ProgramEligibilityItemConfiguration
      */
-    public function setValueType(string $valueType): PortfolioEligibilityItemConfiguration
+    public function setValueType(string $valueType): ProgramEligibilityItemConfiguration
     {
         $this->valueType = $valueType;
 
@@ -169,9 +169,9 @@ class PortfolioEligibilityItemConfiguration
     /**
      * @param string $data
      *
-     * @return PortfolioEligibilityItemConfiguration
+     * @return ProgramEligibilityItemConfiguration
      */
-    public function setData(string $data): PortfolioEligibilityItemConfiguration
+    public function setData(string $data): ProgramEligibilityItemConfiguration
     {
         $this->data = $data;
 

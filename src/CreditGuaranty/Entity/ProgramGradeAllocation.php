@@ -8,17 +8,17 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
-class PortfolioGradeAllocation
+class ProgramGradeAllocation
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Portfolio")
-     * @ORM\JoinColumn(name="id_portfolio", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
+     * @ORM\JoinColumn(name="id_program", nullable=false)
      *
      */
-    private Portfolio $portfolio;
+    private Program $program;
 
     /**
      * @ORM\Column(length=10)
@@ -35,23 +35,23 @@ class PortfolioGradeAllocation
     private string $maxAllocationRate;
 
     /**
-     * @param Portfolio $portfolio
-     * @param string    $grade
-     * @param string    $maxAllocationRate
+     * @param Program $program
+     * @param string  $grade
+     * @param string  $maxAllocationRate
      */
-    public function __construct(Portfolio $portfolio, string $grade, string $maxAllocationRate)
+    public function __construct(Program $program, string $grade, string $maxAllocationRate)
     {
-        $this->portfolio         = $portfolio;
+        $this->program           = $program;
         $this->grade             = $grade;
         $this->maxAllocationRate = $maxAllocationRate;
     }
 
     /**
-     * @return Portfolio
+     * @return Program
      */
-    public function getPortfolio(): Portfolio
+    public function getProgram(): Program
     {
-        return $this->portfolio;
+        return $this->program;
     }
 
     /**
@@ -65,9 +65,9 @@ class PortfolioGradeAllocation
     /**
      * @param string $grade
      *
-     * @return PortfolioGradeAllocation
+     * @return ProgramGradeAllocation
      */
-    public function setGrade(string $grade): PortfolioGradeAllocation
+    public function setGrade(string $grade): ProgramGradeAllocation
     {
         $this->grade = $grade;
 
@@ -85,9 +85,9 @@ class PortfolioGradeAllocation
     /**
      * @param string $maxAllocationRate
      *
-     * @return PortfolioGradeAllocation
+     * @return ProgramGradeAllocation
      */
-    public function setMaxAllocationRate(string $maxAllocationRate): PortfolioGradeAllocation
+    public function setMaxAllocationRate(string $maxAllocationRate): ProgramGradeAllocation
     {
         $this->maxAllocationRate = $maxAllocationRate;
 
