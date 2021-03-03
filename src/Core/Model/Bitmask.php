@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Model;
 
+use InvalidArgumentException;
+
 class Bitmask
 {
     /** @var int */
@@ -14,29 +16,29 @@ class Bitmask
      */
     public function __construct($bitmask)
     {
-        $this->bitmask = $bitmask instanceof static ? $bitmask->get() : $bitmask;
+        $this->bitmask = $this->normalize($bitmask);
     }
 
     /**
-     * @param int $addendum
+     * @param $addendum
      *
      * @return Bitmask
      */
-    public function add(int $addendum): Bitmask
+    public function add($addendum): Bitmask
     {
-        $this->bitmask |= $addendum;
+        $this->bitmask |= $this->normalize($addendum);
 
         return $this;
     }
 
     /**
-     * @param int $subtract
+     * @param $subtract
      *
      * @return Bitmask
      */
-    public function remove(int $subtract): Bitmask
+    public function remove($subtract): Bitmask
     {
-        $this->bitmask &= ~$subtract;
+        $this->bitmask &= ~$this->normalize($subtract);
 
         return $this;
     }
@@ -54,9 +56,9 @@ class Bitmask
      *
      * @return bool
      */
-    public function has(int $query): bool
+    public function has($query): bool
     {
-        return ($this->bitmask & $query) === $query;
+        return ($this->bitmask & $this->normalize($query)) === $this->normalize($query);
     }
 
     /**
@@ -65,5 +67,34 @@ class Bitmask
     public function __toString(): string
     {
         return (string) $this->bitmask;
+    }
+
+    /**
+     * @param $bitmask
+     *
+     * @return int
+     */
+    private function normalize($bitmask): int
+    {
+        if (\is_int($bitmask)) {
+            return $bitmask;
+        }
+
+        if ($bitmask instanceof static) {
+            return $bitmask->bitmask;
+        }
+
+        if (\is_string($bitmask) && \is_numeric($bitmask)) {
+            return (int) $bitmask;
+        }
+
+        throw new InvalidArgumentException(
+            sprintf(
+                'Argument of %s %s given; %s, int, or numeric string expected',
+                \is_object($bitmask) ? 'class' : 'type',
+                \is_object($bitmask) ? \get_class($bitmask) : gettype($bitmask),
+                __CLASS__
+            )
+        );
     }
 }
