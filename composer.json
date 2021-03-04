@@ -7,7 +7,7 @@
     "psr-4": {
       "Unilend\\": "src/",
       "Unilend\\Test\\": "tests/",
-      "PHPUnit\\": "bin/.phpunit/phpunit-8.1/src/"
+      "PHPUnit\\": "bin/.phpunit/phpunit"
     }
   },
   "require": {
