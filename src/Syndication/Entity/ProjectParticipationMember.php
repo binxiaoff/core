@@ -25,7 +25,7 @@ use Unilend\Core\Model\Bitmask;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectParticipationMember:read", "role:read", "companyGroupTag:read", "permission:read"}},
+ *     normalizationContext={"groups": {"projectParticipationMember:read", "archivable:read", "companyGroupTag:read", "permission:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
