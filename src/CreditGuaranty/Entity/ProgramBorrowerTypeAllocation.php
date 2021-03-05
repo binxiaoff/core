@@ -21,7 +21,7 @@ class ProgramBorrowerTypeAllocation
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
-     * @ORM\JoinColumn(name="id_program_borrower_type", nullable=false)
+     * @ORM\JoinColumn(name="id_program_choice_option", nullable=false)
      */
     private ProgramChoiceOption $programChoiceOption;
 
@@ -36,13 +36,13 @@ class ProgramBorrowerTypeAllocation
 
     /**
      * @param Program             $program
-     * @param ProgramChoiceOption $programBorrowerType
+     * @param ProgramChoiceOption $programChoiceOption
      * @param string              $maxAllocationRate
      */
-    public function __construct(Program $program, ProgramChoiceOption $programBorrowerType, string $maxAllocationRate)
+    public function __construct(Program $program, ProgramChoiceOption $programChoiceOption, string $maxAllocationRate)
     {
         $this->program             = $program;
-        $this->programChoiceOption = $programBorrowerType;
+        $this->programChoiceOption = $programChoiceOption;
         $this->maxAllocationRate   = $maxAllocationRate;
     }
 
