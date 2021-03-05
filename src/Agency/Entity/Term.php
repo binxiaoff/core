@@ -50,22 +50,22 @@ class Term
      *
      * @ORM\Column(type="datetime_immutable")
      */
-    private DateTimeImmutable $start;
+    private DateTimeImmutable $startDate;
 
     /**
      * @var DateTimeImmutable
      *
-     * @Assert\GreaterThan(propertyPath="start")
+     * @Assert\GreaterThan(propertyPath="startDate")
      * @Assert\NotBlank
      *
      * @ORM\Column(type="datetime_immutable")
      */
-    private DateTimeImmutable $end;
+    private DateTimeImmutable $endDate;
 
     /**
      * @var DateTimeImmutable|null
      *
-     * @Assert\GreaterThanOrEqual(propertyPath="start")
+     * @Assert\GreaterThanOrEqual(propertyPath="startDate")
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
@@ -84,7 +84,7 @@ class Term
     /**
      * @var DateTimeImmutable|null
      *
-     * @Assert\GreaterThanOrEqual(propertyPath="start")
+     * @Assert\GreaterThanOrEqual(propertyPath="startDate")
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
@@ -92,14 +92,14 @@ class Term
 
     /**
      * @param Covenant               $covenant
-     * @param DateTimeImmutable      $start
-     * @param DateTimeImmutable|null $end
+     * @param DateTimeImmutable      $startDate
+     * @param DateTimeImmutable|null $endDate
      */
-    public function __construct(Covenant $covenant, DateTimeImmutable $start, ?DateTimeImmutable $end = null)
+    public function __construct(Covenant $covenant, DateTimeImmutable $startDate, ?DateTimeImmutable $endDate = null)
     {
         $this->covenant = $covenant;
-        $this->start    = $start;
-        $this->end      = $end ?? $start->add(DateInterval::createFromDateString('+ ' . $covenant->getDelay() . ' days'));
+        $this->startDate    = $startDate;
+        $this->endDate      = $endDate ?? $startDate->add(DateInterval::createFromDateString('+ ' . $covenant->getDelay() . ' days'));
         $this->answers  = new ArrayCollection();
     }
 
@@ -114,27 +114,27 @@ class Term
     /**
      * @return DateTimeImmutable
      */
-    public function getStart(): DateTimeImmutable
+    public function getStartDate(): DateTimeImmutable
     {
-        return $this->start;
+        return $this->startDate;
     }
 
     /**
      * @return DateTimeImmutable
      */
-    public function getEnd(): DateTimeImmutable
+    public function getEndDate(): DateTimeImmutable
     {
-        return $this->end;
+        return $this->endDate;
     }
 
     /**
-     * @param DateTimeImmutable $end
+     * @param DateTimeImmutable $endDate
      *
      * @return Term
      */
-    public function setEnd(DateTimeImmutable $end): Term
+    public function setEndDate(DateTimeImmutable $endDate): Term
     {
-        $this->end = $end;
+        $this->endDate = $endDate;
 
         return $this;
     }
@@ -278,7 +278,7 @@ class Term
             return null;
         }
 
-        $year = (int) $this->getStart()->format('Y');
+        $year = (int) $this->getStartDate()->format('Y');
 
         return $this->getCovenant()->getCovenantRules()[$year];
     }
@@ -298,7 +298,7 @@ class Term
     {
         return $this->getLastAnswer()
             && $this->getLastAnswer()->isFulfilled()
-            && $this->getStart() <= $this->getLastAnswer()->getAdded()
-            && $this->getLastAnswer()->getAdded() <= $this->getEnd() ;
+            && $this->getStartDate() <= $this->getLastAnswer()->getAdded()
+            && $this->getLastAnswer()->getAdded() <= $this->getEndDate() ;
     }
 }

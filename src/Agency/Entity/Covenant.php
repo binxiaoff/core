@@ -46,9 +46,9 @@ class Covenant
     public const NATURE_FINANCIAL_ELEMENT  = "financial_element";
     public const NATURE_FINANCIAL_RATIO    = "financial_ratio";
 
-    public const PERIODICITY_3M = 'P3M';
-    public const PERIODICITY_6M = 'P6M';
-    public const PERIODICITY_12M = 'P12M';
+    public const RECURRENCE_3M = 'P3M';
+    public const RECURRENCE_6M = 'P6M';
+    public const RECURRENCE_12M = 'P12M';
 
     /**
      * @var Project
@@ -61,8 +61,9 @@ class Covenant
     /**
      * @var string
      *
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=50)
      *
+     * @Assert\Length(max="50")
      * @Assert\NotBlank
      *
      * @Groups({"agency:covenant:read"})
@@ -72,25 +73,29 @@ class Covenant
     /**
      * @var string|null
      *
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="string", nullable=true, length=500)
+     *
+     * @Assert\Length(max="500")
      *
      * @Groups({"agency:covenant:read"})
      */
-    private ?string $article = null;
+    private ?string $contractArticle = null;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="string", nullable=true, length=500)
+     *
+     * @Assert\Length(max="500")
      *
      * @Groups({"agency:covenant:read"})
      */
-    private ?string $extract = null;
+    private ?string $contractExtract = null;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="text", nullable=true)
      *
      * @Groups({"agency:covenant:read"})
      */
@@ -141,15 +146,15 @@ class Covenant
     private DateTimeImmutable $endDate;
 
     /**
-     * @var string
+     * @var string|null
      *
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", nullable=true)
      *
-     * @Assert\Choice(callback="getPeriodicities")
+     * @Assert\Choice(callback="getRecurrences")
      *
      * @Groups({"agency:covenant:read"})
      */
-    private string $periodicity;
+    private ?string $recurrence;
 
     /**
      * @var CovenantRule[]|Collection
@@ -180,7 +185,7 @@ class Covenant
      * @var Collection|Term[]
      *
      * @ORM\OneToMany(targetEntity=Term::class, cascade={"persist", "remove"}, mappedBy="covenant")
-     * @ORM\OrderBy({"start"="ASC"})
+     * @ORM\OrderBy({"startDate"="ASC"})
      *
      * @Assert\Count(min=1, groups={"published"})
      *
@@ -220,11 +225,10 @@ class Covenant
      * @param DateTimeImmutable $startDate
      * @param int               $delay
      * @param DateTimeImmutable $endDate
-     * @param string            $periodicity
      *
      * @throws Exception
      */
-    public function __construct(Project $project, string $name, string $nature, DateTimeImmutable $startDate, int $delay, DateTimeImmutable $endDate, string $periodicity)
+    public function __construct(Project $project, string $name, string $nature, DateTimeImmutable $startDate, int $delay, DateTimeImmutable $endDate)
     {
         $this->project           = $project;
         $this->name              = $name;
@@ -232,7 +236,7 @@ class Covenant
         $this->startDate         = $startDate;
         $this->delay             = $delay;
         $this->endDate           = $endDate;
-        $this->periodicity       = $periodicity;
+        $this->recurrence        = null;
         $this->added             = new DateTimeImmutable();
         $this->publicationDate   = null;
         $this->terms             = new ArrayCollection();
@@ -283,19 +287,19 @@ class Covenant
     /**
      * @return string|null
      */
-    public function getArticle(): ?string
+    public function getContractArticle(): ?string
     {
-        return $this->article;
+        return $this->contractArticle;
     }
 
     /**
-     * @param string|null $article
+     * @param string|null $contractArticle
      *
      * @return Covenant
      */
-    public function setArticle(?string $article): Covenant
+    public function setContractArticle(?string $contractArticle): Covenant
     {
-        $this->article = $article;
+        $this->contractArticle = $contractArticle;
 
         return $this;
     }
@@ -303,19 +307,19 @@ class Covenant
     /**
      * @return string|null
      */
-    public function getExtract(): ?string
+    public function getContractExtract(): ?string
     {
-        return $this->extract;
+        return $this->contractExtract;
     }
 
     /**
-     * @param string|null $extract
+     * @param string|null $contractExtract
      *
      * @return Covenant
      */
-    public function setExtract(?string $extract): Covenant
+    public function setContractExtract(?string $contractExtract): Covenant
     {
-        $this->extract = $extract;
+        $this->contractExtract = $contractExtract;
 
         return $this;
     }
@@ -423,19 +427,19 @@ class Covenant
     /**
      * @return string
      */
-    public function getPeriodicity(): string
+    public function getRecurrence(): string
     {
-        return $this->periodicity;
+        return $this->recurrence;
     }
 
     /**
-     * @param string $periodicity
+     * @param string|null $recurrence
      *
      * @return Covenant
      */
-    public function setPeriodicity(string $periodicity): Covenant
+    public function setRecurrence(?string $recurrence): Covenant
     {
-        $this->periodicity = $periodicity;
+        $this->recurrence = $recurrence;
 
         return $this;
     }
@@ -515,9 +519,9 @@ class Covenant
     /**
      * @return string[]|iterable
      */
-    public function getPeriodicities(): iterable
+    public function getRecurrences(): iterable
     {
-        return static::getConstants('PERIODICITY_');
+        return static::getConstants('RECURRENCE_');
     }
 
     /**
@@ -585,9 +589,15 @@ class Covenant
 
         $this->publicationDate = new DateTimeImmutable();
 
+        if (null === $this->recurrence) {
+            $this->terms[] = new Term($this, $this->startDate, $this->endDate);
+
+            return $this;
+        }
+
         // This create an iterable with each of the term start date
         // https://www.php.net/manual/fr/class.dateperiod.php
-        $datePeriod = new DatePeriod($this->startDate, new DateInterval($this->periodicity), $this->endDate);
+        $datePeriod = new DatePeriod($this->startDate, new DateInterval($this->recurrence), $this->endDate);
 
         foreach ($datePeriod as $termStart) {
             $termEnd = DateTimeImmutable::createFromFormat('U', (string) strtotime('+' . $this->delay . ' days', $termStart->getTimestamp()));

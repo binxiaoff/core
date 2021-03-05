@@ -20,7 +20,10 @@ use Unilend\Agency\Entity\Participation;
 use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Entity\Tranche;
-use Unilend\Core\DataFixtures\{AbstractFixtures, CompanyFixtures, MarketSegmentFixtures, StaffFixtures};
+use Unilend\Core\DataFixtures\{AbstractFixtures,
+    CompanyFixtures,
+    MarketSegmentFixtures,
+    StaffFixtures};
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
@@ -83,10 +86,14 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             new BorrowerTrancheShare($borrowers[2], $tranches[2], new Money('EUR', '2000000')),
         ];
 
-        $otherCovenant     = $this->createCovenant($project, Covenant::NATURE_DOCUMENT);
-        $financialCovenant = $this->createCovenant($project, Covenant::NATURE_FINANCIAL_ELEMENT);
+        $otherCovenant     = $this->createCovenant($project, Covenant::NATURE_DOCUMENT, Covenant::RECURRENCE_3M);
+        $financialCovenant = $this->createCovenant($project, Covenant::NATURE_FINANCIAL_ELEMENT, Covenant::RECURRENCE_12M);
 
-        $covenantRules = array_map(fn ($index) => $this->createCovenantRule($financialCovenant, $index), range(0, $financialCovenant->getCovenantYearsDuration()));
+        $covenantRules = array_map(
+            fn ($index) => $this->createCovenantRule($financialCovenant, $index),
+            range($financialCovenant->getStartYear(), $financialCovenant->getEndYear())
+        );
+
         $marginRule = $this->createMarginRule($financialCovenant, $tranches);
 
         $agentParticipation = $this->createParticipation($project, $this->getReference(CompanyFixtures::CALS));
@@ -243,24 +250,28 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
-     * @param Project $project
-     * @param string  $nature
+     * @param Project     $project
+     * @param string      $nature
+     * @param string|null $recurrence
      *
      * @return Covenant
      *
      * @throws Exception
      */
-    private function createCovenant(Project $project, string $nature)
+    private function createCovenant(Project $project, string $nature, ?string $recurrence = null)
     {
-        return new Covenant(
+        $covenant = new Covenant(
             $project,
             $this->faker->title,
             $nature,
             new DateTimeImmutable('now'),
             90,
             DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+2 years', '+6 years')),
-            'P6M'
         );
+
+        $covenant->setRecurrence($recurrence);
+
+        return $covenant;
     }
 
     /**
@@ -273,7 +284,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         return new CovenantRule(
             $covenant,
-            $covenant->getStartYear() + $year,
+            $year,
             new Inequality('>=', '0.9')
         );
     }

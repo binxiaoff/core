@@ -35,7 +35,7 @@ class MarginImpact
      * @var Tranche
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Tranche")
-     * @ORM\JoinColumn(name="id_tranche")
+     * @ORM\JoinColumn(name="id_tranche", onDelete="CASCADE")
      *
      * @Assert\NotBlank
      * @Assert\Expression("value in this.getRule().getCovenant().getProject().getTranches().toArray()")
