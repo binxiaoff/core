@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
@@ -64,7 +65,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {"agency:project:write", "agency:projectStatus:create", "money:write", "nullablePerson:write", "nullableMoney:write"}},
+ *             "denormalization_context": {"groups": {"agency:project:write", "agency:projectStatus:create", "money:write", "nullablePerson:write", "nullableMoney:write", "agency:covenant:update"}},
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
  *     }
@@ -474,11 +475,18 @@ class Project
     private iterable $statuses;
 
     /**
-     * @var Covenant[]|Collection
+     * @var Collection|Covenant[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Covenant", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Covenant", mappedBy="project", cascade={"persist"}, fetch="EAGER")
      *
-     * @Groups({"agency:project:read"})
+     * @Groups({"agency:project:read", "agency:project:write"})
+     *
+     * @Assert\Valid
+     * @Assert\All({
+     *    @Assert\Expression("value.getProject() === this")
+     * })
+     *
+     * @ApiProperty(writableLink=true, readableLink=false)
      */
     private Collection $covenants;
 
@@ -1206,6 +1214,31 @@ class Project
     public function getCovenants(): iterable
     {
         return $this->covenants;
+    }
+
+    /**
+     * @param Covenant $covenants
+     *
+     * @return Project
+     */
+    public function addCovenant(Covenant $covenants)
+    {
+        $this->covenants->add($covenants);
+
+        return $this;
+    }
+
+
+    /**
+     * @param Covenant $covenants
+     *
+     * @return Project
+     */
+    public function removeCovenant(Covenant $covenants)
+    {
+        $this->covenants->removeElement($covenants);
+
+        return $this;
     }
 
     /**

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateInterval;
 use DatePeriod;
 use DateTimeImmutable;
@@ -21,6 +23,17 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 /**
  * @ORM\Table(name="agency_covenant")
  * @ORM\Entity
+ *
+ * @ApiResource(
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     },
+ *     collectionOperations={}
+ * )
  */
 class Covenant
 {
@@ -144,6 +157,9 @@ class Covenant
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\CovenantRule", mappedBy="covenant", indexBy="year")
      *
      * @Assert\Valid
+     * @Assert\All({
+     *    @Assert\Expression("value.getCovenant() === this")
+     * })
      *
      * @Groups({"agency:covenant:read"})
      */
@@ -168,7 +184,14 @@ class Covenant
      *
      * @Assert\Count(min=1, groups={"published"})
      *
-     * @Groups({"agency:covenant:read"})
+     * @Groups({"agency:covenant:read", "agency:covenant:update", "agency:project:write"})
+     *
+     * @Assert\Valid
+     * @Assert\All({
+     *    @Assert\Expression("value.getCovenant() === this")
+     * })
+     *
+     * @ApiProperty(writableLink=true, readableLink=false)
      */
     private Collection $terms;
 
@@ -181,6 +204,9 @@ class Covenant
      * @Assert\AtLeastOneOf({
      *   @Assert\Expression("this.isFinancial()"),
      *   @Assert\Count(0),
+     * })
+     * @Assert\All({
+     *    @Assert\Expression("value.getCovenant() === this")
      * })
      *
      * @Groups({"covenant:read"})
@@ -516,6 +542,22 @@ class Covenant
                 ->atPath('covenantRules')
                 ->addViolation();
         }
+    }
+
+    /**
+     * @param Term $term
+     */
+    public function addTerm(Term $term)
+    {
+        $this->terms[] = $term;
+    }
+
+    /**
+     * @param Term $term
+     */
+    public function removeTerm(Term $term)
+    {
+        $this->terms->removeElement($term);
     }
 
     /**

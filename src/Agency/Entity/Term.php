@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateInterval;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -16,6 +17,17 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 /**
  * @ORM\Entity
  * @ORM\Table(name="agency_term")
+ *
+ * @ApiResource(
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     },
+ *     collectionOperations={}
+ * )
  */
 class Term
 {
