@@ -47,7 +47,7 @@ class ProgramContact
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
-     * @Groups({"creditGuaranty:programContact:read"})
+     * @Groups({"creditGuaranty:programContact:read", "creditGuaranty:programContact:write"})
      */
     private Program $program;
 

@@ -7,7 +7,7 @@ namespace Unilend\CreditGuaranty\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Unilend\Core\DataFixtures\{AbstractFixtures, MarketSegmentFixtures, StaffFixtures};
-use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, MarketSegment, Staff};
+use Unilend\Core\Entity\{Constant\CARatingType, Embeddable\Money, Embeddable\NullableMoney, MarketSegment, Staff};
 use Unilend\CreditGuaranty\Entity\{Program, ProgramStatus};
 
 class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -131,6 +131,9 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
         if (false === empty($programDatum['guarantyCost'])) {
             $program->setGuarantyCost(new NullableMoney($programDatum['guarantyCost']['currency'], $programDatum['guarantyCost']['amount']));
         }
+
+        $cARatingType = CARatingType::getConstList();
+        $program->setRatingType($cARatingType[array_rand($cARatingType)]);
 
         return $program;
     }

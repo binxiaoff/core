@@ -4,10 +4,32 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\Constant\{CAInternalRating, CAInternalRetailRating, CARatingType};
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
+/**
+ * @ApiResource(
+ *     normalizationContext={"groups":{"creditGuaranty:programGradeAllocation:read", "creditGuaranty:program:read", "timestampable:read"}},
+ *     denormalizationContext={"groups": {"creditGuaranty:programGradeAllocation:write"}},
+ *      itemOperations={
+ *          "get",
+ *          "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"},
+ *          "delete": {"security": "is_granted('delete', object)"}
+ *      },
+ *      collectionOperations={
+ *         "post": {"security_post_denormalize": "is_granted('create', object)"}
+ *     }
+ * )
+ *
+ * @ORM\Entity
+ * @ORM\Table(name="credit_guaranty_program_grade_allocation")
+ * @ORM\HasLifecycleCallbacks
+ */
 class ProgramGradeAllocation
 {
     use PublicizeIdentityTrait;
@@ -17,11 +39,19 @@ class ProgramGradeAllocation
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
+     * @Groups({"creditGuaranty:programGradeAllocation:read", "creditGuaranty:programGradeAllocation:write"})
      */
     private Program $program;
 
     /**
      * @ORM\Column(length=10)
+     *
+     * @Assert\Choice(
+     *      "this.isGradeValid()",
+     *      message="CreditGuaranty.ProgramGradeAllocation.grade.invalid"
+     * )
+     *
+     * @Groups({"creditGuaranty:programGradeAllocation:read", "creditGuaranty:programGradeAllocation:write"})
      */
     private string $grade;
 
@@ -31,6 +61,8 @@ class ProgramGradeAllocation
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      * @Assert\Range(min="0", max="0.9999")
+     *
+     * @Groups({"creditGuaranty:programGradeAllocation:read", "creditGuaranty:programGradeAllocation:write"})
      */
     private string $maxAllocationRate;
 
@@ -44,6 +76,7 @@ class ProgramGradeAllocation
         $this->program           = $program;
         $this->grade             = $grade;
         $this->maxAllocationRate = $maxAllocationRate;
+        $this->added             = new DateTimeImmutable();
     }
 
     /**
@@ -92,5 +125,20 @@ class ProgramGradeAllocation
         $this->maxAllocationRate = $maxAllocationRate;
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGradeValid(): bool
+    {
+        switch ($this->program->getRatingType()) {
+            case CARatingType::CA_INTERNAL_RETAIL_RATING_TYPE:
+                return \in_array($this->program, CAInternalRetailRating::getConstList());
+            case CARatingType::CA_RETAIL_RATING_TYPE:
+                return \in_array($this->program, CAInternalRating::getConstList());
+            default:
+                return false;
+        }
     }
 }

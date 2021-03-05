@@ -11,8 +11,18 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface, MarketSegment, Staff,
-    Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Core\Entity\{
+    Constant\CARatingType,
+    Embeddable\Money,
+    Embeddable\NullableMoney,
+    Interfaces\StatusInterface,
+    Interfaces\TraceableStatusAwareInterface,
+    MarketSegment,
+    Staff,
+    Traits\BlamableAddedTrait,
+    Traits\PublicizeIdentityTrait,
+    Traits\TimestampableTrait
+};
 use Unilend\Core\Validator\Constraints\PreviousValue;
 
 /**
@@ -176,6 +186,15 @@ class Program implements TraceableStatusAwareInterface
      * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramStatus", mappedBy="program", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      */
     private Collection $statuses;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(length=60, nullable=true)
+     *
+     * @Assert\Choice(callback={CARatingType::class, "getConstList"})
+     */
+    private ?string $ratingType;
 
     /**
      * @param string        $name
@@ -401,13 +420,33 @@ class Program implements TraceableStatusAwareInterface
     }
 
     /**
+     * @return string|null
+     */
+    public function getRatingType(): ?string
+    {
+        return $this->ratingType;
+    }
+
+    /**
+     * @param string|null $ratingType
+     *
+     * @return $this
+     */
+    public function setRatingType(?string $ratingType): Program
+    {
+        $this->ratingType = $ratingType;
+
+        return $this;
+    }
+
+    /**
      * Used in an expression constraints.
      *
      * @return bool
      */
     public function isMarketSegmentValid(): bool
     {
-        return in_array($this->getMarketSegment()->getLabel(), [MarketSegment::LABEL_AGRICULTURE, MarketSegment::LABEL_CORPORATE], true);
+        return \in_array($this->getMarketSegment()->getLabel(), [MarketSegment::LABEL_AGRICULTURE, MarketSegment::LABEL_CORPORATE], true);
     }
 
     /**
