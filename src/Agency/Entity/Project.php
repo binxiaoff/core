@@ -69,6 +69,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *                      "agency:covenant:update"
  *                  }
  *              },
+ *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
  *     }
  * )
