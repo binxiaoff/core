@@ -20,10 +20,10 @@ class ProgramBorrowerTypeAllocation
     private Program $program;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramBorrowerType")
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_program_borrower_type", nullable=false)
      */
-    private ProgramBorrowerType $programBorrowerType;
+    private ProgramChoiceOption $programChoiceOption;
 
     /**
      * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
@@ -36,13 +36,13 @@ class ProgramBorrowerTypeAllocation
 
     /**
      * @param Program             $program
-     * @param ProgramBorrowerType $programBorrowerType
+     * @param ProgramChoiceOption $programBorrowerType
      * @param string              $maxAllocationRate
      */
-    public function __construct(Program $program, ProgramBorrowerType $programBorrowerType, string $maxAllocationRate)
+    public function __construct(Program $program, ProgramChoiceOption $programBorrowerType, string $maxAllocationRate)
     {
         $this->program             = $program;
-        $this->programBorrowerType = $programBorrowerType;
+        $this->programChoiceOption = $programBorrowerType;
         $this->maxAllocationRate   = $maxAllocationRate;
     }
 
@@ -55,21 +55,21 @@ class ProgramBorrowerTypeAllocation
     }
 
     /**
-     * @return ProgramBorrowerType
+     * @return ProgramChoiceOption
      */
-    public function getProgramBorrowerType(): ProgramBorrowerType
+    public function getProgramChoiceOption(): ProgramChoiceOption
     {
-        return $this->programBorrowerType;
+        return $this->programChoiceOption;
     }
 
     /**
-     * @param ProgramBorrowerType $programBorrowerType
+     * @param ProgramChoiceOption $programChoiceOption
      *
      * @return ProgramBorrowerTypeAllocation
      */
-    public function setProgramBorrowerType(ProgramBorrowerType $programBorrowerType): ProgramBorrowerTypeAllocation
+    public function setProgramChoiceOption(ProgramChoiceOption $programChoiceOption): ProgramBorrowerTypeAllocation
     {
-        $this->programBorrowerType = $programBorrowerType;
+        $this->programChoiceOption = $programChoiceOption;
 
         return $this;
     }
