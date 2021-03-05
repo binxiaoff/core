@@ -48,6 +48,7 @@ class Folder
 
     /**
      * used for database unique index (path field is to big for unique index).
+     * unfortunatly it is a hassle to handle virtual column with doctrine so I need to create a true column for this
      *
      * @Assert\NotBlank
      * @Assert\Length(max="10")
@@ -90,17 +91,22 @@ class Folder
      */
     protected Collection $files;
 
-    public function __construct(string $name, Drive $drive, ?string $path = null)
+    /**
+     * @param string      $name
+     * @param Drive       $drive
+     * @param string|null $parentPath
+     */
+    public function __construct(string $name, Drive $drive, string $parentPath)
     {
         $this->drive = $drive;
-        $path        = '/' === $path ? null : $path;
+        $parentPath        = '/' === $parentPath ? null : $parentPath;
 
-        if ('/' !== $path && null === $this->drive->getFolder($path)) {
-            throw new InvalidArgumentException(sprintf('Given path %s is not a folder in drive', $path));
+        if ('/' !== $parentPath && null === $this->drive->getFolder($parentPath)) {
+            throw new InvalidArgumentException(sprintf('Given path %s is not a folder in drive', $parentPath));
         }
 
-        $this->name     = $name;
-        $this->path     = $path . DIRECTORY_SEPARATOR . $name;
+        $this->name = $name;
+        $this->path = ('/' === $parentPath ? '' : $parentPath) . DIRECTORY_SEPARATOR . $name;
         $this->pathHash = hash('crc32b', $this->path);
         $this->added    = new DateTimeImmutable();
         $this->files    = new ArrayCollection();

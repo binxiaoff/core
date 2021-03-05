@@ -99,13 +99,13 @@ class Drive
     /**
      * @return $this
      */
-    public function rmFile(File $file, string $path = '/'): Drive
+    public function rmFile(File $file, $path = '/'): Drive
     {
         if ($path instanceof Folder) {
             $path = $path->getPath();
         }
 
-        $folder = $this->folders[$path];
+        $folder = $this->getFolder($path);
 
         if ($folder) {
             $folder->rmFile($file);
@@ -121,7 +121,7 @@ class Drive
 
     public function getFolder(string $path): ?Folder
     {
-        return $this->folders[$path];
+        return $this->folders[$path] ?? null;
     }
 
     public function getFile(string $path): ?File
@@ -140,6 +140,6 @@ class Drive
      */
     public function get(string $path)
     {
-        return $this->getFolder($path) ?? $this->getFile($path);
+        return $this->getFolder($path) ?? $this->getFile($path) ?? null;
     }
 }
