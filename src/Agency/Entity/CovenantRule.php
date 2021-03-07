@@ -8,7 +8,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Agency\Entity\Embeddable\Inequality;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
@@ -30,6 +29,8 @@ class CovenantRule
      *
      * @Assert\NotBlank
      * @Assert\Expression("this.getCovenant().isFinancial()")
+     *
+     * @Groups({"agency:covenantRule:create"})
      */
     private Covenant $covenant;
 
@@ -42,7 +43,7 @@ class CovenantRule
      * @Assert\Positive
      * @Assert\Expression("value >= this.getCovenant().getStartYear() and value <= this.getCovenant().getEndYear()")
      *
-     * @Groups({"agency:covenantRule:read"})
+     * @Groups({"agency:covenantRule:read", "agency:covenantRule:create"})
      */
     private int $year;
 
@@ -54,7 +55,7 @@ class CovenantRule
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"agency:covenantRule:read", "agency:covenantRule:write"})
+     * @Groups({"agency:covenantRule:read", "agency:covenantRule:create"})
      */
     private Inequality $inequality;
 

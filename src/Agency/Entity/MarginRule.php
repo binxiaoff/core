@@ -4,18 +4,29 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Agency\Entity\Embeddable\Inequality;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ORM\Table(name="agency_margin_rule")
  * @ORM\Entity
+ *
+ * @ApiResource(
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     },
+ *     collectionOperations={}
+ * )
  */
 class MarginRule
 {
@@ -24,35 +35,40 @@ class MarginRule
     /**
      * @var Covenant
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Covenant", inversedBy="marginRules")
+     * @ORM\ManyToOne(targetEntity=Covenant::class, inversedBy="marginRules")
      * @ORM\JoinColumn(name="id_covenant")
      *
      * @Assert\NotBlank
      * @Assert\Expression(expression="this.getCovenant().isFinancial()", message="Agency.MarginRule.inconsistentCovenant")
+     *
+     * @Groups({"agency:marginRule:read", "agency:marginRule:create"})
      */
     private Covenant $covenant;
 
     /**
      * @var Inequality
      *
-     * @ORM\Embedded(class="Unilend\Agency\Entity\Embeddable\Inequality")
+     * @ORM\Embedded(class=Inequality::class)
      *
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"agency:marginRule:read", "agency:marginRule:write"})
+     * @Groups({"agency:marginRule:read", "agency:marginRule:create"})
      */
     private Inequality $inequality;
 
     /**
      * @var MarginImpact[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginImpact", mappedBy="rule", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity=MarginImpact::class, mappedBy="rule", cascade={"persist"})
      *
      * @Assert\Valid
      * @Assert\Count(min="1")
+     * @Assert\All({
+     *    @Assert\Expression("value.getRule() === this")
+     * })
      *
-     * @Groups({"agency:marginRule:read"})
+     * @Groups({"agency:marginRule:read", "agency:marginRule:create"})
      */
     private Collection $impacts;
 
@@ -110,9 +126,19 @@ class MarginRule
      */
     public function addImpact(MarginImpact $impact): MarginRule
     {
-        if (false === $this->impacts->contains($impact)) {
-            $this->impacts->add($impact);
-        }
+        $this->impacts->add($impact);
+
+        return $this;
+    }
+
+    /**
+     * @param MarginImpact $impact
+     *
+     * @return MarginRule
+     */
+    public function removeImpact(MarginImpact $impact): MarginRule
+    {
+        $this->impacts->removeElement($impact);
 
         return $this;
     }

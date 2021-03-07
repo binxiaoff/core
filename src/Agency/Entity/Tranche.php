@@ -56,6 +56,17 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *
  * @ORM\Entity
  * @ORM\Table(name="agency_tranche")
+ *
+ * @ApiResource(
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     },
+ *     collectionOperations={}
+ * )
  */
 class Tranche
 {

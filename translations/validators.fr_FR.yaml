@@ -21,9 +21,13 @@ Agency:
     ParticipantTrancheAllocation:
         project: La tranche et la participation n'ont pas le même projet
 
+    Covenant:
+        covenantRules:
+            financialNature: Le nombre de règle n'est pas correct
+            otherNature: Il ne peux y avoir de règle pour cette nature d'engagement
+            missingYear: Il manque la règle pour l'année {{ missingYear }}
+
     CovenantRule:
-        inconsistentCovenant: On ne peut ajouter de règle qu'aux engagements de nature financière
-        requiredRules: Un engagement de nature financière doit posséder au moins une règle
         yearUnicity: Il ne peut y avoir qu'une règle par année
         inconsistentYear: L'année doit être comprise entre la date de départ du covenant et sa date de fin
 

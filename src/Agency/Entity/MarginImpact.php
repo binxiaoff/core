@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -15,6 +16,17 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  * @ORM\Entity
  *
  * @UniqueEntity(fields={"rule", "tranche"}, message="Agency.MarginImpact.unicity")
+ *
+ * @ApiResource(
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     },
+ *     collectionOperations={}
+ * )
  */
 class MarginImpact
 {
@@ -28,6 +40,8 @@ class MarginImpact
      *
      * @Assert\NotBlank
      * @Assert\Valid
+     *
+     * @Groups({"agency:marginImpact:read", "agency:marginImpact:create"})
      */
     private MarginRule $rule;
 
@@ -52,7 +66,7 @@ class MarginImpact
      * @Assert\Type("numeric")
      * @Assert\NotBlank
      *
-     * @Groups({"agency:marginImpact:read", "agency:marginImpact:create", "agency:marginImpact:write"})
+     * @Groups({"agency:marginImpact:read", "agency:marginImpact:create"})
      */
     private string $margin;
 
