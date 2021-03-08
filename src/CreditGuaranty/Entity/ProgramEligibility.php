@@ -4,10 +4,38 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource};
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCondition;
+use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
 
+/**
+ * @ApiResource(
+ *      attributes={"pagination_enabled": false},
+ *      normalizationContext={"groups":{
+ *          "creditGuaranty:programEligibility:read",
+ *          "creditGuaranty:eligibilityCriteria:read",
+ *          "creditGuaranty:programChoiceOption:read",
+ *          "creditGuaranty:programEligibilityConfiguration:read",
+ *          "timestampable:read"
+ *      }},
+ *      itemOperations={
+ *          "get"
+ *      },
+ *      collectionOperations={
+ *          "get",
+ *          "post"
+ *      }
+ * )
+ *
+ * @ApiFilter(SearchFilter::class, properties={"program.publicId"})
+ *
+ * @ORM\Entity
+ * @ORM\Table(name="credit_guaranty_program_eligibility")
+ */
 class ProgramEligibility
 {
     use PublicizeIdentityTrait;
@@ -16,32 +44,40 @@ class ProgramEligibility
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
      * @ORM\JoinColumn(name="id_program", nullable=false)
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
+     *
+     * @Groups({"creditGuaranty:programEligibility:read"})
      */
     private Program $program;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCondition")
-     * @ORM\JoinColumn(name="id_eligibility_condition", nullable=false)
-     */
-    private EligibilityCondition $eligibilityCondition;
-
-    /**
-     * When the eligibility type is data or bool.
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria")
+     * @ORM\JoinColumn(name="id_eligibility_criteria", nullable=false)
      *
-     * @ORM\Column(length=100)
+     * @Groups({"creditGuaranty:programEligibility:read"})
      */
-    private ?string $data;
+    private EligibilityCriteria $eligibilityCriteria;
 
     /**
-     * @param Program              $program
-     * @param EligibilityCondition $eligibilityCondition
-     * @param string|null          $data
+     * @var Collection|ProgramEligibilityConfiguration[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration", mappedBy="programEligibility", orphanRemoval=true)
+     *
+     * @Groups({"creditGuaranty:programEligibility:read"})
      */
-    public function __construct(Program $program, EligibilityCondition $eligibilityCondition, ?string $data)
+    private Collection $programEligibilityConfigurations;
+
+    /**
+     * @param Program             $program
+     * @param EligibilityCriteria $eligibilityCriteria
+     */
+    public function __construct(Program $program, EligibilityCriteria $eligibilityCriteria)
     {
-        $this->program              = $program;
-        $this->eligibilityCondition = $eligibilityCondition;
-        $this->data                 = $data;
+        $this->program                          = $program;
+        $this->eligibilityCriteria              = $eligibilityCriteria;
+        $this->programEligibilityConfigurations = new ArrayCollection();
+        $this->added                            = new \DateTimeImmutable();
     }
 
     /**
@@ -53,30 +89,18 @@ class ProgramEligibility
     }
 
     /**
-     * @return EligibilityCondition
+     * @return EligibilityCriteria
      */
-    public function getEligibilityCondition(): EligibilityCondition
+    public function getEligibilityCriteria(): EligibilityCriteria
     {
-        return $this->eligibilityCondition;
+        return $this->eligibilityCriteria;
     }
 
     /**
-     * @return string|null
+     * @return Collection|ProgramEligibilityConfiguration[]
      */
-    public function getData(): ?string
+    public function getProgramEligibilityConfigurations()
     {
-        return $this->data;
-    }
-
-    /**
-     * @param string|null $data
-     *
-     * @return ProgramEligibility
-     */
-    public function setData(?string $data): ProgramEligibility
-    {
-        $this->data = $data;
-
-        return $this;
+        return $this->programEligibilityConfigurations;
     }
 }
