@@ -1221,7 +1221,7 @@ class Project
      *
      * @return Project
      */
-    public function addCovenant(Covenant $covenants)
+    public function addCovenant(Covenant $covenants): Project
     {
         $this->covenants->add($covenants);
 
@@ -1234,7 +1234,7 @@ class Project
      *
      * @return Project
      */
-    public function removeCovenant(Covenant $covenants)
+    public function removeCovenant(Covenant $covenants): Project
     {
         $this->covenants->removeElement($covenants);
 
