@@ -193,6 +193,8 @@ class Program implements TraceableStatusAwareInterface
      * @ORM\Column(length=60, nullable=true)
      *
      * @Assert\Choice(callback={CARatingType::class, "getConstList"})
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private ?string $ratingType;
 
