@@ -39,6 +39,12 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *     },
  *     itemOperations={
  *         "get",
+ *         "patch": {
+ *             "denormalization_context": {
+ *                  "groups": {"agency:covenant:update"}
+ *             },
+ *             "security_post_denormalize": "is_granted('edit', object)"
+ *         }
  *     },
  *     collectionOperations={
  *         "post": {
