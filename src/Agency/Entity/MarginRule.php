@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -42,6 +43,8 @@ class MarginRule
      * @Assert\Expression(expression="this.getCovenant().isFinancial()", message="Agency.MarginRule.inconsistentCovenant")
      *
      * @Groups({"agency:marginRule:read", "agency:marginRule:create"})
+     *
+     * @ApiProperty(writableLink=false, readableLink=false)
      */
     private Covenant $covenant;
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -42,6 +43,8 @@ class MarginImpact
      * @Assert\Valid
      *
      * @Groups({"agency:marginImpact:read", "agency:marginImpact:create"})
+     *
+     * @ApiProperty(writableLink=false, readableLink=false)
      */
     private MarginRule $rule;
 
@@ -55,6 +58,8 @@ class MarginImpact
      * @Assert\Expression("value in this.getRule().getCovenant().getProject().getTranches().toArray()")
      *
      * @Groups({"agency:marginImpact:read", "agency:marginImpact:create"})
+     *
+     * @ApiProperty(writableLink=false, readableLink=false)
      */
     private Tranche $tranche;
 

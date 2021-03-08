@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -31,6 +32,8 @@ class CovenantRule
      * @Assert\Expression("this.getCovenant().isFinancial()")
      *
      * @Groups({"agency:covenantRule:create"})
+     *
+     * @ApiProperty(writableLink=false, readableLink=false)
      */
     private Covenant $covenant;
 

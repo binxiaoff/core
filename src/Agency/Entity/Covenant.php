@@ -84,6 +84,8 @@ class Covenant
      * @ORM\JoinColumn(name="id_project")
      *
      * @Groups({"agency:covenant:create"})
+     *
+     * @ApiProperty(writableLink=false, readableLink=false)
      */
     private Project $project;
 
