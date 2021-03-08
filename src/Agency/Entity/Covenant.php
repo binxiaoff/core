@@ -25,6 +25,9 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ORM\Entity
  *
  * @ApiResource(
+ *     attributes={
+ *        "validation_groups": {Covenant::class, "getValidationGroups"}
+ *     },
  *     normalizationContext={
  *          "groups": {
  *              "agency:covenant:read",
@@ -37,7 +40,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *     itemOperations={
  *         "get",
  *     },
- *     validationGroups={Covenant::class, "getCurrentValidationGroups"},
  *     collectionOperations={
  *         "post": {
  *             "denormalization_context": {
@@ -210,7 +212,7 @@ class Covenant
      *
      * @Assert\Count(min=1, groups={"published"})
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:update", "agency:project:write"})
+     * @Groups({"agency:covenant:read", "agency:covenant:update"})
      *
      * @Assert\Valid
      * @Assert\All({
