@@ -147,21 +147,21 @@ class TermAnswer
      */
     public function __construct(Term $term)
     {
-        $this->added = new DateTimeImmutable();
-        $this->term  = $term;
-        $this->document = null;
+        $this->added           = new DateTimeImmutable();
+        $this->term            = $term;
+        $this->document        = null;
+        $this->borrowerInput   = null;
         $this->borrowerComment = null;
-        $this->borrowerInput = null;
-        $this->agentComment = null;
+        $this->agentComment    = null;
 
-        $this->validation = null;
+        $this->validation     = null;
         $this->validationDate = null;
 
         // Irregularity fields
-        $this->grantedDelay = null;
-        $this->breach = false;
+        $this->grantedDelay  = null;
+        $this->breach        = false;
         $this->breachComment = null;
-        $this->waiver = null;
+        $this->waiver        = null;
         $this->waiverComment = null;
     }
 
@@ -174,6 +174,23 @@ class TermAnswer
     }
 
     /**
+     * @param bool $validation
+     *
+     * @return TermAnswer
+     *
+     * @throws Exception
+     */
+    public function setValidation(bool $validation): TermAnswer
+    {
+        if (null === $this->validation) {
+            $this->validation = $validation;
+            $this->validationDate = new DateTimeImmutable();
+        }
+
+        return $this;
+    }
+
+    /**
      * @return DateTimeImmutable|null
      */
     public function getValidationDate(): ?DateTimeImmutable
@@ -182,47 +199,11 @@ class TermAnswer
     }
 
     /**
-     * @return Term
-     */
-    public function getTerm(): Term
-    {
-        return $this->term;
-    }
-
-    /**
-     * @return File|null
-     */
-    public function getDocument(): ?File
-    {
-        return $this->document;
-    }
-
-    /**
      * @return string|null
      */
     public function getBorrowerComment(): ?string
     {
         return $this->borrowerComment;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getAgentComment(): ?string
-    {
-        return $this->agentComment;
-    }
-
-    /**
-     * @param File|null $document
-     *
-     * @return TermAnswer
-     */
-    public function setDocument(?File $document): TermAnswer
-    {
-        $this->document = $document;
-
-        return $this;
     }
 
     /**
@@ -238,6 +219,14 @@ class TermAnswer
     }
 
     /**
+     * @return string|null
+     */
+    public function getAgentComment(): ?string
+    {
+        return $this->agentComment;
+    }
+
+    /**
      * @param string|null $agentComment
      *
      * @return TermAnswer
@@ -245,23 +234,6 @@ class TermAnswer
     public function setAgentComment(?string $agentComment): TermAnswer
     {
         $this->agentComment = $agentComment;
-
-        return $this;
-    }
-
-    /**
-     * @param bool $validation
-     *
-     * @return TermAnswer
-     *
-     * @throws Exception
-     */
-    public function setValidation(bool $validation): TermAnswer
-    {
-        if (null === $this->validation) {
-            $this->validation     = $validation;
-            $this->validationDate = new DateTimeImmutable();
-        }
 
         return $this;
     }
@@ -312,6 +284,34 @@ class TermAnswer
         }
 
         return false;
+    }
+
+    /**
+     * @return Term
+     */
+    public function getTerm(): Term
+    {
+        return $this->term;
+    }
+
+    /**
+     * @return File|null
+     */
+    public function getDocument(): ?File
+    {
+        return $this->document;
+    }
+
+    /**
+     * @param File|null $document
+     *
+     * @return TermAnswer
+     */
+    public function setDocument(?File $document): TermAnswer
+    {
+        $this->document = $document;
+
+        return $this;
     }
 
     /**
