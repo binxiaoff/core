@@ -54,7 +54,7 @@ class ProgramGradeAllocationFixtures extends AbstractFixtures implements Depende
         $maxAllocationRates = ['0.10', '0.20', '0.30', '0.40', '0.50', '0.60', '0.70', '0.80', '0.90'];
 
         for ($i = 1; $i <= rand(1, 8); $i++) {
-            $grades = CARatingType::CA_INTERNAL_RATING === $program->getRatingType() ? CAInternalRetailRating::getConstList() : CAInternalRating::getConstList();
+            $grades = CARatingType::CA_INTERNAL_RETAIL_RATING === $program->getRatingType() ? CAInternalRetailRating::getConstList() : CAInternalRating::getConstList();
             $programGradeAllocation = new ProgramGradeAllocation($program, $grades[array_rand($grades)], $maxAllocationRates[array_rand($maxAllocationRates)]);
             $manager->persist($programGradeAllocation);
         }
