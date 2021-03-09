@@ -9,17 +9,22 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="agency_term_answer")
+ * @ORM\Table(name="agency_term_history")
  */
-class TermAnswer
+class TermHistory
 {
-    use PublicizeIdentityTrait;
     use TimestampableAddedOnlyTrait;
+
+    /**
+     * @ORM\Column(type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     */
+    private ?int $id = null;
 
     /**
      * @var Term
@@ -56,11 +61,6 @@ class TermAnswer
     /**
      * @var string|null
      *
-     * @Assert\Length(max="255")
-     * @Assert\Type("numeric")
-     *
-     * @Assert\Expression("(this.getTerm().isFinancial() && value) || (!this.getTerm().isFinancial() && !value)")
-     *
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private ?string $borrowerInput;
@@ -89,15 +89,11 @@ class TermAnswer
      * @var bool
      *
      * @ORM\Column(type="boolean", nullable=false)
-     *
-     * @Assert\Expression("(value && this.isInvalid()) || !value")
      */
     private bool $breach;
 
     /**
      * @var string|null
-     *
-     * @Assert\Expression("(this.hasBreach) && value) || null === value")
      *
      * @ORM\Column(type="text", nullable=true)
      */
@@ -112,16 +108,12 @@ class TermAnswer
      *
      * @var bool
      *
-     * @Assert\Expression("this.hasBreach() || value === null")
-     *
      * @ORM\Column(type="boolean", nullable=true)
      */
     private ?bool $waiver;
 
     /**
      * @var string|null
-     *
-     * @Assert\Expression("((this.isWaiverGranted() || this.isWaiverRefused()) && value) || null === value")
      *
      * @ORM\Column(type="text", nullable=true)
      */
@@ -131,10 +123,6 @@ class TermAnswer
      * granted delay by the agent to the borrower for the next answer
      *
      * @var int|null
-     *
-     * @Assert\Positive
-     *
-     * @Assert\Expression("this.isInvalid() || value === null")
      *
      * @ORM\Column(type="integer", nullable=true)
      */
@@ -149,20 +137,28 @@ class TermAnswer
     {
         $this->added           = new DateTimeImmutable();
         $this->term            = $term;
-        $this->document        = null;
-        $this->borrowerInput   = null;
-        $this->borrowerComment = null;
-        $this->agentComment    = null;
+        $this->document        = $term->getDocument();
+        $this->borrowerInput   = $term->getBorrowerComment();
+        $this->borrowerComment = $term->getBorrowerInput();
+        $this->agentComment    = $term->getAgentComment();
 
-        $this->validation     = null;
-        $this->validationDate = null;
+        $this->update($term);
+    }
+
+    /**
+     * @param Term $term
+     */
+    public function update(Term $term)
+    {
+        $this->validation     = $term->getValidation();
+        $this->validationDate = $term->getValidationDate();
 
         // Irregularity fields
-        $this->grantedDelay  = null;
-        $this->breach        = false;
-        $this->breachComment = null;
-        $this->waiver        = null;
-        $this->waiverComment = null;
+        $this->grantedDelay  = $term->getGrantedDelay();
+        $this->breach        = $term->hasBreach();
+        $this->breachComment = $term->getBreachComment();
+        $this->waiver        = $term->getWaiver();
+        $this->waiverComment = $term->getWaiverComment();
     }
 
     /**
@@ -171,23 +167,6 @@ class TermAnswer
     public function getValidation(): ?bool
     {
         return $this->validation;
-    }
-
-    /**
-     * @param bool $validation
-     *
-     * @return TermAnswer
-     *
-     * @throws Exception
-     */
-    public function setValidation(bool $validation): TermAnswer
-    {
-        if (null === $this->validation) {
-            $this->validation = $validation;
-            $this->validationDate = new DateTimeImmutable();
-        }
-
-        return $this;
     }
 
     /**
@@ -207,18 +186,6 @@ class TermAnswer
     }
 
     /**
-     * @param string|null $borrowerComment
-     *
-     * @return TermAnswer
-     */
-    public function setBorrowerComment(?string $borrowerComment): TermAnswer
-    {
-        $this->borrowerComment = $borrowerComment;
-
-        return $this;
-    }
-
-    /**
      * @return string|null
      */
     public function getAgentComment(): ?string
@@ -227,13 +194,121 @@ class TermAnswer
     }
 
     /**
+     * @param string|null $borrowerComment
+     *
+     * @return TermHistory
+     */
+    public function setBorrowerComment(?string $borrowerComment): TermHistory
+    {
+        $this->borrowerComment = $borrowerComment;
+
+        return $this;
+    }
+
+    /**
      * @param string|null $agentComment
      *
-     * @return TermAnswer
+     * @return TermHistory
      */
-    public function setAgentComment(?string $agentComment): TermAnswer
+    public function setAgentComment(?string $agentComment): TermHistory
     {
         $this->agentComment = $agentComment;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBreach(): bool
+    {
+        return $this->breach;
+    }
+
+    /**
+     * @param bool $breach
+     *
+     * @return TermHistory
+     */
+    public function setBreach(bool $breach): TermHistory
+    {
+        $this->breach = $breach;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getBreachComment(): ?string
+    {
+        return $this->breachComment;
+    }
+
+    /**
+     * @param string|null $breachComment
+     *
+     * @return TermHistory
+     */
+    public function setBreachComment(?string $breachComment): TermHistory
+    {
+        $this->breachComment = $breachComment;
+
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getWaiver(): ?bool
+    {
+        return $this->waiver;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isWaiverGranted(): bool
+    {
+        return true === $this->waiver;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isWaiverRefused(): bool
+    {
+        return false === $this->waiver;
+    }
+
+    /**
+     * @param bool $waiver
+     *
+     * @return TermHistory
+     */
+    public function setWaiver(?bool $waiver): TermHistory
+    {
+        $this->waiver = $waiver;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getWaiverComment(): ?string
+    {
+        return $this->waiverComment;
+    }
+
+    /**
+     * @param string|null $waiverComment
+     *
+     * @return TermHistory
+     */
+    public function setWaiverComment(?string $waiverComment): TermHistory
+    {
+        $this->waiverComment = $waiverComment;
 
         return $this;
     }
@@ -244,18 +319,6 @@ class TermAnswer
     public function getBorrowerInput(): ?string
     {
         return $this->borrowerInput;
-    }
-
-    /**
-     * @param string|null $borrowerInput
-     *
-     * @return TermAnswer
-     */
-    public function setBorrowerInput(?string $borrowerInput): TermAnswer
-    {
-        $this->borrowerInput = $borrowerInput;
-
-        return $this;
     }
 
     /**
@@ -303,18 +366,6 @@ class TermAnswer
     }
 
     /**
-     * @param File|null $document
-     *
-     * @return TermAnswer
-     */
-    public function setDocument(?File $document): TermAnswer
-    {
-        $this->document = $document;
-
-        return $this;
-    }
-
-    /**
      * @return bool
      */
     public function hasWaiver(): bool
@@ -323,35 +374,11 @@ class TermAnswer
     }
 
     /**
-     * @param bool $waiver
-     *
-     * @return TermAnswer
-     */
-    public function setWaiver(bool $waiver): TermAnswer
-    {
-        $this->waiver = $waiver;
-
-        return $this;
-    }
-
-    /**
      * @return int|null
      */
     public function getGrantedDelay(): ?int
     {
         return $this->grantedDelay;
-    }
-
-    /**
-     * @param int|null $grantedDelay
-     *
-     * @return TermAnswer
-     */
-    public function setGrantedDelay(?int $grantedDelay): TermAnswer
-    {
-        $this->grantedDelay = $grantedDelay;
-
-        return $this;
     }
 
     /**
