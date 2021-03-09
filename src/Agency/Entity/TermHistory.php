@@ -29,7 +29,7 @@ class TermHistory
     /**
      * @var Term
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Term", inversedBy="answers")
+     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Term")
      * @ORM\JoinColumn(name="id_term", onDelete="CASCADE")
      *
      * @Assert\NotBlank
