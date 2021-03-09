@@ -38,7 +38,17 @@ class TermVoter extends AbstractEntityVoter
      */
     protected function canEdit(Term $term, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_EDIT, $term->getCovenant()) && false === $term->isArchived();
+        if ($term->isArchived()) {
+            return false;
+        }
+
+        if ($term->isShared()) {
+            return false;
+        }
+
+        // TODO Update for borrowers
+
+        return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_EDIT, $term->getCovenant());
     }
 
     /**

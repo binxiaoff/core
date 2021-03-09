@@ -42,6 +42,30 @@ Agency:
             incorrectOperator: Il ne peut y avoir de valeur maximal que si l'operateur est "between"
             greaterThan: La valeur maximale doit être strictement supérieur à la valeur
 
+    Term:
+        borrowerComment:
+            neededBorrowerAction: Il faut que l'emprunteur ait rempli la valeur ou le document pour mettre un commentaire
+        borrowerInput:
+            otherCovenant: Cette valeur doit être vide pour les engagements de nature "Autre"
+        borrowerInputDate:
+            otherCovenant: Cette valeur doit être vide pour les engagements de nature "Autre"
+            borrowerInput: Cette valeur doit être synchronisée avec l'état de la valeur demander à l'emprunteur
+        validatonDate:
+            validation: Cette valeur doit être synchronisée avec l'état de la validation de l'agent
+        breach:
+            invalidTermRequired: L'échec de la validation de l'agent est requise pour avoir un bris
+        breachComment:
+            breachRequired: Le bris est requis pour mettre ce commentaire
+        waiver:
+            breachRequired: Le bris est requis pour le waiver
+        waiverComment:
+            waiverStatusRequired: Le waiver doit être statué pour ce commentaire
+        grantedDelay:
+            invalidTermRequired: L'échec de la validation de l'agent est requise pour avoir accorder un delais supplémentaire
+        sharingDate:
+            agentValidationRequired: Il faut une validation (réussite ou échec) avant de partager le résultat
+        archivingDate:
+            poolSharingRequired: Il faut partager le resultat au pool avant d'archiver
 Core:
     AcceptationsLegalDocs:
         legalDoc:

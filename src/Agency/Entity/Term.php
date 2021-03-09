@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
@@ -19,10 +21,25 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  * @ORM\Table(name="agency_term")
  *
  * @ApiResource(
+ *     normalizationContext={
+ *        "groups": {"agency:term:read"}
+ *     },
+ *     attributes={
+ *        "validation_groups": {Term::class, "getValidationGroups"}
+ *     },
  *     itemOperations={
- *         "get",
- *         "patch",
- *         "delete"
+ *         "get": {
+ *              "security": "is_granted('view', object)"
+ *         },
+ *         "patch": {
+ *              "denormalization_context": {
+ *                    "groups": {"agency:term:update"}
+ *              },
+ *              "security": "is_granted('edit', object)"
+ *         },
+ *         "delete": {
+ *              "security": "is_granted('delete', object)"
+ *         }
  *     },
  *     collectionOperations={}
  * )
@@ -38,6 +55,10 @@ class Term
      *
      * @ORM\ManyToOne(targetEntity=Covenant::class, inversedBy="terms")
      * @ORM\JoinColumn(name="id_covenant", onDelete="CASCADE")
+     *
+     * @Groups({"agency:term:read"})
+     *
+     * @ApiProperty(writableLink=false, readableLink=false)
      */
     private Covenant $covenant;
 
@@ -47,6 +68,8 @@ class Term
      * @Assert\NotBlank
      *
      * @ORM\Column(type="datetime_immutable")
+     *
+     * @Groups({"agency:term:read"})
      */
     private DateTimeImmutable $startDate;
 
@@ -57,61 +80,67 @@ class Term
      * @Assert\NotBlank
      *
      * @ORM\Column(type="datetime_immutable")
+     *
+     * @Groups({"agency:term:read", "agency:term:update"})
      */
     private DateTimeImmutable $endDate;
-
-    /**
-     * @var DateTimeImmutable|null
-     *
-     * @Assert\GreaterThanOrEqual(propertyPath="startDate")
-     *
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     */
-    private ?DateTimeImmutable $sharingDate;
-
-    /**
-     * @var DateTimeImmutable|null
-     *
-     * @Assert\GreaterThanOrEqual(propertyPath="startDate")
-     *
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     */
-    private ?DateTimeImmutable $archivingDate;
 
     /**
      * @var File|null
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\File")
      * @ORM\JoinColumn(name="id_document", nullable=true)
+     *
+     * @Groups({"agency:term:read", "agency:term:update"})
      */
-    private ?File $document;
+    private ?File $borrowerDocument;
 
     /**
      * @var string|null
      *
      * @ORM\Column(type="text", nullable=true)
+     *
+     * @Assert\Expression(
+     *     expression="(null === value) || this.getBorrowerInput() || this.getBorrowerDocument()",
+     *     message="Agency.Term.borrowerComment.neededBorrowerAction"
+     * )
+     *
+     * @Groups({"agency:term:read", "agency:term:update"})
      */
     private ?string $borrowerComment;
 
     /**
+     * Used for financial covenant, represent the input of the borrower fot the given term
+     * Must be null for other covenant
+     *
      * @var string|null
      *
      * @Assert\Length(max="255")
      * @Assert\Type("numeric")
-     *
-     * @Assert\Expression("(this.getTerm().isFinancial() && value) || (!this.getTerm().isFinancial() && !value)")
+     * @Assert\IsNull(groups={"Other"}, message="Agency.Term.borrowerInput.otherCovenant")
      *
      * @ORM\Column(type="string", length=255, nullable=true)
+     *
+     * @Groups({"agency:term:read", "agency:term:update"})
      */
     private ?string $borrowerInput;
 
     /**
+     * Register the date at with the borrower has given its result
+     *
      * @var DateTimeInterface|null
      *
      * @Assert\GreaterThanOrEqual(propertyPath="startDate")
-     * @Assert\Expression("(value && $this->getBorrowerInput()) || (!value && !$this->getBorrowerInput())")
+     * @Assert\IsNull(groups={"Other"}, message="Agency.Term.borrowerInputDate.otherCovenant")
+     * @Assert\Expression(
+     *     groups={"Financial"},
+     *     expression="(null === value && null === this.getBorrowerInput()) || (null !== value && null !== this.getBorrowerInput())",
+     *     message="Agency.Term.borrowerInputDate.borrowerInput"
+     * )
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"agency:term:read"})
      */
     private ?DateTimeInterface $borrowerInputDate;
 
@@ -125,20 +154,32 @@ class Term
      * @ORM\Column(type="boolean", nullable=true)
      *
      * @Assert\Type("bool")
+     *
+     * @Groups({"agency:term:read", "agency:term:update"})
      */
-    private ?bool $validation = null;
+    private ?bool $validation;
 
     /**
      * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Assert\GreaterThanOrEqual("startDate")
+     * @Assert\Expression(
+     *     expression="(null === value && null === this.getValidation()) || (null !== value && null !== this.getValidation())",
+     *     message="Agency.Term.validationDate.validation"
+     * )
+     *
+     * @Groups({"agency:term:read"})
      */
-    private ?DateTimeImmutable $validationDate = null;
+    private ?DateTimeImmutable $validationDate;
 
     /**
      * @var string|null
      *
      * @ORM\Column(type="text", nullable=true)
+     *
+     * @Groups({"agency:term:read", "agency:term:update"})
      */
     private ?string $agentComment;
 
@@ -147,16 +188,26 @@ class Term
      *
      * @ORM\Column(type="boolean", nullable=false)
      *
-     * @Assert\Expression("(value && this.isInvalid()) || !value")
+     * @Assert\Expression(
+     *     expression="(value && this.isInvalid()) || !value",
+     *     message="Agency.Term.breach.invalidTermRequired"
+     * )
+     *
+     * @Groups({"agency:term:read", "agency:term:update"})
      */
     private bool $breach;
 
     /**
      * @var string|null
      *
-     * @Assert\Expression("(this.hasBreach) && value) || null === value")
+     * @Assert\Expression(
+     *     expression="this.hasBreach() || null === value",
+     *     message="Agency.Term.breachComment.breachRequired"
+     * )
      *
      * @ORM\Column(type="text", nullable=true)
+     *
+     * @Groups({"agency:term:read", "agency:term:update"})
      */
     private ?string $breachComment;
 
@@ -169,18 +220,28 @@ class Term
      *
      * @var bool
      *
-     * @Assert\Expression("this.hasBreach() || value === null")
+     * @Assert\Expression(
+     *     expression="this.hasBreach() || value === null",
+     *     message="Agency.Term.waiver.breachRequired"
+     * )
      *
      * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"agency:term:read", "agency:term:update"})
      */
     private ?bool $waiver;
 
     /**
      * @var string|null
      *
-     * @Assert\Expression("((this.isWaiverGranted() || this.isWaiverRefused()) && value) || null === value")
+     * @Assert\Expression(
+     *     expression="((this.isWaiverGranted() || this.isWaiverRefused()) && value) || null === value",
+     *     message="Agency.Term.waiverComment.waiverStatusRequired"
+     * )
      *
      * @ORM\Column(type="text", nullable=true)
+     *
+     * @Groups({"agency:term:read", "agency:term:update"})
      */
     private ?string $waiverComment;
 
@@ -191,11 +252,43 @@ class Term
      *
      * @Assert\Positive
      *
-     * @Assert\Expression("this.isInvalid() || value === null")
+     * @Assert\Expression("this.isInvalid() || value === null", message="Agency.Term.grantedDelay.invalidTermRequired")
      *
      * @ORM\Column(type="integer", nullable=true)
+     *
+     * @Groups({"agency:term:read", "agency:term:update"})
      */
     private ?int $grantedDelay;
+
+    /**
+     * @var DateTimeImmutable|null
+     *
+     * @Assert\GreaterThanOrEqual(propertyPath="validationDate")
+     * @Assert\Expression(
+     *     expression="(value && (false === this.isPending())) || (null === value)",
+     *     message="Agency.Term.sharingDate.agentValidationRequired"
+     * )
+     *
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"agency:term:read"})
+     */
+    private ?DateTimeImmutable $sharingDate;
+
+    /**
+     * @var DateTimeImmutable|null
+     *
+     * @Assert\GreaterThanOrEqual(propertyPath="sharingDate")
+     * @Assert\Expression(
+     *     expression="(value && this.isShared()) || (null === value)",
+     *     message="Agency.Term.sharingDate.poolSharingRequired"
+     * )
+     *
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"agency:term:read"})
+     */
+    private ?DateTimeImmutable $archivingDate;
 
     /**
      * @param Covenant               $covenant
@@ -208,7 +301,7 @@ class Term
         $this->startDate = $startDate;
         $this->endDate = $endDate ?? $startDate->add(DateInterval::createFromDateString('+ ' . $covenant->getDelay() . ' days'));
 
-        $this->document = null;
+        $this->borrowerDocument = null;
         $this->borrowerComment = null;
         $this->borrowerInput = null;
         $this->borrowerInputDate = null;
@@ -227,71 +320,9 @@ class Term
     }
 
     /**
-     * @return DateTimeImmutable|null
-     */
-    public function getSharingDate(): ?DateTimeImmutable
-    {
-        return $this->sharingDate;
-    }
-
-    /**
-     * @return Term
+     * @return bool
      *
-     * @throws Exception
-     */
-    public function share(): Term
-    {
-        if ($this->isShared()) {
-            return $this;
-        }
-
-        $this->sharingDate = new DateTimeImmutable();
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isShared(): bool
-    {
-        return null !== $this->sharingDate;
-    }
-
-    /**
-     * @return DateTimeImmutable|null
-     */
-    public function getArchivingDate(): ?DateTimeImmutable
-    {
-        return $this->archivingDate;
-    }
-
-    /**
-     * @return Term
-     *
-     * @throws Exception
-     */
-    public function archive(): Term
-    {
-        if ($this->isArchived()) {
-            return $this;
-        }
-
-        $this->archivingDate = new DateTimeImmutable();
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isArchived(): bool
-    {
-        return null !== $this->archivingDate;
-    }
-
-    /**
-     * @return bool
+     * @Groups({"agency:term:read"})
      */
     public function isFulfilled(): bool
     {
@@ -299,7 +330,7 @@ class Term
             case Covenant::NATURE_CONTROL:
                 return true;
             case Covenant::NATURE_DOCUMENT:
-                return null !== $this->getDocument() && $this->isDateValid($this->getDocument()->getAdded());
+                return null !== $this->getBorrowerDocument() && $this->isDateValid($this->getBorrowerDocument()->getAdded());
             case Covenant::NATURE_FINANCIAL_ELEMENT:
             case Covenant::NATURE_FINANCIAL_RATIO:
                 if (null === $this->borrowerInput || false === is_numeric($this->borrowerInput)) {
@@ -310,7 +341,7 @@ class Term
                     return false;
                 }
 
-                $rule = $this->getFinancialRule();
+                $rule = $this->getCovenantRule();
 
                 if (null === $rule) {
                     return false;
@@ -341,19 +372,20 @@ class Term
     /**
      * @return File|null
      */
-    public function getDocument(): ?File
+    public function getBorrowerDocument(): ?File
     {
-        return $this->document;
+        return $this->borrowerDocument;
     }
 
     /**
-     * @param File|null $document
+     * @param File|null $borrowerDocument
      *
      * @return Term
      */
-    public function setDocument(?File $document): Term
+    public function setBorrowerDocument(?File $borrowerDocument): Term
     {
-        $this->document = $document;
+        $this->borrowerDocument = $borrowerDocument;
+        $this->awaitValidation();
 
         return $this;
     }
@@ -388,8 +420,10 @@ class Term
 
     /**
      * @return CovenantRule|null
+     *
+     * @Groups({"agency:term:read"})
      */
-    public function getFinancialRule(): ?CovenantRule
+    public function getCovenantRule(): ?CovenantRule
     {
         if (false === $this->isFinancial()) {
             return null;
@@ -497,6 +531,8 @@ class Term
         $this->borrowerInput = $borrowerInput;
         $this->borrowerInputDate = null !== $borrowerInput ? new DateTimeImmutable() : null;
 
+        $this->awaitValidation();
+
         return $this;
     }
 
@@ -578,6 +614,8 @@ class Term
 
     /**
      * @return bool
+     *
+     * @Groups({"agency:term:read"})
      */
     public function isWaiverGranted(): bool
     {
@@ -586,6 +624,8 @@ class Term
 
     /**
      * @return bool
+     *
+     * @Groups({"agency:term:read"})
      */
     public function isWaiverRefused(): bool
     {
@@ -626,6 +666,8 @@ class Term
 
     /**
      * @return bool
+     *
+     * @Groups({"agency:term:read"})
      */
     public function isValid(): bool
     {
@@ -634,6 +676,8 @@ class Term
 
     /**
      * @return bool
+     *
+     * @Groups({"agency:term:read"})
      */
     public function isInvalid(): bool
     {
@@ -642,10 +686,107 @@ class Term
 
     /**
      * @return bool
+     *
+     * @Groups({"agency:term:read"})
      */
     public function isPending(): bool
     {
         return null === $this->validation;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getSharingDate(): ?DateTimeImmutable
+    {
+        return $this->sharingDate;
+    }
+
+    /**
+     * @return Term
+     *
+     * @throws Exception
+     */
+    public function share(): Term
+    {
+        if ($this->isShared()) {
+            return $this;
+        }
+
+        $this->sharingDate = new DateTimeImmutable();
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     *
+     * @Groups({"agency:term:read"})
+     */
+    public function isShared(): bool
+    {
+        return null !== $this->sharingDate;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getArchivingDate(): ?DateTimeImmutable
+    {
+        return $this->archivingDate;
+    }
+
+    /**
+     * @return Term
+     *
+     * @throws Exception
+     */
+    public function archive(): Term
+    {
+        if ($this->isArchived()) {
+            return $this;
+        }
+
+        $this->archivingDate = new DateTimeImmutable();
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     *
+     * @Groups({"agency:term:read"})
+     */
+    public function isArchived(): bool
+    {
+        return null !== $this->archivingDate;
+    }
+
+    /**
+     * Reset entity to await agent validation
+     *
+     * Used when new value or new document is put
+     */
+    public function awaitValidation()
+    {
+        $this->validation = null;
+        $this->validationDate = null;
+        $this->agentComment = null;
+
+        $this->breach = false;
+        $this->breachComment = null;
+        $this->waiver = null;
+        $this->waiverComment = null;
+    }
+
+    /**
+     * @param Term $term
+     *
+     * @return string[]
+     */
+    public static function getValidationGroups(Term $term): array
+    {
+        return ['Default', 'Term', $term->isFinancial() ? 'Financial' : 'Other'];
     }
 
     /**

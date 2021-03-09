@@ -137,7 +137,7 @@ class TermHistory
     {
         $this->added           = new DateTimeImmutable();
         $this->term            = $term;
-        $this->document        = $term->getDocument();
+        $this->document        = $term->getBorrowerDocument();
         $this->borrowerInput   = $term->getBorrowerComment();
         $this->borrowerComment = $term->getBorrowerInput();
         $this->agentComment    = $term->getAgentComment();
@@ -341,7 +341,7 @@ class TermHistory
                     return false;
                 }
 
-                $rule = $this->getTerm()->getFinancialRule();
+                $rule = $this->getTerm()->getCovenantRule();
 
                 if (null === $rule) {
                     return false;
