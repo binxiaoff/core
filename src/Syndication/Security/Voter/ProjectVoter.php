@@ -173,8 +173,12 @@ class ProjectVoter extends AbstractEntityVoter
     {
         $staff = $user->getCurrentStaff();
 
+        // We check against the EDIT attribute of ProjectParticipationVoter instead of DELETE Attribute
+        // because DELETE return false when tested object is arrangerParticipation
+        // (That is the normal case : we cannot in any case delete arranger participation)
+        // We need a little be more flexibility on this case
         return $staff
-            && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_DELETE, $project->getArrangerProjectParticipation())
+            && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $project->getArrangerProjectParticipation())
             && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus();
     }
 }
