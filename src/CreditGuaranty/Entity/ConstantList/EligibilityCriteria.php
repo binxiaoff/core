@@ -8,7 +8,6 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
 
 /**
  * @ApiResource(
