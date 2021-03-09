@@ -322,6 +322,10 @@ class TermHistory
     }
 
     /**
+     * While it is not used directly, it may be useful to keep for reference
+     * beware : this calculation is base on the current data of the covenant not the one at the creation
+     * of this history entry
+     *
      * @return bool
      */
     public function isFulfilled(): bool
