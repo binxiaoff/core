@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource};
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
@@ -34,7 +35,15 @@ use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
  * @ApiFilter(SearchFilter::class, properties={"program.publicId"})
  *
  * @ORM\Entity
- * @ORM\Table(name="credit_guaranty_program_eligibility")
+ * @ORM\Table(
+ *      name="credit_guaranty_program_eligibility",
+ *      uniqueConstraints={
+ *          @ORM\UniqueConstraint(columns={"id_eligibility_criteria", "id_program"})
+ *      }
+ * )
+ * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity({"eligibilityCriteria", "program"})
  */
 class ProgramEligibility
 {

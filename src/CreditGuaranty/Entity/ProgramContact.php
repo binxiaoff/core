@@ -28,10 +28,15 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  * )
  *
  * @ORM\Entity
- * @ORM\Table(name="credit_guaranty_program_contact")
+ * @ORM\Table(
+ *      name="credit_guaranty_program_contact",
+ *      uniqueConstraints={
+ *          @ORM\UniqueConstraint(columns={"email", "id_program"})
+ *      }
+ * )
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity({"email"}, message="CreditGuaranty.ProgramContact.email.unique")
+ * @UniqueEntity({"email", "program"}, message="CreditGuaranty.ProgramContact.email.unique")
  */
 class ProgramContact
 {

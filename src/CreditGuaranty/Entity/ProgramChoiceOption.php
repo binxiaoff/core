@@ -4,20 +4,49 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\CreditGuaranty\Entity\Constant\EligibilityFieldAlias;
 
 /**
+ * @ApiResource(
+ *      attributes={"pagination_enabled": false},
+ *      normalizationContext={"groups":{"creditGuaranty:programChoiceOption:read"}},
+ *      itemOperations={
+ *          "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *      },
+ *      collectionOperations={
+ *          "get",
+ *          "post"
+ *      }
+ * )
+ *
+ * @ApiFilter(SearchFilter::class, properties={"program.publicId"})
+ *
  * @ORM\Entity
- * @ORM\Table(name="credit_guaranty_program_choice_option")
+ * @ORM\Table(
+ *     name="credit_guaranty_program_choice_option",
+ *     uniqueConstraints={
+ *          @ORM\UniqueConstraint(columns={"description", "field_alias", "id_program"})
+ *      }
+ * )
+ * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity({"description", "fieldAlias", "program"})
  */
 class ProgramChoiceOption
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
-
-    public const ACCESS_PATH_BORROWER_TYPE = 'Unilend\CreditGuaranty\Entity\Borrower::type';
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
@@ -26,7 +55,7 @@ class ProgramChoiceOption
     private Program $program;
 
     /**
-     * @ORM\Column(type="text", length=65535)
+     * @ORM\Column(length=255)
      *
      * @Groups({"creditGuaranty:programChoiceOption:read"})
      */
@@ -35,21 +64,23 @@ class ProgramChoiceOption
     /**
      * @ORM\Column(length=100)
      *
+     * @Assert\Choice(callback={EligibilityFieldAlias::class, "getConstList"})
+     *
      * @Groups({"creditGuaranty:programChoiceOption:read"})
      */
-    private string $targetPropertyAccessPath;
+    private string $fieldAlias;
 
     /**
      * @param Program $program
      * @param string  $description
-     * @param string  $targetPropertyAccessPath
+     * @param string  $fieldAlias
      */
-    public function __construct(Program $program, string $description, string $targetPropertyAccessPath)
+    public function __construct(Program $program, string $description, string $fieldAlias)
     {
-        $this->program                  = $program;
-        $this->description              = $description;
-        $this->targetPropertyAccessPath = $targetPropertyAccessPath;
-        $this->added                    = new \DateTimeImmutable();
+        $this->program     = $program;
+        $this->description = $description;
+        $this->fieldAlias  = $fieldAlias;
+        $this->added       = new \DateTimeImmutable();
     }
 
     /**
@@ -83,8 +114,8 @@ class ProgramChoiceOption
     /**
      * @return string
      */
-    public function getTargetPropertyAccessPath(): string
+    public function getFieldAlias(): string
     {
-        return $this->targetPropertyAccessPath;
+        return $this->fieldAlias;
     }
 }

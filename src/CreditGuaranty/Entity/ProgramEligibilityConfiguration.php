@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
-use ApiPlatform\Core\Annotation\ApiProperty;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -14,7 +14,17 @@ use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="credit_guaranty_program_eligibility_configuration")
+ * @ORM\Table(
+ *     name="credit_guaranty_program_eligibility_configuration",
+ *     uniqueConstraints={
+ *          @ORM\UniqueConstraint(columns={"id_program_eligibility", "id_program_choice_option"}),
+ *          @ORM\UniqueConstraint(columns={"id_program_eligibility", "value"}),
+ *      }
+ * )
+ * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity({"programChoiceOption", "programEligibility"})
+ * @UniqueEntity({"value", "programEligibility"})
  */
 class ProgramEligibilityConfiguration
 {

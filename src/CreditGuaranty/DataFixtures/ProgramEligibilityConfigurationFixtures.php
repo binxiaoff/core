@@ -66,7 +66,7 @@ class ProgramEligibilityConfigurationFixtures extends AbstractFixtures implement
                 case EligibilityCriteria::TYPE_LIST:
                     if ($eligibilityCriteria->getTargetPropertyAccessPath()) {
                         $choiceOptions = $this->programChoiceOptionRepository->findBy([
-                            'targetPropertyAccessPath' => $eligibilityCriteria->getTargetPropertyAccessPath(),
+                            'fieldAlias' => $eligibilityCriteria->getFieldAlias(),
                             'program' => $programEligibility->getProgram(),
                         ]);
 

@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
 
 /**
  * @ApiResource(
@@ -38,7 +39,7 @@ class EligibilityCriteria
      *
      * @Groups({"creditGuaranty:eligibilityCriteria:read"})
      */
-    private string $name;
+    private string $fieldAlias;
 
     /**
      * @ORM\Column(length=100)
@@ -76,16 +77,16 @@ class EligibilityCriteria
     private ?string $unit;
 
     /**
-     * @param string      $name
+     * @param string      $fieldAlias
      * @param string      $category
      * @param string      $type
      * @param string      $targetPropertyAccessPath
      * @param bool        $comparable
      * @param string|null $unit
      */
-    public function __construct(string $name, string $category, string $type, string $targetPropertyAccessPath, bool $comparable, ?string $unit = null)
+    public function __construct(string $fieldAlias, string $category, string $type, string $targetPropertyAccessPath, bool $comparable, ?string $unit = null)
     {
-        $this->name                     = $name;
+        $this->fieldAlias               = $fieldAlias;
         $this->category                 = $category;
         $this->type                     = $type;
         $this->targetPropertyAccessPath = $targetPropertyAccessPath;
@@ -96,9 +97,9 @@ class EligibilityCriteria
     /**
      * @return string
      */
-    public function getName(): string
+    public function getFieldAlias(): string
     {
-        return $this->name;
+        return $this->fieldAlias;
     }
 
     /**

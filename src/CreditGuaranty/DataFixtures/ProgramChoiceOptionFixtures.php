@@ -8,7 +8,7 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\{AbstractFixtures, DumpedDataFixture};
-use Unilend\CreditGuaranty\Entity\{Program, ProgramChoiceOption};
+use Unilend\CreditGuaranty\Entity\{Constant\EligibilityFieldAlias, Program, ProgramChoiceOption};
 use Unilend\CreditGuaranty\Repository\EligibilityCriteriaRepository;
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -38,14 +38,12 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             ProgramFixtures::REFERENCE_PAUSED,
         ];
 
-        $borrowerTypeCriteria = $this->eligibilityCriteriaRepository->findOneBy(['name' => 'borrower_type']);
-
         foreach ($programReferences as $programReference) {
             /** @var Program $program */
             $program = $this->getReference($programReference);
 
-            $manager->persist(new ProgramChoiceOption($program, 'Emprunteur de plus de 7 ans', ProgramChoiceOption::ACCESS_PATH_BORROWER_TYPE));
-            $manager->persist(new ProgramChoiceOption($program, 'Emprunteur de moins de 7 ans', ProgramChoiceOption::ACCESS_PATH_BORROWER_TYPE));
+            $manager->persist(new ProgramChoiceOption($program, 'Emprunteur de plus de 7 ans', EligibilityFieldAlias::BORROWER_TYPE));
+            $manager->persist(new ProgramChoiceOption($program, 'Emprunteur de moins de 7 ans', EligibilityFieldAlias::BORROWER_TYPE));
         }
         $manager->flush();
     }
