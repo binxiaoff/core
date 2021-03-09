@@ -14,7 +14,7 @@ final class Version20210305143543 extends AbstractMigration
 {
     public function getDescription() : string
     {
-        return '';
+        return 'CALS-3256 : Add credit_guaranty_program_grade_allocation table and add credit_guaranty_program.rating_type filed';
     }
 
     public function up(Schema $schema) : void

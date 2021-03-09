@@ -122,3 +122,6 @@ CreditGuaranty:
             notChangeable: Vous ne pouvez pas modifier le CAP sur un programme en cours.
             greater: Vous ne pouvez pas réduire le montant du CAP sur un programme en cours.
             draft: Vous ne pouvez que modifier le CAP ou réduire son montant sur un programme en brouillon.
+    ProgramGradeAllocation:
+        grade:
+            invalid: Le grade choisi n'est pas valable.

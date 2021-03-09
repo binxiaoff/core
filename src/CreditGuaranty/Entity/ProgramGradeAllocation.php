@@ -7,6 +7,7 @@ namespace Unilend\CreditGuaranty\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Constant\{CAInternalRating, CAInternalRetailRating, CARatingType};
@@ -27,8 +28,15 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  * )
  *
  * @ORM\Entity
- * @ORM\Table(name="credit_guaranty_program_grade_allocation")
+ * @ORM\Table(
+ *     name="credit_guaranty_program_grade_allocation",
+ *     uniqueConstraints={
+ *          @ORM\UniqueConstraint(columns={"program", "grade"})
+ *      }
+ * )
  * @ORM\HasLifecycleCallbacks
+ *
+ * @UniqueEntity({"program", "grade"})
  */
 class ProgramGradeAllocation
 {
@@ -133,9 +141,9 @@ class ProgramGradeAllocation
     public function isGradeValid(): bool
     {
         switch ($this->program->getRatingType()) {
-            case CARatingType::CA_INTERNAL_RETAIL_RATING_TYPE:
+            case CARatingType::CA_INTERNAL_RETAIL_RATING:
                 return \in_array($this->program, CAInternalRetailRating::getConstList());
-            case CARatingType::CA_RETAIL_RATING_TYPE:
+            case CARatingType::CA_INTERNAL_RATING:
                 return \in_array($this->program, CAInternalRating::getConstList());
             default:
                 return false;
