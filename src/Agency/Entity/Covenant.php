@@ -46,8 +46,8 @@ class Covenant
     public const NATURE_FINANCIAL_ELEMENT  = "financial_element";
     public const NATURE_FINANCIAL_RATIO    = "financial_ratio";
 
-    public const RECURRENCE_3M = 'P3M';
-    public const RECURRENCE_6M = 'P6M';
+    public const RECURRENCE_3M  = 'P3M';
+    public const RECURRENCE_6M  = 'P6M';
     public const RECURRENCE_12M = 'P12M';
 
     /**
