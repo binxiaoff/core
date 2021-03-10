@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\Constant\AbstractEnum;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\CreditGuaranty\Entity\Constant\EligibilityFieldAlias;
 
@@ -22,7 +23,9 @@ use Unilend\CreditGuaranty\Entity\Constant\EligibilityFieldAlias;
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
- *         }
+ *          },
+ *          "patch",
+ *          "delete"
  *      },
  *      collectionOperations={
  *          "get",
@@ -58,13 +61,15 @@ class ProgramChoiceOption
      * @ORM\Column(length=255)
      *
      * @Groups({"creditGuaranty:programChoiceOption:read"})
+     *
+     * @Assert\Expression("this.isDescriptionValid()")
      */
     private string $description;
 
     /**
      * @ORM\Column(length=100)
      *
-     * @Assert\Choice(callback={EligibilityFieldAlias::class, "getConstList"})
+     * @Assert\Choice(callback={EligibilityFieldAlias::class, "getListFields"})
      *
      * @Groups({"creditGuaranty:programChoiceOption:read"})
      */
@@ -117,5 +122,24 @@ class ProgramChoiceOption
     public function getFieldAlias(): string
     {
         return $this->fieldAlias;
+    }
+
+    /**
+     * If it's a pre-defined list, check whether the description is a pre-defined list's item.
+     *
+     * @return bool
+     */
+    public function isDescriptionValid(): bool
+    {
+        $preDefinedLists = EligibilityFieldAlias::getPredefinedListFields();
+        if (false === array_key_exists($this->getFieldAlias(), $preDefinedLists)) {
+            return true;
+        }
+        $constantClass = $preDefinedLists[$this->getFieldAlias()];
+        if (is_subclass_of($constantClass, AbstractEnum::class)) {
+            return in_array($this->description, $constantClass::getConstList(), true);
+        }
+
+        return true;
     }
 }

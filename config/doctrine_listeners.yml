@@ -105,3 +105,11 @@ services:
     Unilend\Syndication\Listener\Doctrine\Lifecycle\ProjectParticipationTrancheUpdatedListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
+
+    Unilend\CreditGuaranty\Listener\Doctrine\Lifecycle\ProgramCreatedListener:
+        tags:
+            - { name: doctrine.event_listener, event: onFlush }
+
+    Unilend\CreditGuaranty\Listener\Doctrine\Lifecycle\ProgramEligibilityCreatedListener:
+        tags:
+            - { name: doctrine.event_listener, event: onFlush }

@@ -24,7 +24,8 @@ use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
  *          "timestampable:read"
  *      }},
  *      itemOperations={
- *          "get"
+ *          "get",
+ *          "delete"
  *      },
  *      collectionOperations={
  *          "get",

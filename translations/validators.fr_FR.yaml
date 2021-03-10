@@ -122,6 +122,20 @@ CreditGuaranty:
             notChangeable: Vous ne pouvez pas modifier le CAP sur un programme en cours.
             greater: Vous ne pouvez pas réduire le montant du CAP sur un programme en cours.
             draft: Vous ne pouvez que modifier le CAP ou réduire son montant sur un programme en brouillon.
+
+
+    ProgramEligibilityConfiguration:
+        programChoiceOption:
+            invalid: La value n'est pas valable.
+            program:
+                invalid: Vous ne pouvez pas mettre programChoiceOption d'un autre program.
+            fieldAlias:
+                invalid: Vous ne pouvez pas mettre programChoiceOption d'un autre champ.
+        value:
+            invalid: La value n'est pas valable.
+    ProgramEligibility:
+        eligibilityCriteria:
+            unsupportedType: le type criteria n'est pas valable.
     ProgramGradeAllocation:
         grade:
             invalid: Le grade choisi n'est pas valable.

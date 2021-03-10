@@ -59,6 +59,7 @@ class ProgramEligibilityFixtures extends AbstractFixtures implements DependentFi
     {
         return [
             ProgramFixtures::class,
+            ProgramChoiceOptionFixtures::class,
             DumpedDataFixture::class,
         ];
     }

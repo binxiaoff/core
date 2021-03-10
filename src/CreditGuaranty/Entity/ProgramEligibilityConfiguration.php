@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -13,6 +15,26 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
 
 /**
+ * @ApiResource(
+ *      attributes={"pagination_enabled": false},
+ *      normalizationContext={"groups":{"creditGuaranty:programEligibilityConfiguration:read", "creditGuaranty:programChoiceOption:read"}},
+ *      itemOperations={
+ *          "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *          },
+ *          "patch",
+ *          "delete"
+ *      },
+ *      collectionOperations={
+ *          "get",
+ *          "post"
+ *      }
+ * )
+ *
+ * @ApiFilter(SearchFilter::class, properties={"programEligibility.publicId"})
+ *
  * @ORM\Entity
  * @ORM\Table(
  *     name="credit_guaranty_program_eligibility_configuration",
@@ -133,36 +155,29 @@ class ProgramEligibilityConfiguration
     {
         $criteriaType   = $this->getProgramEligibility()->getEligibilityCriteria()->getType();
         $violationPaths = [];
-        $valid          = true;
         switch ($criteriaType) {
             case EligibilityCriteria::TYPE_OTHER:
                 if (null !== $this->value) {
                     $violationPaths[] = 'value';
-                    $valid            = false;
                 }
                 if (null !== $this->programChoiceOption) {
                     $violationPaths[] = 'programChoiceOption';
-                    $valid            = false;
                 }
                 break;
             case EligibilityCriteria::TYPE_BOOL:
                 if (null === $this->value) {
                     $violationPaths[] = 'value';
-                    $valid            = false;
                 }
                 if (null !== $this->programChoiceOption) {
                     $violationPaths[] = 'programChoiceOption';
-                    $valid            = false;
                 }
                 break;
             case EligibilityCriteria::TYPE_LIST:
                 if (null !== $this->value) {
                     $violationPaths[] = 'value';
-                    $valid            = false;
                 }
                 if (null === $this->programChoiceOption) {
                     $violationPaths[] = 'programChoiceOption';
-                    $valid            = false;
                 }
                 break;
             default:
@@ -174,7 +189,17 @@ class ProgramEligibilityConfiguration
                 return;
         }
 
-        if (false === $valid) {
+        if ($this->getProgramChoiceOption() instanceof ProgramChoiceOption) {
+            if ($this->getProgramChoiceOption()->getProgram() !== $this->getProgramEligibility()->getProgram()) {
+                $violationPaths[] = 'programChoiceOption.program';
+            }
+
+            if ($this->getProgramChoiceOption()->getFieldAlias() !== $this->getProgramEligibility()->getEligibilityCriteria()->getFieldAlias()) {
+                $violationPaths[] = 'programChoiceOption.fieldAlias';
+            }
+        }
+
+        if (count($violationPaths) > 0) {
             foreach ($violationPaths as $path) {
                 $context->buildViolation('CreditGuaranty.ProgramEligibilityConfiguration.' . $path . '.invalid')
                     ->atPath($path)

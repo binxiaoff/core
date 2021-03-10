@@ -11,31 +11,22 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\{
-    Constant\CARatingType,
-    Embeddable\Money,
-    Embeddable\NullableMoney,
-    Interfaces\StatusInterface,
-    Interfaces\TraceableStatusAwareInterface,
-    MarketSegment,
-    Staff,
-    Traits\BlamableAddedTrait,
-    Traits\PublicizeIdentityTrait,
-    Traits\TimestampableTrait
-};
+use Unilend\Core\Entity\{Constant\CARatingType, Embeddable\Money, Embeddable\NullableMoney, Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface, MarketSegment,
+    Staff, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Core\Validator\Constraints\PreviousValue;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups":{"creditGuaranty:program:read", "creditGuaranty:programStatus:read", "timestampable:read", "money:read", "nullableMoney:read"}},
- *     denormalizationContext={"groups": {"creditGuaranty:program:write", "money:write", "nullableMoney:write"}},
+ *      normalizationContext={"groups":{"creditGuaranty:program:read", "creditGuaranty:programStatus:read", "timestampable:read", "money:read", "nullableMoney:read"}},
+ *      denormalizationContext={"groups": {"creditGuaranty:program:write", "money:write", "nullableMoney:write"}},
  *      itemOperations={
  *          "get",
- *          "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"},
+ *          "patch": {"security": "is_granted('edit', object)"},
  *          "delete": {"security": "is_granted('delete', object)"}
  *      },
  *      collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)"}
+ *         "post": {"security_post_denormalize": "is_granted('create', object)"},
+ *         "get"
  *     }
  * )
  *
