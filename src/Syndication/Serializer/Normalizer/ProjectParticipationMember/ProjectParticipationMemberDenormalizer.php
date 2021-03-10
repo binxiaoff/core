@@ -79,7 +79,7 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['role:write', 'staff:create', 'user:create']);
         }
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationMember::class]['addedBy'] = $user->getCurrentStaff();
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'] = $participation->getParticipant();
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['team'] = $participation->getParticipant()->getRootTeam();
 
         return $this->denormalizer->denormalize($data, $type, $format, $context);
     }

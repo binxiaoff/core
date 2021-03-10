@@ -13,6 +13,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Team;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\StaffRepository;
 use Unilend\Core\Repository\UserRepository;
@@ -74,13 +75,20 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         }
 
         // OR get constructor company if provided (when create staff from ProjectParticipationMemberDenormalizer)
-        if (null === $company && isset($context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'])) {
-            $company = $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'];
+        if (null === $company && isset($context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['team'])) {
+            /** @var Team $team */
+            $team = $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['team'];
+            $company = $team->getCompany();
         }
 
         // else, get from request
         if (null === $company && (isset($data['company']) && \is_string($data['company']))) {
             $company = $this->iriConverter->getItemFromIri($data['company']);
+        }
+
+        if (null === $company && (isset($data['team']) && \is_string($data['team']))) {
+            $team = $this->iriConverter->getItemFromIri($data['team']);
+            $company = $team->getCompany();
         }
 
         $email = $data['user']['email'] ?? null;
