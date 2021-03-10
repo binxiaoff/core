@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Service\Document;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use InvalidArgumentException;
 use RuntimeException;
 use Unilend\Core\Entity\Interfaces\FileStorageInterface;

@@ -6,11 +6,11 @@ namespace Unilend\Core\Repository;
 
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\Persistence\ManagerRegistry;
 use Exception;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\TemporaryToken;
+use Unilend\Core\Entity\User;
 
 /**
  * @method TemporaryToken|null find($id, $lockMode = null, $lockVersion = null)
