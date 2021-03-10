@@ -456,6 +456,9 @@
             "config/packages/misd_phone_number.yaml"
         ]
     },
+    "ondram/ci-detector": {
+        "version": "3.5.1"
+    },
     "oneup/flysystem-bundle": {
         "version": "3.0",
         "recipe": {
