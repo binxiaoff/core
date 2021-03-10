@@ -145,6 +145,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                     "timestampable:read",
  *                     "projectParticipation:read",
  *                     "projectParticipationStatus:read",
+ *                     "projectParticipationMember:read",
  *                     "projectParticipationTranche:read",
  *                     "money:read",
  *                     "nullableMoney:read",
