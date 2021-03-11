@@ -52,7 +52,7 @@ class ParticipationTrancheAllocation
     /**
      * @var Tranche
      *
-     * @ORM\ManyToOne(targetEntity=Tranche::class)
+     * @ORM\ManyToOne(targetEntity=Tranche::class, inversedBy="allocations")
      * @ORM\JoinColumn(name="id_tranche", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -70,18 +70,18 @@ class ParticipationTrancheAllocation
      *
      * @ORM\Embedded(class=Money::class)
      *
-     * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:write"})
+     * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:create"})
      */
     private Money $allocation;
 
     /**
-     * @param Participation $participant
+     * @param Participation $participation
      * @param Tranche       $tranche
      * @param Money         $allocation
      */
-    public function __construct(Participation $participant, Tranche $tranche, Money $allocation)
+    public function __construct(Participation $participation, Tranche $tranche, Money $allocation)
     {
-        $this->participation = $participant;
+        $this->participation = $participation;
         $this->tranche = $tranche;
         $this->allocation = $allocation;
     }

@@ -254,6 +254,25 @@ class Tranche
     private ?DateTimeImmutable $validityDate;
 
     /**
+     * @var ParticipationTrancheAllocation[]|iterable
+     *
+     * @ORM\OneToMany(
+     *     targetEntity=ParticipationTrancheAllocation::class,
+     *     cascade={"persist", "remove"},
+     *     mappedBy="tranche",
+     *     orphanRemoval=true
+     * )
+     *
+     * @Assert\Valid
+     * @Assert\All({
+     *    @Assert\Expression("value.getTranche() === this")
+     * })
+     *
+     * @Groups({"agency:tranche:read"})
+     */
+    private iterable $allocations;
+
+    /**
      * @param Project     $project
      * @param string      $name
      * @param bool        $syndicated
@@ -291,6 +310,7 @@ class Tranche
         $this->draw = new NullableMoney();
         $this->borrowerShares = new ArrayCollection();
         $this->validityDate = null;
+        $this->allocations = new ArrayCollection();
     }
 
     /**
@@ -349,6 +369,10 @@ class Tranche
     public function setSyndicated(bool $syndicated): Tranche
     {
         $this->syndicated = $syndicated;
+
+        if (false === $syndicated) {
+            $this->allocations = new ArrayCollection();
+        }
 
         return $this;
     }
@@ -625,6 +649,14 @@ class Tranche
         $this->draw = $draw;
 
         return $this;
+    }
+
+    /**
+     * @return iterable|ParticipationTrancheAllocation[]
+     */
+    public function getAllocations()
+    {
+        return $this->allocations;
     }
 
     /**

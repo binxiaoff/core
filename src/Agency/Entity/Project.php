@@ -25,6 +25,9 @@ use Unilend\Core\Validator\Constraints\Siren;
 /**
  * TODO Add group filter to give more front control (below nullablePerson:read)
  * @ApiResource(
+ *     attributes={
+ *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
+ *     },
  *     normalizationContext={
  *         "groups": {
  *             "timestampable:read",
@@ -56,7 +59,6 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {"groups": {"agency:project:create", "money:write", "nullablePerson:write", "nullableMoney:write"}},
- *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         }
  *     },
  *     itemOperations={
@@ -66,7 +68,6 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {"groups": {"agency:project:write", "agency:projectStatus:create", "money:write", "nullablePerson:write", "nullableMoney:write", "agency:covenant:update"}},
- *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
  *     }
  * )
@@ -1069,7 +1070,7 @@ class Project
     }
 
     /**
-     * @Assert\Count(min="1")
+     * @Assert\Count(min="1", groups={"published"})
      *
      * @return Tranche[]|iterable
      */

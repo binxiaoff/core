@@ -17,6 +17,9 @@ use Unilend\Core\Model\Bitmask;
 
 /**
  * @ApiResource(
+ *     attributes={
+ *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
+ *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:participation:read",
@@ -188,7 +191,7 @@ class Participation
      *
      * @ORM\OneToMany(targetEntity=ParticipationTrancheAllocation::class, cascade={"persist", "remove"}, mappedBy="participation")
      *
-     * @Assert\Count(min="1")
+     * @Assert\Count(min="1", groups={"published"})
      * @Assert\Valid
      * @Assert\All({
      *    @Assert\Expression("value.getParticipation() === this")
@@ -438,5 +441,23 @@ class Participation
         $this->prorata = $prorata;
 
         return $this;
+    }
+
+    /**
+     * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups
+     *
+     * @param Participation $participation
+     *
+     * @return array|string[]
+     */
+    public static function getCurrentValidationGroups(self $participation): array
+    {
+        $validationGroups = ['Default', 'Project'];
+
+        if ($participation->getProject()->isPublished()) {
+            $validationGroups[] = ['published'];
+        }
+
+        return $validationGroups;
     }
 }
