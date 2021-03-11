@@ -9,8 +9,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Constant\LegalForm;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
@@ -94,7 +92,6 @@ class Borrower
      * @ORM\Column(type="string", length=100)
      *
      * @Assert\NotBlank
-     * @Assert\Choice(callback={LegalForm::class, "getConstList"})
      *
      * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:write"})
      */

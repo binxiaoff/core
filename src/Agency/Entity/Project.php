@@ -12,7 +12,6 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Constant\LegalForm;
 use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
 use Unilend\Core\Entity\Constant\{CAInternalRating, FundingSpecificity};
 use Unilend\Core\Entity\Embeddable\{Money, NullableMoney, NullablePerson};
@@ -125,7 +124,6 @@ class Project
      *
      * @ORM\Column(type="string", nullable=true)
      *
-     * @Assert\Choice(callback={LegalForm::class, "getConstList"})
      * @Assert\NotBlank(groups={"published"})
      *
      * @Groups({"agency:project:read", "agency:project:write"})
