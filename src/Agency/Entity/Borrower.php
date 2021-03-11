@@ -213,6 +213,10 @@ class Borrower
      * @var Collection|BorrowerTrancheShare[]
      *
      * @ORM\OneToMany(targetEntity="BorrowerTrancheShare", mappedBy="borrower", orphanRemoval=true)
+     *
+     * @Assert\All({
+     *    @Assert\Expression("value.getBorrower() === this")
+     * })
      */
     private Collection $trancheShares;
 

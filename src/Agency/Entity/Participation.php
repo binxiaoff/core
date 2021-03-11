@@ -191,6 +191,9 @@ class Participation
      *
      * @Assert\Count(min="1")
      * @Assert\Valid
+     * @Assert\All({
+     *    @Assert\Expression("value.getParticipation() === this")
+     * })
      *
      * @Groups({"agency:participation:read"})
      */

@@ -56,6 +56,7 @@ class ParticipationTrancheAllocation
      * @ORM\JoinColumn(name="id_tranche", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
+     * @Assert\Expression("value.isSyndicated()")
      *
      * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:create"})
      */

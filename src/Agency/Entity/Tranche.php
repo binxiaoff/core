@@ -235,6 +235,10 @@ class Tranche
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
      *
      * @Groups({"agency:tranche:read"})
+     *
+     * @Assert\All({
+     *    @Assert\Expression("value.getTranche() === this")
+     * })
      */
     private Collection $borrowerShares;
 

@@ -166,6 +166,10 @@ class Project
      * @var Contact[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Contact", mappedBy="project", orphanRemoval=true, cascade={"remove"})
+     *
+     * @Assert\All({
+     *    @Assert\Expression("value.getProject() === this")
+     * })
      */
     private Collection $contacts;
 
@@ -361,6 +365,11 @@ class Project
      *
      * @Groups({"agency:project:read"})
      *
+     * @Assert\Valid
+     * @Assert\All({
+     *    @Assert\Expression("value.getProject() === this")
+     * })
+     *
      * @MaxDepth(1)
      */
     private iterable $tranches;
@@ -374,7 +383,11 @@ class Project
      *
      * @MaxDepth(1)
      *
+     * @Assert\Valid
      * @Assert\Count(min="1", groups={"published"})
+     * @Assert\All({
+     *    @Assert\Expression("value.getProject() === this")
+     * })
      */
     private iterable $borrowers;
 
@@ -418,6 +431,8 @@ class Project
      *
      * @ORM\Column(type="date_immutable")
      *
+     * @Assert\GreaterThan(propertyPath="closingDate")
+     *
      * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
     private DateTimeImmutable $contractEndDate;
@@ -448,6 +463,11 @@ class Project
      * @ORM\OneToMany(targetEntity=Participation::class, mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
      * @Groups({"agency:project:read"})
+     *
+     * @Assert\Valid
+     * @Assert\All({
+     *    @Assert\Expression("value.getProject() === this")
+     * })
      */
     private iterable $participations;
 
@@ -1046,6 +1066,16 @@ class Project
     public function getTranches()
     {
         return $this->tranches;
+    }
+
+    /**
+     * @Assert\Count(min="1")
+     *
+     * @return Tranche[]|iterable
+     */
+    public function getSyndicatedTranches(): iterable
+    {
+        return $this->tranches->filter(fn (Tranche $tranche) => $tranche->isSyndicated());
     }
 
     /**
