@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Syndication\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
+use Doctrine\Persistence\ManagerRegistry;
 use Unilend\Core\Entity\Staff;
 use Unilend\Syndication\Entity\{Project, ProjectParticipationMember};
 
