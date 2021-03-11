@@ -37,8 +37,7 @@ class ProgramCreatedListener
                 continue;
             }
             //Auto-create the ProgramChoiceOptions with pre-defined list
-            $programChoiceOptions   = [];
-            // Get all criteria, because we create only the choice options for the field defined in this list.
+            //Get all "list" type criteria, because we create only the choice options for the field defined in this list.
             $listEligibilityCriteria = $this->eligibilityCriteriaRepository->findBy(['type' => EligibilityCriteria::TYPE_LIST]);
             foreach ($listEligibilityCriteria as $eligibilityCriteria) {
                 if (null === $eligibilityCriteria->getPredefinedItems()) {
@@ -46,13 +45,10 @@ class ProgramCreatedListener
                 }
 
                 foreach ($eligibilityCriteria->getPredefinedItems() as $option) {
-                    $programChoiceOptions[] = new ProgramChoiceOption($entity, $option, $eligibilityCriteria);
+                    $programChoiceOption = new ProgramChoiceOption($entity, $option, $eligibilityCriteria);
+                    $em->persist($programChoiceOption);
+                    $uow->computeChangeSet($classMetadata, $programChoiceOption);
                 }
-            }
-
-            foreach ($programChoiceOptions as $programChoiceOption) {
-                $em->persist($programChoiceOption);
-                $uow->computeChangeSet($classMetadata, $programChoiceOption);
             }
         }
     }

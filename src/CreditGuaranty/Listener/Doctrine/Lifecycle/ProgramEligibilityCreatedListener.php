@@ -35,28 +35,34 @@ class ProgramEligibilityCreatedListener
         $classMetadata = $em->getClassMetadata(ProgramEligibilityConfiguration::class);
         foreach ($uow->getScheduledEntityInsertions() as $entity) {
             if ($entity instanceof ProgramEligibility) {
-                $configurations = [];
                 $eligibilityCriteria = $entity->getEligibilityCriteria();
                 // auto-configure the new-created eligibility
                 switch ($eligibilityCriteria->getType()) {
                     // For the "other", the only reason that it's added to the program is to let the target field be required, thus we set always its eligible to true.
                     case EligibilityCriteria::TYPE_OTHER:
-                        $configurations[] = new ProgramEligibilityConfiguration($entity, null, null, true);
+                        $configuration = new ProgramEligibilityConfiguration($entity, null, null, true);
+                        $em->persist($configuration);
+                        $uow->computeChangeSet($classMetadata, $configuration);
                         break;
                     case EligibilityCriteria::TYPE_BOOL:
-                        $configurations[] = new ProgramEligibilityConfiguration($entity, null, EligibilityCriteria::VALUE_BOOL_YES, false);
-                        $configurations[] = new ProgramEligibilityConfiguration($entity, null, EligibilityCriteria::VALUE_BOOL_NO, false);
+                        $configuration = new ProgramEligibilityConfiguration($entity, null, EligibilityCriteria::VALUE_BOOL_YES, false);
+                        $em->persist($configuration);
+                        $uow->computeChangeSet($classMetadata, $configuration);
+
+                        $configuration = new ProgramEligibilityConfiguration($entity, null, EligibilityCriteria::VALUE_BOOL_NO, false);
+                        $em->persist($configuration);
+                        $uow->computeChangeSet($classMetadata, $configuration);
                         break;
                     case EligibilityCriteria::TYPE_LIST:
                         $options = $this->programChoiceOptionRepository->findBy(['program' => $entity->getProgram(), 'eligibilityCriteria' => $eligibilityCriteria]);
                         foreach ($options as $programChoiceOption) {
-                            $configurations[] = new ProgramEligibilityConfiguration($entity, $programChoiceOption, null, false);
+                            $configuration = new ProgramEligibilityConfiguration($entity, $programChoiceOption, null, false);
+                            $em->persist($configuration);
+                            $uow->computeChangeSet($classMetadata, $configuration);
                         }
                         break;
-                }
-                foreach ($configurations as $programEligibilityConfiguration) {
-                    $em->persist($programEligibilityConfiguration);
-                    $uow->computeChangeSet($classMetadata, $programEligibilityConfiguration);
+                    default:
+                        throw new \UnexpectedValueException('The field type is not supported.');
                 }
             }
         }
