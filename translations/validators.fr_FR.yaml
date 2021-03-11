@@ -129,7 +129,7 @@ CreditGuaranty:
             invalid: La value n'est pas valable.
             program:
                 invalid: Vous ne pouvez pas mettre programChoiceOption d'un autre program.
-            fieldAlias:
+            field:
                 invalid: Vous ne pouvez pas mettre programChoiceOption d'un autre champ.
         value:
             invalid: La value n'est pas valable.

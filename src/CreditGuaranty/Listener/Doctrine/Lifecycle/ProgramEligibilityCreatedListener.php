@@ -48,7 +48,7 @@ class ProgramEligibilityCreatedListener
                         $configurations[] = new ProgramEligibilityConfiguration($entity, null, EligibilityCriteria::VALUE_BOOL_NO, false);
                         break;
                     case EligibilityCriteria::TYPE_LIST:
-                        $options = $this->programChoiceOptionRepository->findBy(['program' => $entity->getProgram(), 'fieldAlias' => $eligibilityCriteria->getFieldAlias()]);
+                        $options = $this->programChoiceOptionRepository->findBy(['program' => $entity->getProgram(), 'eligibilityCriteria' => $eligibilityCriteria]);
                         foreach ($options as $programChoiceOption) {
                             $configurations[] = new ProgramEligibilityConfiguration($entity, $programChoiceOption, null, false);
                         }

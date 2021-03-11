@@ -194,8 +194,8 @@ class ProgramEligibilityConfiguration
                 $violationPaths[] = 'programChoiceOption.program';
             }
 
-            if ($this->getProgramChoiceOption()->getFieldAlias() !== $this->getProgramEligibility()->getEligibilityCriteria()->getFieldAlias()) {
-                $violationPaths[] = 'programChoiceOption.fieldAlias';
+            if ($this->getProgramChoiceOption()->getEligibilityCriteria() !== $this->getProgramEligibility()->getEligibilityCriteria()) {
+                $violationPaths[] = 'programChoiceOption.field';
             }
         }
 

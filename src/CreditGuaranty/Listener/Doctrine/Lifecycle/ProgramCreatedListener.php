@@ -6,8 +6,7 @@ namespace Unilend\CreditGuaranty\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
-use Unilend\Core\Entity\Constant\AbstractEnum;
-use Unilend\CreditGuaranty\Entity\{Constant\EligibilityFieldAlias, Program, ProgramChoiceOption};
+use Unilend\CreditGuaranty\Entity\{ConstantList\EligibilityCriteria, Program, ProgramChoiceOption};
 use Unilend\CreditGuaranty\Repository\EligibilityCriteriaRepository;
 
 class ProgramCreatedListener
@@ -40,19 +39,14 @@ class ProgramCreatedListener
             //Auto-create the ProgramChoiceOptions with pre-defined list
             $programChoiceOptions   = [];
             // Get all criteria, because we create only the choice options for the field defined in this list.
-            $allEligibilityCriteria = $this->eligibilityCriteriaRepository->findAll();
-            $preDefinedLists        = EligibilityFieldAlias::getPredefinedListFields();
-            foreach ($allEligibilityCriteria as $eligibilityCriteria) {
-                $fieldAlias = $eligibilityCriteria->getFieldAlias();
-                if (false === array_key_exists($fieldAlias, $preDefinedLists)) {
+            $listEligibilityCriteria = $this->eligibilityCriteriaRepository->findBy(['type' => EligibilityCriteria::TYPE_LIST]);
+            foreach ($listEligibilityCriteria as $eligibilityCriteria) {
+                if (null === $eligibilityCriteria->getPredefinedItems()) {
                     continue;
                 }
 
-                $constantClass = $preDefinedLists[$fieldAlias];
-                if (is_subclass_of($constantClass, AbstractEnum::class)) {
-                    foreach ($constantClass::getConstList() as $option) {
-                        $programChoiceOptions[] = new ProgramChoiceOption($entity, $option, $fieldAlias);
-                    }
+                foreach ($eligibilityCriteria->getPredefinedItems() as $option) {
+                    $programChoiceOptions[] = new ProgramChoiceOption($entity, $option, $eligibilityCriteria);
                 }
             }
 

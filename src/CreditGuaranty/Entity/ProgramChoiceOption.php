@@ -10,9 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Constant\AbstractEnum;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\CreditGuaranty\Entity\Constant\EligibilityFieldAlias;
+use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
 
 /**
  * @ApiResource(
@@ -39,12 +38,12 @@ use Unilend\CreditGuaranty\Entity\Constant\EligibilityFieldAlias;
  * @ORM\Table(
  *     name="credit_guaranty_program_choice_option",
  *     uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"description", "field_alias", "id_program"})
+ *          @ORM\UniqueConstraint(columns={"description", "id_eligibility_criteria", "id_program"})
  *      }
  * )
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity({"description", "fieldAlias", "program"})
+ * @UniqueEntity({"description", "eligibilityCriteria", "program"})
  */
 class ProgramChoiceOption
 {
@@ -67,25 +66,24 @@ class ProgramChoiceOption
     private string $description;
 
     /**
-     * @ORM\Column(length=100)
-     *
-     * @Assert\Choice(callback={EligibilityFieldAlias::class, "getListFields"})
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria")
+     * @ORM\JoinColumn(name="id_eligibility_criteria", nullable=false)
      *
      * @Groups({"creditGuaranty:programChoiceOption:read"})
      */
-    private string $fieldAlias;
+    private EligibilityCriteria $eligibilityCriteria;
 
     /**
-     * @param Program $program
-     * @param string  $description
-     * @param string  $fieldAlias
+     * @param Program             $program
+     * @param string              $description
+     * @param EligibilityCriteria $eligibilityCriteria
      */
-    public function __construct(Program $program, string $description, string $fieldAlias)
+    public function __construct(Program $program, string $description, EligibilityCriteria $eligibilityCriteria)
     {
-        $this->program     = $program;
-        $this->description = $description;
-        $this->fieldAlias  = $fieldAlias;
-        $this->added       = new \DateTimeImmutable();
+        $this->program             = $program;
+        $this->description         = $description;
+        $this->eligibilityCriteria = $eligibilityCriteria;
+        $this->added               = new \DateTimeImmutable();
     }
 
     /**
@@ -117,11 +115,11 @@ class ProgramChoiceOption
     }
 
     /**
-     * @return string
+     * @return EligibilityCriteria
      */
-    public function getFieldAlias(): string
+    public function getEligibilityCriteria(): EligibilityCriteria
     {
-        return $this->fieldAlias;
+        return $this->eligibilityCriteria;
     }
 
     /**
@@ -131,15 +129,10 @@ class ProgramChoiceOption
      */
     public function isDescriptionValid(): bool
     {
-        $preDefinedLists = EligibilityFieldAlias::getPredefinedListFields();
-        if (false === array_key_exists($this->getFieldAlias(), $preDefinedLists)) {
+        if (EligibilityCriteria::TYPE_LIST === $this->getEligibilityCriteria()->getType() && null === $this->getEligibilityCriteria()->getPredefinedItems()) {
             return true;
         }
-        $constantClass = $preDefinedLists[$this->getFieldAlias()];
-        if (is_subclass_of($constantClass, AbstractEnum::class)) {
-            return in_array($this->description, $constantClass::getConstList(), true);
-        }
 
-        return true;
+        return in_array($this->description, $this->getEligibilityCriteria()->getPredefinedItems(), true);
     }
 }

@@ -23,7 +23,7 @@ class EligibilityCriteria
 {
     use PublicizeIdentityTrait;
 
-    // The criteria contains a list of items defined later by the user. The eligibility is configured on each item.
+    // The criteria contains a list of items pre-defined or defined later by the user. The eligibility is configured on each item.
     public const TYPE_LIST = 'list';
     // It is a special version of "list". The listed items are booleans (yes or no).
     public const TYPE_BOOL = 'bool';
@@ -67,6 +67,15 @@ class EligibilityCriteria
     private bool $comparable;
 
     /**
+     * If the filed is a predefined list, we put its items here
+     *
+     * @ORM\Column(type="json", nullable=true)
+     *
+     * @Groups({"creditGuaranty:eligibilityCriteria:read"})
+     */
+    private ?array $predefinedItems;
+
+    /**
      * If comparable, what is its unit is. We can only compare the value of the same unit. It can also be used to build the translation of a unit.
      *
      * @ORM\Column(length=20, nullable=true)
@@ -82,8 +91,9 @@ class EligibilityCriteria
      * @param string      $targetPropertyAccessPath
      * @param bool        $comparable
      * @param string|null $unit
+     * @param array|null  $predefinedItems
      */
-    public function __construct(string $fieldAlias, string $category, string $type, string $targetPropertyAccessPath, bool $comparable, ?string $unit = null)
+    public function __construct(string $fieldAlias, string $category, string $type, string $targetPropertyAccessPath, bool $comparable, ?string $unit, ?array $predefinedItems)
     {
         $this->fieldAlias               = $fieldAlias;
         $this->category                 = $category;
@@ -91,6 +101,7 @@ class EligibilityCriteria
         $this->targetPropertyAccessPath = $targetPropertyAccessPath;
         $this->comparable               = $comparable;
         $this->unit                     = $unit;
+        $this->predefinedItems          = $predefinedItems;
     }
 
     /**
@@ -139,5 +150,13 @@ class EligibilityCriteria
     public function getUnit(): ?string
     {
         return $this->unit;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getPredefinedItems(): ?array
+    {
+        return $this->predefinedItems;
     }
 }

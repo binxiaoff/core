@@ -31,7 +31,7 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  * @ORM\Table(
  *     name="credit_guaranty_program_grade_allocation",
  *     uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"program", "grade"})
+ *          @ORM\UniqueConstraint(columns={"id_program", "grade"})
  *      }
  * )
  * @ORM\HasLifecycleCallbacks

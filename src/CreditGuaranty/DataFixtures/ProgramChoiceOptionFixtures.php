@@ -41,9 +41,10 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
         foreach ($programReferences as $programReference) {
             /** @var Program $program */
             $program = $this->getReference($programReference);
+            $borrowerType = $this->eligibilityCriteriaRepository->findOneBy(['fieldAlias' => EligibilityFieldAlias::BORROWER_TYPE]);
 
-            $manager->persist(new ProgramChoiceOption($program, 'Emprunteur de plus de 7 ans', EligibilityFieldAlias::BORROWER_TYPE));
-            $manager->persist(new ProgramChoiceOption($program, 'Emprunteur de moins de 7 ans', EligibilityFieldAlias::BORROWER_TYPE));
+            $manager->persist(new ProgramChoiceOption($program, 'Emprunteur de plus de 7 ans', $borrowerType));
+            $manager->persist(new ProgramChoiceOption($program, 'Emprunteur de moins de 7 ans', $borrowerType));
         }
         $manager->flush();
     }

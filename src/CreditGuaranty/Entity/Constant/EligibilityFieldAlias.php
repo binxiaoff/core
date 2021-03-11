@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity\Constant;
 
-use Unilend\Core\Entity\Constant\{AbstractEnum, LegalForm, Tranche\LoanType};
+use Unilend\Core\Entity\Constant\AbstractEnum;
 
 /**
- * For the convenient of development, the constants is synchronised with EligibilityCriteria
- * todo: Maybe the entity EligibilityCriteria is not necessary.
+ * todo: this file can be delete ?
  */
 class EligibilityFieldAlias extends AbstractEnum
 {
@@ -33,29 +32,4 @@ class EligibilityFieldAlias extends AbstractEnum
     public const BORROWER_IDENTITY   = 'borrower_identity';
     public const BENEFICIARY_ADDRESS = 'beneficiary_address';
     public const TAX_NUMBER          = 'tax_number';
-
-    /**
-     * @return string[]
-     */
-    public static function getPredefinedListFields(): array
-    {
-        return [
-            self::LEGAL_FORM => LegalForm::class,
-            self::LOAN_TYPE => LoanType::class,
-        ];
-    }
-
-    /**
-     * @return string[]
-     */
-    public static function getListFields(): array
-    {
-        return [
-            self::BORROWER_TYPE,
-            self::INVESTMENT_THEMATIC,
-            self::FUNDING_OBJECT,
-            self::LEGAL_FORM,
-            self::LOAN_TYPE,
-        ];
-    }
 }
