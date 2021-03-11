@@ -108,7 +108,7 @@ class Participation
      *
      * @ORM\Column(type="bitmask", nullable=false)
      *
-     * @Assert\Expression(expression="false === (0 !== value && this.isSecondary())", message="Agency.Participant.responsabilities.secondary")
+     * @Assert\Expression(expression="false === (0 === value && this.isSecondary())", message="Agency.Participation.responsabilities.secondary")
      * @Assert\Expression(expression="false === (this.isArranger() && this.isDeputyArranger())", message="Agency.Participation.responsabilities.arranger")
      * @Assert\Expression(
      *     expression="(this.isAgent() && (this.getParticipant() === this.getProject().getAgent())) || (false === this.isAgent())",
