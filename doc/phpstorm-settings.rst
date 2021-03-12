@@ -1,3 +1,5 @@
+`Return to index <index.rst>`_
+
 .. _phpstorm-settings:
 ======================
 PhpStorm Settings
