@@ -139,3 +139,8 @@ CreditGuaranty:
     ProgramGradeAllocation:
         grade:
             invalid: Le grade choisi n'est pas valable.
+
+    ProgramEligibilityConfigurationInput:
+        programEligibility:
+            type:
+                onlyList: Vous ne pouvez que créer une configuration du type "list" pour l'éligibilité.

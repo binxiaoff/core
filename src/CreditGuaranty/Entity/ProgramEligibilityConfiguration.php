@@ -12,6 +12,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
 use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
 
 /**
@@ -29,7 +30,9 @@ use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
  *      },
  *      collectionOperations={
  *          "get",
- *          "post"
+ *          "post": {
+ *              "input"=ProgramEligibilityConfigurationInput::class
+ *          }
  *      }
  * )
  *
@@ -64,7 +67,7 @@ class ProgramEligibilityConfiguration
      * $programChoiceOption and $value cannot be both filed at the same time.
      *
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
-     * @ORM\JoinColumn(name="id_program_choice_option")
+     * @ORM\JoinColumn(name="id_program_choice_option", onDelete="CASCADE")
      *
      * @Groups({"creditGuaranty:programEligibilityConfiguration:read"})
      */

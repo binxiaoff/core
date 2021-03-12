@@ -6,6 +6,7 @@ namespace Unilend\CreditGuaranty\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
 
 /**
@@ -22,5 +23,17 @@ class ProgramChoiceOptionRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $managerRegistry)
     {
         parent::__construct($managerRegistry, ProgramChoiceOption::class);
+    }
+
+    /**
+     * @param ProgramChoiceOption $programChoiceOption
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function save(ProgramChoiceOption $programChoiceOption): void
+    {
+        $this->getEntityManager()->persist($programChoiceOption);
+        $this->getEntityManager()->flush();
     }
 }
