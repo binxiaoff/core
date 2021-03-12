@@ -54,7 +54,7 @@ class ProgramGradeAllocation
     /**
      * @ORM\Column(length=10)
      *
-     * @Assert\Choice(
+     * @Assert\Expression(
      *      "this.isGradeValid()",
      *      message="CreditGuaranty.ProgramGradeAllocation.grade.invalid"
      * )
@@ -142,9 +142,9 @@ class ProgramGradeAllocation
     {
         switch ($this->program->getRatingType()) {
             case CARatingType::CA_INTERNAL_RETAIL_RATING:
-                return \in_array($this->program, CAInternalRetailRating::getConstList());
+                return \in_array($this->grade, CAInternalRetailRating::getConstList());
             case CARatingType::CA_INTERNAL_RATING:
-                return \in_array($this->program, CAInternalRating::getConstList());
+                return \in_array($this->grade, CAInternalRating::getConstList());
             default:
                 return false;
         }
