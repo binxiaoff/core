@@ -130,7 +130,7 @@ class Participation
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
-     * @Assert\Expression(expression="(null === value && false === this.isAgent()) || (null !== value && this.isAgent())", message="Agency.Participant.commission.agent")
+     * @Assert\Expression(expression="(null === value && false === this.isAgent()) || (null !== value && this.isAgent())", message="Agency.Participation.commission.agent")
      *
      * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
      */
