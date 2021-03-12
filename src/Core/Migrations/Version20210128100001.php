@@ -12,7 +12,10 @@ final class Version20210128100001 extends AbstractMigration
     // Previous roles
     public const DUTY_STAFF_MANAGER    = 'DUTY_STAFF_MANAGER';
     public const DUTY_STAFF_ADMIN      = 'DUTY_STAFF_ADMIN';
-    public const DUTY_STAFF_OPERATOR      = 'DUTY_STAFF_OPERATOR';
+    public const DUTY_STAFF_OPERATOR   = 'DUTY_STAFF_OPERATOR';
+    public const DUTY_STAFF_AUDITOR    = 'DUTY_STAFF_AUDITOR';
+    public const DUTY_STAFF_ACCOUNTANT = 'DUTY_STAFF_ACCOUNTANT';
+    public const DUTY_STAFF_SIGNATORY  = 'DUTY_STAFF_SIGNATORY';
 
     public function getDescription(): string
     {
@@ -25,8 +28,8 @@ final class Version20210128100001 extends AbstractMigration
         $uuid = "LOWER(
             CONCAT(
                 HEX(RANDOM_BYTES(4)), '-',
-                HEX(RANDOM_BYTES(2)), '-', 
-                '4', SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '-', 
+                HEX(RANDOM_BYTES(2)), '-',
+                '4', SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '-',
                 CONCAT(HEX(FLOOR(ASCII(RANDOM_BYTES(1)) / 64)+8), SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3)), '-',
                 HEX(RANDOM_BYTES(6))
             )
@@ -53,6 +56,9 @@ final class Version20210128100001 extends AbstractMigration
         $this->addSql('DROP INDEX IDX_14EFD2729122A03F ON core_staff');
         $this->addSql('DROP INDEX UNIQ_14EFD2726B3CA4B9122A03F ON core_staff');
         $this->addSql('ALTER TABLE core_staff ADD manager TINYINT(1) NOT NULL, ADD arrangement_project_creation_permission TINYINT(1) NOT NULL, ADD agency_project_creation_permission TINYINT(1) NOT NULL, ADD id_team INT NOT NULL');
+        $this->addSql("UPDATE core_staff SET arrangement_project_creation_permission = 1 WHERE JSON_SEARCH(roles, 'one','" . static::DUTY_STAFF_ADMIN . "') IS NOT NULL");
+        $this->addSql("UPDATE core_staff SET arrangement_project_creation_permission = 1 WHERE JSON_SEARCH(roles, 'one','" . static::DUTY_STAFF_MANAGER . "') IS NOT NULL");
+        $this->addSql("UPDATE core_staff SET arrangement_project_creation_permission = 1 WHERE JSON_SEARCH(roles, 'one','" . static::DUTY_STAFF_OPERATOR . "') IS NOT NULL");
         $this->addSql('UPDATE core_staff JOIN core_company cc on cc.id = core_staff.id_company SET id_team = cc.id_root_team');
         $this->addSql("UPDATE core_staff SET manager = 1 WHERE JSON_SEARCH(roles, 'one','" . static::DUTY_STAFF_ADMIN . "') IS NOT NULL");
         $this->addSql("UPDATE core_staff SET manager = 1 WHERE JSON_SEARCH(roles, 'one','" . static::DUTY_STAFF_MANAGER . "') IS NOT NULL");
