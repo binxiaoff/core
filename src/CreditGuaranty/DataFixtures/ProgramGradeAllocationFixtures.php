@@ -55,14 +55,11 @@ class ProgramGradeAllocationFixtures extends AbstractFixtures implements Depende
     private function buildProgramGradeAllocationFixtures(Program $program, ObjectManager $manager)
     {
         $maxAllocationRates = ['0.10', '0.20', '0.30', '0.40', '0.50', '0.60', '0.70', '0.80', '0.90'];
-        $selectedGrades = [];
-        for ($i = 1; $i <= random_int(3, 8); $i++) {
-            $grades = CARatingType::CA_INTERNAL_RETAIL_RATING === $program->getRatingType() ? CAInternalRetailRating::getConstList() : CAInternalRating::getConstList();
-            $selectedGrades[] = $grades[array_rand($grades)];
-        }
+        $grades             = CARatingType::CA_INTERNAL_RETAIL_RATING === $program->getRatingType() ? CAInternalRetailRating::getConstList() : CAInternalRating::getConstList();
+        $nbGrades           = count($grades);
 
-        foreach (array_unique($selectedGrades) as $grade) {
-            $programGradeAllocation = new ProgramGradeAllocation($program, $grade, $maxAllocationRates[array_rand($maxAllocationRates)]);
+        for ($i = 0; $i <= random_int(1, $nbGrades - 1); $i++) {
+            $programGradeAllocation = new ProgramGradeAllocation($program, array_values($grades)[$i], $maxAllocationRates[array_rand($maxAllocationRates)]);
             $manager->persist($programGradeAllocation);
         }
     }

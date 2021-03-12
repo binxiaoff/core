@@ -53,6 +53,8 @@ class ProgramChoiceOption
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
      * @ORM\JoinColumn(name="id_program", nullable=false)
+     *
+     * @Groups({"creditGuaranty:programChoiceOption:read"})
      */
     private Program $program;
 
