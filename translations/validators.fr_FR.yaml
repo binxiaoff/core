@@ -23,8 +23,8 @@ Agency:
 
     Covenant:
         covenantRules:
-            financialNature: Le nombre de règle n'est pas correct
-            otherNature: Il ne peux y avoir de règle pour cette nature d'engagement
+            financialNature: Le nombre de règles n'est pas correct
+            otherNature: Il ne peut y avoir de règle pour cette nature d'engagement
             missingYear: Il manque la règle pour l'année {{ missingYear }}
 
     CovenantRule:

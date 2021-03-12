@@ -26,7 +26,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *
  * @ApiResource(
  *     attributes={
- *        "validation_groups": {Covenant::class, "getValidationGroups"}
+ *        "validation_groups": {Covenant::class, "getCurrentValidationGroups"}
  *     },
  *     normalizationContext={
  *          "groups": {
@@ -38,7 +38,9 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *          }
  *     },
  *     itemOperations={
- *         "get",
+ *         "get": {
+ *              "security": "is_granted('view', object)"
+ *         },
  *         "patch": {
  *             "denormalization_context": {
  *                  "groups": {"agency:covenant:update"}
@@ -68,10 +70,10 @@ class Covenant
     use ConstantsAwareTrait;
     use TimestampableAddedOnlyTrait;
 
-    public const NATURE_DOCUMENT           = "document";
-    public const NATURE_CONTROL            = "control";
-    public const NATURE_FINANCIAL_ELEMENT  = "financial_element";
-    public const NATURE_FINANCIAL_RATIO    = "financial_ratio";
+    public const NATURE_DOCUMENT           = 'document';
+    public const NATURE_CONTROL            = 'control';
+    public const NATURE_FINANCIAL_ELEMENT  = 'financial_element';
+    public const NATURE_FINANCIAL_RATIO    = 'financial_ratio';
 
     public const RECURRENCE_3M  = 'P3M';
     public const RECURRENCE_6M  = 'P6M';
@@ -601,7 +603,7 @@ class Covenant
         // financial covenant must have 1 rule per year (including starting year)
         if ($this->isFinancial()) {
             foreach (range($this->getStartYear(), $this->getEndYear()) as $year) {
-                if (false === $this->covenantRules[$year] ?? false) {
+                if (false === isset($this->covenantRules[$year])) {
                     $context->buildViolation('Agency.Covenant.covenantRules.missingYear')
                         ->atPath('covenantRules')
                         ->setParameter('{{ missingYear }}', $year)
