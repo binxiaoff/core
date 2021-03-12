@@ -1,3 +1,5 @@
+`Return to index <../index.rst>`_
+
 Doctrine migration rollup
 =========================
 
