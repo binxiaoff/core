@@ -232,4 +232,12 @@ class Team
 
         return $this;
     }
+
+    /**
+     * @return CompanyGroupTag[]
+     */
+    public function getAvailableCompanyGroupTags()
+    {
+        return $this->getCompany()->getCompanyGroupTags();
+    }
 }
