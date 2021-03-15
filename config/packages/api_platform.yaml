@@ -9,7 +9,6 @@ api_platform:
         paths: ['%kernel.project_dir%/src/Syndication/Entity', '%kernel.project_dir%/src/Core/Entity']
     patch_formats:
         json:     ['application/merge-patch+json']
-        jsonld:   ['application/ld+json']
     swagger:
         api_keys:
             apiKey:
