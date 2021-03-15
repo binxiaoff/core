@@ -152,6 +152,9 @@ class Staff implements TraceableStatusAwareInterface
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
+     * @Assert\All({
+     *    @Assert\Choice(callback="getAvailableCompanyGroupTags")
+     * })
      * @Assert\Unique
      */
     private Collection $companyGroupTags;
@@ -301,7 +304,7 @@ class Staff implements TraceableStatusAwareInterface
      */
     public function getAvailableCompanyGroupTags(): array
     {
-        return $this->team->getAvailableCompanyGroupTags();
+        return $this->getCompany()->getAvailableCompanyGroupTags();
     }
 
     /**

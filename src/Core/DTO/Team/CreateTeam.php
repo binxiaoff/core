@@ -30,33 +30,12 @@ class CreateTeam
     public Team $parent;
 
     /**
-     * @var CompanyGroupTag[]|iterable
-     *
-     * @Groups({"team:create"})
-     *
-     * @Assert\All(
-     *    @Assert\Choice(callback="getAvailableCompanyGroupTags")
-     * )
+     * @param string $name
+     * @param Team   $parent
      */
-    public iterable $companyGroupTags;
-
-    /**
-     * @param string   $name
-     * @param Team     $parent
-     * @param iterable $companyGroupTags
-     */
-    public function __construct(string $name, Team $parent, iterable $companyGroupTags = [])
+    public function __construct(string $name, Team $parent)
     {
         $this->name = $name;
         $this->parent = $parent;
-        $this->companyGroupTags = $companyGroupTags;
-    }
-
-    /**
-     * @return iterable
-     */
-    public function getAvailableCompanyGroupTags(): iterable
-    {
-        return $this->parent->getAvailableCompanyGroupTags();
     }
 }

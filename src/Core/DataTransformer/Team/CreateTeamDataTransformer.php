@@ -30,13 +30,7 @@ class CreateTeamDataTransformer implements DataTransformerInterface
     {
         $this->validator->validate($object);
 
-        $team = Team::createTeam($object->name, $object->parent);
-
-        foreach ($object->companyGroupTags as $companyGroupTag) {
-            $team->addCompanyGroupTag($companyGroupTag);
-        }
-
-        return $team;
+        return Team::createTeam($object->name, $object->parent);
     }
 
     /**
