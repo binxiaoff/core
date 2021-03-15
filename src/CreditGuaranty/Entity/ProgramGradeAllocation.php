@@ -64,11 +64,11 @@ class ProgramGradeAllocation
     private string $grade;
 
     /**
-     * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
+     * @ORM\Column(type="decimal", precision=3, scale=2)
      *
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
-     * @Assert\Range(min="0", max="0.9999")
+     * @Assert\Range(min="0", max="1")
      *
      * @Groups({"creditGuaranty:programGradeAllocation:read", "creditGuaranty:programGradeAllocation:write"})
      */

@@ -8,7 +8,7 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation;
+use Unilend\CreditGuaranty\Entity\{Program, ProgramBorrowerTypeAllocation};
 use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
 
 class ProgramBorrowerTypeAllocationFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -34,7 +34,7 @@ class ProgramBorrowerTypeAllocationFixtures extends AbstractFixtures implements 
      */
     public function load(ObjectManager $manager): void
     {
-        $maxAllocationRates = ['0.10', '0.20', '0.30', '0.40', '0.50', '0.60', '0.70', '0.80', '0.90'];
+        $maxAllocationRates = ['0.10', '0.20', '0.30', '0.40', '0.50', '0.60', '0.70', '0.80', '0.90', '1'];
         $choiceOptions      = $this->programChoiceOptionRepository->findAll();
         $nbChoiceOptions    = count($choiceOptions);
         $programReferences  = [

@@ -52,18 +52,18 @@ class ProgramBorrowerTypeAllocation
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
-     * @ORM\JoinColumn(name="id_program_choice_option", nullable=false)
+     * @ORM\JoinColumn(name="id_program_choice_option", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"creditGuaranty:programBorrowerTypeAllocation:read", "creditGuaranty:programBorrowerTypeAllocation:write"})
      */
     private ProgramChoiceOption $programChoiceOption;
 
     /**
-     * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
+     * @ORM\Column(type="decimal", precision=3, scale=2)
      *
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
-     * @Assert\Range(min="0", max="0.9999")
+     * @Assert\Range(min="0", max="1")
      *
      * @Groups({"creditGuaranty:programBorrowerTypeAllocation:read", "creditGuaranty:programBorrowerTypeAllocation:write"})
      */
