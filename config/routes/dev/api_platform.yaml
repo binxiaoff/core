@@ -1,0 +1,6 @@
+api_doc:
+  path : "/docs.{_format}"
+  defaults:
+    _api_respond: true
+    _format: ~
+  controller: "@api_platform.action.documentation"
