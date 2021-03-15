@@ -11,6 +11,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
 
 /**
  * @ApiResource(
@@ -22,7 +23,9 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *          "delete": {"security": "is_granted('delete', object)"}
  *      },
  *      collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)"}
+ *         "post": {
+ *              "input"=ProgramBorrowerTypeAllocationInput::class
+ *          }
  *     }
  * )
  *
