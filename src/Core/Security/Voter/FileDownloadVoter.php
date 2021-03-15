@@ -38,7 +38,7 @@ class FileDownloadVoter extends AbstractEntityVoter
      * @param ProjectFileRepository          $projectFileRepository
      * @param ProjectRepository              $projectRepository
      * @param ProjectParticipationRepository $projectParticipationRepository
-     * @param MessageFileRepository                $messageFileRepository
+     * @param MessageFileRepository          $messageFileRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
@@ -135,11 +135,11 @@ class FileDownloadVoter extends AbstractEntityVoter
         switch ($project->getCurrentStatus()->getStatus()) {
             case ProjectStatus::STATUS_INTEREST_EXPRESSION:
             case ProjectStatus::STATUS_PARTICIPANT_REPLY:
-                return $participation && $this->authorizationChecker->isGranted($participation, ProjectParticipationVoter::ATTRIBUTE_VIEW);
+                return $participation && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $participation);
             case ProjectStatus::STATUS_ALLOCATION:
             case ProjectStatus::STATUS_CONTRACTUALISATION:
             case ProjectStatus::STATUS_SYNDICATION_FINISHED:
-                return $participation && $this->authorizationChecker->isGranted($participation, ProjectParticipationVoter::ATTRIBUTE_VIEW)
+                return $participation && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $participation)
                     && ($this->hasValidatedOffer($participation) || $this->isAddedBeforeOfferCollected($project, $fileDownload->getFileVersion()));
             default:
                 throw new LogicException('This code should not be reached');
