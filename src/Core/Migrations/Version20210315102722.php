@@ -14,7 +14,7 @@ final class Version20210315102722 extends AbstractMigration
 {
     public function getDescription() : string
     {
-        return '';
+        return 'CALS-3255 : change max_allocation_rate property';
     }
 
     public function up(Schema $schema) : void
