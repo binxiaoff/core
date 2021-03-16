@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Unilend\CreditGuaranty\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\Persistence\ManagerRegistry;
 use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
 
 /**
