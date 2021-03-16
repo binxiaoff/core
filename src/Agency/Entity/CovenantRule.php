@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -17,6 +18,17 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  * @ORM\Entity
  *
  * @UniqueEntity(fields={"year", "covenant"}, message="Agency.CovenantRule.yearUnicity")
+ *
+ * @ApiResource(
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     },
+ *     collectionOperations={}
+ * )
  */
 class CovenantRule
 {
