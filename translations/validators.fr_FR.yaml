@@ -49,7 +49,7 @@ Agency:
             otherCovenant: Cette valeur doit être vide pour les engagements de nature "Autre"
         borrowerInputDate:
             otherCovenant: Cette valeur doit être vide pour les engagements de nature "Autre"
-            borrowerInput: Cette valeur doit être synchronisée avec l'état de la valeur demander à l'emprunteur
+            borrowerInput: Cette valeur doit être synchronisée avec l'état de la valeur demandée à l'emprunteur
         validatonDate:
             validation: Cette valeur doit être synchronisée avec l'état de la validation de l'agent
         breach:

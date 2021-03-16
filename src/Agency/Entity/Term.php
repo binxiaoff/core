@@ -110,7 +110,7 @@ class Term
     private ?string $borrowerComment;
 
     /**
-     * Used for financial covenant, represent the input of the borrower fot the given term
+     * Used for financial covenant, represent the input of the borrower for the given term
      * Must be null for other covenant
      *
      * @var string|null
