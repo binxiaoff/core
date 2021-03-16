@@ -29,13 +29,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *        "validation_groups": {Covenant::class, "getCurrentValidationGroups"}
  *     },
  *     normalizationContext={
- *          "groups": {
- *              "agency:covenant:read",
- *              "agency:covenantRule:read",
- *              "agency:inequality:read",
- *              "agency:marginRule:read",
- *              "agency:marginImpact:read"
- *          }
+ *          "groups": {"agency:covenant:read"}
  *     },
  *     itemOperations={
  *         "get": {
@@ -692,7 +686,7 @@ class Covenant
         $validationGroups = ['Default', 'Covenant'];
 
         if ($covenant->isPublished()) {
-            $validationGroups[] = ['published'];
+            $validationGroups[] = 'published';
         }
 
         return $validationGroups;
