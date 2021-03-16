@@ -164,7 +164,7 @@ class Term
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Assert\GreaterThanOrEqual("startDate")
+     * @Assert\GreaterThanOrEqual(propertyPath="startDate")
      * @Assert\Expression(
      *     expression="(null === value && null === this.getValidation()) || (null !== value && null !== this.getValidation())",
      *     message="Agency.Term.validationDate.validation"
