@@ -6,7 +6,7 @@ namespace Unilend\CreditGuaranty\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
-use Unilend\CreditGuaranty\Entity\{ConstantList\EligibilityCriteria, ProgramEligibility, ProgramEligibilityConfiguration};
+use Unilend\CreditGuaranty\Entity\{FieldConfiguration, ProgramEligibility, ProgramEligibilityConfiguration};
 use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
 
 class ProgramEligibilityCreatedListener
@@ -35,26 +35,26 @@ class ProgramEligibilityCreatedListener
         $classMetadata = $em->getClassMetadata(ProgramEligibilityConfiguration::class);
         foreach ($uow->getScheduledEntityInsertions() as $entity) {
             if ($entity instanceof ProgramEligibility) {
-                $eligibilityCriteria = $entity->getEligibilityCriteria();
+                $fieldConfiguration = $entity->getFieldConfiguration();
                 // auto-configure the new-created eligibility
-                switch ($eligibilityCriteria->getType()) {
+                switch ($fieldConfiguration->getType()) {
                     // For the "other", the only reason that it's added to the program is to let the target field be required, thus we set always its eligible to true.
-                    case EligibilityCriteria::TYPE_OTHER:
+                    case FieldConfiguration::TYPE_OTHER:
                         $configuration = new ProgramEligibilityConfiguration($entity, null, null, true);
                         $em->persist($configuration);
                         $uow->computeChangeSet($classMetadata, $configuration);
                         break;
-                    case EligibilityCriteria::TYPE_BOOL:
-                        $configuration = new ProgramEligibilityConfiguration($entity, null, EligibilityCriteria::VALUE_BOOL_YES, false);
+                    case FieldConfiguration::TYPE_BOOL:
+                        $configuration = new ProgramEligibilityConfiguration($entity, null, FieldConfiguration::VALUE_BOOL_YES, false);
                         $em->persist($configuration);
                         $uow->computeChangeSet($classMetadata, $configuration);
 
-                        $configuration = new ProgramEligibilityConfiguration($entity, null, EligibilityCriteria::VALUE_BOOL_NO, false);
+                        $configuration = new ProgramEligibilityConfiguration($entity, null, FieldConfiguration::VALUE_BOOL_NO, false);
                         $em->persist($configuration);
                         $uow->computeChangeSet($classMetadata, $configuration);
                         break;
-                    case EligibilityCriteria::TYPE_LIST:
-                        $options = $this->programChoiceOptionRepository->findBy(['program' => $entity->getProgram(), 'eligibilityCriteria' => $eligibilityCriteria]);
+                    case FieldConfiguration::TYPE_LIST:
+                        $options = $this->programChoiceOptionRepository->findBy(['program' => $entity->getProgram(), 'fieldConfiguration' => $fieldConfiguration]);
                         foreach ($options as $programChoiceOption) {
                             $configuration = new ProgramEligibilityConfiguration($entity, $programChoiceOption, null, false);
                             $em->persist($configuration);

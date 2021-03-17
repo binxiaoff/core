@@ -13,7 +13,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
-use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
 
 /**
  * @ApiResource(
@@ -156,10 +155,10 @@ class ProgramEligibilityConfiguration
      */
     public function validateConfiguration(ExecutionContextInterface $context): void
     {
-        $criteriaType   = $this->getProgramEligibility()->getEligibilityCriteria()->getType();
+        $criteriaType   = $this->getProgramEligibility()->getFieldConfiguration()->getType();
         $violationPaths = [];
         switch ($criteriaType) {
-            case EligibilityCriteria::TYPE_OTHER:
+            case FieldConfiguration::TYPE_OTHER:
                 if (null !== $this->value) {
                     $violationPaths[] = 'value';
                 }
@@ -167,7 +166,7 @@ class ProgramEligibilityConfiguration
                     $violationPaths[] = 'programChoiceOption';
                 }
                 break;
-            case EligibilityCriteria::TYPE_BOOL:
+            case FieldConfiguration::TYPE_BOOL:
                 if (null === $this->value) {
                     $violationPaths[] = 'value';
                 }
@@ -175,7 +174,7 @@ class ProgramEligibilityConfiguration
                     $violationPaths[] = 'programChoiceOption';
                 }
                 break;
-            case EligibilityCriteria::TYPE_LIST:
+            case FieldConfiguration::TYPE_LIST:
                 if (null !== $this->value) {
                     $violationPaths[] = 'value';
                 }
@@ -184,7 +183,7 @@ class ProgramEligibilityConfiguration
                 }
                 break;
             default:
-                $context->buildViolation('CreditGuaranty.ProgramEligibility.eligibilityCriteria.unsupportedType')
+                $context->buildViolation('CreditGuaranty.ProgramEligibility.fieldConfiguration.unsupportedType')
                     ->atPath('programEligibility.criteria')
                     ->addViolation()
                 ;
@@ -197,7 +196,7 @@ class ProgramEligibilityConfiguration
                 $violationPaths[] = 'programChoiceOption.program';
             }
 
-            if ($this->getProgramChoiceOption()->getEligibilityCriteria() !== $this->getProgramEligibility()->getEligibilityCriteria()) {
+            if ($this->getProgramChoiceOption()->getfieldConfiguration() !== $this->getProgramEligibility()->getfieldConfiguration()) {
                 $violationPaths[] = 'programChoiceOption.field';
             }
         }

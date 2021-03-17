@@ -134,7 +134,7 @@ CreditGuaranty:
         value:
             invalid: La value n'est pas valable.
     ProgramEligibility:
-        eligibilityCriteria:
+        fieldConfiguration:
             unsupportedType: le type criteria n'est pas valable.
     ProgramGradeAllocation:
         grade:

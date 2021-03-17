@@ -11,7 +11,6 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
 
 /**
  * @ApiResource(
@@ -38,12 +37,12 @@ use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
  * @ORM\Table(
  *     name="credit_guaranty_program_choice_option",
  *     uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"description", "id_eligibility_criteria", "id_program"})
+ *          @ORM\UniqueConstraint(columns={"description", "id_field_configuration", "id_program"})
  *      }
  * )
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity({"description", "eligibilityCriteria", "program"})
+ * @UniqueEntity({"description", "fieldConfiguration", "program"})
  */
 class ProgramChoiceOption
 {
@@ -66,23 +65,23 @@ class ProgramChoiceOption
     private string $description;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria")
-     * @ORM\JoinColumn(name="id_eligibility_criteria", nullable=false)
+     * @ORM\ManyToOne(targetEntity="FieldConfiguration")
+     * @ORM\JoinColumn(name="id_field_configuration", nullable=false)
      *
      * @Groups({"creditGuaranty:programChoiceOption:read"})
      */
-    private EligibilityCriteria $eligibilityCriteria;
+    private FieldConfiguration $fieldConfiguration;
 
     /**
-     * @param Program             $program
-     * @param string              $description
-     * @param EligibilityCriteria $eligibilityCriteria
+     * @param Program            $program
+     * @param string             $description
+     * @param FieldConfiguration $fieldConfiguration
      */
-    public function __construct(Program $program, string $description, EligibilityCriteria $eligibilityCriteria)
+    public function __construct(Program $program, string $description, FieldConfiguration $fieldConfiguration)
     {
         $this->program             = $program;
         $this->description         = $description;
-        $this->eligibilityCriteria = $eligibilityCriteria;
+        $this->fieldConfiguration  = $fieldConfiguration;
         $this->added               = new \DateTimeImmutable();
     }
 
@@ -115,11 +114,11 @@ class ProgramChoiceOption
     }
 
     /**
-     * @return EligibilityCriteria
+     * @return FieldConfiguration
      */
-    public function getEligibilityCriteria(): EligibilityCriteria
+    public function getfieldConfiguration(): FieldConfiguration
     {
-        return $this->eligibilityCriteria;
+        return $this->fieldConfiguration;
     }
 
     /**
@@ -129,10 +128,10 @@ class ProgramChoiceOption
      */
     public function isDescriptionValid(): bool
     {
-        if (EligibilityCriteria::TYPE_LIST === $this->getEligibilityCriteria()->getType() && null === $this->getEligibilityCriteria()->getPredefinedItems()) {
+        if (FieldConfiguration::TYPE_LIST === $this->getfieldConfiguration()->getType() && null === $this->getfieldConfiguration()->getPredefinedItems()) {
             return true;
         }
 
-        return in_array($this->description, $this->getEligibilityCriteria()->getPredefinedItems(), true);
+        return in_array($this->description, $this->getfieldConfiguration()->getPredefinedItems(), true);
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity\ConstantList;
+namespace Unilend\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
@@ -17,9 +17,9 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  * )
  *
  * @ORM\Entity
- * @ORM\Table(name="credit_guaranty_eligibility_criteria")
+ * @ORM\Table(name="credit_guaranty_field_configuration")
  */
-class EligibilityCriteria
+class FieldConfiguration
 {
     use PublicizeIdentityTrait;
 
@@ -36,21 +36,21 @@ class EligibilityCriteria
     /**
      * @ORM\Column(length=100)
      *
-     * @Groups({"creditGuaranty:eligibilityCriteria:read"})
+     * @Groups({"creditGuaranty:fieldConfiguration:read"})
      */
     private string $fieldAlias;
 
     /**
      * @ORM\Column(length=100)
      *
-     * @Groups({"creditGuaranty:eligibilityCriteria:read"})
+     * @Groups({"creditGuaranty:fieldConfiguration:read"})
      */
     private string $category;
 
     /**
      * @ORM\Column(length=20)
      *
-     * @Groups({"creditGuaranty:eligibilityCriteria:read"})
+     * @Groups({"creditGuaranty:fieldConfiguration:read"})
      */
     private string $type;
 
@@ -62,7 +62,7 @@ class EligibilityCriteria
     /**
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"creditGuaranty:eligibilityCriteria:read"})
+     * @Groups({"creditGuaranty:fieldConfiguration:read"})
      */
     private bool $comparable;
 
@@ -71,7 +71,7 @@ class EligibilityCriteria
      *
      * @ORM\Column(type="json", nullable=true)
      *
-     * @Groups({"creditGuaranty:eligibilityCriteria:read"})
+     * @Groups({"creditGuaranty:fieldConfiguration:read"})
      */
     private ?array $predefinedItems;
 
@@ -80,7 +80,7 @@ class EligibilityCriteria
      *
      * @ORM\Column(length=20, nullable=true)
      *
-     * @Groups({"creditGuaranty:eligibilityCriteria:read"})
+     * @Groups({"creditGuaranty:fieldConfiguration:read"})
      */
     private ?string $unit;
 

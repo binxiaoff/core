@@ -6,10 +6,7 @@ namespace Unilend\CreditGuaranty\Entity\Constant;
 
 use Unilend\Core\Entity\Constant\AbstractEnum;
 
-/**
- * todo: this file can be delete ?
- */
-class EligibilityFieldAlias extends AbstractEnum
+class FieldAlias extends AbstractEnum
 {
     // User defined list
     public const BORROWER_TYPE       = 'borrower_type';

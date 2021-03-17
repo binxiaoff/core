@@ -11,14 +11,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
 
 /**
  * @ApiResource(
  *      attributes={"pagination_enabled": false},
  *      normalizationContext={"groups":{
  *          "creditGuaranty:programEligibility:read",
- *          "creditGuaranty:eligibilityCriteria:read",
+ *          "creditGuaranty:fieldConfiguration:read",
  *          "creditGuaranty:programChoiceOption:read",
  *          "creditGuaranty:programEligibilityConfiguration:read",
  *          "timestampable:read"
@@ -39,12 +38,12 @@ use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
  * @ORM\Table(
  *      name="credit_guaranty_program_eligibility",
  *      uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"id_eligibility_criteria", "id_program"})
+ *          @ORM\UniqueConstraint(columns={"id_field_configuration", "id_program"})
  *      }
  * )
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity({"eligibilityCriteria", "program"})
+ * @UniqueEntity({"fieldConfiguration", "program"})
  */
 class ProgramEligibility
 {
@@ -62,12 +61,12 @@ class ProgramEligibility
     private Program $program;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria")
-     * @ORM\JoinColumn(name="id_eligibility_criteria", nullable=false)
+     * @ORM\ManyToOne(targetEntity="FieldConfiguration")
+     * @ORM\JoinColumn(name="id_field_configuration", nullable=false)
      *
      * @Groups({"creditGuaranty:programEligibility:read"})
      */
-    private EligibilityCriteria $eligibilityCriteria;
+    private FieldConfiguration $fieldConfiguration;
 
     /**
      * @var Collection|ProgramEligibilityConfiguration[]
@@ -79,13 +78,13 @@ class ProgramEligibility
     private Collection $programEligibilityConfigurations;
 
     /**
-     * @param Program             $program
-     * @param EligibilityCriteria $eligibilityCriteria
+     * @param Program            $program
+     * @param FieldConfiguration $fieldConfiguration
      */
-    public function __construct(Program $program, EligibilityCriteria $eligibilityCriteria)
+    public function __construct(Program $program, FieldConfiguration $fieldConfiguration)
     {
         $this->program                          = $program;
-        $this->eligibilityCriteria              = $eligibilityCriteria;
+        $this->fieldConfiguration               = $fieldConfiguration;
         $this->programEligibilityConfigurations = new ArrayCollection();
         $this->added                            = new \DateTimeImmutable();
     }
@@ -99,11 +98,11 @@ class ProgramEligibility
     }
 
     /**
-     * @return EligibilityCriteria
+     * @return FieldConfiguration
      */
-    public function getEligibilityCriteria(): EligibilityCriteria
+    public function getfieldConfiguration(): FieldConfiguration
     {
-        return $this->eligibilityCriteria;
+        return $this->fieldConfiguration;
     }
 
     /**

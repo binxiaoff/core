@@ -9,21 +9,20 @@ use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\{AbstractFixtures, DumpedDataFixture};
 use Unilend\CreditGuaranty\Entity\{Program, ProgramEligibility};
-use Unilend\CreditGuaranty\Repository\EligibilityCriteriaRepository;
+use Unilend\CreditGuaranty\Repository\FieldConfigurationRepository;
 
 class ProgramEligibilityFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    /** @var EligibilityCriteriaRepository */
-    private EligibilityCriteriaRepository $eligibilityCriteriaRepository;
+    private FieldConfigurationRepository $fieldConfigurationRepository;
 
     /**
-     * @param TokenStorageInterface         $tokenStorage
-     * @param EligibilityCriteriaRepository $eligibilityCriteriaRepository
+     * @param TokenStorageInterface        $tokenStorage
+     * @param FieldConfigurationRepository $fieldConfigurationRepository
      */
-    public function __construct(TokenStorageInterface $tokenStorage, EligibilityCriteriaRepository $eligibilityCriteriaRepository)
+    public function __construct(TokenStorageInterface $tokenStorage, FieldConfigurationRepository $fieldConfigurationRepository)
     {
         parent::__construct($tokenStorage);
-        $this->eligibilityCriteriaRepository = $eligibilityCriteriaRepository;
+        $this->fieldConfigurationRepository = $fieldConfigurationRepository;
     }
 
     /**
@@ -31,7 +30,7 @@ class ProgramEligibilityFixtures extends AbstractFixtures implements DependentFi
      */
     public function load(ObjectManager $manager): void
     {
-        $allProgramCriteria = $this->eligibilityCriteriaRepository->findAll();
+        $fieldConfigurations = $this->fieldConfigurationRepository->findAll();
 
         $programReferences = [
             ProgramFixtures::REFERENCE_CANCELLED,
@@ -44,8 +43,8 @@ class ProgramEligibilityFixtures extends AbstractFixtures implements DependentFi
             /** @var Program $program */
             $program = $this->getReference($programReference);
 
-            foreach ($allProgramCriteria as $eligibilityCriteria) {
-                $programEligibility = new ProgramEligibility($program, $eligibilityCriteria);
+            foreach ($fieldConfigurations as $fieldConfiguration) {
+                $programEligibility = new ProgramEligibility($program, $fieldConfiguration);
                 $manager->persist($programEligibility);
             }
         }

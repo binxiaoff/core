@@ -9,7 +9,7 @@ use Doctrine\Persistence\ObjectManager;
 use Faker\Provider\Miscellaneous;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\CreditGuaranty\Entity\ConstantList\EligibilityCriteria;
+use Unilend\CreditGuaranty\Entity\FieldConfiguration;
 use Unilend\CreditGuaranty\Repository\{ProgramEligibilityConfigurationRepository, ProgramEligibilityRepository};
 
 class ProgramEligibilityConfigurationFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -45,7 +45,7 @@ class ProgramEligibilityConfigurationFixtures extends AbstractFixtures implement
         $programEligibilityConfigurations = $this->programEligibilityConfigurationRepository->findBy(['programEligibility' => $allProgramEligibilities]);
 
         foreach ($programEligibilityConfigurations as $programEligibilityConfiguration) {
-            if (EligibilityCriteria::TYPE_OTHER !== $programEligibilityConfiguration->getProgramEligibility()->getEligibilityCriteria()->getType()) {
+            if (FieldConfiguration::TYPE_OTHER !== $programEligibilityConfiguration->getProgramEligibility()->getFieldConfiguration()->getType()) {
                 $programEligibilityConfiguration->setEligible(Miscellaneous::boolean(self::CHANCE_OF_ELIGIBILITY));
             }
         }

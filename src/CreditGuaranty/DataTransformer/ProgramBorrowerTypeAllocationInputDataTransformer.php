@@ -8,28 +8,28 @@ use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
-use Unilend\CreditGuaranty\Entity\{Constant\EligibilityFieldAlias, ProgramBorrowerTypeAllocation, ProgramChoiceOption};
-use Unilend\CreditGuaranty\Repository\{EligibilityCriteriaRepository, ProgramChoiceOptionRepository};
+use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, ProgramBorrowerTypeAllocation, ProgramChoiceOption};
+use Unilend\CreditGuaranty\Repository\{FieldConfigurationRepository, ProgramChoiceOptionRepository};
 
 class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransformerInterface
 {
     private ValidatorInterface $validator;
     private ProgramChoiceOptionRepository $programChoiceOptionRepository;
-    private EligibilityCriteriaRepository $eligibilityCriteriaRepository;
+    private FieldConfigurationRepository $fieldConfigurationRepository;
 
     /**
      * @param ValidatorInterface            $validator
      * @param ProgramChoiceOptionRepository $programChoiceOptionRepository
-     * @param EligibilityCriteriaRepository $eligibilityCriteriaRepository
+     * @param FieldConfigurationRepository  $fieldConfigurationRepository
      */
     public function __construct(
         ValidatorInterface $validator,
         ProgramChoiceOptionRepository $programChoiceOptionRepository,
-        EligibilityCriteriaRepository $eligibilityCriteriaRepository
+        FieldConfigurationRepository $fieldConfigurationRepository
     ) {
         $this->validator                     = $validator;
         $this->programChoiceOptionRepository = $programChoiceOptionRepository;
-        $this->eligibilityCriteriaRepository = $eligibilityCriteriaRepository;
+        $this->fieldConfigurationRepository  = $fieldConfigurationRepository;
     }
     /**
      * @inheritDoc
@@ -54,14 +54,14 @@ class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransform
     public function transform($object, string $to, array $context = []): ProgramBorrowerTypeAllocation
     {
         $this->validator->validate($object);
-        $eligibilityCriteria = $this->eligibilityCriteriaRepository->findOneBy(['fieldAlias' => EligibilityFieldAlias::BORROWER_TYPE]);
+        $fieldConfiguration = $this->fieldConfigurationRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
         $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([
-            'program'             => $object->program,
-            'eligibilityCriteria' => $eligibilityCriteria,
-            'description'         => $object->borrowerType,
+            'program'            => $object->program,
+            'fieldConfiguration' => $fieldConfiguration,
+            'description'        => $object->borrowerType,
         ]);
         if (null === $programChoiceOption) {
-            $programChoiceOption = new ProgramChoiceOption($object->program, $object->borrowerType, $eligibilityCriteria);
+            $programChoiceOption = new ProgramChoiceOption($object->program, $object->borrowerType, $fieldConfiguration);
             $this->programChoiceOptionRepository->save($programChoiceOption);
         }
 

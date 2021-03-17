@@ -8,22 +8,21 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\{AbstractFixtures, DumpedDataFixture};
-use Unilend\CreditGuaranty\Entity\{Constant\EligibilityFieldAlias, Program, ProgramChoiceOption};
-use Unilend\CreditGuaranty\Repository\EligibilityCriteriaRepository;
+use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, Program, ProgramChoiceOption};
+use Unilend\CreditGuaranty\Repository\FieldConfigurationRepository;
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    /** @var EligibilityCriteriaRepository */
-    private EligibilityCriteriaRepository $eligibilityCriteriaRepository;
+    private FieldConfigurationRepository $fieldConfigurationRepository;
 
     /**
-     * @param TokenStorageInterface         $tokenStorage
-     * @param EligibilityCriteriaRepository $eligibilityCriteriaRepository
+     * @param TokenStorageInterface        $tokenStorage
+     * @param FieldConfigurationRepository $fieldConfigurationRepository
      */
-    public function __construct(TokenStorageInterface $tokenStorage, EligibilityCriteriaRepository $eligibilityCriteriaRepository)
+    public function __construct(TokenStorageInterface $tokenStorage, FieldConfigurationRepository $fieldConfigurationRepository)
     {
         parent::__construct($tokenStorage);
-        $this->eligibilityCriteriaRepository = $eligibilityCriteriaRepository;
+        $this->fieldConfigurationRepository = $fieldConfigurationRepository;
     }
 
     /**
@@ -47,15 +46,15 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'Vignoble', 'Jeune agriculteur de moins de 30 ans',
             'Installé depuis moins de 10 ans', 'Installé depuis plus de 10 ans',
         ];
-        $nbDescriptions = count($descriptions);
-        $borrowerType   = $this->eligibilityCriteriaRepository->findOneBy(['fieldAlias' => EligibilityFieldAlias::BORROWER_TYPE]);
+        $nbDescriptions     = count($descriptions);
+        $borrowerTypeConfig = $this->fieldConfigurationRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
 
         foreach ($programReferences as $programReference) {
             /** @var Program $program */
             $program = $this->getReference($programReference);
 
             for ($i = 0; $i <= rand(0, $nbDescriptions - 1); $i++) {
-                $manager->persist(new ProgramChoiceOption($program, $descriptions[$i], $borrowerType));
+                $manager->persist(new ProgramChoiceOption($program, $descriptions[$i], $borrowerTypeConfig));
             }
         }
         $manager->flush();

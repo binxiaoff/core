@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\CreditGuaranty\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\{EntityManager, Event\OnFlushEventArgs, Mapping\ClassMetadata, ORMException, UnitOfWork};
-use Unilend\CreditGuaranty\Entity\{Constant\EligibilityFieldAlias, ProgramBorrowerTypeAllocation, ProgramEligibilityConfiguration};
+use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, ProgramBorrowerTypeAllocation, ProgramEligibilityConfiguration};
 
 class ProgramEligibilityConfigurationCreatedListener
 {
@@ -49,7 +49,7 @@ class ProgramEligibilityConfigurationCreatedListener
         UnitOfWork $unitOfWork,
         ClassMetadata $classMetadata
     ): void {
-        if (EligibilityFieldAlias::BORROWER_TYPE === $programEligibilityConfiguration->getProgramEligibility()->getEligibilityCriteria()->getFieldAlias()) {
+        if (FieldAlias::BORROWER_TYPE === $programEligibilityConfiguration->getProgramEligibility()->getFieldConfiguration()->getFieldAlias()) {
             $programBorrowerTypeAllocation = new ProgramBorrowerTypeAllocation(
                 $programEligibilityConfiguration->getProgramEligibility()->getProgram(),
                 $programEligibilityConfiguration->getProgramChoiceOption(),
