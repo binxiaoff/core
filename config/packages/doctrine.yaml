@@ -58,7 +58,7 @@ doctrine:
                             prefix: 'Unilend\Agency\Entity'
                             alias: Unilend\Agency
                     hydrators:
-                        HYDRATE_COLUMN: Unilend\Core\Doctrine\ORM\ColumnHydrator
+                        HYDRATE_COLUMN: 'Unilend\Core\Doctrine\ORM\ColumnHydrator'
                     filters:
                         softdeletable:
                             class: 'Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter'

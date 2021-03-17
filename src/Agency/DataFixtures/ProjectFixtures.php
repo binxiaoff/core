@@ -8,9 +8,13 @@ use DateTimeImmutable;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
+use Unilend\Core\Entity\Constant\MathOperator;
+use Unilend\Core\Entity\Embeddable\NullablePerson;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 use Unilend\Agency\Entity\Borrower;
+use Unilend\Agency\Entity\BorrowerMember;
 use Unilend\Agency\Entity\BorrowerTrancheShare;
-use Unilend\Agency\Entity\Contact;
 use Unilend\Agency\Entity\Covenant;
 use Unilend\Agency\Entity\CovenantRule;
 use Unilend\Agency\Entity\Embeddable\Inequality;
@@ -20,9 +24,9 @@ use Unilend\Agency\Entity\Participation;
 use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Entity\Tranche;
-use Unilend\Core\DataFixtures\{AbstractFixtures,
-    CompanyFixtures,
-    StaffFixtures};
+use Unilend\Core\DataFixtures\AbstractFixtures;
+use Unilend\Core\DataFixtures\CompanyFixtures;
+use Unilend\Core\DataFixtures\StaffFixtures;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
@@ -30,7 +34,6 @@ use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\{Constant\MathOperator, Embeddable\NullablePerson, Staff};
 use Unilend\Core\Model\Bitmask;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -57,13 +60,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $project->setCompanyGroupTag($staff->getAvailableCompanyGroupTags()[0]);
 
         $manager->persist($project);
-
-        foreach (Contact::getTypes() as $type) {
-            for ($i = 0; $i < 3; $i++) {
-                $contact = $this->createContact($project, $staff, $type);
-                $manager->persist($contact);
-            }
-        }
 
         $agencyContact = (new NullablePerson())->setFirstName($this->faker->firstName)->setLastName($this->faker->lastName);
         $project->setAgencyContact($agencyContact);
@@ -140,40 +136,17 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     /**
      * @param Project $project
      * @param Staff   $staff
-     * @param string  $type
-     *
-     * @return Contact
-     *
-     * @throws Exception
-     */
-    private function createContact(Project $project, Staff $staff, string $type): Contact
-    {
-        return new Contact(
-            $project,
-            $type,
-            $staff,
-            $this->faker->firstName,
-            $this->faker->lastName,
-            $staff->getCompany()->getDisplayName(),
-            $this->faker->jobTitle,
-            $this->faker->email,
-            '+33600000000',
-            $this->faker->boolean
-        );
-    }
-
-    /**
-     * @param Project $project
-     * @param Staff   $staff
      *
      * @return Borrower
+     *
+     * @throws Exception
      */
     private function createBorrower(Project $project, Staff $staff)
     {
         $siren = $this->generateSiren();
         $city = $this->faker->city;
 
-        return new Borrower(
+        $borrower = new Borrower(
             $project,
             $staff,
             $this->faker->company,
@@ -181,13 +154,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             new Money('EUR', (string) $this->faker->randomFloat(0, 100000)),
             $this->faker->address,
             implode(' ', ['RCS', strtoupper($city), $this->faker->randomDigit % 2 ? 'A' : 'B', $siren]),
-            $this->faker->firstName,
-            $this->faker->lastName,
-            $this->faker->email,
-            $this->faker->firstName,
-            $this->faker->lastName,
-            $this->faker->email,
         );
+
+        $borrower->setReferent(new BorrowerMember($borrower, new User($this->faker->email)));
+        $borrower->setSignatory(new BorrowerMember($borrower, new User($this->faker->email)));
+
+        return $borrower;
     }
 
     /**

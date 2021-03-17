@@ -17,6 +17,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Agency\Controller\Project\GetTerm;
+use Unilend\Agency\Entity\Versioned\VersionedProject;
 use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
 use Unilend\Core\Entity\Constant\{CAInternalRating, FundingSpecificity};
 use Unilend\Core\Entity\Embeddable\{Money, NullableMoney, NullablePerson};
@@ -84,7 +85,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  * @ORM\Table(name="agency_project")
  * @ORM\Entity
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Agency\Entity\Versioned\VersionedProject")
+ * @Gedmo\Loggable(logEntryClass=VersionedProject::class)
  *
  * @ApiFilter(
  *     filterClass=GroupFilter::class,
@@ -189,17 +190,6 @@ class Project
      * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ?string $agentRCS;
-
-    /**
-     * @var Contact[]|Collection
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Contact", mappedBy="project", orphanRemoval=true, cascade={"remove"})
-     *
-     * @Assert\All({
-     *    @Assert\Expression("value.getProject() === this")
-     * })
-     */
-    private Collection $contacts;
 
     /**
      * @var string|null
@@ -593,7 +583,6 @@ class Project
             ->setEmail($currentUser->getEmail())
             ->setPhone($currentUser->getPhone());
 
-        $this->contacts           = new ArrayCollection();
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
         $this->closingDate        = $closingDate;
@@ -605,6 +594,7 @@ class Project
         $participation = new Participation($this, $this->agent, new Money($this->globalFundingMoney->getCurrency()));
         $participation->setResponsibilities(new Bitmask(Participation::RESPONSIBILITY_AGENT));
         $participation->setAgentCommission('0');
+        $participation->setMembers(new ArrayCollection([new ParticipationMember($participation, $addedBy->getUser())]));
         $this->participations = new ArrayCollection([$participation]);
 
         $this->silentSyndication = false;
@@ -768,26 +758,6 @@ class Project
         $this->agentRCS = $agentRCS;
 
         return $this;
-    }
-
-    /**
-     * @Groups({"agency:project:read"})
-     *
-     * @return Collection
-     */
-    public function getBackOfficeContacts(): Collection
-    {
-        return $this->getContactsByType(Contact::TYPE_BACK_OFFICE);
-    }
-
-    /**
-     * @Groups({"agency:project:read"})
-     *
-     * @return Collection
-     */
-    public function getLegalContacts(): Collection
-    {
-        return $this->getContactsByType(Contact::TYPE_LEGAL);
     }
 
     /**
@@ -1374,20 +1344,5 @@ class Project
     public function getAgentSecondaryParticipantDrive(): Drive
     {
         return $this->agentSecondaryParticipantDrive;
-    }
-
-    /**
-     * @param string $type
-     *
-     * @return Collection
-     */
-    private function getContactsByType(string $type): Collection
-    {
-        $filteredContacts = $this->contacts->filter(function (Contact $contact) use ($type) {
-            return $contact->getType() === $type;
-        });
-
-        // necessary to reset array keys and return a Collection
-        return new ArrayCollection($filteredContacts->getValues());
     }
 }

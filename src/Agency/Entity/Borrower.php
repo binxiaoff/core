@@ -7,6 +7,7 @@ namespace Unilend\Agency\Entity;
 use ApiPlatform\Core\Action\NotFoundAction;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -15,6 +16,7 @@ use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
 
 /**
@@ -28,7 +30,13 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *     collectionOperations={
  *         "post": {
  *              "denormalization_context": {
- *                  "groups": {"agency:borrower:create", "money:write"}
+ *                  "groups": {
+ *                      "agency:borrower:create",
+ *                      "money:write",
+ *                      "agency:borrowerMember:create",
+ *                      "user:create",
+ *                      "user:write"
+ *                  }
  *              },
  *             "security_post_denormalize": "is_granted('create', object)",
  *         }
@@ -134,84 +142,51 @@ class Borrower
     private string $matriculationNumber;
 
     /**
-     * @var string
+     * @var BorrowerMember|null
      *
-     * @ORM\Column(type="string", length=50)
+     * @ORM\ManyToOne(targetEntity=BorrowerMember::class)
+     * @ORM\JoinColumn(name="id_signatory", onDelete="SET NULL")
      *
      * @Assert\NotBlank
-     * @Assert\Length(max="50")
+     * @Assert\Choice(callback="getMembers")
+     * @Assert\Valid
      *
-     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:update"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create"})
      */
-    private string $signatoryFirstName;
+    private ?BorrowerMember $signatory;
 
     /**
-     * @var string
+     * @var BorrowerMember|null
      *
-     * @ORM\Column(type="string", length=50)
+     * @ORM\ManyToOne(targetEntity=BorrowerMember::class)
+     * @ORM\JoinColumn(name="id_referent", onDelete="SET NULL")
      *
      * @Assert\NotBlank
-     * @Assert\Length(max="50")
+     * @Assert\Choice(callback="getMembers")
+     * @Assert\Valid
      *
-     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:update"})
+     * @Groups({"agency:borrower:read", "agency:borrower:create"})
      */
-    private string $signatoryLastName;
+    private ?BorrowerMember $referent;
 
     /**
-     * @var string
+     * @var Collection|BorrowerMember[]
      *
-     * @ORM\Column(type="string", length=50)
+     * @ORM\OneToMany(targetEntity=BorrowerMember::class, mappedBy="borrower", cascade={"persist", "remove"}, orphanRemoval=true)
      *
-     * @Assert\NotBlank
-     * @Assert\Length(max="50")
-     * @Assert\Email
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:update"})
+     * @Assert\Valid
+     * @Assert\All({
+     *     @Assert\Expression("value.getBorrower() === this")
+     * })
      */
-    private string $signatoryEmail;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=50)
-     *
-     * @Assert\NotBlank
-     * @Assert\Length(max="50")
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:update"})
-     */
-    private string $referentFirstName;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=50)
-     *
-     * @Assert\NotBlank
-     * @Assert\Length(max="50")
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:update"})
-     */
-    private string $referentLastName;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=50)
-     *
-     * @Assert\NotBlank
-     * @Assert\Length(max="50")
-     * @Assert\Email
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:update"})
-     */
-    private string $referentEmail;
+    private Collection $members;
 
     /**
      * @var Collection|BorrowerTrancheShare[]
      *
      * @ORM\OneToMany(targetEntity="BorrowerTrancheShare", mappedBy="borrower", orphanRemoval=true)
      *
+     * @Assert\Valid
      * @Assert\All({
      *    @Assert\Expression("value.getBorrower() === this")
      * })
@@ -226,12 +201,6 @@ class Borrower
      * @param Money   $capital
      * @param string  $headquarterAddress
      * @param string  $matriculationNumber
-     * @param string  $signatoryFirstName
-     * @param string  $signatoryLastName
-     * @param string  $signatoryEmail
-     * @param string  $referentFirstName
-     * @param string  $referentLastName
-     * @param string  $referentEmail
      */
     public function __construct(
         Project $project,
@@ -240,13 +209,7 @@ class Borrower
         string $legalForm,
         Money $capital,
         string $headquarterAddress,
-        string $matriculationNumber,
-        string $signatoryFirstName,
-        string $signatoryLastName,
-        string $signatoryEmail,
-        string $referentFirstName,
-        string $referentLastName,
-        string $referentEmail
+        string $matriculationNumber
     ) {
         $this->project = $project;
         $this->addedBy = $addedBy;
@@ -255,12 +218,7 @@ class Borrower
         $this->capital = $capital;
         $this->headquarterAddress = $headquarterAddress;
         $this->matriculationNumber = $matriculationNumber;
-        $this->signatoryFirstName = $signatoryFirstName;
-        $this->signatoryLastName = $signatoryLastName;
-        $this->signatoryEmail = $signatoryEmail;
-        $this->referentFirstName = $referentFirstName;
-        $this->referentLastName = $referentLastName;
-        $this->referentEmail = $referentEmail;
+        $this->members = new ArrayCollection();
     }
 
     /**
@@ -372,122 +330,102 @@ class Borrower
     }
 
     /**
-     * @return string
+     * @return BorrowerMember
      */
-    public function getSignatoryFirstName(): string
+    public function getSignatory(): BorrowerMember
     {
-        return $this->signatoryFirstName;
+        return $this->signatory;
     }
 
     /**
-     * @param string $signatoryFirstName
+     * @param BorrowerMember $signatory
      *
      * @return Borrower
      */
-    public function setSignatoryFirstName(string $signatoryFirstName): Borrower
+    public function setSignatory(BorrowerMember $signatory): Borrower
     {
-        $this->signatoryFirstName = $signatoryFirstName;
+        $this->signatory = $this->findMemberByUser($signatory->getUser()) ?? $signatory;
+        $this->addMember($this->signatory);
 
         return $this;
     }
 
     /**
-     * @return string
+     * @return BorrowerMember
      */
-    public function getSignatoryLastName(): string
+    public function getReferent(): BorrowerMember
     {
-        return $this->signatoryLastName;
+        return $this->referent;
     }
 
     /**
-     * @param string $signatoryLastName
+     * @param BorrowerMember $referent
      *
      * @return Borrower
      */
-    public function setSignatoryLastName(string $signatoryLastName): Borrower
+    public function setReferent(BorrowerMember $referent): Borrower
     {
-        $this->signatoryLastName = $signatoryLastName;
+        $this->referent = $this->findMemberByUser($referent->getUser()) ?? $referent;
+        $this->addMember($this->referent);
 
         return $this;
     }
 
     /**
-     * @return string
+     * @return array|BorrowerMember[]
      */
-    public function getSignatoryEmail(): string
+    public function getMembers(): array
     {
-        return $this->signatoryEmail;
+        return $this->members->toArray();
     }
 
     /**
-     * @param string $signatoryEmail
+     * @param BorrowerMember $member
      *
      * @return Borrower
      */
-    public function setSignatoryEmail(string $signatoryEmail): Borrower
+    public function addMember(BorrowerMember $member): Borrower
     {
-        $this->signatoryEmail = $signatoryEmail;
+        if (null === $this->findMemberByUser($member->getUser())) {
+            $this->members[] = $member;
+        }
 
         return $this;
     }
 
     /**
-     * @return string
-     */
-    public function getReferentFirstName(): string
-    {
-        return $this->referentFirstName;
-    }
-
-    /**
-     * @param string $referentFirstName
+     * @param BorrowerMember $member
      *
      * @return Borrower
      */
-    public function setReferentFirstName(string $referentFirstName): Borrower
+    public function removeMember(BorrowerMember $member): Borrower
     {
-        $this->referentFirstName = $referentFirstName;
+        $this->members->removeElement($member);
+
+        if ($this->referent === $member) {
+            $this->referent = null;
+        }
+
+        if ($this->signatory === $member) {
+            $this->signatory = null;
+        }
 
         return $this;
     }
 
     /**
-     * @return string
-     */
-    public function getReferentLastName(): string
-    {
-        return $this->referentLastName;
-    }
-
-    /**
-     * @param string $referentLastName
+     * @param User $user
      *
-     * @return Borrower
+     * @return BorrowerMember|null
      */
-    public function setReferentLastName(string $referentLastName): Borrower
+    public function findMemberByUser(User $user): ?BorrowerMember
     {
-        $this->referentLastName = $referentLastName;
+        foreach ($this->members as $member) {
+            if ($member->getUser() === $user) {
+                return $member;
+            }
+        }
 
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getReferentEmail(): string
-    {
-        return $this->referentEmail;
-    }
-
-    /**
-     * @param string $referentEmail
-     *
-     * @return Borrower
-     */
-    public function setReferentEmail(string $referentEmail): Borrower
-    {
-        $this->referentEmail = $referentEmail;
-
-        return $this;
+        return null;
     }
 }

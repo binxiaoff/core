@@ -10,6 +10,7 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -17,6 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Model\Bitmask;
 
 /**
@@ -215,6 +217,32 @@ class Participation
      * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
      */
     private bool $secondary;
+
+    /**
+     * @var ParticipationMember|null
+     *
+     * @ORM\ManyToOne(targetEntity=ParticipationMember::class)
+     * @ORM\JoinColumn(name="id_referent", onDelete="SET NULL")
+     *
+     * @Assert\NotBlank(groups="published")
+     * @Assert\Choice(callback="getMembers")
+     * @Assert\Valid
+     *
+     * @Groups({"agency:participation:read"})
+     */
+    private ?ParticipationMember $referent;
+
+    /**
+     * @var Collection|ParticipationMember[]
+     *
+     * @ORM\OneToMany(targetEntity=ParticipationMember::class, mappedBy="participation", cascade={"persist", "remove"}, orphanRemoval=true)
+     *
+     * @Assert\Valid
+     * @Assert\All({
+     *     @Assert\Expression("value.getParticipation() === this")
+     * })
+     */
+    private Collection $members;
 
     /**
      * @param Project $project
@@ -450,6 +478,124 @@ class Participation
     }
 
     /**
+     * @return array|ParticipationMember[]
+     */
+    public function getMembers(): array
+    {
+        return $this->members->toArray();
+    }
+
+    /**
+     * @param iterable|ParticipationMember[] $members
+     *
+     * @return Participation
+     */
+    public function setMembers(iterable $members)
+    {
+        $this->members = $members;
+
+        return $this;
+    }
+
+    /**
+     * @param ParticipationMember $member
+     *
+     * @return Participation
+     */
+    public function addMember(ParticipationMember $member): Participation
+    {
+        if (null === $this->findMemberByUser($member->getUser())) {
+            $this->members[] = $member;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ParticipationMember $member
+     *
+     * @return Participation
+     */
+    public function removeMember(ParticipationMember $member): Participation
+    {
+        $this->members->removeElement($member);
+
+        if ($this->referent === $member) {
+            $this->referent = null;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param User $user
+     *
+     * @return ParticipationMember|null
+     */
+    public function findMemberByUser(User $user): ?ParticipationMember
+    {
+        foreach ($this->members as $member) {
+            if ($member->getUser() === $user) {
+                return $member;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return ParticipationMember|null
+     */
+    public function getReferent(): ?ParticipationMember
+    {
+        return $this->referent;
+    }
+
+
+    /**
+     * @param ParticipationMember $referent
+     *
+     * @return Participation
+     */
+    public function setReferent(ParticipationMember $referent): Participation
+    {
+        $this->referent = $this->findMemberByUser($referent->getUser()) ?? $referent;
+        $this->addMember($this->referent);
+
+        return $this;
+    }
+
+    /**
+     * @return iterable|ParticipationMember[]
+     *
+     * @Groups({"agency:participation:read"})
+     */
+    public function getBackOfficeMembers(): iterable
+    {
+        return $this->getMemberByType(ParticipationMember::TYPE_BACK_OFFICE);
+    }
+
+    /**
+     * @return iterable|ParticipationMember[]
+     *
+     * @Groups({"agency:participation:read"})
+     */
+    public function getLegalMembers(): iterable
+    {
+        return $this->getMemberByType(ParticipationMember::TYPE_LEGAL);
+    }
+
+    /**
+     * @return iterable|ParticipationMember[]
+     *
+     * @Groups({"agency:participation:read"})
+     */
+    public function getWaiverMembers(): iterable
+    {
+        return $this->getMemberByType(ParticipationMember::TYPE_WAIVER);
+    }
+
+    /**
      * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups
      *
      * @param Participation $participation
@@ -465,5 +611,15 @@ class Participation
         }
 
         return $validationGroups;
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return iterable|ParticipationMember[]
+     */
+    private function getMemberByType(string $type): iterable
+    {
+        return $this->members->filter(fn (ParticipationMember $member) => $type === $member->getType())->toArray();
     }
 }
