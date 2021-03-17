@@ -61,7 +61,7 @@ class ProgramEligibility
     private Program $program;
 
     /**
-     * @ORM\ManyToOne(targetEntity="FieldConfiguration")
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\FieldConfiguration")
      * @ORM\JoinColumn(name="id_field_configuration", nullable=false)
      *
      * @Groups({"creditGuaranty:programEligibility:read"})

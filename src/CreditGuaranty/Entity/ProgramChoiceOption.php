@@ -65,7 +65,7 @@ class ProgramChoiceOption
     private string $description;
 
     /**
-     * @ORM\ManyToOne(targetEntity="FieldConfiguration")
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\FieldConfiguration")
      * @ORM\JoinColumn(name="id_field_configuration", nullable=false)
      *
      * @Groups({"creditGuaranty:programChoiceOption:read"})
