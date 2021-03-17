@@ -14,7 +14,7 @@ final class Version20210317141829 extends AbstractMigration
 {
     public function getDescription() : string
     {
-        return '';
+        return 'CALS-3556 Apply DoctrineExtensions changes';
     }
 
     public function up(Schema $schema) : void
