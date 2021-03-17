@@ -1,7 +1,8 @@
 stof_doctrine_extensions:
     default_locale: '%locale%'
     orm:
-        default:
+        default: &doctrine_extensions_configuration
             loggable: true
             softdeleteable: true
             blameable: true
+        migration: *doctrine_extensions_configuration
