@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
+/**
+ * @ApiResource
+ */
 class ProgramEligibilityCondition
 {
     use PublicizeIdentityTrait;
