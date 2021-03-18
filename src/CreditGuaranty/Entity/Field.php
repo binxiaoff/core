@@ -29,10 +29,6 @@ class Field
     public const TYPE_BOOL      = 'bool';
     // Other type that we haven't yet managed.
     public const TYPE_OTHER     = 'other';
-    // Date type
-    public const TYPE_DATE      = 'date';
-    // Number type
-    public const TYPE_NUMBER    = 'number';
 
     public const VALUE_BOOL_YES = '1';
     public const VALUE_BOOL_NO  = '0';
