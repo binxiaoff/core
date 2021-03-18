@@ -8,7 +8,7 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\{AbstractFixtures, DumpedDataFixture};
-use Unilend\CreditGuaranty\Entity\{ConstantList\EligibilityCriteria, Constant\EligibilityFieldAlias, Program, ProgramChoiceOption};
+use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, Program, ProgramChoiceOption};
 use Unilend\CreditGuaranty\Repository\FieldRepository;
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -38,7 +38,7 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
         ];
 
         $choices = [
-            EligibilityFieldAlias::BORROWER_TYPE => [
+            FieldAlias::BORROWER_TYPE => [
                 'Installé depuis plus de 7 ans', 'Installé depuis moins de 7 ans',
                 'En reconversion Bio', 'Agriculture céréalière',
                 'Agriculture bovine', 'Producteur de lait',
@@ -47,7 +47,7 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
                 'Vignoble', 'Jeune agriculteur de moins de 30 ans',
                 'Installé depuis moins de 10 ans', 'Installé depuis plus de 10 ans',
             ],
-            EligibilityFieldAlias::ACTIVITY_COUNTRY => [
+            FieldAlias::ACTIVITY_COUNTRY => [
                 'SARL', 'SAS', 'SASU', 'EURL', 'SA', 'SELAS',
             ],
         ];
@@ -79,14 +79,14 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
     {
         $nbChoices = count($choices);
         /** @var EligibilityCriteria $eligibilityCriteria **/
-        $eligibilityCriteria      = $this->eligibilityCriteriaRepository->findOneBy(['fieldAlias' => $fieldAlias]);
+        $field     = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
 
         foreach ($programReferences as $programReference) {
             /** @var Program $program */
             $program = $this->getReference($programReference);
 
             for ($i = 0; $i <= rand(0, $nbChoices - 1); $i++) {
-                $manager->persist(new ProgramChoiceOption($program, $choices[$i], $eligibilityCriteria));
+                $manager->persist(new ProgramChoiceOption($program, $choices[$i], $field));
             }
         }
     }
