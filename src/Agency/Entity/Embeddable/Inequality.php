@@ -7,6 +7,7 @@ namespace Unilend\Agency\Entity\Embeddable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
@@ -62,16 +63,14 @@ class Inequality
      * @ORM\Column(type="decimal", precision=65, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
-     * @Assert\Expression("(this.getOperator() === constant('Unilend\\Agency\\Entity\\Embeddable\\Inequality::OPERATOR_BETWEEN') && value) or !value")
-     * @Assert\GreaterThan("value")
+     * @Assert\AtLeastOneOf(constraints={
+     *     @Assert\Expression("this.getOperator() === constant('Unilend\\Agency\\Entity\\Embeddable\\Inequality::OPERATOR_BETWEEN') && null !== value"),
+     *     @Assert\Expression("this.getOperator() !== constant('Unilend\\Agency\\Entity\\Embeddable\\Inequality::OPERATOR_BETWEEN') && null === value")
+     * }, message="Inequality.maxValue.incorrectOperator")
      *
-     * @Groups({
-     *     "agency:inequality:read",
-     *     "agency:inequality:write",
-     * })
-     *
+     * @Groups({"agency:inequality:read","agency:inequality:write"})
      */
-    private ?string $maxValue = null;
+    private ?string $maxValue;
 
     /**
      * @param string      $operator
@@ -151,6 +150,21 @@ class Inequality
     public function getOperators(): iterable
     {
         return self::getConstants('OPERATOR_');
+    }
+
+    /**
+     * Replacement of GreaterThan(value) because we use string
+     *
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validate(ExecutionContextInterface $context)
+    {
+        if ($this->maxValue && -1 !== bccomp($this->value, $this->maxValue, 4)) {
+            $context->buildViolation('Inequality.maxValue.greaterThan')
+                ->addViolation();
+        }
     }
 
     /**

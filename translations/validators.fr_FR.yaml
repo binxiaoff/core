@@ -37,6 +37,11 @@ Agency:
     MarginRule:
         inconsistentCovenant: On ne peut ajouter de règle d'impact sur les marges qu'aux engagements de nature financière
 
+    Inequality:
+        maxValue:
+            incorrectOperator: Il ne peut y avoir de valeur maximal que si l'operateur est "between"
+            greaterThan: La valeur maximale doit être strictement supérieur à la valeur
+
 Core:
     AcceptationsLegalDocs:
         legalDoc:
