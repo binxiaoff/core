@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource, ApiSubresource};
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -17,18 +18,23 @@ use Unilend\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
 /**
  * @ApiResource(
  *      attributes={"pagination_enabled": false},
- *      normalizationContext={"groups":{"creditGuaranty:programEligibilityConfiguration:read", "creditGuaranty:programChoiceOption:read"}},
+ *      normalizationContext={"groups":{"creditGuaranty:programEligibilityConfiguration:read", "creditGuaranty:programChoiceOption:read", "timestampable:read"}},
+ *      denormalizationContext={"groups": {"creditGuaranty:programEligibilityConfiguration:write"}},
  *      itemOperations={
  *          "get": {
- *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
- *             "read": false,
- *             "output": false,
+ *              "normalization_context": {
+ *                  "groups":{
+ *                      "creditGuaranty:programEligibilityConfiguration:read",
+ *                      "creditGuaranty:programChoiceOption:read",
+ *                      "creditGuaranty:programEligibilityCondition:read",
+ *                      "timestampable:read"
+ *                  }
+ *              }
  *          },
  *          "patch",
  *          "delete"
  *      },
  *      collectionOperations={
- *          "get",
  *          "post": {
  *              "input"=ProgramEligibilityConfigurationInput::class
  *          }
@@ -56,8 +62,12 @@ class ProgramEligibilityConfiguration
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibility")
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibility", inversedBy="programEligibilityConfigurations")
      * @ORM\JoinColumn(name="id_program_eligibility", nullable=false)
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
+     *
+     * @Groups({"creditGuaranty:programEligibilityConfiguration:read", "creditGuaranty:programEligibilityConfiguration:write"})
      */
     private ProgramEligibility $programEligibility;
 
@@ -68,7 +78,7 @@ class ProgramEligibilityConfiguration
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_program_choice_option", onDelete="CASCADE")
      *
-     * @Groups({"creditGuaranty:programEligibilityConfiguration:read"})
+     * @Groups({"creditGuaranty:programEligibilityConfiguration:read", "creditGuaranty:programEligibilityConfiguration:write"})
      */
     private ?ProgramChoiceOption $programChoiceOption;
 
@@ -78,16 +88,25 @@ class ProgramEligibilityConfiguration
      *
      * @ORM\Column(length=100, nullable=true)
      *
-     * @Groups({"creditGuaranty:programEligibilityConfiguration:read"})
+     * @Groups({"creditGuaranty:programEligibilityConfiguration:read", "creditGuaranty:programEligibilityConfiguration:write"})
      */
     private ?string $value;
 
     /**
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"creditGuaranty:programEligibilityConfiguration:read"})
+     * @Groups({"creditGuaranty:programEligibilityConfiguration:read", "creditGuaranty:programEligibilityConfiguration:write"})
      */
     private bool $eligible;
+
+    /**
+     * @var Collection|ProgramEligibilityCondition[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     */
+    private Collection $programEligibilityConditions;
 
     /**
      * @param ProgramEligibility       $programEligibility
@@ -97,11 +116,11 @@ class ProgramEligibilityConfiguration
      */
     public function __construct(ProgramEligibility $programEligibility, ?ProgramChoiceOption $programChoiceOption, ?string $value, bool $eligible = false)
     {
-        $this->programEligibility  = $programEligibility;
-        $this->programChoiceOption = $programChoiceOption;
-        $this->value               = $value;
-        $this->eligible            = $eligible;
-        $this->added               = new \DateTimeImmutable();
+        $this->programEligibility           = $programEligibility;
+        $this->programChoiceOption          = $programChoiceOption;
+        $this->value                        = $value;
+        $this->eligible                     = $eligible;
+        $this->added                        = new \DateTimeImmutable();
     }
 
     /**
@@ -146,6 +165,16 @@ class ProgramEligibilityConfiguration
     public function getValue(): ?string
     {
         return $this->value;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:programEligibilityConfiguration:read"})
+     *
+     * @return int
+     */
+    public function getProgramEligibilityConditionsCount(): int
+    {
+        return $this->programEligibilityConditions->count();
     }
 
     /**

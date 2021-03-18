@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -15,10 +15,14 @@ use Unilend\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups":{"creditGuaranty:programBorrowerTypeAllocation:read", "creditGuaranty:program:read", "timestampable:read"}},
+ *     normalizationContext={"groups":{"creditGuaranty:programBorrowerTypeAllocation:read", "creditGuaranty:programChoiceOption:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:programBorrowerTypeAllocation:write"}},
  *      itemOperations={
- *          "get",
+ *          "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *          },
  *          "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"},
  *          "delete": {"security": "is_granted('delete', object)"}
  *      },
@@ -46,8 +50,10 @@ class ProgramBorrowerTypeAllocation
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
-     * @ORM\JoinColumn(name="id_program", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programBorrowerTypeAllocations")
+     * @ORM\JoinColumn(name="id_program", nullable=false, )
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
      *
      * @Groups({"creditGuaranty:programBorrowerTypeAllocation:read", "creditGuaranty:programBorrowerTypeAllocation:write"})
      */

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\{ApiResource, ApiSubresource};
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
@@ -188,6 +188,47 @@ class Program implements TraceableStatusAwareInterface
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private ?string $ratingType;
+
+    /***************
+     * Subresource *
+     ***************
+     */
+
+    /**
+     * @var Collection|ProgramBorrowerTypeAllocation[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     */
+    private Collection $programBorrowerTypeAllocations;
+
+    /**
+     * @var Collection|ProgramChoiceOption[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     */
+    private Collection $programChoiceOptions;
+
+    /**
+     * @var Collection|ProgramContact[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramContact", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     */
+    private Collection $programContacts;
+
+    /**
+     * @var Collection|ProgramEligibility[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibility", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     */
+    private Collection $programEligibilities;
 
     /**
      * @param string        $name

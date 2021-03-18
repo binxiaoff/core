@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource};
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -18,21 +17,28 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *      normalizationContext={"groups":{
  *          "creditGuaranty:programEligibility:read",
  *          "creditGuaranty:field:read",
- *          "creditGuaranty:programChoiceOption:read",
  *          "creditGuaranty:programEligibilityConfiguration:read",
  *          "timestampable:read"
  *      }},
+ *     denormalizationContext={"groups":{"creditGuaranty:programEligibility:write"}},
  *      itemOperations={
- *          "get",
+ *          "get": {
+ *              "normalization_context": {
+ *                  "groups":{
+ *                      "creditGuaranty:programEligibility:read",
+ *                      "creditGuaranty:field:read",
+ *                      "creditGuaranty:programChoiceOption:read",
+ *                      "creditGuaranty:programEligibilityConfiguration:read",
+ *                      "timestampable:read"
+ *                  }
+ *              }
+ *          },
  *          "delete"
  *      },
  *      collectionOperations={
- *          "get",
  *          "post"
  *      }
  * )
- *
- * @ApiFilter(SearchFilter::class, properties={"program.publicId"})
  *
  * @ORM\Entity
  * @ORM\Table(
@@ -51,12 +57,12 @@ class ProgramEligibility
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programEligibilities")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:programEligibility:read"})
+     * @Groups({"creditGuaranty:programEligibility:read", "creditGuaranty:programEligibility:write"})
      */
     private Program $program;
 
@@ -64,14 +70,14 @@ class ProgramEligibility
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Field")
      * @ORM\JoinColumn(name="id_field", nullable=false)
      *
-     * @Groups({"creditGuaranty:programEligibility:read"})
+     * @Groups({"creditGuaranty:programEligibility:read", "creditGuaranty:programEligibility:write"})
      */
     private Field $field;
 
     /**
      * @var Collection|ProgramEligibilityConfiguration[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration", mappedBy="programEligibility", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration", mappedBy="programEligibility", orphanRemoval=true, fetch="EXTRA_LAZY")
      *
      * @Groups({"creditGuaranty:programEligibility:read"})
      */

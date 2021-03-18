@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource};
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -15,7 +15,8 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 /**
  * @ApiResource(
  *      attributes={"pagination_enabled": false},
- *      normalizationContext={"groups":{"creditGuaranty:programChoiceOption:read"}},
+ *      normalizationContext={"groups":{"creditGuaranty:programChoiceOption:read", "creditGuaranty:field:read", "timestampable:read"}},
+ *      denormalizationContext={"groups":{"creditGuaranty:programChoiceOption:write", "creditGuaranty:field:read"}},
  *      itemOperations={
  *          "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -26,12 +27,11 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *          "delete"
  *      },
  *      collectionOperations={
- *          "get",
  *          "post"
  *      }
  * )
  *
- * @ApiFilter(SearchFilter::class, properties={"program.publicId"})
+ * @ApiFilter(SearchFilter::class, properties={"field.publicId"})
  *
  * @ORM\Entity
  * @ORM\Table(
@@ -50,15 +50,19 @@ class ProgramChoiceOption
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programChoiceOptions")
      * @ORM\JoinColumn(name="id_program", nullable=false)
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
+     *
+     * @Groups({"creditGuaranty:programChoiceOption:read", "creditGuaranty:programChoiceOption:write"})
      */
     private Program $program;
 
     /**
      * @ORM\Column(length=255)
      *
-     * @Groups({"creditGuaranty:programChoiceOption:read"})
+     * @Groups({"creditGuaranty:programChoiceOption:read", "creditGuaranty:programChoiceOption:write"})
      *
      * @Assert\Expression("this.isDescriptionValid()")
      */
@@ -68,7 +72,7 @@ class ProgramChoiceOption
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Field")
      * @ORM\JoinColumn(name="id_field", nullable=false)
      *
-     * @Groups({"creditGuaranty:programChoiceOption:read"})
+     * @Groups({"creditGuaranty:programChoiceOption:read", "creditGuaranty:programChoiceOption:write"})
      */
     private Field $field;
 

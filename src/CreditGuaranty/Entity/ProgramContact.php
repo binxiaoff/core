@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiResource};
+use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
@@ -18,7 +18,11 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *     normalizationContext={"groups":{"creditGuaranty:programContact:read", "creditGuaranty:program:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:programContact:write"}},
  *      itemOperations={
- *          "get",
+ *          "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *          },
  *          "patch": {"security": "is_granted('edit', object)"},
  *          "delete": {"security": "is_granted('delete', object)"}
  *      },
@@ -44,8 +48,10 @@ class ProgramContact
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programContacts")
      * @ORM\JoinColumn(name="id_program", nullable=false)
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
      *
      * @Groups({"creditGuaranty:programContact:read", "creditGuaranty:programContact:write"})
      */
