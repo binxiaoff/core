@@ -606,7 +606,7 @@ class Covenant
                 if (false === isset($this->covenantRules[$year])) {
                     $context->buildViolation('Agency.Covenant.covenantRules.missingYear')
                         ->atPath('covenantRules')
-                        ->setParameter('{{ missingYear }}', $year)
+                        ->setParameter('{{ missingYear }}', (string) $year)
                         ->addViolation();
                 }
             }
