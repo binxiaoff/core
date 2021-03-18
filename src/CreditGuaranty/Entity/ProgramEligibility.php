@@ -17,7 +17,7 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *      attributes={"pagination_enabled": false},
  *      normalizationContext={"groups":{
  *          "creditGuaranty:programEligibility:read",
- *          "creditGuaranty:fieldConfiguration:read",
+ *          "creditGuaranty:field:read",
  *          "creditGuaranty:programChoiceOption:read",
  *          "creditGuaranty:programEligibilityConfiguration:read",
  *          "timestampable:read"
@@ -38,12 +38,12 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  * @ORM\Table(
  *      name="credit_guaranty_program_eligibility",
  *      uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"id_field_configuration", "id_program"})
+ *          @ORM\UniqueConstraint(columns={"id_field", "id_program"})
  *      }
  * )
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity({"fieldConfiguration", "program"})
+ * @UniqueEntity({"field", "program"})
  */
 class ProgramEligibility
 {
@@ -61,12 +61,12 @@ class ProgramEligibility
     private Program $program;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\FieldConfiguration")
-     * @ORM\JoinColumn(name="id_field_configuration", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Field")
+     * @ORM\JoinColumn(name="id_field", nullable=false)
      *
      * @Groups({"creditGuaranty:programEligibility:read"})
      */
-    private FieldConfiguration $fieldConfiguration;
+    private Field $field;
 
     /**
      * @var Collection|ProgramEligibilityConfiguration[]
@@ -78,13 +78,13 @@ class ProgramEligibility
     private Collection $programEligibilityConfigurations;
 
     /**
-     * @param Program            $program
-     * @param FieldConfiguration $fieldConfiguration
+     * @param Program $program
+     * @param Field   $field
      */
-    public function __construct(Program $program, FieldConfiguration $fieldConfiguration)
+    public function __construct(Program $program, Field $field)
     {
         $this->program                          = $program;
-        $this->fieldConfiguration               = $fieldConfiguration;
+        $this->field                            = $field;
         $this->programEligibilityConfigurations = new ArrayCollection();
         $this->added                            = new \DateTimeImmutable();
     }
@@ -98,11 +98,11 @@ class ProgramEligibility
     }
 
     /**
-     * @return FieldConfiguration
+     * @return Field
      */
-    public function getfieldConfiguration(): FieldConfiguration
+    public function getField(): Field
     {
-        return $this->fieldConfiguration;
+        return $this->field;
     }
 
     /**

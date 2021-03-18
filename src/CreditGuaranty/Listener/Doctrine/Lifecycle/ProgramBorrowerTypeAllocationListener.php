@@ -6,22 +6,22 @@ namespace Unilend\CreditGuaranty\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\{EntityManager, Event\OnFlushEventArgs, Mapping\ClassMetadata, ORMException, UnitOfWork};
 use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, ProgramBorrowerTypeAllocation, ProgramEligibilityConfiguration};
-use Unilend\CreditGuaranty\Repository\{FieldConfigurationRepository, ProgramEligibilityRepository};
+use Unilend\CreditGuaranty\Repository\{FieldRepository, ProgramEligibilityRepository};
 
 class ProgramBorrowerTypeAllocationListener
 {
     private ProgramEligibilityRepository $programEligibilityRepository;
-    /** @var FieldConfigurationRepository */
-    private FieldConfigurationRepository $fieldConfigurationRepository;
+    /** @var FieldRepository */
+    private FieldRepository $fieldRepository;
 
     /**
      * @param ProgramEligibilityRepository $programEligibilityRepository
-     * @param FieldConfigurationRepository $fieldConfigurationRepository
+     * @param FieldRepository              $fieldRepository
      */
-    public function __construct(ProgramEligibilityRepository $programEligibilityRepository, FieldConfigurationRepository $fieldConfigurationRepository)
+    public function __construct(ProgramEligibilityRepository $programEligibilityRepository, FieldRepository $fieldRepository)
     {
-        $this->programEligibilityRepository  = $programEligibilityRepository;
-        $this->fieldConfigurationRepository = $fieldConfigurationRepository;
+        $this->programEligibilityRepository = $programEligibilityRepository;
+        $this->fieldRepository              = $fieldRepository;
     }
 
     /**
@@ -64,10 +64,10 @@ class ProgramBorrowerTypeAllocationListener
         UnitOfWork $unitOfWork,
         ClassMetadata $classMetadata
     ): void {
-        $fieldConfiguration = $this->fieldConfigurationRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
+        $field = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
         $programEligibility  = $this->programEligibilityRepository->findOneBy([
-            'program'            => $programBorrowerTypeAllocation->getProgram(),
-            'fieldConfiguration' => $fieldConfiguration,
+            'program' => $programBorrowerTypeAllocation->getProgram(),
+            'field'   => $field,
         ]);
 
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, $programBorrowerTypeAllocation->getProgramChoiceOption(), null, true);

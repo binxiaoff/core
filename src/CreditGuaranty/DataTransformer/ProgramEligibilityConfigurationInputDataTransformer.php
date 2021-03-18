@@ -50,13 +50,13 @@ class ProgramEligibilityConfigurationInputDataTransformer implements DataTransfo
         $this->validator->validate($object);
 
         $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([
-            'program'             => $object->programEligibility->getProgram(),
-            'fieldConfiguration' => $object->programEligibility->getFieldConfiguration(),
-            'description'         => $object->value,
+            'program'     => $object->programEligibility->getProgram(),
+            'field'       => $object->programEligibility->getField(),
+            'description' => $object->value,
         ]);
 
         if (null === $programChoiceOption) {
-            $programChoiceOption = new ProgramChoiceOption($object->programEligibility->getProgram(), $object->value, $object->programEligibility->getFieldConfiguration());
+            $programChoiceOption = new ProgramChoiceOption($object->programEligibility->getProgram(), $object->value, $object->programEligibility->getField());
             $this->programChoiceOptionRepository->save($programChoiceOption);
         }
 

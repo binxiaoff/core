@@ -9,20 +9,20 @@ use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\{AbstractFixtures, DumpedDataFixture};
 use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, Program, ProgramChoiceOption};
-use Unilend\CreditGuaranty\Repository\FieldConfigurationRepository;
+use Unilend\CreditGuaranty\Repository\FieldRepository;
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    private FieldConfigurationRepository $fieldConfigurationRepository;
+    private FieldRepository $fieldRepository;
 
     /**
-     * @param TokenStorageInterface        $tokenStorage
-     * @param FieldConfigurationRepository $fieldConfigurationRepository
+     * @param TokenStorageInterface $tokenStorage
+     * @param FieldRepository       $fieldRepository
      */
-    public function __construct(TokenStorageInterface $tokenStorage, FieldConfigurationRepository $fieldConfigurationRepository)
+    public function __construct(TokenStorageInterface $tokenStorage, FieldRepository $fieldRepository)
     {
         parent::__construct($tokenStorage);
-        $this->fieldConfigurationRepository = $fieldConfigurationRepository;
+        $this->fieldRepository = $fieldRepository;
     }
 
     /**
@@ -47,7 +47,7 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'Installé depuis moins de 10 ans', 'Installé depuis plus de 10 ans',
         ];
         $nbDescriptions     = count($descriptions);
-        $borrowerTypeConfig = $this->fieldConfigurationRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
+        $borrowerTypeConfig = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
 
         foreach ($programReferences as $programReference) {
             /** @var Program $program */

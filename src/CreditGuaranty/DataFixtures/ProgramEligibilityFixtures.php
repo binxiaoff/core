@@ -9,20 +9,20 @@ use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\{AbstractFixtures, DumpedDataFixture};
 use Unilend\CreditGuaranty\Entity\{Program, ProgramEligibility};
-use Unilend\CreditGuaranty\Repository\FieldConfigurationRepository;
+use Unilend\CreditGuaranty\Repository\FieldRepository;
 
 class ProgramEligibilityFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    private FieldConfigurationRepository $fieldConfigurationRepository;
+    private FieldRepository $fieldRepository;
 
     /**
-     * @param TokenStorageInterface        $tokenStorage
-     * @param FieldConfigurationRepository $fieldConfigurationRepository
+     * @param TokenStorageInterface $tokenStorage
+     * @param FieldRepository       $fieldRepository
      */
-    public function __construct(TokenStorageInterface $tokenStorage, FieldConfigurationRepository $fieldConfigurationRepository)
+    public function __construct(TokenStorageInterface $tokenStorage, FieldRepository $fieldRepository)
     {
         parent::__construct($tokenStorage);
-        $this->fieldConfigurationRepository = $fieldConfigurationRepository;
+        $this->fieldRepository = $fieldRepository;
     }
 
     /**
@@ -30,7 +30,7 @@ class ProgramEligibilityFixtures extends AbstractFixtures implements DependentFi
      */
     public function load(ObjectManager $manager): void
     {
-        $fieldConfigurations = $this->fieldConfigurationRepository->findAll();
+        $fields = $this->fieldRepository->findAll();
 
         $programReferences = [
             ProgramFixtures::REFERENCE_CANCELLED,
@@ -43,8 +43,8 @@ class ProgramEligibilityFixtures extends AbstractFixtures implements DependentFi
             /** @var Program $program */
             $program = $this->getReference($programReference);
 
-            foreach ($fieldConfigurations as $fieldConfiguration) {
-                $programEligibility = new ProgramEligibility($program, $fieldConfiguration);
+            foreach ($fields as $field) {
+                $programEligibility = new ProgramEligibility($program, $field);
                 $manager->persist($programEligibility);
             }
         }

@@ -12,7 +12,7 @@ class ProgramEligibilityConfigurationInput
     /**
      * @Assert\NotBlank
      * @Assert\Expression(
-     *     "constant('Unilend\\CreditGuaranty\\Entity\\FieldConfiguration::TYPE_LIST') === value.getFieldConfiguration().getType()",
+     *     "constant('Unilend\\CreditGuaranty\\Entity\\Field::TYPE_LIST') === value.getField().getType()",
      *     message="CreditGuaranty.ProgramEligibilityConfigurationInput.programEligibility.type.onlyList"
      * )
      */

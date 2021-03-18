@@ -9,27 +9,27 @@ use ApiPlatform\Core\Validator\ValidatorInterface;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
 use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, ProgramBorrowerTypeAllocation, ProgramChoiceOption};
-use Unilend\CreditGuaranty\Repository\{FieldConfigurationRepository, ProgramChoiceOptionRepository};
+use Unilend\CreditGuaranty\Repository\{FieldRepository, ProgramChoiceOptionRepository};
 
 class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransformerInterface
 {
     private ValidatorInterface $validator;
     private ProgramChoiceOptionRepository $programChoiceOptionRepository;
-    private FieldConfigurationRepository $fieldConfigurationRepository;
+    private FieldRepository               $fieldRepository;
 
     /**
      * @param ValidatorInterface            $validator
      * @param ProgramChoiceOptionRepository $programChoiceOptionRepository
-     * @param FieldConfigurationRepository  $fieldConfigurationRepository
+     * @param FieldRepository               $fieldRepository
      */
     public function __construct(
         ValidatorInterface $validator,
         ProgramChoiceOptionRepository $programChoiceOptionRepository,
-        FieldConfigurationRepository $fieldConfigurationRepository
+        FieldRepository $fieldRepository
     ) {
         $this->validator                     = $validator;
         $this->programChoiceOptionRepository = $programChoiceOptionRepository;
-        $this->fieldConfigurationRepository  = $fieldConfigurationRepository;
+        $this->fieldRepository               = $fieldRepository;
     }
     /**
      * @inheritDoc
@@ -54,14 +54,14 @@ class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransform
     public function transform($object, string $to, array $context = []): ProgramBorrowerTypeAllocation
     {
         $this->validator->validate($object);
-        $fieldConfiguration = $this->fieldConfigurationRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
+        $field = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
         $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([
             'program'            => $object->program,
-            'fieldConfiguration' => $fieldConfiguration,
+            'field' => $field,
             'description'        => $object->borrowerType,
         ]);
         if (null === $programChoiceOption) {
-            $programChoiceOption = new ProgramChoiceOption($object->program, $object->borrowerType, $fieldConfiguration);
+            $programChoiceOption = new ProgramChoiceOption($object->program, $object->borrowerType, $field);
             $this->programChoiceOptionRepository->save($programChoiceOption);
         }
 

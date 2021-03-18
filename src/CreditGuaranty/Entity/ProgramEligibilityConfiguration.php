@@ -155,10 +155,10 @@ class ProgramEligibilityConfiguration
      */
     public function validateConfiguration(ExecutionContextInterface $context): void
     {
-        $criteriaType   = $this->getProgramEligibility()->getFieldConfiguration()->getType();
+        $criteriaType   = $this->getProgramEligibility()->getField()->getType();
         $violationPaths = [];
         switch ($criteriaType) {
-            case FieldConfiguration::TYPE_OTHER:
+            case Field::TYPE_OTHER:
                 if (null !== $this->value) {
                     $violationPaths[] = 'value';
                 }
@@ -166,7 +166,7 @@ class ProgramEligibilityConfiguration
                     $violationPaths[] = 'programChoiceOption';
                 }
                 break;
-            case FieldConfiguration::TYPE_BOOL:
+            case Field::TYPE_BOOL:
                 if (null === $this->value) {
                     $violationPaths[] = 'value';
                 }
@@ -174,7 +174,7 @@ class ProgramEligibilityConfiguration
                     $violationPaths[] = 'programChoiceOption';
                 }
                 break;
-            case FieldConfiguration::TYPE_LIST:
+            case Field::TYPE_LIST:
                 if (null !== $this->value) {
                     $violationPaths[] = 'value';
                 }
@@ -183,7 +183,7 @@ class ProgramEligibilityConfiguration
                 }
                 break;
             default:
-                $context->buildViolation('CreditGuaranty.ProgramEligibility.fieldConfiguration.unsupportedType')
+                $context->buildViolation('CreditGuaranty.ProgramEligibility.field.unsupportedType')
                     ->atPath('programEligibility.criteria')
                     ->addViolation()
                 ;
@@ -196,7 +196,7 @@ class ProgramEligibilityConfiguration
                 $violationPaths[] = 'programChoiceOption.program';
             }
 
-            if ($this->getProgramChoiceOption()->getfieldConfiguration() !== $this->getProgramEligibility()->getfieldConfiguration()) {
+            if ($this->getProgramChoiceOption()->getField() !== $this->getProgramEligibility()->getField()) {
                 $violationPaths[] = 'programChoiceOption.field';
             }
         }

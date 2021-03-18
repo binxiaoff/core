@@ -1,4 +1,4 @@
-INSERT INTO credit_guaranty_field_configuration (public_id, field_alias, category, type, target_property_access_path, comparable, unit, predefined_items) VALUES
+INSERT INTO credit_guaranty_field (public_id, field_alias, category, type, target_property_access_path, comparable, unit, predefined_items) VALUES
 ('77d246f8-8181-4d45-9a2a-268dd6795e70', 'juridical_person', 'general', 'bool', '', 0, NULL, NULL),
 ('3e2201f1-493f-475d-b84f-ee44e9065ea2', 'on_going_creation', 'general', 'bool', '', 0, NULL, NULL),
 ('a5ebc5fa-ebd6-450e-9c44-1aab84e65bbb', 'receiving_grant', 'general', 'bool', '', 0, NULL, NULL),

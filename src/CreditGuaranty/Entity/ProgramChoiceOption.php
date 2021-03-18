@@ -37,12 +37,12 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  * @ORM\Table(
  *     name="credit_guaranty_program_choice_option",
  *     uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"description", "id_field_configuration", "id_program"})
+ *          @ORM\UniqueConstraint(columns={"description", "id_field", "id_program"})
  *      }
  * )
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity({"description", "fieldConfiguration", "program"})
+ * @UniqueEntity({"description", "field", "program"})
  */
 class ProgramChoiceOption
 {
@@ -65,24 +65,24 @@ class ProgramChoiceOption
     private string $description;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\FieldConfiguration")
-     * @ORM\JoinColumn(name="id_field_configuration", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Field")
+     * @ORM\JoinColumn(name="id_field", nullable=false)
      *
      * @Groups({"creditGuaranty:programChoiceOption:read"})
      */
-    private FieldConfiguration $fieldConfiguration;
+    private Field $field;
 
     /**
-     * @param Program            $program
-     * @param string             $description
-     * @param FieldConfiguration $fieldConfiguration
+     * @param Program $program
+     * @param string  $description
+     * @param Field   $field
      */
-    public function __construct(Program $program, string $description, FieldConfiguration $fieldConfiguration)
+    public function __construct(Program $program, string $description, Field $field)
     {
-        $this->program             = $program;
-        $this->description         = $description;
-        $this->fieldConfiguration  = $fieldConfiguration;
-        $this->added               = new \DateTimeImmutable();
+        $this->program     = $program;
+        $this->description = $description;
+        $this->field       = $field;
+        $this->added       = new \DateTimeImmutable();
     }
 
     /**
@@ -114,11 +114,11 @@ class ProgramChoiceOption
     }
 
     /**
-     * @return FieldConfiguration
+     * @return Field
      */
-    public function getfieldConfiguration(): FieldConfiguration
+    public function getField(): Field
     {
-        return $this->fieldConfiguration;
+        return $this->field;
     }
 
     /**
@@ -128,10 +128,10 @@ class ProgramChoiceOption
      */
     public function isDescriptionValid(): bool
     {
-        if (FieldConfiguration::TYPE_LIST === $this->getfieldConfiguration()->getType() && null === $this->getfieldConfiguration()->getPredefinedItems()) {
+        if (Field::TYPE_LIST === $this->getField()->getType() && null === $this->getField()->getPredefinedItems()) {
             return true;
         }
 
-        return in_array($this->description, $this->getfieldConfiguration()->getPredefinedItems(), true);
+        return in_array($this->description, $this->getField()->getPredefinedItems(), true);
     }
 }

@@ -17,9 +17,9 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  * )
  *
  * @ORM\Entity
- * @ORM\Table(name="credit_guaranty_field_configuration")
+ * @ORM\Table(name="credit_guaranty_field")
  */
-class FieldConfiguration
+class Field
 {
     use PublicizeIdentityTrait;
 
@@ -36,21 +36,21 @@ class FieldConfiguration
     /**
      * @ORM\Column(length=100)
      *
-     * @Groups({"creditGuaranty:fieldConfiguration:read"})
+     * @Groups({"creditGuaranty:field:read"})
      */
     private string $fieldAlias;
 
     /**
      * @ORM\Column(length=100)
      *
-     * @Groups({"creditGuaranty:fieldConfiguration:read"})
+     * @Groups({"creditGuaranty:field:read"})
      */
     private string $category;
 
     /**
      * @ORM\Column(length=20)
      *
-     * @Groups({"creditGuaranty:fieldConfiguration:read"})
+     * @Groups({"creditGuaranty:field:read"})
      */
     private string $type;
 
@@ -62,7 +62,7 @@ class FieldConfiguration
     /**
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"creditGuaranty:fieldConfiguration:read"})
+     * @Groups({"creditGuaranty:field:read"})
      */
     private bool $comparable;
 
@@ -71,7 +71,7 @@ class FieldConfiguration
      *
      * @ORM\Column(type="json", nullable=true)
      *
-     * @Groups({"creditGuaranty:fieldConfiguration:read"})
+     * @Groups({"creditGuaranty:field:read"})
      */
     private ?array $predefinedItems;
 
@@ -80,7 +80,7 @@ class FieldConfiguration
      *
      * @ORM\Column(length=20, nullable=true)
      *
-     * @Groups({"creditGuaranty:fieldConfiguration:read"})
+     * @Groups({"creditGuaranty:field:read"})
      */
     private ?string $unit;
 

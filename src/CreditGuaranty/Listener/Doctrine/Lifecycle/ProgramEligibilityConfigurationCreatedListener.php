@@ -49,7 +49,7 @@ class ProgramEligibilityConfigurationCreatedListener
         UnitOfWork $unitOfWork,
         ClassMetadata $classMetadata
     ): void {
-        if (FieldAlias::BORROWER_TYPE === $programEligibilityConfiguration->getProgramEligibility()->getFieldConfiguration()->getFieldAlias()) {
+        if (FieldAlias::BORROWER_TYPE === $programEligibilityConfiguration->getProgramEligibility()->getField()->getFieldAlias()) {
             $programBorrowerTypeAllocation = new ProgramBorrowerTypeAllocation(
                 $programEligibilityConfiguration->getProgramEligibility()->getProgram(),
                 $programEligibilityConfiguration->getProgramChoiceOption(),
