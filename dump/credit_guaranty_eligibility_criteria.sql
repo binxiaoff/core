@@ -15,7 +15,7 @@ INSERT INTO credit_guaranty_field (public_id, field_alias, category, type, targe
 ('d61a4e71-4438-46f1-b1a5-376f98566c06', 'activity_start_date', 'activity', 'other', '', 0, NULL, NULL),
 ('6c067265-5ff5-49f4-84f0-e511a4a7d42e', 'employees_number', 'activity', 'other', '', 1, 'person', NULL),
 ('9865fb18-ba90-42ce-9455-e7c508acddd9', 'last_year_turnover', 'activity', 'other', '', 1, 'money', NULL),
-('9865fb18-ba90-42ce-9455-e7c508acddd9', '5_years_average_turnover', 'activity', 'other', '', 1, 'money', NULL),
+('a2e2cbad-75d3-42a4-83d9-aef63da4360e', '5_years_average_turnover', 'activity', 'other', '', 1, 'money', NULL),
 ('938c689e-bddb-42b9-b84a-a00b18523e4f', 'total_assets', 'activity', 'other', '', 1, 'money', NULL),
 ('5e6b31a1-1007-4e8d-a1ce-9a38e62280b9', 'grant_amount', 'activity', 'other', '', 1, 'money', NULL),
 ('d5cbbd4c-0101-4d6b-b816-146a1943ee2e', 'low_density_medical_area_exercise', 'activity', 'other', '', 1, 'money', NULL),
