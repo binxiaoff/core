@@ -24,11 +24,11 @@ class Field
     use PublicizeIdentityTrait;
 
     // The criteria contains a list of items pre-defined or defined later by the user. The eligibility is configured on each item.
-    public const TYPE_LIST      = 'list';
+    public const TYPE_LIST = 'list';
     // It is a special version of "list". The listed items are booleans (yes or no).
-    public const TYPE_BOOL      = 'bool';
+    public const TYPE_BOOL = 'bool';
     // Other type that we haven't yet managed.
-    public const TYPE_OTHER     = 'other';
+    public const TYPE_OTHER = 'other';
 
     public const VALUE_BOOL_YES = '1';
     public const VALUE_BOOL_NO  = '0';

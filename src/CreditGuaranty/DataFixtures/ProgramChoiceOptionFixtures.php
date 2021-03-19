@@ -6,6 +6,7 @@ namespace Unilend\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\{AbstractFixtures, DumpedDataFixture};
 use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, Program, ProgramChoiceOption};
@@ -27,6 +28,8 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
 
     /**
      * @param ObjectManager $manager
+     *
+     * @throws Exception
      */
     public function load(ObjectManager $manager): void
     {
@@ -37,7 +40,7 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             ProgramFixtures::REFERENCE_PAUSED,
         ];
 
-        $choices = [
+        $lists = [
             FieldAlias::BORROWER_TYPE => [
                 'Installé depuis plus de 7 ans', 'Installé depuis moins de 7 ans',
                 'En reconversion Bio', 'Agriculture céréalière',
@@ -48,8 +51,23 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
                 'Installé depuis moins de 10 ans', 'Installé depuis plus de 10 ans',
             ],
         ];
-        foreach ($choices as $type => $typeChoices) {
-            $this->setProgramChoiceOptions($manager, $programReferences, $typeChoices, $type);
+
+        $fields = [];
+
+        foreach ($programReferences as $programReference) {
+            /** @var Program $program */
+            $program = $this->getReference($programReference);
+
+            foreach ($lists as $fieldAlias => $choices) {
+                $nbChoices = count($choices);
+                if (false === isset($fields[$fieldAlias])) {
+                    $fields[$fieldAlias] = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
+                }
+
+                for ($i = 0; $i <= random_int(0, $nbChoices - 1); $i++) {
+                    $manager->persist(new ProgramChoiceOption($program, $choices[$i], $fields[$fieldAlias]));
+                }
+            }
         }
 
         $manager->flush();
@@ -64,27 +82,5 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             ProgramFixtures::class,
             DumpedDataFixture::class,
         ];
-    }
-
-    /**
-     * @param ObjectManager $manager
-     * @param array         $programReferences
-     * @param array         $choices
-     * @param string        $fieldAlias
-     */
-    private function setProgramChoiceOptions(ObjectManager $manager, array $programReferences, array $choices, string $fieldAlias)
-    {
-        $nbChoices = count($choices);
-        /** @var EligibilityCriteria $eligibilityCriteria **/
-        $field     = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
-
-        foreach ($programReferences as $programReference) {
-            /** @var Program $program */
-            $program = $this->getReference($programReference);
-
-            for ($i = 0; $i <= rand(0, $nbChoices - 1); $i++) {
-                $manager->persist(new ProgramChoiceOption($program, $choices[$i], $field));
-            }
-        }
     }
 }
