@@ -10,6 +10,10 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
 /**
  * @ApiResource
+ *
+ * @ORM\Entity
+ * @ORM\Table(name="credit_guaranty_program_eligibility_condition")
+ * @ORM\HasLifecycleCallbacks
  */
 class ProgramEligibilityCondition
 {
