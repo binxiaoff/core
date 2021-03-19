@@ -8,12 +8,24 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\{AbstractFixtures, DumpedDataFixture};
-use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, Program, ProgramChoiceOption};
+use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, Field, Program, ProgramChoiceOption};
 use Unilend\CreditGuaranty\Repository\FieldRepository;
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     private FieldRepository $fieldRepository;
+
+    private const FAKE_LISTS = [
+        FieldAlias::BORROWER_TYPE => [
+            'Installé depuis plus de 7 ans', 'Installé depuis moins de 7 ans',
+            'En reconversion Bio', 'Agriculture céréalière',
+            'Agriculture bovine', 'Producteur de lait',
+            'Exploitant céréalier', 'Ostréiculteur',
+            'Apiculteur', 'Agriculture durable',
+            'Vignoble', 'Jeune agriculteur de moins de 30 ans',
+            'Installé depuis moins de 10 ans', 'Installé depuis plus de 10 ans',
+        ],
+    ];
 
     /**
      * @param TokenStorageInterface $tokenStorage
@@ -36,25 +48,11 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             ProgramFixtures::REFERENCE_DRAFT,
             ProgramFixtures::REFERENCE_PAUSED,
         ];
+        $fields = $this->fieldRepository->findBy(['type' => Field::TYPE_LIST]);
 
-        $choices = [
-            FieldAlias::BORROWER_TYPE => [
-                'Installé depuis plus de 7 ans', 'Installé depuis moins de 7 ans',
-                'En reconversion Bio', 'Agriculture céréalière',
-                'Agriculture bovine', 'Producteur de lait',
-                'Exploitant céréalier', 'Ostréiculteur',
-                'Apiculteur', 'Agriculture durable',
-                'Vignoble', 'Jeune agriculteur de moins de 30 ans',
-                'Installé depuis moins de 10 ans', 'Installé depuis plus de 10 ans',
-            ],
-            FieldAlias::ACTIVITY_COUNTRY => [
-                'SARL', 'SAS', 'SASU', 'EURL', 'SA', 'SELAS',
-            ],
-        ];
-        foreach ($choices as $type => $typeChoices) {
-            $this->setProgramChoiceOptions($manager, $programReferences, $typeChoices, $type);
+        foreach ($fields as $field) {
+            $this->setProgramChoiceOptions($manager, $programReferences, $field);
         }
-
         $manager->flush();
     }
 
@@ -72,21 +70,22 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
     /**
      * @param ObjectManager $manager
      * @param array         $programReferences
-     * @param array         $choices
-     * @param string        $fieldAlias
+     * @param Field         $field
      */
-    private function setProgramChoiceOptions(ObjectManager $manager, array $programReferences, array $choices, string $fieldAlias)
+    private function setProgramChoiceOptions(ObjectManager $manager, array $programReferences, Field $field)
     {
-        $nbChoices = count($choices);
-        /** @var EligibilityCriteria $eligibilityCriteria **/
-        $field     = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
+        if (false === \is_array($field->getPredefinedItems())) {
+            $items = isset(self::FAKE_LISTS[$field->getFieldAlias()]) ? self::FAKE_LISTS[$field->getFieldAlias()] : [];
+            $nbItems = count($items);
 
-        foreach ($programReferences as $programReference) {
-            /** @var Program $program */
-            $program = $this->getReference($programReference);
-
-            for ($i = 0; $i <= rand(0, $nbChoices - 1); $i++) {
-                $manager->persist(new ProgramChoiceOption($program, $choices[$i], $field));
+            if (0 < $nbItems) {
+                foreach ($programReferences as $programReference) {
+                    /** @var Program $program */
+                    $program = $this->getReference($programReference);
+                    for ($i = 0; $i <= rand(0, $nbItems - 1); $i++) {
+                        $manager->persist(new ProgramChoiceOption($program, $items[$i], $field));
+                    }
+                }
             }
         }
     }

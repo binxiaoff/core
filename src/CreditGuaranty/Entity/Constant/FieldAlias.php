@@ -23,12 +23,12 @@ class FieldAlias extends AbstractEnum
     public const EMPLOYEES_NUMBER                  = 'employees_number';
     public const LAST_YEAR_TURNOVER                = 'last_year_turnover';
     public const LAST_FIVE_YEAR_TURNOVER           = 'last_year_turnover';
-    public const TOTAL_BALANCE                     = 'total_balance';
+    public const TOTAL_ASSETS                      = 'total_assets';
     public const GRANT_AMOUNT                      = 'grant_amount';
-    public const LOW_DENSITY_MEDICAL_AREA_EXERCISE = 'low_density_medical_are_exercise';
+    public const LOW_DENSITY_MEDICAL_AREA_EXERCISE = 'low_density_medical_area_exercise';
 
     // date
-    public const FIRST_ACTIVITY_DATE               = 'first_activity_date';
+    public const ACTIVITY_START_DATE               = 'activity_start_date';
 
     // Boolean fields
     public const JURIDICAL_PERSON                  = 'juridical_person';
