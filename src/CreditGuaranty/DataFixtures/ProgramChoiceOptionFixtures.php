@@ -8,24 +8,12 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\{AbstractFixtures, DumpedDataFixture};
-use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, Field, Program, ProgramChoiceOption};
+use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, Program, ProgramChoiceOption};
 use Unilend\CreditGuaranty\Repository\FieldRepository;
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     private FieldRepository $fieldRepository;
-
-    private const FAKE_LISTS = [
-        FieldAlias::BORROWER_TYPE => [
-            'Installé depuis plus de 7 ans', 'Installé depuis moins de 7 ans',
-            'En reconversion Bio', 'Agriculture céréalière',
-            'Agriculture bovine', 'Producteur de lait',
-            'Exploitant céréalier', 'Ostréiculteur',
-            'Apiculteur', 'Agriculture durable',
-            'Vignoble', 'Jeune agriculteur de moins de 30 ans',
-            'Installé depuis moins de 10 ans', 'Installé depuis plus de 10 ans',
-        ],
-    ];
 
     /**
      * @param TokenStorageInterface $tokenStorage
@@ -48,11 +36,22 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             ProgramFixtures::REFERENCE_DRAFT,
             ProgramFixtures::REFERENCE_PAUSED,
         ];
-        $fields = $this->fieldRepository->findBy(['type' => Field::TYPE_LIST]);
 
-        foreach ($fields as $field) {
-            $this->setProgramChoiceOptions($manager, $programReferences, $field);
+        $choices = [
+            FieldAlias::BORROWER_TYPE => [
+                'Installé depuis plus de 7 ans', 'Installé depuis moins de 7 ans',
+                'En reconversion Bio', 'Agriculture céréalière',
+                'Agriculture bovine', 'Producteur de lait',
+                'Exploitant céréalier', 'Ostréiculteur',
+                'Apiculteur', 'Agriculture durable',
+                'Vignoble', 'Jeune agriculteur de moins de 30 ans',
+                'Installé depuis moins de 10 ans', 'Installé depuis plus de 10 ans',
+            ],
+        ];
+        foreach ($choices as $type => $typeChoices) {
+            $this->setProgramChoiceOptions($manager, $programReferences, $typeChoices, $type);
         }
+
         $manager->flush();
     }
 
@@ -62,30 +61,29 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
     public function getDependencies(): array
     {
         return [
-          ProgramFixtures::class,
-          DumpedDataFixture::class,
+            ProgramFixtures::class,
+            DumpedDataFixture::class,
         ];
     }
 
     /**
      * @param ObjectManager $manager
      * @param array         $programReferences
-     * @param Field         $field
+     * @param array         $choices
+     * @param string        $fieldAlias
      */
-    private function setProgramChoiceOptions(ObjectManager $manager, array $programReferences, Field $field)
+    private function setProgramChoiceOptions(ObjectManager $manager, array $programReferences, array $choices, string $fieldAlias)
     {
-        if (false === \is_array($field->getPredefinedItems())) {
-            $items = isset(self::FAKE_LISTS[$field->getFieldAlias()]) ? self::FAKE_LISTS[$field->getFieldAlias()] : [];
-            $nbItems = count($items);
+        $nbChoices = count($choices);
+        /** @var EligibilityCriteria $eligibilityCriteria **/
+        $field     = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
 
-            if (0 < $nbItems) {
-                foreach ($programReferences as $programReference) {
-                    /** @var Program $program */
-                    $program = $this->getReference($programReference);
-                    for ($i = 0; $i <= rand(0, $nbItems - 1); $i++) {
-                        $manager->persist(new ProgramChoiceOption($program, $items[$i], $field));
-                    }
-                }
+        foreach ($programReferences as $programReference) {
+            /** @var Program $program */
+            $program = $this->getReference($programReference);
+
+            for ($i = 0; $i <= rand(0, $nbChoices - 1); $i++) {
+                $manager->persist(new ProgramChoiceOption($program, $choices[$i], $field));
             }
         }
     }
