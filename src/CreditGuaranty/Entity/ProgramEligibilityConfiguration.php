@@ -104,7 +104,7 @@ class ProgramEligibilityConfiguration
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition", mappedBy="programEligibilityConfiguration", orphanRemoval=true, fetch="EXTRA_LAZY")
      */
     private Collection $programEligibilityConditions;
 

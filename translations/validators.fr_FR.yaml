@@ -139,8 +139,16 @@ CreditGuaranty:
     ProgramGradeAllocation:
         grade:
             invalid: Le grade choisi n'est pas valable.
-
     ProgramEligibilityConfigurationInput:
         programEligibility:
             type:
                 onlyList: Vous ne pouvez que créer une configuration du type "list" pour l'éligibilité.
+    ProgramEligibilityCondition:
+        value:
+            outOfRange: Merci de mettre un chiffre entre 0 et 1 pour une comparaison de type "rate".
+        operandField:
+            nonComparable: Le champs choisi n'est pas comparable.
+        rightOperandField:
+            selfComparaison: Vous ne pouvez pas comparer un champ à lui-même.
+            empty: rightOperandField est requis pour une comparaison de type "rate".
+            notEmpty: rightOperandField doit être vide pour une comparaison de type "value".
