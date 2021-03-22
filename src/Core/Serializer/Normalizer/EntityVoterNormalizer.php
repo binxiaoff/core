@@ -58,7 +58,6 @@ class EntityVoterNormalizer implements NormalizerInterface, NormalizerAwareInter
 
         if (\is_array($normalized)) {
             $normalized['permissions'] = [
-                'view' => $this->security->isGranted('view', $object),
                 'edit' => $this->security->isGranted('edit', $object),
                 'delete' => $this->security->isGranted('delete', $object),
             ];
