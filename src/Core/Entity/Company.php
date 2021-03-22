@@ -56,7 +56,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *        },
  *         "staff": {
  *              "method": "GET",
- *              "path": "/core/companies/{id}/staff",
+ *              "path": "/core/companies/{publicId}/staff",
  *              "controller": "\Unilend\Core\Controller\Company\Staff",
  *              "normalization_context": {
  *                  "groups": {
@@ -69,7 +69,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         },
  *         "companyGroupTags": {
  *              "method": "GET",
- *              "path": "/core/companies/{id}/company_group_tags",
+ *              "path": "/core/companies/{publicId}/company_group_tags",
  *              "controller": "\Unilend\Core\Controller\Company\CompanyGroupTag",
  *              "normalization_context": {
  *                  "groups": {
@@ -79,7 +79,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         },
  *         "teams": {
  *              "method": "GET",
- *              "path": "/core/companies/{id}/teams",
+ *              "path": "/core/companies/{publicId}/teams",
  *              "controller": "\Unilend\Core\Controller\Company\Team",
  *              "normalization_context": {
  *                  "groups": {
