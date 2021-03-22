@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateInterval;
 use DatePeriod;
 use DateTimeImmutable;
@@ -29,7 +31,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *        "validation_groups": {Covenant::class, "getCurrentValidationGroups"}
  *     },
  *     normalizationContext={
- *          "groups": {"agency:covenant:read"}
+ *          "groups": {"agency:covenant:read", "agency:inequality:read"}
  *     },
  *     itemOperations={
  *         "get": {
@@ -57,6 +59,18 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         }
  *     }
  * )
+ *
+ * @ApiFilter(
+ *     filterClass=GroupFilter::class,
+ *     arguments={
+ *         "whitelist": {
+ *              "agency:covenantRule:read",
+ *              "agency:marginRule:read",
+ *              "agency:marginImpact:read",
+ *              "agency:term:read",
+ *          }
+ *     }
+ * )
  */
 class Covenant
 {
@@ -76,7 +90,7 @@ class Covenant
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="covenants")
+     * @ORM\ManyToOne(targetEntity=Project::class, inversedBy="covenants")
      * @ORM\JoinColumn(name="id_project")
      *
      * @Groups({"agency:covenant:create"})
@@ -186,7 +200,7 @@ class Covenant
     /**
      * @var CovenantRule[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\CovenantRule", mappedBy="covenant", indexBy="year", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity=CovenantRule::class, mappedBy="covenant", indexBy="year", cascade={"persist", "remove"})
      *
      * @Assert\Valid
      * @Assert\All({
@@ -230,7 +244,7 @@ class Covenant
     /**
      * @var MarginRule[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\MarginRule", mappedBy="covenant", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity=MarginRule::class, mappedBy="covenant", cascade={"persist"})
      *
      * @Assert\Valid
      * @Assert\AtLeastOneOf({
