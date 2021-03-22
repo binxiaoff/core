@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Action\NotFoundAction;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -13,7 +15,7 @@ use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Validator\Constraints\{Rcs as AssertRcs, Siren as AssertSiren};
+use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
 
 /**
  * @ApiResource(
@@ -33,7 +35,7 @@ use Unilend\Core\Validator\Constraints\{Rcs as AssertRcs, Siren as AssertSiren};
  *     },
  *     itemOperations={
  *         "get": {
- *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "controller": NotFoundAction::class,
  *             "read": false,
  *             "output": false,
  *         },
@@ -65,6 +67,8 @@ class Borrower
      * @Assert\NotBlank
      *
      * @Groups({"agency:borrower:read", "agency:borrower:create"})
+     *
+     * @ApiProperty(readableLink=false)
      */
     private Project $project;
 

@@ -44,19 +44,19 @@ doctrine:
                             type: annotation
                             dir: '%kernel.project_dir%/src/Syndication/Entity'
                             prefix: 'Unilend\Syndication\Entity'
-                            alias: Unilend\Syndication
+                            alias: Unilend
                         Unilend\Core:
                             is_bundle: false
                             type: annotation
                             dir: '%kernel.project_dir%/src/Core/Entity'
                             prefix: 'Unilend\Core\Entity'
                             alias: Unilend\Core
-            Unilend\Agency:
-                is_bundle: false
-                type: annotation
-                dir: '%kernel.project_dir%/src/Agency/Entity'
-                prefix: 'Unilend\Agency\Entity'
-                alias: Unilend\Agency
+                        Unilend\Agency:
+                            is_bundle: false
+                            type: annotation
+                            dir: '%kernel.project_dir%/src/Agency/Entity'
+                            prefix: 'Unilend\Agency\Entity'
+                            alias: Unilend\Agency
                     hydrators:
                         HYDRATE_COLUMN: Unilend\Core\Doctrine\ORM\ColumnHydrator
                     filters:

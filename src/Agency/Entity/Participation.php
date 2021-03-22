@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Action\NotFoundAction;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -50,6 +54,16 @@ use Unilend\Core\Model\Bitmask;
  * })
  *
  * @UniqueEntity(fields={"project", "participant"})
+ *
+ * @ApiFilter(
+ *     filterClass=GroupFilter::class,
+ *     arguments={
+ *         "whitelist": {
+ *             "agency:participationTrancheAllocation:read",
+ *             "company:read"
+ *         }
+ *     }
+ * )
  */
 class Participation
 {
@@ -68,6 +82,8 @@ class Participation
      * @Groups({"agency:participation:read", "agency:participation:create"})
      *
      * @Assert\NotBlank
+     *
+     * @ApiProperty(readableLink=false)
      */
     private Project $project;
 

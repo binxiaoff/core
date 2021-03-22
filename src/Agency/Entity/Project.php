@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
@@ -22,42 +24,32 @@ use Unilend\Core\Model\Bitmask;
 use Unilend\Core\Validator\Constraints\Siren;
 
 /**
- * TODO Add group filter to give more front control (below nullablePerson:read)
  * @ApiResource(
  *     attributes={
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *     },
  *     normalizationContext={
  *         "groups": {
- *             "timestampable:read",
  *             "agency:project:read",
- *             "money:read",
- *             "nullableMoney:read",
  *             "timestampable:read",
+ *             "money:read",
  *             "nullablePerson:read",
- *             "lendingRate:read",
- *             "agency:contact:read",
- *             "agency:borrower:read",
- *             "agency:tranche:read",
- *             "agency:borrowerTrancheShare:read",
- *             "agency:participation:read",
- *             "agency:participationTrancheAllocation:read",
- *             "company:read"
- *         },
- *     },
- *     denormalizationContext={
- *         "groups": {
- *             "agency:project:write",
- *             "money:write",
- *             "nullableMoney:write",
- *             "nullablePerson:write",
+ *             "nullableMoney:read",
+ *             "lendingRate:read"
  *         },
  *     },
  *     collectionOperations={
  *         "get",
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"agency:project:create", "money:write", "nullablePerson:write", "nullableMoney:write"}},
+ *             "denormalization_context": {
+ *                  "groups": {
+ *                       "agency:project:create",
+ *                       "money:write",
+ *                       "nullablePerson:write",
+ *                       "nullableMoney:write"
+ *                  }
+ *             },
  *         }
  *     },
  *     itemOperations={
@@ -67,7 +59,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
- *                 "groups": {
+ *                  "groups": {
  *                      "agency:project:write",
  *                      "agency:projectStatus:create",
  *                      "money:write",
@@ -84,6 +76,21 @@ use Unilend\Core\Validator\Constraints\Siren;
  * @ORM\Entity
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Agency\Entity\Versioned\VersionedProject")
+ *
+ * @ApiFilter(
+ *     filterClass=GroupFilter::class,
+ *     arguments={
+ *         "whitelist": {
+ *             "agency:contact:read",
+ *             "agency:borrower:read",
+ *             "agency:tranche:read",
+ *             "agency:borrowerTrancheShare:read",
+ *             "agency:participation:read",
+ *             "agency:participationTrancheAllocation:read",
+ *             "company:read"
+ *         }
+ *     }
+ * )
  */
 class Project
 {

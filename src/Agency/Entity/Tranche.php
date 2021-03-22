@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Action\NotFoundAction;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Constant\Tranche\{CommissionType, LoanType, RepaymentType};
@@ -20,7 +23,6 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
- * TODO Add group filter to give more front control (below nullableMoney:read)
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
@@ -28,7 +30,6 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "agency:tranche:read",
  *             "money:read",
  *             "nullableMoney:read",
- *             "agency:borrowerTrancheShare:read",
  *             "lendingRate:read"
  *         }
  *     },
@@ -40,7 +41,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *     },
  *     itemOperations={
  *         "get": {
- *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "controller": NotFoundAction::class,
  *             "read": false,
  *             "output": false,
  *         },
@@ -67,6 +68,16 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *     },
  *     collectionOperations={}
  * )
+ *
+ * @ApiFilter(
+ *     filterClass=GroupFilter::class,
+ *     arguments={
+ *         "whitelist": {
+ *             "agency:borrowerTrancheShare:read",
+ *             "agency:participationTrancheAllocation:read"
+ *         }
+ *     }
+ * )
  */
 class Tranche
 {
@@ -82,7 +93,7 @@ class Tranche
      *
      * @Groups({"agency:tranche:read", "agency:tranche:create"})
      *
-     * @MaxDepth(1)
+     * @ApiProperty(readableLink=false)
      */
     private Project $project;
 
