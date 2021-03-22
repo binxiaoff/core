@@ -124,7 +124,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *             "method": "GET",
  *             "security": "is_granted('view_nda', object)",
  *             "normalization_context": {"groups": {"project:nda:read", "file:read"}},
- *             "path": "/syndication/projects/{id}/nda"
+ *             "path": "/syndication/projects/{publicId}/nda"
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",

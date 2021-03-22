@@ -23,7 +23,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *             "security": "is_granted('sign', object)",
  *             "method": "POST",
  *             "controller": "Unilend\Core\Controller\FileVersionSignature\Sign",
- *             "path": "/core/file_version_signatures/{id}/sign",
+ *             "path": "/core/file_version_signatures/{publicId}/sign",
  *             "denormalization_context": {"groups": {"fileVersionSignature:sign"}}
  *         }
  *     },
