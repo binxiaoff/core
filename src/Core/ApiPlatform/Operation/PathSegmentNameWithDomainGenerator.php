@@ -9,20 +9,23 @@ use Doctrine\Inflector\InflectorFactory;
 
 class PathSegmentNameWithDomainGenerator implements PathSegmentNameGeneratorInterface
 {
+    private const API_DOMAINS = ['core', 'syndication'];
+
     /**
      * @inheritDoc
      */
     public function getSegmentName(string $name, bool $collection = true): string
     {
-        $inflector = InflectorFactory::create()->build();
 
-        $fragments = explode('_', $name, 2);
+        if (1 === preg_match(sprintf('/^(%s)_(.+)/', implode('|', self::API_DOMAINS)), $name, $matches)) {
+            $inflector    = InflectorFactory::create()->build();
+            $resourceName = $inflector->tableize($matches[2]);
+            $resourceName = $collection ? $inflector->pluralize($resourceName) : $resourceName;
 
-        foreach ($fragments as $key => &$fragment) {
-            $fragment = $inflector->tableize($fragment);
-            $fragment = $collection && array_key_last($fragments) === $key ? $inflector->pluralize($fragment) : $fragment;
+            return $matches[1] . '/' . $resourceName;
         }
 
-        return implode('/', $fragments);
+        // Some resources pass here without "domain" at the very first running when the Symfony cache is generating, we just let them bypass.
+        return $name;
     }
 }
