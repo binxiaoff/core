@@ -16,16 +16,16 @@ class PathSegmentNameWithDomainGenerator implements PathSegmentNameGeneratorInte
      */
     public function getSegmentName(string $name, bool $collection = true): string
     {
-
+        $inflector = InflectorFactory::create()->build();
+        $domain    = null;
+        // The segment names with domain.
         if (1 === preg_match(sprintf('/^(%s)_(.+)/', implode('|', self::API_DOMAINS)), $name, $matches)) {
-            $inflector    = InflectorFactory::create()->build();
-            $resourceName = $inflector->tableize($matches[2]);
-            $resourceName = $collection ? $inflector->pluralize($resourceName) : $resourceName;
-
-            return $matches[1] . '/' . $resourceName;
+            [, $domain, $name] = $matches;
         }
+        // It exists also the segment names without domain (ex. sub-resource).
+        $name = $inflector->tableize($name);
+        $name = $collection ? $inflector->pluralize($name) : $name;
 
-        // Some resources pass here without "domain" at the very first running when the Symfony cache is generating, we just let them bypass.
-        return $name;
+        return $domain ? $domain . '/' . $name : $name;
     }
 }
