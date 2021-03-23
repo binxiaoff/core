@@ -689,6 +689,14 @@ class Covenant
     }
 
     /**
+     * @return Collection|Term[]
+     */
+    public function getTerms()
+    {
+        return $this->terms;
+    }
+
+    /**
      * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups
      *
      * @param Covenant $covenant

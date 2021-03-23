@@ -16,6 +16,7 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Agency\Controller\Project\GetTerm;
 use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
 use Unilend\Core\Entity\Constant\{CAInternalRating, FundingSpecificity};
 use Unilend\Core\Entity\Embeddable\{Money, NullableMoney, NullablePerson};
@@ -57,6 +58,12 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         "get": {
  *             "security": "is_granted('view', object)",
  *         },
+ *         "terms": {
+ *             "path": "/agency/projects/{publicId}/terms",
+ *             "method": "GET",
+ *             "security": "is_granted('view', object)",
+ *             "controller": GetTerm::class
+ *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
@@ -68,7 +75,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *                      "nullableMoney:write",
  *                      "agency:covenant:update"
  *                  }
- *              },
+ *             },
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
  *     }
@@ -527,6 +534,8 @@ class Project
      * })
      *
      * @ApiProperty(writableLink=true, readableLink=false)
+     *
+     * @ApiSubresource()
      */
     private Collection $covenants;
 

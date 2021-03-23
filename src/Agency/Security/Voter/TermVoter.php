@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Security\Voter;
 
+use DateTime;
 use Exception;
 use Unilend\Agency\Entity\Term;
 use Unilend\Core\Entity\User;
@@ -25,7 +26,8 @@ class TermVoter extends AbstractEntityVoter
      */
     protected function canView(Term $term, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_VIEW, $term->getCovenant());
+        return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_VIEW, $term->getCovenant())
+            && $term->getStartDate() >= $this->getToday();
     }
 
     /**
@@ -38,6 +40,10 @@ class TermVoter extends AbstractEntityVoter
      */
     protected function canEdit(Term $term, User $user): bool
     {
+        if (false === ($term->getStartDate() >= $this->getToday())) {
+            return false;
+        }
+
         if ($term->isArchived()) {
             return false;
         }
@@ -62,6 +68,15 @@ class TermVoter extends AbstractEntityVoter
     protected function canDelete(Term $term, User $user): bool
     {
         return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_EDIT, $term->getCovenant())
-            && false === $term->isArchived() && $term->isShared();
+            && false === $term->isArchived() && $term->isShared()
+            && $term->getStartDate() >= $this->getToday();
+    }
+
+    /**
+     * @return DateTime|false
+     */
+    private function getToday()
+    {
+        return (new DateTime())->setTime(0, 0);
     }
 }

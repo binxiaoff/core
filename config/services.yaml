@@ -59,6 +59,11 @@ services:
         tags:
             - { name: 'controller.service_arguments' }
 
+    Unilend\Agency\Controller\:
+        resource: '%kernel.project_dir%/src/Agency/Controller'
+        tags:
+            - { name: 'controller.service_arguments' }
+
     Unilend\Core\Service\WebServiceClient\InseeManager:
         $client: '@eight_points_guzzle.client.insee'
 

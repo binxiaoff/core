@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Listener\Doctrine;
+namespace Unilend\Agency\Doctrine\Listener;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
