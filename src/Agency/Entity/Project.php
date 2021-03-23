@@ -64,6 +64,12 @@ use Unilend\Core\Validator\Constraints\Siren;
  *             "security": "is_granted('view', object)",
  *             "controller": GetTerm::class
  *         },
+ *         "terms": {
+ *             "path": "/agency/projects/{publicId}/terms",
+ *             "method": "GET",
+ *             "security": "is_granted('view', object)",
+ *             "controller": GetTerm::class
+ *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
