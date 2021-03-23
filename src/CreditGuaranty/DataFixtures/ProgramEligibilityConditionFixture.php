@@ -14,7 +14,7 @@ use Unilend\CreditGuaranty\Repository\{FieldRepository, ProgramEligibilityConfig
 
 class ProgramEligibilityConditionFixture extends AbstractFixtures implements DependentFixtureInterface
 {
-    private const CHANCE_OF_HAS_CONDITION = 30;
+    private const CHANCE_OF_HAVING_CONDITION = 30;
 
     private FieldRepository $fieldRepository;
     /** @var ProgramEligibilityConfigurationRepository */
@@ -67,7 +67,7 @@ class ProgramEligibilityConditionFixture extends AbstractFixtures implements Dep
             $programEligibilityConfigurations = $this->programEligibilityConfigurationRepository->findBy(['programEligibility' => $programEligibilities]);
 
             foreach ($programEligibilityConfigurations as $programEligibilityConfiguration) {
-                if (Miscellaneous::boolean(self::CHANCE_OF_HAS_CONDITION)) {
+                if (Miscellaneous::boolean(self::CHANCE_OF_HAVING_CONDITION)) {
                     for ($i = 0; $i <= random_int(1, count($comparableFields) - 1); $i++) {
                         $leftOperand = $comparableFields[$i];
                         $rightFields = $comparableFields;
