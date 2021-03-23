@@ -466,9 +466,9 @@ class Covenant
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getRecurrence(): string
+    public function getRecurrence(): ?string
     {
         return $this->recurrence;
     }
