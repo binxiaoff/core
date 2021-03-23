@@ -67,7 +67,7 @@ class Term
      *
      * @Assert\NotBlank
      *
-     * @ORM\Column(type="datetime_immutable")
+     * @ORM\Column(type="date_immutable")
      *
      * @Groups({"agency:term:read"})
      */
@@ -79,7 +79,7 @@ class Term
      * @Assert\GreaterThan(propertyPath="startDate")
      * @Assert\NotBlank
      *
-     * @ORM\Column(type="datetime_immutable")
+     * @ORM\Column(type="date_immutable")
      *
      * @Groups({"agency:term:read", "agency:term:update"})
      */
@@ -162,7 +162,7 @@ class Term
     /**
      * @var DateTimeImmutable|null
      *
-     * @ORM\Column(type="datetime_immutable", nullable=true)
+     * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Assert\GreaterThanOrEqual(propertyPath="startDate")
      * @Assert\Expression(
@@ -269,7 +269,7 @@ class Term
      *     message="Agency.Term.sharingDate.agentValidationRequired"
      * )
      *
-     * @ORM\Column(type="datetime_immutable", nullable=true)
+     * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Groups({"agency:term:read"})
      */
@@ -284,7 +284,7 @@ class Term
      *     message="Agency.Term.sharingDate.poolSharingRequired"
      * )
      *
-     * @ORM\Column(type="datetime_immutable", nullable=true)
+     * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Groups({"agency:term:read"})
      */

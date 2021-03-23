@@ -157,7 +157,7 @@ class Covenant
     /**
      * @var DateTimeImmutable
      *
-     * @ORM\Column(name="startDate", type="datetime_immutable")
+     * @ORM\Column(name="startDate", type="date_immutable")
      *
      * @Groups({"agency:covenant:read", "agency:covenant:create"})
      */
@@ -178,7 +178,7 @@ class Covenant
     /**
      * @var DateTimeImmutable
      *
-     * @ORM\Column(name="endDate", type="datetime_immutable")
+     * @ORM\Column(name="endDate", type="date_immutable")
      *
      * @Assert\GreaterThan(propertyPath="startDate")
      *
@@ -214,7 +214,7 @@ class Covenant
     /**
      * @var DateTimeImmutable|null
      *
-     * @ORM\Column(type="datetime_immutable", nullable=true)
+     * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Assert\NotBlank(groups={"published"})
      *
