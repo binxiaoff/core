@@ -8,7 +8,8 @@ use Doctrine\ORM\ORMException;
 use JsonException;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Core\Entity\{Staff};
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Unilend\Core\Entity\Staff;
 use Unilend\Core\Service\TemporaryTokenGenerator;
 use Unilend\Core\SwiftMailer\MailjetMessage;
 
@@ -18,24 +19,28 @@ class StaffNotifier
     private Swift_Mailer $mailer;
     /** @var TemporaryTokenGenerator */
     private TemporaryTokenGenerator $temporaryTokenGenerator;
-    /**
-     * @var RouterInterface
-     */
+    /** @var RouterInterface */
     private RouterInterface $router;
+
+    /** @var TranslatorInterface  */
+    private TranslatorInterface $translator;
 
     /**
      * @param Swift_Mailer            $mailer
      * @param TemporaryTokenGenerator $temporaryTokenGenerator
      * @param RouterInterface         $router
+     * @param TranslatorInterface     $translator
      */
     public function __construct(
         Swift_Mailer $mailer,
         TemporaryTokenGenerator $temporaryTokenGenerator,
-        RouterInterface $router
+        RouterInterface $router,
+        TranslatorInterface $translator
     ) {
         $this->mailer                  = $mailer;
         $this->temporaryTokenGenerator = $temporaryTokenGenerator;
         $this->router = $router;
+        $this->translator = $translator;
     }
 
     /**
@@ -55,6 +60,7 @@ class StaffNotifier
 
         $token = $this->temporaryTokenGenerator->generateUltraLongToken($user)->getToken();
 
+        $translatedCompanyGroupTags = array_map(fn (string $tag) => $this->translator->trans('market-segment.' . $tag), $staff->getCompanyGroupTags());
         $message = (new MailjetMessage())
             ->setTo($user->getEmail())
             ->setTemplateId(MailjetMessage::TEMPLATE_STAFF_USER_INITIALISATION)
@@ -65,10 +71,10 @@ class StaffNotifier
                             ['temporaryTokenPublicId' => $token, 'userPublicId' => $user->getPublicId()],
                             RouterInterface::ABSOLUTE_URL
                         ),
-                    'marketSegments' => ' ',
+                    'marketSegments' => implode(', ', $translatedCompanyGroupTags),
                     'roles' => $staff->isManager() ? 'manager' : '',
                     'company_displayName' => $staff->getCompany()->getDisplayName(),
-                    'client_firstName' =>  $user->getFirstName(),
+                    'client_firstName' =>  $user->getFirstName() ?? '',
             ])
         ;
 

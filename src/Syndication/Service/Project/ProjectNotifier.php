@@ -30,8 +30,8 @@ class ProjectNotifier
     private RouterInterface $router;
 
     /**
-     * @param Slack                   $client
-     * @param ProjectRepository       $projectRepository
+     * @param Slack             $client
+     * @param ProjectRepository $projectRepository
      * @param Swift_Mailer      $mailer
      * @param RouterInterface   $router
      */
@@ -144,7 +144,7 @@ class ProjectNotifier
                             'front_viewParticipation_URL' => $this->router->generate('front_viewParticipation', [
                                 'projectParticipationPublicId' => $participation->getPublicId(),
                             ], RouterInterface::ABSOLUTE_URL),
-                            'client_firstName' => $activeProjectParticipationMember->getStaff()->getUser()->getFirstName(),
+                            'client_firstName' => $activeProjectParticipationMember->getStaff()->getUser()->getFirstName() ?? '',
                             'project_arranger'      => $project->getSubmitterCompany()->getDisplayName(),
                             'project_title'         => $project->getTitle(),
                             'project_riskGroupName' => $project->getRiskGroupName(),

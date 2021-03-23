@@ -60,7 +60,7 @@ class ProjectParticipationNotifier
                     'project_riskGroupName' =>  $project->getRiskGroupName(),
                     'project_title' => $project->getTitle(),
                     'participant_displayName' => $projectParticipation->getParticipant()->getDisplayName(),
-                    'client_firstName' => $submitterUser->getFirstName(),
+                    'client_firstName' => $submitterUser->getFirstName() ?? '',
                 ]
             );
 
