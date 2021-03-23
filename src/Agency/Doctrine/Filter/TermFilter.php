@@ -23,6 +23,6 @@ class TermFilter extends SQLFilter
             return '';
         }
 
-        return $targetTableAlias . '.start_date <= ' . (new DateTime())->setTime(0, 0)->format('Y-m-d');
+        return $targetTableAlias . '.start_date >= ' . (new DateTime())->setTime(0, 0)->format('Y-m-d');
     }
 }
