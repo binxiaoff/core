@@ -236,8 +236,6 @@ class Covenant
      * @Assert\All({
      *    @Assert\Expression("value.getCovenant() === this")
      * })
-     *
-     * @ApiProperty(writableLink=true, readableLink=false)
      */
     private Collection $terms;
 
