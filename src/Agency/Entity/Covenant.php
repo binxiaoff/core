@@ -93,7 +93,7 @@ class Covenant
      * @ORM\ManyToOne(targetEntity=Project::class, inversedBy="covenants")
      * @ORM\JoinColumn(name="id_project")
      *
-     * @Groups({"agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create"})
      *
      * @ApiProperty(writableLink=false, readableLink=false)
      */
