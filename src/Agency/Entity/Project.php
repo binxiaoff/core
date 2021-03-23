@@ -16,9 +16,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
 use Unilend\Core\Entity\Constant\{CAInternalRating, FundingSpecificity};
 use Unilend\Core\Entity\Embeddable\{Money, NullableMoney, NullablePerson};
-use Unilend\Core\Entity\MarketSegment;
 use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Core\Entity\{Company, Drive, Staff};
+use Unilend\Core\Entity\{Company, CompanyGroupTag, Drive, Staff};
 use Unilend\Core\Model\Bitmask;
 use Unilend\Core\Validator\Constraints\Siren;
 
@@ -67,7 +66,16 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {"agency:project:write", "agency:projectStatus:create", "money:write", "nullablePerson:write", "nullableMoney:write", "agency:covenant:update"}},
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                      "agency:project:write",
+ *                      "agency:projectStatus:create",
+ *                      "money:write",
+ *                      "nullablePerson:write",
+ *                      "nullableMoney:write",
+ *                      "agency:covenant:update"
+ *                  }
+ *              },
  *         },
  *     }
  * )
@@ -404,19 +412,21 @@ class Project
     private ?string $fundingSpecificity;
 
     /**
-     * @var MarketSegment
+     * @var CompanyGroupTag|null
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\MarketSegment")
+     * @ORM\ManyToOne(targetEntity=CompanyGroupTag::class)
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_market_segment", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_company_group_tag", referencedColumnName="id", nullable=false)
      * })
+     *
+     * Remove assertion for external banks (they may have no companyGroupTag)
      * @Assert\NotBlank
      *
      * @Gedmo\Versioned
      *
      * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
      */
-    private MarketSegment $marketSegment;
+    private ?CompanyGroupTag $companyGroupTag;
 
     /**
      * @var DateTimeImmutable
@@ -540,7 +550,6 @@ class Project
      * @param string            $title
      * @param string            $riskGroupName
      * @param Money             $globalFundingMoney
-     * @param MarketSegment     $marketSegment
      * @param DateTimeImmutable $closingDate
      * @param DateTimeImmutable $contractEndDate
      *
@@ -551,7 +560,6 @@ class Project
         string $title,
         string $riskGroupName,
         Money $globalFundingMoney,
-        MarketSegment $marketSegment,
         DateTimeImmutable $closingDate,
         DateTimeImmutable $contractEndDate
     ) {
@@ -569,7 +577,6 @@ class Project
         $this->contacts           = new ArrayCollection();
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
-        $this->marketSegment      = $marketSegment;
         $this->closingDate        = $closingDate;
         $this->contractEndDate    = $contractEndDate;
         $this->title              = $title;
@@ -1152,21 +1159,21 @@ class Project
     }
 
     /**
-     * @return MarketSegment
+     * @return CompanyGroupTag|null
      */
-    public function getMarketSegment(): MarketSegment
+    public function getCompanyGroupTag(): ?CompanyGroupTag
     {
-        return $this->marketSegment;
+        return $this->companyGroupTag;
     }
 
     /**
-     * @param MarketSegment $marketSegment
+     * @param CompanyGroupTag|null $companyGroupTag
      *
      * @return Project
      */
-    public function setMarketSegment(MarketSegment $marketSegment): Project
+    public function setCompanyGroupTag(?CompanyGroupTag $companyGroupTag): Project
     {
-        $this->marketSegment = $marketSegment;
+        $this->companyGroupTag = $companyGroupTag;
 
         return $this;
     }

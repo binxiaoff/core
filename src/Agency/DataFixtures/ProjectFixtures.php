@@ -22,7 +22,6 @@ use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Entity\Tranche;
 use Unilend\Core\DataFixtures\{AbstractFixtures,
     CompanyFixtures,
-    MarketSegmentFixtures,
     StaffFixtures};
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
@@ -31,7 +30,7 @@ use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\{Embeddable\NullablePerson, MarketSegment, Staff};
+use Unilend\Core\Entity\{Embeddable\NullablePerson, Staff};
 use Unilend\Core\Model\Bitmask;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -45,17 +44,17 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         /** @var Staff $staff */
         $staff         = $this->getReference(StaffFixtures::ADMIN);
-        /** @var MarketSegment $marketSegment */
-        $marketSegment = $this->getReference(MarketSegmentFixtures::SEGMENT1);
+
         $project = new Project(
             $staff,
             $this->faker->title,
             $this->faker->name,
             new Money('EUR', '5000000'),
-            $marketSegment,
             new DateTimeImmutable('now'),
             new DateTimeImmutable('+1 year')
         );
+
+        $project->setCompanyGroupTag($staff->getAvailableCompanyGroupTags()[0]);
 
         $manager->persist($project);
 
@@ -135,7 +134,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         return [
             StaffFixtures::class,
-            MarketSegmentFixtures::class,
         ];
     }
 
