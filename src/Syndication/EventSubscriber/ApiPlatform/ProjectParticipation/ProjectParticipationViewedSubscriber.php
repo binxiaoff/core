@@ -84,7 +84,7 @@ class ProjectParticipationViewedSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($this->projectParticipationManager->isMember($projectParticipation, $staff)) {
+        if ($this->projectParticipationManager->isActiveMember($projectParticipation, $staff)) {
             $projectParticipation->setParticipantLastConsulted(new \DateTimeImmutable());
             $this->projectParticipationRepository->save($projectParticipation);
         }

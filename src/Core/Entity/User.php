@@ -10,7 +10,6 @@ use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
-use InvalidArgumentException;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
@@ -368,18 +367,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     public function getStaff(): iterable
     {
         return $this->staff;
-    }
-
-    /**
-     * @param Staff $staff
-     */
-    public function addStaff(Staff $staff)
-    {
-        if ($staff->getUser() !== $this) {
-            throw new InvalidArgumentException('The staff should concern the user');
-        }
-
-        $this->staff->add($staff);
     }
 
     /**

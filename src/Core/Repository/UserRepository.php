@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace Unilend\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\{Expr\Join};
 use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
+use Doctrine\Persistence\ManagerRegistry;
 use JsonException;
 use PDO;
-use Unilend\Core\Entity\{Company, ProjectParticipation, Staff, User, UserStatus};
+use Unilend\Core\Entity\{Company, Staff, User, UserStatus};
+use Unilend\Syndication\Entity\ProjectParticipation;
 
-/**
+    /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
  * @method User|null findOneBy(array $criteria, array $orderBy = null)
  * @method User[]    findAll()
@@ -118,10 +119,8 @@ class UserRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('users')
             ->innerJoin('users.staff', 'staff')
             ->where('staff.company = :company')
-            ->andWhere(':marketSegment MEMBER OF staff.marketSegments')
             ->setParameters([
                 'company'       => $projectParticipation->getParticipant(),
-                'marketSegment' => $projectParticipation->getProject()->getMarketSegment(),
             ])
         ;
 

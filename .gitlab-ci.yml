@@ -1,11 +1,8 @@
 # Select what we should cache
-cache:
-    paths:
-        - vendor/
-
 before_script:
+    - rm -rf vendor
     - composer install
 
 test:application:
     script:
-        - php -dpcov.enabled=1  bin/phpunit --coverage-text --colors=never
+        - php -dpcov.enabled=1  bin/phpunit --coverage-text --colors=never --testsuite='unit'

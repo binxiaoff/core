@@ -22,6 +22,7 @@ use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use Unilend\Core\Entity\{Company,
+    CompanyGroupTag,
     Embeddable\Money,
     Embeddable\NullableMoney,
     Embeddable\NullablePerson,
@@ -29,7 +30,6 @@ use Unilend\Core\Entity\{Company,
     Interfaces\MoneyInterface,
     Interfaces\StatusInterface,
     Interfaces\TraceableStatusAwareInterface,
-    MarketSegment,
     Staff,
     Traits\PublicizeIdentityTrait,
     Traits\TimestampableTrait,
@@ -51,7 +51,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *             "nullablePerson:read",
  *             "projectStatus:read",
  *             "projectOrganizer:read",
- *             "role:read"
+ *             "role:read",
+ *             "companyGroupTag:read"
  *         }
  *     },
  *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "tag:write", "nullablePerson:write"}},
@@ -68,7 +69,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                     "projectParticipationTranche:read",
  *                     "money:read",
  *                     "nullableMoney:read",
- *                     "nullablePerson:read"
+ *                     "nullablePerson:read",
+ *                     "companyGroupTag:read"
  *                 }
  *             }
  *         },
@@ -82,7 +84,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                     "money:write",
  *                     "nullableMoney:write",
  *                     "tag:write",
- *                     "nullablePerson:write"
+ *                     "nullablePerson:write",
+ *                     "companyGroupTag:read"
  *                 }
  *             }
  *         }
@@ -101,6 +104,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                 "fileVersion:read",
  *                 "projectStatus:read",
  *                 "projectParticipationMember:read",
+ *                 "permission:read",
  *                 "archivable:read",
  *                 "projectOrganizer:read",
  *                 "tranche_project:read",
@@ -117,14 +121,15 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                 "rangedOfferWithFee:read",
  *                 "offerWithFee:read",
  *                 "offer:read",
- *                 "companyStatus:read"
+ *                 "companyStatus:read",
+ *                 "companyGroupTag:read"
  *             }}
  *         },
  *         "project_nda": {
  *             "method": "GET",
  *             "security": "is_granted('view_nda', object)",
  *             "normalization_context": {"groups": {"project:nda:read", "file:read"}},
- *             "path": "/syndication/projects/{id}/nda"
+ *             "path": "/syndication/projects/{publicId}/nda"
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
@@ -140,6 +145,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                     "timestampable:read",
  *                     "projectParticipation:read",
  *                     "projectParticipationStatus:read",
+ *                     "projectParticipationMember:read",
  *                     "projectParticipationTranche:read",
  *                     "money:read",
  *                     "nullableMoney:read",
@@ -147,7 +153,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                     "rangedOfferWithFee:read",
  *                     "offerWithFee:read",
  *                     "offer:read",
- *                     "companyStatus:read"
+ *                     "companyStatus:read",
+ *                     "companyGroupTag:read"
  *                 }
  *             }
  *         },
@@ -238,21 +245,6 @@ class Project implements TraceableStatusAwareInterface
      * @Groups({"project:write", "project:read"})
      */
     private string $title;
-
-    /**
-     * @var MarketSegment
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\MarketSegment")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_market_segment", referencedColumnName="id", nullable=false)
-     * })
-     * @Assert\NotBlank
-     *
-     * @Gedmo\Versioned
-     *
-     * @Groups({"project:write", "project:read"})
-     */
-    private MarketSegment $marketSegment;
 
     /**
      * @var string|null
@@ -555,30 +547,42 @@ class Project implements TraceableStatusAwareInterface
     private NullablePerson $privilegedContactPerson;
 
     /**
-     * @param Staff         $addedBy
-     * @param string        $riskGroupName
-     * @param Money         $globalFundingMoney
-     * @param MarketSegment $marketSegment
+     * @var CompanyGroupTag|null
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
+     * @ORM\JoinColumn(name="id_company_group_tag")
+     *
+     * @Groups({"project:read", "project:write"})
+     *
+     * @Assert\Choice(callback="getAvailableCompanyGroupTags")
+     */
+    private ?CompanyGroupTag $companyGroupTag;
+
+    /**
+     * @param Staff  $addedBy
+     * @param string $riskGroupName
+     * @param Money  $globalFundingMoney
      *
      * @throws Exception
      */
-    public function __construct(Staff $addedBy, string $riskGroupName, Money $globalFundingMoney, MarketSegment $marketSegment)
+    public function __construct(Staff $addedBy, string $riskGroupName, Money $globalFundingMoney)
     {
-        $arrangerParticipation = new ProjectParticipation($addedBy->getCompany(), $this, $addedBy);
-        $arrangerParticipation->addProjectParticipationMember(
-            new ProjectParticipationMember($arrangerParticipation, $addedBy, $addedBy)
-        );
-        $this->projectFiles          = new ArrayCollection();
+        $this->submitterCompany      = $addedBy->getCompany();
+        $this->submitterUser         = $addedBy->getUser();
+        $arrangerParticipation       = new ProjectParticipation($addedBy->getCompany(), $this, $addedBy);
+        $projectParticipationMember = new ProjectParticipationMember($arrangerParticipation, $addedBy, $addedBy);
+        $projectParticipationMember->addPermission(ProjectParticipationMember::PERMISSION_WRITE);
+        $arrangerParticipation->addProjectParticipationMember($projectParticipationMember);
         $this->projectParticipations = new ArrayCollection([$arrangerParticipation]);
+
+        $this->companyGroupTag       = null;
+        $this->projectFiles          = new ArrayCollection();
         $this->projectComments       = new ArrayCollection();
         $this->statuses              = new ArrayCollection();
         $this->tranches              = new ArrayCollection();
         $this->tags                  = new ArrayCollection();
         $this->organizers            = new ArrayCollection([new ProjectOrganizer($addedBy->getCompany(), $this, $addedBy)]);
         $this->added                 = new DateTimeImmutable();
-        $this->marketSegment         = $marketSegment;
-        $this->submitterUser       = $addedBy->getUser();
-        $this->submitterCompany      = $addedBy->getCompany();
 
         $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_DRAFT, $addedBy));
         $contact = (new NullablePerson())
@@ -743,26 +747,6 @@ class Project implements TraceableStatusAwareInterface
     public function getStatuses(): Collection
     {
         return $this->statuses;
-    }
-
-    /**
-     * @return MarketSegment
-     */
-    public function getMarketSegment(): MarketSegment
-    {
-        return $this->marketSegment;
-    }
-
-    /**
-     * @param MarketSegment $marketSegment
-     *
-     * @return Project
-     */
-    public function setMarketSegment(MarketSegment $marketSegment): Project
-    {
-        $this->marketSegment = $marketSegment;
-
-        return $this;
     }
 
     /**
@@ -1541,6 +1525,33 @@ class Project implements TraceableStatusAwareInterface
         }
     }
 
+    /**
+     * @return CompanyGroupTag|null
+     */
+    public function getCompanyGroupTag(): ?CompanyGroupTag
+    {
+        return $this->companyGroupTag;
+    }
+
+    /**
+     * @param CompanyGroupTag|null $companyGroupTag
+     *
+     * @return Project
+     */
+    public function setCompanyGroupTag(?CompanyGroupTag $companyGroupTag): Project
+    {
+        $this->companyGroupTag = $companyGroupTag;
+
+        return $this;
+    }
+
+    /**
+     * @return CompanyGroupTag[]|array
+     */
+    public function getAvailableCompanyGroupTags(): array
+    {
+        return $this->getArranger()->getCompanyGroupTags();
+    }
 
     /**
      * @param string $role

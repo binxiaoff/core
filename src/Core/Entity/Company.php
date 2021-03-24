@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
+use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use DateTimeInterface;
-use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -22,23 +22,71 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *     attributes={
  *         "pagination_enabled": false
  *     },
- *     normalizationContext={
- *         "groups": {
- *              "company:read",
- *              "companyStatus:read",
- *              "companyModule:read",
- *              "staff:read",
- *              "user:read",
- *              "user_status:read",
- *              "role:read",
- *              "nullableMoney:read"
- *         }
- *     },
  *     collectionOperations={
- *         "get"
+ *         "get": {
+ *         "normalization_context": {
+ *              "groups": {
+ *                  "company:read",
+ *                  "companyStatus:read",
+ *                  "companyModule:read",
+ *                  "companyGroupTag:read",
+ *                  "staff:read",
+ *                  "user:read",
+ *                  "user_status:read",
+ *                  "nullableMoney:read"
+ *             }
+ *          }
+ *        }
  *     },
  *     itemOperations={
- *         "get"
+ *         "get": {
+ *           "normalization_context": {
+ *              "groups": {
+ *                  "company:read",
+ *                  "companyStatus:read",
+ *                  "companyModule:read",
+ *                  "companyGroupTag:read",
+ *                  "staff:read",
+ *                  "user:read",
+ *                  "user_status:read",
+ *                  "nullableMoney:read",
+ *                  "team:read"
+ *              }
+ *          },
+ *        },
+ *         "staff": {
+ *              "method": "GET",
+ *              "path": "/core/companies/{publicId}/staff",
+ *              "controller": "\Unilend\Core\Controller\Company\Staff",
+ *              "normalization_context": {
+ *                  "groups": {
+ *                      "staff:read",
+ *                      "user:read",
+ *                      "user_status:read",
+ *                      "staffStatus:read"
+ *                  }
+ *              }
+ *         },
+ *         "companyGroupTags": {
+ *              "method": "GET",
+ *              "path": "/core/companies/{publicId}/company_group_tags",
+ *              "controller": "\Unilend\Core\Controller\Company\CompanyGroupTag",
+ *              "normalization_context": {
+ *                  "groups": {
+ *                      "companyGroupTag:read"
+ *                  }
+ *              }
+ *         },
+ *         "teams": {
+ *              "method": "GET",
+ *              "path": "/core/companies/{publicId}/teams",
+ *              "controller": "\Unilend\Core\Controller\Company\Team",
+ *              "normalization_context": {
+ *                  "groups": {
+ *                      "team:read"
+ *                  }
+ *              }
+ *         }
  *     }
  * )
  * @ApiFilter("Unilend\Core\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"})
@@ -57,8 +105,6 @@ class Company implements TraceableStatusAwareInterface
 
     public const VAT_METROPOLITAN = 'metropolitan'; // Default tva category : 20 %
     public const VAT_OVERSEAS     = 'overseas'; // Overseas tva category (Guadeloupe, Martinique, Reunion) : 8.5 %
-
-    public const GROUPNAME_CA = 'Crédit Agricole';
 
     public const COMPANY_NAME_CALS = 'CA Lending Services';
 
@@ -114,13 +160,12 @@ class Company implements TraceableStatusAwareInterface
     private string $bankCode;
 
     /**
-     * @var string|null
+     * @var CompanyGroup|null
      *
-     * @ORM\Column(type="string", length=50, nullable=true)
-     *
-     * @Groups({"company:read"})
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroup")
+     * @ORM\JoinColumn(name="id_company_group")
      */
-    private ?string $groupName;
+    private ?CompanyGroup $companyGroup;
 
     /**
      * @var string|null
@@ -141,13 +186,12 @@ class Company implements TraceableStatusAwareInterface
     private string $applicableVat;
 
     /**
-     * @var Collection|Staff[]
+     * @var Team
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\Staff", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
-     *
-     * @ApiSubresource
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Team", cascade={"persist"}, inversedBy="company")
+     * @ORM\JoinColumn(name="id_root_team", nullable=false, unique=true)
      */
-    private Collection $staff;
+    private Team $rootTeam;
 
     /**
      * @var string|null
@@ -195,6 +239,13 @@ class Company implements TraceableStatusAwareInterface
     private Collection $modules;
 
     /**
+     * @var iterable|CompanyAdmin[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\CompanyAdmin", mappedBy="company")
+     */
+    private iterable $admins;
+
+    /**
      * @param string $displayName
      * @param string $companyName
      *
@@ -202,13 +253,15 @@ class Company implements TraceableStatusAwareInterface
      */
     public function __construct(string $displayName, string $companyName)
     {
-        $this->displayName   = $displayName;
-        $this->companyName   = $companyName;
-        $this->staff         = new ArrayCollection();
-        $this->statuses      = new ArrayCollection();
-        $this->added         = new DateTimeImmutable();
-        $moduleCodes         = CompanyModule::getAvailableModuleCodes();
-        $this->modules       = new ArrayCollection(array_map(function ($module) {
+        $this->displayName  = $displayName;
+        $this->companyName  = $companyName;
+        $this->rootTeam     = Team::createRootTeam($this);
+        $this->statuses     = new ArrayCollection();
+        $this->added        = new DateTimeImmutable();
+        $this->admins       = new ArrayCollection();
+        $this->companyGroup = null;
+        $moduleCodes        = CompanyModule::getAvailableModuleCodes();
+        $this->modules      = new ArrayCollection(array_map(function ($module) {
             return new CompanyModule($module, $this);
         }, array_combine($moduleCodes, $moduleCodes)));
         $this->applicableVat = static::VAT_METROPOLITAN;
@@ -233,7 +286,7 @@ class Company implements TraceableStatusAwareInterface
      *
      * @return Company
      */
-    public function setDisplayName($displayName): Company
+    public function setDisplayName(string $displayName): Company
     {
         $this->displayName = $displayName;
 
@@ -269,43 +322,13 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param User|null $user
-     *
-     * @return Collection|Staff[]
+     * @return Staff[]|iterable
      */
-    public function getStaff(?User $user = null): Collection
+    public function getStaff(): iterable
     {
-        $criteria = new Criteria();
-
-        if ($user) {
-            $criteria->where(Criteria::expr()->eq('user', $user));
+        foreach ($this->getTeams() as $team) {
+            yield from $team->getStaff();
         }
-
-        return $this->staff->matching($criteria);
-    }
-
-    /**
-     * @param Staff $staff
-     *
-     * @return Company
-     */
-    public function removeStaff(Staff $staff): Company
-    {
-        $this->staff->removeElement($staff);
-
-        return $this;
-    }
-
-    /**
-     * @param Staff $staff
-     *
-     * @return Company
-     */
-    public function addStaff(Staff $staff): Company
-    {
-        $this->staff->add($staff);
-
-        return $this;
     }
 
     /**
@@ -378,7 +401,7 @@ class Company implements TraceableStatusAwareInterface
      */
     public function isSameGroup(Company $company): bool
     {
-        return $this->getGroupName() === $company->getGroupName();
+        return $this->getCompanyGroup() && ($this->getCompanyGroup() === $company->getCompanyGroup());
     }
 
     /**
@@ -498,20 +521,30 @@ class Company implements TraceableStatusAwareInterface
 
     /**
      * @return string|null
+     *
+     * @Groups({"company:read"})
      */
     public function getGroupName(): ?string
     {
-        return $this->groupName;
+        return $this->companyGroup ? $this->companyGroup->getName() : null;
     }
 
     /**
-     * @param string|null $groupName
+     * @return CompanyGroup|null
+     */
+    public function getCompanyGroup(): ?CompanyGroup
+    {
+        return $this->companyGroup;
+    }
+
+    /**
+     * @param CompanyGroup|null $companyGroup
      *
      * @return Company
      */
-    public function setGroupName(?string $groupName): Company
+    public function setCompanyGroup(?CompanyGroup $companyGroup): Company
     {
-        $this->groupName = $groupName;
+        $this->companyGroup = $companyGroup;
 
         return $this;
     }
@@ -563,7 +596,7 @@ class Company implements TraceableStatusAwareInterface
      */
     public function isCAGMember(): bool
     {
-        return $this->groupName === static::GROUPNAME_CA;
+        return $this->getGroupName() === CompanyGroup::COMPANY_GROUP_CA;
     }
 
     /**
@@ -575,6 +608,40 @@ class Company implements TraceableStatusAwareInterface
     }
 
     /**
+     * @return iterable|CompanyAdmin[]
+     */
+    public function getAdmins(): iterable
+    {
+        return $this->admins;
+    }
+
+    /**
+     * @return Team
+     */
+    public function getRootTeam(): Team
+    {
+        return $this->rootTeam;
+    }
+
+    /**
+     * @return Team[]|iterable
+     */
+    public function getTeams(): iterable
+    {
+        yield $this->rootTeam;
+
+        yield from $this->rootTeam->getDescendents();
+    }
+
+    /**
+     * @return CompanyGroupTag[]|array
+     */
+    public function getCompanyGroupTags(): array
+    {
+        return $this->companyGroup ? $this->companyGroup->getTags() : [];
+    }
+
+    /**
      * @param DateTimeInterface $dateTime
      *
      * @return CompanyStatus|null
@@ -582,7 +649,7 @@ class Company implements TraceableStatusAwareInterface
     private function getCurrentStatusAt(DateTimeInterface $dateTime): ?CompanyStatus
     {
         /** @var CompanyStatus $status */
-        $previousStatuses = $this->getStatuses()->filter(function ($status) use ($dateTime) {
+        $previousStatuses = $this->getStatuses()->filter(static function ($status) use ($dateTime) {
             return $status->getAdded() <= $dateTime;
         });
 

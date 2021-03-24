@@ -173,9 +173,6 @@
     "doctrine/persistence": {
         "version": "1.1.1"
     },
-    "doctrine/reflection": {
-        "version": "v1.0.0"
-    },
     "doctrine/sql-formatter": {
         "version": "1.1.0"
     },
@@ -270,6 +267,9 @@
             ".php_cs.dist"
         ]
     },
+    "friendsofphp/proxy-manager-lts": {
+        "version": "v1.0.3"
+    },
     "friendsofsymfony/jsrouting-bundle": {
         "version": "2.3",
         "recipe": {
@@ -350,6 +350,12 @@
             "config/packages/knp_snappy.yaml"
         ]
     },
+    "laminas/laminas-code": {
+        "version": "4.0.0"
+    },
+    "laminas/laminas-eventmanager": {
+        "version": "3.3.0"
+    },
     "laminas/laminas-zendframework-bridge": {
         "version": "1.0.4"
     },
@@ -361,6 +367,9 @@
     },
     "league/flysystem-aws-s3-v3": {
         "version": "1.0.23"
+    },
+    "league/mime-type-detection": {
+        "version": "1.7.0"
     },
     "lexik/jwt-authentication-bundle": {
         "version": "2.5",
@@ -446,6 +455,9 @@
         "files": [
             "config/packages/misd_phone_number.yaml"
         ]
+    },
+    "ondram/ci-detector": {
+        "version": "3.5.1"
     },
     "oneup/flysystem-bundle": {
         "version": "3.0",
@@ -915,6 +927,9 @@
     "symfony/serializer": {
         "version": "v4.3.0"
     },
+    "symfony/serializer-pack": {
+        "version": "v1.0.4"
+    },
     "symfony/stopwatch": {
         "version": "v4.3.0"
     },
@@ -1010,12 +1025,6 @@
     "symfony/yaml": {
         "version": "v4.3.0"
     },
-    "thadafinser/package-info": {
-        "version": "v1.0.0"
-    },
-    "thadafinser/user-agent-parser": {
-        "version": "v2.0.0"
-    },
     "theofidry/alice-data-fixtures": {
         "version": "1.0",
         "recipe": {
@@ -1032,9 +1041,6 @@
         "version": "1.4.8"
     },
     "voku/stop-words": {
-        "version": "2.0.1"
-    },
-    "webimpress/safe-writer": {
         "version": "2.0.1"
     },
     "webmozart/assert": {

@@ -11,8 +11,8 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareInterface,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
-use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\ProjectParticipation;
 use Unilend\Syndication\Entity\ProjectParticipationMember;
 use Unilend\Syndication\Security\Voter\ProjectParticipationMemberVoter;
@@ -57,10 +57,6 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
         /** @var ProjectParticipationMember $projectParticipationMember */
         $projectParticipationMember = $this->extractObjectToPopulate(ProjectParticipationMember::class, $context);
 
-        if ($projectParticipationMember) {
-            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipationMember));
-        }
-
         // Disallow creating staff with other company than the participation
         if (isset($data['staff']) && \is_array($data['staff'])) {
             unset($data['staff']['company']);
@@ -83,24 +79,8 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
             $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['role:write', 'staff:create', 'user:create']);
         }
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationMember::class]['addedBy'] = $user->getCurrentStaff();
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'] = $participation->getParticipant();
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['team'] = $participation->getParticipant()->getRootTeam();
 
         return $this->denormalizer->denormalize($data, $type, $format, $context);
-    }
-
-    /**
-     * @param ProjectParticipationMember|null $projectParticipationMember
-     *
-     * @return array
-     */
-    private function getAdditionalDenormalizerGroups(ProjectParticipationMember $projectParticipationMember): array
-    {
-        $groups = [];
-
-        if ($this->security->isGranted(ProjectParticipationMemberVoter::ATTRIBUTE_ACCEPT_NDA, $projectParticipationMember)) {
-            $groups[] = ProjectParticipationMember::SERIALIZER_GROUP_PROJECT_PARTICIPATION_MEMBER_OWNER_WRITE;
-        }
-
-        return $groups;
     }
 }

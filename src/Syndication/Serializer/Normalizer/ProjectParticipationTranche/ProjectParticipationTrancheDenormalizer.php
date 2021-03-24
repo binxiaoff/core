@@ -11,8 +11,12 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
 use Unilend\Core\Entity\User;
+use Unilend\Syndication\Entity\ProjectParticipationMember;
 use Unilend\Syndication\Entity\ProjectParticipationTranche;
 use Unilend\Syndication\Entity\ProjectStatus;
+use Unilend\Syndication\Security\Voter\ProjectParticipationTrancheVoter;
+use Unilend\Syndication\Security\Voter\ProjectParticipationVoter;
+use Unilend\Syndication\Security\Voter\ProjectVoter;
 use Unilend\Syndication\Service\Project\ProjectManager;
 use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
@@ -25,21 +29,13 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
 
     /** @var Security */
     private Security $security;
-    /** @var ProjectParticipationManager */
-    private ProjectParticipationManager $projectParticipationManager;
-    /** @var ProjectManager */
-    private ProjectManager $projectManager;
 
     /**
-     * @param Security                    $security
-     * @param ProjectManager              $projectManager
-     * @param ProjectParticipationManager $projectParticipationManager
+     * @param Security $security
      */
-    public function __construct(Security $security, ProjectManager $projectManager, ProjectParticipationManager $projectParticipationManager)
+    public function __construct(Security $security)
     {
         $this->security = $security;
-        $this->projectParticipationManager = $projectParticipationManager;
-        $this->projectManager = $projectManager;
     }
 
     /**
@@ -92,15 +88,15 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
             $currentStatus = $project->getCurrentStatus()->getStatus();
             switch ($currentStatus) {
                 case ProjectStatus::STATUS_PARTICIPANT_REPLY:
-                    if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
+                    if ($this->security->isGranted(ProjectParticipationTrancheVoter::ATTRIBUTE_EDIT, $projectParticipationTranche)) {
                             $groups[] = 'projectParticipationTranche:owner:participantReply:write';
                     }
                     break;
                 case ProjectStatus::STATUS_ALLOCATION:
-                    if ($this->projectManager->isArranger($project, $currentStaff)) {
+                    if ($this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
                         $groups[] = 'projectParticipationTranche:arranger:allocation:write';
 
-                        if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
+                        if ($projectParticipation->isArrangerParticipation()) {
                             $groups[] = 'projectParticipationTranche:arrangerOwner:allocation:write';
                         }
                     }

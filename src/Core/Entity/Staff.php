@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
@@ -15,7 +15,7 @@ use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
-use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait};
+use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 
 /**
  * @ApiResource(
@@ -29,67 +29,37 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, Timestamp
  *             "read": false,
  *             "output": false,
  *         },
- *         "patch": {"security_post_denormalize": "is_granted('edit', object)", "denormalization_context": {"groups": {"staff:update", "role:write", "staffStatus:create"}}}
+ *         "patch": {
+ *              "security": "is_granted('edit', object)",
+ *              "denormalization_context": {"groups": {"staff:update", "staffStatus:create"}}
+ *         }
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"role:write", "staff:create"}}
+ *             "denormalization_context": {"groups": {"staff:create", "user:create"}}
  *         },
- *         "get",
- *         "api_core_companies_staff_get_subresource": {
- *            "pagination_enabled":false
- *         }
+ *         "get"
  *     }
  * )
- *
- * @ApiFilter(SearchFilter::class, properties={"company.groupName"})
  *
  * @ORM\Entity
  * @ORM\Table(
  *     name="core_staff",
  *     uniqueConstraints={
- *         @ORM\UniqueConstraint(columns={"id_user", "id_company"})
+ *         @ORM\UniqueConstraint(columns={"id_user", "id_team"})
  *     }
  * )
  * @ORM\HasLifecycleCallbacks
  *
- * @UniqueEntity(fields={"company", "user"}, message="Core.Staff.user.unique")
+ * @UniqueEntity(fields={"team", "user"}, message="Core.Staff.user.unique")
  */
 class Staff implements TraceableStatusAwareInterface
 {
-    use RoleableTrait {
-        getRoles as private baseRolesGetter;
-    }
     use TimestampableTrait;
     use PublicizeIdentityTrait;
 
-    public const DUTY_STAFF_OPERATOR   = 'DUTY_STAFF_OPERATOR';
-    public const DUTY_STAFF_MANAGER    = 'DUTY_STAFF_MANAGER';
-    public const DUTY_STAFF_ADMIN      = 'DUTY_STAFF_ADMIN';
-    public const DUTY_STAFF_AUDITOR    = 'DUTY_STAFF_AUDITOR';
-    public const DUTY_STAFF_ACCOUNTANT = 'DUTY_STAFF_ACCOUNTANT';
-    public const DUTY_STAFF_SIGNATORY  = 'DUTY_STAFF_SIGNATORY';
-
-    public const SERIALIZER_GROUP_ADMIN_CREATE = 'staff:admin:create';
-
     public const SERIALIZER_GROUP_OWNER_READ = 'staff:owner:read';
-
-    /**
-     * @var Company
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company", inversedBy="staff")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
-     * })
-     *
-     * @Assert\NotBlank(message="Staff.company.empty")
-     *
-     * @Groups({"staff:read", "staff:create"})
-     *
-     * @MaxDepth(2)
-     */
-    private Company $company;
 
     /**
      * @var User
@@ -108,15 +78,27 @@ class Staff implements TraceableStatusAwareInterface
      */
     private User $user;
 
+
     /**
-     * @var Collection|MarketSegment[]
+     * @var Team
      *
-     * @ORM\ManyToMany(targetEntity="Unilend\Core\Entity\MarketSegment")
-     * @ORM\JoinTable(name="core_staff_market_segment")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Team", inversedBy="staff")
+     * @ORM\JoinColumn(name="id_team", nullable=false)
      *
-     * @Groups({"staff:read", "staff:create", "staff:update", Staff::SERIALIZER_GROUP_ADMIN_CREATE})
+     * @Assert\NotBlank
+     *
+     * @Groups({"staff:read", "staff:create", "staff:update"})
      */
-    private Collection $marketSegments;
+    private Team $team;
+
+    /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean")
+     *
+     * @Groups({"staff:read", "staff:create", "staff:update"})
+     */
+    private bool $manager;
 
     /**
      * @var StaffStatus|null
@@ -143,42 +125,76 @@ class Staff implements TraceableStatusAwareInterface
     private Collection $statuses;
 
     /**
-     * Staff constructor.
+     * @var bool
      *
-     * @param Company $company
-     * @param User    $user
-     * @param Staff   $addedBy
+     * @ORM\Column(type="boolean")
+     *
+     * @Groups({"staff:read", "staff:create", "staff:update"})
+     */
+    private bool $arrangementProjectCreationPermission;
+
+    /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean")
+     *
+     * @Groups({"staff:read", "staff:create", "staff:update"})
+     */
+    private bool $agencyProjectCreationPermission;
+
+    /**
+     * @var Collection
+     *
+     * @ORM\ManyToMany(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
+     * @ORM\JoinTable(name="core_staff_company_group_tag")
+     *
+     * @Groups({"staff:read", "staff:create", "staff:update"})
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
+     *
+     * @Assert\All({
+     *    @Assert\Choice(callback="getAvailableCompanyGroupTags")
+     * })
+     * @Assert\Unique
+     */
+    private Collection $companyGroupTags;
+
+    /**
+     * @param User       $user
+     * @param Team       $team
+     * @param Staff|null $addedBy
      *
      * @throws Exception
      */
-    public function __construct(Company $company, User $user, Staff $addedBy)
+    public function __construct(User $user, Team $team, ?Staff $addedBy = null)
     {
-        $this->marketSegments = new ArrayCollection();
-        $this->added          = new DateTimeImmutable();
-        $this->company        = $company;
-        $this->user           = $user;
-        $this->statuses       = new ArrayCollection();
-        $this->setCurrentStatus(new StaffStatus($this, StaffStatus::STATUS_ACTIVE, $addedBy));
+        $this->companyGroupTags = new ArrayCollection();
+        $this->added            = new DateTimeImmutable();
+        $this->user             = $user;
+        $this->team             = $team;
+        $this->manager          = false;
+        $this->statuses         = new ArrayCollection();
+        $this->arrangementProjectCreationPermission = false;
+        $this->agencyProjectCreationPermission = false;
+        $this->setCurrentStatus(new StaffStatus($this, StaffStatus::STATUS_ACTIVE, $addedBy ?? $this));
     }
 
     /**
      * @return Company
+     *
+     * @Groups({"staff:read"})
      */
     public function getCompany(): Company
     {
-        return $this->company;
+        return $this->team->getCompany();
     }
 
     /**
-     * @param Company $company
-     *
-     * @return Staff
+     * @return Team
      */
-    public function setCompany(Company $company): Staff
+    public function getTeam(): Team
     {
-        $this->company = $company;
-
-        return $this;
+        return $this->team;
     }
 
     /**
@@ -202,61 +218,15 @@ class Staff implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return Collection|MarketSegment[]
-     */
-    public function getMarketSegments(): Collection
-    {
-        return $this->marketSegments;
-    }
-
-    /**
-     * @param MarketSegment $marketSegment
+     * @param bool $manager
      *
      * @return Staff
      */
-    public function addMarketSegment(MarketSegment $marketSegment): Staff
+    public function setManager(bool $manager): Staff
     {
-        if (false === $this->marketSegments->contains($marketSegment)) {
-            $this->marketSegments[] = $marketSegment;
-        }
+        $this->manager = $manager;
 
         return $this;
-    }
-
-    /**
-     * @param MarketSegment $marketSegment
-     *
-     * @return Staff
-     */
-    public function removeMarketSegment(MarketSegment $marketSegment): Staff
-    {
-        $this->marketSegments->removeElement($marketSegment);
-
-        return $this;
-    }
-
-    /**
-     * @param Collection|MarketSegment[] $marketSegments
-     *
-     * @return Staff
-     */
-    public function setMarketSegments($marketSegments): Staff
-    {
-        if (\is_array($marketSegments)) {
-            $marketSegments = new ArrayCollection($marketSegments);
-        }
-
-        $this->marketSegments = $marketSegments;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isAdmin(): bool
-    {
-        return $this->hasRole(static::DUTY_STAFF_ADMIN);
     }
 
     /**
@@ -264,31 +234,7 @@ class Staff implements TraceableStatusAwareInterface
      */
     public function isManager(): bool
     {
-        return $this->hasRole(static::DUTY_STAFF_MANAGER);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isOperator(): bool
-    {
-        return $this->hasRole(static::DUTY_STAFF_OPERATOR);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isAuditor(): bool
-    {
-        return $this->hasRole(static::DUTY_STAFF_AUDITOR);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isAccountant(): bool
-    {
-        return $this->hasRole(static::DUTY_STAFF_ACCOUNTANT);
+        return $this->manager;
     }
 
     /**
@@ -336,23 +282,117 @@ class Staff implements TraceableStatusAwareInterface
     }
 
     /**
-     * @Groups({"staff:read"})
-     *
-     * @return array
-     */
-    public function getRoles(): array
-    {
-        return $this->baseRolesGetter();
-    }
-
-    /**
      * @Groups({Staff::SERIALIZER_GROUP_OWNER_READ})
      *
      * @return array
      */
     public function getActivatedModules(): array
     {
-        return $this->company->getActivatedModules();
+        return $this->getCompany()->getActivatedModules();
+    }
+
+    /**
+     * @return CompanyGroupTag[]|array
+     */
+    public function getCompanyGroupTags(): array
+    {
+        return $this->companyGroupTags->toArray();
+    }
+
+    /**
+     * @return CompanyGroupTag[]|array
+     */
+    public function getAvailableCompanyGroupTags(): array
+    {
+        return $this->getCompany()->getCompanyGroupTags();
+    }
+
+    /**
+     * @param CompanyGroupTag $tag
+     *
+     * @return Staff
+     */
+    public function addCompanyGroupTag(CompanyGroupTag $tag): Staff
+    {
+        $companyGroup = $this->getCompany()->getCompanyGroup();
+
+        if (null === $companyGroup) {
+            return $this;
+        }
+
+        if ($companyGroup !== $tag->getCompanyGroup()) {
+            return $this;
+        }
+
+        if (false === $this->companyGroupTags->contains($tag)) {
+            $this->companyGroupTags[] = $tag;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param CompanyGroupTag $tag
+     *
+     * @return Staff
+     */
+    public function removeCompanyGroupTag(CompanyGroupTag $tag): Staff
+    {
+        $this->companyGroupTags->removeElement($tag);
+
+        return $this;
+    }
+
+    /**
+     * @param Team $team
+     *
+     * @return Staff
+     */
+    public function setTeam(Team $team): Staff
+    {
+        $this->team = $team;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasArrangementProjectCreationPermission(): bool
+    {
+        return $this->arrangementProjectCreationPermission;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasAgencyProjectCreationPermission(): bool
+    {
+        return $this->agencyProjectCreationPermission;
+    }
+
+    /**
+     * @param bool $arrangementProjectCreationPermission
+     *
+     * @return Staff
+     */
+    public function setArrangementProjectCreationPermission(bool $arrangementProjectCreationPermission): Staff
+    {
+        $this->arrangementProjectCreationPermission = $arrangementProjectCreationPermission;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $agencyProjectCreationPermission
+     *
+     * @return Staff
+     */
+    public function setAgencyProjectCreationPermission(bool $agencyProjectCreationPermission): Staff
+    {
+        $this->agencyProjectCreationPermission = $agencyProjectCreationPermission;
+
+        return $this;
     }
 
     /**
@@ -367,5 +407,40 @@ class Staff implements TraceableStatusAwareInterface
         }
 
         return $this->isActive();
+    }
+
+    /**
+     * @return bool
+     *
+     * @Groups({"staff:read"})
+     */
+    public function isAdmin(): bool
+    {
+        foreach ($this->getCompany()->getAdmins() as $admin) {
+            if ($admin->getUser()->getPublicId() === $this->getUser()->getPublicId()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Assert there is only one staff for each company for a given user
+     *
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     */
+    public function validateCompanyUnicity(ExecutionContextInterface $context)
+    {
+        foreach ($this->user->getStaff() as $staff) {
+            if ($this->id !== $staff->getId() && $staff->getTeam()->getCompany() === $this->team->getCompany()) {
+                $context->buildViolation('Staff.company.unicity')
+                    ->atPath('team')
+                    ->setInvalidValue($this->team)
+                    ->addViolation();
+            }
+        }
     }
 }

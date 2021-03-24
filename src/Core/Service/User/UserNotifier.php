@@ -48,7 +48,7 @@ class UserNotifier
         $message = (new MailjetMessage())
             ->setTemplateId(MailjetMessage::TEMPLATE_USER_PASSWORD_REQUEST)
             ->setVars([
-                'firstName' => $user->getFirstName(),
+                'firstName' => $user->getFirstName() ?? '',
                 'resetPasswordURL' => $this->router->generate(
                     'front_resetPassword',
                     [

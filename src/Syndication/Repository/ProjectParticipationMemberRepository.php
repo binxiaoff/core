@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Unilend\Syndication\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
+use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\Persistence\ManagerRegistry;
 use Unilend\Core\Entity\Staff;
-use Unilend\Syndication\Entity\{Project, ProjectParticipationMember};
+use Unilend\Core\Entity\TeamEdge;
+use Unilend\Syndication\Entity\{ProjectParticipation, ProjectParticipationMember};
 
 /**
  * @method ProjectParticipationMember|null find($id, $lockMode = null, $lockVersion = null)
@@ -29,27 +28,42 @@ class ProjectParticipationMemberRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Project $project
-     * @param Staff   $staff
+     * @param Staff $manager
      *
-     * @throws NonUniqueResultException
-     *
-     * @return ProjectParticipationMember|null
+     * @return array
      */
-    public function findByProjectAndStaff(Project $project, Staff $staff): ?ProjectParticipationMember
+    public function findActiveByManager(Staff $manager): array
     {
-        $queryBuilder = $this->createQueryBuilder('ppc')
-            ->innerJoin('ppc.projectParticipation', 'pp')
-            ->where('ppc.staff = :staff')
-            ->andWhere('pp.participant = :company')
-            ->andWhere('pp.project = :project')
-            ->setParameters([
-                'staff'   => $staff,
-                'project' => $project,
-                'company' => $staff->getCompany(),
-            ])
-        ;
+        if (false === $manager->isManager()) {
+            return [];
+        }
 
-        return $queryBuilder->getQuery()->getOneOrNullResult();
+        return $this->createQueryBuilder('ppm')
+            ->innerJoin('ppm.staff', 's')
+            ->leftJoin(TeamEdge::class, 't', Join::WITH, 't.descendent = s.team')
+            ->where('t.ancestor = :team OR s.team = :team')
+            ->andWhere('ppm.archived is NULL')
+            ->setParameter('team', $manager->getTeam())
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     * @param Staff                $manager
+     * @param int                  $permission
+     *
+     * @return array
+     */
+    public function findActiveByProjectParticipationAndManagerAndPermissionEnabled(ProjectParticipation $projectParticipation, Staff $manager, int $permission = 0): array
+    {
+        if (false === $manager->isManager()) {
+            return [];
+        }
+
+        return $projectParticipation->getProjectParticipationMembers()->filter(function (ProjectParticipationMember $projectParticipationMember) use ($permission, $manager) {
+            return $projectParticipationMember->getPermissions()->has($permission) && false === $projectParticipationMember->isArchived() &&
+                (\in_array($projectParticipationMember->getStaff()->getTeam(), [...$manager->getTeam()->getDescendents(), $manager->getTeam()], true));
+        })->toArray();
     }
 }

@@ -7,6 +7,7 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Unilend\Core\DataFixtures\{AbstractFixtures, StaffFixtures};
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Model\Bitmask;
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectParticipationMember;
 
@@ -36,6 +37,11 @@ class ProjectParticipationMemberFixture extends AbstractFixtures implements Depe
                             $staff,
                             $adminStaff
                         );
+
+                        if ($participation->getParticipant() !== $project->getArranger()) {
+                            $member->setPermissions(new Bitmask(ProjectParticipationMember::PERMISSION_WRITE));
+                        }
+
                         $manager->persist($member);
                     }
                 }

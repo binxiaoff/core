@@ -13,6 +13,7 @@ use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
     DenormalizerAwareTrait,
     ObjectToPopulateTrait};
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Team;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\StaffRepository;
 use Unilend\Core\Repository\UserRepository;
@@ -66,11 +67,6 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         /** @var Staff $staff */
         $staff = $this->extractObjectToPopulate(Staff::class, $context);
 
-        if ($staff) {
-            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalGroups($staff));
-        }
-
-
         $company = null;
 
         // Try to get from staff
@@ -79,8 +75,10 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         }
 
         // OR get constructor company if provided (when create staff from ProjectParticipationMemberDenormalizer)
-        if (null === $company && isset($context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'])) {
-            $company = $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['company'];
+        if (null === $company && isset($context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['team'])) {
+            /** @var Team $team */
+            $team = $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['team'];
+            $company = $team->getCompany();
         }
 
         // else, get from request
@@ -88,11 +86,16 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             $company = $this->iriConverter->getItemFromIri($data['company']);
         }
 
+        if (null === $company && (isset($data['team']) && \is_string($data['team']))) {
+            $team = $this->iriConverter->getItemFromIri($data['team']);
+            $company = $team->getCompany();
+        }
+
         $email = $data['user']['email'] ?? null;
 
         if (null === $staff && $email && $company) {
             unset($data['user']);
-            $staff         = $this->staffRepository->findOneByUserEmailAndCompany((string) $email, $company);
+            $staff         = $this->staffRepository->findOneByEmailAndCompany((string) $email, $company);
             $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $staff;
 
             if (null === $staff) {
@@ -106,12 +109,6 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
                     $data['user']['email'] = $email;
                 }
             }
-        }
-
-        // External bank mandatory role and marketSegment
-        if (false === $company->isCAGMember()) {
-            $data['roles'] = [Staff::DUTY_STAFF_OPERATOR];
-            $data['marketSegments'] = [];
         }
 
         /** @var Staff $denormalized */
@@ -128,19 +125,5 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     public function supportsDenormalization($data, $type, ?string $format = null, array $context = []): bool
     {
         return !isset($context[self::ALREADY_CALLED]) && Staff::class === $type;
-    }
-
-    /**
-     * @param Staff $staff
-     *
-     * @return array
-     */
-    private function getAdditionalGroups(Staff $staff): array
-    {
-        if ($this->security->isGranted(StaffVoter::ATTRIBUTE_ADMIN_EDIT, $staff)) {
-            return [Staff::SERIALIZER_GROUP_ADMIN_CREATE];
-        }
-
-        return [];
     }
 }

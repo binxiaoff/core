@@ -92,7 +92,7 @@ class ProjectParticipationMemberNotifier
             'project_title' => $project->getTitle(),
             'projectParticipation_participant_displayName' => $projectParticipation->getParticipant()->getDisplayName(),
             'arranger_displayName' => $project->getSubmitterCompany()->getDisplayName(),
-            'client_firstName' => $user->getFirstName(),
+            'client_firstName' => $user->getFirstName() ?? '',
         ];
 
         if ($templateId) {

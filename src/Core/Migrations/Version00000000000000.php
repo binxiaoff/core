@@ -152,4 +152,9 @@ SCHEMA_CREATION;
 
         $this->addSql($dump);
     }
+
+    public function down(Schema $schema): void
+    {
+        //nothing to do.
+    }
 }

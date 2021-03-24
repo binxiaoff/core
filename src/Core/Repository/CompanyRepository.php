@@ -5,9 +5,15 @@ declare(strict_types=1);
 namespace Unilend\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\{
+    NoResultException,
+    NonUniqueResultException,
+    ORMException,
+    OptimisticLockException
+};
+use Doctrine\Persistence\ManagerRegistry;
 use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Team;
 use Unilend\Core\Repository\Traits\OrderByHandlerTrait;
 
 /**
@@ -21,8 +27,6 @@ class CompanyRepository extends ServiceEntityRepository
     use OrderByHandlerTrait;
 
     /**
-     * CompanyRepository constructor.
-     *
      * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)

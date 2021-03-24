@@ -122,8 +122,8 @@ class MoneyCalculator
         if (static::isDifferentCurrency($a, $b)) {
             throw new DifferentCurrencyException($a, $b);
         }
-
-        return bccomp($a->getAmount(), $b->getAmount(), 2);
+        // cast them to string, since amount can be null.
+        return bccomp((string) $a->getAmount(), (string) $b->getAmount(), 2);
     }
 
     /**

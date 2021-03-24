@@ -62,12 +62,10 @@ class ArchivedStaffSubscriber implements EventSubscriberInterface
         }
 
         if ($previousResult instanceof Staff && Request::METHOD_POST === $method) {
-            $existingStaff = $this->staffRepository->findOneByUserEmailAndCompany($previousResult->getUser()->getEmail(), $previousResult->getCompany());
+            $existingStaff = $this->staffRepository->findOneByEmailAndCompany($previousResult->getUser()->getEmail(), $previousResult->getCompany());
 
             if ($existingStaff && $existingStaff->isArchived()) {
                 $existingStaff->setCurrentStatus(new StaffStatus($existingStaff, StaffStatus::STATUS_ACTIVE, $currentStaff));
-                $existingStaff->setRoles($previousResult->getRoles());
-                $existingStaff->setMarketSegments($previousResult->getMarketSegments());
                 $event->setControllerResult($existingStaff);
             }
         }

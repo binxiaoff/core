@@ -7,21 +7,30 @@ namespace Unilend\Syndication\Extension\Project;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
+use RuntimeException;
 use Symfony\Component\Security\Core\Security;
+use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\{Project, ProjectStatus};
+use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
     /** @var Security */
-    private $security;
+    private Security $security;
+    /** @var ProjectParticipationMemberRepository */
+    private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
 
     /**
-     * @param Security $security
+     * @param Security                             $security
+     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
      */
-    public function __construct(Security $security)
-    {
+    public function __construct(
+        Security $security,
+        ProjectParticipationMemberRepository $projectParticipationMemberRepository
+    ) {
         $this->security = $security;
+        $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
     }
 
     /**
@@ -42,6 +51,11 @@ class ListExtension implements QueryCollectionExtensionInterface
 
         $staff = $user->getCurrentStaff();
 
+        if (false === $staff instanceof Staff) {
+            throw new RuntimeException('There should not be access to this class without a staff');
+        }
+
+
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
             ->distinct()
@@ -49,28 +63,26 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->leftJoin($rootAlias . '.projectParticipations', 'pp')
             ->leftJoin('pp.projectParticipationMembers', 'ppc')
             ->andWhere($queryBuilder->expr()->orX(
-                // if you are owner
+                // you are the project owner
                 $rootAlias . '.submitterUser = :user',
-                // or you are in owner company and you have market segment
+                // or you fulfill the two following conditions :
                 $queryBuilder->expr()->andX(
-                    $rootAlias . '.submitterCompany = :company',
+                    // you are non archived member of participation OR you managed a member of a participation
                     $queryBuilder->expr()->orX(
-                        $rootAlias . '.marketSegment IN (:marketSegments)',
-                        ($staff && $staff->isAdmin() ? '1 = 1' : '0 = 1')
+                        $queryBuilder->expr()->andX('ppc.staff = :staff', 'ppc.archived IS NULL'),
+                        'ppc IN (:managedStaffMember)',
+                    ),
+                    // you are in arranger company OR your participant and the project is in displayable status
+                    $queryBuilder->expr()->orX(
+                        $rootAlias . '.submitterCompany = pp.participant',
+                        'cs.status in (:displayableStatus)'
                     )
-                ),
-                // or you are non archived participant and the project is published
-                $queryBuilder->expr()->andX(
-                    'cs.status in (:displayableStatus)',
-                    'ppc.staff = :staff',
-                    'ppc.archived IS NULL'
                 )
             ))
-            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
-            ->setParameter('company', $staff->getCompany())
-            ->setParameter('staff', $staff)
             ->setParameter('user', $staff->getUser())
-            ->setParameter('marketSegments', $staff ? $staff->getMarketSegments() : [])
+            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
+            ->setParameter('staff', $staff)
+            ->setParameter('managedStaffMember', $this->projectParticipationMemberRepository->findActiveByManager($staff))
         ;
     }
 }

@@ -13,18 +13,15 @@ Core:
         floorType:
             illegal: Vous ne pouvez pas définir une valeur pour le floorType quand l'indexType est vide ou est "fixé".
             empty: Le floorType est requis.
-
     Money:
         currency:
             inconsistent: La devise n'est pas cohérente avec celle du projet.
             maxMoney: Le montant maximum est inférieur ou égal au montant minimum.
-
     Roleable:
         roles:
             choice: "Un ou plusieurs des rôles donnés sont incorrects"
             count: "Un rôle est requis"
             unique: "Les rôles doivent être uniques"
-
     Staff:
         user:
             unique: Cet utilisateur dispose déjà d'un compte KLS
@@ -69,17 +66,16 @@ Syndication:
         projectParticipations:
             duplicated: Merci de vérifier l'unicité des participants.
 
-        ProjectParticipationMember:
-            staff:
-                incorrectCompany: Ce staff et la participation ne sont pas liés à la même entité
-            acceptedNdaVersion:
-                unacceptableVersion: Cette version de fichier n'est pas une de la lettre de confidentialité acceptable
-                accepted: Ce staff a déjà acception la lettre de confidentialité.
-            acceptableNdaVersion:
-                empty: La lettre de confidentialité acceptable n'est pas définie.
-            archived:
-                lastActiveMember: Vous ne pouvez pas archiver la dernier membre de la participation
-                isManager: Vous ne pouvez pas archiver un coordinateur
+ProjectParticipationMember:
+    staff:
+        incorrectCompany: Ce staff et la participation ne sont pas liés à la même entité
+    acceptedNdaVersion:
+        unacceptableVersion: Cette version de fichier n'est pas une de la lettre de confidentialité acceptable
+        accepted: Ce staff a déjà acception la lettre de confidentialité.
+    acceptableNdaVersion:
+        empty: La lettre de confidentialité acceptable n'est pas définie.
+    archived:
+        lastActiveMember: Vous ne pouvez pas archiver la dernier membre de la participation
 
         ProjectParticipationStatus:
             status:

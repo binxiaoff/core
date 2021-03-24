@@ -278,10 +278,7 @@ class FileInputDataTransformer
      */
     private function uploadProjectParticipationNda(ProjectParticipation $projectParticipation, FileInput $fileInput, Staff $currentStaff, ?File $file)
     {
-        if (
-            false === $this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $projectParticipation)
-            || false === $this->projectManager->isArranger($projectParticipation->getProject(), $currentStaff)
-        ) {
+        if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $projectParticipation->getProject())) {
             throw new AccessDeniedException();
         }
 

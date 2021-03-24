@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Unilend\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\ORMException;
+use Doctrine\ORM\Query\ResultSetMapping;
+use Doctrine\Persistence\ManagerRegistry;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Staff;
 
@@ -22,8 +24,9 @@ class StaffRepository extends ServiceEntityRepository
     /**
      * @param ManagerRegistry $registry
      */
-    public function __construct(ManagerRegistry $registry)
-    {
+    public function __construct(
+        ManagerRegistry $registry
+    ) {
         parent::__construct($registry, Staff::class);
     }
 
@@ -45,15 +48,17 @@ class StaffRepository extends ServiceEntityRepository
      *
      * @return Staff|null
      */
-    public function findOneByUserEmailAndCompany(string $email, Company $company): ?Staff
+    public function findOneByEmailAndCompany(string $email, Company $company): ?Staff
     {
         return $this->createQueryBuilder('s')
-            ->innerJoin('s.user', 'c')
+            ->innerJoin('s.user', 'u')
+            ->innerJoin('s.team', 't')
+            ->innerJoin('t.incomingEdges', 'i')
             ->where(
-                'c.email = :email',
-                's.company = :company'
+                'u.email = :email',
+                's.team = :rootTeam OR i.ancestor = :rootTeam'
             )
-            ->setParameters(['email' => $email, 'company' => $company])
+            ->setParameters(['email' => $email, 'rootTeam' => $company->getRootTeam()])
             ->getQuery()
             ->getOneOrNullResult()
         ;

@@ -6,7 +6,8 @@ namespace Unilend\Core\Doctrine\Types;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
-use Unilend\Core\DTO\Bitmask;
+use InvalidArgumentException;
+use Unilend\Core\Model\Bitmask;
 
 class BitmaskType extends Type
 {
@@ -24,25 +25,25 @@ class BitmaskType extends Type
     /**
      * @inheritdoc
      *
-     * @param int $value
+     * @param int|null $value
      *
-     * @return Bitmask
+     * @return Bitmask|null
      */
-    public function convertToPHPValue($value, AbstractPlatform $platform): Bitmask
+    public function convertToPHPValue($value, AbstractPlatform $platform): ?Bitmask
     {
-        return new Bitmask($value);
+        return null === $value ? null : new Bitmask((int) $value);
     }
 
     /**
      * @inheritdoc
      *
-     * @param Bitmask $value
+     * @param Bitmask|null $value
      *
      * @return int
      */
-    public function convertToDatabaseValue($value, AbstractPlatform $platform): int
+    public function convertToDatabaseValue($value, AbstractPlatform $platform): ?int
     {
-        return $value->get();
+        return null === $value ? null : $value->get();
     }
 
     /**

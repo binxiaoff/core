@@ -19,6 +19,8 @@ use Unilend\Syndication\Entity\{ProjectParticipation,
     ProjectParticipationTranche,
     ProjectStatus};
 use Unilend\Syndication\Security\Voter\ProjectParticipationMemberVoter;
+use Unilend\Syndication\Security\Voter\ProjectParticipationVoter;
+use Unilend\Syndication\Security\Voter\ProjectVoter;
 use Unilend\Syndication\Service\Project\ProjectManager;
 use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
@@ -48,7 +50,6 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
     {
         $this->security = $security;
         $this->iriConverter = $iriConverter;
-        $this->projectParticipationManager = $projectParticipationManager;
         $this->projectManager = $projectManager;
     }
 
@@ -137,8 +138,8 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                 AbstractNormalizer::GROUPS =>
                     // These group should be analog to ProjectParticipationMember::post operation and ProjectParticipationMember:patch operation and Staff::post operation
                     isset($projectParticipationMember['@id'])
-                        ? ['archivable:write'] // PATCH
-                        : ['projectParticipationMember:create', 'projectParticipationMember:write'], // POST
+                        ? ['archivable:write', 'permission:write'] // PATCH
+                        : ['projectParticipationMember:create', 'projectParticipationMember:write', 'permission:write'], // POST
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     ProjectParticipationMember::class => [
                         'projectParticipation' => $projectParticipation,
@@ -180,7 +181,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
 
             $currentStatus = $project->getCurrentStatus()->getStatus();
 
-            if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
+            if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $projectParticipation)) {
                 switch ($currentStatus) {
                     case ProjectStatus::STATUS_INTEREST_EXPRESSION:
                         $groups[] = 'projectParticipation:owner:interestExpression:write';
@@ -191,7 +192,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                 }
             }
 
-            if ($this->projectManager->isArranger($project, $currentStaff)) {
+            if ($this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
                 switch ($currentStatus) {
                     case ProjectStatus::STATUS_DRAFT:
                         $groups[] = 'projectParticipation:arranger:draft:write';
@@ -205,7 +206,7 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                         $groups[] = 'projectParticipation:arranger:participantReply:write';
                         break;
                     case ProjectStatus::STATUS_ALLOCATION:
-                        if ($this->projectParticipationManager->isOwner($projectParticipation, $currentStaff)) {
+                        if ($projectParticipation->isArrangerParticipation()) {
                             $groups[] = 'projectParticipation:arrangerOwner:allocation:write';
                         }
                         break;

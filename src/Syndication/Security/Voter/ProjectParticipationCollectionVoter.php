@@ -20,6 +20,6 @@ class ProjectParticipationCollectionVoter extends AbstractEntityVoter
      */
     protected function canCreate(ProjectParticipationCollection $projectParticipationCollection): bool
     {
-        return $this->authorizationChecker->isGranted('edit', $projectParticipationCollection->getProject());
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $projectParticipationCollection->getProject());
     }
 }

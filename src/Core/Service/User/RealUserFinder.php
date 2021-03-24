@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Service\User;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\User;

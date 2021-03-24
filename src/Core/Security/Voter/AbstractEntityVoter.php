@@ -12,6 +12,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 
 abstract class AbstractEntityVoter extends Voter
 {
+    // TODO CALS-3576 Move common attribute here as they are the same everywhere
     use ConstantsAwareTrait;
 
     /** @var AuthorizationCheckerInterface */

@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Repository;
 
-use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\QueryBuilder;
-use Doctrine\ORM\{NoResultException, NonUniqueResultException, ORMException, OptimisticLockException};
+use Doctrine\ORM\{
+    NoResultException,
+    NonUniqueResultException,
+    ORMException,
+    OptimisticLockException
+};
+use Doctrine\Persistence\ManagerRegistry;
 use Unilend\Core\Entity\{MessageStatus, MessageThread, Staff, UserStatus};
 use Unilend\Syndication\Entity\ProjectStatus;
 

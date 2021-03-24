@@ -31,7 +31,7 @@ final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryI
 
         if (false !== strrpos($resourceClass, '\\')) {
             $exploded  = explode('\\', $resourceClass);
-            $domain    = strtolower($exploded[1]);
+            $domain    = $inflector->tableize($exploded[1]);
             $entity    = $inflector->tableize(end($exploded));
             $shortName = $domain . '_' . $entity;
 

@@ -4,7 +4,7 @@ api_platform:
     description: 'Backend API of KLS'
     version: '1.0.0'
     enable_entrypoint: '%kernel.debug%'
-    enable_docs: '%kernel.debug%'
+    enable_docs: true
     mapping:
         paths: ['%kernel.project_dir%/src/Syndication/Entity', '%kernel.project_dir%/src/Core/Entity']
     patch_formats:
@@ -19,6 +19,7 @@ api_platform:
         Symfony\Component\Serializer\Exception\ExceptionInterface: 400 # Use a raw status code (recommended)
         ApiPlatform\Core\Exception\InvalidArgumentException: 400
         ApiPlatform\Core\Exception\FilterValidationException: 400
+        ApiPlatform\Core\Validator\Exception\ValidationException: 400 # Revert change introduced with api-platform/core:2.6.*
         Doctrine\ORM\OptimisticLockException: 409
         # Convert not found exception to 403 for security reason
         Symfony\Component\HttpKernel\Exception\NotFoundHttpException: 403

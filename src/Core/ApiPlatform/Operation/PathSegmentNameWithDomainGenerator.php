@@ -9,20 +9,23 @@ use Doctrine\Inflector\InflectorFactory;
 
 class PathSegmentNameWithDomainGenerator implements PathSegmentNameGeneratorInterface
 {
+    private const API_DOMAINS = ['core', 'syndication'];
+
     /**
      * @inheritDoc
      */
     public function getSegmentName(string $name, bool $collection = true): string
     {
         $inflector = InflectorFactory::create()->build();
-
-        $fragments = explode('_', $name, 2);
-
-        foreach ($fragments as $key => &$fragment) {
-            $fragment = $inflector->tableize($fragment);
-            $fragment = $collection && array_key_last($fragments) === $key ? $inflector->pluralize($fragment) : $fragment;
+        $domain    = null;
+        // The segment names with domain.
+        if (1 === preg_match(sprintf('/^(%s)_(.+)/', implode('|', self::API_DOMAINS)), $name, $matches)) {
+            [, $domain, $name] = $matches;
         }
+        // It exists also the segment names without domain (ex. sub-resource).
+        $name = $inflector->tableize($name);
+        $name = $collection ? $inflector->pluralize($name) : $name;
 
-        return implode('/', $fragments);
+        return $domain ? $domain . '/' . $name : $name;
     }
 }

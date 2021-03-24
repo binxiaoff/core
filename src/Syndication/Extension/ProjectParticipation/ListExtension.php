@@ -6,27 +6,29 @@ namespace Unilend\Syndication\Extension\ProjectParticipation;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
+use RuntimeException;
 use Symfony\Component\Security\Core\Security;
+use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\{Project, ProjectParticipation};
+use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
+use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
     /** @var Security */
-    private $security;
-    /** @var EntityManagerInterface */
-    private $entityManager;
+    private Security $security;
+    /** @var ProjectParticipationMemberRepository */
+    private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
 
     /**
-     * @param Security               $security
-     * @param EntityManagerInterface $entityManager
+     * @param Security                             $security
+     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
      */
-    public function __construct(Security $security, EntityManagerInterface $entityManager)
+    public function __construct(Security $security, ProjectParticipationMemberRepository $projectParticipationMemberRepository)
     {
         $this->security      = $security;
-        $this->entityManager = $entityManager;
+        $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
     }
 
     /**
@@ -48,43 +50,35 @@ class ListExtension implements QueryCollectionExtensionInterface
 
         $staff = $user->getCurrentStaff();
 
-        $expressionBuilder = $this->entityManager->getExpressionBuilder();
-        $subQueryBuilder   = $this->entityManager->createQueryBuilder();
-        $subQueryBuilder->select('sub_project')
-            ->from(Project::class, 'sub_project')
-            ->innerJoin('sub_project.currentStatus', 'sub_cs')
-            ->innerJoin('sub_project.projectParticipations', 'sub_participation')
-            ->innerJoin('sub_participation.projectParticipationMembers', 'sub_member')
-            ->where('sub_member.staff = :staff')
-        ;
+        if (false === $staff instanceof Staff) {
+            throw new RuntimeException('There should not be access to this class without a staff');
+        }
+
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
             ->distinct()
             ->leftJoin("{$rootAlias}.projectParticipationMembers", 'ppc')
             ->innerJoin("{$rootAlias}.project", 'p')
+            ->innerJoin('p.currentStatus', 'cs')
             ->andWhere(
-                $expressionBuilder->orX(
-                    // Submitter condition
-                    $expressionBuilder->andX(
-                        'p.submitterCompany = :company',
-                        $queryBuilder->expr()->orX(
-                            'p.marketSegment IN (:marketSegments)',
-                            ($staff && $staff->isAdmin() ? '1 = 1' : '0 = 1')
-                        )
+                // you fulfill both of the following conditions :
+                $queryBuilder->expr()->andX(
+                    // you are non archived member of participation OR you managed a member of a participation
+                    $queryBuilder->expr()->orX(
+                        $queryBuilder->expr()->andX('ppc.staff = :staff', 'ppc.archived IS NULL'),
+                        'ppc IN (:managedStaffMember)'
                     ),
-                    // Participant condition
-                    $expressionBuilder->andX(
-                        'ppc.archived IS NULL',
-                        '(p.offerVisibility = :private AND ppc.staff = :staff) OR p.offerVisibility in (:nonPrivate)',
-                        $expressionBuilder->in('p.id', $subQueryBuilder->getDQL())
-                    )
+                    // you are in arranger company OR your participant and the project is in displayable status
+                    $queryBuilder->expr()->orX(
+                        'p.submitterCompany = ' . $rootAlias . '.participant',
+                        $queryBuilder->expr()->andX('cs.status IN (:displayableStatus)', $rootAlias . '.participant = :company')
+                    ),
                 )
             )
+            ->setParameter('company', $staff->getCompany())
             ->setParameter('staff', $staff)
-            ->setParameter('private', Project::OFFER_VISIBILITY_PRIVATE)
-            ->setParameter('nonPrivate', [Project::OFFER_VISIBILITY_PARTICIPANT, Project::OFFER_VISIBILITY_PUBLIC])
-            ->setParameter('company', $user->getCompany())
-            ->setParameter('marketSegments', $user->getCurrentStaff()->getMarketSegments())
+            ->setParameter('managedStaffMember', $this->projectParticipationMemberRepository->findActiveByManager($staff))
+            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
         ;
     }
 }

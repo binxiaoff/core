@@ -11,7 +11,6 @@ use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
 use Unilend\Core\DataFixtures\{AbstractFixtures,
-    MarketSegmentFixtures,
     StaffFixtures,
     UserFixtures};
 use Unilend\Core\Entity\Constant\CAInternalRating;
@@ -23,7 +22,7 @@ use Unilend\Core\Entity\{
     Embeddable\NullablePerson,
     File,
     FileVersion,
-    Staff};
+    Staff, User};
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectStatus;
 
@@ -166,12 +165,13 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $ndaFileVersion = (new FileVersion('/fake.pdf', $staff, $ndaFile, 'user_attachment', '', 'application/pdf'))->setOriginalName($title . ' NDA.pdf');
         $ndaFile->setCurrentFileVersion($ndaFileVersion);
 
+        $companyGroupTags = $staff->getCompany()->getCompanyGroupTags();
+
         // Project
         $project = (new Project(
             $staff,
             'RISK-GROUP-1',
-            new Money('EUR', '5000000'),
-            $this->getReference(MarketSegmentFixtures::SEGMENT1)
+            new Money('EUR', '5000000')
         ))
             ->setTitle($title)
             ->setNda($ndaFile)
@@ -185,6 +185,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
                     ? DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+10 days', '+1 year'))
                     : null
             )
+            ->setCompanyGroupTag(reset($companyGroupTags) ?: null)
             ->setParticipantReplyDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+70 days', '+1 year')))
             ->setAllocationDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+1 year', '+2 year')))
             ->setPrivilegedContactPerson(
@@ -220,7 +221,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         return [
             StaffFixtures::class,
-            MarketSegmentFixtures::class,
         ];
     }
 
