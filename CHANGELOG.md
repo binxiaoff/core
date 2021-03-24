@@ -1,3 +1,6 @@
+## 4.0.0 (24/03/2021)
+[Release note](https://lafabriquebyca.atlassian.net/browse/CALS/fixforversion/10067)
+
 ## 3.6.1 (01/03/2021)
 [Release note](https://lafabriquebyca.atlassian.net/browse/CALS/fixforversion/10064)
 
