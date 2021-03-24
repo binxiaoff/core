@@ -35,11 +35,7 @@ use Unilend\Core\Model\Bitmask;
  *         }
  *     },
  *     itemOperations={
- *         "get": {
- *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
- *             "read": false,
- *             "output": false,
- *         },
+ *         "get",
  *         "patch": {
  *              "denormalization_context": {
  *                  "groups": {"agency:participation:update", "money:write", "agency:participationTrancheAllocation:write"}
