@@ -18,7 +18,7 @@ use Unilend\Core\Model\Bitmask;
 /**
  * @ApiResource(
  *     attributes={
- *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
+ *         "validation_groups": {Participation::class, "getCurrentValidationGroups"}
  *     },
  *     normalizationContext={
  *         "groups": {
@@ -26,16 +26,10 @@ use Unilend\Core\Model\Bitmask;
  *             "money:read"
  *         }
  *     },
- *     denormalizationContext={
- *         "groups": {
- *             "agency:participation:write",
- *             "money:write"
- *         }
- *     },
  *     collectionOperations={
  *         "post": {
  *              "denormalization_context": {
- *                  "groups": {"agency:participation:create", "money:write"}
+ *                  "groups": {"agency:participation:create", "money:write", "agency:participationTrancheAllocation:write"}
  *              },
  *             "security_post_denormalize": "is_granted('create', object)",
  *         }
@@ -48,7 +42,7 @@ use Unilend\Core\Model\Bitmask;
  *         },
  *         "patch": {
  *              "denormalization_context": {
- *                  "groups": {"agency:participation:write", "money:write"}
+ *                  "groups": {"agency:participation:update", "money:write", "agency:participationTrancheAllocation:write"}
  *              },
  *             "security_post_denormalize": "is_granted('edit', object)",
  *         }
@@ -102,7 +96,7 @@ class Participation
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      *
-     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
      */
     private ?string $participantCommission;
 
@@ -118,7 +112,7 @@ class Participation
      *     message="Agency.Participation.responsabilities.agent"
      * )
      *
-     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
      */
     private Bitmask $responsibilities;
 
@@ -132,7 +126,7 @@ class Participation
      * @Assert\PositiveOrZero
      * @Assert\Expression(expression="(null === value && false === this.isAgent()) || (null !== value && this.isAgent())", message="Agency.Participation.commission.agent")
      *
-     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
      */
     private ?string $agentCommission;
 
@@ -147,7 +141,7 @@ class Participation
      *
      * @Assert\Expression(expression="null === value || false === this.isArranger()", message="Agency.Participant.commission.arranger")
      *
-     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
      */
     private ?string $arrangerCommission;
 
@@ -162,7 +156,7 @@ class Participation
      *
      * @Assert\Expression(expression="null === value || false === this.isCoArranger()", message="Agency.Participant.commission.deputyArranger")
      *
-     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
      */
     private ?string $deputyArrangerCommission;
 
@@ -171,7 +165,7 @@ class Participation
      *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
      *
-     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
      *
      * @Assert\Valid
      */
@@ -182,7 +176,7 @@ class Participation
      *
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
      */
     private bool $prorata;
 
@@ -197,7 +191,7 @@ class Participation
      *    @Assert\Expression("value.getParticipation() === this")
      * })
      *
-     * @Groups({"agency:participation:read"})
+     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
      */
     private iterable $allocations;
 
@@ -206,7 +200,7 @@ class Participation
      *
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"agency:participation:write", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
      */
     private bool $secondary;
 

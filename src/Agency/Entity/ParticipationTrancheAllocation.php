@@ -14,6 +14,12 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ApiResource(
+ *     normalizationContext={
+ *         "groups": {"agency:participationTrancheAllocation:read"}
+ *     },
+ *     denormalizationContext={
+ *         "groups": {"agency:participationTrancheAllocation:write"}
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -45,7 +51,7 @@ class ParticipationTrancheAllocation
      *
      * @Assert\NotBlank
      *
-     * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:create"})
+     * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:write"})
      */
     private Participation $participation;
 
@@ -58,7 +64,7 @@ class ParticipationTrancheAllocation
      * @Assert\NotBlank
      * @Assert\Expression("value.isSyndicated()")
      *
-     * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:create"})
+     * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:write"})
      */
     private Tranche $tranche;
 
@@ -70,7 +76,7 @@ class ParticipationTrancheAllocation
      *
      * @ORM\Embedded(class=Money::class)
      *
-     * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:create"})
+     * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:write"})
      */
     private Money $allocation;
 

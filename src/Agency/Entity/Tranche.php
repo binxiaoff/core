@@ -34,7 +34,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *     },
  *     collectionOperations={
  *         "post": {
- *             "denormalization_context": {"groups": {"agency:tranche:create", "money:write", "nullableMoney:write", "lendingRate:write"}},
+ *             "denormalization_context": {"groups": {"agency:tranche:create", "money:write", "nullableMoney:write", "lendingRate:write", "agency:borrowerTrancheShare:write"}},
  *             "security_post_denormalize": "is_granted('create', object)",
  *         }
  *     },
@@ -45,7 +45,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "output": false,
  *         },
  *         "patch": {
- *             "denormalization_context": {"groups": {"agency:tranche:update", "money:write", "nullableMoney:write", "lendingRate:write"}},
+ *             "denormalization_context": {"groups": {"agency:tranche:update", "money:write", "nullableMoney:write", "lendingRate:write", "agency:borrowerTrancheShare:write"}},
  *             "security": "is_granted('edit', object)",
  *         },
  *         "delete": {
@@ -243,9 +243,9 @@ class Tranche
     /**
      * @var BorrowerTrancheShare[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche", cascade={"persist", "remove"}, orphanRemoval=true)
      *
-     * @Groups({"agency:tranche:read"})
+     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
      *
      * @Assert\All({
      *    @Assert\Expression("value.getTranche() === this")
@@ -616,7 +616,7 @@ class Tranche
         $this->borrowerShares->clear();
 
         foreach ($borrowerShares as $borrowerShare) {
-            $this->borrowerShares->add($borrowerShare);
+            $this->addBorrowerShare($borrowerShare);
         }
 
         return $this;
@@ -675,11 +675,24 @@ class Tranche
      *
      * @return Tranche
      */
-    public function addBorrowerTrancheShare(BorrowerTrancheShare $borrowerTrancheShare): Tranche
+    public function addBorrowerShare(BorrowerTrancheShare $borrowerTrancheShare): Tranche
     {
         if (false === $this->borrowerShares->contains($borrowerTrancheShare)) {
             $this->borrowerShares->add($borrowerTrancheShare);
         }
+
+        return $this;
+    }
+
+
+    /**
+     * @param BorrowerTrancheShare $borrowerTrancheShare
+     *
+     * @return Tranche
+     */
+    public function removeBorrowerShare(BorrowerTrancheShare $borrowerTrancheShare): Tranche
+    {
+        $this->borrowerShares->removeElement($borrowerTrancheShare);
 
         return $this;
     }

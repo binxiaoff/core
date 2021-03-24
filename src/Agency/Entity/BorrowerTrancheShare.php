@@ -15,14 +15,10 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 /**
  * @ApiResource(
  *     normalizationContext={
- *         "groups": {
- *             "agency:borrowerTrancheShare:read"
- *         }
+ *         "groups": {"agency:borrowerTrancheShare:read"}
  *     },
  *     denormalizationContext={
- *         "groups": {
- *             "agency:borrowerTrancheShare:write"
- *         }
+ *         "groups": {"agency:borrowerTrancheShare:write"}
  *     },
  *     itemOperations={
  *         "get": {
