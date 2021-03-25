@@ -5,11 +5,19 @@ declare(strict_types=1);
 namespace Unilend\Core\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Core\Entity\CompanyGroup;
-use Unilend\Core\Entity\CompanyGroupTag;
+use Unilend\Core\Entity\{CompanyGroup, CompanyGroupTag};
 
 class CompanyGroupFixture extends AbstractFixtures
 {
+    public const CORPORATE               = 'company_group_tag_corporate';
+    public const PUBLIC_COLLECTIVITY     = 'company_group_tag_public_collectivity';
+    public const ENERGY                  = 'company_group_tag_energy';
+    public const REAL_ESTATE_DEVELOPMENT = 'company_group_real_estate_development';
+    public const PPP                     = 'company_group_tag_ppp';
+    public const AGRICULTURE             = 'company_group_tag_agriculture';
+    public const PRO                     = 'company_group_tag_pro';
+    public const PATRIMONIAL             = 'company_group_tag_patrimonial';
+
     /**
      * @inheritDoc
      */
@@ -22,12 +30,20 @@ class CompanyGroupFixture extends AbstractFixtures
         $manager->persist($companyGroup);
 
         $codes = [
-            'corporate', 'public_collectivity', 'energy', 'real_estate_development', 'ppp', 'agriculture', 'pro', 'patrimonial',
+            self::CORPORATE               => 'corporate',
+            self::PUBLIC_COLLECTIVITY     => 'public_collectivity',
+            self::ENERGY                  => 'energy',
+            self::REAL_ESTATE_DEVELOPMENT => 'real_estate_development',
+            self::PPP                     => 'ppp',
+            self::AGRICULTURE             => 'agriculture',
+            self::PRO                     => 'pro',
+            self::PATRIMONIAL             => 'patrimonial',
         ];
 
-        foreach ($codes as $code) {
+        foreach ($codes as $referenceName => $code) {
             $tag = new CompanyGroupTag($companyGroup, $code);
             $manager->persist($tag);
+            $this->addReference($referenceName, $tag);
         }
 
         $manager->flush();
