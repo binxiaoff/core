@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\{Constant\CARatingType, Embeddable\Money, Embeddable\NullableMoney, Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface, MarketSegment,
+use Unilend\Core\Entity\{CompanyGroupTag, Constant\CARatingType, Embeddable\Money, Embeddable\NullableMoney, Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface,
     Staff, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
 use Unilend\Core\Validator\Constraints\PreviousValue;
 
@@ -42,6 +42,9 @@ class Program implements TraceableStatusAwareInterface
     use TimestampableTrait;
     use BlamableAddedTrait;
 
+    public const COMPANY_GROUP_TAG_CORPORATE   = 'corporate';
+    public const COMPANY_GROUP_TAG_AGRICULTURE = 'agriculture';
+
     /**
      * @ORM\Column(length=100, unique=true)
      *
@@ -57,17 +60,17 @@ class Program implements TraceableStatusAwareInterface
     private ?string $description;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\MarketSegment")
-     * @ORM\JoinColumn(name="id_market_segment", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
+     * @ORM\JoinColumn(name="id_company_group_tag", nullable=false)
      *
      * @Assert\Expression(
-     *      "this.isMarketSegmentValid()",
-     *      message="CreditGuaranty.Program.marketSegment.invalid"
+     *      "this.isCompanyGroupTagValid()",
+     *      message="CreditGuaranty.Program.companyGroupTag.invalid"
      * )
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
-    private MarketSegment $marketSegment;
+    private CompanyGroupTag $companyGroupTag;
 
     /**
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
@@ -231,21 +234,21 @@ class Program implements TraceableStatusAwareInterface
     private Collection $programEligibilities;
 
     /**
-     * @param string        $name
-     * @param MarketSegment $marketSegment
-     * @param Money         $funds
-     * @param Staff         $addedBy
+     * @param string          $name
+     * @param CompanyGroupTag $companyGroupTag
+     * @param Money           $funds
+     * @param Staff           $addedBy
      */
-    public function __construct(string $name, MarketSegment $marketSegment, Money $funds, Staff $addedBy)
+    public function __construct(string $name, CompanyGroupTag $companyGroupTag, Money $funds, Staff $addedBy)
     {
-        $this->name          = $name;
-        $this->marketSegment = $marketSegment;
-        $this->funds         = $funds;
-        $this->addedBy       = $addedBy;
-        $this->cappedAt      = new NullableMoney();
-        $this->statuses      = new ArrayCollection();
-        $this->guarantyCost  = new NullableMoney();
-        $this->added         = new DateTimeImmutable();
+        $this->name            = $name;
+        $this->companyGroupTag = $companyGroupTag;
+        $this->funds           = $funds;
+        $this->addedBy         = $addedBy;
+        $this->cappedAt        = new NullableMoney();
+        $this->statuses        = new ArrayCollection();
+        $this->guarantyCost    = new NullableMoney();
+        $this->added           = new DateTimeImmutable();
         $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_DRAFT, $addedBy));
     }
 
@@ -278,11 +281,11 @@ class Program implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return MarketSegment
+     * @return CompanyGroupTag
      */
-    public function getMarketSegment(): MarketSegment
+    public function getCompanyGroupTag(): CompanyGroupTag
     {
-        return $this->marketSegment;
+        return $this->companyGroupTag;
     }
 
     /**
@@ -478,9 +481,9 @@ class Program implements TraceableStatusAwareInterface
      *
      * @return bool
      */
-    public function isMarketSegmentValid(): bool
+    public function isCompanyGroupTagValid(): bool
     {
-        return \in_array($this->getMarketSegment()->getLabel(), [MarketSegment::LABEL_AGRICULTURE, MarketSegment::LABEL_CORPORATE], true);
+        return \in_array($this->getCompanyGroupTag()->getCode(), [self::COMPANY_GROUP_TAG_CORPORATE, self::COMPANY_GROUP_TAG_AGRICULTURE], true);
     }
 
     /**

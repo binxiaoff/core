@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Core\DataFixtures;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use JsonException;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\CompanyGroup;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\StaffStatus;
-use Unilend\Core\Entity\User;
+use Unilend\Core\Entity\{Company, Staff, StaffStatus, User};
 
 class StaffFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -42,15 +37,15 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
 
         // Create a CASA staff
         /** @var Company $casaCompany */
-        $casaCompany = $this->getReference(CompanyFixtures::CASA);
-        /** @var User $admin */
-        $admin = $this->getReference(UserFixtures::ADMIN);
-        $this->insertStaff($admin, $casaCompany, $manager, [Staff::DUTY_STAFF_ADMIN], MarketSegmentFixtures::SEGMENTS);
+        $casaCompany    = $this->getReference(CompanyFixtures::CASA);
+        $casaAdminStaff = $this->insertStaff($admin, $casaCompany, $manager);
+        $this->addAllCompanyGroupTag($casaAdminStaff);
 
         /** @var User $managerUser */
-        $managerUser = $this->getReference(UserFixtures::MANAGER);
-        $managerStaff = $this->insertStaff($managerUser, $casaCompany, $manager, [Staff::DUTY_STAFF_MANAGER], MarketSegmentFixtures::SEGMENTS);
-        $this->addReference(self::CASA, $managerStaff);
+        $managerUser      = $this->getReference(UserFixtures::MANAGER);
+        $casaManagerStaff = $this->insertStaff($managerUser, $casaCompany, $manager);
+        $this->addAllCompanyGroupTag($casaAdminStaff);
+        $this->addReference(self::CASA, $casaManagerStaff);
 
         $data = [
             UserFixtures::AUDITOR => [

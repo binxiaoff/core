@@ -6,9 +6,8 @@ namespace Unilend\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Core\DataFixtures\{AbstractFixtures, MarketSegmentFixtures, StaffFixtures};
-use Unilend\Core\Entity\{Embeddable\Money, Embeddable\NullableMoney, MarketSegment, Staff};
-use Unilend\CreditGuaranty\Entity\{Program, ProgramContact, ProgramStatus};
+use Unilend\Core\DataFixtures\{AbstractFixtures};
+use Unilend\CreditGuaranty\Entity\{Program, ProgramContact};
 
 class ProgramContactFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

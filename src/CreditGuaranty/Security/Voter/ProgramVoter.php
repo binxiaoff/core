@@ -28,7 +28,7 @@ class ProgramVoter extends AbstractEntityVoter
 
         return $staff
             && Company::SHORT_CODE_CASA === $staff->getCompany()->getShortCode()
-            && ($staff->isAdmin() || $staff->getMarketSegments()->contains($program->getMarketSegment()));
+            && ($staff->isAdmin() || in_array($program->getCompanyGroupTag(), $staff->getCompanyGroupTags(), true));
     }
 
     /**
@@ -59,6 +59,6 @@ class ProgramVoter extends AbstractEntityVoter
         return $staff
             && Company::SHORT_CODE_CASA === $staff->getCompany()->getShortCode()
             && ($program->isInDraft() || $program->isPaused())
-            && ($staff->isAdmin() || $staff->getMarketSegments()->contains($program->getMarketSegment()) || $program->getAddedBy() === $staff);
+            && ($staff->isAdmin() || in_array($program->getCompanyGroupTag(), $staff->getCompanyGroupTags(), true) || $program->getAddedBy() === $staff);
     }
 }

@@ -6,8 +6,10 @@ namespace Unilend\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Core\DataFixtures\{AbstractFixtures, MarketSegmentFixtures, StaffFixtures};
-use Unilend\Core\Entity\{Constant\CARatingType, Embeddable\Money, Embeddable\NullableMoney, MarketSegment, Staff};
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Unilend\Core\DataFixtures\{AbstractFixtures, CompanyGroupFixture, StaffFixtures};
+use Unilend\Core\Entity\{Constant\CARatingType, Embeddable\Money, Embeddable\NullableMoney, Staff};
+use Unilend\Core\Repository\CompanyGroupTagRepository;
 use Unilend\CreditGuaranty\Entity\{Program, ProgramStatus};
 
 class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -17,6 +19,19 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
     public const REFERENCE_COMMERCIALIZED = 'commercialized_program';
     public const REFERENCE_PAUSED         = 'paused_program';
 
+    /** @var CompanyGroupTagRepository */
+    private CompanyGroupTagRepository $companyGroupTagRepository;
+
+    /**
+     * @param TokenStorageInterface     $tokenStorage
+     * @param CompanyGroupTagRepository $companyGroupTagRepository
+     */
+    public function __construct(TokenStorageInterface $tokenStorage, CompanyGroupTagRepository $companyGroupTagRepository)
+    {
+        parent::__construct($tokenStorage);
+        $this->companyGroupTagRepository = $companyGroupTagRepository;
+    }
+
     /**
      * @param ObjectManager $manager
      */
@@ -24,26 +39,26 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         $programData = [
             self::REFERENCE_DRAFT          => [
-                'name'          => 'Programme en brouillon',
-                'marketSegment' => MarketSegmentFixtures::SEGMENT3,
-                'funds'         => ['currency' => 'EUR', 'amount' => '100000000'],
-                'addedBy'       => StaffFixtures::CASA,
-                'currentStatus' => ProgramStatus::STATUS_DRAFT,
-                'cappedAt'      => ['currency' => 'EUR', 'amount' => '100000'],
-                'description'   => 'La description pour la pogramme en brouillon',
+                'name'                 => 'Programme en brouillon',
+                'companyGroupTag'      => Program::COMPANY_GROUP_TAG_CORPORATE,
+                'funds'                => ['currency' => 'EUR', 'amount' => '100000000'],
+                'addedBy'              => StaffFixtures::CASA,
+                'currentStatus'        => ProgramStatus::STATUS_DRAFT,
+                'cappedAt'             => ['currency' => 'EUR', 'amount' => '100000'],
+                'description'          => 'La description pour la pogramme en brouillon',
                 'distributionDeadline' => new \DateTimeImmutable(),
             ],
             self::REFERENCE_CANCELLED      => [
-                'name'          => 'Programme annulée',
-                'marketSegment' => MarketSegmentFixtures::SEGMENT6,
-                'funds'         => ['currency' => 'EUR', 'amount' => '200000000'],
-                'addedBy'       => StaffFixtures::CASA,
-                'currentStatus' => ProgramStatus::STATUS_CANCELLED,
-                'cappedAt'      => ['currency' => 'EUR', 'amount' => '100000'],
+                'name'            => 'Programme annulée',
+                'companyGroupTag' => Program::COMPANY_GROUP_TAG_AGRICULTURE,
+                'funds'           => ['currency' => 'EUR', 'amount' => '200000000'],
+                'addedBy'         => StaffFixtures::CASA,
+                'currentStatus'   => ProgramStatus::STATUS_CANCELLED,
+                'cappedAt'        => ['currency' => 'EUR', 'amount' => '100000'],
             ],
             self::REFERENCE_COMMERCIALIZED => [
                 'name'                 => 'Programme commercialisée',
-                'marketSegment'        => MarketSegmentFixtures::SEGMENT3,
+                'companyGroupTag'      => Program::COMPANY_GROUP_TAG_AGRICULTURE,
                 'funds'                => ['currency' => 'EUR', 'amount' => '300000000'],
                 'addedBy'              => StaffFixtures::CASA,
                 'currentStatus'        => ProgramStatus::STATUS_COMMERCIALIZED,
@@ -63,16 +78,16 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'guarantyCost'         => ['currency' => 'EUR', 'amount' => '1000'],
             ],
             self::REFERENCE_PAUSED         => [
-                'name'          => 'Programme en pause',
-                'marketSegment' => MarketSegmentFixtures::SEGMENT6,
-                'funds'         => ['currency' => 'EUR', 'amount' => '400000000'],
-                'addedBy'       => StaffFixtures::CASA,
-                'currentStatus' => ProgramStatus::STATUS_PAUSED,
+                'name'            => 'Programme en pause',
+                'companyGroupTag' => Program::COMPANY_GROUP_TAG_CORPORATE,
+                'funds'           => ['currency' => 'EUR', 'amount' => '400000000'],
+                'addedBy'         => StaffFixtures::CASA,
+                'currentStatus'   => ProgramStatus::STATUS_PAUSED,
             ],
         ];
 
         foreach ($programData as $reference => $programDatum) {
-            $program = $this->buildProgram($programDatum);
+            $program = $this->buildProgram($programDatum, $manager);
             $manager->persist($program);
 
             $addedBy = $this->getReference($programDatum['addedBy']);
@@ -100,9 +115,9 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         /** @var Staff $addedBy */
         $addedBy = $this->getReference($programDatum['addedBy']);
-        /** @var MarketSegment $marketSegment */
-        $marketSegment = $this->getReference($programDatum['marketSegment']);
-        $program       = new Program($programDatum['name'], $marketSegment, new Money($programDatum['funds']['currency'], $programDatum['funds']['amount']), $addedBy);
+        // todo: put the references on the compnayGroupTag and use them here
+        $companyGroupTag = $this->companyGroupTagRepository->findOneBy(['code' => $programDatum['companyGroupTag']]);
+        $program         = new Program($programDatum['name'], $companyGroupTag, new Money($programDatum['funds']['currency'], $programDatum['funds']['amount']), $addedBy);
 
         if (false === empty($programDatum['cappedAt'])) {
             $program->setCappedAt(new NullableMoney($programDatum['cappedAt']['currency'], $programDatum['cappedAt']['amount']));
@@ -144,7 +159,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
     public function getDependencies(): array
     {
         return [
-            MarketSegmentFixtures::class,
+            CompanyGroupFixture::class,
             StaffFixtures::class,
         ];
     }
