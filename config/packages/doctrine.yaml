@@ -11,7 +11,10 @@ doctrine:
             default:
                 url: '%env(DATABASE_URL)%'
                 <<: &connection_configuration
-                    schema_filter: '/^(?!core_messenger_messages|core_staff_log).*$/'
+                    # Remove from doctrine refresh_token (Refresh JWT token table)
+                    # Remove from doctrine messenger_messages (Symfony messenger queue table)
+                    # Remove from doctrine core_staff_log (Old table kept for reference)
+                    schema_filter: '/^(?!refresh_token|messenger_messages|core_staff_log).*$/'
                     driver_class: 'Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver'
                     default_table_options:
                         charset: utf8mb4
