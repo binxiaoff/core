@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Unilend\Core\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\Entity\{Company, CompanyGroup, CompanyStatus, Team, User};
 
 class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -52,19 +50,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         'CEBPL', 'CEPAC', 'CECA', 'CEAL', 'CEBFC', 'CEMP', 'CEGEE',
     ];
 
-    /** @var EntityManagerInterface */
-    private EntityManagerInterface $entityManager;
-
-    /**
-     * @param TokenStorageInterface  $tokenStorage
-     * @param EntityManagerInterface $entityManager
-     */
-    public function __construct(TokenStorageInterface $tokenStorage, EntityManagerInterface $entityManager)
-    {
-        $this->entityManager = $entityManager;
-
-        parent::__construct($tokenStorage);
-    }
+    private ObjectManager $entityManager;
 
     /**
      * @param ObjectManager $manager
@@ -74,6 +60,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     public function load(ObjectManager $manager): void
     {
+        $this->entityManager = $manager;
        // Main company
         /** @var User $user */
         $user    = $this->getReference(UserFixtures::ADMIN);
