@@ -763,23 +763,6 @@ class Term
     }
 
     /**
-     * Reset entity to await agent validation
-     *
-     * Used when new value or new document is put
-     */
-    public function awaitValidation()
-    {
-        $this->validation = null;
-        $this->validationDate = null;
-        $this->agentComment = null;
-
-        $this->breach = false;
-        $this->breachComment = null;
-        $this->waiver = null;
-        $this->waiverComment = null;
-    }
-
-    /**
      * @param Term $term
      *
      * @return string[]
@@ -797,5 +780,22 @@ class Term
     private function isDateValid(DateTimeInterface $dateTime)
     {
         return $this->getStartDate()->setTime(0, 0) <= $dateTime && $dateTime <= $this->getEndDate()->setTime(0, 0);
+    }
+
+    /**
+     * Reset entity to await agent validation
+     *
+     * Used when new value or new document is put
+     */
+    private function awaitValidation()
+    {
+        $this->validation = null;
+        $this->validationDate = null;
+        $this->agentComment = null;
+
+        $this->breach = false;
+        $this->breachComment = null;
+        $this->waiver = null;
+        $this->waiverComment = null;
     }
 }

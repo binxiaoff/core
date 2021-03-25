@@ -13,7 +13,7 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="agency_term_history")
+ * @ORM\Table(name="agency_term_history", indexes={@ORM\Index(columns={"added"})})
  */
 class TermHistory
 {
