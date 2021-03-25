@@ -61,7 +61,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
             $user = $this->getReference($userReference);
             $company = $datum['company'] ?? $adminCompany;
             $staff = $this->createStaff($user, $company);
-            if (false === \in_array($userReference, [UserFixtures::AUDITOR, UserFixtures::OPERATOR], true)) {
+            if (false === \in_array($userReference, [UserFixtures::AUDITOR, UserFixtures::ACCOUNTANT], true)) {
                 $staff->setArrangementProjectCreationPermission(true);
             }
             $this->addStaffReference($staff);
