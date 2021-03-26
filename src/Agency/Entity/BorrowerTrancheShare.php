@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Action\NotFoundAction;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -53,6 +54,8 @@ class BorrowerTrancheShare
      * @Groups({"agency:borrowerTrancheShare:read", "agency:borrowerTrancheShare:write"})
      *
      * @Assert\NotBlank
+     *
+     * @ApiProperty(readableLink=false)
      */
     private Borrower $borrower;
 
@@ -65,6 +68,8 @@ class BorrowerTrancheShare
      * @Groups({"agency:borrowerTrancheShare:read", "agency:borrowerTrancheShare:write"})
      *
      * @Assert\NotBlank
+     *
+     * @ApiProperty(readableLink=false)
      */
     private Tranche $tranche;
 
