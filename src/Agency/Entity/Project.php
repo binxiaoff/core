@@ -7,6 +7,7 @@ namespace Unilend\Agency\Entity;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
@@ -386,7 +387,7 @@ class Project
      *    @Assert\Expression("value.getProject() === this")
      * })
      *
-     * @MaxDepth(1)
+     * @ApiSubresource
      */
     private iterable $tranches;
 
