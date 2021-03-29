@@ -92,6 +92,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ApiFilter("Unilend\Core\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"})
  * @ApiFilter(SearchFilter::class, properties={"groupName"})
  * @ApiFilter("Unilend\Core\Filter\Company\ParticipantCandidateFilter")
+ * @ApiFilter("Unilend\Core\Filter\Company\CARegionalBankFilter")
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
@@ -110,7 +111,7 @@ class Company implements TraceableStatusAwareInterface
 
     public const SHORT_CODE_CASA = 'CASA';
 
-    public const NON_ELIGIBLE_TO_PARTICIPANT = ['CASA'];
+    public const NON_ELIGIBLE_TO_PARTICIPANT = [self::SHORT_CODE_CASA];
 
     public const SERIALIZER_GROUP_COMPANY_STAFF_READ      = 'company:staff:read';
     public const SERIALIZER_GROUP_COMPANY_ADMIN_READ      = 'company:admin:read';
