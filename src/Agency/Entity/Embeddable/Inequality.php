@@ -8,26 +8,17 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Traits\ConstantsAwareTrait;
+use Unilend\Core\Entity\Constant\MathOperator;
 
 /**
  * @ORM\Embeddable
  */
 class Inequality
 {
-    use ConstantsAwareTrait;
-
-    public const OPERATOR_INFERIOR          = '<';
-    public const OPERATOR_INFERIOR_OR_EQUAL = '<=';
-    public const OPERATOR_EQUAL             = '=';
-    public const OPERATOR_SUPERIOR          = '>';
-    public const OPERATOR_SUPERIOR_OR_EQUAL = '>=';
-    public const OPERATOR_BETWEEN           = '<>';
-
     /**
      * @var string
      *
-     * @ORM\Column(type="string", length=2)
+     * @ORM\Column(type="string", length=3)
      *
      * @Assert\NotBlank
      * @Assert\Choice(callback="getOperators")
@@ -64,8 +55,8 @@ class Inequality
      *
      * @Assert\Type("numeric")
      * @Assert\AtLeastOneOf(constraints={
-     *     @Assert\Expression("this.getOperator() === constant('Unilend\\Agency\\Entity\\Embeddable\\Inequality::OPERATOR_BETWEEN') && null !== value"),
-     *     @Assert\Expression("this.getOperator() !== constant('Unilend\\Agency\\Entity\\Embeddable\\Inequality::OPERATOR_BETWEEN') && null === value")
+     *     @Assert\Expression("this.getOperator() === constant('Unilend\\Core\\Entity\\Constant\\MathOperator::BETWEEN') && null !== value"),
+     *     @Assert\Expression("this.getOperator() !== constant('Unilend\\Core\\Entity\\Constant\\MathOperator::BETWEEN') && null === value")
      * }, message="Inequality.maxValue.incorrectOperator")
      *
      * @Groups({"agency:inequality:read","agency:inequality:write"})
@@ -145,14 +136,6 @@ class Inequality
     }
 
     /**
-     * @return iterable
-     */
-    public function getOperators(): iterable
-    {
-        return self::getConstants('OPERATOR_');
-    }
-
-    /**
      * Replacement of GreaterThan(value) because we use string
      *
      * @Assert\Callback
@@ -179,17 +162,17 @@ class Inequality
         $maxValueComp = $this->maxValue ? bccomp($this->maxValue, $evaluatedNumber, 4) : false;
 
         switch ($this->operator) {
-            case static::OPERATOR_EQUAL:
+            case MathOperator::EQUAL:
                 return 0 === $comp;
-            case static::OPERATOR_INFERIOR:
+            case MathOperator::INFERIOR:
                 return 1 === $comp ;
-            case static::OPERATOR_INFERIOR_OR_EQUAL:
+            case MathOperator::INFERIOR_OR_EQUAL:
                 return 0 === $comp || 1 === $comp;
-            case static::OPERATOR_SUPERIOR:
+            case MathOperator::SUPERIOR:
                 return -1 === $comp;
-            case static::OPERATOR_SUPERIOR_OR_EQUAL:
+            case MathOperator::SUPERIOR_OR_EQUAL:
                 return -1 === $comp || 0 === $comp;
-            case static::OPERATOR_BETWEEN:
+            case MathOperator::BETWEEN:
                 return $this->maxValue && ((1 === $maxValueComp && -1 === $comp) || 0 === $maxValueComp || 0 === $comp);
         }
 
