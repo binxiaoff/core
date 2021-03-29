@@ -6,8 +6,8 @@ namespace Unilend\Test\Core\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
-use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ObjectManager;
 use ReflectionClass;
 
 abstract class AbstractFixture extends Fixture implements FixtureGroupInterface
