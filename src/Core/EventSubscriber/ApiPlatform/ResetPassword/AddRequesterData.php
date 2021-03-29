@@ -63,8 +63,8 @@ class AddRequesterData implements EventSubscriberInterface
         $geoLocation = $geoLocation ? implode(' ', [$geoLocation->city->name, $geoLocation->country->name]) : null;
 
         $userAgent = $this->userAgent->parse($request->headers->get('User-Agent'));
-        $browser   = $userAgent ? $userAgent->getBrowser() : null;
-        $browser   = null !== $browser ? $browser->getName() . ' ' . $browser->getVersion()->getComplete() : null;
+        $browser   = $userAgent->browser ?? null;
+        $browser   = null !== $browser ? $browser->getName() . ' ' . $browser->getVersion() : '';
 
         $requesterData = array_filter([
             'ip'       => $ip,
