@@ -44,7 +44,7 @@ class BasicCompanyArrangerProjectFixture extends AbstractProjectFixture
      */
     protected function getSubmitterStaff(): Staff
     {
-        return $this->getReference('staff_company/basic_user/1');
+        return $this->getReference('staff_company:basic_user:1');
     }
 
     /**
@@ -57,7 +57,7 @@ class BasicCompanyArrangerProjectFixture extends AbstractProjectFixture
     protected function getAdditionalProjectParticipations(Project $project)
     {
         return [
-            new ProjectParticipation($this->getReference('company/example'), $project, $this->getSubmitterStaff()),
+            new ProjectParticipation($this->getReference('company:example'), $project, $this->getSubmitterStaff()),
         ];
     }
 
@@ -72,15 +72,15 @@ class BasicCompanyArrangerProjectFixture extends AbstractProjectFixture
     {
         $company = $projectParticipation->getParticipant();
         switch ($company->getPublicId()) {
-            case 'company/basic':
+            case 'company:basic':
                 return [
-                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company/basic_user/9'), $this->getSubmitterStaff()),
-                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company/basic_user/4'), $this->getSubmitterStaff()),
-                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company/basic_user/11'), $this->getSubmitterStaff()),
+                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company:basic_user:9'), $this->getSubmitterStaff()),
+                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company:basic_user:4'), $this->getSubmitterStaff()),
+                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company:basic_user:11'), $this->getSubmitterStaff()),
                 ];
-            case 'company/example':
+            case 'company:example':
                 return [
-                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company/example_user/9'), $this->getSubmitterStaff()),
+                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company:example_user:9'), $this->getSubmitterStaff()),
                 ];
         }
 

@@ -21,14 +21,14 @@ abstract class AbstractCompanyGroupFixture extends AbstractFixture
     {
         $companyGroup = new CompanyGroup($this->getName());
 
-        $reference = 'companyGroup/' . $this->getName();
+        $reference = 'companyGroup:' . $this->getName();
 
         $this->addReference($reference, $companyGroup);
 
         $this->setPublicId($companyGroup, $reference);
 
         foreach ($this->getTags($companyGroup) as $tag) {
-            $this->addReference($reference . '_tag/' . $tag->getCode(), $tag);
+            $this->addReference($reference . '_tag:' . $tag->getCode(), $tag);
             $manager->persist($tag);
         }
 

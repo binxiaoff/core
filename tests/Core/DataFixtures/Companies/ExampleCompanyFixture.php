@@ -41,7 +41,7 @@ class ExampleCompanyFixture extends AbstractCompanyFixture
     {
         return array_map(static function (User $user) use ($company) {
             return new CompanyAdmin($user, $company);
-        }, [$this->getReference('user/3'), $this->getReference('user/11'), $this->getReference('user/12')]);
+        }, [$this->getReference('user:3'), $this->getReference('user:11'), $this->getReference('user:12')]);
     }
 
     /**
@@ -54,24 +54,24 @@ class ExampleCompanyFixture extends AbstractCompanyFixture
         switch ($team->getName()) {
             case 'Z':
                 return [
-                    $this->createManager($this->getReference('user/15'), $team),
-                    $this->createManager($this->getReference('user/16'), $team),
+                    $this->createManager($this->getReference('user:15'), $team),
+                    $this->createManager($this->getReference('user:16'), $team),
                 ];
             case 'Y':
                 return [
-                    $this->createManager($this->getReference('user/17'), $team),
-                    $this->createStaff($this->getReference('user/18'), $team),
+                    $this->createManager($this->getReference('user:17'), $team),
+                    $this->createStaff($this->getReference('user:18'), $team),
                 ];
             case '9':
                 return [
-                    $this->createManager($this->getReference('user/19'), $team),
-                    $this->createStaff($this->getReference('user/20'), $team),
+                    $this->createManager($this->getReference('user:19'), $team),
+                    $this->createStaff($this->getReference('user:20'), $team),
                 ];
             case 'w':
                 return [
-                    $this->createManager($this->getReference('user/14'), $team),
-                    $this->createStaff($this->getReference('user/10'), $team),
-                    $this->createStaff($this->getReference('user/9'), $team),
+                    $this->createManager($this->getReference('user:14'), $team),
+                    $this->createStaff($this->getReference('user:10'), $team),
+                    $this->createStaff($this->getReference('user:9'), $team),
                 ];
         }
 

@@ -44,7 +44,7 @@ class BasicCompanyFixture extends AbstractCompanyFixture
     {
         return array_map(static function (User $user) use ($company) {
             return new CompanyAdmin($user, $company);
-        }, [$this->getReference('user/1'), $this->getReference('user/11'), $this->getReference('user/12')]);
+        }, [$this->getReference('user:1'), $this->getReference('user:11'), $this->getReference('user:12')]);
     }
 
     /**
@@ -57,30 +57,30 @@ class BasicCompanyFixture extends AbstractCompanyFixture
         switch ($team->getName()) {
             case 'A':
                 return [
-                    $this->createManager($this->getReference('user/1'), $team),
-                    $this->createManager($this->getReference('user/5'), $team),
-                    $this->createStaff($this->getReference('user/6'), $team),
-                    $this->createStaff($this->getReference('user/7'), $team),
+                    $this->createManager($this->getReference('user:1'), $team),
+                    $this->createManager($this->getReference('user:5'), $team),
+                    $this->createStaff($this->getReference('user:6'), $team),
+                    $this->createStaff($this->getReference('user:7'), $team),
                 ];
             case '1':
                 return [
-                    $this->createManager($this->getReference('user/2'), $team),
-                    $this->createStaff($this->getReference('user/8'), $team),
-                    $this->createStaff($this->getReference('user/9'), $team),
+                    $this->createManager($this->getReference('user:2'), $team),
+                    $this->createStaff($this->getReference('user:8'), $team),
+                    $this->createStaff($this->getReference('user:9'), $team),
                 ];
             case 'c':
                 return [
-                    $this->createManager($this->getReference('user/3'), $team),
+                    $this->createManager($this->getReference('user:3'), $team),
                 ];
             case '.':
                 return [
-                    $this->createManager($this->getReference('user/4'), $team),
-                    $this->createStaff($this->getReference('user/10'), $team),
+                    $this->createManager($this->getReference('user:4'), $team),
+                    $this->createStaff($this->getReference('user:10'), $team),
                 ];
             case 'B':
                 return [
-                    $this->createManager($this->getReference('user/11'), $team),
-                    $this->createStaff($this->getReference('user/12'), $team),
+                    $this->createManager($this->getReference('user:11'), $team),
+                    $this->createStaff($this->getReference('user:12'), $team),
                 ];
         }
 
@@ -92,6 +92,6 @@ class BasicCompanyFixture extends AbstractCompanyFixture
      */
     protected function getCompanyGroup(): ?CompanyGroup
     {
-        return $this->getReference('companyGroup/foo');
+        return $this->getReference('companyGroup:foo');
     }
 }

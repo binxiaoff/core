@@ -42,11 +42,11 @@ abstract class AbstractCompanyFixture extends AbstractFixture implements Depende
         $company->setShortCode($this->getShortCode());
         $company->setBankCode($this->getBankCode());
         $company->setCompanyGroup($this->getCompanyGroup());
-        $companyReference = 'company/' . $this->getName();
+        $companyReference = 'company:' . $this->getName();
 
         $teams = [...array_values($this->getTeams($company->getRootTeam())), $company->getRootTeam()];
         foreach ($teams as $team) {
-            $this->setPublicId($team, 'team/' . $team->getName() . '_' . $companyReference);
+            $this->setPublicId($team, 'team:' . $team->getName() . '_' . $companyReference);
             $manager->persist($team);
 
             foreach ($this->getStaff($team) as $staff) {

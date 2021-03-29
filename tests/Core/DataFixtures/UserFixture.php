@@ -39,7 +39,7 @@ class UserFixture extends AbstractFixture
         foreach (range(1, 20) as $index) {
             $user = new User('user' . $index . '@test.com');
 
-            $reference = 'user/' . $index;
+            $reference = 'user:' . $index;
 
             $this->addReference($reference, $user);
 
