@@ -311,6 +311,9 @@ class Term
         $this->validation = null;
         $this->validationDate = null;
 
+        $this->sharingDate = null;
+        $this->archivingDate = null;
+
         // Irregularity fields
         $this->grantedDelay = null;
         $this->breach = false;
