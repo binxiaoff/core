@@ -13,6 +13,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\UserRepository;
+use Unilend\Core\Service\JWT\JwtPayloadManagerInterface;
 
 class JwtPayloadManagerSubscriber implements EventSubscriberInterface
 {
@@ -24,13 +25,16 @@ class JwtPayloadManagerSubscriber implements EventSubscriberInterface
 
     /** @var JWTTokenManagerInterface */
     private JWTTokenManagerInterface $jwtManager;
+
     /**
      * @param UserRepository                      $userRepository
+     * @param JWTTokenManagerInterface            $jwtManager
      * @param iterable|JwtPayloadManagerInterface $jwtPayloadManagers
      */
-    public function __construct(UserRepository $userRepository, iterable $jwtPayloadManagers = [])
+    public function __construct(UserRepository $userRepository, JWTTokenManagerInterface $jwtManager, iterable $jwtPayloadManagers = [])
     {
         $this->userRepository = $userRepository;
+        $this->jwtManager = $jwtManager;
 
         foreach ($jwtPayloadManagers as $jwtPayloadManager) {
             $this->addJwtTokenManager($jwtPayloadManager);

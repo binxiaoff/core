@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\EventSubscriber\JWT;
+namespace Unilend\Core\Service\JWT;
 
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Unilend\Core\Entity\User;

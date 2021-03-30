@@ -46,7 +46,7 @@ services:
 
     _instanceof:
         # services whose classes are instances of CustomInterface will be tagged automatically
-        Unilend\Core\EventSubscriber\JWT\JwtPayloadManagerInterface:
+        Unilend\Core\Service\JWT\JwtPayloadManagerInterface:
             tags: ['kls.jwt_payload_manager']
 
     # makes classes in src/ available to be used as services
