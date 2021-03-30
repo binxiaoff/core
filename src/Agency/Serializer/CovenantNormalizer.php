@@ -79,7 +79,9 @@ class CovenantNormalizer implements ContextAwareDenormalizerInterface, Denormali
         $data = $this->normalizer->normalize($object, $format, $context);
 
         // Enforce array for association field with indexBy attribute
-        $data['covenantRules'] = array_values($data['covenantRules']);
+        if (array_key_exists('covenantRules', $data)) {
+            $data['covenantRules'] = array_values($data['covenantRules']);
+        }
 
         return $data;
     }
