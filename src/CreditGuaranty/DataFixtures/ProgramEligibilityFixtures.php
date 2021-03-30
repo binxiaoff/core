@@ -7,7 +7,7 @@ namespace Unilend\CreditGuaranty\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\DataFixtures\{AbstractFixtures, DumpedDataFixture};
+use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\CreditGuaranty\Entity\{Program, ProgramEligibility};
 use Unilend\CreditGuaranty\Repository\FieldRepository;
 
@@ -59,7 +59,7 @@ class ProgramEligibilityFixtures extends AbstractFixtures implements DependentFi
         return [
             ProgramFixtures::class,
             ProgramChoiceOptionFixtures::class,
-            DumpedDataFixture::class,
+            FieldFixtures::class,
         ];
     }
 }

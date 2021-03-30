@@ -8,7 +8,7 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\DataFixtures\{AbstractFixtures, DumpedDataFixture};
+use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, Program, ProgramChoiceOption};
 use Unilend\CreditGuaranty\Repository\FieldRepository;
 
@@ -80,7 +80,7 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
     {
         return [
             ProgramFixtures::class,
-            DumpedDataFixture::class,
+            FieldFixtures::class,
         ];
     }
 }

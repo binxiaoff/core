@@ -13,6 +13,7 @@ class FieldAlias extends AbstractEnum
     public const INVESTMENT_THEMATIC               = 'investment_thematic';
     public const FUNDING_OBJECT                    = 'funding_object';
     public const NAF_CODE                          = 'naf_code';
+    public const LOAN_DURATION                     = 'loan_duration';
 
     // Pre-defined list
     public const LEGAL_FORM                        = 'legal_form';
@@ -26,6 +27,9 @@ class FieldAlias extends AbstractEnum
     public const TOTAL_ASSETS                      = 'total_assets';
     public const GRANT_AMOUNT                      = 'grant_amount';
     public const LOW_DENSITY_MEDICAL_AREA_EXERCISE = 'low_density_medical_area_exercise';
+    public const PROJECT_TOTAL_AMOUNT              = 'project_total_amount';
+    public const FUNDING_OBJECT_AMOUNT             = 'funding_object_amount';
+    public const LOAN_DEFERRAL                     = 'loan_deferral';
 
     // date
     public const ACTIVITY_START_DATE               = 'activity_start_date';
@@ -35,6 +39,7 @@ class FieldAlias extends AbstractEnum
     public const ON_GOING_CREATION                 = 'on_going_creation';
     public const RECEIVING_GRANT                   = 'receiving_grant';
     public const SUBSIDIARY                        = 'subsidiary';
+    public const LOAN_RELEASED_ON_INVOICE          = 'loan_released_on_invoice';
 
     // Other
     public const COMPANY_NAME                      = 'company_name';
