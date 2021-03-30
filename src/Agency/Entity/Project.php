@@ -96,9 +96,11 @@ use Unilend\Core\Validator\Constraints\Siren;
  *             "agency:borrowerTrancheShare:read",
  *             "agency:participation:read",
  *             "agency:participationTrancheAllocation:read",
- *             "company:read"
+ *             "company:read",
+ *             "agency:covenant:read",
+ *             "agency:term:read"
  *         }
- *     }
+ *    }
  * )
  */
 class Project
@@ -532,8 +534,6 @@ class Project
      * @Assert\All({
      *    @Assert\Expression("value.getProject() === this")
      * })
-     *
-     * @ApiProperty(writableLink=true, readableLink=false)
      *
      * @ApiSubresource()
      */
