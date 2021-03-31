@@ -21,7 +21,7 @@ class Inequality
      * @ORM\Column(type="string", length=3)
      *
      * @Assert\NotBlank
-     * @Assert\Choice(callback="getOperators")
+     * @Assert\Choice(callback={MathOperator::class, "getConstList"})
      *
      * @Groups({
      *     "agency:inequality:read",
