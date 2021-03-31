@@ -8,6 +8,7 @@ use ApiPlatform\Core\Action\NotFoundAction;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -62,6 +63,7 @@ use Unilend\Core\Model\Bitmask;
  *     arguments={
  *         "whitelist": {
  *             "agency:participationTrancheAllocation:read",
+ *             "agency:participationMember:read",
  *             "company:read"
  *         }
  *     }
@@ -228,7 +230,7 @@ class Participation
      * @Assert\Choice(callback="getMembers")
      * @Assert\Valid
      *
-     * @Groups({"agency:participation:read"})
+     * @Groups({"agency:participation:read", "agency:participation:create", "agency:participation:update"})
      */
     private ?ParticipationMember $referent;
 
@@ -241,6 +243,10 @@ class Participation
      * @Assert\All({
      *     @Assert\Expression("value.getParticipation() === this")
      * })
+     *
+     * @ApiSubresource
+     *
+     * @Groups({"agency:participation:read"})
      */
     private Collection $members;
 

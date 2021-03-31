@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Action\NotFoundAction;
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -61,6 +64,15 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *
  * @ORM\Table(name="agency_borrower")
  * @ORM\Entity
+ *
+ * @ApiFilter(
+ *     filterClass=GroupFilter::class,
+ *     arguments={
+ *         "whitelist": {
+ *             "agency:borrowerMember:read"
+ *         }
+ *     }
+ * )
  */
 class Borrower
 {
@@ -178,6 +190,10 @@ class Borrower
      * @Assert\All({
      *     @Assert\Expression("value.getBorrower() === this")
      * })
+     *
+     * @Groups({"agency:borrower:read"})
+     *
+     * @ApiSubresource
      */
     private Collection $members;
 
