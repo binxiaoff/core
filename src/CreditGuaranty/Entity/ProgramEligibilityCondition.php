@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\Constant\MathOperator;
 use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
@@ -40,12 +41,6 @@ class ProgramEligibilityCondition
     use PublicizeIdentityTrait;
     use TimestampableTrait;
     use ConstantsAwareTrait;
-
-    private const OPERATION_EQUAL_TO              = '=';
-    private const OPERATION_GREATER_THAN          = '>';
-    private const OPERATION_GREATER_OR_EQUAL_THAN = '>=';
-    private const OPERATION_LESS_THAN             = '<';
-    private const OPERATION_LESS_OR_EQUAL_THAN    = '<=';
 
     public const VALUE_TYPE_RATE  = 'rate';
     public const VALUE_TYPE_VALUE = 'value';
@@ -244,7 +239,12 @@ class ProgramEligibilityCondition
      */
     public static function getAvailableOperations(): array
     {
-        return static::getConstants('OPERATION_');
+        $operations = MathOperator::getConstList();
+        if (isset($operations['BETWEEN'])) {
+            unset($operations['BETWEEN']);
+        }
+
+        return $operations;
     }
 
     /**
