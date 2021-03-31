@@ -110,7 +110,7 @@ class Covenant
      * @Assert\Length(max="50")
      * @Assert\NotBlank
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
      */
     private string $name;
 
@@ -121,7 +121,7 @@ class Covenant
      *
      * @Assert\Length(max="500")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
      */
     private ?string $contractArticle = null;
 
@@ -132,7 +132,7 @@ class Covenant
      *
      * @Assert\Length(max="500")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
      */
     private ?string $contractExtract = null;
 
@@ -141,7 +141,7 @@ class Covenant
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
      */
     private ?string $description = null;
 
@@ -153,7 +153,7 @@ class Covenant
      * @Assert\NotBlank
      * @Assert\Choice(callback="getNatures")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
      */
     private string $nature;
 
@@ -162,7 +162,7 @@ class Covenant
      *
      * @ORM\Column(name="startDate", type="date_immutable")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
      */
     private DateTimeImmutable $startDate;
 
@@ -174,7 +174,7 @@ class Covenant
      * @Assert\Type("integer")
      * @Assert\Positive
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
      */
     private int $delay;
 
@@ -185,7 +185,7 @@ class Covenant
      *
      * @Assert\GreaterThan(propertyPath="startDate")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
      */
     private DateTimeImmutable $endDate;
 
@@ -196,7 +196,7 @@ class Covenant
      *
      * @Assert\Choice(callback="getRecurrences")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
      */
     private ?string $recurrence;
 
@@ -210,7 +210,7 @@ class Covenant
      *    @Assert\Expression("value.getCovenant() === this")
      * })
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
      */
     private Collection $covenantRules;
 
@@ -256,7 +256,7 @@ class Covenant
      *    @Assert\Expression("value.getCovenant() === this")
      * })
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
      */
     private Collection $marginRules;
 
