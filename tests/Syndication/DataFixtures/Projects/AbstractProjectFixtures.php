@@ -18,9 +18,9 @@ use Unilend\Syndication\Entity\ProjectParticipationMember;
 use Unilend\Syndication\Entity\ProjectParticipationTranche;
 use Unilend\Syndication\Entity\ProjectStatus;
 use Unilend\Syndication\Entity\Tranche;
-use Unilend\Test\Core\DataFixtures\AbstractFixture;
+use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 
-abstract class AbstractProjectFixture extends AbstractFixture implements DependentFixtureInterface
+abstract class AbstractProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     /**
      * @inheritDoc

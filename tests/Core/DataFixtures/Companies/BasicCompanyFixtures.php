@@ -11,7 +11,7 @@ use Unilend\Core\Entity\CompanyGroup;
 use Unilend\Core\Entity\Team;
 use Unilend\Core\Entity\User;
 
-class BasicCompanyFixture extends AbstractCompanyFixture
+class BasicCompanyFixtures extends AbstractCompanyFixtures
 {
     /**
      * @return string

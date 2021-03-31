@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\UserStatus;
 
-class UserFixture extends AbstractFixture
+class UserFixtures extends AbstractFixtures
 {
     /**
      * @var UserPasswordEncoderInterface

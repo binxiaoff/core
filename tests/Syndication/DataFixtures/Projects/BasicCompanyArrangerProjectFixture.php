@@ -10,17 +10,17 @@ use Unilend\Core\Entity\Staff;
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectParticipation;
 use Unilend\Syndication\Entity\ProjectParticipationMember;
-use Unilend\Test\Core\DataFixtures\Companies\BasicCompanyFixture;
-use Unilend\Test\Core\DataFixtures\Companies\ExampleCompanyFixture;
+use Unilend\Test\Core\DataFixtures\Companies\BasicCompanyFixtures;
+use Unilend\Test\Core\DataFixtures\Companies\ExampleCompanyFixtures;
 
-class BasicCompanyArrangerProjectFixture extends AbstractProjectFixture
+class BasicCompanyArrangerProjectFixture extends AbstractProjectFixtures
 {
     /**
      * @return array
      */
     public function getDependencies(): array
     {
-        return [BasicCompanyFixture::class, ExampleCompanyFixture::class];
+        return [BasicCompanyFixtures::class, ExampleCompanyFixtures::class];
     }
 
     /**

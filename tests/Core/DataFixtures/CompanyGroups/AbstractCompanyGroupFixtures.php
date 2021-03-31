@@ -8,9 +8,9 @@ use Doctrine\Persistence\ObjectManager;
 use ReflectionException;
 use Unilend\Core\Entity\CompanyGroup;
 use Unilend\Core\Entity\CompanyGroupTag;
-use Unilend\Test\Core\DataFixtures\AbstractFixture;
+use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 
-abstract class AbstractCompanyGroupFixture extends AbstractFixture
+abstract class AbstractCompanyGroupFixtures extends AbstractFixtures
 {
     /**
      * @inheritDoc

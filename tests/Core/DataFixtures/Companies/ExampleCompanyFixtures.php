@@ -10,7 +10,7 @@ use Unilend\Core\Entity\CompanyAdmin;
 use Unilend\Core\Entity\Team;
 use Unilend\Core\Entity\User;
 
-class ExampleCompanyFixture extends AbstractCompanyFixture
+class ExampleCompanyFixtures extends AbstractCompanyFixtures
 {
     /**
      * @return string

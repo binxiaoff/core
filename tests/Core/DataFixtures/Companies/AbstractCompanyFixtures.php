@@ -15,17 +15,17 @@ use Unilend\Core\Entity\CompanyGroup;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Team;
 use Unilend\Core\Entity\User;
-use Unilend\Test\Core\DataFixtures\AbstractFixture;
-use Unilend\Test\Core\DataFixtures\UserFixture;
+use Unilend\Test\Core\DataFixtures\AbstractFixtures;
+use Unilend\Test\Core\DataFixtures\UserFixtures;
 
-abstract class AbstractCompanyFixture extends AbstractFixture implements DependentFixtureInterface
+abstract class AbstractCompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     /**
      * @return array
      */
     public function getDependencies(): array
     {
-        return [UserFixture::class];
+        return [UserFixtures::class];
     }
 
     /**

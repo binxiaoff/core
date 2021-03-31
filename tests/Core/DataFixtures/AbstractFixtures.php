@@ -10,7 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectManager;
 use ReflectionClass;
 
-abstract class AbstractFixture extends Fixture implements FixtureGroupInterface
+abstract class AbstractFixtures extends Fixture implements FixtureGroupInterface
 {
     private array $publicIdReflexionProperties = [];
 
