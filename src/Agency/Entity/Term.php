@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Action\NotFoundAction;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateInterval;
@@ -15,7 +16,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use ApiPlatform\Core\Action\NotFoundAction;
 
 /**
  * @ORM\Entity

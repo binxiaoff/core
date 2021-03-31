@@ -42,6 +42,9 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                  "groups": {"agency:covenant:update"}
  *             },
  *             "security_post_denormalize": "is_granted('edit', object)"
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)"
  *         }
  *     },
  *     collectionOperations={
