@@ -97,6 +97,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *             "agency:participation:read",
  *             "agency:participationTrancheAllocation:read",
  *             "company:read",
+ *             "companyGroupTag:read",
  *             "agency:covenant:read",
  *             "agency:term:read"
  *         }
