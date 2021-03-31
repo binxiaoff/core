@@ -92,6 +92,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ApiFilter("Unilend\Core\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"})
  * @ApiFilter(SearchFilter::class, properties={"groupName"})
  * @ApiFilter("Unilend\Core\Filter\Company\ParticipantCandidateFilter")
+ * @ApiFilter("Unilend\Core\Filter\Company\CARegionalBankFilter")
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks

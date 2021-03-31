@@ -7,11 +7,11 @@ namespace Unilend\Core\Filter\Company;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\{Filter\AbstractContextAwareFilter, Util\QueryNameGeneratorInterface};
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\{Company, Constant\CARegionalBank};
 
-class ParticipantCandidateFilter extends AbstractContextAwareFilter
+class CARegionalBankFilter extends AbstractContextAwareFilter
 {
-    private const PARAMETER_NAME = 'eligibleParticipant';
+    private const PARAMETER_NAME = 'caRegionalBank';
 
     /**
      * {@inheritdoc}
@@ -41,8 +41,8 @@ class ParticipantCandidateFilter extends AbstractContextAwareFilter
         if (self::PARAMETER_NAME === $property && Company::class === $resourceClass && Request::METHOD_GET === strtoupper($operationName)) {
             $alias = $queryBuilder->getRootAliases()[0];
             $queryBuilder
-                ->andWhere($alias . '.shortCode not in (:nonEligibleCompanies)')
-                ->setParameter('nonEligibleCompanies', Company::NON_ELIGIBLE_TO_PARTICIPANT)
+                ->andWhere($alias . '.shortCode in (:caRegionalBanks)')
+                ->setParameter('caRegionalBanks', CARegionalBank::REGIONAL_BANKS)
             ;
         }
     }
