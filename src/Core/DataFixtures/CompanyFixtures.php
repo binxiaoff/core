@@ -22,16 +22,6 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
     private const COMPANY_NOT_SIGNED_NO_MEMBERS = 'COMPANY_NOT_SIGNED_NO_MEMBERS';
     public const COMPANY_EXTERNAL = 'COMPANY_EXTERNAL';
 
-    public const COMPANIES = [
-        self::REFERENCE_PREFIX . self::CA_SHORTCODE[0],
-        self::REFERENCE_PREFIX . self::CA_SHORTCODE[1],
-        self::REFERENCE_PREFIX . self::CA_SHORTCODE[2],
-        self::REFERENCE_PREFIX . self::CA_SHORTCODE[3],
-        self::REFERENCE_PREFIX . self::CA_SHORTCODE[4],
-        self::COMPANY_EXTERNAL,
-        self::COMPANY_NOT_SIGNED,
-    ];
-
     private const CA_SHORTCODE = [
         'ALVO', 'ATVD', 'BRPI', 'CENL', 'CEST', 'CM2SE', 'CHPE',
         'CAPR', 'AQTN', 'CENF', 'CHBO',
@@ -47,6 +37,16 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         'BPAL', 'BRED', 'BP', 'BPALC', 'BPACA', 'BPBFC', 'BPGO',
         'BPARA', 'BPDN', 'BPDS', 'BPM', 'BPO', 'BPRP', 'BPVF', 'CDE', 'CEPC',
         'CEBPL', 'CEPAC', 'CECA', 'CEAL', 'CEBFC', 'CEMP', 'CEGEE',
+    ];
+
+    public const COMPANIES = [
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[0],
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[1],
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[2],
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[3],
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[4],
+        self::COMPANY_EXTERNAL,
+        self::COMPANY_NOT_SIGNED,
     ];
 
     private ObjectManager $entityManager;
