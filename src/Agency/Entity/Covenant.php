@@ -153,7 +153,7 @@ class Covenant
      * @Assert\NotBlank
      * @Assert\Choice(callback="getNatures")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create"})
      */
     private string $nature;
 
@@ -162,7 +162,7 @@ class Covenant
      *
      * @ORM\Column(name="startDate", type="date_immutable")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create"})
      */
     private DateTimeImmutable $startDate;
 
@@ -174,7 +174,7 @@ class Covenant
      * @Assert\Type("integer")
      * @Assert\Positive
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create"})
      */
     private int $delay;
 
@@ -185,7 +185,7 @@ class Covenant
      *
      * @Assert\GreaterThan(propertyPath="startDate")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create"})
      */
     private DateTimeImmutable $endDate;
 
@@ -196,7 +196,7 @@ class Covenant
      *
      * @Assert\Choice(callback="getRecurrences")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create"})
      */
     private ?string $recurrence;
 
@@ -210,7 +210,7 @@ class Covenant
      *    @Assert\Expression("value.getCovenant() === this")
      * })
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create"})
      */
     private Collection $covenantRules;
 
@@ -256,7 +256,7 @@ class Covenant
      *    @Assert\Expression("value.getCovenant() === this")
      * })
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
+     * @Groups({"agency:covenant:read", "agency:covenant:create"})
      */
     private Collection $marginRules;
 
