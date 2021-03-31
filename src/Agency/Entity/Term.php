@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use ApiPlatform\Core\Action\NotFoundAction;
 
 /**
  * @ORM\Entity
@@ -29,7 +30,9 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *     },
  *     itemOperations={
  *         "get": {
- *              "security": "is_granted('view', object)"
+ *             "controller": NotFoundAction::class,
+ *             "read": false,
+ *             "output": false,
  *         },
  *         "patch": {
  *              "denormalization_context": {
