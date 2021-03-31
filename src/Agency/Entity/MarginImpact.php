@@ -128,6 +128,16 @@ class MarginImpact
     }
 
     /**
+     * @Groups({"agency:marginImpact:read"})
+     *
+     * @return string
+     */
+    public function getTrancheName(): string
+    {
+        return $this->getTranche()->getName();
+    }
+
+    /**
      * @return string
      */
     public function getMargin(): string
