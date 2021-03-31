@@ -63,6 +63,9 @@ doctrine:
                         softdeletable:
                             class: 'Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter'
                             enabled: true
+                        term:
+                            class: Unilend\Agency\Doctrine\Filter\TermFilter
+                            enabled: true
             # entity manager dedicated to Doctrine Migration bundle (Doctrine Migration bundle ignores the option --conn, if it finds some entity manager)
             migration:
                 connection: migration
