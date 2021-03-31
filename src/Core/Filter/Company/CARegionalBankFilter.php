@@ -6,8 +6,7 @@ namespace Unilend\Core\Filter\Company;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\{Filter\AbstractContextAwareFilter, Util\QueryNameGeneratorInterface};
 use Doctrine\ORM\QueryBuilder;
-use InvalidArgumentException;
-use Unilend\Core\Entity\Constant\CARegionalBank;
+use Unilend\Core\Entity\{Company, Constant\CARegionalBank};
 
 class CARegionalBankFilter extends AbstractContextAwareFilter
 {
@@ -38,38 +37,12 @@ class CARegionalBankFilter extends AbstractContextAwareFilter
         string $resourceClass,
         string $operationName = null
     ): void {
-        if (self::PARAMETER_NAME === $property && true === $this->normalizeValue($value)) {
+        if (self::PARAMETER_NAME === $property && Company::class === $resourceClass) {
             $alias = $queryBuilder->getRootAliases()[0];
             $queryBuilder
                 ->andWhere($alias . '.shortCode in (:caRegionalBanks)')
                 ->setParameter('caRegionalBanks', CARegionalBank::REGIONAL_BANKS)
             ;
         }
-    }
-
-    /**
-     * @param $value
-     *
-     * @return bool|null
-     */
-    private function normalizeValue($value): ?bool
-    {
-        if (\in_array($value, [true, 'true', '1'], true)) {
-            return true;
-        }
-
-        if (\in_array($value, [false, 'false', '0'], true)) {
-            return false;
-        }
-
-        $this->getLogger()->notice('Invalid filter ignored', [
-            'exception' => new InvalidArgumentException(sprintf(
-                'Invalid boolean value for "%s" property, expected one of ( "%s" )',
-                self::PARAMETER_NAME,
-                implode('" | "', ['true', 'false', '1', '0'])
-            )),
-        ]);
-
-        return null;
     }
 }
