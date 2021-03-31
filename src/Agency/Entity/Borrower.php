@@ -400,14 +400,14 @@ class Borrower
      */
     public function removeMember(BorrowerMember $member): Borrower
     {
-        $this->members->removeElement($member);
+        if ($this->members->removeElement($member)) {
+            if ($this->referent === $member) {
+                $this->referent = null;
+            }
 
-        if ($this->referent === $member) {
-            $this->referent = null;
-        }
-
-        if ($this->signatory === $member) {
-            $this->signatory = null;
+            if ($this->signatory === $member) {
+                $this->signatory = null;
+            }
         }
 
         return $this;

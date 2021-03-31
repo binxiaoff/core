@@ -10,7 +10,7 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class BorrowerMemberVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW = 'view';
+    public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_CREATE = 'create';
 
     /**

@@ -518,10 +518,11 @@ class Participation
      */
     public function removeMember(ParticipationMember $member): Participation
     {
-        $this->members->removeElement($member);
-
-        if ($this->referent === $member) {
-            $this->referent = null;
+        if ($this->members->removeElement($member)) {
+            // Do not merge into parent if construct because we need the removal to take place
+            if ($this->referent === $member) {
+                $this->referent = null;
+            }
         }
 
         return $this;

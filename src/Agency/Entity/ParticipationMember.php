@@ -51,8 +51,8 @@ class ParticipationMember
     use TimestampableTrait;
 
     public const TYPE_BACK_OFFICE = 'back_office';
-    public const TYPE_WAIVER = 'waiver';
-    public const TYPE_LEGAL = 'legal';
+    public const TYPE_WAIVER      = 'waiver';
+    public const TYPE_LEGAL       = 'legal';
 
     /**
      * @var Participation
@@ -96,8 +96,8 @@ class ParticipationMember
     public function __construct(Participation $participation, User $user)
     {
         $this->participation = $participation;
-        $this->added       = new DateTimeImmutable();
-        $this->user        = $user;
+        $this->added         = new DateTimeImmutable();
+        $this->user          = $user;
     }
 
     /**
