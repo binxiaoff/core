@@ -38,8 +38,8 @@ class ListExtension implements QueryCollectionExtensionInterface
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
-            ->andWhere($rootAlias . '.companyName != :cals')
-            ->setParameter('cals', Company::COMPANY_NAME_CALS)
+            ->andWhere($rootAlias . '.shortCode != :cals')
+            ->setParameter('cals', Company::SHORT_CODE_CALS)
         ;
     }
 }
