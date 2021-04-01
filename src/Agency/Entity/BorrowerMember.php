@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Action\NotFoundAction;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -60,6 +61,8 @@ class BorrowerMember
      * @Assert\Valid
      *
      * @Groups({"agency:borrowerMember:read", "agency:borrowerMember:create"})
+     *
+     * @ApiProperty(readableLink=false)
      */
     private Borrower $borrower;
 

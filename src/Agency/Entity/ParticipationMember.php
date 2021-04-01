@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Action\NotFoundAction;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -64,6 +65,8 @@ class ParticipationMember
      * @Assert\Valid
      *
      * @Groups({"agency:participationMember:read", "agency:participationMember:create"})
+     *
+     * @ApiProperty(readableLink=false)
      */
     private Participation $participation;
 
