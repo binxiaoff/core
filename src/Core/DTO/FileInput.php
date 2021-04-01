@@ -7,6 +7,7 @@ namespace Unilend\Core\DTO;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Agency\Entity\Term;
 use Unilend\Core\Entity\Message;
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectFile;
@@ -33,31 +34,20 @@ class FileInput
     ];
 
     /**
-     * @var UploadedFile
-     *
      * @Assert\File(maxSize="250Mi", mimeTypes=Unilend\Core\DTO\FileInput::ACCEPTED_MEDIA_TYPE)
      */
     public UploadedFile $uploadedFile;
 
     /**
-     * @var object
-     *
      * @Assert\NotBlank
      */
     public object $targetEntity;
 
     /**
-     * @var string
-     *
      * @Assert\Choice(callback="getFileTypes")
      */
     public string $type;
 
-    /**
-     * @param UploadedFile $uploadedFile
-     * @param string       $type
-     * @param object       $targetEntity
-     */
     public function __construct(UploadedFile $uploadedFile, string $type, object $targetEntity)
     {
         $this->uploadedFile = $uploadedFile;
@@ -76,7 +66,6 @@ class FileInput
     /**
      * @Assert\Callback
      *
-     * @param ExecutionContextInterface $context
      * @param $payload
      */
     public function validateTargetEntity(ExecutionContextInterface $context, $payload)
@@ -108,6 +97,7 @@ class FileInput
             Project::class              => array_merge(Project::getProjectFileTypes(), ProjectFile::getProjectFileTypes()),
             ProjectParticipation::class => ProjectParticipation::getFileTypes(),
             Message::class              => Message::getFileTypes(),
+            Term::class                 => Term::getFileTypes(),
         ];
     }
 }
