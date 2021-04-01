@@ -404,7 +404,7 @@ class TermHistory
     /**
      * @return bool
      */
-    public function isPending(): bool
+    public function isPendingAgentValidation(): bool
     {
         return null === $this->validation;
     }

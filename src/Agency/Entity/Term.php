@@ -12,6 +12,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use LogicException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\File;
@@ -268,7 +269,7 @@ class Term
      *
      * @Assert\GreaterThanOrEqual(propertyPath="validationDate")
      * @Assert\Expression(
-     *     expression="(value && (false === this.isPending())) || (null === value)",
+     *     expression="(value && (false === this.isPendingAgentValidation())) || (null === value)",
      *     message="Agency.Term.sharingDate.agentValidationRequired"
      * )
      *
@@ -356,7 +357,7 @@ class Term
                 return $rule->getInequality()->isConform($this->borrowerInput);
         }
 
-        return false;
+        throw new LogicException(sprintf('The given type (%s) is incorrect for a term', $this->getNature()));
     }
 
     /**
@@ -695,9 +696,29 @@ class Term
      *
      * @Groups({"agency:term:read"})
      */
-    public function isPending(): bool
+    public function isPendingAgentValidation(): bool
     {
         return null === $this->validation;
+    }
+
+    /**
+     * @return bool
+     *
+     * @Groups({"agency:term:read"})
+     */
+    public function isPendingBorrowerInput(): bool
+    {
+        switch ($this->getNature()) {
+            case Covenant::NATURE_CONTROL:
+                return false;
+            case Covenant::NATURE_DOCUMENT:
+                return null === $this->getBorrowerDocument();
+            case Covenant::NATURE_FINANCIAL_ELEMENT:
+            case Covenant::NATURE_FINANCIAL_RATIO:
+                return null === $this->borrowerInput || null === $this->getBorrowerDocument();
+        }
+
+        throw new LogicException(sprintf('The given type (%s) is incorrect for a term', $this->getNature()));
     }
 
     /**
