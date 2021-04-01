@@ -15,17 +15,17 @@ use Unilend\Core\Entity\CompanyGroup;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Team;
 use Unilend\Core\Entity\User;
-use Unilend\Test\Core\DataFixtures\AbstractFixture;
-use Unilend\Test\Core\DataFixtures\UserFixture;
+use Unilend\Test\Core\DataFixtures\AbstractFixtures;
+use Unilend\Test\Core\DataFixtures\UserFixtures;
 
-abstract class AbstractCompanyFixture extends AbstractFixture implements DependentFixtureInterface
+abstract class AbstractCompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     /**
      * @return array
      */
     public function getDependencies(): array
     {
-        return [UserFixture::class];
+        return [UserFixtures::class];
     }
 
     /**
@@ -42,11 +42,11 @@ abstract class AbstractCompanyFixture extends AbstractFixture implements Depende
         $company->setShortCode($this->getShortCode());
         $company->setBankCode($this->getBankCode());
         $company->setCompanyGroup($this->getCompanyGroup());
-        $companyReference = 'company/' . $this->getName();
+        $companyReference = 'company:' . $this->getName();
 
         $teams = [...array_values($this->getTeams($company->getRootTeam())), $company->getRootTeam()];
         foreach ($teams as $team) {
-            $this->setPublicId($team, 'team/' . $team->getName() . '_' . $companyReference);
+            $this->setPublicId($team, 'team:' . $team->getName() . '_' . $companyReference);
             $manager->persist($team);
 
             foreach ($this->getStaff($team) as $staff) {

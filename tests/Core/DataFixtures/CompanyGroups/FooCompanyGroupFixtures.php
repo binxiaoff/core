@@ -7,7 +7,7 @@ namespace Unilend\Test\Core\DataFixtures\CompanyGroups;
 use Unilend\Core\Entity\CompanyGroup;
 use Unilend\Core\Entity\CompanyGroupTag;
 
-class FooCompanyGroupFixture extends AbstractCompanyGroupFixture
+class FooCompanyGroupFixtures extends AbstractCompanyGroupFixtures
 {
     /**
      * @inheritDoc

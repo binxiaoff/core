@@ -10,17 +10,17 @@ use Unilend\Core\Entity\Staff;
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectParticipation;
 use Unilend\Syndication\Entity\ProjectParticipationMember;
-use Unilend\Test\Core\DataFixtures\Companies\BasicCompanyFixture;
-use Unilend\Test\Core\DataFixtures\Companies\ExampleCompanyFixture;
+use Unilend\Test\Core\DataFixtures\Companies\BasicCompanyFixtures;
+use Unilend\Test\Core\DataFixtures\Companies\ExampleCompanyFixtures;
 
-class ExampleCompanyArrangerProjectFixture extends AbstractProjectFixture
+class ExampleCompanyArrangerProjectFixture extends AbstractProjectFixtures
 {
     /**
      * @return array
      */
     public function getDependencies(): array
     {
-        return [BasicCompanyFixture::class, ExampleCompanyFixture::class];
+        return [BasicCompanyFixtures::class, ExampleCompanyFixtures::class];
     }
     /**
      * @inheritDoc
@@ -43,7 +43,7 @@ class ExampleCompanyArrangerProjectFixture extends AbstractProjectFixture
      */
     protected function getSubmitterStaff(): Staff
     {
-        return $this->getReference('staff_company/example_user/20');
+        return $this->getReference('staff_company:example_user:20');
     }
 
     /**
@@ -56,7 +56,7 @@ class ExampleCompanyArrangerProjectFixture extends AbstractProjectFixture
     protected function getAdditionalProjectParticipations(Project $project)
     {
         return [
-            new ProjectParticipation($this->getReference('company/basic'), $project, $this->getSubmitterStaff()),
+            new ProjectParticipation($this->getReference('company:basic'), $project, $this->getSubmitterStaff()),
         ];
     }
 
@@ -72,19 +72,19 @@ class ExampleCompanyArrangerProjectFixture extends AbstractProjectFixture
         $company = $projectParticipation->getParticipant();
 
         switch ($company->getPublicId()) {
-            case 'company/basic':
+            case 'company:basic':
                 return [
-                    (new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company/basic_user/3'), $this->getSubmitterStaff()))
+                    (new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company:basic_user:3'), $this->getSubmitterStaff()))
                         ->setPermissions(ProjectParticipationMember::PERMISSION_WRITE),
-                    (new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company/basic_user/8'), $this->getSubmitterStaff()))
+                    (new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company:basic_user:8'), $this->getSubmitterStaff()))
                         ->setPermissions(ProjectParticipationMember::PERMISSION_WRITE),
-                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company/basic_user/4'), $this->getSubmitterStaff()),
-                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company/basic_user/10'), $this->getSubmitterStaff()),
+                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company:basic_user:4'), $this->getSubmitterStaff()),
+                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company:basic_user:10'), $this->getSubmitterStaff()),
                 ];
-            case 'company/example':
+            case 'company:example':
                 return [
-                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company/example_user/9'), $this->getSubmitterStaff()),
-                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company/example_user/10'), $this->getSubmitterStaff()),
+                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company:example_user:9'), $this->getSubmitterStaff()),
+                    new ProjectParticipationMember($projectParticipation, $this->getReference('staff_company:example_user:10'), $this->getSubmitterStaff()),
                 ];
         }
 

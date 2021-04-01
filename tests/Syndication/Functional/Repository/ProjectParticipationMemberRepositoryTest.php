@@ -47,22 +47,22 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
     {
         return [
             'It should return managed staff who part of any project' => [
-                'publicId' => 'staff_company/example_user/15',
+                'publicId' => 'staff_company:example_user:15',
                 [
-                    'example_arranger_example_user/20',
-                    'example_arranger_example_user/9',
-                    'example_arranger_example_user/10',
-                    'basic_arranger_example_user/9',
+                    'example_arranger_example_user:20',
+                    'example_arranger_example_user:9',
+                    'example_arranger_example_user:10',
+                    'basic_arranger_example_user:9',
                 ],
             ],
             'It should yield no result for non manager staff' => [
-                'staff_company/basic_user/7',
+                'staff_company:basic_user:7',
                 [],
             ],
             'It should return at least the queried manager staff' => [
-                'staff_company/basic_user/11',
+                'staff_company:basic_user:11',
                 [
-                    'basic_arranger_basic_user/11',
+                    'basic_arranger_basic_user:11',
                 ],
             ],
         ];
@@ -163,44 +163,44 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
     {
         return [
             'It should return no result for non manager staff' => [
-                ['participant' => 'company/basic', 'project' => 'project/basic_arranger'],
-                ['publicId' => 'staff_company/basic_user/7'],
+                ['participant' => 'company:basic', 'project' => 'project/basic_arranger'],
+                ['publicId' => 'staff_company:basic_user:7'],
                 0,
                 [],
             ],
             'It should return no result for manager staff on incorrect participation' => [
-                ['participant' => 'company/example', 'project' => 'project/basic_arranger'],
-                ['publicId' => 'staff_company/basic_user/1'],
+                ['participant' => 'company:example', 'project' => 'project/basic_arranger'],
+                ['publicId' => 'staff_company:basic_user:1'],
                 0,
                 [],
             ],
             'It should return participation members managed by given staff' => [
-                ['participant' => 'company/basic', 'project' => 'project/example_arranger'],
-                ['publicId' => 'staff_company/basic_user/1'],
+                ['participant' => 'company:basic', 'project' => 'project/example_arranger'],
+                ['publicId' => 'staff_company:basic_user:1'],
                 0,
                 [
-                    'example_arranger_basic_user/4',
-                    'example_arranger_basic_user/10',
-                    'example_arranger_basic_user/3',
-                    'example_arranger_basic_user/8',
+                    'example_arranger_basic_user:4',
+                    'example_arranger_basic_user:10',
+                    'example_arranger_basic_user:3',
+                    'example_arranger_basic_user:8',
                 ],
             ],
             'It should return participation members managed by given staff 2' => [
-                ['participant' => 'company/basic', 'project' => 'project/example_arranger'],
-                ['publicId' => 'staff_company/basic_user/4'],
+                ['participant' => 'company:basic', 'project' => 'project/example_arranger'],
+                ['publicId' => 'staff_company:basic_user:4'],
                 0,
                 [
-                    'example_arranger_basic_user/4',
-                    'example_arranger_basic_user/10',
+                    'example_arranger_basic_user:4',
+                    'example_arranger_basic_user:10',
                 ],
             ],
             'It should return participation members with specified permission managed by given staff ' => [
-                ['participant' => 'company/basic', 'project' => 'project/example_arranger'],
-                ['publicId' => 'staff_company/basic_user/1'],
+                ['participant' => 'company:basic', 'project' => 'project/example_arranger'],
+                ['publicId' => 'staff_company:basic_user:1'],
                 1,
                 [
-                    'example_arranger_basic_user/3',
-                    'example_arranger_basic_user/8',
+                    'example_arranger_basic_user:3',
+                    'example_arranger_basic_user:8',
                 ],
             ],
         ];
