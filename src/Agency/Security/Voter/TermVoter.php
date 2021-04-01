@@ -40,7 +40,7 @@ class TermVoter extends AbstractEntityVoter
      */
     protected function canEdit(Term $term, User $user): bool
     {
-        if (false === ($term->getStartDate() >= $this->getToday())) {
+        if (false === ($term->getStartDate() <= $this->getToday())) {
             return false;
         }
 
