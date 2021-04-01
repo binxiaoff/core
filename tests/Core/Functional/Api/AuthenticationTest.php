@@ -15,12 +15,15 @@ use Unilend\Core\Repository\UserRepository;
 
 class AuthenticationTest extends WebTestCase
 {
+    /** @var string  */
+    private const LOGIN_ENDPOINT = '/core/authentication_token';
+
     /**
      * Test POST /authentication_tokens
      *
      * @throws JsonException
      */
-    public function testSuccessfulLogin(): void
+    public function testSuccessfulLoginForStaffAccount(): void
     {
         static::ensureKernelShutdown();
         $client = static::createClient();
@@ -30,7 +33,7 @@ class AuthenticationTest extends WebTestCase
 
         $client->request(
             Request::METHOD_POST,
-            '/core/authentication_token',
+            static::LOGIN_ENDPOINT,
             [],
             [],
             [
@@ -45,9 +48,10 @@ class AuthenticationTest extends WebTestCase
         $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
 
         static::assertArrayHasKey('refresh_token', $response);
-        static::assertArrayHasKey('tokens', $response);
+        static::assertArrayHasKey('staffTokens', $response);
+        static::assertArrayHasKey('userToken', $response);
         static::assertArrayNotHasKey('token', $response);
-        static::assertCount(count($user->getStaff()), $response['tokens']);
+        static::assertCount(count($user->getStaff()), $response['staffTokens']);
 
         $decoder = static::$container->get(JWTEncoderInterface::class);
 
@@ -57,11 +61,15 @@ class AuthenticationTest extends WebTestCase
 
         $staffIris = [];
 
+        $decodedUserToken = $decoder->decode($response['userToken']);
+
+        static::assertSame($userIri, $decodedUserToken['user'] ?? null);
+
         foreach ($user->getStaff() as $staff) {
             $staffIris[] = $iriConverter->getIriFromItem($staff);
         }
 
-        foreach ($response['tokens'] as $token) {
+        foreach ($response['staffTokens'] as $token) {
             $decoded = $decoder->decode($token);
 
             static::assertNotNull($decoded['version'] ?? null);
@@ -81,7 +89,7 @@ class AuthenticationTest extends WebTestCase
 
         $client->request(
             Request::METHOD_POST,
-            '/core/authentication_token',
+            static::LOGIN_ENDPOINT,
             [],
             [],
             [
@@ -107,7 +115,7 @@ class AuthenticationTest extends WebTestCase
 
         $client->request(
             Request::METHOD_POST,
-            '/core/authentication_token',
+            static::LOGIN_ENDPOINT,
             [],
             [],
             [
@@ -133,7 +141,7 @@ class AuthenticationTest extends WebTestCase
 
         $client->request(
             Request::METHOD_POST,
-            '/core/authentication_token',
+            static::LOGIN_ENDPOINT,
             [],
             [],
             [

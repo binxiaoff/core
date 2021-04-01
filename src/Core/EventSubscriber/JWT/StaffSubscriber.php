@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Core\EventSubscriber\JWT;
 
+use ApiPlatform\Core\Api\IriConverterInterface;
+use ApiPlatform\Core\Exception\ItemNotFoundException;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTAuthenticatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
@@ -11,34 +13,32 @@ use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\UserRepository;
-use Unilend\Core\Service\JWT\JwtPayloadManagerInterface;
 
-class JwtPayloadManagerSubscriber implements EventSubscriberInterface
+class StaffSubscriber implements EventSubscriberInterface
 {
     /** @var UserRepository  */
     private UserRepository $userRepository;
 
-    /** @var array|JwtPayloadManagerInterface[] */
-    private array $jwtPayloadManagers;
-
     /** @var JWTTokenManagerInterface */
     private JWTTokenManagerInterface $jwtManager;
 
-    /**
-     * @param UserRepository                      $userRepository
-     * @param JWTTokenManagerInterface            $jwtManager
-     * @param iterable|JwtPayloadManagerInterface $jwtPayloadManagers
-     */
-    public function __construct(UserRepository $userRepository, JWTTokenManagerInterface $jwtManager, iterable $jwtPayloadManagers = [])
-    {
-        $this->userRepository = $userRepository;
-        $this->jwtManager = $jwtManager;
+    /** @var IriConverterInterface */
+    private IriConverterInterface $iriConverter;
 
-        foreach ($jwtPayloadManagers as $jwtPayloadManager) {
-            $this->addJwtTokenManager($jwtPayloadManager);
-        }
+    /**
+     * @param JWTTokenManagerInterface $jwtManager
+     * @param IriConverterInterface    $iriConverter
+     */
+    public function __construct(
+        JWTTokenManagerInterface $jwtManager,
+        IriConverterInterface $iriConverter
+    ) {
+        $this->jwtManager = $jwtManager;
+        $this->iriConverter = $iriConverter;
     }
 
     /**
@@ -49,7 +49,7 @@ class JwtPayloadManagerSubscriber implements EventSubscriberInterface
         return [
             JwtEvents::JWT_DECODED            => 'validateToken',
             JwtEvents::JWT_AUTHENTICATED      => 'updateSecurityToken',
-            JwtEvents::AUTHENTICATION_SUCCESS => 'addGeneratedJwtTokens',
+            JwtEvents::AUTHENTICATION_SUCCESS => 'addStaffJwtTokens',
         ];
     }
 
@@ -63,25 +63,24 @@ class JwtPayloadManagerSubscriber implements EventSubscriberInterface
     {
         $payload = $event->getPayload();
 
-        if (false === isset($payload['@type'])) {
-            $event->markAsInvalid();
-        }
+        if ($payload['staff']) {
+            try {
+                /** @var Staff $staff */
+                $staff = $this->iriConverter->getItemFromIri($payload['staff'], [AbstractNormalizer::GROUPS => []]);
+            } catch (ItemNotFoundException $exception) {
+                $event->markAsInvalid();
+            }
 
-        if (false === isset($this->jwtPayloadManagers[$payload['@type']])) {
-            $event->markAsInvalid();
-        }
-
-        $validity = $this->jwtPayloadManagers[$payload['@type']]->isTokenPayloadValid($event->getPayload());
-
-        if (false === $validity) {
-            $event->markAsInvalid();
+            if (false === ($staff instanceof Staff && $staff->isGrantedLogin())) {
+                $event->markAsInvalid();
+            }
         }
     }
 
     /**
      * @param AuthenticationSuccessEvent $event
      */
-    public function addGeneratedJwtTokens(AuthenticationSuccessEvent $event): void
+    public function addStaffJwtTokens(AuthenticationSuccessEvent $event): void
     {
         $user = $event->getUser();
 
@@ -95,15 +94,10 @@ class JwtPayloadManagerSubscriber implements EventSubscriberInterface
 
         $data = $event->getData();
 
-        unset($data['token']);
+        $data['staffTokens'] = [];
 
-        $data['tokens'] = [];
-
-        foreach ($this->jwtPayloadManagers as $generator) {
-            foreach ($generator->generatePayloads($user) as $payload) {
-                $payload['@type'] = $generator->getType();
-                $data['tokens'][] = $this->jwtManager->createFromPayload($user, $payload);
-            }
+        foreach ($user->getStaff() as $staff) {
+            $data['staffTokens'][] = $this->jwtManager->createFromPayload($user, ['staff' => $this->iriConverter->getIriFromItem($staff)]);
         }
 
         $event->setData($data);
@@ -117,15 +111,16 @@ class JwtPayloadManagerSubscriber implements EventSubscriberInterface
         $payload = $event->getPayload();
         $token   = $event->getToken();
 
-        $token->setAttribute('type', $payload['@type']);
-        $this->jwtPayloadManagers[$payload['@type']]->updateSecurityToken($token, $payload);
-    }
 
-    /**
-     * @param JwtPayloadManagerInterface $manager
-     */
-    private function addJwtTokenManager(JwtPayloadManagerInterface $manager)
-    {
-        $this->jwtPayloadManagers[$manager->getType()] = $manager;
+        if ($payload['staff']) {
+            /** @var Staff $currentStaff */
+            $currentStaff = $this->iriConverter->getItemFromIri($payload['staff'], [AbstractNormalizer::GROUPS => []]);
+
+            // Legacy way of storing current staff for security
+            $token->getUser()->setCurrentStaff($currentStaff);
+
+            $token->setAttribute('staff', $currentStaff);
+            $token->setAttribute('company', $currentStaff->getCompany());
+        }
     }
 }
