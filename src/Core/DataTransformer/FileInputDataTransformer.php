@@ -111,6 +111,10 @@ class FileInputDataTransformer
             $file = $this->uploadTermDocument($targetEntity, $fileInput, $user);
         }
 
+        if ($targetEntity instanceof Term) {
+            $file = $this->uploadTermDocument($targetEntity, $fileInput, $currentStaff);
+        }
+
         return $file;
     }
 
