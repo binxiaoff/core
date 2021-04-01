@@ -51,7 +51,7 @@ class ProgramBorrowerTypeAllocation
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programBorrowerTypeAllocations")
-     * @ORM\JoinColumn(name="id_program", nullable=false, )
+     * @ORM\JoinColumn(name="id_program", nullable=false)
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *

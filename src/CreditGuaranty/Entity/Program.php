@@ -234,6 +234,15 @@ class Program implements TraceableStatusAwareInterface
     private Collection $programEligibilities;
 
     /**
+     * @var Collection|Participation[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\Participation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     */
+    private Collection $participations;
+
+    /**
      * @param string          $name
      * @param CompanyGroupTag $companyGroupTag
      * @param Money           $funds
