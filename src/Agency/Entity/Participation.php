@@ -64,7 +64,8 @@ use Unilend\Core\Model\Bitmask;
  *         "whitelist": {
  *             "agency:participationTrancheAllocation:read",
  *             "agency:participationMember:read",
- *             "company:read"
+ *             "company:read",
+ *             "user:read"
  *         }
  *     }
  * )

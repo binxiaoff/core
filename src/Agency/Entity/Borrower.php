@@ -69,7 +69,8 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *     filterClass=GroupFilter::class,
  *     arguments={
  *         "whitelist": {
- *             "agency:borrowerMember:read"
+ *             "agency:borrowerMember:read",
+ *             "user:read"
  *         }
  *     }
  * )
