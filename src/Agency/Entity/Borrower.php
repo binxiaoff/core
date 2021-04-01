@@ -193,8 +193,6 @@ class Borrower
      * })
      *
      * @Groups({"agency:borrower:read"})
-     *
-     * @ApiSubresource
      */
     private Collection $members;
 

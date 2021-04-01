@@ -245,8 +245,6 @@ class Participation
      *     @Assert\Expression("value.getParticipation() === this")
      * })
      *
-     * @ApiSubresource
-     *
      * @Groups({"agency:participation:read"})
      */
     private Collection $members;
