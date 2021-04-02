@@ -104,11 +104,11 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $participations = [
             ...array_map(
                 fn ($company) => $this->createParticipation($project, $this->getReference($company)),
-                [CompanyFixtures::COMPANY1, CompanyFixtures::COMPANY2]
+                [CompanyFixtures::COMPANY_MANY_STAFF, CompanyFixtures::COMPANIES[0]]
             ),
             ...array_map(
                 fn ($company) => $this->createParticipation($project, $this->getReference($company), true),
-                [CompanyFixtures::COMPANY3, CompanyFixtures::COMPANY4]
+                [ CompanyFixtures::COMPANIES[4], CompanyFixtures::COMPANIES[3]]
             ),
         ];
 
