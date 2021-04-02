@@ -30,7 +30,7 @@ use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\{Embeddable\NullablePerson, Staff};
+use Unilend\Core\Entity\{Constant\MathOperator, Embeddable\NullablePerson, Staff};
 use Unilend\Core\Model\Bitmask;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -283,7 +283,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         return new CovenantRule(
             $covenant,
             $year,
-            new Inequality('>=', '0.9')
+            new Inequality(MathOperator::INFERIOR_OR_EQUAL, '0.9')
         );
     }
 
@@ -295,7 +295,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     private function createMarginRule(Covenant $covenant, iterable $tranches)
     {
-        $marginRule = new MarginRule($covenant, new Inequality('>=', '0.9'));
+        $marginRule = new MarginRule($covenant, new Inequality(MathOperator::INFERIOR_OR_EQUAL, '0.9'));
 
         foreach ($tranches as $tranche) {
             $marginImpact = new MarginImpact($marginRule, $tranche, '0.9');
