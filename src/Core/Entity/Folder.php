@@ -42,13 +42,26 @@ class Folder
     use PublicizeIdentityTrait;
 
     /**
+     * @var File[]|Collection
+     *
+     * This is a OneToMany unidirectionnal relation : Folder <-× File
+     * https://www.doctrine-project.org/projects/doctrine-orm/en/2.8/reference/association-mapping.html#one-to-many-unidirectional-with-join-table
+     *
+     * @ORM\ManyToMany(targetEntity=File::class, cascade={"persist", "remove"}, indexBy="publicId")
+     * @ORM\JoinTable(
+     *     inverseJoinColumns={@ORM\JoinColumn(name="file_id", referencedColumnName="id", unique=true)}
+     * )
+     */
+    protected Collection $files;
+
+    /**
      * @ORM\Column(type="text", nullable=false)
      */
     private string $path;
 
     /**
      * used for database unique index (path field is to big for unique index).
-     * unfortunatly it is a hassle to handle virtual column with doctrine so I need to create a true column for this
+     * unfortunatly it is a hassle to handle virtual column with doctrine so I need to create a true column for this.
      *
      * @Assert\NotBlank
      * @Assert\Length(max="10")
@@ -60,7 +73,7 @@ class Folder
     /**
      * @Assert\Length(max="100")
      * @Assert\AtLeastOneOf({
-     *     @Assert\NotBlank(),
+     *     @Assert\NotBlank,
      *     @Assert\Expression("'/' == this.getPath()")
      * })
      *
@@ -79,34 +92,18 @@ class Folder
     private Drive $drive;
 
     /**
-     * @var File[]|Collection
-     *
-     * This is a OneToMany unidirectionnal relation : Folder <-× File
-     * https://www.doctrine-project.org/projects/doctrine-orm/en/2.8/reference/association-mapping.html#one-to-many-unidirectional-with-join-table
-     *
-     * @ORM\ManyToMany(targetEntity=File::class, cascade={"persist", "remove"}, indexBy="publicId")
-     * @ORM\JoinTable(
-     *      inverseJoinColumns={@ORM\JoinColumn(name="file_id", referencedColumnName="id", unique=true)}
-     * )
-     */
-    protected Collection $files;
-
-    /**
-     * @param string      $name
-     * @param Drive       $drive
      * @param string|null $parentPath
      */
     public function __construct(string $name, Drive $drive, string $parentPath)
     {
         $this->drive = $drive;
-        $parentPath        = '/' === $parentPath ? null : $parentPath;
 
-        if ('/' !== $parentPath && null === $this->drive->getFolder($parentPath)) {
+        if (null === $this->drive->getFolder($parentPath)) {
             throw new InvalidArgumentException(sprintf('Given path %s is not a folder in drive', $parentPath));
         }
 
-        $this->name = $name;
-        $this->path = ('/' === $parentPath ? '' : $parentPath) . DIRECTORY_SEPARATOR . $name;
+        $this->name     = $name;
+        $this->path     = ('/' === $parentPath ? '' : $parentPath) . DIRECTORY_SEPARATOR . $name;
         $this->pathHash = hash('crc32b', $this->path);
         $this->added    = new DateTimeImmutable();
         $this->files    = new ArrayCollection();
