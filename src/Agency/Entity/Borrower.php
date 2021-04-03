@@ -157,7 +157,7 @@ class Borrower
     /**
      * @var BorrowerMember|null
      *
-     * @ORM\ManyToOne(targetEntity=BorrowerMember::class)
+     * @ORM\OneToOne(targetEntity=BorrowerMember::class)
      * @ORM\JoinColumn(name="id_signatory", onDelete="SET NULL")
      *
      * @Assert\NotBlank
@@ -171,7 +171,7 @@ class Borrower
     /**
      * @var BorrowerMember|null
      *
-     * @ORM\ManyToOne(targetEntity=BorrowerMember::class)
+     * @ORM\OneToOne(targetEntity=BorrowerMember::class)
      * @ORM\JoinColumn(name="id_referent", onDelete="SET NULL")
      *
      * @Assert\NotBlank

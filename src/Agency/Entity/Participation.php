@@ -224,7 +224,7 @@ class Participation
     /**
      * @var ParticipationMember|null
      *
-     * @ORM\ManyToOne(targetEntity=ParticipationMember::class)
+     * @ORM\OneToOne(targetEntity=ParticipationMember::class)
      * @ORM\JoinColumn(name="id_referent", onDelete="SET NULL")
      *
      * @Assert\NotBlank(groups="published")
