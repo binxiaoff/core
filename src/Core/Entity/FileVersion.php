@@ -11,7 +11,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
@@ -38,7 +38,6 @@ class FileVersion
 {
     use ConstantsAwareTrait;
     use TimestampableTrait;
-    use BlamableAddedTrait;
     use PublicizeIdentityTrait;
 
     public const FILE_SYSTEM_USER_ATTACHMENT    = 'user_attachment';
@@ -120,8 +119,16 @@ class FileVersion
     private $mimeType;
 
     /**
+     * @var User
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\JoinColumn(name="added_by", referencedColumnName="id", nullable=false)
+     */
+    private User $addedBy;
+
+    /**
      * @param string      $path
-     * @param Staff       $addedBy
+     * @param User        $addedBy
      * @param File        $file
      * @param string      $fileSystem
      * @param string|null $plainEncryptionKey
@@ -129,7 +136,7 @@ class FileVersion
      *
      * @throws Exception
      */
-    public function __construct(string $path, Staff $addedBy, File $file, string $fileSystem, ?string $plainEncryptionKey, ?string $mimeType)
+    public function __construct(string $path, User $addedBy, File $file, string $fileSystem, ?string $plainEncryptionKey, ?string $mimeType)
     {
         $this->signatures           = new ArrayCollection();
         $this->fileVersionDownloads = new ArrayCollection();
@@ -316,5 +323,13 @@ class FileVersion
         $fileVersions = $this->getFile()->getFileVersions();
 
         return $fileVersions->indexOf($this) + 1;
+    }
+
+    /**
+     * @return User
+     */
+    public function getAddedBy(): User
+    {
+        return $this->addedBy;
     }
 }

@@ -11,9 +11,9 @@ use InvalidArgumentException;
 use League\Flysystem\{FileExistsException, FilesystemInterface};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\FileVersion;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\{Staff};
 use Unilend\Core\Message\File\FileUploaded;
 use Unilend\Core\Repository\FileRepository;
@@ -46,7 +46,7 @@ class FileUploadManager
 
     /**
      * @param UploadedFile $uploadedFile
-     * @param Staff        $uploader
+     * @param User         $uploader
      * @param File|null    $file
      * @param array        $context
      *
@@ -55,16 +55,16 @@ class FileUploadManager
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws Exception
      */
-    public function upload(UploadedFile $uploadedFile, Staff $uploader, File $file, array $context = []): void
+    public function upload(UploadedFile $uploadedFile, User $uploader, File $file, array $context = []): void
     {
         $mineType                               = $uploadedFile->getMimeType();
-        [$relativeUploadedPath, $encryptionKey] = $this->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getUserDirectory($uploader->getUser()));
+        [$relativeUploadedPath, $encryptionKey] = $this->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getUserDirectory($uploader));
 
         $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file, FileVersion::FILE_SYSTEM_USER_ATTACHMENT, $encryptionKey, $mineType);
         $fileVersion
-            ->setOriginalName($this->fileSystemHelper->normalizeFileName($uploadedFile->
-            getClientOriginalName()))
+            ->setOriginalName($this->fileSystemHelper->normalizeFileName($uploadedFile->getClientOriginalName()))
             ->setSize($uploadedFile->getSize())
         ;
         $file->setCurrentFileVersion($fileVersion);
