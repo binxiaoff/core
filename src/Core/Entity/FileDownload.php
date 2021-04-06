@@ -26,7 +26,7 @@ class FileDownload
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $id;
+    private int $id;
 
     /**
      * @var FileVersion
@@ -34,23 +34,30 @@ class FileDownload
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\FileVersion", inversedBy="fileVersionDownloads")
      * @ORM\JoinColumn(name="id_file_version", nullable=false)
      */
-    private $fileVersion;
+    private FileVersion $fileVersion;
 
     /**
      * @var string
      *
      * @ORM\Column(length=150)
      */
-    private $type;
+    private string $type;
+
+    /**
+     * @var Staff
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\JoinColumn(name="added_by", referencedColumnName="id", nullable=false)
+     */
+    private $addedBy;
 
     /**
      * @param FileVersion $fileVersion
-     * @param Staff       $addedBy
+     * @param User        $addedBy
      * @param string      $type
      *
-     * @throws Exception
      */
-    public function __construct(FileVersion $fileVersion, Staff $addedBy, string $type)
+    public function __construct(FileVersion $fileVersion, User $addedBy, string $type)
     {
         $this->fileVersion = $fileVersion;
         $this->addedBy     = $addedBy;
@@ -80,5 +87,13 @@ class FileDownload
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /**
+     * @return User
+     */
+    public function getAddedBy(): User
+    {
+        return $this->addedBy;
     }
 }

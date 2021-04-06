@@ -48,14 +48,18 @@ class Download
      */
     public function __invoke(FileVersion $data, Request $request, string $type): StreamedResponse
     {
-        $user         = $this->security->getUser();
-        $currentStaff = $user instanceof User ? $user->getCurrentStaff() : null;
+        $user = $this->security->getUser();
 
-        if (null === $currentStaff) {
-            throw new AccessDeniedHttpException();
+        if (false === $user instanceof User) {
+            throw new AccessDeniedHttpException(sprintf(
+                'Attempt to download with %s%s instead of object of class %s',
+                \is_object($user) ? 'object of class ' : '',
+                \is_object($user) ? \get_class($user) : gettype($user),
+                User::class
+            ));
         }
 
-        $fileDownload = new FileDownload($data, $currentStaff, $type);
+        $fileDownload = new FileDownload($data, $user, $type);
 
         if (false === $this->security->isGranted(FileDownloadVoter::ATTRIBUTE_CREATE, $fileDownload)) {
             throw new AccessDeniedHttpException();
