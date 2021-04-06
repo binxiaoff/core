@@ -20,7 +20,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
- *             "timestampable:read",
  *             "agency:participationMember:read"
  *         }
  *     },
@@ -49,7 +48,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 class ParticipationMember
 {
     use PublicizeIdentityTrait;
-    use TimestampableTrait;
 
     public const TYPE_BACK_OFFICE = 'back_office';
     public const TYPE_WAIVER      = 'waiver';
@@ -59,8 +57,8 @@ class ParticipationMember
      * @var Participation
      *
      * @ORM\ManyToOne(targetEntity=Participation::class, inversedBy="members")
-     * @ORM\JoinColumn(name="id_participation", onDelete="CASCADE")
-
+     * @ORM\JoinColumn(name="id_participation", onDelete="CASCADE", nullable=false)
+     *
      * @Assert\NotBlank
      * @Assert\Valid
      *
@@ -89,8 +87,19 @@ class ParticipationMember
      * @ORM\Column(type="string", nullable=true, length=40)
      *
      * @Assert\Choice({ParticipationMember::TYPE_BACK_OFFICE, ParticipationMember::TYPE_LEGAL, ParticipationMember::TYPE_WAIVER})
+     *
+     * @Groups({"agency:participationMember:read", "agency:participationMember:create"})
      */
     private ?string $type;
+
+    /**
+     * @var DateTimeImmutable
+     *
+     * @ORM\Column(name="added", type="datetime_immutable")
+     *
+     * @Groups({"agency:participationMember:read"})
+     */
+    protected DateTimeImmutable $added;
 
     /**
      * @param Participation $participation

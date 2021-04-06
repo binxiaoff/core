@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
-use ApiPlatform\Core\Action\NotFoundAction;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -231,7 +229,7 @@ class Participation
      * @Assert\Choice(callback="getMembers")
      * @Assert\Valid
      *
-     * @Groups({"agency:participation:read", "agency:participation:create", "agency:participation:update"})
+     * @Groups({"agency:participation:read", "agency:participation:write"})
      */
     private ?ParticipationMember $referent;
 

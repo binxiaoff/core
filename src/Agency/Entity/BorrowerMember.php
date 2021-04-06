@@ -12,15 +12,12 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Entity\User;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
- *             "timestampable:read",
  *             "agency:borrowerMember:read"
  *         }
  *     },
@@ -49,13 +46,12 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 class BorrowerMember
 {
     use PublicizeIdentityTrait;
-    use TimestampableTrait;
 
     /**
      * @var Borrower
      *
      * @ORM\ManyToOne(targetEntity=Borrower::class, inversedBy="members")
-     * @ORM\JoinColumn(name="id_borrower", onDelete="CASCADE")
+     * @ORM\JoinColumn(name="id_borrower", onDelete="CASCADE", nullable=false)
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -78,6 +74,15 @@ class BorrowerMember
      * @Groups({"agency:borrowerMember:read", "agency:borrowerMember:create"})
      */
     private User $user;
+
+    /**
+     * @var DateTimeImmutable
+     *
+     * @ORM\Column(name="added", type="datetime_immutable")
+     *
+     * @Groups({"agency:borrowerMember:read"})
+     */
+    protected DateTimeImmutable $added;
 
     /**
      * @param Borrower $borrower
@@ -124,5 +129,13 @@ class BorrowerMember
     public function getBorrower(): Borrower
     {
         return $this->borrower;
+    }
+
+    /**
+     * @return DateTimeImmutable
+     */
+    public function getAdded(): DateTimeImmutable
+    {
+        return $this->added;
     }
 }

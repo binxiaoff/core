@@ -8,7 +8,6 @@ use ApiPlatform\Core\Action\NotFoundAction;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -164,7 +163,7 @@ class Borrower
      * @Assert\Choice(callback="getMembers")
      * @Assert\Valid
      *
-     * @Groups({"agency:borrower:read", "agency:borrower:create"})
+     * @Groups({"agency:borrower:read", "agency:borrower:write"})
      */
     private ?BorrowerMember $signatory;
 
@@ -178,7 +177,7 @@ class Borrower
      * @Assert\Choice(callback="getMembers")
      * @Assert\Valid
      *
-     * @Groups({"agency:borrower:read", "agency:borrower:create"})
+     * @Groups({"agency:borrower:read", "agency:borrower:write"})
      */
     private ?BorrowerMember $referent;
 
@@ -345,9 +344,9 @@ class Borrower
     }
 
     /**
-     * @return BorrowerMember
+     * @return BorrowerMember|null
      */
-    public function getSignatory(): BorrowerMember
+    public function getSignatory(): ?BorrowerMember
     {
         return $this->signatory;
     }
@@ -366,9 +365,9 @@ class Borrower
     }
 
     /**
-     * @return BorrowerMember
+     * @return BorrowerMember|null
      */
-    public function getReferent(): BorrowerMember
+    public function getReferent(): ?BorrowerMember
     {
         return $this->referent;
     }

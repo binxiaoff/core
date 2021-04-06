@@ -14,8 +14,8 @@ class BorrowerMemberVoter extends AbstractEntityVoter
     public const ATTRIBUTE_CREATE = 'create';
 
     /**
-     * @param $borrowerMember
-     * @param User $user
+     * @param BorrowerMember $borrowerMember
+     * @param User           $user
      *
      * @return bool
      */
