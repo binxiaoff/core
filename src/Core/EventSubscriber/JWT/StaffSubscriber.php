@@ -97,7 +97,9 @@ class StaffSubscriber implements EventSubscriberInterface
         $data['staffTokens'] = [];
 
         foreach ($user->getStaff() as $staff) {
-            $data['staffTokens'][] = $this->jwtManager->createFromPayload($user, ['staff' => $this->iriConverter->getIriFromItem($staff)]);
+            if ($staff->isGrantedLogin()) {
+                $data['staffTokens'][] = $this->jwtManager->createFromPayload($user, ['staff' => $this->iriConverter->getIriFromItem($staff)]);
+            }
         }
 
         $event->setData($data);
