@@ -204,6 +204,7 @@ class Covenant
      * @var CovenantRule[]|Collection
      *
      * @ORM\OneToMany(targetEntity=CovenantRule::class, mappedBy="covenant", indexBy="year", cascade={"persist", "remove"})
+     * @ORM\OrderBy({"year" = "ASC"})
      *
      * @Assert\Valid
      * @Assert\All({
