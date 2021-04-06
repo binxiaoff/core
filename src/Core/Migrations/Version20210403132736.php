@@ -33,6 +33,7 @@ final class Version20210403132736 extends AbstractMigration
     public function down(Schema $schema) : void
     {
         $this->addSql('ALTER TABLE core_file_download DROP FOREIGN KEY FK_41EFE7B2699B6BAF');
+        $this->addSql('UPDATE core_file_download cfd SET cfd.added_by = (SELECT id FROM unilend.core_staff LIMIT 1) WHERE TRUE');
         $this->addSql('ALTER TABLE core_file_download ADD CONSTRAINT FK_41EFE7B2699B6BAF FOREIGN KEY (added_by) REFERENCES core_staff (id) ON UPDATE NO ACTION ON DELETE NO ACTION');
     }
 }
