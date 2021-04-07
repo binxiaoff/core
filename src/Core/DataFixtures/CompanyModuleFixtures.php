@@ -6,16 +6,20 @@ namespace Unilend\Core\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Core\DataFixtures\{AbstractFixtures, CompanyFixtures, StaffFixtures};
+use phpDocumentor\Reflection\Types\Nullable;
+use Unilend\Core\DataFixtures\AbstractFixtures;
+use Unilend\Core\DataFixtures\CompanyFixtures;
+use Unilend\Core\DataFixtures\StaffFixtures;
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\{Company, CompanyModule};
 
 class CompanyModuleFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     private ObjectManager $manager;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function load(ObjectManager $manager)
     {
@@ -56,7 +60,7 @@ class CompanyModuleFixtures extends AbstractFixtures implements DependentFixture
                     $module = $company->getModule($moduleCode);
                     $module->setActivated(true);
 
-                    if (CompanyModule::MODULE_ARRANGEMENT === $module->getCode()) {
+                    if ($module->getCode() === CompanyModule::MODULE_ARRANGEMENT) {
                         $module->setArrangementAnnualLicenseMoney(
                             $this->faker->boolean ? new NullableMoney('EUR', (string) $this->faker->randomNumber()) : null
                         );

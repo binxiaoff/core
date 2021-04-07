@@ -12,9 +12,7 @@ return PhpCsFixer\Config::create()
         '@PHPUnit75Migration:risky'              => true,
         'no_superfluous_phpdoc_tags'             => false,
         'no_unused_imports'                      => true,
-        'group_import'                           => true,
-        'single_import_per_statement'            => false,
-        'ordered_imports'                        => ['imports_order' => ['class', 'function', 'const'],'sort_algorithm' => 'alpha'],
+        'ordered_imports'                        => ['imports_order' => ['class', 'function', 'const'], 'sort_algorithm' => 'alpha'],
         'binary_operator_spaces'                 => ['default' => 'align_single_space_minimal'],
         'concat_space'                           => ['spacing' => 'one'],
         'combine_nested_dirname'                 => true, //risky
