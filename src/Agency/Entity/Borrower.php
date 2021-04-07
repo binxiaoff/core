@@ -34,8 +34,10 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *              "denormalization_context": {
  *                  "groups": {
  *                      "agency:borrower:create",
+ *                      "agency:borrower:write",
  *                      "money:write",
  *                      "agency:borrowerMember:create",
+ *                      "agency:borrowerMember:write",
  *                      "user:create",
  *                      "user:write"
  *                  }

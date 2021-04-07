@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Traits\ConstantsAwareTrait;
@@ -27,7 +28,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
- *                  "groups": {"agency:participationMember:create", "user:create", "user:write"}
+ *                  "groups": {"agency:participationMember:create", "agency:participationMember:write", "user:create", "user:write"}
  *             }
  *         }
  *     },
@@ -48,6 +49,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 class ParticipationMember
 {
     use PublicizeIdentityTrait;
+    use TimestampableAddedOnlyTrait;
 
     public const TYPE_BACK_OFFICE = 'back_office';
     public const TYPE_WAIVER      = 'waiver';
@@ -93,13 +95,15 @@ class ParticipationMember
     private ?string $type;
 
     /**
-     * @var DateTimeImmutable
+     * @var string|null
      *
-     * @ORM\Column(name="added", type="datetime_immutable")
+     * @Groups({"agency:borrowerMember:read", "agency:participationMember:write"})
      *
-     * @Groups({"agency:participationMember:read"})
+     * @Assert\Length(max=200)
+     *
+     * @ORM\Column(type="string", length=200, nullable=true)
      */
-    protected DateTimeImmutable $added;
+    protected ?string $projectFunction;
 
     /**
      * @param Participation $participation
@@ -118,18 +122,6 @@ class ParticipationMember
     public function getUser(): User
     {
         return $this->user;
-    }
-
-    /**
-     * @param User $user
-     *
-     * @return ParticipationMember
-     */
-    public function setUser(User $user): ParticipationMember
-    {
-        $this->user = $user;
-
-        return $this;
     }
 
     /**
@@ -164,6 +156,26 @@ class ParticipationMember
     public function setType(?string $type): ParticipationMember
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getProjectFunction(): ?string
+    {
+        return $this->projectFunction;
+    }
+
+    /**
+     * @param string|null $projectFunction
+     *
+     * @return ParticipationMember
+     */
+    public function setProjectFunction(?string $projectFunction): ParticipationMember
+    {
+        $this->projectFunction = $projectFunction;
 
         return $this;
     }

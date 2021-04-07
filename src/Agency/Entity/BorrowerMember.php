@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Entity\User;
 
 /**
@@ -25,7 +26,7 @@ use Unilend\Core\Entity\User;
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
- *                "groups": {"agency:borrowerMember:create", "user:create", "user:write"}
+ *                "groups": {"agency:borrowerMember:create", "agency:borrowerMember:write", "user:create", "user:write"}
  *             }
  *         }
  *     },
@@ -46,6 +47,7 @@ use Unilend\Core\Entity\User;
 class BorrowerMember
 {
     use PublicizeIdentityTrait;
+    use TimestampableAddedOnlyTrait;
 
     /**
      * @var Borrower
@@ -76,13 +78,15 @@ class BorrowerMember
     private User $user;
 
     /**
-     * @var DateTimeImmutable
+     * @var string|null
      *
-     * @ORM\Column(name="added", type="datetime_immutable")
+     * @Groups({"agency:borrowerMember:read", "agency:borrowerMember:write"})
      *
-     * @Groups({"agency:borrowerMember:read"})
+     * @Assert\Length(max=200)
+     *
+     * @ORM\Column(type="string", length=200, nullable=true)
      */
-    protected DateTimeImmutable $added;
+    protected ?string $projectFunction;
 
     /**
      * @param Borrower $borrower
@@ -112,18 +116,6 @@ class BorrowerMember
     }
 
     /**
-     * @param User $user
-     *
-     * @return BorrowerMember
-     */
-    public function setUser(User $user): BorrowerMember
-    {
-        $this->user = $user;
-
-        return $this;
-    }
-
-    /**
      * @return Borrower
      */
     public function getBorrower(): Borrower
@@ -132,10 +124,22 @@ class BorrowerMember
     }
 
     /**
-     * @return DateTimeImmutable
+     * @return string|null
      */
-    public function getAdded(): DateTimeImmutable
+    public function getProjectFunction(): ?string
     {
-        return $this->added;
+        return $this->projectFunction;
+    }
+
+    /**
+     * @param string|null $projectFunction
+     *
+     * @return BorrowerMember
+     */
+    public function setProjectFunction(?string $projectFunction): BorrowerMember
+    {
+        $this->projectFunction = $projectFunction;
+
+        return $this;
     }
 }
