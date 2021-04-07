@@ -14,7 +14,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\{Staff};
+use Unilend\Core\Entity\{Company, Staff};
 use Unilend\Core\Message\File\FileUploaded;
 use Unilend\Core\Repository\FileRepository;
 use Unilend\Core\Service\FileSystem\FileSystemHelper;
@@ -49,20 +49,20 @@ class FileUploadManager
      * @param User         $uploader
      * @param File|null    $file
      * @param array        $context
+     * @param Company|null $company
      *
      * @throws EnvironmentIsBrokenException
      * @throws FileExistsException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws Exception
      */
-    public function upload(UploadedFile $uploadedFile, User $uploader, File $file, array $context = []): void
+    public function upload(UploadedFile $uploadedFile, User $uploader, File $file, array $context = [], ?Company $company = null): void
     {
         $mineType                               = $uploadedFile->getMimeType();
         [$relativeUploadedPath, $encryptionKey] = $this->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getUserDirectory($uploader));
 
-        $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file, FileVersion::FILE_SYSTEM_USER_ATTACHMENT, $encryptionKey, $mineType);
+        $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file, FileVersion::FILE_SYSTEM_USER_ATTACHMENT, $encryptionKey, $mineType, $company);
         $fileVersion
             ->setOriginalName($this->fileSystemHelper->normalizeFileName($uploadedFile->getClientOriginalName()))
             ->setSize($uploadedFile->getSize())

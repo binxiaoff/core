@@ -127,16 +127,23 @@ class FileVersion
     private User $addedBy;
 
     /**
-     * @param string      $path
-     * @param User        $addedBy
-     * @param File        $file
-     * @param string      $fileSystem
-     * @param string|null $plainEncryptionKey
-     * @param string|null $mimeType
+     * @var Company|null
      *
-     * @throws Exception
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=true)
      */
-    public function __construct(string $path, User $addedBy, File $file, string $fileSystem, ?string $plainEncryptionKey, ?string $mimeType)
+    private ?Company $company;
+
+    /**
+     * @param string       $path
+     * @param User         $addedBy
+     * @param File         $file
+     * @param string       $fileSystem
+     * @param string|null  $plainEncryptionKey
+     * @param string|null  $mimeType
+     * @param Company|null $company
+     */
+    public function __construct(string $path, User $addedBy, File $file, string $fileSystem, ?string $plainEncryptionKey, ?string $mimeType, ?Company $company = null)
     {
         $this->signatures           = new ArrayCollection();
         $this->fileVersionDownloads = new ArrayCollection();
@@ -147,6 +154,7 @@ class FileVersion
         $this->fileSystem           = $fileSystem;
         $this->plainEncryptionKey   = $plainEncryptionKey;
         $this->mimeType             = $mimeType;
+        $this->company              = $company;
     }
 
     /**
@@ -331,5 +339,13 @@ class FileVersion
     public function getAddedBy(): User
     {
         return $this->addedBy;
+    }
+
+    /**
+     * @return Company|null
+     */
+    public function getCompany(): ?Company
+    {
+        return $this->company;
     }
 }

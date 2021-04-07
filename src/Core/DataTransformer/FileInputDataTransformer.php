@@ -13,14 +13,13 @@ use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
 use Unilend\Core\DTO\FileInput;
-use Unilend\Core\Entity\{File, Message, MessageFile, Staff, User};
+use Unilend\Core\Entity\{Company, File, FileVersion, Message, MessageFile, Staff, User};
 use Unilend\Core\Repository\{MessageFileRepository, MessageRepository};
 use Unilend\Core\Security\Voter\MessageVoter;
 use Unilend\Core\Service\File\FileUploadManager;
 use Unilend\Syndication\Entity\{Project, ProjectFile, ProjectParticipation};
 use Unilend\Syndication\Repository\{ProjectFileRepository, ProjectRepository};
-use Unilend\Syndication\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
-use Unilend\Syndication\Service\Project\ProjectManager;
+use Unilend\Syndication\Security\Voter\{ProjectFileVoter, ProjectVoter};
 
 class FileInputDataTransformer
 {
@@ -130,7 +129,7 @@ class FileInputDataTransformer
             $file = new File();
         }
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $this->getCurrentUser(), $file);
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $this->getCurrentUser(), $file, [], $this->getCompanyFromSecurityContext());
 
         $messagesToBeAttached = [$message];
 
@@ -189,7 +188,13 @@ class FileInputDataTransformer
             }
         }
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $this->getCurrentUser(), $file, ['projectId' => $projectFile->getProject()->getId()]);
+        $this->fileUploadManager->upload(
+            $fileInput->uploadedFile,
+            $this->getCurrentUser(),
+            $file,
+            ['projectId' => $projectFile->getProject()->getId()],
+            $this->getCompanyFromSecurityContext()
+        );
 
         $this->projectFileRepository->save($projectFile);
 
@@ -240,7 +245,7 @@ class FileInputDataTransformer
                 throw new \InvalidArgumentException(sprintf('You cannot upload the file of the type %s.', $fileInput->type));
         }
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $this->getCurrentUser(), $file, ['projectId' => $project->getId()]);
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $this->getCurrentUser(), $file, ['projectId' => $project->getId()], $this->getCompanyFromSecurityContext());
 
         $this->projectRepository->save($project);
 
@@ -275,7 +280,13 @@ class FileInputDataTransformer
 
         $file = $isPublished && $existingNda ? $existingNda : new File();
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $this->getCurrentUser(), $file, ['projectParticipationId' => $projectParticipation->getId()]);
+        $this->fileUploadManager->upload(
+            $fileInput->uploadedFile,
+            $this->getCurrentUser(),
+            $file,
+            ['projectParticipationId' => $projectParticipation->getId()],
+            $this->getCompanyFromSecurityContext()
+        );
 
         $projectParticipation->setNda($file);
 
@@ -311,6 +322,26 @@ class FileInputDataTransformer
         }
 
         return $currentStaff;
+    }
+
+    /**
+     * @return Company|null
+     */
+    private function getCompanyFromSecurityContext(): ?Company
+    {
+        $user = $this->security->getUser();
+
+        if (false === ($user instanceof User)) {
+            return null;
+        }
+
+        $staff = $user->getCurrentStaff();
+
+        if (false === ($staff instanceof Staff)) {
+            return null;
+        }
+
+        return $staff->getCompany();
     }
 
     /**
