@@ -59,7 +59,15 @@ class Download
             ));
         }
 
-        $fileDownload = new FileDownload($data, $user, $type);
+        $staff = $user->getCurrentStaff();
+
+        $company = null;
+
+        if ($staff) {
+            $company = $staff->getCompany();
+        }
+
+        $fileDownload = new FileDownload($data, $user, $type, $company);
 
         if (false === $this->security->isGranted(FileDownloadVoter::ATTRIBUTE_CREATE, $fileDownload)) {
             throw new AccessDeniedHttpException();

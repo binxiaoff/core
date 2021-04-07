@@ -6,8 +6,6 @@ namespace Unilend\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
@@ -16,7 +14,6 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
  */
 class FileDownload
 {
-    use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
 
     /**
@@ -52,17 +49,26 @@ class FileDownload
     private $addedBy;
 
     /**
-     * @param FileVersion $fileVersion
-     * @param User        $addedBy
-     * @param string      $type
+     * @var Company|null
      *
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=true)
      */
-    public function __construct(FileVersion $fileVersion, User $addedBy, string $type)
+    private ?Company $company;
+
+    /**
+     * @param FileVersion  $fileVersion
+     * @param User         $addedBy
+     * @param string       $type
+     * @param Company|null $company
+     */
+    public function __construct(FileVersion $fileVersion, User $addedBy, string $type, ?Company $company = null)
     {
         $this->fileVersion = $fileVersion;
         $this->addedBy     = $addedBy;
         $this->type        = $type;
         $this->added       = new DateTimeImmutable();
+        $this->company     = $company;
     }
 
     /**
@@ -95,5 +101,13 @@ class FileDownload
     public function getAddedBy(): User
     {
         return $this->addedBy;
+    }
+
+    /**
+     * @return Company|null
+     */
+    public function getCompany(): ?Company
+    {
+        return $this->company;
     }
 }
