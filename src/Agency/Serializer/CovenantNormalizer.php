@@ -46,11 +46,16 @@ class CovenantNormalizer implements ContextAwareDenormalizerInterface, Denormali
         $publication = $data['published'] ?? false;
         unset($data['published']);
 
-        $covenantRules = $data['covenantRules'] ?? [];
-        unset($data['covenantRules']);
+        $denormalizeData = [];
+        if (array_key_exists('covenantRules', $data)) {
+            $denormalizeData['covenantRules'] = $data['covenantRules'] ?? [];
+            unset($data['covenantRules']);
+        }
 
-        $marginRules = $data['marginRules'] ?? [];
-        unset($data['marginRules']);
+        if (array_key_exists('marginRules', $data)) {
+            $denormalizeData['marginRules'] = $data['marginRules'] ?? [];
+            unset($data['marginRules']);
+        }
 
         /** @var Covenant $covenant */
         $covenant = $this->denormalizer->denormalize($data, $type, $format, $context);
@@ -63,7 +68,7 @@ class CovenantNormalizer implements ContextAwareDenormalizerInterface, Denormali
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][CovenantRule::class]['covenant'] = $covenant;
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][MarginRule::class]['covenant'] = $covenant;
 
-        $covenant = $this->denormalizer->denormalize(['covenantRules' => $covenantRules, 'marginRules' => $marginRules], $type, $format, $context);
+        $covenant = $this->denormalizer->denormalize($denormalizeData, $type, $format, $context);
 
         return $covenant;
     }
