@@ -5,21 +5,34 @@ declare(strict_types=1);
 namespace Unilend\Core\DataTransformer;
 
 use ApiPlatform\Core\Validator\ValidatorInterface;
-use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, IOException};
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
+use Defuse\Crypto\Exception\IOException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
 use League\Flysystem\FileExistsException;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Security\Core\Security;
 use Unilend\Core\DTO\FileInput;
-use Unilend\Core\Entity\{Company, File, FileVersion, Message, MessageFile, Staff, User};
-use Unilend\Core\Repository\{MessageFileRepository, MessageRepository};
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\File;
+use Unilend\Core\Entity\Message;
+use Unilend\Core\Entity\MessageFile;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
+use Unilend\Core\Repository\MessageFileRepository;
+use Unilend\Core\Repository\MessageRepository;
 use Unilend\Core\Security\Voter\MessageVoter;
 use Unilend\Core\Service\File\FileUploadManager;
-use Unilend\Syndication\Entity\{Project, ProjectFile, ProjectParticipation};
-use Unilend\Syndication\Repository\{ProjectFileRepository, ProjectRepository};
-use Unilend\Syndication\Security\Voter\{ProjectFileVoter, ProjectVoter};
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectFile;
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Repository\ProjectFileRepository;
+use Unilend\Syndication\Repository\ProjectRepository;
+use Unilend\Syndication\Security\Voter\ProjectFileVoter;
+use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class FileInputDataTransformer
 {
@@ -31,7 +44,7 @@ class FileInputDataTransformer
     private FileUploadManager $fileUploadManager;
     /** @var ProjectFileRepository */
     private ProjectFileRepository $projectFileRepository;
-    /** @var ProjectRepository  */
+    /** @var ProjectRepository */
     private ProjectRepository $projectRepository;
     /** @var MessageFileRepository */
     private MessageFileRepository $messageFileRepository;
@@ -58,13 +71,13 @@ class FileInputDataTransformer
         MessageFileRepository $messageFileRepository,
         MessageRepository $messageRepository
     ) {
-        $this->validator                = $validator;
-        $this->security                 = $security;
-        $this->fileUploadManager        = $fileUploadManager;
-        $this->projectFileRepository    = $projectFileRepository;
-        $this->projectRepository        = $projectRepository;
-        $this->messageFileRepository    = $messageFileRepository;
-        $this->messageRepository        = $messageRepository;
+        $this->validator             = $validator;
+        $this->security              = $security;
+        $this->fileUploadManager     = $fileUploadManager;
+        $this->projectFileRepository = $projectFileRepository;
+        $this->projectRepository     = $projectRepository;
+        $this->messageFileRepository = $messageFileRepository;
+        $this->messageRepository     = $messageRepository;
     }
 
     /**
@@ -206,13 +219,13 @@ class FileInputDataTransformer
      * @param FileInput $fileInput
      * @param File|null $file
      *
-     * @return File
-     *
      * @throws EnvironmentIsBrokenException
      * @throws FileExistsException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
+     *
+     * @return File
      */
     private function uploadForProject(Project $project, FileInput $fileInput, ?File $file): File
     {
@@ -232,6 +245,7 @@ class FileInputDataTransformer
                 $project->setDescriptionDocument($file);
                 // Orphan removal takes care to remove unused file
                 break;
+
             case Project::PROJECT_FILE_TYPE_NDA:
                 $nda = $project->getNda();
                 if ($isPublished && null !== $file && null !== $nda && $file !== $nda) {
@@ -241,6 +255,7 @@ class FileInputDataTransformer
                 $project->setNda($file);
                 // Orphan removal takes care to remove unused file
                 break;
+
             default:
                 throw new \InvalidArgumentException(sprintf('You cannot upload the file of the type %s.', $fileInput->type));
         }
@@ -257,13 +272,13 @@ class FileInputDataTransformer
      * @param FileInput            $fileInput
      * @param File|null            $file
      *
-     * @return File
-     *
      * @throws EnvironmentIsBrokenException
      * @throws FileExistsException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
+     *
+     * @return File
      */
     private function uploadProjectParticipationNda(ProjectParticipation $projectParticipation, FileInput $fileInput, ?File $file)
     {
