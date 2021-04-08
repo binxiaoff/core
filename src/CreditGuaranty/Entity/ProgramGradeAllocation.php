@@ -44,7 +44,7 @@ class ProgramGradeAllocation
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programGradeAllocations")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
      * @Groups({"creditGuaranty:programGradeAllocation:read", "creditGuaranty:programGradeAllocation:write"})

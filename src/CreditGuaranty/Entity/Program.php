@@ -190,7 +190,14 @@ class Program implements TraceableStatusAwareInterface
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
-    private ?string $ratingType;
+    private ?string $ratingType = null;
+
+    /**
+     * @var Collection|ProgramGradeAllocation[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramGradeAllocation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     */
+    private Collection $programGradeAllocations;
 
     /***************
      * Subresource *
@@ -250,14 +257,15 @@ class Program implements TraceableStatusAwareInterface
      */
     public function __construct(string $name, CompanyGroupTag $companyGroupTag, Money $funds, Staff $addedBy)
     {
-        $this->name            = $name;
-        $this->companyGroupTag = $companyGroupTag;
-        $this->funds           = $funds;
-        $this->addedBy         = $addedBy;
-        $this->cappedAt        = new NullableMoney();
-        $this->statuses        = new ArrayCollection();
-        $this->guarantyCost    = new NullableMoney();
-        $this->added           = new DateTimeImmutable();
+        $this->name                    = $name;
+        $this->companyGroupTag         = $companyGroupTag;
+        $this->funds                   = $funds;
+        $this->addedBy                 = $addedBy;
+        $this->cappedAt                = new NullableMoney();
+        $this->statuses                = new ArrayCollection();
+        $this->guarantyCost            = new NullableMoney();
+        $this->added                   = new DateTimeImmutable();
+        $this->programGradeAllocations = new ArrayCollection();
         $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_DRAFT, $addedBy));
     }
 
@@ -480,6 +488,10 @@ class Program implements TraceableStatusAwareInterface
      */
     public function setRatingType(?string $ratingType): Program
     {
+        if ($ratingType !== $this->ratingType) {
+            $this->programGradeAllocations->clear();
+        }
+
         $this->ratingType = $ratingType;
 
         return $this;
