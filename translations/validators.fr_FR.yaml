@@ -30,6 +30,7 @@ Core:
             unicity: Un utilisateur ne peut être présent dans deux équipes de la même entité
     StatusInterface:
         duplicated: Le nouveau statut est en doublons avec le dernier.
+        invalid: Le nouveau statut n'est pas valable.
     Users:
         email:
             unique: Cet utilisateur dispose déjà d'un compte KLS
