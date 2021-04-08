@@ -98,22 +98,28 @@ class FileInputDataTransformer
         $targetEntity = $fileInput->targetEntity;
         $type         = $fileInput->type;
 
+        $user = $this->security->getUser();
+
+        if (false === $user instanceof User) {
+            throw new AccessDeniedHttpException('Attempt to transform fileInput into file without valid user');
+        }
+
         if ($targetEntity instanceof Project) {
             if (\in_array($type, ProjectFile::getProjectFileTypes(), true)) {
-                $file = $this->uploadForProjectFile($targetEntity, $fileInput, $file);
+                $file = $this->uploadForProjectFile($targetEntity, $fileInput, $user, $file);
             }
 
             if (\in_array($type, Project::getProjectFileTypes(), true)) {
-                $file = $this->uploadForProject($targetEntity, $fileInput, $file);
+                $file = $this->uploadForProject($targetEntity, $fileInput, $user, $file);
             }
         }
 
         if ($targetEntity instanceof ProjectParticipation) {
-            $file = $this->uploadProjectParticipationNda($targetEntity, $fileInput, $file);
+            $file = $this->uploadProjectParticipationNda($targetEntity, $fileInput, $user, $file);
         }
 
         if ($targetEntity instanceof Message) {
-            $file = $this->uploadMessageFile($targetEntity, $fileInput, $file);
+            $file = $this->uploadMessageFile($targetEntity, $fileInput, $user, $file);
         }
 
         return $file;
@@ -122,6 +128,7 @@ class FileInputDataTransformer
     /**
      * @param Message   $message
      * @param FileInput $fileInput
+     * @param User      $user
      * @param File|null $file
      *
      * @throws EnvironmentIsBrokenException
@@ -132,7 +139,7 @@ class FileInputDataTransformer
      *
      * @return File
      */
-    private function uploadMessageFile(Message $message, FileInput $fileInput, ?File $file): File
+    private function uploadMessageFile(Message $message, FileInput $fileInput, User $user, ?File $file): File
     {
         if (false === $this->security->isGranted(MessageVoter::ATTRIBUTE_ATTACH_FILE, $message)) {
             throw new AccessDeniedException();
@@ -142,7 +149,7 @@ class FileInputDataTransformer
             $file = new File();
         }
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $this->getCurrentUser(), $file, [], $this->getCompanyFromSecurityContext());
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $user, $file, [], $this->getCurrentCompany());
 
         $messagesToBeAttached = [$message];
 
@@ -164,6 +171,7 @@ class FileInputDataTransformer
     /**
      * @param Project   $project
      * @param FileInput $fileInput
+     * @param User      $user
      * @param File|null $file
      *
      * @throws EnvironmentIsBrokenException
@@ -175,11 +183,17 @@ class FileInputDataTransformer
      *
      * @return File
      */
-    private function uploadForProjectFile(Project $project, FileInput $fileInput, ?File $file): File
+    private function uploadForProjectFile(Project $project, FileInput $fileInput, User $user, ?File $file): File
     {
+        $currentStaff = $this->getCurrentStaff();
+
+        if (false === ($currentStaff instanceof Staff)) {
+            throw new AccessDeniedException(sprintf('Cannot add new project file if there is no staff attached to logged user'));
+        }
+
         if (null === $file) {
             $file        = new File();
-            $projectFile = new ProjectFile($fileInput->type, $file, $project, $this->getCurrentStaff());
+            $projectFile = new ProjectFile($fileInput->type, $file, $project, $currentStaff);
 
             if (false === $this->security->isGranted(ProjectFileVoter::ATTRIBUTE_CREATE, $projectFile)) {
                 throw new AccessDeniedException();
@@ -203,10 +217,10 @@ class FileInputDataTransformer
 
         $this->fileUploadManager->upload(
             $fileInput->uploadedFile,
-            $this->getCurrentUser(),
+            $user,
             $file,
             ['projectId' => $projectFile->getProject()->getId()],
-            $this->getCompanyFromSecurityContext()
+            $this->getCurrentCompany()
         );
 
         $this->projectFileRepository->save($projectFile);
@@ -217,6 +231,7 @@ class FileInputDataTransformer
     /**
      * @param Project   $project
      * @param FileInput $fileInput
+     * @param User      $user
      * @param File|null $file
      *
      * @throws EnvironmentIsBrokenException
@@ -227,7 +242,7 @@ class FileInputDataTransformer
      *
      * @return File
      */
-    private function uploadForProject(Project $project, FileInput $fileInput, ?File $file): File
+    private function uploadForProject(Project $project, FileInput $fileInput, User $user, ?File $file): File
     {
         if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
             throw new AccessDeniedException();
@@ -260,7 +275,7 @@ class FileInputDataTransformer
                 throw new \InvalidArgumentException(sprintf('You cannot upload the file of the type %s.', $fileInput->type));
         }
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $this->getCurrentUser(), $file, ['projectId' => $project->getId()], $this->getCompanyFromSecurityContext());
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $user, $file, ['projectId' => $project->getId()], $this->getCurrentCompany());
 
         $this->projectRepository->save($project);
 
@@ -270,6 +285,7 @@ class FileInputDataTransformer
     /**
      * @param ProjectParticipation $projectParticipation
      * @param FileInput            $fileInput
+     * @param User                 $user
      * @param File|null            $file
      *
      * @throws EnvironmentIsBrokenException
@@ -280,7 +296,7 @@ class FileInputDataTransformer
      *
      * @return File
      */
-    private function uploadProjectParticipationNda(ProjectParticipation $projectParticipation, FileInput $fileInput, ?File $file)
+    private function uploadProjectParticipationNda(ProjectParticipation $projectParticipation, FileInput $fileInput, User $user, ?File $file)
     {
         if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $projectParticipation->getProject())) {
             throw new AccessDeniedException();
@@ -297,10 +313,10 @@ class FileInputDataTransformer
 
         $this->fileUploadManager->upload(
             $fileInput->uploadedFile,
-            $this->getCurrentUser(),
+            $user,
             $file,
             ['projectParticipationId' => $projectParticipation->getId()],
-            $this->getCompanyFromSecurityContext()
+            $this->getCurrentCompany()
         );
 
         $projectParticipation->setNda($file);
@@ -325,51 +341,22 @@ class FileInputDataTransformer
     }
 
     /**
-     * @return Staff
+     * @return Staff|null
      */
-    private function getCurrentStaff(): Staff
+    private function getCurrentStaff(): ?Staff
     {
-        $user         = $this->getCurrentUser();
-        $currentStaff = $user->getCurrentStaff();
+        $token = $this->security->getToken();
 
-        if (false === $currentStaff instanceof Staff) {
-            throw new AccessDeniedHttpException('Attempt to transform fileInput into file without valid staff');
-        }
-
-        return $currentStaff;
+        return $token ? $token->getAttribute('staff') : null;
     }
 
     /**
      * @return Company|null
      */
-    private function getCompanyFromSecurityContext(): ?Company
+    private function getCurrentCompany(): ?Company
     {
-        $user = $this->security->getUser();
+        $staff = $this->getCurrentStaff();
 
-        if (false === ($user instanceof User)) {
-            return null;
-        }
-
-        $staff = $user->getCurrentStaff();
-
-        if (false === ($staff instanceof Staff)) {
-            return null;
-        }
-
-        return $staff->getCompany();
-    }
-
-    /**
-     * @return User
-     */
-    private function getCurrentUser(): User
-    {
-        $user = $this->security->getUser();
-
-        if (false === $user instanceof User) {
-            throw new AccessDeniedHttpException('Attempt to transform fileInput into file without valid user');
-        }
-
-        return $user;
+        return $staff ? $staff->getCompany() : null;
     }
 }
