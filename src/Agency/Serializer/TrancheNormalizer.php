@@ -14,7 +14,7 @@ use Unilend\Agency\Entity\Tranche;
 
 class TrancheNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
-    use DenormalizerAwareTrait;
+    use NestedDenormalizationTrait;
 
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
@@ -33,17 +33,17 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     {
         $context[static::ALREADY_CALLED] = true;
 
-        $nestedProperties = ['allocations', 'borrowerShares'];
+        return $this->nestedDenormalize($data, $type, $format, $context, ['allocations', 'borrowerShares']);
+    }
 
-        /** @var Tranche $denormalized */
-        $denormalized = $this->denormalizer->denormalize(array_diff_key($data, array_flip($nestedProperties)), $type, $format, $context);
-
-        $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $denormalized;
+    /**
+     * @inheritDoc
+     */
+    protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
+    {
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][BorrowerTrancheShare::class]['tranche'] = $denormalized;
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ParticipationTrancheAllocation::class]['tranche'] = $denormalized;
 
-        $denormalized = $this->denormalizer->denormalize(array_intersect_key($data, array_flip($nestedProperties)), $type, $format, $context);
-
-        return $denormalized;
+        return $context;
     }
 }

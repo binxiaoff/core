@@ -14,16 +14,16 @@ use Unilend\Agency\Entity\MarginRule;
 
 class MarginRuleNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
-    use DenormalizerAwareTrait;
+    use NestedDenormalizationTrait;
 
-    private const ALREADY_CALLED_DENORMALIZER = __CLASS__ . '_ALREADY_CALLED_DENORMALIZER';
+    private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED_DENORMALIZER';
 
     /**
      * @inheritDoc
      */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
-        return !isset($context[static::ALREADY_CALLED_DENORMALIZER]) && $type === MarginRule::class;
+        return !isset($context[static::ALREADY_CALLED]) && $type === MarginRule::class;
     }
 
     /**
@@ -31,19 +31,18 @@ class MarginRuleNormalizer implements ContextAwareDenormalizerInterface, Denorma
      */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
-        $context[static::ALREADY_CALLED_DENORMALIZER] = true;
+        $context[static::ALREADY_CALLED] = true;
 
-        $marginImpacts = $data['impacts'] ?? [];
-        unset($data['impacts']);
+        return $this->nestedDenormalize($data, $type, $format, $context, ['impacts']);
+    }
 
-        /** @var Covenant $covenant */
-        $marginRule = $this->denormalizer->denormalize($data, $type, $format, $context);
+    /**
+     * @inheritDoc
+     */
+    protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
+    {
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][MarginImpact::class]['rule'] = $denormalized;
 
-        $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $marginRule;
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][MarginImpact::class]['rule'] = $marginRule;
-
-        $marginRule = $this->denormalizer->denormalize(['impacts' => $marginImpacts], $type, $format, $context);
-
-        return $marginRule;
+        return $context;
     }
 }

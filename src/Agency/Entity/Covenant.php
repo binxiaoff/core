@@ -28,18 +28,18 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *
  * @ApiResource(
  *     attributes={
- *        "validation_groups": {Covenant::class, "getCurrentValidationGroups"}
+ *         "validation_groups": {Covenant::class, "getCurrentValidationGroups"}
  *     },
  *     normalizationContext={
- *          "groups": {"agency:covenant:read", "agency:inequality:read"}
+ *         "groups": {"agency:covenant:read", "agency:inequality:read"}
  *     },
  *     itemOperations={
  *         "get": {
- *              "security": "is_granted('view', object)"
+ *             "security": "is_granted('view', object)"
  *         },
  *         "patch": {
  *             "denormalization_context": {
- *                  "groups": {"agency:covenant:update"}
+ *                 "groups": {"agency:covenant:update"}
  *             },
  *             "security_denormalize": "is_granted('edit', object)"
  *         },
@@ -50,13 +50,13 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *     collectionOperations={
  *         "post": {
  *             "denormalization_context": {
- *                  "groups": {
- *                      "agency:covenant:create",
- *                      "agency:covenantRule:create",
- *                      "agency:marginRule:create",
- *                      "agency:marginImpact:create",
- *                      "agency:inequality:write",
- *                  }
+ *                 "groups": {
+ *                     "agency:covenant:create",
+ *                     "agency:covenantRule:create",
+ *                     "agency:marginRule:create",
+ *                     "agency:marginImpact:create",
+ *                     "agency:inequality:write",
+ *                 }
  *             },
  *             "security_post_denormalize": "is_granted('create', object)"
  *         }
@@ -67,11 +67,11 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *     filterClass=GroupFilter::class,
  *     arguments={
  *         "whitelist": {
- *              "agency:covenantRule:read",
- *              "agency:marginRule:read",
- *              "agency:marginImpact:read",
- *              "agency:term:read",
- *          }
+ *             "agency:covenantRule:read",
+ *             "agency:marginRule:read",
+ *             "agency:marginImpact:read",
+ *             "agency:term:read",
+ *         }
  *     }
  * )
  */
@@ -81,10 +81,10 @@ class Covenant
     use ConstantsAwareTrait;
     use TimestampableAddedOnlyTrait;
 
-    public const NATURE_DOCUMENT           = 'document';
-    public const NATURE_CONTROL            = 'control';
-    public const NATURE_FINANCIAL_ELEMENT  = 'financial_element';
-    public const NATURE_FINANCIAL_RATIO    = 'financial_ratio';
+    public const NATURE_DOCUMENT          = 'document';
+    public const NATURE_CONTROL           = 'control';
+    public const NATURE_FINANCIAL_ELEMENT = 'financial_element';
+    public const NATURE_FINANCIAL_RATIO   = 'financial_ratio';
 
     public const RECURRENCE_3M  = 'P3M';
     public const RECURRENCE_6M  = 'P6M';
@@ -203,12 +203,12 @@ class Covenant
     /**
      * @var CovenantRule[]|Collection
      *
-     * @ORM\OneToMany(targetEntity=CovenantRule::class, mappedBy="covenant", indexBy="year", fetch="EAGER", cascade={"persist", "remove"})
-     * @ORM\OrderBy({"year" = "ASC"})
+     * @ORM\OneToMany(targetEntity=CovenantRule::class, mappedBy="covenant", indexBy="year", cascade={"persist", "remove"})
+     * @ORM\OrderBy({"year": "ASC"})
      *
      * @Assert\Valid
      * @Assert\All({
-     *    @Assert\Expression("value.getCovenant() === this")
+     *     @Assert\Expression("value.getCovenant() === this")
      * })
      *
      * @Groups({"agency:covenant:read", "agency:covenant:create"})
@@ -230,7 +230,7 @@ class Covenant
      * @var Collection|Term[]
      *
      * @ORM\OneToMany(targetEntity=Term::class, cascade={"persist", "remove"}, mappedBy="covenant")
-     * @ORM\OrderBy({"startDate"="ASC"})
+     * @ORM\OrderBy({"startDate": "ASC"})
      *
      * @Assert\Count(min=1, groups={"published"})
      *
@@ -238,7 +238,7 @@ class Covenant
      *
      * @Assert\Valid
      * @Assert\All({
-     *    @Assert\Expression("value.getCovenant() === this")
+     *     @Assert\Expression("value.getCovenant() === this")
      * })
      */
     private Collection $terms;
@@ -250,11 +250,11 @@ class Covenant
      *
      * @Assert\Valid
      * @Assert\AtLeastOneOf({
-     *   @Assert\Expression("this.isFinancial()"),
-     *   @Assert\Count(0),
+     *     @Assert\Expression("this.isFinancial()"),
+     *     @Assert\Count(0),
      * })
      * @Assert\All({
-     *    @Assert\Expression("value.getCovenant() === this")
+     *     @Assert\Expression("value.getCovenant() === this")
      * })
      *
      * @Groups({"agency:covenant:read", "agency:covenant:create"})
@@ -273,18 +273,18 @@ class Covenant
      */
     public function __construct(Project $project, string $name, string $nature, DateTimeImmutable $startDate, int $delay, DateTimeImmutable $endDate)
     {
-        $this->project           = $project;
-        $this->name              = $name;
-        $this->nature            = $nature;
-        $this->startDate         = $startDate;
-        $this->delay             = $delay;
-        $this->endDate           = $endDate;
-        $this->recurrence        = null;
-        $this->added             = new DateTimeImmutable();
-        $this->publicationDate   = null;
-        $this->terms             = new ArrayCollection();
-        $this->covenantRules = new ArrayCollection();
-        $this->marginRules   = new ArrayCollection();
+        $this->project         = $project;
+        $this->name            = $name;
+        $this->nature          = $nature;
+        $this->startDate       = $startDate;
+        $this->delay           = $delay;
+        $this->endDate         = $endDate;
+        $this->recurrence      = null;
+        $this->added           = new DateTimeImmutable();
+        $this->publicationDate = null;
+        $this->terms           = new ArrayCollection();
+        $this->covenantRules   = new ArrayCollection();
+        $this->marginRules     = new ArrayCollection();
     }
 
     /**
@@ -578,6 +578,7 @@ class Covenant
 
         return $this;
     }
+
     /**
      * @return string[]|iterable
      */
@@ -607,7 +608,8 @@ class Covenant
         if (0 !== $covenantRulesCount && (false === $this->isFinancial())) {
             $context->buildViolation('Agency.Covenant.covenantRules.otherNature')
                 ->atPath('covenantRules')
-                ->addViolation();
+                ->addViolation()
+            ;
         }
 
         // financial covenant must have 1 rule per year (including starting year)
@@ -617,7 +619,8 @@ class Covenant
                     $context->buildViolation('Agency.Covenant.covenantRules.missingYear')
                         ->atPath('covenantRules')
                         ->setParameter('{{ missingYear }}', (string) $year)
-                        ->addViolation();
+                        ->addViolation()
+                    ;
                 }
             }
         }
@@ -650,7 +653,7 @@ class Covenant
     }
 
     /**
-     * This method actually publish a covenant
+     * This method actually publish a covenant.
      *
      * @throws Exception
      *
@@ -675,7 +678,7 @@ class Covenant
         $datePeriod = new DatePeriod($this->startDate, new DateInterval($this->recurrence), $this->endDate);
 
         foreach ($datePeriod as $termStart) {
-            $termEnd = DateTimeImmutable::createFromFormat('U', (string) strtotime('+' . $this->delay . ' days', $termStart->getTimestamp()));
+            $termEnd       = DateTimeImmutable::createFromFormat('U', (string) strtotime('+' . $this->delay . ' days', $termStart->getTimestamp()));
             $this->terms[] = new Term($this, $termStart, $termEnd);
         }
 
@@ -699,7 +702,7 @@ class Covenant
     }
 
     /**
-     * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups
+     * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups.
      *
      * @param Covenant $covenant
      *

@@ -20,7 +20,7 @@ use Unilend\Agency\Entity\MarginRule;
 class CovenantNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface, NormalizerAwareInterface, ContextAwareNormalizerInterface
 {
     use ObjectToPopulateTrait;
-    use DenormalizerAwareTrait;
+    use NestedDenormalizationTrait;
     use NormalizerAwareTrait;
 
     private const ALREADY_CALLED_NORMALIZER = __CLASS__ . '_ALREADY_CALLED_NORMALIZER';
@@ -46,31 +46,13 @@ class CovenantNormalizer implements ContextAwareDenormalizerInterface, Denormali
         $publication = $data['published'] ?? false;
         unset($data['published']);
 
-        $denormalizeData = [];
-        if (array_key_exists('covenantRules', $data)) {
-            $denormalizeData['covenantRules'] = $data['covenantRules'] ?? [];
-            unset($data['covenantRules']);
+        $denormalized = $this->nestedDenormalize($data, $type, $format, $context, ['covenantRules', 'marginRules']);
+
+        if ($publication && $denormalized && (false === $denormalized->isPublished())) {
+            $denormalized->publish();
         }
 
-        if (array_key_exists('marginRules', $data)) {
-            $denormalizeData['marginRules'] = $data['marginRules'] ?? [];
-            unset($data['marginRules']);
-        }
-
-        /** @var Covenant $covenant */
-        $covenant = $this->denormalizer->denormalize($data, $type, $format, $context);
-
-        if ($publication && $covenant && (false === $covenant->isPublished())) {
-            $covenant->publish();
-        }
-
-        $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $covenant;
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][CovenantRule::class]['covenant'] = $covenant;
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][MarginRule::class]['covenant'] = $covenant;
-
-        $covenant = $this->denormalizer->denormalize($denormalizeData, $type, $format, $context);
-
-        return $covenant;
+        return $denormalized;
     }
 
     /**
@@ -97,5 +79,16 @@ class CovenantNormalizer implements ContextAwareDenormalizerInterface, Denormali
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
         return $data instanceof Covenant && !isset($context[static::ALREADY_CALLED_NORMALIZER]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
+    {
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][CovenantRule::class]['covenant'] = $denormalized;
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][MarginRule::class]['covenant'] = $denormalized;
+
+        return $context;
     }
 }

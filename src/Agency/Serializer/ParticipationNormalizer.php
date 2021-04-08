@@ -14,7 +14,7 @@ use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 
 class ParticipationNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
-    use DenormalizerAwareTrait;
+    use NestedDenormalizationTrait;
 
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
@@ -40,16 +40,16 @@ class ParticipationNormalizer implements ContextAwareDenormalizerInterface, Deno
     {
         $context[static::ALREADY_CALLED] = true;
 
-        $nestedProperties = ['allocations'];
+        return $this->nestedDenormalize($data, $type, $format, $context, ['allocation']);
+    }
 
-        /** @var Participation $denormalized */
-        $denormalized = $this->denormalizer->denormalize(array_diff_key($data, array_flip($nestedProperties)), $type, $format, $context);
-
-        $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $denormalized;
+    /**
+     * @inheritDoc
+     */
+    protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
+    {
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ParticipationTrancheAllocation::class]['participation'] = $denormalized;
 
-        $denormalized = $this->denormalizer->denormalize(array_intersect_key($data, array_flip($nestedProperties)), $type, $format, $context);
-
-        return $denormalized;
+        return $context;
     }
 }
