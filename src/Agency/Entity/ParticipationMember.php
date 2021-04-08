@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Action\NotFoundAction;
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Entity\User;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
@@ -45,6 +45,15 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *     @ORM\UniqueConstraint(columns={"id_user", "id_participation"})
  * })
  * @ORM\Entity
+ *
+ * @ApiFilter(
+ *     filterClass=GroupFilter::class,
+ *     arguments={
+ *         "whitelist": {
+ *             "user:read"
+ *         }
+ *     }
+ * )
  */
 class ParticipationMember
 {
@@ -97,7 +106,7 @@ class ParticipationMember
     /**
      * @var string|null
      *
-     * @Groups({"agency:borrowerMember:read", "agency:participationMember:write"})
+     * @Groups({"agency:participationMember:read", "agency:participationMember:write"})
      *
      * @Assert\Length(max=200)
      *
