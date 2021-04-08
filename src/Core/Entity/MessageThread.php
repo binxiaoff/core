@@ -4,43 +4,47 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiProperty, ApiResource};
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
-use Unilend\Syndication\Entity\{Project, ProjectParticipation};
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectParticipation;
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="core_message_thread")
  *
  * @ApiResource(
- *  attributes={"pagination_enabled": false},
- *  normalizationContext={"groups": {
- *      "messageThread:read",
- *      "message:read",
- *      "messageStatus:read",
- *      "messageFile:read",
- *      "staff:read",
- *      "company:read",
- *      "timestampable:read",
- *      "file:read",
- *      "user:read",
- *      "fileVersion:read",
- *      "companyGroupTag:read"
- *  }},
- *  itemOperations={
- *      "get": {
- *          "security": "is_granted('view', object)"
- *      }
- *  },
- *  collectionOperations={
- *      "get"
- *  }
+ *     attributes={"pagination_enabled": false},
+ *     normalizationContext={"groups": {
+ *         "messageThread:read",
+ *         "message:read",
+ *         "messageStatus:read",
+ *         "messageFile:read",
+ *         "staff:read",
+ *         "company:read",
+ *         "timestampable:read",
+ *         "file:read",
+ *         "user:read",
+ *         "fileVersion:read",
+ *         "companyGroupTag:read"
+ *     }},
+ *     itemOperations={
+ *         "get": {
+ *             "security": "is_granted('view', object)"
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "get"
+ *     }
  * )
  * @ApiFilter(SearchFilter::class, properties={"projectParticipation.publicId": "exact"})
  */
@@ -137,7 +141,7 @@ class MessageThread
      */
     public function getParticipantName(): string
     {
-        return $this->projectParticipation->getParticipant()->getCompanyName();
+        return $this->projectParticipation->getParticipant()->getDisplayName();
     }
 
     /**
