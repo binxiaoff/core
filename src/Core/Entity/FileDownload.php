@@ -6,6 +6,7 @@ namespace Unilend\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Core\Entity\Traits\IdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
@@ -15,15 +16,7 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 class FileDownload
 {
     use TimestampableAddedOnlyTrait;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    private int $id;
+    use IdentityTrait;
 
     /**
      * @var FileVersion
@@ -41,12 +34,12 @@ class FileDownload
     private string $type;
 
     /**
-     * @var Staff
+     * @var User
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
      * @ORM\JoinColumn(name="added_by", referencedColumnName="id", nullable=false)
      */
-    private $addedBy;
+    private User $addedBy;
 
     /**
      * @var Company|null
