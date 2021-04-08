@@ -9,9 +9,9 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
@@ -48,7 +48,7 @@ class FileVersion
      *
      * @ORM\Column(length=191)
      */
-    private $path;
+    private string $path;
 
     /**
      * @var string
@@ -57,7 +57,7 @@ class FileVersion
      *
      * @Groups({"fileVersion:read"})
      */
-    private $originalName;
+    private string $originalName;
 
     /**
      * @var FileVersionSignature[]
@@ -77,7 +77,7 @@ class FileVersion
      *
      * @Groups({"fileVersion:read"})
      */
-    private $size;
+    private int $size;
 
     /**
      * @var Collection|FileDownload[]
@@ -90,33 +90,33 @@ class FileVersion
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\File", inversedBy="fileVersions")
      * @ORM\JoinColumn(name="id_file", nullable=false)
      */
-    private $file;
+    private File $file;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $fileSystem;
+    private string $fileSystem;
 
     /**
-     * @var|null string
+     * @var string|null string
      *
      * @ORM\Column(length=512, nullable=true)
      */
-    private $encryptionKey;
+    private ?string $encryptionKey;
 
     /**
      * @var string|null
      */
-    private $plainEncryptionKey;
+    private ?string $plainEncryptionKey;
 
     /**
-     * @var|null string
+     * @var string|null string
      *
      * @ORM\Column(length=150, nullable=true)
      *
      * @Groups({"fileVersion:read"})
      */
-    private $mimeType;
+    private ?string $mimeType;
 
     /**
      * @var User
@@ -143,7 +143,7 @@ class FileVersion
      * @param string|null  $mimeType
      * @param Company|null $company
      */
-    public function __construct(string $path, User $addedBy, File $file, string $fileSystem, ?string $plainEncryptionKey, ?string $mimeType, ?Company $company = null)
+    public function __construct(string $path, User $addedBy, File $file, string $fileSystem, ?string $plainEncryptionKey = null, ?string $mimeType = null, ?Company $company = null)
     {
         $this->signatures           = new ArrayCollection();
         $this->fileVersionDownloads = new ArrayCollection();
@@ -153,6 +153,7 @@ class FileVersion
         $this->added                = new DateTimeImmutable();
         $this->fileSystem           = $fileSystem;
         $this->plainEncryptionKey   = $plainEncryptionKey;
+        $this->encryptionKey        = null;
         $this->mimeType             = $mimeType;
         $this->company              = $company;
     }
