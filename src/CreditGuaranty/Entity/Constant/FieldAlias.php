@@ -12,7 +12,8 @@ class FieldAlias extends AbstractEnum
     public const BORROWER_TYPE       = 'borrower_type';
     public const INVESTMENT_THEMATIC = 'investment_thematic';
     public const FUNDING_OBJECT      = 'funding_object';
-    public const NAF_CODE            = 'naf_code';
+    public const NAF_CODE_PROJECT    = 'naf_code_project';
+    public const NAF_CODE_COMPANY    = 'naf_code_company';
     public const LOAN_DURATION       = 'loan_duration';
 
     // Pre-defined list
