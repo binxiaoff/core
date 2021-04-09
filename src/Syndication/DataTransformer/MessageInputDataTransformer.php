@@ -95,7 +95,7 @@ class MessageInputDataTransformer implements DataTransformerInterface
             throw new AccessDeniedException();
         }
 
-        if (($entity instanceof Project) && false === $this->projectManager->isArranger($entity, $this->security->getUser()->getCurrentStaff())) {
+        if (($entity instanceof Project) && $entity->getArranger() === $user->getCompany()) {
             throw new AccessDeniedException();
         }
 
