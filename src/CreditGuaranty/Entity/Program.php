@@ -182,8 +182,6 @@ class Program implements TraceableStatusAwareInterface
     private Collection $statuses;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(length=60, nullable=true)
      *
      * @Assert\Choice(callback={CARatingType::class, "getConstList"})
@@ -198,6 +196,16 @@ class Program implements TraceableStatusAwareInterface
      * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramGradeAllocation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
      */
     private Collection $programGradeAllocations;
+
+    /**
+     * @ORM\Column(type="smallint", nullable=true)
+     * The max of a signed "smallint" is 32767
+     * @Assert\Range(min="1", max="32767")
+     * @Assert\NotBlank(allowNull=true)
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     */
+    private ?int $reservationDuration;
 
     /***************
      * Subresource *
@@ -493,6 +501,26 @@ class Program implements TraceableStatusAwareInterface
         }
 
         $this->ratingType = $ratingType;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getReservationDuration(): ?int
+    {
+        return $this->reservationDuration;
+    }
+
+    /**
+     * @param int|null $reservationDuration
+     *
+     * @return Program
+     */
+    public function setReservationDuration(?int $reservationDuration): Program
+    {
+        $this->reservationDuration = $reservationDuration;
 
         return $this;
     }
