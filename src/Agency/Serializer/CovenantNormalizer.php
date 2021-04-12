@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Unilend\Agency\Serializer;
 
 use Exception;
-use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
-    ContextAwareDenormalizerInterface,
-    ContextAwareNormalizerInterface,
-    DenormalizerAwareInterface,
-    DenormalizerAwareTrait,
-    NormalizerAwareInterface,
-    NormalizerAwareTrait,
-    ObjectToPopulateTrait};
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
 use Unilend\Agency\Entity\Covenant;
 use Unilend\Agency\Entity\CovenantRule;
 use Unilend\Agency\Entity\MarginRule;
@@ -23,19 +22,19 @@ class CovenantNormalizer implements ContextAwareDenormalizerInterface, Denormali
     use NestedDenormalizationTrait;
     use NormalizerAwareTrait;
 
-    private const ALREADY_CALLED_NORMALIZER = __CLASS__ . '_ALREADY_CALLED_NORMALIZER';
+    private const ALREADY_CALLED_NORMALIZER   = __CLASS__ . '_ALREADY_CALLED_NORMALIZER';
     private const ALREADY_CALLED_DENORMALIZER = __CLASS__ . '_ALREADY_CALLED_DENORMALIZER';
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
-        return !isset($context[static::ALREADY_CALLED_DENORMALIZER]) && $type === Covenant::class;
+        return !isset($context[static::ALREADY_CALLED_DENORMALIZER]) && Covenant::class === $type;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws Exception
      */
@@ -56,7 +55,7 @@ class CovenantNormalizer implements ContextAwareDenormalizerInterface, Denormali
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function normalize($object, string $format = null, array $context = [])
     {
@@ -74,7 +73,7 @@ class CovenantNormalizer implements ContextAwareDenormalizerInterface, Denormali
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
@@ -82,12 +81,12 @@ class CovenantNormalizer implements ContextAwareDenormalizerInterface, Denormali
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
     {
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][CovenantRule::class]['covenant'] = $denormalized;
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][MarginRule::class]['covenant'] = $denormalized;
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][MarginRule::class]['covenant']   = $denormalized;
 
         return $context;
     }

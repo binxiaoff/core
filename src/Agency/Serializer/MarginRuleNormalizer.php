@@ -7,8 +7,6 @@ namespace Unilend\Agency\Serializer;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
-use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
-use Unilend\Agency\Entity\Covenant;
 use Unilend\Agency\Entity\MarginImpact;
 use Unilend\Agency\Entity\MarginRule;
 
@@ -19,15 +17,15 @@ class MarginRuleNormalizer implements ContextAwareDenormalizerInterface, Denorma
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED_DENORMALIZER';
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
-        return !isset($context[static::ALREADY_CALLED]) && $type === MarginRule::class;
+        return !isset($context[static::ALREADY_CALLED]) && MarginRule::class === $type;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
@@ -37,7 +35,7 @@ class MarginRuleNormalizer implements ContextAwareDenormalizerInterface, Denorma
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
     {

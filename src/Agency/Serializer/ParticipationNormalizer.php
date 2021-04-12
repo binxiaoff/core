@@ -8,7 +8,6 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
-use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Unilend\Agency\Entity\Participation;
 use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 
@@ -19,7 +18,7 @@ class ParticipationNormalizer implements ContextAwareDenormalizerInterface, Deno
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
@@ -32,9 +31,9 @@ class ParticipationNormalizer implements ContextAwareDenormalizerInterface, Deno
      * @param string|null $format
      * @param array       $context
      *
-     * @return Participation
-     *
      * @throws ExceptionInterface
+     *
+     * @return Participation
      */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
@@ -44,7 +43,7 @@ class ParticipationNormalizer implements ContextAwareDenormalizerInterface, Deno
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
     {

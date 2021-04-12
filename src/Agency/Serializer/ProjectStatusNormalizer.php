@@ -10,15 +10,15 @@ use Unilend\Agency\Entity\ProjectStatus;
 class ProjectStatusNormalizer implements NormalizerInterface
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function normalize($object, string $format = null, array $context = [])
     {
-        return  $object->getStatus();
+        return $object->getStatus();
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsNormalization($data, string $format = null)
     {

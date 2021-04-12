@@ -13,15 +13,23 @@ trait NestedDenormalizationTrait
     use DenormalizerAwareTrait;
 
     /**
-     * @param                       $data
+     * @param $denormalized
+     * @param array $context
+     *
+     * @return array
+     */
+    abstract protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array;
+
+    /**
+     * @param             $data
      * @param string      $type
      * @param string|null $format
      * @param array       $context
      * @param array       $nestedProperties
      *
-     * @return mixed
-     *
      * @throws ExceptionInterface
+     *
+     * @return mixed
      */
     private function nestedDenormalize($data, string $type, ?string $format = null, array $context = [], $nestedProperties = [])
     {
@@ -39,12 +47,4 @@ trait NestedDenormalizationTrait
 
         return $denormalized;
     }
-
-    /**
-     * @param $denormalized
-     * @param array $context
-     *
-     * @return array
-     */
-    abstract protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array;
 }

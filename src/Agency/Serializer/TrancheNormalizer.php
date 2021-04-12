@@ -7,7 +7,6 @@ namespace Unilend\Agency\Serializer;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
-use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Unilend\Agency\Entity\BorrowerTrancheShare;
 use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 use Unilend\Agency\Entity\Tranche;
@@ -19,7 +18,7 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
@@ -27,7 +26,7 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
@@ -37,11 +36,11 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
     {
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][BorrowerTrancheShare::class]['tranche'] = $denormalized;
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][BorrowerTrancheShare::class]['tranche']           = $denormalized;
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ParticipationTrancheAllocation::class]['tranche'] = $denormalized;
 
         return $context;

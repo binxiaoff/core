@@ -19,7 +19,6 @@ class ProjectNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     use ObjectToPopulateTrait;
     use DenormalizerAwareTrait;
 
-
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
     private Security $security;
@@ -33,15 +32,15 @@ class ProjectNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
-        return !isset($context[static::ALREADY_CALLED]) && $type === Project::class;
+        return !isset($context[static::ALREADY_CALLED]) && Project::class === $type;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
