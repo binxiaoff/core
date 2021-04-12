@@ -16,6 +16,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\User;
@@ -197,6 +198,21 @@ class Participation
     private Collection $allocations;
 
     /**
+     * @ORM\Column(type="boolean")
+     *
+     * @Groups({"agency:participation:read", "agency:participation:write"})
+     */
+    private bool $secondary;
+
+    /**
+     * @var Drive
+     *
+     * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
+     * @ORM\JoinColumn(name="id_personal_drive", nullable=false, unique=true)
+     */
+    private Drive $personalDrive;
+
+    /**
      * @ORM\OneToOne(targetEntity=ParticipationMember::class)
      * @ORM\JoinColumn(name="id_referent", onDelete="SET NULL")
      *
@@ -244,6 +260,7 @@ class Participation
         $this->allocations              = new ArrayCollection();
         $this->archivingDate            = null;
         $this->members                  = new ArrayCollection();
+        $this->personalDrive            = new Drive();
     }
 
     public function getParticipant(): Company
@@ -478,6 +495,14 @@ class Participation
     public function getWaiverMembers(): iterable
     {
         return $this->getMemberByType(ParticipationMember::TYPE_WAIVER);
+    }
+
+    /**
+     * @return Drive
+     */
+    public function getPersonalDrive(): Drive
+    {
+        return $this->personalDrive;
     }
 
     /**
