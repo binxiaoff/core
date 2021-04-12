@@ -53,7 +53,7 @@ class StaffRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('s')
             ->innerJoin('s.user', 'u')
             ->innerJoin('s.team', 't')
-            ->innerJoin('t.incomingEdges', 'i')
+            ->leftJoin('t.incomingEdges', 'i')
             ->where(
                 'u.email = :email',
                 's.team = :rootTeam OR i.ancestor = :rootTeam'
