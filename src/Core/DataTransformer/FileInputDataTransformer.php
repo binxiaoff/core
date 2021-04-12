@@ -347,7 +347,7 @@ class FileInputDataTransformer
     {
         $token = $this->security->getToken();
 
-        return $token ? $token->getAttribute('staff') : null;
+        return $token && $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
     }
 
     /**
@@ -355,8 +355,8 @@ class FileInputDataTransformer
      */
     private function getCurrentCompany(): ?Company
     {
-        $staff = $this->getCurrentStaff();
+        $token = $this->security->getToken();
 
-        return $staff ? $staff->getCompany() : null;
+        return $token && $token->hasAttribute('company') ? $token->getAttribute('company') : null;
     }
 }
