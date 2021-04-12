@@ -16,7 +16,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Constant\Tranche\{CommissionType, LoanType, RepaymentType};
+use Unilend\Core\Entity\Constant\Tranche\CommissionType;
+use Unilend\Core\Entity\Constant\Tranche\LoanType;
+use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
@@ -35,7 +37,16 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *     },
  *     collectionOperations={
  *         "post": {
- *             "denormalization_context": {"groups": {"agency:tranche:create", "money:write", "nullableMoney:write", "lendingRate:write", "agency:borrowerTrancheShare:write"}},
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "agency:tranche:create",
+ *                     "agency:tranche:write",
+ *                     "money:write",
+ *                     "nullableMoney:write",
+ *                     "lendingRate:write",
+ *                     "agency:borrowerTrancheShare:write"
+ *                 }
+ *             },
  *             "security_post_denormalize": "is_granted('create', object)",
  *         }
  *     },
@@ -46,7 +57,15 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "output": false,
  *         },
  *         "patch": {
- *             "denormalization_context": {"groups": {"agency:tranche:update", "money:write", "nullableMoney:write", "lendingRate:write", "agency:borrowerTrancheShare:write"}},
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "agency:tranche:update",
+ *                     "agency:tranche:write",
+ *                     "money:write", "nullableMoney:write",
+ *                     "lendingRate:write",
+ *                     "agency:borrowerTrancheShare:write"
+ *                 }
+ *             },
  *             "security": "is_granted('edit', object)",
  *         },
  *         "delete": {
@@ -105,7 +124,7 @@ class Tranche
      * @Assert\NotBlank
      * @Assert\Length(max=30)
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private string $name;
 
@@ -114,7 +133,7 @@ class Tranche
      *
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private bool $syndicated;
 
@@ -127,7 +146,7 @@ class Tranche
      * @Assert\Length(max="255")
      * @Assert\Expression(expression="(!this.isSyndicated() && value) || !value", message="Agency.Tranche.thirdPartySyndicate.invalid")
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private ?string $thirdPartySyndicate;
 
@@ -140,7 +159,7 @@ class Tranche
      * @Assert\Regex(pattern="/#[0-9a-f]{3}([0-9a-f]{3})?/i", message="Syndication.Tranche.color.regex")
      * @Assert\NotBlank
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private string $color;
 
@@ -152,7 +171,7 @@ class Tranche
      * @Assert\NotBlank
      * @Assert\Choice(callback={LoanType::class, "getConstList"})
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private string $loanType;
 
@@ -164,7 +183,7 @@ class Tranche
      * @Assert\NotBlank
      * @Assert\Choice(callback={RepaymentType::class, "getConstList"})
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private string $repaymentType;
 
@@ -178,7 +197,7 @@ class Tranche
      * @Assert\GreaterThanOrEqual(1)
      * @Assert\NotBlank
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private int $duration;
 
@@ -190,7 +209,7 @@ class Tranche
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private Money $money;
 
@@ -201,7 +220,7 @@ class Tranche
      *
      * @Assert\Valid
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private NullableMoney $draw;
 
@@ -213,7 +232,7 @@ class Tranche
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private LendingRate $rate;
 
@@ -225,7 +244,7 @@ class Tranche
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Choice(callback={CommissionType::class, "getConstList"})
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private ?string $commissionType;
 
@@ -238,7 +257,7 @@ class Tranche
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private ?string $commissionRate;
 
@@ -247,7 +266,7 @@ class Tranche
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private ?string $comment;
 
@@ -256,10 +275,10 @@ class Tranche
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche", cascade={"persist", "remove"}, orphanRemoval=true)
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      *
      * @Assert\All({
-     *    @Assert\Expression("value.getTranche() === this")
+     *     @Assert\Expression("value.getTranche() === this")
      * })
      */
     private Collection $borrowerShares;
@@ -271,7 +290,7 @@ class Tranche
      *
      * @Assert\GreaterThanOrEqual(value="today")
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:create", "agency:tranche:update"})
+     * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private ?DateTimeImmutable $validityDate;
 
@@ -287,7 +306,7 @@ class Tranche
      *
      * @Assert\Valid
      * @Assert\All({
-     *    @Assert\Expression("value.getTranche() === this")
+     *     @Assert\Expression("value.getTranche() === this")
      * })
      *
      * @Groups({"agency:tranche:read"})
@@ -316,23 +335,23 @@ class Tranche
         Money $money,
         LendingRate $rate
     ) {
-        $this->project = $project;
-        $this->name = $name;
-        $this->syndicated = $syndicated;
+        $this->project             = $project;
+        $this->name                = $name;
+        $this->syndicated          = $syndicated;
         $this->thirdPartySyndicate = null;
-        $this->color = $color;
-        $this->loanType = $loanType;
-        $this->repaymentType = $repaymentType;
-        $this->duration = $duration;
-        $this->money = $money;
-        $this->rate = $rate;
-        $this->commissionType = null;
-        $this->commissionRate = null;
-        $this->comment = null;
-        $this->draw = new NullableMoney();
-        $this->borrowerShares = new ArrayCollection();
-        $this->validityDate = null;
-        $this->allocations = new ArrayCollection();
+        $this->color               = $color;
+        $this->loanType            = $loanType;
+        $this->repaymentType       = $repaymentType;
+        $this->duration            = $duration;
+        $this->money               = $money;
+        $this->rate                = $rate;
+        $this->commissionType      = null;
+        $this->commissionRate      = null;
+        $this->comment             = null;
+        $this->draw                = new NullableMoney();
+        $this->borrowerShares      = new ArrayCollection();
+        $this->validityDate        = null;
+        $this->allocations         = new ArrayCollection();
     }
 
     /**
@@ -426,7 +445,6 @@ class Tranche
     {
         return false === $this->isSyndicated() && null === $this->thirdPartySyndicate;
     }
-
 
     /**
      * @return string
@@ -695,7 +713,6 @@ class Tranche
         return $this;
     }
 
-
     /**
      * @param BorrowerTrancheShare $borrowerTrancheShare
      *
@@ -711,7 +728,7 @@ class Tranche
     /**
      * @param ExecutionContextInterface $context
      *
-     * @Assert\Callback()
+     * @Assert\Callback
      */
     public function validateCommission(ExecutionContextInterface $context)
     {
@@ -720,13 +737,15 @@ class Tranche
             && false === \in_array($this->getLoanType(), LoanType::getChargeableLoanTypes(), true)
         ) {
             $context->buildViolation('Agency.Tranche.commission.invalidLoanType')
-                ->addViolation();
+                ->addViolation()
+            ;
         }
 
         if (($this->getCommissionRate() || '0' === $this->getCommissionRate()) xor $this->getCommissionType()) {
             $context->buildViolation('Agency.Tranche.commission.incomplete')
                 ->atPath($this->getCommissionType() ? 'commissionRate' : 'commissionType')
-                ->addViolation();
+                ->addViolation()
+            ;
         }
     }
 }

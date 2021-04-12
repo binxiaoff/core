@@ -56,7 +56,7 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *         },
  *         "patch": {
  *             "denormalization_context": {
- *                 "groups": {"agency:borrower:update", "money:write"}
+ *                 "groups": {"agency:borrower:update", "agency:borrower:write", "money:write"}
  *             },
  *             "security_post_denormalize": "is_granted('edit', object)",
  *         }
@@ -98,7 +98,7 @@ class Borrower
      * @Assert\NotBlank
      * @Assert\Length(max="100")
      *
-     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:update"})
+     * @Groups({"agency:borrower:read", "agency:borrower:write"})
      */
     private string $corporateName;
 
@@ -107,7 +107,7 @@ class Borrower
      *
      * @Assert\NotBlank
      *
-     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:update"})
+     * @Groups({"agency:borrower:read", "agency:borrower:write"})
      */
     private string $legalForm;
 
@@ -115,7 +115,7 @@ class Borrower
      * @Assert\Valid
      * @Assert\NotBlank
      *
-     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:update"})
+     * @Groups({"agency:borrower:read", "agency:borrower:write"})
      *
      * @ORM\Embedded(class=Money::class)
      */
@@ -127,7 +127,7 @@ class Borrower
      * @Assert\Length(max="100")
      * @Assert\NotBlank
      *
-     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:update"})
+     * @Groups({"agency:borrower:read", "agency:borrower:write"})
      */
     private string $headquarterAddress;
 
@@ -139,7 +139,7 @@ class Borrower
      *
      * @AssertRcs
      *
-     * @Groups({"agency:borrower:read", "agency:borrower:create", "agency:borrower:update"})
+     * @Groups({"agency:borrower:read", "agency:borrower:write"})
      */
     private string $matriculationNumber;
 

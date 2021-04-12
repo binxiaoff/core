@@ -33,25 +33,25 @@ use Unilend\Core\Model\Bitmask;
  *     },
  *     collectionOperations={
  *         "post": {
- *              "denormalization_context": {
- *                  "groups": {"agency:participation:create", "money:write", "agency:participationTrancheAllocation:write"}
- *              },
+ *             "denormalization_context": {
+ *                 "groups": {"agency:participation:create", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}
+ *             },
  *             "security_post_denormalize": "is_granted('create', object)",
  *         }
  *     },
  *     itemOperations={
  *         "get",
  *         "patch": {
- *              "denormalization_context": {
- *                  "groups": {"agency:participation:update", "money:write", "agency:participationTrancheAllocation:write"}
- *              },
+ *             "denormalization_context": {
+ *                 "groups": {"agency:participation:update", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}
+ *             },
  *             "security_post_denormalize": "is_granted('edit', object)",
  *         }
  *     }
  * )
- * @ORM\Entity()
+ * @ORM\Entity
  * @ORM\Table(name="agency_participation", uniqueConstraints={
- *    @ORM\UniqueConstraint(columns={"id_project", "id_participant"})
+ *     @ORM\UniqueConstraint(columns={"id_project", "id_participant"})
  * })
  *
  * @UniqueEntity(fields={"project", "participant"})
@@ -72,8 +72,8 @@ class Participation
 {
     use PublicizeIdentityTrait;
 
-    public const RESPONSIBILITY_AGENT = 1 << 0;
-    public const RESPONSIBILITY_ARRANGER = 1 << 1;
+    public const RESPONSIBILITY_AGENT           = 1 << 0;
+    public const RESPONSIBILITY_ARRANGER        = 1 << 1;
     public const RESPONSIBILITY_DEPUTY_ARRANGER = 1 << 2;
 
     /**
@@ -111,7 +111,7 @@ class Participation
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      *
-     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:read", "agency:participation:write"})
      */
     private ?string $participantCommission;
 
@@ -127,7 +127,7 @@ class Participation
      *     message="Agency.Participation.responsabilities.agent"
      * )
      *
-     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:read", "agency:participation:write"})
      */
     private Bitmask $responsibilities;
 
@@ -141,7 +141,7 @@ class Participation
      * @Assert\PositiveOrZero
      * @Assert\Expression(expression="(null === value && false === this.isAgent()) || (null !== value && this.isAgent())", message="Agency.Participation.commission.agent")
      *
-     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:read", "agency:participation:write"})
      */
     private ?string $agentCommission;
 
@@ -156,7 +156,7 @@ class Participation
      *
      * @Assert\Expression(expression="null === value || false === this.isArranger()", message="Agency.Participant.commission.arranger")
      *
-     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:read", "agency:participation:write"})
      */
     private ?string $arrangerCommission;
 
@@ -171,7 +171,7 @@ class Participation
      *
      * @Assert\Expression(expression="null === value || false === this.isCoArranger()", message="Agency.Participant.commission.deputyArranger")
      *
-     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:read", "agency:participation:write"})
      */
     private ?string $deputyArrangerCommission;
 
@@ -180,7 +180,7 @@ class Participation
      *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
      *
-     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:read", "agency:participation:write"})
      *
      * @Assert\Valid
      */
@@ -191,7 +191,7 @@ class Participation
      *
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:read", "agency:participation:write"})
      */
     private bool $prorata;
 
@@ -203,10 +203,10 @@ class Participation
      * @Assert\Count(min="1", groups={"published"})
      * @Assert\Valid
      * @Assert\All({
-     *    @Assert\Expression("value.getParticipation() === this")
+     *     @Assert\Expression("value.getParticipation() === this")
      * })
      *
-     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:read", "agency:participation:write"})
      */
     private iterable $allocations;
 
@@ -215,7 +215,7 @@ class Participation
      *
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"agency:participation:update", "agency:participation:read", "agency:participation:create"})
+     * @Groups({"agency:participation:read", "agency:participation:write"})
      */
     private bool $secondary;
 
@@ -259,17 +259,17 @@ class Participation
         Money $finalAllocation,
         bool $secondary = false
     ) {
-        $this->responsibilities = new Bitmask(0);
-        $this->project = $project;
-        $this->finalAllocation = $finalAllocation;
-        $this->participant = $participant;
-        $this->secondary = $secondary;
-        $this->prorata = false;
-        $this->participantCommission = '0';
-        $this->arrangerCommission = null;
-        $this->agentCommission = null;
+        $this->responsibilities         = new Bitmask(0);
+        $this->project                  = $project;
+        $this->finalAllocation          = $finalAllocation;
+        $this->participant              = $participant;
+        $this->secondary                = $secondary;
+        $this->prorata                  = false;
+        $this->participantCommission    = '0';
+        $this->arrangerCommission       = null;
+        $this->agentCommission          = null;
         $this->deputyArrangerCommission = null;
-        $this->allocations = new ArrayCollection();
+        $this->allocations              = new ArrayCollection();
     }
 
     /**
@@ -555,7 +555,6 @@ class Participation
         return $this->referent;
     }
 
-
     /**
      * @param ParticipationMember $referent
      *
@@ -600,7 +599,7 @@ class Participation
     }
 
     /**
-     * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups
+     * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups.
      *
      * @param Participation $participation
      *
