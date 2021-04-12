@@ -8,15 +8,13 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\ORM\Id\AssignedGenerator;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectManager;
-use Faker\{Factory, Generator};
+use Faker\Factory;
+use Faker\Generator;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\Entity\Staff;
-
-use function get_class;
-use function is_string;
 
 abstract class AbstractFixtures extends Fixture
 {
@@ -30,7 +28,7 @@ abstract class AbstractFixtures extends Fixture
      */
     public function __construct(TokenStorageInterface $tokenStorage)
     {
-        $this->faker = Factory::create('fr_FR');
+        $this->faker        = Factory::create('fr_FR');
         $this->tokenStorage = $tokenStorage;
     }
 
@@ -42,7 +40,7 @@ abstract class AbstractFixtures extends Fixture
      */
     protected function forcePublicId($entity, string $value): void
     {
-        $ref = new ReflectionClass(get_class($entity));
+        $ref      = new ReflectionClass(get_class($entity));
         $property = $ref->getProperty('publicId');
         $property->setAccessible(true);
         $property->setValue($entity, $value);
@@ -58,14 +56,14 @@ abstract class AbstractFixtures extends Fixture
     protected function forceId(ObjectManager $manager, object $entity, int $value): void
     {
         $this->disableAutoIncrement($manager, $entity);
-        $ref = new ReflectionClass(get_class($entity));
+        $ref      = new ReflectionClass(get_class($entity));
         $property = $ref->getProperty('id');
         $property->setAccessible(true);
         $property->setValue($entity, $value);
     }
 
     /**
-     * Return multiple references
+     * Return multiple references.
      *
      * @param array $names
      *
@@ -91,7 +89,10 @@ abstract class AbstractFixtures extends Fixture
 
         $user->setCurrentStaff($staff);
 
-        $this->tokenStorage->setToken(new JWTUserToken($user->getRoles(), $user));
+        $token = new JWTUserToken($user->getRoles(), $user);
+        $token->setAttribute('staff', $staff);
+
+        $this->tokenStorage->setToken($token);
     }
 
     /**
@@ -103,7 +104,7 @@ abstract class AbstractFixtures extends Fixture
         if (!is_string($entity)) {
             $entity = get_class($entity);
         }
-        /** @var string $entity */
+        // @var string $entity
         [$type, $generator] = $this->idGenerator[$entity];
         unset($this->idGenerator[$entity]);
         $metadata = $manager->getClassMetadata($entity);

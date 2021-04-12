@@ -4,33 +4,29 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\IdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="agency_project_status", uniqueConstraints={
+ * @ORM\Table(name="agency_project_status_history", uniqueConstraints={
  *     @ORM\UniqueConstraint(columns={"id_project", "status"})
  * })
  *
  * @UniqueEntity(fields={"project", "status"})
  */
-class ProjectStatus
+class ProjectStatusHistory
 {
     use BlamableAddedTrait;
-
-    public const DRAFT = 10;
-
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer", nullable=false, unique=true)
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private ?int $id;
+    use IdentityTrait;
+    use TimestampableAddedOnlyTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="statuses")
@@ -44,14 +40,18 @@ class ProjectStatus
      * @ORM\Column(type="integer")
      *
      * @Groups({"agency:projectStatus:create"})
+     *
+     * @Assert\NotBlank
+     * @Assert\Choice(callback={Project::class, "getAvailableStatuses"})
      */
     private int $status;
 
-    public function __construct(Project $project, Staff $addedBy, int $status)
+    public function __construct(Project $project, Staff $addedBy)
     {
         $this->project = $project;
-        $this->status  = $status;
+        $this->status  = $project->getCurrentStatus();
         $this->addedBy = $addedBy;
+        $this->added   = new DateTimeImmutable();
     }
 
     public function getProject(): Project
