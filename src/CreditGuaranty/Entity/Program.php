@@ -554,9 +554,9 @@ class Program implements TraceableStatusAwareInterface
     /**
      * @return bool
      */
-    public function isCommercialized(): bool
+    public function isDistributed(): bool
     {
-        return $this->getCurrentStatus()->getStatus() === ProgramStatus::STATUS_COMMERCIALIZED;
+        return $this->getCurrentStatus()->getStatus() === ProgramStatus::STATUS_DISTRIBUTED;
     }
 
     /**

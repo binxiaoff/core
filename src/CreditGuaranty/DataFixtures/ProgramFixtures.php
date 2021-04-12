@@ -61,7 +61,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'companyGroupTag'      => Program::COMPANY_GROUP_TAG_AGRICULTURE,
                 'funds'                => ['currency' => 'EUR', 'amount' => '300000000'],
                 'addedBy'              => StaffFixtures::CASA,
-                'currentStatus'        => ProgramStatus::STATUS_COMMERCIALIZED,
+                'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,
                 'cappedAt'             => ['currency' => 'EUR', 'amount' => '100000'],
                 'description'          => 'La description pour la pogramme en brouillon',
                 'distributionDeadline' => new \DateTimeImmutable(),
@@ -92,7 +92,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
 
             $addedBy = $this->getReference($programDatum['addedBy']);
             if (ProgramStatus::STATUS_PAUSED === $programDatum['currentStatus']) {
-                $status = new ProgramStatus($program, ProgramStatus::STATUS_COMMERCIALIZED, $addedBy);
+                $status = new ProgramStatus($program, ProgramStatus::STATUS_DISTRIBUTED, $addedBy);
                 $manager->persist($status);
             }
 
