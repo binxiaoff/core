@@ -119,7 +119,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *                 "sharedDrive": "agentBorrower"
  *             },
  *             "normalization_context": {
- *                  "groups": {"folder:read"}
+ *                 "groups": {"folder:read"}
  *             }
  *         },
  *         "dataroom_shared_agency_principal_participant": {
@@ -134,7 +134,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *                 "sharedDrive": "agentPrincipalParticipant"
  *             },
  *             "normalization_context": {
- *                  "groups": {"folder:read"}
+ *                 "groups": {"folder:read"}
  *             }
  *         },
  *         "dataroom_shared_agency_secondary_participant": {
@@ -149,7 +149,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *                 "sharedDrive": "agentSecondaryParticipant"
  *             },
  *             "normalization_context": {
- *                  "groups": {"folder:read"}
+ *                 "groups": {"folder:read"}
  *             }
  *         },
  *         "dataroom_confidential": {
@@ -164,7 +164,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *                 "path": "/"
  *             },
  *             "normalization_context": {
- *                  "groups": {"folder:read"}
+ *                 "groups": {"folder:read"}
  *             }
  *         }
  *     }
@@ -525,6 +525,14 @@ class Project
     private ?ArrangementProject $source;
 
     /**
+     * @var Drive
+     *
+     * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
+     * @ORM\JoinColumn(name="id_borrower_drive", nullable=false, unique=true)
+     */
+    private Drive $borrowerDrive;
+
+    /**
      * @throws Exception
      */
     public function __construct(
@@ -577,6 +585,7 @@ class Project
         $this->agentBorrowerDrive             = new Drive();
         $this->agentPrincipalParticipantDrive = new Drive();
         $this->agentSecondaryParticipantDrive = new Drive();
+        $this->borrowerDrive                  = new Drive();
 
         $this->source = $source;
         if ($source) {
@@ -1082,5 +1091,13 @@ class Project
 
             next($statuses);
         }
+    }
+
+    /**
+     * @return Drive
+     */
+    public function getBorrowerDrive(): Drive
+    {
+        return $this->borrowerDrive;
     }
 }
