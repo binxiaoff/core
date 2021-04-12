@@ -10,7 +10,6 @@ return PhpCsFixer\Config::create()
         '@DoctrineAnnotation'                    => true,
         '@PHP74Migration'                        => true,
         '@PHPUnit75Migration:risky'              => true,
-        'no_superfluous_phpdoc_tags'             => false,
         'no_unused_imports'                      => true,
         'ordered_imports'                        => ['imports_order' => ['class', 'function', 'const'], 'sort_algorithm' => 'alpha'],
         'binary_operator_spaces'                 => ['default' => 'align_single_space_minimal'],
