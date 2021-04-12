@@ -9,26 +9,38 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Agency\Controller\Project\GetTerm;
 use Unilend\Agency\Entity\Versioned\VersionedProject;
-use Unilend\Core\Entity\Constant\SyndicationModality\{ParticipationType, RiskType, SyndicationType};
-use Unilend\Core\Entity\Constant\{CAInternalRating, FundingSpecificity};
-use Unilend\Core\Entity\Embeddable\{Money, NullableMoney, NullablePerson};
-use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Core\Entity\{Company, CompanyGroupTag, Drive, Staff};
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\CompanyGroupTag;
+use Unilend\Core\Entity\Constant\CAInternalRating;
+use Unilend\Core\Entity\Constant\FundingSpecificity;
+use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
+use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
+use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
+use Unilend\Core\Entity\Drive;
+use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Embeddable\NullablePerson;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Model\Bitmask;
 use Unilend\Core\Validator\Constraints\Siren;
 
 /**
  * @ApiResource(
  *     attributes={
- *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
+ *         "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *     },
  *     normalizationContext={
  *         "groups": {
@@ -45,12 +57,12 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
- *                  "groups": {
- *                       "agency:project:create",
- *                       "money:write",
- *                       "nullablePerson:write",
- *                       "nullableMoney:write"
- *                  }
+ *                 "groups": {
+ *                     "agency:project:create",
+ *                     "money:write",
+ *                     "nullablePerson:write",
+ *                     "nullableMoney:write"
+ *                 }
  *             },
  *         }
  *     },
@@ -67,14 +79,14 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
- *                  "groups": {
- *                      "agency:project:write",
- *                      "agency:projectStatus:create",
- *                      "money:write",
- *                      "nullablePerson:write",
- *                      "nullableMoney:write",
- *                      "agency:covenant:update"
- *                  }
+ *                 "groups": {
+ *                     "agency:project:write",
+ *                     "agency:projectStatus:create",
+ *                     "money:write",
+ *                     "nullablePerson:write",
+ *                     "nullableMoney:write",
+ *                     "agency:covenant:update"
+ *                 }
  *             },
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
@@ -101,7 +113,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *             "agency:covenant:read",
  *             "agency:term:read"
  *         }
- *    }
+ *     }
  * )
  */
 class Project
@@ -120,7 +132,7 @@ class Project
      *
      * @Groups({"agency:project:read"})
      *
-     * @Assert\NotBlank()
+     * @Assert\NotBlank
      */
     private Company $agent;
 
@@ -367,7 +379,7 @@ class Project
      *     groups={"published"}
      * ),
      * @Assert\Expression(
-     *     expression="(this.hasSilentSyndication()) or (false === this.hasSilentSyndication() and null === value)"),
+     * expression="(this.hasSilentSyndication()) or (false === this.hasSilentSyndication() and null === value)"),
      *     groups={"published"}
      * )
      *
@@ -384,7 +396,7 @@ class Project
      *
      * @Assert\Valid
      * @Assert\All({
-     *    @Assert\Expression("value.getProject() === this")
+     *     @Assert\Expression("value.getProject() === this")
      * })
      *
      * @ApiSubresource
@@ -403,7 +415,7 @@ class Project
      * @Assert\Valid
      * @Assert\Count(min="1", groups={"published"})
      * @Assert\All({
-     *    @Assert\Expression("value.getProject() === this")
+     *     @Assert\Expression("value.getProject() === this")
      * })
      */
     private iterable $borrowers;
@@ -485,7 +497,7 @@ class Project
      *
      * @Assert\Valid
      * @Assert\All({
-     *    @Assert\Expression("value.getProject() === this")
+     *     @Assert\Expression("value.getProject() === this")
      * })
      */
     private iterable $participations;
@@ -522,10 +534,10 @@ class Project
      *
      * @Assert\Valid
      * @Assert\All({
-     *    @Assert\Expression("value.getProject() === this")
+     *     @Assert\Expression("value.getProject() === this")
      * })
      *
-     * @ApiSubresource()
+     * @ApiSubresource
      */
     private Collection $covenants;
 
@@ -571,16 +583,17 @@ class Project
         DateTimeImmutable $closingDate,
         DateTimeImmutable $contractEndDate
     ) {
-        $this->added              = new DateTimeImmutable();
-        $this->addedBy            = $addedBy;
-        $this->agent              = $addedBy->getCompany();
+        $this->added   = new DateTimeImmutable();
+        $this->addedBy = $addedBy;
+        $this->agent   = $addedBy->getCompany();
 
         $currentUser         = $addedBy->getUser();
         $this->agencyContact = (new NullablePerson())
             ->setFirstName($currentUser->getFirstName())
             ->setLastName($currentUser->getLastName())
             ->setEmail($currentUser->getEmail())
-            ->setPhone($currentUser->getPhone());
+            ->setPhone($currentUser->getPhone())
+        ;
 
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
@@ -590,7 +603,7 @@ class Project
 
         $this->borrowers = new ArrayCollection();
         $this->tranches  = new ArrayCollection();
-        $participation = new Participation($this, $this->agent, new Money($this->globalFundingMoney->getCurrency()));
+        $participation   = new Participation($this, $this->agent, new Money($this->globalFundingMoney->getCurrency()));
         $participation->setResponsibilities(new Bitmask(Participation::RESPONSIBILITY_AGENT));
         $participation->setAgentCommission('0');
         $participation->setMembers(new ArrayCollection([new ParticipationMember($participation, $addedBy->getUser())]));
@@ -598,13 +611,13 @@ class Project
 
         $this->silentSyndication = false;
 
-        $this->principalSyndicationType = null;
+        $this->principalSyndicationType   = null;
         $this->principalParticipationType = null;
-        $this->principalRiskType = null;
+        $this->principalRiskType          = null;
 
-        $this->secondarySyndicationType = null;
+        $this->secondarySyndicationType   = null;
         $this->secondaryParticipationType = null;
-        $this->secondaryRiskType = null;
+        $this->secondaryRiskType          = null;
 
         $this->currentStatus = new ProjectStatus($this, $addedBy, ProjectStatus::DRAFT);
         $this->statuses      = new ArrayCollection([$this->currentStatus]);
@@ -613,7 +626,7 @@ class Project
         $this->agentDisplayName = $this->agent->getDisplayName();
         $this->agentSiren       = $this->agent->getSiren();
 
-        $this->agentBorrowerDrive = new Drive();
+        $this->agentBorrowerDrive             = new Drive();
         $this->agentPrincipalParticipantDrive = new Drive();
         $this->agentSecondaryParticipantDrive = new Drive();
     }
@@ -717,7 +730,6 @@ class Project
 
         return $this;
     }
-
 
     /**
      * @return NullableMoney|null
@@ -866,7 +878,6 @@ class Project
     {
         return $this->internalRatingScore;
     }
-
 
     /**
      * @param string|null $internalRatingScore
@@ -1282,7 +1293,6 @@ class Project
         return $this;
     }
 
-
     /**
      * @param Covenant $covenants
      *
@@ -1304,7 +1314,7 @@ class Project
     }
 
     /**
-     * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups
+     * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups.
      *
      * @param Project $project
      *
@@ -1315,7 +1325,7 @@ class Project
         $validationGroups = ['Default', 'Project'];
 
         if ($project->isPublished()) {
-            $validationGroups[] = ['published'];
+            $validationGroups[] = 'published';
         }
 
         return $validationGroups;
