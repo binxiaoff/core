@@ -35,7 +35,7 @@ class TermListener
 
         $uow = $em->getUnitOfWork();
 
-        $termClassMetadata = $em->getClassMetadata(Term::class);
+        $termClassMetadata   = $em->getClassMetadata(Term::class);
         $termHistoryMetadata = $em->getClassMetadata(TermHistory::class);
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
@@ -58,12 +58,12 @@ class TermListener
 
         foreach ($uow->getScheduledEntityDeletions() as $entity) {
             if ($entity instanceof Term) {
-                $em->persist($entity);
-
                 $entity->archive();
 
+                $em->persist($entity);
+
                 $uow->computeChangeSet($termClassMetadata, $entity);
-                $uow->scheduleExtraUpdate($entity, $uow->getEntityChangeSet($uow));
+                $uow->scheduleExtraUpdate($entity, $uow->getEntityChangeSet($entity));
             }
         }
     }

@@ -227,6 +227,15 @@ class Covenant
     private ?DateTimeImmutable $publicationDate;
 
     /**
+     * @var DateTimeImmutable|null
+     *
+     * @ORM\Column(type="date_immutable", nullable=true)
+     *
+     * @Groups({"agency:covenant:read"})
+     */
+    private ?DateTimeImmutable $archivingDate;
+
+    /**
      * @var Collection|Term[]
      *
      * @ORM\OneToMany(targetEntity=Term::class, cascade={"persist", "remove"}, mappedBy="covenant")
@@ -686,9 +695,30 @@ class Covenant
     }
 
     /**
+     * @throws Exception
+     *
+     * @return $this
+     */
+    public function archive(): Covenant
+    {
+        $this->archivingDate = new DateTimeImmutable();
+
+        /** @var Term $term */
+        foreach ($this->terms->getValues() as $term) {
+            $term->archive();
+
+            if ($term->getStartDate() > $this->archivingDate) {
+                $this->terms->removeElement($term);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * @return DateTimeImmutable|null
      */
-    public function getPublicationDate(): ?DateTimeImmutable
+    public function getArchivingDate(): ?DateTimeImmutable
     {
         return $this->publicationDate;
     }
@@ -717,5 +747,13 @@ class Covenant
         }
 
         return $validationGroups;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isArchived(): bool
+    {
+        return null !== $this->archivingDate;
     }
 }

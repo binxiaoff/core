@@ -68,7 +68,8 @@ class TermVoter extends AbstractEntityVoter
     protected function canDelete(Term $term, User $user): bool
     {
         return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_EDIT, $term->getCovenant())
-            && false === $term->isArchived() && $term->isShared()
+            && false === $term->isArchived()
+            && $term->isShared()
             && $term->getStartDate() >= $this->getToday();
     }
 
