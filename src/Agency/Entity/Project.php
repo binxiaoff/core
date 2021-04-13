@@ -107,7 +107,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             },
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
- *         "dataroom_shared_agency_borrower": {
+ *         "dataroom_shared_agency_agent_borrower": {
  *             "method": "GET",
  *             "path": "/agency/projects/{id}/dataroom/shared/agentBorrower/{path?}",
  *             "controller": Get::class,
@@ -117,6 +117,21 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "defaults": {
  *                 "path": "/",
  *                 "sharedDrive": "agentBorrower"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"folder:read"}
+ *             }
+ *         },
+ *         "dataroom_shared_agency_borrower": {
+ *             "method": "GET",
+ *             "path": "/agency/projects/{id}/dataroom/shared/borrower/{path?}",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "sharedDrive": "borrower"
  *             },
  *             "normalization_context": {
  *                 "groups": {"folder:read"}
