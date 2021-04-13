@@ -4,27 +4,38 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiResource, ApiSubresource};
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\{CompanyGroupTag, Constant\CARatingType, Embeddable\Money, Embeddable\NullableMoney, Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface,
-    Staff, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Core\Entity\CompanyGroupTag;
+use Unilend\Core\Entity\Constant\CARatingType;
+use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Interfaces\StatusInterface;
+use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Validator\Constraints\PreviousValue;
 
 /**
  * @ApiResource(
- *      normalizationContext={"groups":{"creditGuaranty:program:read", "creditGuaranty:programStatus:read", "timestampable:read", "money:read", "nullableMoney:read"}},
- *      denormalizationContext={"groups": {"creditGuaranty:program:write", "money:write", "nullableMoney:write"}},
- *      itemOperations={
- *          "get",
- *          "patch": {"security": "is_granted('edit', object)"},
- *          "delete": {"security": "is_granted('delete', object)"}
- *      },
- *      collectionOperations={
+ *     normalizationContext={"groups": {"creditGuaranty:program:read", "creditGuaranty:programStatus:read", "timestampable:read", "money:read", "nullableMoney:read"}},
+ *     denormalizationContext={"groups": {"creditGuaranty:program:write", "money:write", "nullableMoney:write"}},
+ *     itemOperations={
+ *         "get",
+ *         "patch": {"security": "is_granted('edit', object)"},
+ *         "delete": {"security": "is_granted('delete', object)"}
+ *     },
+ *     collectionOperations={
  *         "post": {"security_post_denormalize": "is_granted('create', object)"},
  *         "get"
  *     }
@@ -64,8 +75,8 @@ class Program implements TraceableStatusAwareInterface
      * @ORM\JoinColumn(name="id_company_group_tag", nullable=false)
      *
      * @Assert\Expression(
-     *      "this.isCompanyGroupTagValid()",
-     *      message="CreditGuaranty.Program.companyGroupTag.invalid"
+     *     "this.isCompanyGroupTagValid()",
+     *     message="CreditGuaranty.Program.companyGroupTag.invalid"
      * )
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
@@ -73,22 +84,24 @@ class Program implements TraceableStatusAwareInterface
     private CompanyGroupTag $companyGroupTag;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Column(type="decimal", precision=3, scale=2, nullable=true)
      *
-     * @Assert\Valid
+     * @Assert\Type("numeric")
+     * @Assert\PositiveOrZero
+     * @Assert\Range(min="0", max="0.99")
      * @Assert\AtLeastOneOf({
      *     @Assert\Expression("this.isInDraft()", message="CreditGuaranty.Program.cappedAt.draft"),
      *     @Assert\Sequentially({
      *
-     *         @PreviousValue\MoneyNotAssignable(message="CreditGuaranty.Program.cappedAt.notChangeable"),
-     *         @PreviousValue\MoneyNotResettable(message="CreditGuaranty.Program.cappedAt.notChangeable"),
-     *         @PreviousValue\MoneyGreaterThanOrEqual(message="CreditGuaranty.Program.cappedAt.greater")
+     *         @PreviousValue\ScalarNotAssignable(message="CreditGuaranty.Program.cappedAt.notChangeable"),
+     *         @PreviousValue\ScalarNotResettable(message="CreditGuaranty.Program.cappedAt.notChangeable"),
+     *         @PreviousValue\NumericGreaterThanOrEqual(message="CreditGuaranty.Program.cappedAt.greater")
      *     })
      * })
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
-    private NullableMoney $cappedAt;
+    private ?string $cappedAt;
 
     /**
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
@@ -126,7 +139,7 @@ class Program implements TraceableStatusAwareInterface
     private ?array $distributionProcess;
 
     /**
-     * Duration in month
+     * Duration in month.
      *
      * @ORM\Column(type="smallint", nullable=true)
      *
@@ -207,10 +220,7 @@ class Program implements TraceableStatusAwareInterface
      */
     private ?int $reservationDuration;
 
-    /***************
-     * Subresource *
-     ***************
-     */
+    // Subresource
 
     /**
      * @var Collection|ProgramBorrowerTypeAllocation[]
@@ -269,7 +279,6 @@ class Program implements TraceableStatusAwareInterface
         $this->companyGroupTag         = $companyGroupTag;
         $this->funds                   = $funds;
         $this->addedBy                 = $addedBy;
-        $this->cappedAt                = new NullableMoney();
         $this->statuses                = new ArrayCollection();
         $this->guarantyCost            = new NullableMoney();
         $this->added                   = new DateTimeImmutable();
@@ -314,19 +323,19 @@ class Program implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return NullableMoney
+     * @return string|null
      */
-    public function getCappedAt(): NullableMoney
+    public function getCappedAt(): ?string
     {
         return $this->cappedAt;
     }
 
     /**
-     * @param NullableMoney $cappedAt
+     * @param string|null $cappedAt
      *
      * @return Program
      */
-    public function setCappedAt(NullableMoney $cappedAt): Program
+    public function setCappedAt(?string $cappedAt): Program
     {
         $this->cappedAt = $cappedAt;
 
@@ -540,7 +549,7 @@ class Program implements TraceableStatusAwareInterface
      */
     public function isInDraft(): bool
     {
-        return $this->getCurrentStatus()->getStatus() === ProgramStatus::STATUS_DRAFT;
+        return ProgramStatus::STATUS_DRAFT === $this->getCurrentStatus()->getStatus();
     }
 
     /**
@@ -548,7 +557,7 @@ class Program implements TraceableStatusAwareInterface
      */
     public function isPaused(): bool
     {
-        return $this->getCurrentStatus()->getStatus() === ProgramStatus::STATUS_PAUSED;
+        return ProgramStatus::STATUS_PAUSED === $this->getCurrentStatus()->getStatus();
     }
 
     /**
@@ -556,7 +565,7 @@ class Program implements TraceableStatusAwareInterface
      */
     public function isDistributed(): bool
     {
-        return $this->getCurrentStatus()->getStatus() === ProgramStatus::STATUS_DISTRIBUTED;
+        return ProgramStatus::STATUS_DISTRIBUTED === $this->getCurrentStatus()->getStatus();
     }
 
     /**
@@ -564,6 +573,6 @@ class Program implements TraceableStatusAwareInterface
      */
     public function isCancelled(): bool
     {
-        return $this->getCurrentStatus()->getStatus() === ProgramStatus::STATUS_CANCELLED;
+        return ProgramStatus::STATUS_CANCELLED === $this->getCurrentStatus()->getStatus();
     }
 }

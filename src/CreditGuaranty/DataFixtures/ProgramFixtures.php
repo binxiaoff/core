@@ -7,10 +7,16 @@ namespace Unilend\CreditGuaranty\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\DataFixtures\{AbstractFixtures, CompanyGroupFixture, StaffFixtures};
-use Unilend\Core\Entity\{Constant\CARatingType, Embeddable\Money, Embeddable\NullableMoney, Staff};
+use Unilend\Core\DataFixtures\AbstractFixtures;
+use Unilend\Core\DataFixtures\CompanyGroupFixture;
+use Unilend\Core\DataFixtures\StaffFixtures;
+use Unilend\Core\Entity\Constant\CARatingType;
+use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Staff;
 use Unilend\Core\Repository\CompanyGroupTagRepository;
-use Unilend\CreditGuaranty\Entity\{Program, ProgramStatus};
+use Unilend\CreditGuaranty\Entity\Program;
+use Unilend\CreditGuaranty\Entity\ProgramStatus;
 
 class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -34,27 +40,29 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     /**
      * @param ObjectManager $manager
+     *
+     * @throws \Exception
      */
     public function load(ObjectManager $manager): void
     {
         $programData = [
-            self::REFERENCE_DRAFT          => [
+            self::REFERENCE_DRAFT => [
                 'name'                 => 'Programme en brouillon',
                 'companyGroupTag'      => Program::COMPANY_GROUP_TAG_CORPORATE,
                 'funds'                => ['currency' => 'EUR', 'amount' => '100000000'],
                 'addedBy'              => StaffFixtures::CASA,
                 'currentStatus'        => ProgramStatus::STATUS_DRAFT,
-                'cappedAt'             => ['currency' => 'EUR', 'amount' => '100000'],
+                'cappedAt'             => random_int(10, 40) / 100,
                 'description'          => 'La description pour la pogramme en brouillon',
                 'distributionDeadline' => new \DateTimeImmutable(),
             ],
-            self::REFERENCE_CANCELLED      => [
+            self::REFERENCE_CANCELLED => [
                 'name'            => 'Programme annulée',
                 'companyGroupTag' => Program::COMPANY_GROUP_TAG_AGRICULTURE,
                 'funds'           => ['currency' => 'EUR', 'amount' => '200000000'],
                 'addedBy'         => StaffFixtures::CASA,
                 'currentStatus'   => ProgramStatus::STATUS_CANCELLED,
-                'cappedAt'        => ['currency' => 'EUR', 'amount' => '100000'],
+                'cappedAt'        => random_int(10, 40) / 100,
             ],
             self::REFERENCE_COMMERCIALIZED => [
                 'name'                 => 'Programme commercialisée',
@@ -62,7 +70,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'funds'                => ['currency' => 'EUR', 'amount' => '300000000'],
                 'addedBy'              => StaffFixtures::CASA,
                 'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,
-                'cappedAt'             => ['currency' => 'EUR', 'amount' => '100000'],
+                'cappedAt'             => random_int(10, 40) / 100,
                 'description'          => 'La description pour la pogramme en brouillon',
                 'distributionDeadline' => new \DateTimeImmutable(),
                 'distributionProcess'  => [
@@ -73,11 +81,11 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                     'Signature du client et contractualisation',
                     'Renseignement du N° de prêt et montant des réalisations',
                 ],
-                'guarantyDuration'     => 240,
-                'guarantyCoverage'     => '0.07',
-                'guarantyCost'         => ['currency' => 'EUR', 'amount' => '1000'],
+                'guarantyDuration' => 240,
+                'guarantyCoverage' => '0.07',
+                'guarantyCost'     => ['currency' => 'EUR', 'amount' => '1000'],
             ],
-            self::REFERENCE_PAUSED         => [
+            self::REFERENCE_PAUSED => [
                 'name'            => 'Programme en pause',
                 'companyGroupTag' => Program::COMPANY_GROUP_TAG_CORPORATE,
                 'funds'           => ['currency' => 'EUR', 'amount' => '400000000'],
@@ -120,7 +128,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
         $program         = new Program($programDatum['name'], $companyGroupTag, new Money($programDatum['funds']['currency'], $programDatum['funds']['amount']), $addedBy);
 
         if (false === empty($programDatum['cappedAt'])) {
-            $program->setCappedAt(new NullableMoney($programDatum['cappedAt']['currency'], $programDatum['cappedAt']['amount']));
+            $program->setCappedAt((string) $programDatum['cappedAt']);
         }
 
         if (false === empty($programDatum['description'])) {

@@ -9,7 +9,7 @@ use Unilend\Core\Validator\Constraints\AbstractPreviousValueComparison;
 /**
  * @Annotation
  */
-class MoneyLessThanOrEqual extends AbstractPreviousValueComparison
+class ScalarNotAssignable extends AbstractPreviousValueComparison
 {
-    public string $message = 'The money amount is greater than the previous one.';
+    public string $message = 'The value is locked to null.';
 }
