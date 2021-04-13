@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
-use ApiPlatform\Core\Action\NotFoundAction;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -31,33 +30,34 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *     },
  *     collectionOperations={
  *         "post": {
- *              "denormalization_context": {
- *                  "groups": {
- *                      "agency:borrower:create",
- *                      "agency:borrower:write",
- *                      "money:write",
- *                      "agency:borrowerMember:create",
- *                      "agency:borrowerMember:write",
- *                      "user:create",
- *                      "user:write"
- *                  }
- *              },
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "agency:borrower:create",
+ *                     "agency:borrower:write",
+ *                     "money:write",
+ *                     "agency:borrowerMember:create",
+ *                     "agency:borrowerMember:write",
+ *                     "user:create",
+ *                     "user:write"
+ *                 }
+ *             },
  *             "security_post_denormalize": "is_granted('create', object)",
  *         }
  *     },
  *     itemOperations={
  *         "get": {
- *             "controller": NotFoundAction::class,
- *             "read": false,
- *             "output": false,
+ *             "normalization_context": {
+ *                 "groups": {"agency:borrower:read"}
+ *             },
+ *             "security": "is_granted('view', object)",
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)",
- *          },
+ *         },
  *         "patch": {
- *              "denormalization_context": {
- *                  "groups": {"agency:borrower:update", "money:write"}
- *              },
+ *             "denormalization_context": {
+ *                 "groups": {"agency:borrower:update", "money:write"}
+ *             },
  *             "security_post_denormalize": "is_granted('edit', object)",
  *         }
  *     }
@@ -82,8 +82,6 @@ class Borrower
     use BlamableAddedTrait;
 
     /**
-     * @var Project
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="borrowers")
      *
      * @Assert\NotBlank
@@ -95,8 +93,6 @@ class Borrower
     private Project $project;
 
     /**
-     * @var string
-     *
      * @ORM\Column(type="string", length=100)
      *
      * @Assert\NotBlank
@@ -107,8 +103,6 @@ class Borrower
     private string $corporateName;
 
     /**
-     * @var string
-     *
      * @ORM\Column(type="string", length=100)
      *
      * @Assert\NotBlank
@@ -118,8 +112,6 @@ class Borrower
     private string $legalForm;
 
     /**
-     * @var Money
-     *
      * @Assert\Valid
      * @Assert\NotBlank
      *
@@ -130,8 +122,6 @@ class Borrower
     private Money $capital;
 
     /**
-     * @var string
-     *
      * @ORM\Column(type="string", length=100)
      *
      * @Assert\Length(max="100")
@@ -142,8 +132,6 @@ class Borrower
     private string $headquarterAddress;
 
     /**
-     * @var string
-     *
      * @ORM\Column(type="string", length=100)
      *
      * @Assert\NotBlank
@@ -156,8 +144,6 @@ class Borrower
     private string $matriculationNumber;
 
     /**
-     * @var BorrowerMember|null
-     *
      * @ORM\OneToOne(targetEntity=BorrowerMember::class)
      * @ORM\JoinColumn(name="id_signatory", onDelete="SET NULL")
      *
@@ -170,8 +156,6 @@ class Borrower
     private ?BorrowerMember $signatory;
 
     /**
-     * @var BorrowerMember|null
-     *
      * @ORM\OneToOne(targetEntity=BorrowerMember::class)
      * @ORM\JoinColumn(name="id_referent", onDelete="SET NULL")
      *
@@ -204,20 +188,11 @@ class Borrower
      *
      * @Assert\Valid
      * @Assert\All({
-     *    @Assert\Expression("value.getBorrower() === this")
+     *     @Assert\Expression("value.getBorrower() === this")
      * })
      */
     private Collection $trancheShares;
 
-    /**
-     * @param Project $project
-     * @param Staff   $addedBy
-     * @param string  $corporateName
-     * @param string  $legalForm
-     * @param Money   $capital
-     * @param string  $headquarterAddress
-     * @param string  $matriculationNumber
-     */
     public function __construct(
         Project $project,
         Staff $addedBy,
@@ -227,37 +202,26 @@ class Borrower
         string $headquarterAddress,
         string $matriculationNumber
     ) {
-        $this->project = $project;
-        $this->addedBy = $addedBy;
-        $this->corporateName = $corporateName;
-        $this->legalForm = $legalForm;
-        $this->capital = $capital;
-        $this->headquarterAddress = $headquarterAddress;
+        $this->project             = $project;
+        $this->addedBy             = $addedBy;
+        $this->corporateName       = $corporateName;
+        $this->legalForm           = $legalForm;
+        $this->capital             = $capital;
+        $this->headquarterAddress  = $headquarterAddress;
         $this->matriculationNumber = $matriculationNumber;
-        $this->members = new ArrayCollection();
+        $this->members             = new ArrayCollection();
     }
 
-    /**
-     * @return Project
-     */
     public function getProject(): Project
     {
         return $this->project;
     }
 
-    /**
-     * @return string
-     */
     public function getCorporateName(): string
     {
         return $this->corporateName;
     }
 
-    /**
-     * @param string $corporateName
-     *
-     * @return Borrower
-     */
     public function setCorporateName(string $corporateName): Borrower
     {
         $this->corporateName = $corporateName;
@@ -265,19 +229,11 @@ class Borrower
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getLegalForm(): string
     {
         return $this->legalForm;
     }
 
-    /**
-     * @param string $legalForm
-     *
-     * @return Borrower
-     */
     public function setLegalForm(string $legalForm): Borrower
     {
         $this->legalForm = $legalForm;
@@ -285,19 +241,11 @@ class Borrower
         return $this;
     }
 
-    /**
-     * @return Money
-     */
     public function getCapital(): Money
     {
         return $this->capital;
     }
 
-    /**
-     * @param Money $capital
-     *
-     * @return Borrower
-     */
     public function setCapital(Money $capital): Borrower
     {
         $this->capital = $capital;
@@ -305,19 +253,11 @@ class Borrower
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getHeadquarterAddress(): string
     {
         return $this->headquarterAddress;
     }
 
-    /**
-     * @param string $headquarterAddress
-     *
-     * @return Borrower
-     */
     public function setHeadquarterAddress(string $headquarterAddress): Borrower
     {
         $this->headquarterAddress = $headquarterAddress;
@@ -325,19 +265,11 @@ class Borrower
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getMatriculationNumber(): string
     {
         return $this->matriculationNumber;
     }
 
-    /**
-     * @param string $matriculationNumber
-     *
-     * @return Borrower
-     */
     public function setMatriculationNumber(string $matriculationNumber): Borrower
     {
         $this->matriculationNumber = $matriculationNumber;
@@ -345,19 +277,11 @@ class Borrower
         return $this;
     }
 
-    /**
-     * @return BorrowerMember|null
-     */
     public function getSignatory(): ?BorrowerMember
     {
         return $this->signatory;
     }
 
-    /**
-     * @param BorrowerMember $signatory
-     *
-     * @return Borrower
-     */
     public function setSignatory(BorrowerMember $signatory): Borrower
     {
         $this->signatory = $this->findMemberByUser($signatory->getUser()) ?? $signatory;
@@ -366,19 +290,11 @@ class Borrower
         return $this;
     }
 
-    /**
-     * @return BorrowerMember|null
-     */
     public function getReferent(): ?BorrowerMember
     {
         return $this->referent;
     }
 
-    /**
-     * @param BorrowerMember $referent
-     *
-     * @return Borrower
-     */
     public function setReferent(BorrowerMember $referent): Borrower
     {
         $this->referent = $this->findMemberByUser($referent->getUser()) ?? $referent;
@@ -395,11 +311,6 @@ class Borrower
         return $this->members->toArray();
     }
 
-    /**
-     * @param BorrowerMember $member
-     *
-     * @return Borrower
-     */
     public function addMember(BorrowerMember $member): Borrower
     {
         if (null === $this->findMemberByUser($member->getUser())) {
@@ -409,11 +320,6 @@ class Borrower
         return $this;
     }
 
-    /**
-     * @param BorrowerMember $member
-     *
-     * @return Borrower
-     */
     public function removeMember(BorrowerMember $member): Borrower
     {
         if ($this->members->removeElement($member)) {
@@ -429,11 +335,6 @@ class Borrower
         return $this;
     }
 
-    /**
-     * @param User $user
-     *
-     * @return BorrowerMember|null
-     */
     public function findMemberByUser(User $user): ?BorrowerMember
     {
         foreach ($this->members as $member) {
