@@ -6,8 +6,7 @@ namespace Unilend\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\IdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
@@ -16,17 +15,8 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
  */
 class FileDownload
 {
-    use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    private $id;
+    use IdentityTrait;
 
     /**
      * @var FileVersion
@@ -34,28 +24,44 @@ class FileDownload
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\FileVersion", inversedBy="fileVersionDownloads")
      * @ORM\JoinColumn(name="id_file_version", nullable=false)
      */
-    private $fileVersion;
+    private FileVersion $fileVersion;
 
     /**
      * @var string
      *
      * @ORM\Column(length=150)
      */
-    private $type;
+    private string $type;
 
     /**
-     * @param FileVersion $fileVersion
-     * @param Staff       $addedBy
-     * @param string      $type
+     * @var User
      *
-     * @throws Exception
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\JoinColumn(name="added_by", referencedColumnName="id", nullable=false)
      */
-    public function __construct(FileVersion $fileVersion, Staff $addedBy, string $type)
+    private User $addedBy;
+
+    /**
+     * @var Company|null
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=true)
+     */
+    private ?Company $company;
+
+    /**
+     * @param FileVersion  $fileVersion
+     * @param User         $addedBy
+     * @param string       $type
+     * @param Company|null $company
+     */
+    public function __construct(FileVersion $fileVersion, User $addedBy, string $type, ?Company $company = null)
     {
         $this->fileVersion = $fileVersion;
         $this->addedBy     = $addedBy;
         $this->type        = $type;
         $this->added       = new DateTimeImmutable();
+        $this->company     = $company;
     }
 
     /**
@@ -80,5 +86,21 @@ class FileDownload
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /**
+     * @return User
+     */
+    public function getAddedBy(): User
+    {
+        return $this->addedBy;
+    }
+
+    /**
+     * @return Company|null
+     */
+    public function getCompany(): ?Company
+    {
+        return $this->company;
     }
 }

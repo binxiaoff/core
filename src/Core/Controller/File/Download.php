@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Controller\File;
 
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
-use Symfony\Component\HttpFoundation\{Request, StreamedResponse};
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\{FileDownload, FileVersion, User};
+use Unilend\Core\Entity\FileDownload;
+use Unilend\Core\Entity\FileVersion;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\FileDownloadRepository;
 use Unilend\Core\Security\Voter\FileDownloadVoter;
 use Unilend\Core\Service\File\FileDownloadManager;
@@ -48,14 +52,26 @@ class Download
      */
     public function __invoke(FileVersion $data, Request $request, string $type): StreamedResponse
     {
-        $user         = $this->security->getUser();
-        $currentStaff = $user instanceof User ? $user->getCurrentStaff() : null;
+        $user = $this->security->getUser();
 
-        if (null === $currentStaff) {
-            throw new AccessDeniedHttpException();
+        if (false === $user instanceof User) {
+            throw new AccessDeniedHttpException(sprintf(
+                'Attempt to download with %s%s instead of object of class %s',
+                \is_object($user) ? 'object of class ' : '',
+                \is_object($user) ? \get_class($user) : gettype($user),
+                User::class
+            ));
         }
 
-        $fileDownload = new FileDownload($data, $currentStaff, $type);
+        $token = $this->security->getToken();
+
+        $company = null;
+
+        if ($token) {
+            $company = $token->getAttribute('company');
+        }
+
+        $fileDownload = new FileDownload($data, $user, $type, $company);
 
         if (false === $this->security->isGranted(FileDownloadVoter::ATTRIBUTE_CREATE, $fileDownload)) {
             throw new AccessDeniedHttpException();
