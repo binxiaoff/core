@@ -5,22 +5,34 @@ declare(strict_types=1);
 namespace Unilend\Core\DataTransformer;
 
 use ApiPlatform\Core\Validator\ValidatorInterface;
-use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, IOException};
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
+use Defuse\Crypto\Exception\IOException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
 use League\Flysystem\FileExistsException;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Security\Core\Security;
 use Unilend\Core\DTO\FileInput;
-use Unilend\Core\Entity\{File, Message, MessageFile, Staff, User};
-use Unilend\Core\Repository\{MessageFileRepository, MessageRepository};
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\File;
+use Unilend\Core\Entity\Message;
+use Unilend\Core\Entity\MessageFile;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
+use Unilend\Core\Repository\MessageFileRepository;
+use Unilend\Core\Repository\MessageRepository;
 use Unilend\Core\Security\Voter\MessageVoter;
 use Unilend\Core\Service\File\FileUploadManager;
-use Unilend\Syndication\Entity\{Project, ProjectFile, ProjectParticipation};
-use Unilend\Syndication\Repository\{ProjectFileRepository, ProjectRepository};
-use Unilend\Syndication\Security\Voter\{ProjectFileVoter, ProjectParticipationVoter, ProjectVoter};
-use Unilend\Syndication\Service\Project\ProjectManager;
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectFile;
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Repository\ProjectFileRepository;
+use Unilend\Syndication\Repository\ProjectRepository;
+use Unilend\Syndication\Security\Voter\ProjectFileVoter;
+use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class FileInputDataTransformer
 {
@@ -32,12 +44,10 @@ class FileInputDataTransformer
     private FileUploadManager $fileUploadManager;
     /** @var ProjectFileRepository */
     private ProjectFileRepository $projectFileRepository;
-    /** @var ProjectRepository  */
+    /** @var ProjectRepository */
     private ProjectRepository $projectRepository;
     /** @var MessageFileRepository */
     private MessageFileRepository $messageFileRepository;
-    /** @var ProjectManager */
-    private ProjectManager $projectManager;
     /** @var MessageRepository */
     private MessageRepository $messageRepository;
 
@@ -47,7 +57,6 @@ class FileInputDataTransformer
      * @param ValidatorInterface    $validator
      * @param Security              $security
      * @param FileUploadManager     $fileUploadManager
-     * @param ProjectManager        $projectManager
      * @param ProjectFileRepository $projectFileRepository
      * @param ProjectRepository     $projectRepository
      * @param MessageFileRepository $messageFileRepository
@@ -57,20 +66,18 @@ class FileInputDataTransformer
         ValidatorInterface $validator,
         Security $security,
         FileUploadManager $fileUploadManager,
-        ProjectManager $projectManager,
         ProjectFileRepository $projectFileRepository,
         ProjectRepository $projectRepository,
         MessageFileRepository $messageFileRepository,
         MessageRepository $messageRepository
     ) {
-        $this->validator                = $validator;
-        $this->security                 = $security;
-        $this->fileUploadManager        = $fileUploadManager;
-        $this->projectFileRepository    = $projectFileRepository;
-        $this->projectRepository        = $projectRepository;
-        $this->messageFileRepository    = $messageFileRepository;
-        $this->projectManager           = $projectManager;
-        $this->messageRepository        = $messageRepository;
+        $this->validator             = $validator;
+        $this->security              = $security;
+        $this->fileUploadManager     = $fileUploadManager;
+        $this->projectFileRepository = $projectFileRepository;
+        $this->projectRepository     = $projectRepository;
+        $this->messageFileRepository = $messageFileRepository;
+        $this->messageRepository     = $messageRepository;
     }
 
     /**
@@ -91,29 +98,28 @@ class FileInputDataTransformer
         $targetEntity = $fileInput->targetEntity;
         $type         = $fileInput->type;
 
-        $user         = $this->security->getUser();
-        $currentStaff = $user instanceof User ? $user->getCurrentStaff() : null;
+        $user = $this->security->getUser();
 
-        if (null === $currentStaff) {
-            throw new AccessDeniedHttpException();
+        if (false === $user instanceof User) {
+            throw new AccessDeniedHttpException('Attempt to transform fileInput into file without valid user');
         }
 
         if ($targetEntity instanceof Project) {
             if (\in_array($type, ProjectFile::getProjectFileTypes(), true)) {
-                $file = $this->uploadForProjectFile($targetEntity, $fileInput, $currentStaff, $file);
+                $file = $this->uploadForProjectFile($targetEntity, $fileInput, $user, $file);
             }
 
             if (\in_array($type, Project::getProjectFileTypes(), true)) {
-                $file = $this->uploadForProject($targetEntity, $fileInput, $currentStaff, $file);
+                $file = $this->uploadForProject($targetEntity, $fileInput, $user, $file);
             }
         }
 
         if ($targetEntity instanceof ProjectParticipation) {
-            $file = $this->uploadProjectParticipationNda($targetEntity, $fileInput, $currentStaff, $file);
+            $file = $this->uploadProjectParticipationNda($targetEntity, $fileInput, $user, $file);
         }
 
         if ($targetEntity instanceof Message) {
-            $file = $this->uploadMessageFile($targetEntity, $fileInput, $currentStaff, $file);
+            $file = $this->uploadMessageFile($targetEntity, $fileInput, $user, $file);
         }
 
         return $file;
@@ -122,7 +128,7 @@ class FileInputDataTransformer
     /**
      * @param Message   $message
      * @param FileInput $fileInput
-     * @param Staff     $currentStaff
+     * @param User      $user
      * @param File|null $file
      *
      * @throws EnvironmentIsBrokenException
@@ -133,7 +139,7 @@ class FileInputDataTransformer
      *
      * @return File
      */
-    private function uploadMessageFile(Message $message, FileInput $fileInput, Staff $currentStaff, ?File $file): File
+    private function uploadMessageFile(Message $message, FileInput $fileInput, User $user, ?File $file): File
     {
         if (false === $this->security->isGranted(MessageVoter::ATTRIBUTE_ATTACH_FILE, $message)) {
             throw new AccessDeniedException();
@@ -143,7 +149,7 @@ class FileInputDataTransformer
             $file = new File();
         }
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file);
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $user, $file, [], $this->getCurrentCompany());
 
         $messagesToBeAttached = [$message];
 
@@ -165,7 +171,7 @@ class FileInputDataTransformer
     /**
      * @param Project   $project
      * @param FileInput $fileInput
-     * @param Staff     $currentStaff
+     * @param User      $user
      * @param File|null $file
      *
      * @throws EnvironmentIsBrokenException
@@ -177,8 +183,14 @@ class FileInputDataTransformer
      *
      * @return File
      */
-    private function uploadForProjectFile(Project $project, FileInput $fileInput, Staff $currentStaff, ?File $file): File
+    private function uploadForProjectFile(Project $project, FileInput $fileInput, User $user, ?File $file): File
     {
+        $currentStaff = $this->getCurrentStaff();
+
+        if (false === ($currentStaff instanceof Staff)) {
+            throw new AccessDeniedException(sprintf('Cannot add new project file if there is no staff attached to logged user'));
+        }
+
         if (null === $file) {
             $file        = new File();
             $projectFile = new ProjectFile($fileInput->type, $file, $project, $currentStaff);
@@ -203,7 +215,13 @@ class FileInputDataTransformer
             }
         }
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, ['projectId' => $projectFile->getProject()->getId()]);
+        $this->fileUploadManager->upload(
+            $fileInput->uploadedFile,
+            $user,
+            $file,
+            ['projectId' => $projectFile->getProject()->getId()],
+            $this->getCurrentCompany()
+        );
 
         $this->projectFileRepository->save($projectFile);
 
@@ -213,7 +231,7 @@ class FileInputDataTransformer
     /**
      * @param Project   $project
      * @param FileInput $fileInput
-     * @param Staff     $currentStaff
+     * @param User      $user
      * @param File|null $file
      *
      * @throws EnvironmentIsBrokenException
@@ -224,7 +242,7 @@ class FileInputDataTransformer
      *
      * @return File
      */
-    private function uploadForProject(Project $project, FileInput $fileInput, Staff $currentStaff, ?File $file): File
+    private function uploadForProject(Project $project, FileInput $fileInput, User $user, ?File $file): File
     {
         if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
             throw new AccessDeniedException();
@@ -242,6 +260,7 @@ class FileInputDataTransformer
                 $project->setDescriptionDocument($file);
                 // Orphan removal takes care to remove unused file
                 break;
+
             case Project::PROJECT_FILE_TYPE_NDA:
                 $nda = $project->getNda();
                 if ($isPublished && null !== $file && null !== $nda && $file !== $nda) {
@@ -251,11 +270,12 @@ class FileInputDataTransformer
                 $project->setNda($file);
                 // Orphan removal takes care to remove unused file
                 break;
+
             default:
                 throw new \InvalidArgumentException(sprintf('You cannot upload the file of the type %s.', $fileInput->type));
         }
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, ['projectId' => $project->getId()]);
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $user, $file, ['projectId' => $project->getId()], $this->getCurrentCompany());
 
         $this->projectRepository->save($project);
 
@@ -265,18 +285,18 @@ class FileInputDataTransformer
     /**
      * @param ProjectParticipation $projectParticipation
      * @param FileInput            $fileInput
-     * @param Staff                $currentStaff
+     * @param User                 $user
      * @param File|null            $file
-     *
-     * @return File
      *
      * @throws EnvironmentIsBrokenException
      * @throws FileExistsException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
+     *
+     * @return File
      */
-    private function uploadProjectParticipationNda(ProjectParticipation $projectParticipation, FileInput $fileInput, Staff $currentStaff, ?File $file)
+    private function uploadProjectParticipationNda(ProjectParticipation $projectParticipation, FileInput $fileInput, User $user, ?File $file)
     {
         if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $projectParticipation->getProject())) {
             throw new AccessDeniedException();
@@ -291,7 +311,13 @@ class FileInputDataTransformer
 
         $file = $isPublished && $existingNda ? $existingNda : new File();
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $currentStaff, $file, ['projectParticipationId' => $projectParticipation->getId()]);
+        $this->fileUploadManager->upload(
+            $fileInput->uploadedFile,
+            $user,
+            $file,
+            ['projectParticipationId' => $projectParticipation->getId()],
+            $this->getCurrentCompany()
+        );
 
         $projectParticipation->setNda($file);
 
@@ -312,5 +338,25 @@ class FileInputDataTransformer
             \get_class($targetEntity),
             \method_exists($targetEntity, 'getPublicId') ? $targetEntity->getPublicId() : '',
         ));
+    }
+
+    /**
+     * @return Staff|null
+     */
+    private function getCurrentStaff(): ?Staff
+    {
+        $token = $this->security->getToken();
+
+        return $token && $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
+    }
+
+    /**
+     * @return Company|null
+     */
+    private function getCurrentCompany(): ?Company
+    {
+        $token = $this->security->getToken();
+
+        return $token && $token->hasAttribute('company') ? $token->getAttribute('company') : null;
     }
 }
