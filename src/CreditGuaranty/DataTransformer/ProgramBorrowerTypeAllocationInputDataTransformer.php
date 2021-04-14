@@ -8,6 +8,7 @@ use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
 use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
 use Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation;
@@ -53,23 +54,56 @@ class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransform
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws \RuntimeException
      *
      * @return ProgramBorrowerTypeAllocation
      */
     public function transform($object, string $to, array $context = []): ProgramBorrowerTypeAllocation
     {
         $this->validator->validate($object);
-        $field               = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
-        $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([
-            'program'     => $object->program,
-            'field'       => $field,
-            'description' => $object->borrowerType,
-        ]);
-        if (null === $programChoiceOption) {
-            $programChoiceOption = new ProgramChoiceOption($object->program, $object->borrowerType, $field);
-            $this->programChoiceOptionRepository->save($programChoiceOption);
+
+        if (isset($context['item_operation_name']) && 'post' === $context['item_operation_name']) {
+            $field               = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
+            $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([
+                'program'     => $object->program,
+                'field'       => $field,
+                'description' => $object->borrowerType,
+            ]);
+            if (null === $programChoiceOption) {
+                $programChoiceOption = new ProgramChoiceOption($object->program, $object->borrowerType, $field);
+                $this->programChoiceOptionRepository->save($programChoiceOption);
+            }
+
+            return new ProgramBorrowerTypeAllocation($object->program, $programChoiceOption, $object->maxAllocationRate);
         }
 
-        return new ProgramBorrowerTypeAllocation($object->program, $programChoiceOption, $object->maxAllocationRate);
+        if (isset($context['item_operation_name']) && 'patch' === $context['item_operation_name']) {
+            $programBorrowerTypeAllocation = $context[AbstractNormalizer::OBJECT_TO_POPULATE] ?? null;
+            if (false === $programBorrowerTypeAllocation instanceof ProgramBorrowerTypeAllocation) {
+                throw new \RuntimeException(sprintf('Can not populate the object of %s from the context.', ProgramBorrowerTypeAllocation::class));
+            }
+
+            foreach ($object as $name => $value) {
+                switch ($name) {
+                    case 'borrowerType':
+                        $programBorrowerTypeAllocation->getProgramChoiceOption()->setDescription($value);
+
+                        break;
+
+                    case 'maxAllocationRate':
+                        $programBorrowerTypeAllocation->setMaxAllocationRate($object->maxAllocationRate);
+
+                        break;
+
+                    default:
+                        //noting
+                        break;
+                }
+            }
+
+            return $programBorrowerTypeAllocation;
+        }
+
+        throw new \RuntimeException(sprintf('The operation is not supported by %s', __CLASS__));
     }
 }

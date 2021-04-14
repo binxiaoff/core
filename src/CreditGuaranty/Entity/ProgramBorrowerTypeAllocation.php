@@ -24,12 +24,16 @@ use Unilend\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
  *             "read": false,
  *             "output": false,
  *         },
- *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"},
+ *         "patch": {
+ *             "input": ProgramBorrowerTypeAllocationInput::class,
+ *             "security_post_denormalize": "is_granted('edit', previous_object)"
+ *         },
  *         "delete": {"security": "is_granted('delete', object)"}
  *     },
  *     collectionOperations={
  *         "post": {
- *             "input": ProgramBorrowerTypeAllocationInput::class
+ *             "input": ProgramBorrowerTypeAllocationInput::class,
+ *             "validation_groups": {"creditGuaranty:programBorrowerTypeAllocation:createValidation"}
  *         }
  *     }
  * )
