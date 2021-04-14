@@ -6,9 +6,11 @@ namespace Unilend\CreditGuaranty\DataTransformer;
 
 use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Unilend\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
-use Unilend\CreditGuaranty\Entity\{ProgramChoiceOption, ProgramEligibilityConfiguration};
+use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
+use Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
 use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
 
 class ProgramEligibilityConfigurationInputDataTransformer implements DataTransformerInterface
@@ -25,8 +27,9 @@ class ProgramEligibilityConfigurationInputDataTransformer implements DataTransfo
         $this->validator                     = $validator;
         $this->programChoiceOptionRepository = $programChoiceOptionRepository;
     }
+
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsTransformation($data, string $to, array $context = []): bool
     {

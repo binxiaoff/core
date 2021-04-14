@@ -6,10 +6,14 @@ namespace Unilend\CreditGuaranty\DataTransformer;
 
 use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Unilend\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
-use Unilend\CreditGuaranty\Entity\{Constant\FieldAlias, ProgramBorrowerTypeAllocation, ProgramChoiceOption};
-use Unilend\CreditGuaranty\Repository\{FieldRepository, ProgramChoiceOptionRepository};
+use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
+use Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation;
+use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
+use Unilend\CreditGuaranty\Repository\FieldRepository;
+use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
 
 class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransformerInterface
 {
@@ -31,8 +35,9 @@ class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransform
         $this->programChoiceOptionRepository = $programChoiceOptionRepository;
         $this->fieldRepository               = $fieldRepository;
     }
+
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsTransformation($data, string $to, array $context = []): bool
     {
@@ -54,11 +59,11 @@ class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransform
     public function transform($object, string $to, array $context = []): ProgramBorrowerTypeAllocation
     {
         $this->validator->validate($object);
-        $field = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
+        $field               = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
         $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([
-            'program'            => $object->program,
-            'field' => $field,
-            'description'        => $object->borrowerType,
+            'program'     => $object->program,
+            'field'       => $field,
+            'description' => $object->borrowerType,
         ]);
         if (null === $programChoiceOption) {
             $programChoiceOption = new ProgramChoiceOption($object->program, $object->borrowerType, $field);
