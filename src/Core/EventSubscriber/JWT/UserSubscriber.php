@@ -33,7 +33,7 @@ class UserSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            JwtEvents::JWT_CREATED => 'addPayload',
+            JwtEvents::JWT_CREATED => ['addPayload', 10],
             JwtEvents::JWT_DECODED => 'validatePayload',
             JwtEvents::AUTHENTICATION_SUCCESS => 'updateSuccessResponse',
         ];
@@ -47,6 +47,7 @@ class UserSubscriber implements EventSubscriberInterface
         $payload = $event->getData();
 
         $payload['user'] = $this->iriConverter->getIriFromItem($event->getUser());
+        $payload['@type'] = 'user';
 
         $event->setData($payload);
     }
@@ -59,7 +60,6 @@ class UserSubscriber implements EventSubscriberInterface
         $payload = $event->getPayload();
 
         $userIri = $payload['user'] ?? null;
-
         if (null === $userIri) {
             $event->markAsInvalid();
 

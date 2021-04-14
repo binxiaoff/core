@@ -8,6 +8,7 @@ use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Exception\ItemNotFoundException;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTAuthenticatedEvent;
+use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -43,7 +44,22 @@ class StaffSubscriber implements EventSubscriberInterface
             JwtEvents::JWT_DECODED            => 'validateToken',
             JwtEvents::JWT_AUTHENTICATED      => 'updateSecurityToken',
             JwtEvents::AUTHENTICATION_SUCCESS => 'addStaffJwtTokens',
+            JwtEvents::JWT_CREATED => 'addPayload',
         ];
+    }
+
+    /**
+     * @param JWTCreatedEvent $event
+     */
+    public function addPayload(JWTCreatedEvent $event): void
+    {
+        $payload = $event->getData();
+
+        if (array_key_exists('staff', $payload)) {
+            $payload['@type'] = 'staff';
+        }
+
+        $event->setData($payload);
     }
 
     /**
