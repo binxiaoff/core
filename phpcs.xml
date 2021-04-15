@@ -26,6 +26,8 @@
         <exclude name="Symfony.Commenting.ClassComment.Missing"/>
         <exclude name="Symfony.Functions.Arguments.Invalid"/>
         <exclude name="Symfony.Commenting.FunctionComment.Missing"/>
+        <exclude name="Symfony.Commenting.FunctionComment.MissingReturn"/>
+        <exclude name="Symfony.Commenting.FunctionComment.MissingParamTag"/>
     </rule>
     <rule ref="Generic.Files.LineLength">
         <properties>
