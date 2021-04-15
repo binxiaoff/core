@@ -19,6 +19,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Agency\Controller\Project\Get;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Agency\Controller\Project\GetTerm;
 use Unilend\Agency\Entity\Versioned\VersionedProject;
@@ -109,7 +110,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *         },
  *         "dataroom_shared_agency_agent_borrower": {
  *             "method": "GET",
- *             "path": "/agency/projects/{id}/dataroom/shared/agentBorrower/{path?}",
+ *             "path": "/agency/projects/{publicId}/dataroom/shared/agentBorrower/{path?}",
  *             "controller": Get::class,
  *             "requirements": {
  *                 "path": ".+"
@@ -124,7 +125,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *         },
  *         "dataroom_shared_agency_borrower": {
  *             "method": "GET",
- *             "path": "/agency/projects/{id}/dataroom/shared/borrower/{path?}",
+ *             "path": "/agency/projects/{publicId}/dataroom/shared/borrower/{path?}",
  *             "controller": Get::class,
  *             "requirements": {
  *                 "path": ".+"
@@ -139,7 +140,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *         },
  *         "dataroom_shared_agency_principal_participant": {
  *             "method": "GET",
- *             "path": "/agency/projects/{id}/dataroom/shared/agentPrincipalParticipant/{path?}",
+ *             "path": "/agency/projects/{publicId}/dataroom/shared/agentPrincipalParticipant/{path?}",
  *             "controller": Get::class,
  *             "requirements": {
  *                 "path": ".+"
@@ -154,7 +155,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *         },
  *         "dataroom_shared_agency_secondary_participant": {
  *             "method": "GET",
- *             "path": "/agency/projects/{id}/dataroom/shared/agentSecondaryParticipant/{path?}",
+ *             "path": "/agency/projects/{publicId}/dataroom/shared/agentSecondaryParticipant/{path?}",
  *             "controller": Get::class,
  *             "requirements": {
  *                 "path": ".+"
@@ -169,7 +170,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *         },
  *         "dataroom_confidential": {
  *             "method": "GET",
- *             "path": "/agency/projects/{id}/dataroom/confidential/{path?}",
+ *             "path": "/agency/projects/{publicId}/dataroom/confidential/{path?}",
  *             "controller": Get::class,
  *             "security": "is_granted('view', object)",
  *             "requirements": {
@@ -540,8 +541,6 @@ class Project
     private ?ArrangementProject $source;
 
     /**
-     * @var Drive
-     *
      * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_borrower_drive", nullable=false, unique=true)
      */
