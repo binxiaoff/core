@@ -14,7 +14,6 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -778,7 +777,7 @@ class Project
     }
 
     /**
-     * @return Company
+     * @return string
      */
     public function getRiskGroupName(): string
     {
@@ -875,7 +874,7 @@ class Project
      *
      * @return Project
      */
-    public function setTranches($tranches)
+    public function setTranches($tranches): Project
     {
         $this->tranches = $tranches;
 
