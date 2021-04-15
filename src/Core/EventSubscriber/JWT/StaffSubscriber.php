@@ -20,29 +20,22 @@ use Unilend\Core\Repository\UserRepository;
 
 class StaffSubscriber implements EventSubscriberInterface
 {
-    /** @var UserRepository  */
     private UserRepository $userRepository;
 
-    /** @var JWTTokenManagerInterface */
     private JWTTokenManagerInterface $jwtManager;
 
-    /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
 
-    /**
-     * @param JWTTokenManagerInterface $jwtManager
-     * @param IriConverterInterface    $iriConverter
-     */
     public function __construct(
         JWTTokenManagerInterface $jwtManager,
         IriConverterInterface $iriConverter
     ) {
-        $this->jwtManager = $jwtManager;
+        $this->jwtManager   = $jwtManager;
         $this->iriConverter = $iriConverter;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public static function getSubscribedEvents()
     {
@@ -56,14 +49,12 @@ class StaffSubscriber implements EventSubscriberInterface
     /**
      * To handle case where the staff is disabled whereas user is still connected
      * This will disconnect him the next time the user attempts to access the api after its token has been disabled.
-     *
-     * @param JWTDecodedEvent $event
      */
     public function validateToken(JWTDecodedEvent $event): void
     {
         $payload = $event->getPayload();
 
-        if ($payload['staff']) {
+        if (isset($payload['staff'])) {
             try {
                 /** @var Staff $staff */
                 $staff = $this->iriConverter->getItemFromIri($payload['staff'], [AbstractNormalizer::GROUPS => []]);
@@ -77,9 +68,6 @@ class StaffSubscriber implements EventSubscriberInterface
         }
     }
 
-    /**
-     * @param AuthenticationSuccessEvent $event
-     */
     public function addStaffJwtTokens(AuthenticationSuccessEvent $event): void
     {
         $user = $event->getUser();
@@ -105,16 +93,12 @@ class StaffSubscriber implements EventSubscriberInterface
         $event->setData($data);
     }
 
-    /**
-     * @param JWTAuthenticatedEvent $event
-     */
     public function updateSecurityToken(JWTAuthenticatedEvent $event): void
     {
         $payload = $event->getPayload();
         $token   = $event->getToken();
 
-
-        if ($payload['staff']) {
+        if (isset($payload['staff'])) {
             /** @var Staff $currentStaff */
             $currentStaff = $this->iriConverter->getItemFromIri($payload['staff'], [AbstractNormalizer::GROUPS => []]);
 
