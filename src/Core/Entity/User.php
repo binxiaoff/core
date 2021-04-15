@@ -4,20 +4,27 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
-use Symfony\Component\Serializer\Annotation\{Groups, SerializedName};
+use Symfony\Component\Security\Core\User\EquatableInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\DTO\GoogleRecaptchaResult;
-use Unilend\Core\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
-use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, RoleableTrait, TimestampableTrait};
+use Unilend\Core\Entity\Interfaces\StatusInterface;
+use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\RoleableTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Validator\Constraints\{Password as AssertPassword};
 
 /**
@@ -60,8 +67,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     public const PHONE_NUMBER_DEFAULT_REGION = 'FR';
 
     /**
-     * @var string|null
-     *
      * @Groups({"user:read", "user:write"})
      *
      * @ORM\Column(name="last_name", type="string", length=191, nullable=true)
@@ -72,8 +77,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     private ?string $lastName = null;
 
     /**
-     * @var string|null
-     *
      * @Groups({"user:read", "user:write"})
      *
      * @ORM\Column(name="first_name", type="string", length=191, nullable=true)
@@ -84,8 +87,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     private ?string $firstName = null;
 
     /**
-     * @var string|null
-     *
      * @Groups({"user:read", "user:write"})
      *
      * @ORM\Column(name="phone", type="string", length=35, nullable=true)
@@ -95,8 +96,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     private ?string $phone = null;
 
     /**
-     * @var string
-     *
      * @Groups({"user:read", "user:create"})
      *
      * @ORM\Column(name="email", type="string", length=191, unique=true)
@@ -107,8 +106,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     private string $email;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(name="password", type="string", length=191, nullable=true)
      *
      * @Gedmo\Versioned
@@ -125,8 +122,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     private ?string $plainPassword = null;
 
     /**
-     * @var string|null
-     *
      * @Groups({"user:read", "user:write"})
      *
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -143,8 +138,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     private Collection $staff;
 
     /**
-     * @var UserStatus|null
-     *
      * @Groups({"user:read"})
      *
      * @ORM\OneToOne(targetEntity="UserStatus", cascade={"persist"})
@@ -153,9 +146,7 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     private ?UserStatus $currentStatus = null;
 
     /**
-     * Property initialised only in UserNormalizer
-     *
-     * @var LegalDocument|null
+     * Property initialised only in UserNormalizer.
      *
      * @Groups({"user:item:read"})
      */
@@ -168,20 +159,12 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
      */
     private Collection $statuses;
 
-    /**
-     * @var Staff|null
-     */
     private ?Staff $currentStaff = null;
 
-    /**
-     * @var GoogleRecaptchaResult|null
-     */
     private ?GoogleRecaptchaResult $recaptchaResult = null;
 
     /**
      * Users constructor.
-     *
-     * @param string $email
      *
      * @throws Exception
      */
@@ -198,8 +181,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
 
     /**
      * For comparaison (ex. array_unique).
-     *
-     * @return string
      */
     public function __toString(): string
     {
@@ -207,12 +188,7 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     }
 
     /**
-     * @param string|null $lastName
-     *
-     * @return User
-
      **@throws Exception
-     *
      */
     public function setLastName(?string $lastName): User
     {
@@ -223,21 +199,13 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getLastName(): ?string
     {
         return $this->lastName;
     }
 
     /**
-     * @param string|null $firstName
-     *
-     * @return User
-
      **@throws Exception
-     *
      */
     public function setFirstName(?string $firstName): User
     {
@@ -248,19 +216,11 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getFirstName(): ?string
     {
         return $this->firstName;
     }
 
-    /**
-     * @param string|null $phone
-     *
-     * @return User
-     */
     public function setPhone(?string $phone): User
     {
         $this->phone = $phone;
@@ -268,19 +228,11 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getPhone(): ?string
     {
         return $this->phone;
     }
 
-    /**
-     * @param string $email
-     *
-     * @return User
-     */
     public function setEmail(string $email): User
     {
         $this->email = $email;
@@ -288,21 +240,13 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getEmail(): string
     {
         return $this->email;
     }
 
     /**
-     * @param string|null $password
-     *
-     * @return User
-
      **@throws Exception
-     *
      */
     public function setPassword(?string $password): User
     {
@@ -313,25 +257,17 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getPassword(): ?string
     {
         return $this->password;
     }
 
-    /**
-     * @return string|null
-     */
     public function getPlainPassword(): ?string
     {
         return $this->plainPassword;
     }
 
     /**
-     * @param string $plainPassword
-     *
      * @return $this
      */
     public function setPlainPassword(string $plainPassword): User
@@ -341,19 +277,11 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getJobFunction(): ?string
     {
         return $this->jobFunction;
     }
 
-    /**
-     * @param string|null $jobFunction
-     *
-     * @return User
-     */
     public function setJobFunction(?string $jobFunction): User
     {
         $this->jobFunction = $jobFunction;
@@ -369,43 +297,21 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $this->staff;
     }
 
-    /**
-     * @return Company|null
-     */
     public function getCompany(): ?Company
     {
         return $this->getCurrentStaff() ? $this->getCurrentStaff()->getCompany() : null;
     }
 
-    /**
-     * @return string
-     */
     public function getInitials(): string
     {
         return mb_substr($this->getFirstName() ?? '', 0, 1) . mb_substr($this->getLastName() ?? '', 0, 1);
     }
 
-    /**
-     * @return bool
-     */
     public function isGrantedLogin(): bool
     {
-        if (false === $this->isInStatus(UserStatus::GRANTED_LOGIN)) {
-            return false;
-        }
-
-        foreach ($this->getStaff() as $staff) {
-            if ($staff->isGrantedLogin()) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->isInStatus(UserStatus::GRANTED_LOGIN);
     }
 
-    /**
-     * @return bool
-     */
     public function isInitializationNeeded(): bool
     {
         return $this->isInStatus([UserStatus::STATUS_INVITED]) || false === $this->isProfileCompleted();
@@ -461,8 +367,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
 
     /**
      * @param StatusInterface|UserStatus $currentStatus
-     *
-     * @return User
      */
     public function setCurrentStatus(StatusInterface $currentStatus): User
     {
@@ -479,17 +383,11 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return self::getConstants('ROLE_');
     }
 
-    /**
-     * @return Staff|null
-     */
     public function getCurrentStaff(): ?Staff
     {
         return $this->currentStaff;
     }
 
-    /**
-     * @param Staff $currentStaff
-     */
     public function setCurrentStaff(Staff $currentStaff): void
     {
         $this->currentStaff = $currentStaff;
@@ -503,27 +401,16 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $this->statuses;
     }
 
-    /**
-     * @return UserStatus
-     */
     public function getCurrentStatus(): UserStatus
     {
         return $this->currentStatus;
     }
 
-    /**
-     * @return LegalDocument|null
-     */
     public function getServiceTermsToSign(): ?LegalDocument
     {
         return $this->serviceTermsToSign;
     }
 
-    /**
-     * @param LegalDocument $serviceTermsToSign
-     *
-     * @return User
-     */
     public function setServiceTermsToSign(LegalDocument $serviceTermsToSign): User
     {
         $this->serviceTermsToSign = $serviceTermsToSign;
@@ -531,19 +418,11 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $this;
     }
 
-    /**
-     * @return GoogleRecaptchaResult|null
-     */
     public function getRecaptchaResult(): ?GoogleRecaptchaResult
     {
         return $this->recaptchaResult;
     }
 
-    /**
-     * @param GoogleRecaptchaResult|null $recaptchaResult
-     *
-     * @return User
-     */
     public function setRecaptchaResult(?GoogleRecaptchaResult $recaptchaResult): User
     {
         $this->recaptchaResult = $recaptchaResult;
@@ -551,11 +430,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $this;
     }
 
-    /**
-     * @param string|null $name
-     *
-     * @return string|null
-     */
     private function normalizeName(?string $name): ?string
     {
         if (null === $name) {
@@ -580,11 +454,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $newName;
     }
 
-    /**
-     * @param array $status
-     *
-     * @return bool
-     */
     private function isInStatus(array $status): bool
     {
         $userStatus = $this->getCurrentStatus();
@@ -592,9 +461,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $userStatus && \in_array($userStatus->getStatus(), $status, true);
     }
 
-    /**
-     * @return bool
-     */
     private function isProfileCompleted(): bool
     {
         return $this->getFirstName() && $this->getLastName() && $this->getPassword();
