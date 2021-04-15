@@ -22,6 +22,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Agency\Controller\Project\Get;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Agency\Controller\Project\GetTerm;
+use Unilend\Agency\Controller\Project\Post;
 use Unilend\Agency\Entity\Versioned\VersionedProject;
 use Unilend\Agency\Filter\ApiPlatform\ProjectFilter;
 use Unilend\Core\Entity\Company;
@@ -43,9 +44,6 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "validation_groups": {Project::class, "getCurrentValidationGroups"}
- *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:project:read",
@@ -59,6 +57,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *     collectionOperations={
  *         "get",
  *         "post": {
+ *             "validation_groups": {Project::class, "getCurrentValidationGroups"},
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
  *                 "groups": {
@@ -82,7 +81,22 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *                     }
  *                 }
  *             }
- *         }
+ *         },
+ *         "dataroom_shared_agency_borrower": {
+ *             "method": "POST",
+ *             "deserialize": false,
+ *             "path": "/agency/projects/{publicId}/dataroom/shared/agentBorrower/{path?}",
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "sharedDrive": "agentBorrower"
+ *             },
+ *         },
+ *         "dataroom_shared_agency_principal_participant": {},
+ *         "dataroom_shared_agency_secondary_participant": {},
  *     },
  *     itemOperations={
  *         "get": {
