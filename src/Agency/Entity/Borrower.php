@@ -47,7 +47,7 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *     itemOperations={
  *         "get": {
  *             "normalization_context": {
- *                 "groups": {"agency:borrower:read"}
+ *                 "groups": {"agency:borrower:read", "money:read"}
  *             },
  *             "security": "is_granted('view', object)",
  *         },
