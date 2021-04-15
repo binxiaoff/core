@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Agency\Controller\Participation\Get;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
@@ -54,6 +55,21 @@ use Unilend\Core\Model\Bitmask;
  *         "delete": {
  *             "security": "is_granted('delete', object)"
  *         }
+ *         },
+ *         "dataroom_shared_agency_participation": {
+ *             "method": "GET",
+ *             "path": "/agency/participation/{publicId}/dataroom/shared/personal/{path?}",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"folder:read"}
+ *             }
+ *         },
  *     }
  * )
  * @ORM\Entity
