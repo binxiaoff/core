@@ -95,8 +95,32 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *                 "sharedDrive": "agentBorrower"
  *             },
  *         },
- *         "dataroom_shared_agency_principal_participant": {},
- *         "dataroom_shared_agency_secondary_participant": {},
+ *         "dataroom_shared_agency_principal_participant": {
+ *             "method": "POST",
+ *             "deserialize": false,
+ *             "path": "/agency/projects/{publicId}/dataroom/shared/agentPrincipalParticipant/{path?}",
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "sharedDrive": "agentPrincipalParticipant"
+ *             },
+ *         },
+ *         "dataroom_shared_agency_secondary_participant": {
+ *             "method": "POST",
+ *             "deserialize": false,
+ *             "path": "/agency/projects/{publicId}/dataroom/shared/agentSecondaryParticipant/{path?}",
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "sharedDrive": "agentSecondaryParticipant"
+ *             },
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
