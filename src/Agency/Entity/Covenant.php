@@ -39,7 +39,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         },
  *         "patch": {
  *             "denormalization_context": {
- *                 "groups": {"agency:covenant:update"}
+ *                 "groups": {"agency:covenant:update", "agency:covenant:write"}
  *             },
  *             "security_denormalize": "is_granted('edit', object)"
  *         },
@@ -52,10 +52,11 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:covenant:create",
+ *                     "agency:covenant:write",
  *                     "agency:covenantRule:create",
  *                     "agency:marginRule:create",
  *                     "agency:marginImpact:create",
- *                     "agency:inequality:write",
+ *                     "agency:inequality:write"
  *                 }
  *             },
  *             "security_post_denormalize": "is_granted('create', object)"
@@ -110,7 +111,7 @@ class Covenant
      * @Assert\Length(max="50")
      * @Assert\NotBlank
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private string $name;
 
@@ -121,7 +122,7 @@ class Covenant
      *
      * @Assert\Length(max="500")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private ?string $contractArticle = null;
 
@@ -132,7 +133,7 @@ class Covenant
      *
      * @Assert\Length(max="500")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private ?string $contractExtract = null;
 
@@ -141,7 +142,7 @@ class Covenant
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create", "agency:covenant:update"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private ?string $description = null;
 

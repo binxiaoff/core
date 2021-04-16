@@ -58,7 +58,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
  *                 "groups": {
- *                     "agency:project:create",
+ *                     "agency:project:write",
  *                     "money:write",
  *                     "nullablePerson:write",
  *                     "nullableMoney:write"
@@ -244,7 +244,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      *
      * @Assert\NotBlank
      * @Assert\Length(max="255")
@@ -260,7 +260,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private ?string $internalRatingScore;
 
@@ -274,7 +274,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private string $title;
 
@@ -286,7 +286,7 @@ class Project
      * @Assert\NotBlank
      * @Assert\Valid
      *
-     * @Groups({"agency:project:read", "agency:project:write", "agency:project:create"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      */
     private Money $globalFundingMoney;
 
@@ -295,7 +295,7 @@ class Project
      *
      * @ORM\Column(type="boolean")
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private bool $silentSyndication;
 
@@ -307,7 +307,7 @@ class Project
      * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private ?string $principalSyndicationType;
 
@@ -319,7 +319,7 @@ class Project
      * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private ?string $principalParticipationType;
 
@@ -334,7 +334,7 @@ class Project
      *     groups={"published"}
      * )
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private ?string $principalRiskType;
 
@@ -349,7 +349,7 @@ class Project
      *     groups={"published"}
      * )
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private ?string $secondarySyndicationType;
 
@@ -364,7 +364,7 @@ class Project
      *     groups={"published"}
      * )
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private ?string $secondaryParticipationType;
 
@@ -383,7 +383,7 @@ class Project
      *     groups={"published"}
      * )
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private ?string $secondaryRiskType;
 
@@ -423,7 +423,7 @@ class Project
     /**
      * @var string|null
      *
-     * @Groups({"agency:project:read", "agency:project:write", "agency:project:create"})
+     * @Groups({"agency:project:read", "agency:project:write"})
      *
      * @ORM\Column(type="string", nullable=true, length=10)
      *
@@ -444,7 +444,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private ?CompanyGroupTag $companyGroupTag;
 
@@ -453,7 +453,7 @@ class Project
      *
      * @ORM\Column(type="date_immutable")
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private DateTimeImmutable $closingDate;
 
@@ -464,7 +464,7 @@ class Project
      *
      * @Assert\GreaterThan(propertyPath="closingDate")
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private DateTimeImmutable $contractEndDate;
 
@@ -473,7 +473,7 @@ class Project
      *
      * @ORM\Column(type="text", length=16777215, nullable=true)
      *
-     * @Groups({"agency:project:write", "agency:project:read", "agency:project:create"})
+     * @Groups({"agency:project:write", "agency:project:read"})
      */
     private ?string $description = null;
 

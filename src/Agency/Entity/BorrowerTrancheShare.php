@@ -19,9 +19,6 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *     normalizationContext={
  *         "groups": {"agency:borrowerTrancheShare:read"}
  *     },
- *     denormalizationContext={
- *         "groups": {"agency:borrowerTrancheShare:write"}
- *     },
  *     itemOperations={
  *         "get": {
  *             "controller": NotFoundAction::class,
@@ -34,7 +31,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *
  * @ORM\Entity
  * @ORM\Table(name="agency_borrower_tranche_share", uniqueConstraints={
- *    @ORM\UniqueConstraint(columns={"id_borrower", "id_tranche"})
+ *     @ORM\UniqueConstraint(columns={"id_borrower", "id_tranche"})
  * })
  *
  * @UniqueEntity(fields={"borrower", "tranche"})
