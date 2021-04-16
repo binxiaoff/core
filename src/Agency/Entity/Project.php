@@ -17,6 +17,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Agency\ApiPlatform\Filter\ProjectFilter;
 use Unilend\Agency\Controller\Project\GetTerm;
 use Unilend\Agency\Entity\Versioned\VersionedProject;
 use Unilend\Core\Entity\Company;
@@ -115,6 +116,8 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         }
  *     }
  * )
+ *
+ * @ApiFilter(filterClass=ProjectFilter::class, arguments={})
  */
 class Project
 {
@@ -123,8 +126,6 @@ class Project
     use BlamableAddedTrait;
 
     /**
-     * @var Company
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_agent", referencedColumnName="id", nullable=false)
@@ -137,8 +138,6 @@ class Project
     private Company $agent;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", length=300, nullable=true)
      *
      * @Assert\NotBlank(groups={"published"})
@@ -148,8 +147,6 @@ class Project
     private ?string $agentDisplayName;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", length=9, nullable=true)
      *
      * @Siren
@@ -161,8 +158,6 @@ class Project
     private ?string $agentSiren;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\NotBlank(groups={"published"})
@@ -172,8 +167,6 @@ class Project
     private ?string $agentLegalForm;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\NotBlank(groups={"published"})
@@ -183,8 +176,6 @@ class Project
     private ?string $headOffice;
 
     /**
-     * @var NullableMoney|null
-     *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"agency:project:read", "agency:project:write"})
@@ -192,8 +183,6 @@ class Project
     private ?NullableMoney $agentCapital;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\NotBlank(groups={"published"})
@@ -203,8 +192,6 @@ class Project
     private ?string $agentRCS;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\NotBlank(groups={"published"})
@@ -214,8 +201,6 @@ class Project
     private ?string $bankInstitution;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", length=11, nullable=true)
      *
      * @Assert\Bic
@@ -226,8 +211,6 @@ class Project
     private ?string $bic;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", length=34, nullable=true)
      *
      * @Assert\Iban
@@ -252,8 +235,6 @@ class Project
     private string $riskGroupName;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(length=8, nullable=true)
      *
      * @Assert\Choice(callback={CAInternalRating::class, "getConstList"})
@@ -265,8 +246,6 @@ class Project
     private ?string $internalRatingScore;
 
     /**
-     * @var string
-     *
      * @ORM\Column(length=191)
      *
      * @Assert\NotBlank
@@ -279,8 +258,6 @@ class Project
     private string $title;
 
     /**
-     * @var Money
-     *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
      *
      * @Assert\NotBlank
@@ -291,8 +268,6 @@ class Project
     private Money $globalFundingMoney;
 
     /**
-     * @var bool
-     *
      * @ORM\Column(type="boolean")
      *
      * @Groups({"agency:project:write", "agency:project:read"})
@@ -300,8 +275,6 @@ class Project
     private bool $silentSyndication;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
@@ -312,8 +285,6 @@ class Project
     private ?string $principalSyndicationType;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
@@ -324,8 +295,6 @@ class Project
     private ?string $principalParticipationType;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", nullable=true, length=30)
      *
      * @Assert\Choice(callback={RiskType::class, "getConstList"})
@@ -339,8 +308,6 @@ class Project
     private ?string $principalRiskType;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
@@ -354,8 +321,6 @@ class Project
     private ?string $secondarySyndicationType;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
@@ -369,8 +334,6 @@ class Project
     private ?string $secondaryParticipationType;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", nullable=true, length=30)
      *
      * @Assert\Choice(callback={RiskType::class, "getConstList"})
@@ -421,8 +384,6 @@ class Project
     private iterable $borrowers;
 
     /**
-     * @var string|null
-     *
      * @Groups({"agency:project:read", "agency:project:write"})
      *
      * @ORM\Column(type="string", nullable=true, length=10)
@@ -432,8 +393,6 @@ class Project
     private ?string $fundingSpecificity;
 
     /**
-     * @var CompanyGroupTag|null
-     *
      * @ORM\ManyToOne(targetEntity=CompanyGroupTag::class)
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company_group_tag", referencedColumnName="id", nullable=false)
@@ -449,8 +408,6 @@ class Project
     private ?CompanyGroupTag $companyGroupTag;
 
     /**
-     * @var DateTimeImmutable
-     *
      * @ORM\Column(type="date_immutable")
      *
      * @Groups({"agency:project:write", "agency:project:read"})
@@ -458,8 +415,6 @@ class Project
     private DateTimeImmutable $closingDate;
 
     /**
-     * @var DateTimeImmutable
-     *
      * @ORM\Column(type="date_immutable")
      *
      * @Assert\GreaterThan(propertyPath="closingDate")
@@ -469,8 +424,6 @@ class Project
     private DateTimeImmutable $contractEndDate;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="text", length=16777215, nullable=true)
      *
      * @Groups({"agency:project:write", "agency:project:read"})
@@ -478,8 +431,6 @@ class Project
     private ?string $description = null;
 
     /**
-     * @var NullablePerson
-     *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullablePerson", columnPrefix="agency_contact_")
      *
      * @Assert\Valid
@@ -503,8 +454,6 @@ class Project
     private iterable $participations;
 
     /**
-     * @var ProjectStatus
-     *
      * @ORM\OneToOne(targetEntity="Unilend\Agency\Entity\ProjectStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status")
      *
@@ -542,37 +491,24 @@ class Project
     private Collection $covenants;
 
     /**
-     * @var Drive
-     *
      * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_agent_borrower_drive", nullable=false, unique=true)
      */
     private Drive $agentBorrowerDrive;
 
     /**
-     * @var Drive
-     *
      * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_agent_principal_borrower_drive", nullable=false, unique=true)
      */
     private Drive $agentPrincipalParticipantDrive;
 
     /**
-     * @var Drive
-     *
      * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_agent_secondary_borrower_drive", nullable=false, unique=true)
      */
     private Drive $agentSecondaryParticipantDrive;
 
     /**
-     * @param Staff             $addedBy
-     * @param string            $title
-     * @param string            $riskGroupName
-     * @param Money             $globalFundingMoney
-     * @param DateTimeImmutable $closingDate
-     * @param DateTimeImmutable $contractEndDate
-     *
      * @throws Exception
      */
     public function __construct(
@@ -631,19 +567,11 @@ class Project
         $this->agentSecondaryParticipantDrive = new Drive();
     }
 
-    /**
-     * @return Company
-     */
     public function getAgent(): Company
     {
         return $this->agent;
     }
 
-    /**
-     * @param Company $agent
-     *
-     * @return Project
-     */
     public function setAgent(Company $agent): Project
     {
         $this->agent = $agent;
@@ -651,19 +579,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getAgentDisplayName(): ?string
     {
         return $this->agentDisplayName;
     }
 
-    /**
-     * @param string|null $agentDisplayName
-     *
-     * @return Project
-     */
     public function setAgentDisplayName(?string $agentDisplayName): Project
     {
         $this->agentDisplayName = $agentDisplayName;
@@ -671,19 +591,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getAgentSiren(): ?string
     {
         return $this->agentSiren;
     }
 
-    /**
-     * @param string|null $agentSiren
-     *
-     * @return Project
-     */
     public function setAgentSiren(?string $agentSiren): Project
     {
         $this->agentSiren = $agentSiren;
@@ -691,19 +603,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getAgentLegalForm(): ?string
     {
         return $this->agentLegalForm;
     }
 
-    /**
-     * @param string|null $agentLegalForm
-     *
-     * @return Project
-     */
     public function setAgentLegalForm(?string $agentLegalForm): Project
     {
         $this->agentLegalForm = $agentLegalForm;
@@ -711,19 +615,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getHeadOffice(): ?string
     {
         return $this->headOffice;
     }
 
-    /**
-     * @param string|null $headOffice
-     *
-     * @return Project
-     */
     public function setHeadOffice(?string $headOffice): Project
     {
         $this->headOffice = $headOffice;
@@ -731,19 +627,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return NullableMoney|null
-     */
     public function getAgentCapital(): ?NullableMoney
     {
         return $this->agentCapital;
     }
 
-    /**
-     * @param NullableMoney|null $agentCapital
-     *
-     * @return Project
-     */
     public function setAgentCapital(?NullableMoney $agentCapital): Project
     {
         $this->agentCapital = $agentCapital;
@@ -751,19 +639,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getAgentRCS(): ?string
     {
         return $this->agentRCS;
     }
 
-    /**
-     * @param string|null $agentRCS
-     *
-     * @return Project
-     */
     public function setAgentRCS(?string $agentRCS): Project
     {
         $this->agentRCS = $agentRCS;
@@ -771,19 +651,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return NullablePerson
-     */
     public function getAgencyContact(): NullablePerson
     {
         return $this->agencyContact;
     }
 
-    /**
-     * @param NullablePerson $agencyContact
-     *
-     * @return Project
-     */
     public function setAgencyContact(NullablePerson $agencyContact): Project
     {
         $this->agencyContact = $agencyContact;
@@ -791,19 +663,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getBankInstitution(): ?string
     {
         return $this->bankInstitution;
     }
 
-    /**
-     * @param string|null $bankInstitution
-     *
-     * @return Project
-     */
     public function setBankInstitution(?string $bankInstitution): Project
     {
         $this->bankInstitution = $bankInstitution;
@@ -811,19 +675,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getBic(): ?string
     {
         return $this->bic;
     }
 
-    /**
-     * @param string|null $bic
-     *
-     * @return Project
-     */
     public function setBic(?string $bic): Project
     {
         $this->bic = $bic;
@@ -831,19 +687,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getIban(): ?string
     {
         return $this->iban;
     }
 
-    /**
-     * @param string|null $iban
-     *
-     * @return Project
-     */
     public function setIban(?string $iban): Project
     {
         $this->iban = $iban;
@@ -851,11 +699,6 @@ class Project
         return $this;
     }
 
-    /**
-     * @param string $riskGroupName
-     *
-     * @return Project
-     */
     public function setRiskGroupName(string $riskGroupName): Project
     {
         $this->riskGroupName = $riskGroupName;
@@ -871,19 +714,11 @@ class Project
         return $this->riskGroupName;
     }
 
-    /**
-     * @return string|null
-     */
     public function getInternalRatingScore(): ?string
     {
         return $this->internalRatingScore;
     }
 
-    /**
-     * @param string|null $internalRatingScore
-     *
-     * @return Project
-     */
     public function setInternalRatingScore(?string $internalRatingScore): Project
     {
         $this->internalRatingScore = $internalRatingScore;
@@ -891,19 +726,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function hasSilentSyndication(): bool
     {
         return $this->silentSyndication;
     }
 
-    /**
-     * @param bool $silentSyndication
-     *
-     * @return Project
-     */
     public function setSilentSyndication(bool $silentSyndication): Project
     {
         $this->silentSyndication = $silentSyndication;
@@ -911,19 +738,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getPrincipalSyndicationType(): ?string
     {
         return $this->principalSyndicationType;
     }
 
-    /**
-     * @param string|null $principalSyndicationType
-     *
-     * @return Project
-     */
     public function setPrincipalSyndicationType(?string $principalSyndicationType): Project
     {
         $this->principalSyndicationType = $principalSyndicationType;
@@ -931,19 +750,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getPrincipalParticipationType(): ?string
     {
         return $this->principalParticipationType;
     }
 
-    /**
-     * @param string|null $principalParticipationType
-     *
-     * @return Project
-     */
     public function setPrincipalParticipationType(?string $principalParticipationType): Project
     {
         $this->principalParticipationType = $principalParticipationType;
@@ -959,19 +770,11 @@ class Project
         return ParticipationType::SUB_PARTICIPATION === $this->principalParticipationType;
     }
 
-    /**
-     * @return string|null
-     */
     public function getPrincipalRiskType(): ?string
     {
         return $this->principalRiskType;
     }
 
-    /**
-     * @param string|null $principalRiskType
-     *
-     * @return Project
-     */
     public function setPrincipalRiskType(?string $principalRiskType): Project
     {
         $this->principalRiskType = $principalRiskType;
@@ -979,19 +782,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getSecondarySyndicationType(): ?string
     {
         return $this->secondarySyndicationType;
     }
 
-    /**
-     * @param string|null $secondarySyndicationType
-     *
-     * @return Project
-     */
     public function setSecondarySyndicationType(?string $secondarySyndicationType): Project
     {
         $this->secondarySyndicationType = $secondarySyndicationType;
@@ -999,9 +794,6 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getSecondaryParticipationType(): ?string
     {
         return $this->secondaryParticipationType;
@@ -1015,11 +807,6 @@ class Project
         return ParticipationType::SUB_PARTICIPATION === $this->secondaryParticipationType;
     }
 
-    /**
-     * @param string|null $secondaryParticipationType
-     *
-     * @return Project
-     */
     public function setSecondaryParticipationType(?string $secondaryParticipationType): Project
     {
         $this->secondaryParticipationType = $secondaryParticipationType;
@@ -1027,19 +814,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getSecondaryRiskType(): ?string
     {
         return $this->secondaryRiskType;
     }
 
-    /**
-     * @param string|null $secondaryRiskType
-     *
-     * @return Project
-     */
     public function setSecondaryRiskType(?string $secondaryRiskType): Project
     {
         $this->secondaryRiskType = $secondaryRiskType;
@@ -1097,11 +876,6 @@ class Project
         return $this;
     }
 
-    /**
-     * @param string $title
-     *
-     * @return Project
-     */
     public function setTitle(string $title): Project
     {
         $this->title = $title;
@@ -1109,19 +883,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getTitle(): string
     {
         return $this->title;
     }
 
-    /**
-     * @param Money $globalFundingMoney
-     *
-     * @return Project
-     */
     public function setGlobalFundingMoney(Money $globalFundingMoney): Project
     {
         $this->globalFundingMoney = $globalFundingMoney;
@@ -1129,27 +895,16 @@ class Project
         return $this;
     }
 
-    /**
-     * @return Money
-     */
     public function getGlobalFundingMoney(): Money
     {
         return $this->globalFundingMoney;
     }
 
-    /**
-     * @return string|null
-     */
     public function getFundingSpecificity(): ?string
     {
         return $this->fundingSpecificity;
     }
 
-    /**
-     * @param string|null $fundingSpecificity
-     *
-     * @return Project
-     */
     public function setFundingSpecificity(?string $fundingSpecificity): Project
     {
         $this->fundingSpecificity = $fundingSpecificity;
@@ -1157,19 +912,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return CompanyGroupTag|null
-     */
     public function getCompanyGroupTag(): ?CompanyGroupTag
     {
         return $this->companyGroupTag;
     }
 
-    /**
-     * @param CompanyGroupTag|null $companyGroupTag
-     *
-     * @return Project
-     */
     public function setCompanyGroupTag(?CompanyGroupTag $companyGroupTag): Project
     {
         $this->companyGroupTag = $companyGroupTag;
@@ -1177,19 +924,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return DateTimeImmutable
-     */
     public function getClosingDate(): DateTimeImmutable
     {
         return $this->closingDate;
     }
 
-    /**
-     * @param DateTimeImmutable $closingDate
-     *
-     * @return Project
-     */
     public function setClosingDate(DateTimeImmutable $closingDate): Project
     {
         $this->closingDate = $closingDate;
@@ -1197,19 +936,11 @@ class Project
         return $this;
     }
 
-    /**
-     * @return DateTimeImmutable
-     */
     public function getContractEndDate(): DateTimeImmutable
     {
         return $this->contractEndDate;
     }
 
-    /**
-     * @param DateTimeImmutable $contractEndDate
-     *
-     * @return Project
-     */
     public function setContractEndDate(DateTimeImmutable $contractEndDate): Project
     {
         $this->contractEndDate = $contractEndDate;
@@ -1217,11 +948,6 @@ class Project
         return $this;
     }
 
-    /**
-     * @param string|null $description
-     *
-     * @return Project
-     */
     public function setDescription(?string $description): Project
     {
         $this->description = $description;
@@ -1229,9 +955,6 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getDescription(): ?string
     {
         return $this->description;
@@ -1245,19 +968,11 @@ class Project
         return $this->participations;
     }
 
-    /**
-     * @return ProjectStatus
-     */
     public function getCurrentStatus(): ProjectStatus
     {
         return $this->currentStatus;
     }
 
-    /**
-     * @param ProjectStatus $currentStatus
-     *
-     * @return Project
-     */
     public function setCurrentStatus(ProjectStatus $currentStatus): Project
     {
         $this->currentStatus = $currentStatus;
@@ -1281,11 +996,6 @@ class Project
         return $this->covenants;
     }
 
-    /**
-     * @param Covenant $covenants
-     *
-     * @return Project
-     */
     public function addCovenant(Covenant $covenants): Project
     {
         $this->covenants->add($covenants);
@@ -1293,11 +1003,6 @@ class Project
         return $this;
     }
 
-    /**
-     * @param Covenant $covenants
-     *
-     * @return Project
-     */
     public function removeCovenant(Covenant $covenants): Project
     {
         $this->covenants->removeElement($covenants);
@@ -1305,9 +1010,6 @@ class Project
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isPublished(): bool
     {
         return ProjectStatus::DRAFT > $this->getCurrentStatus()->getStatus();
@@ -1331,25 +1033,16 @@ class Project
         return $validationGroups;
     }
 
-    /**
-     * @return Drive
-     */
     public function getAgentBorrowerDrive(): Drive
     {
         return $this->agentBorrowerDrive;
     }
 
-    /**
-     * @return Drive
-     */
     public function getAgentPrincipalParticipantDrive(): Drive
     {
         return $this->agentPrincipalParticipantDrive;
     }
 
-    /**
-     * @return Drive
-     */
     public function getAgentSecondaryParticipantDrive(): Drive
     {
         return $this->agentSecondaryParticipantDrive;
