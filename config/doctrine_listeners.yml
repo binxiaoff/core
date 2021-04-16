@@ -42,6 +42,11 @@ services:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
+    Unilend\Agency\Doctrine\Listener\CovenantListener:
+        tags:
+            - { name: doctrine.event_listener, event: onFlush }
+            - { name: doctrine.event_listener, event: postUpdate }
+
     # Message Dispatcher
     Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\User\UserUpdatedListener:
         tags:

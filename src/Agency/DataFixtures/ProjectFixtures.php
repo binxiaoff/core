@@ -8,10 +8,6 @@ use DateTimeImmutable;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Unilend\Core\Entity\Constant\MathOperator;
-use Unilend\Core\Entity\Embeddable\NullablePerson;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
 use Unilend\Agency\Entity\Borrower;
 use Unilend\Agency\Entity\BorrowerMember;
 use Unilend\Agency\Entity\BorrowerTrancheShare;
@@ -28,25 +24,29 @@ use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\DataFixtures\CompanyFixtures;
 use Unilend\Core\DataFixtures\StaffFixtures;
 use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Constant\MathOperator;
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullablePerson;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Model\Bitmask;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws Exception
      */
     public function load(ObjectManager $manager)
     {
         /** @var Staff $staff */
-        $staff         = $this->getReference(StaffFixtures::ADMIN);
+        $staff = $this->getReference(StaffFixtures::ADMIN);
 
         $project = new Project(
             $staff,
@@ -81,13 +81,23 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             new BorrowerTrancheShare($borrowers[2], $tranches[2], new Money('EUR', '2000000')),
         ];
 
-        $otherCovenant     = $this->createCovenant($project, Covenant::NATURE_DOCUMENT, Covenant::RECURRENCE_3M);
         $financialCovenant = $this->createCovenant($project, Covenant::NATURE_FINANCIAL_ELEMENT, Covenant::RECURRENCE_12M);
 
         $covenantRules = array_map(
             fn ($index) => $this->createCovenantRule($financialCovenant, $index),
             range($financialCovenant->getStartYear(), $financialCovenant->getEndYear())
         );
+
+        $covenants = [
+            $this->createCovenant($project, Covenant::NATURE_DOCUMENT, Covenant::RECURRENCE_3M),
+            $this->createCovenant($project, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_3M),
+            $this->createCovenant($project, Covenant::NATURE_DOCUMENT, Covenant::RECURRENCE_3M, new DateTimeImmutable('-3 years')),
+            $this->createCovenant($project, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_3M, new DateTimeImmutable('-3 years')),
+            $financialCovenant,
+        ];
+
+        $covenants[2]->publish();
+        $covenants[3]->publish();
 
         $marginRule = $this->createMarginRule($financialCovenant, $tranches);
 
@@ -104,7 +114,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ),
             ...array_map(
                 fn ($company) => $this->createParticipation($project, $this->getReference($company), true),
-                [ CompanyFixtures::COMPANIES[4], CompanyFixtures::COMPANIES[3]]
+                [CompanyFixtures::COMPANIES[4], CompanyFixtures::COMPANIES[3]]
             ),
         ];
 
@@ -113,15 +123,13 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ...$tranches,
             ...$borrowerTrancheShares,
             ...$participations,
-            $otherCovenant,
-            $financialCovenant,
+            ...$covenants,
             ...$covenantRules,
             $marginRule,
         ]);
 
         $manager->flush();
     }
-
 
     /**
      * @return string[]
@@ -137,14 +145,14 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      * @param Project $project
      * @param Staff   $staff
      *
-     * @return Borrower
-     *
      * @throws Exception
+     *
+     * @return Borrower
      */
     private function createBorrower(Project $project, Staff $staff)
     {
         $siren = $this->generateSiren();
-        $city = $this->faker->city;
+        $city  = $this->faker->city;
 
         $borrower = new Borrower(
             $project,
@@ -153,7 +161,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             'SARL',
             new Money('EUR', (string) $this->faker->randomFloat(0, 100000)),
             $this->faker->address,
-            implode(' ', ['RCS', strtoupper($city), $this->faker->randomDigit % 2 ? 'A' : 'B', $siren]),
+            implode(' ', ['RCS', mb_strtoupper($city), $this->faker->randomDigit % 2 ? 'A' : 'B', $siren]),
         );
 
         $borrower->setReferent(new BorrowerMember($borrower, new User($this->faker->email)));
@@ -170,9 +178,9 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         // A siren use the Luhn algorithm to validate. Its final length (number + checksum must be 9)
         // https://fr.wikipedia.org/wiki/Luhn_algorithm
         // https://fr.wikipedia.org/wiki/Syst%C3%A8me_d%27identification_du_r%C3%A9pertoire_des_entreprises#Calcul_et_validit%C3%A9_d'un_num%C3%A9ro_SIREN
-        $siren = $this->faker->randomNumber(8); // First we generate a 8 digit long number
-        $siren = str_split((string) $siren); // Conversion and split into an array
-        $checksum = array_map(static fn ($i, $d) => 1 === $i % 2 ? array_sum(str_split((string) ($d * 2))) : $d, range(0, 7), $siren); // Double each odd index digit
+        $siren    = $this->faker->randomNumber(8); // First we generate a 8 digit long number
+        $siren    = mb_str_split((string) $siren); // Conversion and split into an array
+        $checksum = array_map(static fn ($i, $d) => 1 === $i % 2 ? array_sum(mb_str_split((string) ($d * 2))) : $d, range(0, 7), $siren); // Double each odd index digit
         $checksum = array_sum($checksum); // Sum the resulting array
         $checksum *= 9; // Multiply it by 9
         $checksum %= 10; // Checksum is the last digit of the sum
@@ -183,9 +191,9 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     /**
      * @param Project $project
      *
-     * @return Tranche
-     *
      * @throws Exception
+     *
+     * @return Tranche
      */
     private function createTranche(Project $project)
     {
@@ -220,21 +228,22 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
-     * @param Project     $project
-     * @param string      $nature
-     * @param string|null $recurrence
-     *
-     * @return Covenant
+     * @param Project                $project
+     * @param string                 $nature
+     * @param string|null            $recurrence
+     * @param DateTimeImmutable|null $startDate
      *
      * @throws Exception
+     *
+     * @return Covenant
      */
-    private function createCovenant(Project $project, string $nature, ?string $recurrence = null)
+    private function createCovenant(Project $project, string $nature, ?string $recurrence = null, ?DateTimeImmutable $startDate = null)
     {
         $covenant = new Covenant(
             $project,
             $this->faker->title,
             $nature,
-            new DateTimeImmutable('now'),
+            $startDate ?? new DateTimeImmutable('now'),
             90,
             DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+2 years', '+6 years')),
         );
