@@ -55,9 +55,15 @@ class StaffSubscriber implements EventSubscriberInterface
     {
         $payload = $event->getData();
 
-        if (array_key_exists('staff', $payload)) {
-            $payload['@type'] = 'staff';
+        if (!array_key_exists('staff', $payload)) {
+            return;
         }
+
+        if (!array_key_exists('@scope', $payload)) {
+            $payload['@scope'] = [];
+        }
+
+        $payload['@scope'][] = 'staff';
 
         $event->setData($payload);
     }
