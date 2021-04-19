@@ -43,7 +43,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             ->distinct()
             ->leftJoin($rootAlias . '.borrowers', 'b')
             ->leftJoin('b.members', 'bm')
-            ->where('bm.user = :user')
+            ->andWhere('bm.user = :user')
             ->setParameter('user', $user)
         ;
 
