@@ -106,3 +106,49 @@ ProjectParticipationMember:
             expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche
         commissionRate:
             expression: Cette valeur n'est pas cohérente avec celui du type de la commission
+
+CreditGuaranty:
+    Program:
+        name:
+            unique: Le nom d'une programme doit être unique.
+        companyGroupTag:
+            invalid: Le marché choisi n'est pas valable.
+        distributionProcess:
+            textMax: Les textes de chaque étape ne peut excéder une longeur de %limit%.
+        funds:
+            greater: Vous ne pouvez pas réduire le montant total sur un programme en cours.
+            draft: Vous ne pouvez que réduire le montant total sur un programme en brouillon.
+        cappedAt:
+            notChangeable: Vous ne pouvez pas modifier le CAP sur un programme en cours.
+            greater: Vous ne pouvez pas réduire le montant du CAP sur un programme en cours.
+            draft: Vous ne pouvez que modifier le CAP ou réduire son montant sur un programme en brouillon.
+
+
+    ProgramEligibilityConfiguration:
+        programChoiceOption:
+            invalid: La value n'est pas valable.
+            program:
+                invalid: Vous ne pouvez pas mettre programChoiceOption d'un autre program.
+            field:
+                invalid: Vous ne pouvez pas mettre programChoiceOption d'un autre champ.
+        value:
+            invalid: La value n'est pas valable.
+    ProgramEligibility:
+        field:
+            unsupportedType: le type criteria n'est pas valable.
+    ProgramGradeAllocation:
+        grade:
+            invalid: Le grade choisi n'est pas valable.
+    ProgramEligibilityConfigurationInput:
+        programEligibility:
+            type:
+                onlyList: Vous ne pouvez que créer une configuration du type "list" pour l'éligibilité.
+    ProgramEligibilityCondition:
+        value:
+            outOfRange: Merci de mettre un chiffre entre 0 et 1 pour une comparaison de type "rate".
+        operandField:
+            nonComparable: Le champs choisi n'est pas comparable.
+        rightOperandField:
+            selfComparaison: Vous ne pouvez pas comparer un champ à lui-même.
+            empty: rightOperandField est requis pour une comparaison de type "rate".
+            notEmpty: rightOperandField doit être vide pour une comparaison de type "value".
