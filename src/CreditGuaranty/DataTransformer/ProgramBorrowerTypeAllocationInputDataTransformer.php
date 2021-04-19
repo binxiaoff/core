@@ -22,11 +22,6 @@ class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransform
     private ProgramChoiceOptionRepository $programChoiceOptionRepository;
     private FieldRepository               $fieldRepository;
 
-    /**
-     * @param ValidatorInterface            $validator
-     * @param ProgramChoiceOptionRepository $programChoiceOptionRepository
-     * @param FieldRepository               $fieldRepository
-     */
     public function __construct(
         ValidatorInterface $validator,
         ProgramChoiceOptionRepository $programChoiceOptionRepository,
@@ -49,20 +44,16 @@ class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransform
      * @todo: check user's permission when the habilitation is available
      *
      * @param ProgramBorrowerTypeAllocationInput $object
-     * @param string                             $to
-     * @param array                              $context
      *
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws \RuntimeException
-     *
-     * @return ProgramBorrowerTypeAllocation
      */
     public function transform($object, string $to, array $context = []): ProgramBorrowerTypeAllocation
     {
         $this->validator->validate($object);
 
-        if (isset($context['item_operation_name']) && 'post' === $context['item_operation_name']) {
+        if (isset($context['collection_operation_name']) && 'post' === $context['collection_operation_name']) {
             $field               = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
             $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([
                 'program'     => $object->program,
