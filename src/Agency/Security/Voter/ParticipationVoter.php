@@ -16,6 +16,7 @@ class ParticipationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_CREATE = 'create';
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_DELETE = 'delete';
+    public const ATTRIBUTE_VIEW   = 'view';
 
     private ParticipationRepository $participationRepository;
 

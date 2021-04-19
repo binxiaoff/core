@@ -58,8 +58,9 @@ use Unilend\Core\Model\Bitmask;
  *         },
  *         "dataroom_shared_agency_participation": {
  *             "method": "GET",
- *             "path": "/agency/participation/{publicId}/dataroom/shared/personal/{path?}",
+ *             "path": "/agency/participation/{publicId}/dataroom/shared/confidential/{path?}",
  *             "controller": Get::class,
+ *             "security": "is_granted('view', object)",
  *             "requirements": {
  *                 "path": ".+"
  *             },
@@ -221,12 +222,10 @@ class Participation
     private bool $secondary;
 
     /**
-     * @var Drive
-     *
      * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_personal_drive", nullable=false, unique=true)
+     * @ORM\JoinColumn(name="id_confidential_drive", nullable=false, unique=true)
      */
-    private Drive $personalDrive;
+    private Drive $confidentialDrive;
 
     /**
      * @ORM\OneToOne(targetEntity=ParticipationMember::class)
@@ -276,7 +275,7 @@ class Participation
         $this->allocations              = new ArrayCollection();
         $this->archivingDate            = null;
         $this->members                  = new ArrayCollection();
-        $this->personalDrive            = new Drive();
+        $this->confidentialDrive        = new Drive();
     }
 
     public function getParticipant(): Company
@@ -513,12 +512,9 @@ class Participation
         return $this->getMemberByType(ParticipationMember::TYPE_WAIVER);
     }
 
-    /**
-     * @return Drive
-     */
-    public function getPersonalDrive(): Drive
+    public function getConfidentialDrive(): Drive
     {
-        return $this->personalDrive;
+        return $this->confidentialDrive;
     }
 
     /**
