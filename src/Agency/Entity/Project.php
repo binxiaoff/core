@@ -776,9 +776,6 @@ class Project
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getRiskGroupName(): string
     {
         return $this->riskGroupName;
@@ -871,8 +868,6 @@ class Project
 
     /**
      * @param iterable|Tranche[] $tranches
-     *
-     * @return Project
      */
     public function setTranches($tranches): Project
     {
