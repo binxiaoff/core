@@ -34,7 +34,6 @@ use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
-use Unilend\Core\Model\Bitmask;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -101,11 +100,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         $marginRule = $this->createMarginRule($financialCovenant, $tranches);
 
-        $agentParticipation = $this->createParticipation($project, $this->getReference(CompanyFixtures::CALS));
-        $agentParticipation->setResponsibilities((new Bitmask(0))->add(Participation::RESPONSIBILITY_AGENT));
-        $agentParticipation->setAllocations([
-            new ParticipationTrancheAllocation($agentParticipation, $tranches[0], new Money('EUR', '2000000')),
-        ]);
+        $agentParticipation = $project->getAgentParticipation();
+        $agentParticipation->addAllocation(new ParticipationTrancheAllocation($agentParticipation, $tranches[0], new Money('EUR', '2000000')));
 
         $participations = [
             ...array_map(

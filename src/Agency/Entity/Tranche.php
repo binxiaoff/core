@@ -265,7 +265,7 @@ class Tranche
     private ?DateTimeImmutable $validityDate;
 
     /**
-     * @var ParticipationTrancheAllocation[]|iterable
+     * @var ParticipationTrancheAllocation[]|Collection
      *
      * @ORM\OneToMany(
      *     targetEntity=ParticipationTrancheAllocation::class,
@@ -281,7 +281,7 @@ class Tranche
      *
      * @Groups({"agency:tranche:read"})
      */
-    private iterable $allocations;
+    private Collection $allocations;
 
     public function __construct(
         Project $project,
@@ -580,5 +580,22 @@ class Tranche
                 ->addViolation()
             ;
         }
+    }
+
+    public function addAllocation(ParticipationTrancheAllocation $participationTrancheAllocation): Tranche
+    {
+        if (false === $this->allocations->contains($participationTrancheAllocation)) {
+            $this->allocations->add($participationTrancheAllocation);
+            $participationTrancheAllocation->getParticipation()->addAllocation($participationTrancheAllocation);
+        }
+
+        return $this;
+    }
+
+    public function removeAllocation(ParticipationTrancheAllocation $participationTrancheAllocation): Tranche
+    {
+        $this->allocations->removeElement($participationTrancheAllocation);
+
+        return $this;
     }
 }

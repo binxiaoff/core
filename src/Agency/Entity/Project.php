@@ -64,6 +64,20 @@ use Unilend\Core\Validator\Constraints\Siren;
  *                     "nullableMoney:write"
  *                 }
  *             },
+ *             "openapi_context": {
+ *                 "parameters": {
+ *                     {
+ *                         "in": "query",
+ *                         "name": "import",
+ *                         "schema": {
+ *                             "type": "string",
+ *                             "minimum": 0,
+ *                             "maximum": 1
+ *                         },
+ *                         "description": "Public id of the imported arragement project"
+ *                     }
+ *                 }
+ *             }
  *         }
  *     },
  *     itemOperations={
@@ -348,7 +362,7 @@ class Project
     private ?string $secondaryRiskType;
 
     /**
-     * @var iterable|Tranche[]
+     * @var Collection|Tranche[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Tranche", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
@@ -361,7 +375,7 @@ class Project
      *
      * @ApiSubresource
      */
-    private iterable $tranches;
+    private Collection $tranches;
 
     /**
      * @var Borrower[]|iterable
@@ -506,6 +520,13 @@ class Project
     private Drive $agentSecondaryParticipantDrive;
 
     /**
+     * There is no direct relation with Arrangement project because there is no need and it would add an uneeded relation.
+     *
+     * @ORM\Column(type="string", length=36, nullable=true)
+     */
+    private ?string $sourcePublicId;
+
+    /**
      * @throws Exception
      */
     public function __construct(
@@ -562,18 +583,13 @@ class Project
         $this->agentBorrowerDrive             = new Drive();
         $this->agentPrincipalParticipantDrive = new Drive();
         $this->agentSecondaryParticipantDrive = new Drive();
+
+        $this->sourcePublicId = null;
     }
 
     public function getAgent(): Company
     {
         return $this->agent;
-    }
-
-    public function setAgent(Company $agent): Project
-    {
-        $this->agent = $agent;
-
-        return $this;
     }
 
     public function getAgentDisplayName(): ?string
@@ -852,6 +868,26 @@ class Project
     }
 
     /**
+     * @return Project
+     */
+    public function addTranche(Tranche $tranche)
+    {
+        $this->tranches->add($tranche);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function removeTranche(Tranche $tranche)
+    {
+        $this->tranches->removeElement($tranche);
+
+        return $this;
+    }
+
+    /**
      * @Assert\Count(min="1", groups={"published"})
      *
      * @return Tranche[]|iterable
@@ -965,6 +1001,20 @@ class Project
         return $this->participations;
     }
 
+    public function addParticipation(Participation $participation): Project
+    {
+        $this->participations->add($participation);
+
+        return $this;
+    }
+
+    public function removeParticipation(Participation $participation): Project
+    {
+        $this->participations->removeElement($participation);
+
+        return $this;
+    }
+
     public function getCurrentStatus(): ProjectStatus
     {
         return $this->currentStatus;
@@ -1043,5 +1093,27 @@ class Project
     public function getAgentSecondaryParticipantDrive(): Drive
     {
         return $this->agentSecondaryParticipantDrive;
+    }
+
+    public function getAgentParticipation(): Participation
+    {
+        return $this->findParticipationByParticipant($this->getAgent());
+    }
+
+    public function findParticipationByParticipant(Company $participant): ?Participation
+    {
+        return $this->participations->filter(fn (Participation $participation) => $participation->getParticipant() === $participant)->first() ?: null;
+    }
+
+    public function getSourcePublicId(): ?string
+    {
+        return $this->sourcePublicId;
+    }
+
+    public function setSourcePublicId(?string $sourcePublicId): Project
+    {
+        $this->sourcePublicId = $sourcePublicId;
+
+        return $this;
     }
 }

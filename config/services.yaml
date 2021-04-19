@@ -157,6 +157,10 @@ services:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
+    Unilend\Agency\ApiPlatform\ContextBuilder\ProjectImportContextBuilder:
+        decorates: 'api_platform.serializer.context_builder'
+        autoconfigure: false
+
     Unilend\Core\Service\ElectronicSignature\XmlSigner:
         $publicKey: '%psn.public_key%'
         $privateKey: '%psn.private_key%'

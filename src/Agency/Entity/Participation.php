@@ -178,7 +178,7 @@ class Participation
     private bool $prorata;
 
     /**
-     * @var ParticipationTrancheAllocation[]|iterable
+     * @var ParticipationTrancheAllocation[]|Collection
      *
      * @ORM\OneToMany(targetEntity=ParticipationTrancheAllocation::class, cascade={"persist", "remove"}, mappedBy="participation")
      *
@@ -190,7 +190,7 @@ class Participation
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
-    private iterable $allocations;
+    private Collection $allocations;
 
     /**
      * @ORM\Column(type="boolean")
@@ -242,6 +242,7 @@ class Participation
         $this->agentCommission          = null;
         $this->deputyArrangerCommission = null;
         $this->allocations              = new ArrayCollection();
+        $this->members                  = new ArrayCollection();
     }
 
     public function getParticipant(): Company
@@ -489,6 +490,23 @@ class Participation
         }
 
         return $validationGroups;
+    }
+
+    public function addAllocation(ParticipationTrancheAllocation $participationTrancheAllocation): Participation
+    {
+        if (false === $this->allocations->contains($participationTrancheAllocation)) {
+            $this->allocations->add($participationTrancheAllocation);
+            $participationTrancheAllocation->getTranche()->addAllocation($participationTrancheAllocation);
+        }
+
+        return $this;
+    }
+
+    public function removeAllocation(ParticipationTrancheAllocation $participationTrancheAllocation): Participation
+    {
+        $this->allocations->removeElement($participationTrancheAllocation);
+
+        return $this;
     }
 
     /**
