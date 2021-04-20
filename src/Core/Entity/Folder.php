@@ -49,6 +49,7 @@ class Folder
      *
      * @ORM\ManyToMany(targetEntity=File::class, cascade={"persist", "remove"}, indexBy="publicId")
      * @ORM\JoinTable(
+     *     name="core_folder_file",
      *     inverseJoinColumns={@ORM\JoinColumn(name="file_id", referencedColumnName="id", unique=true)}
      * )
      */
@@ -168,5 +169,14 @@ class Folder
     public function getFile(string $publicId): ?File
     {
         return $this->files[$publicId];
+    }
+
+    public function addFile(File $file): Folder
+    {
+        if (false === $this->files->contains($file)) {
+            $this->files->add($file);
+        }
+
+        return $this;
     }
 }

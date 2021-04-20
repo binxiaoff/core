@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Core\DataTransformer;
 
 use ApiPlatform\Core\Validator\ValidatorInterface;
-use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
-use Defuse\Crypto\Exception\IOException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
@@ -20,6 +18,7 @@ use Unilend\Agency\Security\Voter\TermVoter;
 use Unilend\Core\DTO\FileInput;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\File;
+use Unilend\Core\Entity\Folder;
 use Unilend\Core\Entity\Message;
 use Unilend\Core\Entity\MessageFile;
 use Unilend\Core\Entity\Staff;
@@ -111,20 +110,14 @@ class FileInputDataTransformer
             $file = $this->uploadTermDocument($targetEntity, $fileInput, $user);
         }
 
-        if ($targetEntity instanceof Term) {
-            $file = $this->uploadTermDocument($targetEntity, $fileInput, $currentStaff);
+        if ($targetEntity instanceof Folder) {
+            $file = $this->uploadFolderFile($targetEntity, $fileInput, $user);
+            // TODO add confidential drive
         }
 
         return $file;
     }
 
-    /**
-     * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
-     * @throws IOException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
     private function uploadMessageFile(Message $message, FileInput $fileInput, User $user, ?File $file): File
     {
         if (false === $this->security->isGranted(MessageVoter::ATTRIBUTE_ATTACH_FILE, $message)) {
@@ -154,14 +147,6 @@ class FileInputDataTransformer
         return $file;
     }
 
-    /**
-     * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
-     * @throws IOException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws Exception
-     */
     private function uploadForProjectFile(Project $project, FileInput $fileInput, User $user, ?File $file): File
     {
         $currentStaff = $this->getCurrentStaff();
@@ -207,13 +192,6 @@ class FileInputDataTransformer
         return $file;
     }
 
-    /**
-     * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
-     * @throws IOException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
     private function uploadForProject(Project $project, FileInput $fileInput, User $user, ?File $file): File
     {
         if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
@@ -254,15 +232,6 @@ class FileInputDataTransformer
         return $file;
     }
 
-    /**
-     * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
-     * @throws IOException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     *
-     * @return File
-     */
     private function uploadProjectParticipationNda(ProjectParticipation $projectParticipation, FileInput $fileInput, User $user, ?File $file)
     {
         if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $projectParticipation->getProject())) {
@@ -291,15 +260,6 @@ class FileInputDataTransformer
         return $file;
     }
 
-    /**
-     * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
-     * @throws IOException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     *
-     * @return File
-     */
     private function uploadTermDocument(Term $targetEntity, FileInput $fileInput, User $user)
     {
         if (false === $this->security->isGranted(TermVoter::ATTRIBUTE_EDIT, $targetEntity)) {
@@ -311,6 +271,16 @@ class FileInputDataTransformer
         $this->fileUploadManager->upload($fileInput->uploadedFile, $user, $file, ['termId' => $targetEntity->getId()]);
 
         $targetEntity->setBorrowerDocument($file);
+
+        return $file;
+    }
+
+    private function uploadFolderFile(Folder $targetEntity, FileInput $fileInput, User $user)
+    {
+        $file = new File();
+
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $user, $file, ['folderId' => $targetEntity->getPublicId()]);
+        $targetEntity->addFile($file);
 
         return $file;
     }

@@ -272,6 +272,11 @@ class Project
     public const STATUS_DRAFT     = 10;
     public const STATUS_PUBLISHED = 20;
 
+    public const PROJECT_DRIVE_BORROWER                    = 'project_drive_borrower';
+    public const PROJECT_DRIVE_AGENT_BORROWER              = 'project_drive_agent_borrower';
+    public const PROJECT_DRIVE_AGENT_PRINCIPAL_PARTICIPANT = 'project_drive_agent_principal_participant';
+    public const PROJECT_DRIVE_AGENT_SECONDARY_PARTICIPANT = 'project_drive_agent_secondary_participant';
+
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
      * @ORM\JoinColumns({
@@ -1158,5 +1163,10 @@ class Project
     public function getBorrowerDrive(): Drive
     {
         return $this->borrowerDrive;
+    }
+
+    public static function getFileTypes(): array
+    {
+        return self::getConstants('PROJECT_DRIVE_');
     }
 }
