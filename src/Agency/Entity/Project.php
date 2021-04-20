@@ -7,6 +7,7 @@ namespace Unilend\Agency\Entity;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -133,6 +134,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *     }
  * )
  *
+ * @ApiFilter(filterClass=NumericFilter::class, properties={"currentStatus"})
  * @ApiFilter(filterClass=ProjectFilter::class, arguments={})
  */
 class Project
