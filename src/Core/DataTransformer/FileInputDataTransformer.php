@@ -15,6 +15,8 @@ use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
+use Unilend\Agency\Entity\Term;
+use Unilend\Agency\Security\Voter\TermVoter;
 use Unilend\Core\DTO\FileInput;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\File;
@@ -36,32 +38,20 @@ use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class FileInputDataTransformer
 {
-    /** @var ValidatorInterface */
     private ValidatorInterface $validator;
-    /** @var Security */
+
     private Security $security;
-    /** @var FileUploadManager */
+
     private FileUploadManager $fileUploadManager;
-    /** @var ProjectFileRepository */
+
     private ProjectFileRepository $projectFileRepository;
-    /** @var ProjectRepository */
+
     private ProjectRepository $projectRepository;
-    /** @var MessageFileRepository */
+
     private MessageFileRepository $messageFileRepository;
-    /** @var MessageRepository */
+
     private MessageRepository $messageRepository;
 
-    /**
-     * FileInputDataTransformer constructor.
-     *
-     * @param ValidatorInterface    $validator
-     * @param Security              $security
-     * @param FileUploadManager     $fileUploadManager
-     * @param ProjectFileRepository $projectFileRepository
-     * @param ProjectRepository     $projectRepository
-     * @param MessageFileRepository $messageFileRepository
-     * @param MessageRepository     $messageRepository
-     */
     public function __construct(
         ValidatorInterface $validator,
         Security $security,
@@ -81,15 +71,10 @@ class FileInputDataTransformer
     }
 
     /**
-     * @param FileInput $fileInput
-     * @param File|null $file
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws FileExistsException
      * @throws Exception
-     *
-     * @return File
      */
     public function transform(FileInput $fileInput, ?File $file): File
     {
@@ -122,22 +107,19 @@ class FileInputDataTransformer
             $file = $this->uploadMessageFile($targetEntity, $fileInput, $user, $file);
         }
 
+        if ($targetEntity instanceof Term) {
+            $file = $this->uploadTermDocument($targetEntity, $fileInput, $user);
+        }
+
         return $file;
     }
 
     /**
-     * @param Message   $message
-     * @param FileInput $fileInput
-     * @param User      $user
-     * @param File|null $file
-     *
      * @throws EnvironmentIsBrokenException
      * @throws FileExistsException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
-     *
-     * @return File
      */
     private function uploadMessageFile(Message $message, FileInput $fileInput, User $user, ?File $file): File
     {
@@ -169,19 +151,12 @@ class FileInputDataTransformer
     }
 
     /**
-     * @param Project   $project
-     * @param FileInput $fileInput
-     * @param User      $user
-     * @param File|null $file
-     *
      * @throws EnvironmentIsBrokenException
      * @throws FileExistsException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws Exception
-     *
-     * @return File
      */
     private function uploadForProjectFile(Project $project, FileInput $fileInput, User $user, ?File $file): File
     {
@@ -229,18 +204,11 @@ class FileInputDataTransformer
     }
 
     /**
-     * @param Project   $project
-     * @param FileInput $fileInput
-     * @param User      $user
-     * @param File|null $file
-     *
      * @throws EnvironmentIsBrokenException
      * @throws FileExistsException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
-     *
-     * @return File
      */
     private function uploadForProject(Project $project, FileInput $fileInput, User $user, ?File $file): File
     {
@@ -283,11 +251,6 @@ class FileInputDataTransformer
     }
 
     /**
-     * @param ProjectParticipation $projectParticipation
-     * @param FileInput            $fileInput
-     * @param User                 $user
-     * @param File|null            $file
-     *
      * @throws EnvironmentIsBrokenException
      * @throws FileExistsException
      * @throws IOException
@@ -325,10 +288,29 @@ class FileInputDataTransformer
     }
 
     /**
-     * @param FileInput $request
-     * @param File      $existingFile
-     * @param object    $targetEntity
+     * @throws EnvironmentIsBrokenException
+     * @throws FileExistsException
+     * @throws IOException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return File
      */
+    private function uploadTermDocument(Term $targetEntity, FileInput $fileInput, User $user)
+    {
+        if (false === $this->security->isGranted(TermVoter::ATTRIBUTE_EDIT, $targetEntity)) {
+            throw new AccessDeniedException();
+        }
+
+        $file = new File();
+
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $user, $file, ['termId' => $targetEntity->getId()]);
+
+        $targetEntity->setBorrowerDocument($file);
+
+        return $file;
+    }
+
     private static function denyUploadExistingFile(FileInput $request, File $existingFile, object $targetEntity)
     {
         throw new RuntimeException(sprintf(
@@ -340,9 +322,6 @@ class FileInputDataTransformer
         ));
     }
 
-    /**
-     * @return Staff|null
-     */
     private function getCurrentStaff(): ?Staff
     {
         $token = $this->security->getToken();
@@ -350,9 +329,6 @@ class FileInputDataTransformer
         return $token && $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
     }
 
-    /**
-     * @return Company|null
-     */
     private function getCurrentCompany(): ?Company
     {
         $token = $this->security->getToken();
