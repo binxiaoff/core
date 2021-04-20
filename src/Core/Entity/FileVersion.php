@@ -71,13 +71,11 @@ class FileVersion
     /**
      * The size of the file in bytes.
      *
-     * @var int
-     *
      * @ORM\Column(type="integer", nullable=true)
      *
      * @Groups({"fileVersion:read"})
      */
-    private int $size;
+    private ?int $size = null;
 
     /**
      * @var Collection|FileDownload[]
