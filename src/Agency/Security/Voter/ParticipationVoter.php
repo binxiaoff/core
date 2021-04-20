@@ -12,6 +12,7 @@ class ParticipationVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_DELETE = 'delete';
 
     /**
      * @param Participation $participation

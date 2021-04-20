@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -46,6 +47,9 @@ use Unilend\Core\Model\Bitmask;
  *                 "groups": {"agency:participation:update", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}
  *             },
  *             "security_post_denormalize": "is_granted('edit', object)",
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)"
  *         }
  *     }
  * )
@@ -223,7 +227,12 @@ class Participation
      *
      * @Groups({"agency:participation:read"})
      */
-    private Collection $members;
+    private Collection         $members;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private ?DateTimeImmutable $archivingDate;
 
     public function __construct(
         Project $project,
@@ -242,6 +251,7 @@ class Participation
         $this->agentCommission          = null;
         $this->deputyArrangerCommission = null;
         $this->allocations              = new ArrayCollection();
+        $this->archivingDate            = null;
         $this->members                  = new ArrayCollection();
     }
 
@@ -513,11 +523,25 @@ class Participation
         return $this;
     }
 
+    public function archive(): Participation
+    {
+        if (false === $this->isArchived()) {
+            $this->archivingDate = new DateTimeImmutable();
+        }
+
+        return $this;
+    }
+
     /**
      * @return iterable|ParticipationMember[]
      */
     private function getMemberByType(string $type): iterable
     {
         return $this->members->filter(fn (ParticipationMember $member) => $type === $member->getType())->toArray();
+    }
+
+    private function isArchived(): bool
+    {
+        return null !== $this->archivingDate;
     }
 }
