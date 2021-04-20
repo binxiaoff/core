@@ -51,6 +51,12 @@ doctrine:
                             dir: '%kernel.project_dir%/src/Core/Entity'
                             prefix: 'Unilend\Core\Entity'
                             alias: Unilend\Core
+                        Unilend\Agency:
+                            is_bundle: false
+                            type: annotation
+                            dir: '%kernel.project_dir%/src/Agency/Entity'
+                            prefix: 'Unilend\Agency\Entity'
+                            alias: Unilend\Agency
                         Unilend\CreditGuaranty:
                             is_bundle: false
                             type: annotation
@@ -58,10 +64,13 @@ doctrine:
                             prefix: 'Unilend\CreditGuaranty\Entity'
                             alias: Unilend\CreditGuaranty
                     hydrators:
-                        HYDRATE_COLUMN: Unilend\Core\Doctrine\ORM\ColumnHydrator
+                        HYDRATE_COLUMN: 'Unilend\Core\Doctrine\ORM\ColumnHydrator'
                     filters:
                         softdeletable:
                             class: 'Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter'
+                            enabled: true
+                        term:
+                            class: Unilend\Agency\Doctrine\Filter\TermFilter
                             enabled: true
             # entity manager dedicated to Doctrine Migration bundle (Doctrine Migration bundle ignores the option --conn, if it finds some entity manager)
             migration:

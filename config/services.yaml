@@ -51,11 +51,16 @@ services:
         # The directory Unilend contains the legacy bundles. The services are managed by their own configurations.
         exclude: [
             '%kernel.project_dir%/src/Kernel.php',
-            '%kernel.project_dir%/src/{Core,Syndication,CreditGuaranty}/{Console,Entity,Migrations,Controller,Tests,Traits,Listener}'
+            '%kernel.project_dir%/src/{Core,Syndication,Agency,CreditGuaranty}/{Console,Entity,Migrations,Controller,Tests,Traits,Listener/Doctrine,Doctrine/Listener}'
         ]
 
     Unilend\Core\Controller\:
         resource: '%kernel.project_dir%/src/Core/Controller'
+        tags:
+            - { name: 'controller.service_arguments' }
+
+    Unilend\Agency\Controller\:
+        resource: '%kernel.project_dir%/src/Agency/Controller'
         tags:
             - { name: 'controller.service_arguments' }
 
