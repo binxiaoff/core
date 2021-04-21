@@ -179,3 +179,7 @@ services:
 
     Unilend\Core\ApiPlatform\Metadata\Metadata\Resource\Factory\ShortNameResourceMetadataFactory:
         decorates: 'api_platform.metadata.resource.metadata_factory'
+
+    Unilend\Core\EventSubscriber\Jwt\PayloadManagerSubscriber:
+        calls:
+            - addPayloadManager: ['@Unilend\Core\Service\Jwt\StaffPayloadManager']

@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\EventSubscriber\JWT;
+namespace Unilend\Core\EventSubscriber\Jwt;
 
-use Lexik\Bundle\JWTAuthenticationBundle\Event\{JWTCreatedEvent, JWTDecodedEvent};
+use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
+use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class VersionSubscriber implements EventSubscriberInterface
 {
-    public const JWT_VERSION = '2021-03-30';
+    public const JWT_VERSION = '2021-04-21';
 
     /**
      * {@inheritdoc}
@@ -23,9 +24,6 @@ class VersionSubscriber implements EventSubscriberInterface
         ];
     }
 
-    /**
-     * @param JWTCreatedEvent $event
-     */
     public function addPayload(JWTCreatedEvent $event): void
     {
         $payload = $event->getData();
@@ -35,9 +33,6 @@ class VersionSubscriber implements EventSubscriberInterface
         $event->setData($payload);
     }
 
-    /**
-     * @param JWTDecodedEvent $event
-     */
     public function validatePayload(JWTDecodedEvent $event): void
     {
         $payload = $event->getPayload();
