@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\ApiPlatform\Filter;
+namespace Unilend\Agency\Filter\ApiPlatform;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
