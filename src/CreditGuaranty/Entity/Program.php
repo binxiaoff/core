@@ -523,4 +523,12 @@ class Program implements TraceableStatusAwareInterface
 
         return $this;
     }
+
+    /**
+     * @return Collection|ProgramChoiceOption[]
+     */
+    public function getProgramChoiceOptions(): Collection
+    {
+        return $this->programChoiceOptions;
+    }
 }

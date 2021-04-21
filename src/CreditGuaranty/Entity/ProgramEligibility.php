@@ -95,6 +95,7 @@ class ProgramEligibility
         $this->field                            = $field;
         $this->programEligibilityConfigurations = new ArrayCollection();
         $this->added                            = new \DateTimeImmutable();
+        $this->initialiseConfigurations();
     }
 
     public function getProgram(): Program
@@ -143,5 +144,37 @@ class ProgramEligibility
         }
 
         return $this;
+    }
+
+    private function initialiseConfigurations(): void
+    {
+        $field = $this->getField();
+        // auto-configure the new-created eligibility
+        switch ($field->getType()) {
+            // For the "other", the only reason that it's added to the program is to let the target field be required, thus we set always its eligible to true.
+            case Field::TYPE_OTHER:
+                $this->addProgramEligibilityConfiguration(new ProgramEligibilityConfiguration($this, null, null, true));
+
+                break;
+
+            case Field::TYPE_BOOL:
+                $this->addProgramEligibilityConfiguration(new ProgramEligibilityConfiguration($this, null, Field::VALUE_BOOL_YES, true));
+                $this->addProgramEligibilityConfiguration(new ProgramEligibilityConfiguration($this, null, Field::VALUE_BOOL_NO, true));
+
+                break;
+
+            case Field::TYPE_LIST:
+                $programChoiceOptions = $this->getProgram()->getProgramChoiceOptions()->filter(
+                    fn (ProgramChoiceOption $programChoiceOption) => $programChoiceOption->getField() === $field
+                );
+                foreach ($programChoiceOptions as $programChoiceOption) {
+                    $this->addProgramEligibilityConfiguration(new ProgramEligibilityConfiguration($this, $programChoiceOption, null, true));
+                }
+
+                break;
+
+            default:
+                throw new \UnexpectedValueException('The field type is not supported.');
+        }
     }
 }
