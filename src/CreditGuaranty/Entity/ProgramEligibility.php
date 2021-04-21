@@ -4,48 +4,51 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
- *      attributes={"pagination_enabled": false},
- *      normalizationContext={"groups":{
- *          "creditGuaranty:programEligibility:read",
- *          "creditGuaranty:field:read",
- *          "creditGuaranty:programEligibilityConfiguration:read",
- *          "timestampable:read"
- *      }},
- *     denormalizationContext={"groups":{"creditGuaranty:programEligibility:write"}},
- *      itemOperations={
- *          "get": {
- *              "normalization_context": {
- *                  "groups":{
- *                      "creditGuaranty:programEligibility:read",
- *                      "creditGuaranty:field:read",
- *                      "creditGuaranty:programChoiceOption:read",
- *                      "creditGuaranty:programEligibilityConfiguration:read",
- *                      "timestampable:read"
- *                  }
- *              }
- *          },
- *          "delete"
- *      },
- *      collectionOperations={
- *          "post"
- *      }
+ *     attributes={"pagination_enabled": false},
+ *     normalizationContext={"groups": {
+ *         "creditGuaranty:programEligibility:read",
+ *         "creditGuaranty:field:read",
+ *         "creditGuaranty:programEligibilityConfiguration:read",
+ *         "timestampable:read"
+ *     }},
+ *     denormalizationContext={"groups": {"creditGuaranty:programEligibility:write"}},
+ *     itemOperations={
+ *         "get": {
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "creditGuaranty:programEligibility:read",
+ *                     "creditGuaranty:field:read",
+ *                     "creditGuaranty:programChoiceOption:read",
+ *                     "creditGuaranty:programEligibilityConfiguration:read",
+ *                     "timestampable:read"
+ *                 }
+ *             }
+ *         },
+ *         "delete"
+ *     },
+ *     collectionOperations={
+ *         "post"
+ *     }
  * )
  *
  * @ORM\Entity
  * @ORM\Table(
- *      name="credit_guaranty_program_eligibility",
- *      uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"id_field", "id_program"})
- *      }
+ *     name="credit_guaranty_program_eligibility",
+ *     uniqueConstraints={
+ *         @ORM\UniqueConstraint(columns={"id_field", "id_program"})
+ *     }
  * )
  * @ORM\HasLifecycleCallbacks
  *
@@ -77,16 +80,15 @@ class ProgramEligibility
     /**
      * @var Collection|ProgramEligibilityConfiguration[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration", mappedBy="programEligibility", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(
+     *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration",
+     *     mappedBy="programEligibility", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     * )
      *
      * @Groups({"creditGuaranty:programEligibility:read"})
      */
     private Collection $programEligibilityConfigurations;
 
-    /**
-     * @param Program $program
-     * @param Field   $field
-     */
     public function __construct(Program $program, Field $field)
     {
         $this->program                          = $program;
@@ -95,17 +97,11 @@ class ProgramEligibility
         $this->added                            = new \DateTimeImmutable();
     }
 
-    /**
-     * @return Program
-     */
     public function getProgram(): Program
     {
         return $this->program;
     }
 
-    /**
-     * @return Field
-     */
     public function getField(): Field
     {
         return $this->field;
@@ -117,5 +113,35 @@ class ProgramEligibility
     public function getProgramEligibilityConfigurations()
     {
         return $this->programEligibilityConfigurations;
+    }
+
+    public function removeProgramEligibilityConfiguration(ProgramEligibilityConfiguration $programEligibilityConfiguration): ProgramEligibility
+    {
+        $this->programEligibilityConfigurations->removeElement($programEligibilityConfiguration);
+
+        return $this;
+    }
+
+    public function addProgramEligibilityConfiguration(ProgramEligibilityConfiguration $programEligibilityConfiguration): ProgramEligibility
+    {
+        $callback = static function (int $key, ProgramEligibilityConfiguration $existingProgramEligibilityConfiguration) use ($programEligibilityConfiguration): bool {
+            if ($existingProgramEligibilityConfiguration->getProgramChoiceOption()) {
+                return $existingProgramEligibilityConfiguration->getProgramChoiceOption() === $programEligibilityConfiguration->getProgramChoiceOption();
+            }
+            if ($existingProgramEligibilityConfiguration->getValue()) {
+                return $existingProgramEligibilityConfiguration->getValue() === $programEligibilityConfiguration->getValue();
+            }
+            // If both are null, it's a configuration without value. One ProgramEligibility can only have one configuration like that, so we return true.
+            return true;
+        };
+
+        if (
+            $programEligibilityConfiguration->getProgramEligibility() === $this
+            && false === $this->programEligibilityConfigurations->exists($callback)
+        ) {
+            $this->programEligibilityConfigurations->add($programEligibilityConfiguration);
+        }
+
+        return $this;
     }
 }

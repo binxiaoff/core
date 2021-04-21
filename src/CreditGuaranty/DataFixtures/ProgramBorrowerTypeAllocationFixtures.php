@@ -9,36 +9,46 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\CreditGuaranty\Repository\ProgramBorrowerTypeAllocationRepository;
+use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
+use Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation;
+use Unilend\CreditGuaranty\Repository\FieldRepository;
+use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
+use Unilend\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
 
 class ProgramBorrowerTypeAllocationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    /** @var ProgramBorrowerTypeAllocationRepository */
-    private ProgramBorrowerTypeAllocationRepository $programBorrowerTypeAllocationRepository;
+    private ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository;
+    private ProgramChoiceOptionRepository             $programChoiceOptionRepository;
+    private FieldRepository                           $fieldRepository;
 
-    /**
-     * ProgramBorrowerTypeAllocationFixtures constructor.
-     *
-     * @param TokenStorageInterface                   $tokenStorage
-     * @param ProgramBorrowerTypeAllocationRepository $programBorrowerTypeAllocationRepository
-     */
-    public function __construct(TokenStorageInterface $tokenStorage, ProgramBorrowerTypeAllocationRepository $programBorrowerTypeAllocationRepository)
-    {
+    public function __construct(
+        TokenStorageInterface $tokenStorage,
+        ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository,
+        ProgramChoiceOptionRepository $programChoiceOptionRepository,
+        FieldRepository $fieldRepository
+    ) {
         parent::__construct($tokenStorage);
-        $this->programBorrowerTypeAllocationRepository = $programBorrowerTypeAllocationRepository;
+        $this->programEligibilityConfigurationRepository = $programEligibilityConfigurationRepository;
+        $this->programChoiceOptionRepository             = $programChoiceOptionRepository;
+        $this->fieldRepository                           = $fieldRepository;
     }
 
     /**
-     * @param ObjectManager $manager
-     *
      * @throws Exception
      */
     public function load(ObjectManager $manager): void
     {
-        $allProgramBorrowerTypeAllocations = $this->programBorrowerTypeAllocationRepository->findAll();
+        $programBorrowerTypeField          = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
+        $programBorrowerTypeChoiceOptions  = $this->programChoiceOptionRepository->findBy(['field' => $programBorrowerTypeField]);
+        $programBorrowerTypeConfigurations = $this->programEligibilityConfigurationRepository->findBy(['programChoiceOption' => $programBorrowerTypeChoiceOptions]);
 
-        foreach ($allProgramBorrowerTypeAllocations as $programBorrowerTypeAllocation) {
-            $programBorrowerTypeAllocation->setMaxAllocationRate((string) (random_int(0, 100) / 100));
+        foreach ($programBorrowerTypeConfigurations as $programBorrowerTypeConfiguration) {
+            $programBorrowerTypeAllocation = new ProgramBorrowerTypeAllocation(
+                $programBorrowerTypeConfiguration->getProgramEligibility()->getProgram(),
+                $programBorrowerTypeConfiguration->getProgramChoiceOption(),
+                (string) (random_int(0, 100) / 100)
+            );
+            $manager->persist($programBorrowerTypeAllocation);
         }
         $manager->flush();
     }
@@ -49,7 +59,9 @@ class ProgramBorrowerTypeAllocationFixtures extends AbstractFixtures implements 
     public function getDependencies(): array
     {
         return [
+            FieldFixtures::class,
             ProgramChoiceOptionFixtures::class,
+            ProgramEligibilityConfigurationFixtures::class,
         ];
     }
 }

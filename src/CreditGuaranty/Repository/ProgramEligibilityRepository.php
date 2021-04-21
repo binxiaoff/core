@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Unilend\CreditGuaranty\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Unilend\CreditGuaranty\Entity\ProgramEligibility;
 
@@ -16,11 +18,18 @@ use Unilend\CreditGuaranty\Entity\ProgramEligibility;
  */
 class ProgramEligibilityRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $managerRegistry
-     */
     public function __construct(ManagerRegistry $managerRegistry)
     {
         parent::__construct($managerRegistry, ProgramEligibility::class);
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function save(ProgramEligibility $programEligibility): void
+    {
+        $this->getEntityManager()->persist($programEligibility);
+        $this->getEntityManager()->flush();
     }
 }

@@ -122,13 +122,3 @@ services:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
             - { name: doctrine.event_listener, event: postFlush }
-
-    Unilend\CreditGuaranty\Listener\Doctrine\Lifecycle\ProgramBorrowerTypeAllocationListener:
-        tags:
-            - { name: doctrine.event_listener, event: onFlush }
-            - { name: doctrine.event_listener, event: postFlush }
-
-    Unilend\CreditGuaranty\Listener\Doctrine\Lifecycle\ProgramEligibilityConfigurationCreatedListener:
-        tags:
-            - { name: doctrine.event_listener, event: onFlush }
-            - { name: doctrine.event_listener, event: postFlush }

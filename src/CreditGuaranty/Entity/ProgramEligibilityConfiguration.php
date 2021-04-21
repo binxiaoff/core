@@ -9,6 +9,7 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -112,34 +113,21 @@ class ProgramEligibilityConfiguration
      */
     private Collection $programEligibilityConditions;
 
-    /**
-     * @param ProgramEligibility       $programEligibility
-     * @param ProgramChoiceOption|null $programChoiceOption
-     * @param string|null              $value
-     * @param bool                     $eligible
-     */
-    public function __construct(ProgramEligibility $programEligibility, ?ProgramChoiceOption $programChoiceOption, ?string $value, bool $eligible = false)
+    public function __construct(ProgramEligibility $programEligibility, ?ProgramChoiceOption $programChoiceOption, ?string $value, bool $eligible)
     {
-        $this->programEligibility  = $programEligibility;
-        $this->programChoiceOption = $programChoiceOption;
-        $this->value               = $value;
-        $this->eligible            = $eligible;
-        $this->added               = new \DateTimeImmutable();
+        $this->programEligibility           = $programEligibility;
+        $this->programChoiceOption          = $programChoiceOption;
+        $this->value                        = $value;
+        $this->eligible                     = $eligible;
+        $this->programEligibilityConditions = new ArrayCollection();
+        $this->added                        = new \DateTimeImmutable();
     }
 
-    /**
-     * @return ProgramEligibility
-     */
     public function getProgramEligibility(): ProgramEligibility
     {
         return $this->programEligibility;
     }
 
-    /**
-     * @param bool $eligible
-     *
-     * @return ProgramEligibilityConfiguration
-     */
     public function setEligible(bool $eligible): ProgramEligibilityConfiguration
     {
         $this->eligible = $eligible;
@@ -147,25 +135,16 @@ class ProgramEligibilityConfiguration
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isEligible(): bool
     {
         return $this->eligible;
     }
 
-    /**
-     * @return ProgramChoiceOption|null
-     */
     public function getProgramChoiceOption(): ?ProgramChoiceOption
     {
         return $this->programChoiceOption;
     }
 
-    /**
-     * @return string|null
-     */
     public function getValue(): ?string
     {
         return $this->value;
@@ -173,8 +152,6 @@ class ProgramEligibilityConfiguration
 
     /**
      * @Groups({"creditGuaranty:programEligibilityConfiguration:read"})
-     *
-     * @return int
      */
     public function getProgramEligibilityConditionsCount(): int
     {
@@ -183,8 +160,6 @@ class ProgramEligibilityConfiguration
 
     /**
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
      */
     public function validateConfiguration(ExecutionContextInterface $context): void
     {

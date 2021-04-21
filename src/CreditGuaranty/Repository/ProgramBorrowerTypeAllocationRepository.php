@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\CreditGuaranty\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation;
 
@@ -16,11 +17,17 @@ use Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation;
  */
 class ProgramBorrowerTypeAllocationRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $managerRegistry
-     */
     public function __construct(ManagerRegistry $managerRegistry)
     {
         parent::__construct($managerRegistry, ProgramBorrowerTypeAllocation::class);
+    }
+
+    /**
+     * @throws ORMException
+     */
+    public function remove(ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation): void
+    {
+        $this->getEntityManager()->remove($programBorrowerTypeAllocation);
+        $this->getEntityManager()->flush();
     }
 }

@@ -9,25 +9,20 @@ use Doctrine\Persistence\ObjectManager;
 use Faker\Provider\Miscellaneous;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\CreditGuaranty\Entity\{Program, ProgramEligibilityCondition};
-use Unilend\CreditGuaranty\Repository\{FieldRepository, ProgramEligibilityConfigurationRepository, ProgramEligibilityRepository};
+use Unilend\CreditGuaranty\Entity\Program;
+use Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition;
+use Unilend\CreditGuaranty\Repository\FieldRepository;
+use Unilend\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
+use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
 
 class ProgramEligibilityConditionFixture extends AbstractFixtures implements DependentFixtureInterface
 {
     private const CHANCE_OF_HAVING_CONDITION = 30;
 
     private FieldRepository $fieldRepository;
-    /** @var ProgramEligibilityConfigurationRepository */
     private ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository;
-    /** @var ProgramEligibilityRepository */
     private ProgramEligibilityRepository $programEligibilityRepository;
 
-    /**
-     * @param TokenStorageInterface                     $tokenStorage
-     * @param FieldRepository                           $fieldRepository
-     * @param ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository
-     * @param ProgramEligibilityRepository              $programEligibilityRepository
-     */
     public function __construct(
         TokenStorageInterface $tokenStorage,
         FieldRepository $fieldRepository,
@@ -41,34 +36,23 @@ class ProgramEligibilityConditionFixture extends AbstractFixtures implements Dep
     }
 
     /**
-     * @param ObjectManager $manager
-     *
      * @throws \Exception
      */
     public function load(ObjectManager $manager): void
     {
         $comparableFields = $this->fieldRepository->findBy(['comparable' => true]);
 
-        $programReferences = [
-            ProgramFixtures::REFERENCE_CANCELLED,
-            ProgramFixtures::REFERENCE_COMMERCIALIZED,
-            ProgramFixtures::REFERENCE_DRAFT,
-            ProgramFixtures::REFERENCE_PAUSED,
-        ];
-
         $operations = ProgramEligibilityCondition::getAvailableOperations();
         $valueTypes = ProgramEligibilityCondition::getAvailableValueType();
-
-        foreach ($programReferences as $programReference) {
-            /** @var Program $program */
-            $program = $this->getReference($programReference);
+        /** @var Program $program */
+        foreach ($this->getReferences(ProgramFixtures::ALL_PROGRAMS) as $program) {
             $programEligibilities = $this->programEligibilityRepository->findBy(['program' => $program]);
 
             $programEligibilityConfigurations = $this->programEligibilityConfigurationRepository->findBy(['programEligibility' => $programEligibilities]);
 
             foreach ($programEligibilityConfigurations as $programEligibilityConfiguration) {
                 if (Miscellaneous::boolean(self::CHANCE_OF_HAVING_CONDITION)) {
-                    for ($i = 0; $i <= random_int(1, count($comparableFields) - 1); $i++) {
+                    for ($i = 0; $i <= random_int(1, count($comparableFields) - 1); ++$i) {
                         $leftOperand = $comparableFields[$i];
                         $rightFields = $comparableFields;
                         shuffle($rightFields);
@@ -85,6 +69,7 @@ class ProgramEligibilityConditionFixture extends AbstractFixtures implements Dep
                                         (string) (mt_rand() / mt_getrandmax())
                                     );
                                     $manager->persist($programEligibilityCondition);
+
                                     break 2;
                                 }
                             }

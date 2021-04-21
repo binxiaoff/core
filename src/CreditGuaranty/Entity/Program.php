@@ -227,7 +227,10 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(
+     *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation",
+     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     * )
      */
     private Collection $programBorrowerTypeAllocations;
 
@@ -254,7 +257,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibility", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibility", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
      */
     private Collection $programEligibilities;
 
@@ -468,5 +471,56 @@ class Program implements TraceableStatusAwareInterface
     public function isCancelled(): bool
     {
         return ProgramStatus::STATUS_CANCELLED === $this->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * @return Collection|ProgramEligibility[]
+     */
+    public function getProgramEligibilities(): Collection
+    {
+        return $this->programEligibilities;
+    }
+
+    public function addProgramEligibility(ProgramEligibility $programEligibility): Program
+    {
+        $callback = fn (int $key, ProgramEligibility $existingProgramEligibility): bool => $existingProgramEligibility->getField() === $programEligibility->getField();
+        if (
+            $programEligibility->getProgram() === $this
+            && false === $this->programEligibilities->exists($callback)
+        ) {
+            $this->programEligibilities->add($programEligibility);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ProgramBorrowerTypeAllocation[]
+     */
+    public function getProgramBorrowerTypeAllocations()
+    {
+        return $this->programBorrowerTypeAllocations;
+    }
+
+    public function removeProgramBorrowerTypeAllocation(ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation): Program
+    {
+        $this->programBorrowerTypeAllocations->removeElement($programBorrowerTypeAllocation);
+
+        return $this;
+    }
+
+    public function addProgramBorrowerTypeAllocation(ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation): Program
+    {
+        $callback = static function (int $key, ProgramBorrowerTypeAllocation $existingProgramBorrowerTypeAllocation) use ($programBorrowerTypeAllocation): bool {
+            return $existingProgramBorrowerTypeAllocation->getProgramChoiceOption() === $programBorrowerTypeAllocation->getProgramChoiceOption();
+        };
+        if (
+            $programBorrowerTypeAllocation->getProgram() === $this
+            && false === $this->programBorrowerTypeAllocations->exists($callback)
+        ) {
+            $this->programBorrowerTypeAllocations->add($programBorrowerTypeAllocation);
+        }
+
+        return $this;
     }
 }

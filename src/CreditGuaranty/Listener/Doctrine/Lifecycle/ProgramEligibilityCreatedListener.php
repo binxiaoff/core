@@ -24,10 +24,6 @@ class ProgramEligibilityCreatedListener extends AbstractOnFlushMemoryListener
     private ProgramChoiceOptionRepository $programChoiceOptionRepository;
     private ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository;
 
-    /**
-     * @param ProgramChoiceOptionRepository                                                $programChoiceOptionRepository
-     * @param \Unilend\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository
-     */
     public function __construct(ProgramChoiceOptionRepository $programChoiceOptionRepository, ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository)
     {
         $this->programChoiceOptionRepository             = $programChoiceOptionRepository;
@@ -35,8 +31,6 @@ class ProgramEligibilityCreatedListener extends AbstractOnFlushMemoryListener
     }
 
     /**
-     * @param PostFlushEventArgs $args
-     *
      * @throws ORMException
      */
     public function postFlush(PostFlushEventArgs $args): void
@@ -86,13 +80,6 @@ class ProgramEligibilityCreatedListener extends AbstractOnFlushMemoryListener
         }
     }
 
-    /**
-     * @param \Unilend\CreditGuaranty\Entity\ProgramEligibility       $programEligibility
-     * @param \Unilend\CreditGuaranty\Entity\ProgramChoiceOption|null $programChoiceOption
-     * @param string|null                                             $value
-     *
-     * @return ProgramEligibilityConfiguration
-     */
     private function createConfiguration(ProgramEligibility $programEligibility, ?ProgramChoiceOption $programChoiceOption, ?string $value): ProgramEligibilityConfiguration
     {
         $configuration = $this->programEligibilityConfigurationRepository->findOneBy([
@@ -101,7 +88,7 @@ class ProgramEligibilityCreatedListener extends AbstractOnFlushMemoryListener
             'value'               => $value,
         ]);
         if (null === $configuration) {
-            $configuration = new ProgramEligibilityConfiguration($programEligibility, $programChoiceOption, $value);
+            $configuration = new ProgramEligibilityConfiguration($programEligibility, $programChoiceOption, $value, true);
         }
 
         return $configuration;

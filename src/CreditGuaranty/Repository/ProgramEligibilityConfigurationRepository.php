@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\CreditGuaranty\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
 
@@ -16,11 +17,17 @@ use Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
  */
 class ProgramEligibilityConfigurationRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $managerRegistry
-     */
     public function __construct(ManagerRegistry $managerRegistry)
     {
         parent::__construct($managerRegistry, ProgramEligibilityConfiguration::class);
+    }
+
+    /**
+     * @throws ORMException
+     */
+    public function remove(ProgramEligibilityConfiguration $programEligibilityConfiguration): void
+    {
+        $this->getEntityManager()->remove($programEligibilityConfiguration);
+        $this->getEntityManager()->flush();
     }
 }
