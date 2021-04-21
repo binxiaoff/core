@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Doctrine\Listener;
+namespace Unilend\Agency\Listener\Doctrine;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
