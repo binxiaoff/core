@@ -44,22 +44,19 @@ class StaffSubscriber implements EventSubscriberInterface
             JwtEvents::JWT_DECODED            => 'validateToken',
             JwtEvents::JWT_AUTHENTICATED      => 'updateSecurityToken',
             JwtEvents::AUTHENTICATION_SUCCESS => 'addStaffJwtTokens',
-            JwtEvents::JWT_CREATED => 'addPayload',
+            JwtEvents::JWT_CREATED            => 'addPayload',
         ];
     }
 
-    /**
-     * @param JWTCreatedEvent $event
-     */
     public function addPayload(JWTCreatedEvent $event): void
     {
         $payload = $event->getData();
 
-        if (!array_key_exists('staff', $payload)) {
+        if (false === array_key_exists('staff', $payload)) {
             return;
         }
 
-        if (!array_key_exists('@scope', $payload)) {
+        if (false === \array_key_exists('@scope', $payload)) {
             $payload['@scope'] = [];
         }
 

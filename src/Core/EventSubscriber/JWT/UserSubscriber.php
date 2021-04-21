@@ -16,15 +16,11 @@ use Unilend\Core\Entity\User;
 
 class UserSubscriber implements EventSubscriberInterface
 {
-    /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
 
-    /**
-     * @param IriConverterInterface $iriConverter
-     */
     public function __construct(IriConverterInterface $iriConverter)
     {
-        $this->iriConverter    = $iriConverter;
+        $this->iriConverter = $iriConverter;
     }
 
     /**
@@ -33,22 +29,19 @@ class UserSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            JwtEvents::JWT_CREATED => 'addPayload',
-            JwtEvents::JWT_DECODED => 'validatePayload',
+            JwtEvents::JWT_CREATED            => 'addPayload',
+            JwtEvents::JWT_DECODED            => 'validatePayload',
             JwtEvents::AUTHENTICATION_SUCCESS => 'updateSuccessResponse',
         ];
     }
 
-    /**
-     * @param JWTCreatedEvent $event
-     */
     public function addPayload(JWTCreatedEvent $event): void
     {
         $payload = $event->getData();
 
         $payload['user'] = $this->iriConverter->getIriFromItem($event->getUser());
 
-        if (!array_key_exists('@scope', $payload)) {
+        if (false === array_key_exists('@scope', $payload)) {
             $payload['@scope'] = [];
         }
 
@@ -57,9 +50,6 @@ class UserSubscriber implements EventSubscriberInterface
         $event->setData($payload);
     }
 
-    /**
-     * @param JWTDecodedEvent $event
-     */
     public function validatePayload(JWTDecodedEvent $event): void
     {
         $payload = $event->getPayload();
@@ -85,9 +75,6 @@ class UserSubscriber implements EventSubscriberInterface
         }
     }
 
-    /**
-     * @param AuthenticationSuccessEvent $event
-     */
     public function updateSuccessResponse(AuthenticationSuccessEvent $event): void
     {
         $data = $event->getData();
