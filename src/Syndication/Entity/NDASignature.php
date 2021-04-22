@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -27,6 +29,7 @@ use Unilend\Core\Entity\Traits\{BlamableAddedTrait,
  *         }
  *     },
  *     collectionOperations={
+ *         "get",
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {"groups": {"ndaSignature:create"}}
@@ -40,6 +43,8 @@ use Unilend\Core\Entity\Traits\{BlamableAddedTrait,
  * @ORM\Entity
  *
  * @UniqueEntity({"addedBy", "projectParticipation"})
+ *
+ * @ApiFilter(SearchFilter::class, properties={"projectParticipation.publicId": "exact","addedBy.publicId": "exact"})
  */
 class NDASignature
 {
