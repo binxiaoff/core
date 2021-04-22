@@ -82,7 +82,7 @@ class ProgramBorrowerTypeDataPersister implements DataPersisterInterface
         //remove only ProgramBorrowerTypeAllocation and ProgramEligibilityConfiguration
         //todo: archive ProgramChoiceOption
         } else {
-            //$this->programBorrowerTypeAllocationRepository->remove($data);
+            $this->programBorrowerTypeAllocationRepository->remove($data);
             $programEligibilities = $program->getProgramEligibilities()->filter(fn (ProgramEligibility $item) => $borrowerTypeField === $item->getField());
             if (1 === $programEligibilities->count()) {
                 /** @var ProgramEligibility $programEligibility */
