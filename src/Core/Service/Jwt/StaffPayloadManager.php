@@ -26,7 +26,7 @@ class StaffPayloadManager implements PayloadManagerInterface
      *
      * @param mixed $payload
      */
-    public function validateToken($payload): bool
+    public function isPayloadValid(array $payload): bool
     {
         if (isset($payload['staff'])) {
             try {
