@@ -19,6 +19,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Agency\Controller\Project\GetTerm;
 use Unilend\Agency\Entity\Versioned\VersionedProject;
+use Unilend\Agency\Filter\ApiPlatform\ProjectFilter;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\Constant\CAInternalRating;
@@ -115,6 +116,8 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         }
  *     }
  * )
+ *
+ * @ApiFilter(filterClass=ProjectFilter::class, arguments={})
  */
 class Project
 {
