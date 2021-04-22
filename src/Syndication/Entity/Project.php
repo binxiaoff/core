@@ -7,6 +7,7 @@ namespace Unilend\Syndication\Entity;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
@@ -173,6 +174,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  * @ApiFilter(ArrayFilter::class, properties={"organizers.roles"})
  * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId"})
+ * @ApiFilter(BooleanFilter::class, properties={"agencyImported"})
  *
  * @ORM\Table(name="syndication_project")
  * @ORM\Entity
@@ -1159,6 +1161,11 @@ class Project implements TraceableStatusAwareInterface
     public function isInContractNegotiationStep(): bool
     {
         return $this->hasCurrentStatus(ProjectStatus::STATUS_CONTRACTUALISATION);
+    }
+
+    public function isFinished(): bool
+    {
+        return $this->hasCurrentStatus(ProjectStatus::STATUS_SYNDICATION_FINISHED);
     }
 
     public function hasCurrentStatus(int $testedStatus): bool

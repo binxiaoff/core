@@ -36,6 +36,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Model\Bitmask;
 use Unilend\Core\Validator\Constraints\Siren;
+use Unilend\Syndication\Entity\Project as ArrangementProject;
 
 /**
  * @ApiResource(
@@ -520,11 +521,12 @@ class Project
     private Drive $agentSecondaryParticipantDrive;
 
     /**
-     * There is no direct relation with Arrangement project because there is no need and it would add an uneeded relation.
+     * @ORM\ManyToOne(targetEntity=ArrangementProject::class, cascade={"persist"})
+     * @ORM\JoinColumn(name="id_arrangement_project", nullable=true, onDelete="SET NULL")
      *
-     * @ORM\Column(type="string", length=36, nullable=true)
+     * @Assert\Expression("value === null || value.isFinished()")
      */
-    private ?string $sourcePublicId;
+    private ?ArrangementProject $source;
 
     /**
      * @throws Exception
@@ -535,7 +537,8 @@ class Project
         string $riskGroupName,
         Money $globalFundingMoney,
         DateTimeImmutable $closingDate,
-        DateTimeImmutable $contractEndDate
+        DateTimeImmutable $contractEndDate,
+        ?ArrangementProject $source = null
     ) {
         $this->added   = new DateTimeImmutable();
         $this->addedBy = $addedBy;
@@ -584,7 +587,10 @@ class Project
         $this->agentPrincipalParticipantDrive = new Drive();
         $this->agentSecondaryParticipantDrive = new Drive();
 
-        $this->sourcePublicId = null;
+        $this->source = $source;
+        if ($source) {
+            $source->setAgencyImported(true);
+        }
     }
 
     public function getAgent(): Company
@@ -872,7 +878,10 @@ class Project
      */
     public function addTranche(Tranche $tranche)
     {
-        $this->tranches->add($tranche);
+        // There is no unicity factor in tranche so I cannot use exists
+        if (false === $this->tranches->contains($tranche)) {
+            $this->tranches->add($tranche);
+        }
 
         return $this;
     }
@@ -1003,7 +1012,9 @@ class Project
 
     public function addParticipation(Participation $participation): Project
     {
-        $this->participations->add($participation);
+        if (false === $this->participations->exists(fn ($key, Participation $item) => $item->getParticipant() === $participation->getParticipant())) {
+            $this->participations->add($participation);
+        }
 
         return $this;
     }
@@ -1105,15 +1116,8 @@ class Project
         return $this->participations->filter(fn (Participation $participation) => $participation->getParticipant() === $participant)->first() ?: null;
     }
 
-    public function getSourcePublicId(): ?string
+    public function getSource(): ?ArrangementProject
     {
-        return $this->sourcePublicId;
-    }
-
-    public function setSourcePublicId(?string $sourcePublicId): Project
-    {
-        $this->sourcePublicId = $sourcePublicId;
-
-        return $this;
+        return $this->source;
     }
 }

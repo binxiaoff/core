@@ -584,7 +584,11 @@ class Tranche
 
     public function addAllocation(ParticipationTrancheAllocation $participationTrancheAllocation): Tranche
     {
-        if (false === $this->allocations->contains($participationTrancheAllocation)) {
+        if (
+            false === $this->allocations->exists(
+                fn ($key, ParticipationTrancheAllocation $item) => $item->getParticipation() === $participationTrancheAllocation->getParticipation()
+            )
+        ) {
             $this->allocations->add($participationTrancheAllocation);
             $participationTrancheAllocation->getParticipation()->addAllocation($participationTrancheAllocation);
         }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Serializer;
+namespace Unilend\Agency\Serializer\Normalizer;
 
 use Exception;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
