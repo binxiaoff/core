@@ -4,36 +4,43 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\{NumericFilter, SearchFilter};
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use RuntimeException;
-use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\FundingSpecificity;
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
-use Unilend\Core\Entity\{Company,
-    CompanyGroupTag,
-    Embeddable\Money,
-    Embeddable\NullableMoney,
-    Embeddable\NullablePerson,
-    File,
-    Interfaces\MoneyInterface,
-    Interfaces\StatusInterface,
-    Interfaces\TraceableStatusAwareInterface,
-    Staff,
-    Traits\PublicizeIdentityTrait,
-    Traits\TimestampableTrait,
-    User};
+use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Embeddable\NullablePerson;
+use Unilend\Core\Entity\File;
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
+use Unilend\Core\Entity\Interfaces\StatusInterface;
+use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Filter\ArrayFilter;
 use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Core\Traits\ConstantsAwareTrait;
@@ -167,6 +174,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  * @ApiFilter(ArrayFilter::class, properties={"organizers.roles"})
  * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId"})
+ * @ApiFilter(BooleanFilter::class, properties={"agencyImported"})
  *
  * @ORM\Table(name="syndication_project")
  * @ORM\Entity
@@ -185,7 +193,7 @@ class Project implements TraceableStatusAwareInterface
     public const OFFER_VISIBILITY_PUBLIC      = 'public';
 
     public const SERIALIZER_GROUP_ADMIN_READ = 'project:admin:read'; // Additional group that is available for admin (admin user or arranger)
-    public const SERIALIZER_GROUP_GCA_READ = 'project:gca:read'; // Additional group that is available for gca (crédit agricole group) staff member
+    public const SERIALIZER_GROUP_GCA_READ   = 'project:gca:read'; // Additional group that is available for gca (crédit agricole group) staff member
 
     public const FIELD_CURRENT_STATUS = 'currentStatus';
     public const FIELD_DESCRIPTION    = 'description';
@@ -194,8 +202,6 @@ class Project implements TraceableStatusAwareInterface
     public const PROJECT_FILE_TYPE_NDA         = 'project_file_nda';
 
     /**
-     * @var string
-     *
      * @ORM\Column(type="string", length=255, nullable=false)
      *
      * @Gedmo\Versioned
@@ -208,8 +214,6 @@ class Project implements TraceableStatusAwareInterface
     private string $riskGroupName;
 
     /**
-     * @var Company
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company_submitter", referencedColumnName="id", nullable=false)
@@ -222,8 +226,6 @@ class Project implements TraceableStatusAwareInterface
     private Company $submitterCompany;
 
     /**
-     * @var User
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_user_submitter",  referencedColumnName="id", nullable=false)
@@ -234,8 +236,6 @@ class Project implements TraceableStatusAwareInterface
     private User $submitterUser;
 
     /**
-     * @var string
-     *
      * @ORM\Column(length=191)
      *
      * @Assert\NotBlank
@@ -247,8 +247,6 @@ class Project implements TraceableStatusAwareInterface
     private string $title;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="text", length=16777215, nullable=true)
      *
      * @Gedmo\Versioned
@@ -258,8 +256,6 @@ class Project implements TraceableStatusAwareInterface
     private ?string $description = null;
 
     /**
-     * @var File|null
-     *
      * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File", orphanRemoval=true)
      * @ORM\JoinColumn(name="id_description_document", unique=true)
      *
@@ -268,8 +264,6 @@ class Project implements TraceableStatusAwareInterface
     private ?File $descriptionDocument = null;
 
     /**
-     * @var File|null
-     *
      * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File")
      * @ORM\JoinColumn(name="id_nda", unique=true)
      *
@@ -279,8 +273,6 @@ class Project implements TraceableStatusAwareInterface
 
     /**
      * en front (barre de progression projet) : Signature.
-     *
-     * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
@@ -293,8 +285,6 @@ class Project implements TraceableStatusAwareInterface
     /**
      * en front (barre de progression projet) : Allocation.
      *
-     * @var DateTimeImmutable|null
-     *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Gedmo\Versioned
@@ -305,8 +295,6 @@ class Project implements TraceableStatusAwareInterface
 
     /**
      * en front (barre de progression projet) : Réponse ferme.
-     *
-     * @var DateTimeImmutable|null
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
@@ -319,8 +307,6 @@ class Project implements TraceableStatusAwareInterface
     /**
      * en front (barre de progression projet) : Marque d'interet.
      *
-     * @var DateTimeImmutable|null
-     *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Gedmo\Versioned
@@ -332,8 +318,6 @@ class Project implements TraceableStatusAwareInterface
     /**
      * en front (barre de progression projet) : Projet de contrat.
      *
-     * @var DateTimeImmutable|null
-     *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Gedmo\Versioned
@@ -343,8 +327,6 @@ class Project implements TraceableStatusAwareInterface
     private ?DateTimeImmutable $contractualizationDeadline;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(length=8, nullable=true)
      *
      * @Assert\Choice(callback={CAInternalRating::class, "getConstList"})
@@ -356,8 +338,6 @@ class Project implements TraceableStatusAwareInterface
     private ?string $internalRatingScore;
 
     /**
-     * @var string
-     *
      * @ORM\Column(type="string", nullable=false, length=25)
      *
      * @Gedmo\Versioned
@@ -411,8 +391,6 @@ class Project implements TraceableStatusAwareInterface
     private Collection $tranches;
 
     /**
-     * @var ProjectStatus
-     *
      * @ORM\OneToOne(targetEntity="Unilend\Syndication\Entity\ProjectStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
@@ -434,8 +412,6 @@ class Project implements TraceableStatusAwareInterface
     private Collection $statuses;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", length=80, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
@@ -448,8 +424,6 @@ class Project implements TraceableStatusAwareInterface
     private ?string $syndicationType;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", length=80, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
@@ -462,8 +436,6 @@ class Project implements TraceableStatusAwareInterface
     private ?string $participationType = null;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", nullable=true, length=80)
      *
      * @Assert\Expression("(!this.isSubParticipation() and !value) or (this.isSubParticipation() and value)")
@@ -486,8 +458,6 @@ class Project implements TraceableStatusAwareInterface
     private Collection $tags;
 
     /**
-     * @var Money
-     *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
      *
      * @Assert\NotBlank
@@ -507,17 +477,13 @@ class Project implements TraceableStatusAwareInterface
     private Collection $projectFiles;
 
     /**
-     * @var bool|null
-     *
      * @Groups({"project:read", "project:write"})
      *
-     * @ORM\Column(type="boolean", nullable=true,)
+     * @ORM\Column(type="boolean", nullable=true, )
      */
     private ?bool $interestExpressionEnabled;
 
     /**
-     * @var NullableMoney
-     *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"project:admin:read", "project:write"})
@@ -525,8 +491,6 @@ class Project implements TraceableStatusAwareInterface
     private NullableMoney $arrangementCommissionMoney;
 
     /**
-     * @var string|null
-     *
      * @Groups({"project:read", "project:write"})
      *
      * @ORM\Column(type="string", nullable=true, length=10)
@@ -536,8 +500,6 @@ class Project implements TraceableStatusAwareInterface
     private ?string $fundingSpecificity;
 
     /**
-     * @var NullablePerson
-     *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullablePerson", columnPrefix="privileged_contact_")
      *
      * @Assert\Valid
@@ -547,8 +509,6 @@ class Project implements TraceableStatusAwareInterface
     private NullablePerson $privilegedContactPerson;
 
     /**
-     * @var CompanyGroupTag|null
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
      * @ORM\JoinColumn(name="id_company_group_tag")
      *
@@ -559,30 +519,32 @@ class Project implements TraceableStatusAwareInterface
     private ?CompanyGroupTag $companyGroupTag;
 
     /**
-     * @param Staff  $addedBy
-     * @param string $riskGroupName
-     * @param Money  $globalFundingMoney
-     *
+     * @ORM\Column(type="boolean")
+     */
+    private bool $agencyImported;
+
+    /**
      * @throws Exception
      */
     public function __construct(Staff $addedBy, string $riskGroupName, Money $globalFundingMoney)
     {
-        $this->submitterCompany      = $addedBy->getCompany();
-        $this->submitterUser         = $addedBy->getUser();
-        $arrangerParticipation       = new ProjectParticipation($addedBy->getCompany(), $this, $addedBy);
+        $this->submitterCompany     = $addedBy->getCompany();
+        $this->submitterUser        = $addedBy->getUser();
+        $arrangerParticipation      = new ProjectParticipation($addedBy->getCompany(), $this, $addedBy);
         $projectParticipationMember = new ProjectParticipationMember($arrangerParticipation, $addedBy, $addedBy);
         $projectParticipationMember->addPermission(ProjectParticipationMember::PERMISSION_WRITE);
         $arrangerParticipation->addProjectParticipationMember($projectParticipationMember);
         $this->projectParticipations = new ArrayCollection([$arrangerParticipation]);
 
-        $this->companyGroupTag       = null;
-        $this->projectFiles          = new ArrayCollection();
-        $this->projectComments       = new ArrayCollection();
-        $this->statuses              = new ArrayCollection();
-        $this->tranches              = new ArrayCollection();
-        $this->tags                  = new ArrayCollection();
-        $this->organizers            = new ArrayCollection([new ProjectOrganizer($addedBy->getCompany(), $this, $addedBy)]);
-        $this->added                 = new DateTimeImmutable();
+        $this->companyGroupTag = null;
+        $this->projectFiles    = new ArrayCollection();
+        $this->projectComments = new ArrayCollection();
+        $this->statuses        = new ArrayCollection();
+        $this->tranches        = new ArrayCollection();
+        $this->tags            = new ArrayCollection();
+        $this->organizers      = new ArrayCollection([new ProjectOrganizer($addedBy->getCompany(), $this, $addedBy)]);
+        $this->added           = new DateTimeImmutable();
+        $this->agencyImported  = false;
 
         $this->setCurrentStatus(new ProjectStatus($this, ProjectStatus::STATUS_DRAFT, $addedBy));
         $contact = (new NullablePerson())
@@ -590,7 +552,8 @@ class Project implements TraceableStatusAwareInterface
             ->setLastName($addedBy->getUser()->getLastName())
             ->setEmail($addedBy->getUser()->getEmail())
             ->setPhone($addedBy->getUser()->getPhone())
-            ->setOccupation($addedBy->getUser()->getJobFunction());
+            ->setOccupation($addedBy->getUser()->getJobFunction())
+        ;
         $this->setPrivilegedContactPerson($contact);
 
         $this->offerVisibility    = static::OFFER_VISIBILITY_PRIVATE;
@@ -600,11 +563,6 @@ class Project implements TraceableStatusAwareInterface
         $this->arrangementCommissionMoney = new NullableMoney();
     }
 
-    /**
-     * @param string $riskGroupName
-     *
-     * @return Project
-     */
     public function setRiskGroupName(string $riskGroupName): Project
     {
         $this->riskGroupName = $riskGroupName;
@@ -620,17 +578,11 @@ class Project implements TraceableStatusAwareInterface
         return $this->riskGroupName;
     }
 
-    /**
-     * @return Company
-     */
     public function getSubmitterCompany(): Company
     {
         return $this->submitterCompany;
     }
 
-    /**
-     * @return User
-     */
     public function getSubmitterUser(): User
     {
         return $this->submitterUser;
@@ -638,8 +590,6 @@ class Project implements TraceableStatusAwareInterface
 
     /**
      * @param string $title
-     *
-     * @return Project
      */
     public function setTitle($title): Project
     {
@@ -648,19 +598,11 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getTitle(): string
     {
         return $this->title;
     }
 
-    /**
-     * @param string|null $description
-     *
-     * @return Project
-     */
     public function setDescription(?string $description): Project
     {
         $this->description = $description;
@@ -668,19 +610,11 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * @param File|null $file
-     *
-     * @return Project
-     */
     public function setDescriptionDocument(?File $file): Project
     {
         $this->descriptionDocument = $file;
@@ -688,19 +622,11 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return File|null
-     */
     public function getDescriptionDocument(): ?File
     {
         return $this->descriptionDocument;
     }
 
-    /**
-     * @param File|null $file
-     *
-     * @return Project
-     */
     public function setNda(?File $file): Project
     {
         $this->nda = $file;
@@ -708,9 +634,6 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return File|null
-     */
     public function getNda(): ?File
     {
         return $this->nda;
@@ -726,8 +649,6 @@ class Project implements TraceableStatusAwareInterface
 
     /**
      * @param ProjectStatus|StatusInterface $projectStatus
-     *
-     * @return Project
      */
     public function setCurrentStatus(StatusInterface $projectStatus): Project
     {
@@ -749,19 +670,11 @@ class Project implements TraceableStatusAwareInterface
         return $this->statuses;
     }
 
-    /**
-     * @return DateTimeImmutable|null
-     */
     public function getSigningDeadline(): ?DateTimeImmutable
     {
         return $this->signingDeadline;
     }
 
-    /**
-     * @param DateTimeImmutable|null $signingDeadline
-     *
-     * @return Project
-     */
     public function setSigningDeadline(?DateTimeImmutable $signingDeadline): Project
     {
         $this->signingDeadline = $signingDeadline;
@@ -769,19 +682,11 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return DateTimeImmutable|null
-     */
     public function getAllocationDeadline(): ?DateTimeImmutable
     {
         return $this->allocationDeadline;
     }
 
-    /**
-     * @param DateTimeImmutable|null $allocationDeadline
-     *
-     * @return Project
-     */
     public function setAllocationDeadline(?DateTimeImmutable $allocationDeadline): Project
     {
         $this->allocationDeadline = $allocationDeadline;
@@ -797,11 +702,6 @@ class Project implements TraceableStatusAwareInterface
         return $this->participantReplyDeadline;
     }
 
-    /**
-     * @param DateTimeImmutable|null $participantReplyDeadline
-     *
-     * @return Project
-     */
     public function setParticipantReplyDeadline(?DateTimeImmutable $participantReplyDeadline): Project
     {
         $this->participantReplyDeadline = $participantReplyDeadline;
@@ -809,18 +709,12 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getInternalRatingScore(): ?string
     {
         return $this->internalRatingScore;
     }
 
-
     /**
-     * @param string|null $internalRatingScore
-     *
      * @return $this
      */
     public function setInternalRatingScore(?string $internalRatingScore): Project
@@ -830,19 +724,11 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getOfferVisibility(): string
     {
         return $this->offerVisibility;
     }
 
-    /**
-     * @param string $offerVisibility
-     *
-     * @return Project
-     */
     public function setOfferVisibility(string $offerVisibility): Project
     {
         $this->offerVisibility = $offerVisibility;
@@ -850,9 +736,6 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return iterable
-     */
     public static function getOfferVisibilities(): iterable
     {
         return self::getConstants('OFFER_VISIBILITY_');
@@ -866,11 +749,6 @@ class Project implements TraceableStatusAwareInterface
         return $this->projectFiles;
     }
 
-    /**
-     * @param ProjectFile $projectFile
-     *
-     * @return Project
-     */
     public function removeProjectFile(ProjectFile $projectFile): Project
     {
         $this->projectFiles->removeElement($projectFile);
@@ -886,11 +764,6 @@ class Project implements TraceableStatusAwareInterface
         return $this->projectParticipations;
     }
 
-    /**
-     * @param Company $company
-     *
-     * @return ProjectParticipation|null
-     */
     public function getProjectParticipationByCompany(Company $company): ?ProjectParticipation
     {
         $criteria = new Criteria();
@@ -900,11 +773,6 @@ class Project implements TraceableStatusAwareInterface
         return $this->projectParticipations->matching($criteria)->first() ?: null;
     }
 
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return Project
-     */
     public function removeProjectParticipation(ProjectParticipation $projectParticipation): Project
     {
         $this->projectParticipations->removeElement($projectParticipation);
@@ -913,8 +781,6 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return Company
-     *
      * @Groups({"project:read"})
      *
      * @MaxDepth(1)
@@ -924,9 +790,6 @@ class Project implements TraceableStatusAwareInterface
         return $this->getSubmitterCompany();
     }
 
-    /**
-     * @return ProjectParticipation
-     */
     public function getArrangerProjectParticipation(): ProjectParticipation
     {
         $filtered = $this->projectParticipations->filter(function (ProjectParticipation $projectParticipation) {
@@ -956,8 +819,6 @@ class Project implements TraceableStatusAwareInterface
 
     /**
      * @throws Exception
-     *
-     * @return ProjectOrganizer|null
      */
     public function getRun(): ?ProjectOrganizer
     {
@@ -992,11 +853,6 @@ class Project implements TraceableStatusAwareInterface
         return $this->tranches;
     }
 
-    /**
-     * @param Tranche $tranche
-     *
-     * @return Project
-     */
     public function addTranche(Tranche $tranche): Project
     {
         $tranche->setProject($this);
@@ -1008,11 +864,6 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @param Tranche $tranche
-     *
-     * @return Project
-     */
     public function removeTranche(Tranche $tranche): Project
     {
         $this->tranches->removeElement($tranche);
@@ -1020,67 +871,41 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isPrimary(): bool
     {
         return SyndicationType::PRIMARY === $this->syndicationType;
     }
 
-    /**
-     * @return bool
-     */
     public function isSecondary(): bool
     {
         return SyndicationType::SECONDARY === $this->syndicationType;
     }
 
-    /**
-     * @return bool
-     */
     public function isDirect(): bool
     {
         return ParticipationType::DIRECT === $this->participationType;
     }
 
-    /**
-     * @return bool
-     */
     public function isSubParticipation(): bool
     {
         return ParticipationType::SUB_PARTICIPATION === $this->participationType;
     }
 
-    /**
-     * @return bool
-     */
     public function isRisk(): bool
     {
         return $this->isSubParticipation() && (RiskType::RISK === $this->riskType);
     }
 
-    /**
-     * @return bool
-     */
     public function isRiskAndTreasury(): bool
     {
         return $this->isSubParticipation() && (RiskType::RISK_TREASURY === $this->riskType);
     }
 
-    /**
-     * @return string|null
-     */
     public function getSyndicationType(): ?string
     {
         return $this->syndicationType;
     }
 
-    /**
-     * @param string|null $syndicationType
-     *
-     * @return Project
-     */
     public function setSyndicationType(?string $syndicationType): Project
     {
         $this->syndicationType = $syndicationType;
@@ -1088,19 +913,11 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getParticipationType(): ?string
     {
         return $this->participationType;
     }
 
-    /**
-     * @param string|null $participationType
-     *
-     * @return Project
-     */
     public function setParticipationType(?string $participationType): Project
     {
         $this->participationType = $participationType;
@@ -1112,19 +929,11 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getRiskType(): ?string
     {
         return $this->riskType;
     }
 
-    /**
-     * @param string|null $riskType
-     *
-     * @return Project
-     */
     public function setRiskType(?string $riskType): Project
     {
         $this->riskType = $riskType;
@@ -1140,11 +949,6 @@ class Project implements TraceableStatusAwareInterface
         return $this->tags;
     }
 
-    /**
-     * @param Tag $tag
-     *
-     * @return Project
-     */
     public function addTag(Tag $tag): Project
     {
         if (false === $this->tags->contains($tag)) {
@@ -1154,11 +958,6 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @param Tag $tag
-     *
-     * @return Project
-     */
     public function removeTag(Tag $tag): Project
     {
         $this->tags->removeElement($tag);
@@ -1166,11 +965,6 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return Project
-     */
     public function addProjectParticipation(ProjectParticipation $projectParticipation): Project
     {
         if (false === $this->projectParticipations->contains($projectParticipation)) {
@@ -1181,8 +975,6 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return Money
-     *
      * @Groups({"project:read"})
      */
     public function getTranchesTotalMoney(): Money
@@ -1196,9 +988,6 @@ class Project implements TraceableStatusAwareInterface
         return $money;
     }
 
-    /**
-     * @return bool
-     */
     public function isOversubscribed(): bool
     {
         $totalAllocationMoney = $this->getTotalAllocationMoney();
@@ -1206,9 +995,6 @@ class Project implements TraceableStatusAwareInterface
         return 1 === MoneyCalculator::compare($totalAllocationMoney, $this->getTranchesTotalMoney());
     }
 
-    /**
-     * @return MoneyInterface
-     */
     public function getTotalAllocationMoney(): MoneyInterface
     {
         $totalAllocationMoney = new NullableMoney();
@@ -1220,11 +1006,6 @@ class Project implements TraceableStatusAwareInterface
         return $totalAllocationMoney;
     }
 
-    /**
-     * @param Money $globalFundingMoney
-     *
-     * @return Project
-     */
     public function setGlobalFundingMoney(Money $globalFundingMoney): Project
     {
         $this->globalFundingMoney = $globalFundingMoney;
@@ -1232,17 +1013,12 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return Money
-     */
     public function getGlobalFundingMoney(): Money
     {
         return $this->globalFundingMoney;
     }
 
     /**
-     * @return Money
-     *
      * @Groups({"project:read"})
      */
     public function getSyndicatedAmount(): Money
@@ -1258,27 +1034,28 @@ class Project implements TraceableStatusAwareInterface
         return $syndicatedMoney;
     }
 
-    /**
-     * @return array
-     */
+    public function isAgencyImported(): bool
+    {
+        return $this->agencyImported;
+    }
+
+    public function setAgencyImported(bool $agencyImported): Project
+    {
+        $this->agencyImported = $agencyImported;
+
+        return $this;
+    }
+
     public static function getProjectFileTypes(): array
     {
         return self::getConstants('PROJECT_FILE_TYPE_');
     }
 
-    /**
-     * @return DateTimeImmutable|null
-     */
     public function getInterestExpressionDeadline(): ?DateTimeImmutable
     {
         return $this->interestExpressionDeadline;
     }
 
-    /**
-     * @param DateTimeImmutable|null $interestExpressionDeadline
-     *
-     * @return Project
-     */
     public function setInterestExpressionDeadline(?DateTimeImmutable $interestExpressionDeadline): Project
     {
         $this->interestExpressionDeadline = $interestExpressionDeadline;
@@ -1286,19 +1063,11 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return DateTimeImmutable|null
-     */
     public function getContractualizationDeadline(): ?DateTimeImmutable
     {
         return $this->contractualizationDeadline;
     }
 
-    /**
-     * @param DateTimeImmutable|null $contractualizationDeadline
-     *
-     * @return Project
-     */
     public function setContractualizationDeadline(?DateTimeImmutable $contractualizationDeadline): Project
     {
         $this->contractualizationDeadline = $contractualizationDeadline;
@@ -1306,19 +1075,11 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return bool|null
-     */
     public function isInterestExpressionEnabled(): ?bool
     {
         return $this->interestExpressionEnabled;
     }
 
-    /**
-     * @param bool|null $interestExpressionEnabled
-     *
-     * @return Project
-     */
     public function setInterestExpressionEnabled(?bool $interestExpressionEnabled): Project
     {
         if (null === $this->getCurrentStatus() || ProjectStatus::STATUS_DRAFT === $this->getCurrentStatus()->getStatus()) {
@@ -1328,19 +1089,11 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return NullableMoney|null
-     */
     public function getArrangementCommissionMoney(): ?NullableMoney
     {
         return $this->arrangementCommissionMoney->isValid() ? $this->arrangementCommissionMoney : null;
     }
 
-    /**
-     * @param NullableMoney $arrangementCommissionMoney
-     *
-     * @return Project
-     */
     public function setArrangementCommissionMoney(NullableMoney $arrangementCommissionMoney): Project
     {
         $this->arrangementCommissionMoney = $arrangementCommissionMoney;
@@ -1348,19 +1101,11 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getFundingSpecificity(): ?string
     {
         return $this->fundingSpecificity;
     }
 
-    /**
-     * @param string|null $fundingSpecificity
-     *
-     * @return Project
-     */
     public function setFundingSpecificity(?string $fundingSpecificity): Project
     {
         $this->fundingSpecificity = $fundingSpecificity;
@@ -1368,19 +1113,11 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return NullablePerson
-     */
     public function getPrivilegedContactPerson(): NullablePerson
     {
         return $this->privilegedContactPerson;
     }
 
-    /**
-     * @param NullablePerson $privilegedContactPerson
-     *
-     * @return Project
-     */
     public function setPrivilegedContactPerson(NullablePerson $privilegedContactPerson): Project
     {
         $this->privilegedContactPerson = $privilegedContactPerson;
@@ -1388,49 +1125,31 @@ class Project implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isPublished(): bool
     {
         return $this->hasCompletedStatus(ProjectStatus::STATUS_DRAFT);
     }
 
-    /**
-     * @return bool
-     */
     public function isDraft(): bool
     {
         return $this->hasCurrentStatus(ProjectStatus::STATUS_DRAFT);
     }
 
-    /**
-     * @return bool
-     */
     public function isInterestCollected(): bool
     {
         return $this->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION);
     }
 
-    /**
-     * @return bool
-     */
     public function isInInterestCollectionStep(): bool
     {
         return $this->hasCurrentStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION);
     }
 
-    /**
-     * @return bool
-     */
     public function isInOfferNegotiationStep(): bool
     {
         return $this->hasCurrentStatus(ProjectStatus::STATUS_PARTICIPANT_REPLY);
     }
 
-    /**
-     * @return bool
-     */
     public function isInAllocationStep(): bool
     {
         return $this->hasCurrentStatus(ProjectStatus::STATUS_ALLOCATION);
@@ -1438,29 +1157,22 @@ class Project implements TraceableStatusAwareInterface
 
     /**
      * Used in an expression constraints.
-     *
-     * @return bool
      */
     public function isInContractNegotiationStep(): bool
     {
         return $this->hasCurrentStatus(ProjectStatus::STATUS_CONTRACTUALISATION);
     }
 
-    /**
-     * @param int $testedStatus
-     *
-     * @return bool
-     */
+    public function isFinished(): bool
+    {
+        return $this->hasCurrentStatus(ProjectStatus::STATUS_SYNDICATION_FINISHED);
+    }
+
     public function hasCurrentStatus(int $testedStatus): bool
     {
         return $testedStatus === $this->getCurrentStatus()->getStatus();
     }
 
-    /**
-     * @param int $testedStatus
-     *
-     * @return bool
-     */
     public function hasCompletedStatus(int $testedStatus): bool
     {
         return $this->getCurrentStatus()->getStatus() > $testedStatus;
@@ -1468,8 +1180,6 @@ class Project implements TraceableStatusAwareInterface
 
     /**
      * @Groups({"project:read"})
-     *
-     * @return bool
      */
     public function isMandatoryInformationComplete(): bool
     {
@@ -1487,9 +1197,6 @@ class Project implements TraceableStatusAwareInterface
             ;
     }
 
-    /**
-     * @return bool
-     */
     public function hasEditableStatus(): bool
     {
         return false === \in_array($this->getCurrentStatus()->getStatus(), ProjectStatus::NON_EDITABLE_STATUSES, true);
@@ -1497,47 +1204,37 @@ class Project implements TraceableStatusAwareInterface
 
     /**
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
      */
     public function validateParticipantReplyDeadline(ExecutionContextInterface $context)
     {
         if ($this->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION) && null === $this->getParticipantReplyDeadline()) {
             $context->buildViolation('Syndication.Project.participantReplyDeadline.required')
                 ->atPath('participantReplyDeadline')
-                ->addViolation();
+                ->addViolation()
+            ;
         }
     }
 
     /**
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
      */
     public function validateProjectParticipations(ExecutionContextInterface $context)
     {
         foreach ($this->projectParticipations as $index => $projectParticipation) {
             if ($projectParticipation->getProject() !== $this) {
                 $context->buildViolation('Syndication.Project.projectParticipations.incorrectProject')
-                    ->atPath("projectParticipation[$index]")
-                    ->addViolation();
+                    ->atPath("projectParticipation[{$index}]")
+                    ->addViolation()
+                ;
             }
         }
     }
 
-    /**
-     * @return CompanyGroupTag|null
-     */
     public function getCompanyGroupTag(): ?CompanyGroupTag
     {
         return $this->companyGroupTag;
     }
 
-    /**
-     * @param CompanyGroupTag|null $companyGroupTag
-     *
-     * @return Project
-     */
     public function setCompanyGroupTag(?CompanyGroupTag $companyGroupTag): Project
     {
         $this->companyGroupTag = $companyGroupTag;
@@ -1554,8 +1251,6 @@ class Project implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param string $role
-     *
      * @return ProjectOrganizer[]|Collection
      */
     private function getOrganizersByRole(string $role): Collection
@@ -1572,11 +1267,6 @@ class Project implements TraceableStatusAwareInterface
         return $organizers;
     }
 
-    /**
-     * @param string $role
-     *
-     * @return ProjectOrganizer|null
-     */
     private function getUniqueOrganizer(string $role): ?ProjectOrganizer
     {
         if (false === ProjectOrganizer::isUniqueRole($role)) {

@@ -2,27 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Serializer;
+namespace Unilend\Agency\Serializer\Normalizer;
 
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
-use Unilend\Agency\Entity\BorrowerTrancheShare;
-use Unilend\Agency\Entity\ParticipationTrancheAllocation;
-use Unilend\Agency\Entity\Tranche;
+use Unilend\Agency\Entity\MarginImpact;
+use Unilend\Agency\Entity\MarginRule;
 
-class TrancheNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
+class MarginRuleNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
     use NestedDenormalizationTrait;
 
-    private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
+    private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED_DENORMALIZER';
 
     /**
      * {@inheritDoc}
      */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
-        return Tranche::class === $type && false === isset($context[static::ALREADY_CALLED]);
+        return !isset($context[static::ALREADY_CALLED]) && MarginRule::class === $type;
     }
 
     /**
@@ -32,7 +31,7 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     {
         $context[static::ALREADY_CALLED] = true;
 
-        return $this->nestedDenormalize($data, $type, $format, $context, ['allocations', 'borrowerShares']);
+        return $this->nestedDenormalize($data, $type, $format, $context, ['impacts']);
     }
 
     /**
@@ -40,8 +39,7 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
      */
     protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
     {
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][BorrowerTrancheShare::class]['tranche']           = $denormalized;
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ParticipationTrancheAllocation::class]['tranche'] = $denormalized;
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][MarginImpact::class]['rule'] = $denormalized;
 
         return $context;
     }

@@ -37,6 +37,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Model\Bitmask;
 use Unilend\Core\Validator\Constraints\Siren;
+use Unilend\Syndication\Entity\Project as ArrangementProject;
 
 /**
  * @ApiResource(
@@ -65,6 +66,20 @@ use Unilend\Core\Validator\Constraints\Siren;
  *                     "nullableMoney:write"
  *                 }
  *             },
+ *             "openapi_context": {
+ *                 "parameters": {
+ *                     {
+ *                         "in": "query",
+ *                         "name": "import",
+ *                         "schema": {
+ *                             "type": "string",
+ *                             "minimum": 0,
+ *                             "maximum": 1
+ *                         },
+ *                         "description": "Public id of the imported arragement project"
+ *                     }
+ *                 }
+ *             }
  *         }
  *     },
  *     itemOperations={
@@ -351,7 +366,7 @@ class Project
     private ?string $secondaryRiskType;
 
     /**
-     * @var iterable|Tranche[]
+     * @var Collection|Tranche[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Tranche", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
@@ -364,7 +379,7 @@ class Project
      *
      * @ApiSubresource
      */
-    private iterable $tranches;
+    private Collection $tranches;
 
     /**
      * @var Borrower[]|iterable
@@ -509,6 +524,14 @@ class Project
     private Drive $agentSecondaryParticipantDrive;
 
     /**
+     * @ORM\ManyToOne(targetEntity=ArrangementProject::class, cascade={"persist"})
+     * @ORM\JoinColumn(name="id_arrangement_project", nullable=true, onDelete="SET NULL")
+     *
+     * @Assert\Expression("value === null || value.isFinished()")
+     */
+    private ?ArrangementProject $source;
+
+    /**
      * @throws Exception
      */
     public function __construct(
@@ -517,7 +540,8 @@ class Project
         string $riskGroupName,
         Money $globalFundingMoney,
         DateTimeImmutable $closingDate,
-        DateTimeImmutable $contractEndDate
+        DateTimeImmutable $contractEndDate,
+        ?ArrangementProject $source = null
     ) {
         $this->added   = new DateTimeImmutable();
         $this->addedBy = $addedBy;
@@ -565,18 +589,16 @@ class Project
         $this->agentBorrowerDrive             = new Drive();
         $this->agentPrincipalParticipantDrive = new Drive();
         $this->agentSecondaryParticipantDrive = new Drive();
+
+        $this->source = $source;
+        if ($source) {
+            $source->setAgencyImported(true);
+        }
     }
 
     public function getAgent(): Company
     {
         return $this->agent;
-    }
-
-    public function setAgent(Company $agent): Project
-    {
-        $this->agent = $agent;
-
-        return $this;
     }
 
     public function getAgentDisplayName(): ?string
@@ -855,6 +877,29 @@ class Project
     }
 
     /**
+     * @return Project
+     */
+    public function addTranche(Tranche $tranche)
+    {
+        // There is no unicity factor in tranche so I cannot use exists
+        if (false === $this->tranches->contains($tranche)) {
+            $this->tranches->add($tranche);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function removeTranche(Tranche $tranche)
+    {
+        $this->tranches->removeElement($tranche);
+
+        return $this;
+    }
+
+    /**
      * @Assert\Count(min="1", groups={"published"})
      *
      * @return Tranche[]|iterable
@@ -968,6 +1013,22 @@ class Project
         return $this->participations;
     }
 
+    public function addParticipation(Participation $participation): Project
+    {
+        if (false === $this->participations->exists(fn ($key, Participation $item) => $item->getParticipant() === $participation->getParticipant())) {
+            $this->participations->add($participation);
+        }
+
+        return $this;
+    }
+
+    public function removeParticipation(Participation $participation): Project
+    {
+        $this->participations->removeElement($participation);
+
+        return $this;
+    }
+
     public function getCurrentStatus(): ProjectStatus
     {
         return $this->currentStatus;
@@ -1046,5 +1107,20 @@ class Project
     public function getAgentSecondaryParticipantDrive(): Drive
     {
         return $this->agentSecondaryParticipantDrive;
+    }
+
+    public function getAgentParticipation(): Participation
+    {
+        return $this->findParticipationByParticipant($this->getAgent());
+    }
+
+    public function findParticipationByParticipant(Company $participant): ?Participation
+    {
+        return $this->participations->filter(fn (Participation $participation) => $participation->getParticipant() === $participant)->first() ?: null;
+    }
+
+    public function getSource(): ?ArrangementProject
+    {
+        return $this->source;
     }
 }
