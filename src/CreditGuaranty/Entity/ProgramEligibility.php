@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Unilend\Core\Entity\Traits\CloneableTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 
@@ -39,7 +40,9 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *         "delete"
  *     },
  *     collectionOperations={
- *         "post"
+ *         "post": {
+ *             "denormalization_context": {"groups": {"creditGuaranty:programEligibility:write", "creditGuaranty:programEligibility:create"}}
+ *         }
  *     }
  * )
  *
@@ -58,6 +61,7 @@ class ProgramEligibility
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+    use CloneableTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programEligibilities")
@@ -65,7 +69,7 @@ class ProgramEligibility
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:programEligibility:read", "creditGuaranty:programEligibility:write"})
+     * @Groups({"creditGuaranty:programEligibility:read", "creditGuaranty:programEligibility:create"})
      */
     private Program $program;
 
@@ -73,7 +77,7 @@ class ProgramEligibility
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Field")
      * @ORM\JoinColumn(name="id_field", nullable=false)
      *
-     * @Groups({"creditGuaranty:programEligibility:read", "creditGuaranty:programEligibility:write"})
+     * @Groups({"creditGuaranty:programEligibility:read", "creditGuaranty:programEligibility:create"})
      */
     private Field $field;
 
@@ -101,6 +105,13 @@ class ProgramEligibility
     public function getProgram(): Program
     {
         return $this->program;
+    }
+
+    public function setProgram(Program $program): ProgramEligibility
+    {
+        $this->program = $program;
+
+        return $this;
     }
 
     public function getField(): Field
@@ -176,5 +187,17 @@ class ProgramEligibility
             default:
                 throw new \UnexpectedValueException('The field type is not supported.');
         }
+    }
+
+    protected function onClone(): void
+    {
+        $clonedProgramEligibilityConfigurations = new ArrayCollection();
+        foreach ($this->programEligibilityConfigurations as $item) {
+            $clonedItem = clone $item;
+            $clonedItem->setProgramEligibility($this);
+            $clonedProgramEligibilityConfigurations->add($clonedItem);
+        }
+
+        $this->programEligibilityConfigurations = $clonedProgramEligibilityConfigurations;
     }
 }

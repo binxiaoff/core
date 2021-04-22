@@ -4,39 +4,45 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\{Groups};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Entity\Traits\CloneableTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups":{"creditGuaranty:programContact:read", "creditGuaranty:program:read", "timestampable:read"}},
+ *     normalizationContext={"groups": {"creditGuaranty:programContact:read", "creditGuaranty:program:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:programContact:write"}},
- *      itemOperations={
- *          "get": {
+ *     itemOperations={
+ *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
- *          },
- *          "patch": {"security": "is_granted('edit', object)"},
- *          "delete": {"security": "is_granted('delete', object)"}
- *      },
- *      collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)"}
+ *         },
+ *         "patch": {"security": "is_granted('edit', object)"},
+ *         "delete": {"security": "is_granted('delete', object)"}
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *             "denormalization_context": {"groups": {"creditGuaranty:programContact:write", "creditGuaranty:programContact:create"}}
+ *         }
  *     }
  * )
  *
  * @ORM\Entity
  * @ORM\Table(
- *      name="credit_guaranty_program_contact",
- *      uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"email", "id_program"})
- *      }
+ *     name="credit_guaranty_program_contact",
+ *     uniqueConstraints={
+ *         @ORM\UniqueConstraint(columns={"email", "id_program"})
+ *     }
  * )
  * @ORM\HasLifecycleCallbacks
  *
@@ -46,6 +52,7 @@ class ProgramContact
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+    use CloneableTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programContacts")
@@ -53,7 +60,7 @@ class ProgramContact
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:programContact:read", "creditGuaranty:programContact:write"})
+     * @Groups({"creditGuaranty:programContact:read", "creditGuaranty:programContact:create"})
      */
     private Program $program;
 
@@ -96,14 +103,6 @@ class ProgramContact
      */
     private string $phone;
 
-    /**
-     * @param Program $program
-     * @param string  $firstName
-     * @param string  $lastName
-     * @param string  $workingScope
-     * @param string  $email
-     * @param string  $phone
-     */
     public function __construct(Program $program, string $firstName, string $lastName, string $workingScope, string $email, string $phone)
     {
         $this->program      = $program;
@@ -115,27 +114,23 @@ class ProgramContact
         $this->added        = new DateTimeImmutable();
     }
 
-    /**
-     * @return Program
-     */
     public function getProgram(): Program
     {
         return $this->program;
     }
 
-    /**
-     * @return string
-     */
+    public function setProgram(Program $program): ProgramContact
+    {
+        $this->program = $program;
+
+        return $this;
+    }
+
     public function getFirstName(): string
     {
         return $this->firstName;
     }
 
-    /**
-     * @param string $firstName
-     *
-     * @return ProgramContact
-     */
     public function setFirstName(string $firstName): ProgramContact
     {
         $this->firstName = $firstName;
@@ -143,19 +138,11 @@ class ProgramContact
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getLastName(): string
     {
         return $this->lastName;
     }
 
-    /**
-     * @param string $lastName
-     *
-     * @return ProgramContact
-     */
     public function setLastName(string $lastName): ProgramContact
     {
         $this->lastName = $lastName;
@@ -163,19 +150,11 @@ class ProgramContact
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getWorkingScope(): string
     {
         return $this->workingScope;
     }
 
-    /**
-     * @param string $workingScope
-     *
-     * @return ProgramContact
-     */
     public function setWorkingScope(string $workingScope): ProgramContact
     {
         $this->workingScope = $workingScope;
@@ -183,19 +162,11 @@ class ProgramContact
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getEmail(): string
     {
         return $this->email;
     }
 
-    /**
-     * @param string $email
-     *
-     * @return ProgramContact
-     */
     public function setEmail(string $email): ProgramContact
     {
         $this->email = $email;
@@ -203,19 +174,11 @@ class ProgramContact
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getPhone(): string
     {
         return $this->phone;
     }
 
-    /**
-     * @param string $phone
-     *
-     * @return ProgramContact
-     */
     public function setPhone(string $phone): ProgramContact
     {
         $this->phone = $phone;

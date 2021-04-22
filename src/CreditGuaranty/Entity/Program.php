@@ -22,6 +22,7 @@ use Unilend\Core\Entity\Interfaces\StatusInterface;
 use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\CloneableTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Validator\Constraints\PreviousValue;
@@ -52,6 +53,7 @@ class Program implements TraceableStatusAwareInterface
     use PublicizeIdentityTrait;
     use TimestampableTrait;
     use BlamableAddedTrait;
+    use CloneableTrait;
 
     public const COMPANY_GROUP_TAG_CORPORATE   = 'corporate';
     public const COMPANY_GROUP_TAG_AGRICULTURE = 'agriculture';
@@ -281,11 +283,19 @@ class Program implements TraceableStatusAwareInterface
         $this->added                   = new DateTimeImmutable();
         $this->programGradeAllocations = new ArrayCollection();
         $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_DRAFT, $addedBy));
+        $this->programChoiceOptions = new ArrayCollection();
     }
 
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function setName(string $name): Program
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     public function getDescription(): ?string
@@ -404,8 +414,6 @@ class Program implements TraceableStatusAwareInterface
 
     /**
      * @param StatusInterface|ProgramStatus $status
-     *
-     * @return $this
      */
     public function setCurrentStatus(StatusInterface $status): Program
     {
@@ -474,11 +482,31 @@ class Program implements TraceableStatusAwareInterface
     }
 
     /**
+     * @param Collection|ProgramContact[] $programContacts
+     */
+    public function setProgramContacts($programContacts): Program
+    {
+        $this->programContacts = $programContacts;
+
+        return $this;
+    }
+
+    /**
      * @return Collection|ProgramEligibility[]
      */
     public function getProgramEligibilities(): Collection
     {
         return $this->programEligibilities;
+    }
+
+    /**
+     * @param Collection|ProgramEligibility[] $programEligibilities
+     */
+    public function setProgramEligibilities($programEligibilities): Program
+    {
+        $this->programEligibilities = $programEligibilities;
+
+        return $this;
     }
 
     public function addProgramEligibility(ProgramEligibility $programEligibility): Program
@@ -495,11 +523,41 @@ class Program implements TraceableStatusAwareInterface
     }
 
     /**
+     * @param Collection|Participation[] $participations
+     */
+    public function setParticipations($participations): Program
+    {
+        $this->participations = $participations;
+
+        return $this;
+    }
+
+    /**
+     * @param Collection|ProgramGradeAllocation[] $programGradeAllocations
+     */
+    public function setProgramGradeAllocations($programGradeAllocations): Program
+    {
+        $this->programGradeAllocations = $programGradeAllocations;
+
+        return $this;
+    }
+
+    /**
      * @return Collection|ProgramBorrowerTypeAllocation[]
      */
-    public function getProgramBorrowerTypeAllocations()
+    public function getProgramBorrowerTypeAllocations(): Collection
     {
         return $this->programBorrowerTypeAllocations;
+    }
+
+    /**
+     * @param Collection|ProgramBorrowerTypeAllocation[] $programBorrowerTypeAllocations
+     */
+    public function setProgramBorrowerTypeAllocations($programBorrowerTypeAllocations): Program
+    {
+        $this->programBorrowerTypeAllocations = $programBorrowerTypeAllocations;
+
+        return $this;
     }
 
     public function removeProgramBorrowerTypeAllocation(ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation): Program
@@ -530,5 +588,101 @@ class Program implements TraceableStatusAwareInterface
     public function getProgramChoiceOptions(): Collection
     {
         return $this->programChoiceOptions;
+    }
+
+    /**
+     * @param Collection|ProgramChoiceOption[] $programChoiceOptions
+     */
+    public function setProgramChoiceOptions($programChoiceOptions): Program
+    {
+        $this->programChoiceOptions = $programChoiceOptions;
+
+        return $this;
+    }
+
+    public function setAddedBy(Staff $addedBy): Program
+    {
+        $this->addedBy = $addedBy;
+
+        return $this;
+    }
+
+    public function duplicate(string $name, Staff $addedBy): Program
+    {
+        $duplicatedProgram = clone $this;
+
+        $duplicatedProgram
+            ->setCurrentStatus(new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $addedBy))
+            ->setName($name)
+            ->setAddedBy($addedBy)
+            ->setProgramContacts($this->cloneCollection($duplicatedProgram, $this->programContacts))
+            ->setProgramChoiceOptions($this->cloneCollection($duplicatedProgram, $this->programChoiceOptions))
+            ->setProgramEligibilities($this->cloneCollection($duplicatedProgram, $this->programEligibilities))
+            ->setProgramGradeAllocations($this->cloneCollection($duplicatedProgram, $this->programGradeAllocations))
+            ->setProgramBorrowerTypeAllocations($this->cloneCollection($duplicatedProgram, $this->programBorrowerTypeAllocations))
+            ->setParticipations($this->cloneCollection($duplicatedProgram, $this->participations))
+        ;
+
+        // Replace the ProgramChoiceOption (if not null) in the ProgramEligibilityConfiguration (which is not remplace in the previous process), by a new created one.
+        foreach ($duplicatedProgram->getProgramEligibilities() as $programEligibility) {
+            foreach ($programEligibility->getProgramEligibilityConfigurations() as $programEligibilityConfiguration) {
+                $programChoiceOption = $programEligibilityConfiguration->getProgramChoiceOption();
+                if ($programChoiceOption) {
+                    $newProgramChoiceOption = $duplicatedProgram->getProgramChoiceOptions()
+                        ->filter(
+                            fn (ProgramChoiceOption $item) => $item->getField() === $programChoiceOption->getField()
+                                && $item->getDescription() === $programChoiceOption->getDescription()
+                        )
+                        ->first()
+                    ;
+                    if (false === $newProgramChoiceOption instanceof ProgramChoiceOption) {
+                        throw new \LogicException(sprintf(
+                            'The new program choice option cannot be found on project %s with field %s and description %s',
+                            $duplicatedProgram->getId(),
+                            $programChoiceOption->getField()->getId(),
+                            $programChoiceOption->getDescription()
+                        ));
+                    }
+                    $programEligibilityConfiguration->setProgramChoiceOption($newProgramChoiceOption);
+                }
+            }
+        }
+
+        // Replace the ProgramChoiceOption (if not null) in the ProgramBorrowerTypeAllocation (which is not remplace in the previous process), by a new created one.
+        foreach ($duplicatedProgram->getProgramBorrowerTypeAllocations() as $programBorrowerTypeAllocation) {
+            $programChoiceOption = $programBorrowerTypeAllocation->getProgramChoiceOption();
+            if ($programChoiceOption) {
+                $newProgramChoiceOption = $duplicatedProgram->getProgramChoiceOptions()
+                    ->filter(
+                        fn (ProgramChoiceOption $item) => $item->getField() === $programChoiceOption->getField()
+                            && $item->getDescription() === $programChoiceOption->getDescription()
+                    )
+                    ->first()
+                ;
+                if (null === $newProgramChoiceOption) {
+                    throw new \LogicException(sprintf(
+                        'The new program choice option cannot be found on project %s with field %s and description %s',
+                        $duplicatedProgram->getId(),
+                        $programChoiceOption->getField()->getId(),
+                        $programChoiceOption->getDescription()
+                    ));
+                }
+                $programBorrowerTypeAllocation->setProgramChoiceOption($newProgramChoiceOption);
+            }
+        }
+
+        return $duplicatedProgram;
+    }
+
+    private function cloneCollection(Program $duplicatedProgram, Collection $collectionToDuplicate): ArrayCollection
+    {
+        $clonedArrayCollection = new ArrayCollection();
+        foreach ($collectionToDuplicate as $item) {
+            $clonedItem = clone $item;
+            $clonedItem->setProgram($duplicatedProgram);
+            $clonedArrayCollection->add($clonedItem);
+        }
+
+        return $clonedArrayCollection;
     }
 }
