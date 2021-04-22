@@ -48,13 +48,14 @@ class PayloadManagerSubscriber implements EventSubscriberInterface
             return;
         }
 
+        /** @var PayloadManagerInterface $payloadManager */
         $payloadManager = $this->payloadManagers[$scope] ?? null;
 
         if (null === $payloadManager) {
             $event->markAsInvalid();
         }
 
-        if (false === $payloadManager->isValid($payload)) {
+        if (false === $payloadManager->isPayloadValid($payload)) {
             $event->markAsInvalid();
         }
     }

@@ -14,4 +14,6 @@ interface PayloadManagerInterface
     public function getPayloads(User $user): iterable;
 
     public function updateSecurityToken(TokenInterface $token, array $payload);
+
+    public function isPayloadValid(array $payload);
 }
