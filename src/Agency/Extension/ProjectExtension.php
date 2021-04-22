@@ -13,6 +13,8 @@ use Unilend\Core\Entity\Staff;
 
 class ProjectExtension implements QueryCollectionExtensionInterface
 {
+    private const PREFIX = 'ProjectExtension';
+
     private Security $security;
 
     public function __construct(Security $security)
@@ -35,26 +37,41 @@ class ProjectExtension implements QueryCollectionExtensionInterface
         $token = $this->security->getToken();
 
         /** @var Staff $staff */
-        $staff = $token && $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
 
-        $rootAlias = $queryBuilder->getRootAliases()[0];
+        $rootAlias           = $queryBuilder->getRootAliases()[0];
+        $borrowerAlias       = static::prefix('borrower');
+        $borrowerMemberAlias = static::prefix('borrowerMember');
+
+        $userParameterName = static::prefix('user');
 
         $queryBuilder
             ->distinct()
-            ->leftJoin($rootAlias . '.borrowers', 'b')
-            ->leftJoin('b.members', 'bm')
-            ->andWhere('bm.user = :user')
-            ->setParameter('user', $user)
+            ->leftJoin("{$rootAlias}.borrowers", $borrowerAlias)
+            ->leftJoin("{$borrowerAlias}.members", $borrowerMemberAlias)
+            ->andWhere("{$borrowerMemberAlias}.user = :{$userParameterName}")
+            ->setParameter($userParameterName, $user)
         ;
 
         if ($staff) {
+            $participationAlias       = static::prefix('participation');
+            $participationMemberAlias = static::prefix('participationMember');
+
+            $managedUserParameterName = static::prefix('managedUsers');
+            $companyParameterName     = static::prefix('company');
+
             $queryBuilder
-                ->leftJoin($rootAlias . '.participations', 'p')
-                ->leftJoin('p.members', 'pm')
-                ->orWhere('pm.user IN (:managedUsers) and p.participant = :company')
-                ->setParameter('managedUsers', iterator_to_array($staff->getManagedUsers(), false))
-                ->setParameter('company', $staff->getCompany())
+                ->leftJoin("{$rootAlias}.participations", $participationAlias)
+                ->leftJoin("{$participationAlias}.members", $participationMemberAlias)
+                ->orWhere("{$participationMemberAlias}.user IN (:{$managedUserParameterName}) and {$participationAlias}.participant = :{$companyParameterName}")
+                ->setParameter($managedUserParameterName, iterator_to_array($staff->getManagedUsers(), false))
+                ->setParameter($companyParameterName, $staff->getCompany())
             ;
         }
+    }
+
+    private static function prefix(string $name)
+    {
+        return static::PREFIX . '_' . $name;
     }
 }
