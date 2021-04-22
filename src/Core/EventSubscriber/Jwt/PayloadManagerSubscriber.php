@@ -14,15 +14,15 @@ use Unilend\Core\Service\Jwt\PayloadManagerInterface;
 
 class PayloadManagerSubscriber implements EventSubscriberInterface
 {
-    private array $jwtPayloadManagers;
+    private array $payloadManagers;
 
     private JWTTokenManagerInterface $jwtManager;
 
-    public function __construct(JWTTokenManagerInterface $jwtManager, iterable $jwtPayloadManagers = [])
+    public function __construct(JWTTokenManagerInterface $jwtManager, iterable $payloadManagers = [])
     {
-        $this->jwtPayloadManagers = [];
+        $this->payloadManagers = [];
 
-        foreach ($jwtPayloadManagers as $jwtPayloadManager) {
+        foreach ($payloadManagers as $jwtPayloadManager) {
             $this->addPayloadManager($jwtPayloadManager);
         }
 
@@ -48,13 +48,13 @@ class PayloadManagerSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $payloadGenerator = $this->jwtPayloadManagers[$scope] ?? null;
+        $payloadManager = $this->payloadManagers[$scope] ?? null;
 
-        if (null === $payloadGenerator) {
+        if (null === $payloadManager) {
             $event->markAsInvalid();
         }
 
-        if (false === $payloadGenerator->isValid($payload)) {
+        if (false === $payloadManager->isValid($payload)) {
             $event->markAsInvalid();
         }
     }
@@ -70,13 +70,13 @@ class PayloadManagerSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $payloadGenerator = $this->jwtPayloadManagers[$scope] ?? null;
+        $payloadManager = $this->payloadManagers[$scope] ?? null;
 
-        if (null === $payloadGenerator) {
+        if (null === $payloadManager) {
             throw new \LogicException(sprintf('At this point there should be a corresponding payload generator for %s', $scope));
         }
 
-        $payloadGenerator->updateSecurityToken($token, $payload);
+        $payloadManager->updateSecurityToken($token, $payload);
     }
 
     public function updateSuccessResponse(AuthenticationSuccessEvent $event): void
@@ -89,9 +89,9 @@ class PayloadManagerSubscriber implements EventSubscriberInterface
         $data['tokens'] = [$this->jwtManager->create($event->getUser())];
 
         /** @var PayloadManagerInterface $jwtPayloadManager */
-        foreach ($this->jwtPayloadManagers as $jwtPayloadManager) {
+        foreach ($this->payloadManagers as $jwtPayloadManager) {
             foreach ($jwtPayloadManager->getPayloads($event->getUser()) as $payload) {
-                $payload['@scope'] = $jwtPayloadManager->getScope();
+                $payload['@scope'] = $jwtPayloadManager::getScope();
                 $data['tokens'][]  = $this->jwtManager->createFromPayload($event->getUser(), $payload);
             }
         }
@@ -99,16 +99,16 @@ class PayloadManagerSubscriber implements EventSubscriberInterface
         $event->setData($data);
     }
 
-    public function addPayloadManager(PayloadManagerInterface $jwtPayloadManager)
+    public function addPayloadManager(PayloadManagerInterface $payloadManager)
     {
-        if (isset($this->jwtPayloadManagers[$jwtPayloadManager->getScope()])) {
+        if (isset($this->payloadManagers[$payloadManager::getScope()])) {
             throw new \InvalidArgumentException(sprintf(
                 'This scope %s is already used by another jwt payload manager. Check the classes %s and %s',
-                $jwtPayloadManager->getScope(),
-                \get_class($jwtPayloadManager),
-                \get_class($this->jwtPayloadManagers[$jwtPayloadManager->getScope()])
+                $payloadManager::getScope(),
+                \get_class($payloadManager),
+                \get_class($this->payloadManagers[$payloadManager::getScope()])
             ));
         }
-        $this->jwtPayloadManagers[$jwtPayloadManager->getScope()] = $jwtPayloadManager;
+        $this->payloadManagers[$payloadManager::getScope()] = $payloadManager;
     }
 }

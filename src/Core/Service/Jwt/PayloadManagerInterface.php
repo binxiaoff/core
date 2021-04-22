@@ -9,7 +9,7 @@ use Unilend\Core\Entity\User;
 
 interface PayloadManagerInterface
 {
-    public function getScope(): string;
+    public static function getScope(): string;
 
     public function getPayloads(User $user): iterable;
 

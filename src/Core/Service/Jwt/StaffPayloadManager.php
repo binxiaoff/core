@@ -15,9 +15,8 @@ class StaffPayloadManager implements PayloadManagerInterface
 {
     private IriConverterInterface $iriConverter;
 
-    public function __construct(
-        IriConverterInterface $iriConverter
-    ) {
+    public function __construct(IriConverterInterface $iriConverter)
+    {
         $this->iriConverter = $iriConverter;
     }
 
@@ -59,7 +58,7 @@ class StaffPayloadManager implements PayloadManagerInterface
         }
     }
 
-    public function getScope(): string
+    public static function getScope(): string
     {
         return 'staff';
     }
