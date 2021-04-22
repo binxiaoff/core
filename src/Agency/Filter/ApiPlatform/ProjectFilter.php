@@ -9,7 +9,6 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
-use ReflectionClass;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
@@ -22,9 +21,9 @@ class ProjectFilter extends AbstractContextAwareFilter
 
     private const AUTHORIZED_VALUES = ['agent', 'participant', 'borrower'];
 
-    private Security $security;
+    private const PREFIX = 'ProjectFilter';
 
-    private string $parameterPrefix;
+    private Security $security;
 
     public function __construct(
         Security $security,
@@ -37,8 +36,6 @@ class ProjectFilter extends AbstractContextAwareFilter
         parent::__construct($managerRegistry, $requestStack, $logger, $properties, $nameConverter);
 
         $this->security = $security;
-
-        $this->parameterPrefix = (new ReflectionClass($this))->getShortName();
     }
 
     /**
@@ -98,75 +95,92 @@ class ProjectFilter extends AbstractContextAwareFilter
         if ($value) {
             $queryBuilder->distinct();
 
-            $queryBuilder->where('0 = 1');
+            $conditions = [];
 
             if (\in_array('borrower', $value, true)) {
-                $this->includeBorrower($queryBuilder);
+                $conditions[] = $this->includeBorrower($queryBuilder);
             }
 
             if (\in_array('participant', $value, true)) {
-                $this->includeParticipant($queryBuilder);
+                $conditions[] = $this->includeParticipant($queryBuilder);
             }
 
             if (\in_array('agent', $value, true)) {
-                $this->includeAgent($queryBuilder);
+                $conditions[] = $this->includeAgent($queryBuilder);
+            }
+
+            $conditions = array_filter($conditions);
+
+            if ($conditions) {
+                $queryBuilder->andWhere($queryBuilder->expr()->orX(...$conditions));
             }
         }
     }
 
-    private function includeBorrower(QueryBuilder $queryBuilder)
+    private function includeBorrower(QueryBuilder $queryBuilder): string
     {
-        $rootAlias = $queryBuilder->getRootAliases()[0];
+        $rootAlias           = $queryBuilder->getRootAliases()[0];
+        $borrowerAlias       = self::prefix('borrower');
+        $borrowerMemberAlias = static::prefix('borrowerMember');
+
+        $userParameterName = static::prefix('user');
 
         $queryBuilder
-            ->leftJoin($rootAlias . '.borrowers', 'b')
-            ->leftJoin('b.members', 'bm')
-            ->orWhere('bm.user = :' . $this->getParameterName('user'))
-            ->setParameter($this->getParameterName('user'), $this->security->getUser())
+            ->leftJoin("{$rootAlias}.borrowers", $borrowerAlias)
+            ->leftJoin("{$borrowerAlias}.members", $borrowerMemberAlias)
+            ->setParameter($userParameterName, $this->security->getUser())
         ;
+
+        return "{$borrowerMemberAlias}.user = :{$userParameterName}";
     }
 
-    private function includeParticipant(QueryBuilder $queryBuilder)
+    private function includeParticipant(QueryBuilder $queryBuilder): ?string
     {
         $company = $this->getCompany();
 
         if (null === $company) {
-            return;
+            return null;
         }
 
-        $rootAlias = $queryBuilder->getRootAliases()[0];
+        $rootAlias          = $queryBuilder->getRootAliases()[0];
+        $participationAlias = static::prefix('participation');
 
-        $queryBuilder->leftJoin($rootAlias . '.participations', 'p')
-            ->orWhere('p.participant = :' . $this->getParameterName('company') . ' and p.participant !=' . $rootAlias . '.agent')
-            ->setParameter($this->getParameterName('company'), $company)
+        $companyParameterName = static::prefix('company') . '_participant';
+
+        $queryBuilder->leftJoin($rootAlias . '.participations', $participationAlias)
+            ->setParameter($companyParameterName, $company)
         ;
+
+        return "{$participationAlias}.participant = :{$companyParameterName} and {$participationAlias}.participant !=  {$rootAlias}.agent";
     }
 
-    private function includeAgent(QueryBuilder $queryBuilder)
+    private function includeAgent(QueryBuilder $queryBuilder): ?string
     {
         $company = $this->getCompany();
 
         if (null === $company) {
-            return;
+            return null;
         }
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
 
-        $queryBuilder->orWhere($rootAlias . '.agent = :' . $this->getParameterName('company'))
-            ->setParameter($this->getParameterName('company'), $company)
-        ;
+        $companyParameterName = static::prefix('company') . '_agent';
+
+        $queryBuilder->setParameter($companyParameterName, $company);
+
+        return "{$rootAlias}.agent = :{$companyParameterName}";
     }
 
-    private function getParameterName(string $name)
+    private static function prefix(string $name)
     {
-        return $this->parameterPrefix . '_' . $name;
+        return static::PREFIX . '_' . $name;
     }
 
     private function getCompany(): ?Company
     {
         $token = $this->security->getToken();
 
-        if (null === $token || false === $token->getAttribute('company')) {
+        if (null === $token || false === $token->hasAttribute('company')) {
             return null;
         }
 
