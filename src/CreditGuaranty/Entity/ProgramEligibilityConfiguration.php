@@ -133,6 +133,13 @@ class ProgramEligibilityConfiguration
         return $this->programEligibility;
     }
 
+    public function setProgramEligibility(ProgramEligibility $programEligibility): ProgramEligibilityConfiguration
+    {
+        $this->programEligibility = $programEligibility;
+
+        return $this;
+    }
+
     public function setEligible(bool $eligible): ProgramEligibilityConfiguration
     {
         $this->eligible = $eligible;
@@ -148,13 +155,6 @@ class ProgramEligibilityConfiguration
     public function getProgramChoiceOption(): ?ProgramChoiceOption
     {
         return $this->programChoiceOption;
-    }
-
-    public function setProgramEligibility(ProgramEligibility $programEligibility): ProgramEligibilityConfiguration
-    {
-        $this->programEligibility = $programEligibility;
-
-        return $this;
     }
 
     public function setProgramChoiceOption(?ProgramChoiceOption $programChoiceOption): ProgramEligibilityConfiguration

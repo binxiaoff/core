@@ -640,57 +640,31 @@ class Program implements TraceableStatusAwareInterface
             ->setParticipations($this->cloneCollection($duplicatedProgram, $this->participations))
         ;
 
-        // Replace the ProgramChoiceOption (if not null) in the ProgramEligibilityConfiguration (which is not remplace in the previous process), by a new created one.
+        // Replace the ProgramChoiceOption (if not null) in the ProgramEligibilityConfiguration and ProgramBorrowerTypeAllocation (which are not remplace in the previous process)
+        // by the newly created one. The new one was created with setProgramChoiceOptions() in the duplicated program.
         foreach ($duplicatedProgram->getProgramEligibilities() as $programEligibility) {
             foreach ($programEligibility->getProgramEligibilityConfigurations() as $programEligibilityConfiguration) {
-                $programChoiceOption = $programEligibilityConfiguration->getProgramChoiceOption();
-                if ($programChoiceOption) {
-                    $newProgramChoiceOption = $duplicatedProgram->getProgramChoiceOptions()
-                        ->filter(
-                            fn (ProgramChoiceOption $item) => $item->getField() === $programChoiceOption->getField()
-                                && $item->getDescription() === $programChoiceOption->getDescription()
-                        )
-                        ->first()
-                    ;
-                    if (false === $newProgramChoiceOption instanceof ProgramChoiceOption) {
-                        throw new \LogicException(sprintf(
-                            'The new program choice option cannot be found on project %s with field %s and description %s',
-                            $duplicatedProgram->getId(),
-                            $programChoiceOption->getField()->getId(),
-                            $programChoiceOption->getDescription()
-                        ));
-                    }
-                    $programEligibilityConfiguration->setProgramChoiceOption($newProgramChoiceOption);
+                $originalProgramChoiceOption = $programEligibilityConfiguration->getProgramChoiceOption();
+                if ($originalProgramChoiceOption) {
+                    $duplicatedProgramChoiceOption = $this->findProgramChoiceOption($duplicatedProgram, $originalProgramChoiceOption);
+                    $programEligibilityConfiguration->setProgramChoiceOption($duplicatedProgramChoiceOption);
                 }
             }
         }
-
-        // Replace the ProgramChoiceOption (if not null) in the ProgramBorrowerTypeAllocation (which is not remplace in the previous process), by a new created one.
         foreach ($duplicatedProgram->getProgramBorrowerTypeAllocations() as $programBorrowerTypeAllocation) {
-            $programChoiceOption = $programBorrowerTypeAllocation->getProgramChoiceOption();
-            if ($programChoiceOption) {
-                $newProgramChoiceOption = $duplicatedProgram->getProgramChoiceOptions()
-                    ->filter(
-                        fn (ProgramChoiceOption $item) => $item->getField() === $programChoiceOption->getField()
-                            && $item->getDescription() === $programChoiceOption->getDescription()
-                    )
-                    ->first()
-                ;
-                if (null === $newProgramChoiceOption) {
-                    throw new \LogicException(sprintf(
-                        'The new program choice option cannot be found on project %s with field %s and description %s',
-                        $duplicatedProgram->getId(),
-                        $programChoiceOption->getField()->getId(),
-                        $programChoiceOption->getDescription()
-                    ));
-                }
-                $programBorrowerTypeAllocation->setProgramChoiceOption($newProgramChoiceOption);
+            $originalProgramChoiceOption = $programBorrowerTypeAllocation->getProgramChoiceOption();
+            if ($originalProgramChoiceOption) {
+                $duplicatedProgramChoiceOption = $this->findProgramChoiceOption($duplicatedProgram, $originalProgramChoiceOption);
+                $programBorrowerTypeAllocation->setProgramChoiceOption($duplicatedProgramChoiceOption);
             }
         }
 
         return $duplicatedProgram;
     }
 
+    /**
+     * clone the OneToMany relation.
+     */
     private function cloneCollection(Program $duplicatedProgram, Collection $collectionToDuplicate): ArrayCollection
     {
         $clonedArrayCollection = new ArrayCollection();
@@ -701,5 +675,29 @@ class Program implements TraceableStatusAwareInterface
         }
 
         return $clonedArrayCollection;
+    }
+
+    /**
+     * Find the choice option in the duplicated program which has the same attribut as the original one.
+     */
+    private function findProgramChoiceOption(Program $duplicatedProgram, ProgramChoiceOption $originalProgramChoiceOption): ProgramChoiceOption
+    {
+        $clonedProgramChoiceOption = $duplicatedProgram->getProgramChoiceOptions()
+            ->filter(
+                fn (ProgramChoiceOption $item) => $item->getField() === $originalProgramChoiceOption->getField()
+                    && $item->getDescription() === $originalProgramChoiceOption->getDescription()
+            )
+            ->first()
+        ;
+        if (false === $clonedProgramChoiceOption instanceof ProgramChoiceOption) {
+            throw new \LogicException(sprintf(
+                'The new program choice option cannot be found on project %s with field %s and description %s',
+                $duplicatedProgram->getId(),
+                $originalProgramChoiceOption->getField()->getId(),
+                $originalProgramChoiceOption->getDescription()
+            ));
+        }
+
+        return $clonedProgramChoiceOption;
     }
 }
