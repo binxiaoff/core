@@ -18,6 +18,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Agency\Controller\Project\GetTerm;
 use Unilend\Agency\Entity\Versioned\VersionedProject;
 use Unilend\Agency\Filter\ApiPlatform\ProjectFilter;
@@ -1138,5 +1139,30 @@ class Project
     public static function getAvailableStatuses(): array
     {
         return static::getConstants('STATUS_');
+    }
+
+    /**
+     * @param $payload
+     *
+     * @Assert\Callback
+     */
+    public function validateStatusTransition(ExecutionContextInterface $context, $payload)
+    {
+        $statuses = array_values(static::getAvailableStatuses());
+
+        sort($statuses);
+
+        reset($statuses);
+
+        while (($status = current($statuses)) && $status < $this->currentStatus) {
+            if (false === $this->statuses->exists(fn ($_, ProjectStatusHistory $history) => $history->getStatus() === $status)) {
+                $context->buildViolation('Agency.Project.missingStatus', [
+                    'missingStatus' => $status,
+                    'nextStatus'    => $this->currentStatus,
+                ])->addViolation();
+            }
+
+            next($statuses);
+        }
     }
 }
