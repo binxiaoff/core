@@ -607,14 +607,13 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    public function duplicate(string $name, Staff $addedBy): Program
+    public function duplicate(Staff $duplicatedBy): Program
     {
         $duplicatedProgram = clone $this;
 
         $duplicatedProgram
-            ->setCurrentStatus(new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $addedBy))
-            ->setName($name)
-            ->setAddedBy($addedBy)
+            ->setCurrentStatus(new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $duplicatedBy))
+            ->setAddedBy($duplicatedBy)
             ->setProgramContacts($this->cloneCollection($duplicatedProgram, $this->programContacts))
             ->setProgramChoiceOptions($this->cloneCollection($duplicatedProgram, $this->programChoiceOptions))
             ->setProgramEligibilities($this->cloneCollection($duplicatedProgram, $this->programEligibilities))

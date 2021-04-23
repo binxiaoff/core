@@ -13,15 +13,10 @@ use Unilend\CreditGuaranty\Entity\ProgramStatus;
 class ProgramVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_DELETE = 'delete';
 
-    /**
-     * @param Program $program
-     * @param User    $user
-     *
-     * @return bool
-     */
     protected function canCreate(Program $program, User $user): bool
     {
         $staff = $user->getCurrentStaff();
@@ -31,12 +26,12 @@ class ProgramVoter extends AbstractEntityVoter
             && ($staff->isAdmin() || in_array($program->getCompanyGroupTag(), $staff->getCompanyGroupTags(), true));
     }
 
-    /**
-     * @param Program $program
-     * @param User    $user
-     *
-     * @return bool
-     */
+    protected function canView(Program $program, User $user): bool
+    {
+        // todo: To be completed
+        return true;
+    }
+
     protected function canDelete(Program $program, User $user): bool
     {
         $staff = $user->getCurrentStaff();
@@ -46,12 +41,6 @@ class ProgramVoter extends AbstractEntityVoter
             && ProgramStatus::STATUS_DRAFT === $program->getCurrentStatus()->getStatus();
     }
 
-    /**
-     * @param Program $program
-     * @param User    $user
-     *
-     * @return bool
-     */
     protected function canEdit(Program $program, User $user): bool
     {
         $staff = $user->getCurrentStaff();
