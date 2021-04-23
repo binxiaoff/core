@@ -83,11 +83,6 @@ class ProgramBorrowerTypeAllocation
      */
     private string $maxAllocationRate;
 
-    /**
-     * @param Program             $program
-     * @param ProgramChoiceOption $programChoiceOption
-     * @param string              $maxAllocationRate
-     */
     public function __construct(Program $program, ProgramChoiceOption $programChoiceOption, string $maxAllocationRate)
     {
         $this->program             = $program;
@@ -96,27 +91,16 @@ class ProgramBorrowerTypeAllocation
         $this->added               = new DateTimeImmutable();
     }
 
-    /**
-     * @return Program
-     */
     public function getProgram(): Program
     {
         return $this->program;
     }
 
-    /**
-     * @return ProgramChoiceOption
-     */
     public function getProgramChoiceOption(): ProgramChoiceOption
     {
         return $this->programChoiceOption;
     }
 
-    /**
-     * @param ProgramChoiceOption $programChoiceOption
-     *
-     * @return ProgramBorrowerTypeAllocation
-     */
     public function setProgramChoiceOption(ProgramChoiceOption $programChoiceOption): ProgramBorrowerTypeAllocation
     {
         $this->programChoiceOption = $programChoiceOption;
@@ -124,19 +108,11 @@ class ProgramBorrowerTypeAllocation
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getMaxAllocationRate(): string
     {
         return $this->maxAllocationRate;
     }
 
-    /**
-     * @param string $maxAllocationRate
-     *
-     * @return ProgramBorrowerTypeAllocation
-     */
     public function setMaxAllocationRate(string $maxAllocationRate): ProgramBorrowerTypeAllocation
     {
         $this->maxAllocationRate = $maxAllocationRate;
@@ -146,8 +122,6 @@ class ProgramBorrowerTypeAllocation
 
     /**
      * @Groups({"creditGuaranty:programBorrowerTypeAllocation:read"})
-     *
-     * @return string
      */
     public function getBorrowerType(): string
     {

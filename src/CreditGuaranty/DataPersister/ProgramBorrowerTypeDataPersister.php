@@ -52,7 +52,7 @@ class ProgramBorrowerTypeDataPersister implements DataPersisterInterface
         //Add ProgramBorrowerTypeAllocation and ProgramEligibility to the Program (instead of saving themselves separately),
         //so that we can check in the add() their existence and save both of them by saving the Program.
         $program->addProgramBorrowerTypeAllocation($data);
-        $program->addProgramEligibility(new ProgramEligibility($program, $data->getProgramChoiceOption()->getField()));
+        $program->addProgramEligibility(new ProgramEligibility($program, $borrowerTypeField));
         $programEligibilities = $program->getProgramEligibilities()->filter(fn (ProgramEligibility $item) => $borrowerTypeField === $item->getField());
 
         if (1 !== $programEligibilities->count()) {
