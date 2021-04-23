@@ -600,6 +600,19 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
+    public function addProgramChoiceOption(ProgramChoiceOption $programChoiceOption): Program
+    {
+        $callback = fn (int $key, ProgramChoiceOption $existingProgramChoiceOption): bool => $existingProgramChoiceOption->getField() === $programChoiceOption->getField();
+        if (
+            $programChoiceOption->getProgram() === $this
+            && false === $this->programChoiceOptions->exists($callback)
+        ) {
+            $this->programChoiceOptions->add($programChoiceOption);
+        }
+
+        return $this;
+    }
+
     public function setAddedBy(Staff $addedBy): Program
     {
         $this->addedBy = $addedBy;
