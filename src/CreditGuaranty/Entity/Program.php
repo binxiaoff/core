@@ -220,7 +220,9 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramGradeAllocation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(
+     *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramGradeAllocation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     * )
      */
     private Collection $programGradeAllocations;
 
@@ -241,7 +243,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
      */
     private Collection $programChoiceOptions;
 
@@ -250,7 +252,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramContact", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramContact", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
      */
     private Collection $programContacts;
 
@@ -268,7 +270,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\Participation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\Participation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
      */
     private Collection $participations;
 
@@ -602,7 +604,10 @@ class Program implements TraceableStatusAwareInterface
 
     public function addProgramChoiceOption(ProgramChoiceOption $programChoiceOption): Program
     {
-        $callback = fn (int $key, ProgramChoiceOption $existingProgramChoiceOption): bool => $existingProgramChoiceOption->getField() === $programChoiceOption->getField();
+        $callback = function (int $key, ProgramChoiceOption $existingProgramChoiceOption) use ($programChoiceOption): bool {
+            return $existingProgramChoiceOption->getField()       === $programChoiceOption->getField()
+                && $existingProgramChoiceOption->getDescription() === $programChoiceOption->getDescription();
+        };
         if (
             $programChoiceOption->getProgram() === $this
             && false === $this->programChoiceOptions->exists($callback)
