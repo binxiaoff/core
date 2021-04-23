@@ -54,11 +54,11 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
 
         $staff = $token && $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
 
-        if (false === ($staff instanceof Staff)) {
-            return [];
-        }
-
         $context = $this->decorated->createFromRequest($request, $normalization, $extractedAttributes);
+
+        if (false === ($staff instanceof Staff)) {
+            return $context;
+        }
 
         if (
             Request::METHOD_POST !== $request->getMethod()
