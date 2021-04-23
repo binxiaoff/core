@@ -171,8 +171,6 @@ class Program implements TraceableStatusAwareInterface
     private NullableMoney $guarantyCost;
 
     /**
-     * @var ProgramStatus|null
-     *
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
@@ -204,13 +202,6 @@ class Program implements TraceableStatusAwareInterface
     private ?string $ratingType = null;
 
     /**
-     * @var Collection|ProgramGradeAllocation[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramGradeAllocation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
-     */
-    private Collection $programGradeAllocations;
-
-    /**
      * @ORM\Column(type="smallint", nullable=true)
      * The max of a signed "smallint" is 32767
      * @Assert\Range(min="1", max="32767")
@@ -223,11 +214,23 @@ class Program implements TraceableStatusAwareInterface
     // Subresource
 
     /**
+     * @var Collection|ProgramGradeAllocation[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramGradeAllocation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     */
+    private Collection $programGradeAllocations;
+
+    /**
      * @var Collection|ProgramBorrowerTypeAllocation[]
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(
+     *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation",
+     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     * )
      */
     private Collection $programBorrowerTypeAllocations;
 
@@ -254,7 +257,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibility", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibility", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
      */
     private Collection $programEligibilities;
 
@@ -267,12 +270,6 @@ class Program implements TraceableStatusAwareInterface
      */
     private Collection $participations;
 
-    /**
-     * @param string          $name
-     * @param CompanyGroupTag $companyGroupTag
-     * @param Money           $funds
-     * @param Staff           $addedBy
-     */
     public function __construct(string $name, CompanyGroupTag $companyGroupTag, Money $funds, Staff $addedBy)
     {
         $this->name                    = $name;
@@ -286,27 +283,16 @@ class Program implements TraceableStatusAwareInterface
         $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_DRAFT, $addedBy));
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return string|null
-     */
     public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * @param string|null $description
-     *
-     * @return Program
-     */
     public function setDescription(?string $description): Program
     {
         $this->description = $description;
@@ -314,27 +300,16 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return CompanyGroupTag
-     */
     public function getCompanyGroupTag(): CompanyGroupTag
     {
         return $this->companyGroupTag;
     }
 
-    /**
-     * @return string|null
-     */
     public function getCappedAt(): ?string
     {
         return $this->cappedAt;
     }
 
-    /**
-     * @param string|null $cappedAt
-     *
-     * @return Program
-     */
     public function setCappedAt(?string $cappedAt): Program
     {
         $this->cappedAt = $cappedAt;
@@ -342,19 +317,11 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return Money
-     */
     public function getFunds(): Money
     {
         return $this->funds;
     }
 
-    /**
-     * @param Money $funds
-     *
-     * @return Program
-     */
     public function setFunds(Money $funds): Program
     {
         $this->funds = $funds;
@@ -362,19 +329,11 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return DateTimeImmutable|null
-     */
     public function getDistributionDeadline(): ?DateTimeImmutable
     {
         return $this->distributionDeadline;
     }
 
-    /**
-     * @param DateTimeImmutable|null $distributionDeadline
-     *
-     * @return Program
-     */
     public function setDistributionDeadline(?DateTimeImmutable $distributionDeadline): Program
     {
         $this->distributionDeadline = $distributionDeadline;
@@ -382,19 +341,11 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return array|null
-     */
     public function getDistributionProcess(): ?array
     {
         return $this->distributionProcess;
     }
 
-    /**
-     * @param array|null $distributionProcess
-     *
-     * @return Program
-     */
     public function setDistributionProcess(?array $distributionProcess): Program
     {
         $this->distributionProcess = $distributionProcess;
@@ -402,19 +353,11 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return int|null
-     */
     public function getGuarantyDuration(): ?int
     {
         return $this->guarantyDuration;
     }
 
-    /**
-     * @param int|null $guarantyDuration
-     *
-     * @return Program
-     */
     public function setGuarantyDuration(?int $guarantyDuration): Program
     {
         $this->guarantyDuration = $guarantyDuration;
@@ -422,19 +365,11 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getGuarantyCoverage(): ?string
     {
         return $this->guarantyCoverage;
     }
 
-    /**
-     * @param string|null $guarantyCoverage
-     *
-     * @return Program
-     */
     public function setGuarantyCoverage(?string $guarantyCoverage): Program
     {
         $this->guarantyCoverage = $guarantyCoverage;
@@ -442,19 +377,11 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return NullableMoney
-     */
     public function getGuarantyCost(): NullableMoney
     {
         return $this->guarantyCost;
     }
 
-    /**
-     * @param NullableMoney $guarantyCost
-     *
-     * @return Program
-     */
     public function setGuarantyCost(NullableMoney $guarantyCost): Program
     {
         $this->guarantyCost = $guarantyCost;
@@ -470,9 +397,6 @@ class Program implements TraceableStatusAwareInterface
         return $this->statuses;
     }
 
-    /**
-     * @return StatusInterface
-     */
     public function getCurrentStatus(): StatusInterface
     {
         return $this->currentStatus;
@@ -490,17 +414,12 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getRatingType(): ?string
     {
         return $this->ratingType;
     }
 
     /**
-     * @param string|null $ratingType
-     *
      * @return $this
      */
     public function setRatingType(?string $ratingType): Program
@@ -514,19 +433,11 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return int|null
-     */
     public function getReservationDuration(): ?int
     {
         return $this->reservationDuration;
     }
 
-    /**
-     * @param int|null $reservationDuration
-     *
-     * @return Program
-     */
     public function setReservationDuration(?int $reservationDuration): Program
     {
         $this->reservationDuration = $reservationDuration;
@@ -536,43 +447,88 @@ class Program implements TraceableStatusAwareInterface
 
     /**
      * Used in an expression constraints.
-     *
-     * @return bool
      */
     public function isCompanyGroupTagValid(): bool
     {
         return \in_array($this->getCompanyGroupTag()->getCode(), [self::COMPANY_GROUP_TAG_CORPORATE, self::COMPANY_GROUP_TAG_AGRICULTURE], true);
     }
 
-    /**
-     * @return bool
-     */
     public function isInDraft(): bool
     {
         return ProgramStatus::STATUS_DRAFT === $this->getCurrentStatus()->getStatus();
     }
 
-    /**
-     * @return bool
-     */
     public function isPaused(): bool
     {
         return ProgramStatus::STATUS_PAUSED === $this->getCurrentStatus()->getStatus();
     }
 
-    /**
-     * @return bool
-     */
     public function isDistributed(): bool
     {
         return ProgramStatus::STATUS_DISTRIBUTED === $this->getCurrentStatus()->getStatus();
     }
 
-    /**
-     * @return bool
-     */
     public function isCancelled(): bool
     {
         return ProgramStatus::STATUS_CANCELLED === $this->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * @return Collection|ProgramEligibility[]
+     */
+    public function getProgramEligibilities(): Collection
+    {
+        return $this->programEligibilities;
+    }
+
+    public function addProgramEligibility(ProgramEligibility $programEligibility): Program
+    {
+        $callback = fn (int $key, ProgramEligibility $existingProgramEligibility): bool => $existingProgramEligibility->getField() === $programEligibility->getField();
+        if (
+            $programEligibility->getProgram() === $this
+            && false === $this->programEligibilities->exists($callback)
+        ) {
+            $this->programEligibilities->add($programEligibility);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ProgramBorrowerTypeAllocation[]
+     */
+    public function getProgramBorrowerTypeAllocations()
+    {
+        return $this->programBorrowerTypeAllocations;
+    }
+
+    public function removeProgramBorrowerTypeAllocation(ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation): Program
+    {
+        $this->programBorrowerTypeAllocations->removeElement($programBorrowerTypeAllocation);
+
+        return $this;
+    }
+
+    public function addProgramBorrowerTypeAllocation(ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation): Program
+    {
+        $callback = static function (int $key, ProgramBorrowerTypeAllocation $existingProgramBorrowerTypeAllocation) use ($programBorrowerTypeAllocation): bool {
+            return $existingProgramBorrowerTypeAllocation->getProgramChoiceOption() === $programBorrowerTypeAllocation->getProgramChoiceOption();
+        };
+        if (
+            $programBorrowerTypeAllocation->getProgram() === $this
+            && false === $this->programBorrowerTypeAllocations->exists($callback)
+        ) {
+            $this->programBorrowerTypeAllocations->add($programBorrowerTypeAllocation);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ProgramChoiceOption[]
+     */
+    public function getProgramChoiceOptions(): Collection
+    {
+        return $this->programChoiceOptions;
     }
 }

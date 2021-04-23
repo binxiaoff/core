@@ -10,12 +10,12 @@ use Unilend\CreditGuaranty\Entity\Program;
 class ProgramBorrowerTypeAllocationInput
 {
     /**
-     * @Assert\NotBlank
+     * @Assert\NotBlank(groups={"creditGuaranty:programBorrowerTypeAllocation:createValidation"})
      */
     public Program $program;
 
     /**
-     * @Assert\NotBlank
+     * @Assert\NotBlank(groups={"creditGuaranty:programBorrowerTypeAllocation:createValidation"})
      */
     public string $borrowerType;
 

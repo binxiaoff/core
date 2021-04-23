@@ -24,14 +24,15 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
     public const REFERENCE_CANCELLED      = 'cancelled_program';
     public const REFERENCE_COMMERCIALIZED = 'commercialized_program';
     public const REFERENCE_PAUSED         = 'paused_program';
+    public const ALL_PROGRAMS             = [
+        self::REFERENCE_CANCELLED,
+        self::REFERENCE_COMMERCIALIZED,
+        self::REFERENCE_DRAFT,
+        self::REFERENCE_PAUSED,
+    ];
 
-    /** @var CompanyGroupTagRepository */
     private CompanyGroupTagRepository $companyGroupTagRepository;
 
-    /**
-     * @param TokenStorageInterface     $tokenStorage
-     * @param CompanyGroupTagRepository $companyGroupTagRepository
-     */
     public function __construct(TokenStorageInterface $tokenStorage, CompanyGroupTagRepository $companyGroupTagRepository)
     {
         parent::__construct($tokenStorage);
@@ -39,8 +40,6 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
-     * @param ObjectManager $manager
-     *
      * @throws \Exception
      */
     public function load(ObjectManager $manager): void
@@ -114,11 +113,6 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
         $manager->flush();
     }
 
-    /**
-     * @param array $programDatum
-     *
-     * @return Program
-     */
     public function buildProgram(array $programDatum): Program
     {
         /** @var Staff $addedBy */
