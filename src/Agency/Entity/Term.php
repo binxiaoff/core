@@ -641,6 +641,11 @@ class Term
         return ['Default', 'Term', $term->isFinancial() ? 'Financial' : 'Other'];
     }
 
+    public function getProject(): Project
+    {
+        return $this->covenant->getProject();
+    }
+
     /**
      * @return bool
      */
