@@ -44,7 +44,7 @@ use Unilend\Core\Entity\Traits\{BlamableAddedTrait,
  *
  * @UniqueEntity({"addedBy", "projectParticipation"})
  *
- * @ApiFilter(SearchFilter::class, properties={"projectParticipation.publicId": "exact","addedBy.publicId": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"projectParticipation.publicId": "exact"})
  */
 class NDASignature
 {
