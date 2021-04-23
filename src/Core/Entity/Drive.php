@@ -97,6 +97,8 @@ class Drive
     }
 
     /**
+     * @param mixed $path
+     *
      * @return $this
      */
     public function rmFile(File $file, $path = '/'): Drive
@@ -140,6 +142,10 @@ class Drive
      */
     public function get(string $path)
     {
+        if ('/' !== mb_substr($path, 0, 1)) {
+            $path = "/{$path}";
+        }
+
         return $this->getFolder($path) ?? $this->getFile($path) ?? null;
     }
 }

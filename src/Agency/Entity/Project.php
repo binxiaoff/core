@@ -84,6 +84,19 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *         "dataroom_shared_agency_borrower": {
  *             "method": "POST",
  *             "deserialize": false,
+ *             "path": "/agency/projects/{publicId}/dataroom/shared/borrower/{path?}",
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "sharedDrive": "borrower"
+ *             },
+ *         },
+ *         "dataroom_shared_agency_agent_borrower": {
+ *             "method": "POST",
+ *             "deserialize": false,
  *             "path": "/agency/projects/{publicId}/dataroom/shared/agentBorrower/{path?}",
  *             "controller": Post::class,
  *             "requirements": {

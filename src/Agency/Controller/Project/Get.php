@@ -12,9 +12,6 @@ use Unilend\Core\Entity\Drive;
 class Get
 {
     /**
-     * @param Project $data
-     * @param Request $request
-     *
      * @return Project
      */
     public function __invoke(Project $data, Request $request)
@@ -37,7 +34,7 @@ class Get
             throw new NotFoundHttpException();
         }
 
-        $return = $drive->get($request->get('path', '/') ?? '/');
+        $return = $drive->get($request->get('path'));
 
         if ($return) {
             return $return;
