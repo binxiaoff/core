@@ -23,7 +23,7 @@ class ParticipationListener
 
         $uow = $em->getUnitOfWork();
 
-        $covenantClassMetadata = $em->getClassMetadata(Participation::class);
+        $participationClassMetadata = $em->getClassMetadata(Participation::class);
 
         foreach ($uow->getScheduledEntityDeletions() as $entity) {
             if ($entity instanceof Participation && $entity->getProject()->isPublished()) {
@@ -31,7 +31,7 @@ class ParticipationListener
 
                 $em->persist($entity);
 
-                $uow->computeChangeSet($covenantClassMetadata, $entity);
+                $uow->computeChangeSet($participationClassMetadata, $entity);
             }
         }
     }
