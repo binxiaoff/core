@@ -157,6 +157,18 @@ class ProgramEligibility
         return $this;
     }
 
+    protected function onClone(): void
+    {
+        $clonedProgramEligibilityConfigurations = new ArrayCollection();
+        foreach ($this->programEligibilityConfigurations as $item) {
+            $clonedItem = clone $item;
+            $clonedItem->setProgramEligibility($this);
+            $clonedProgramEligibilityConfigurations->add($clonedItem);
+        }
+
+        $this->programEligibilityConfigurations = $clonedProgramEligibilityConfigurations;
+    }
+
     private function initialiseConfigurations(): void
     {
         $field = $this->getField();
@@ -187,17 +199,5 @@ class ProgramEligibility
             default:
                 throw new \UnexpectedValueException('The field type is not supported.');
         }
-    }
-
-    protected function onClone(): void
-    {
-        $clonedProgramEligibilityConfigurations = new ArrayCollection();
-        foreach ($this->programEligibilityConfigurations as $item) {
-            $clonedItem = clone $item;
-            $clonedItem->setProgramEligibility($this);
-            $clonedProgramEligibilityConfigurations->add($clonedItem);
-        }
-
-        $this->programEligibilityConfigurations = $clonedProgramEligibilityConfigurations;
     }
 }
