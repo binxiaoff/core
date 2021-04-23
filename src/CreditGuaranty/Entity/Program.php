@@ -628,49 +628,56 @@ class Program implements TraceableStatusAwareInterface
     public function duplicate(Staff $duplicatedBy): Program
     {
         $duplicatedProgram = clone $this;
-
         $duplicatedProgram
             ->setCurrentStatus(new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $duplicatedBy))
             ->setAddedBy($duplicatedBy)
-            ->setProgramContacts($this->cloneCollection($duplicatedProgram, $this->programContacts))
-            ->setProgramChoiceOptions($this->cloneCollection($duplicatedProgram, $this->programChoiceOptions))
-            ->setProgramEligibilities($this->cloneCollection($duplicatedProgram, $this->programEligibilities))
-            ->setProgramGradeAllocations($this->cloneCollection($duplicatedProgram, $this->programGradeAllocations))
-            ->setProgramBorrowerTypeAllocations($this->cloneCollection($duplicatedProgram, $this->programBorrowerTypeAllocations))
-            ->setParticipations($this->cloneCollection($duplicatedProgram, $this->participations))
+        ;
+
+        return $duplicatedProgram;
+    }
+
+    protected function onClone(): Program
+    {
+        $this
+            ->setProgramContacts($this->cloneCollection($this->programContacts))
+            ->setProgramChoiceOptions($this->cloneCollection($this->programChoiceOptions))
+            ->setProgramEligibilities($this->cloneCollection($this->programEligibilities))
+            ->setProgramGradeAllocations($this->cloneCollection($this->programGradeAllocations))
+            ->setProgramBorrowerTypeAllocations($this->cloneCollection($this->programBorrowerTypeAllocations))
+            ->setParticipations($this->cloneCollection($this->participations))
         ;
 
         // Replace the ProgramChoiceOption (if not null) in the ProgramEligibilityConfiguration and ProgramBorrowerTypeAllocation (which are not remplace in the previous process)
         // by the newly created one. The new one was created with setProgramChoiceOptions() in the duplicated program.
-        foreach ($duplicatedProgram->getProgramEligibilities() as $programEligibility) {
+        foreach ($this->getProgramEligibilities() as $programEligibility) {
             foreach ($programEligibility->getProgramEligibilityConfigurations() as $programEligibilityConfiguration) {
                 $originalProgramChoiceOption = $programEligibilityConfiguration->getProgramChoiceOption();
                 if ($originalProgramChoiceOption) {
-                    $duplicatedProgramChoiceOption = $this->findProgramChoiceOption($duplicatedProgram, $originalProgramChoiceOption);
+                    $duplicatedProgramChoiceOption = $this->findProgramChoiceOption($originalProgramChoiceOption);
                     $programEligibilityConfiguration->setProgramChoiceOption($duplicatedProgramChoiceOption);
                 }
             }
         }
-        foreach ($duplicatedProgram->getProgramBorrowerTypeAllocations() as $programBorrowerTypeAllocation) {
+        foreach ($this->getProgramBorrowerTypeAllocations() as $programBorrowerTypeAllocation) {
             $originalProgramChoiceOption = $programBorrowerTypeAllocation->getProgramChoiceOption();
             if ($originalProgramChoiceOption) {
-                $duplicatedProgramChoiceOption = $this->findProgramChoiceOption($duplicatedProgram, $originalProgramChoiceOption);
+                $duplicatedProgramChoiceOption = $this->findProgramChoiceOption($originalProgramChoiceOption);
                 $programBorrowerTypeAllocation->setProgramChoiceOption($duplicatedProgramChoiceOption);
             }
         }
 
-        return $duplicatedProgram;
+        return $this;
     }
 
     /**
      * clone the OneToMany relation.
      */
-    private function cloneCollection(Program $duplicatedProgram, Collection $collectionToDuplicate): ArrayCollection
+    private function cloneCollection(Collection $collectionToDuplicate): ArrayCollection
     {
         $clonedArrayCollection = new ArrayCollection();
         foreach ($collectionToDuplicate as $item) {
             $clonedItem = clone $item;
-            $clonedItem->setProgram($duplicatedProgram);
+            $clonedItem->setProgram($this);
             $clonedArrayCollection->add($clonedItem);
         }
 
@@ -680,9 +687,9 @@ class Program implements TraceableStatusAwareInterface
     /**
      * Find the choice option in the duplicated program which has the same attribut as the original one.
      */
-    private function findProgramChoiceOption(Program $duplicatedProgram, ProgramChoiceOption $originalProgramChoiceOption): ProgramChoiceOption
+    private function findProgramChoiceOption(ProgramChoiceOption $originalProgramChoiceOption): ProgramChoiceOption
     {
-        $clonedProgramChoiceOption = $duplicatedProgram->getProgramChoiceOptions()
+        $clonedProgramChoiceOption = $this->getProgramChoiceOptions()
             ->filter(
                 fn (ProgramChoiceOption $item) => $item->getField() === $originalProgramChoiceOption->getField()
                     && $item->getDescription() === $originalProgramChoiceOption->getDescription()
@@ -691,8 +698,8 @@ class Program implements TraceableStatusAwareInterface
         ;
         if (false === $clonedProgramChoiceOption instanceof ProgramChoiceOption) {
             throw new \LogicException(sprintf(
-                'The new program choice option cannot be found on project %s with field %s and description %s',
-                $duplicatedProgram->getId(),
+                'The new program choice option cannot be found on program %s with field %s and description %s',
+                $this->getName(),
                 $originalProgramChoiceOption->getField()->getId(),
                 $originalProgramChoiceOption->getDescription()
             ));
