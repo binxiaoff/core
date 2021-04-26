@@ -65,11 +65,11 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
             throw new AccessDeniedException();
         }
 
-        if (false === $this->security->isGranted(ProgramVoter::ATTRIBUTE_CREATE, $existingProgram)) {
+        $duplicatedProgram = $existingProgram->duplicate($staff);
+
+        if (false === $this->security->isGranted(ProgramVoter::ATTRIBUTE_CREATE, $duplicatedProgram)) {
             throw new AccessDeniedException();
         }
-
-        $duplicatedProgram = $existingProgram->duplicate($staff);
 
         $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $duplicatedProgram;
 
