@@ -54,8 +54,8 @@ Agency:
             validation: Cette valeur doit être synchronisée avec l'état de la validation de l'agent
         breach:
             invalidTermRequired: L'échec de la validation de l'agent est requise pour avoir un bris
-        breachComment:
-            breachRequired: Le bris est requis pour mettre ce commentaire
+        irregularityComment:
+            irregularityRequired: La constatation d'irrégularité est requise pour mettre ce commentaire
         waiver:
             breachRequired: Le bris est requis pour le waiver
         waiverComment:

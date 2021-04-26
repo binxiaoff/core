@@ -185,15 +185,15 @@ class Term
 
     /**
      * @Assert\Expression(
-     *     expression="this.hasBreach() || null === value",
-     *     message="Agency.Term.breachComment.breachRequired"
+     *     expression="this.isInvalid() || null === value",
+     *     message="Agency.Term.irregularityComment.breachRequired"
      * )
      *
      * @ORM\Column(type="text", nullable=true)
      *
      * @Groups({"agency:term:read", "agency:term:update"})
      */
-    private ?string $breachComment;
+    private ?string $irregularityComment;
 
     /**
      * true if waiver is granted
@@ -286,11 +286,11 @@ class Term
         $this->archivingDate = null;
 
         // Irregularity fields
-        $this->grantedDelay  = null;
-        $this->breach        = false;
-        $this->breachComment = null;
-        $this->waiver        = null;
-        $this->waiverComment = null;
+        $this->grantedDelay        = null;
+        $this->breach              = false;
+        $this->irregularityComment = null;
+        $this->waiver              = null;
+        $this->waiverComment       = null;
     }
 
     /**
@@ -483,14 +483,14 @@ class Term
         return $this;
     }
 
-    public function getBreachComment(): ?string
+    public function getIrregularityComment(): ?string
     {
-        return $this->breachComment;
+        return $this->irregularityComment;
     }
 
-    public function setBreachComment(?string $breachComment): Term
+    public function setIrregularityComment(?string $irregularityComment): Term
     {
-        $this->breachComment = $breachComment;
+        $this->irregularityComment = $irregularityComment;
 
         return $this;
     }
@@ -660,9 +660,9 @@ class Term
         $this->validationDate = null;
         $this->agentComment   = null;
 
-        $this->breach        = false;
-        $this->breachComment = null;
-        $this->waiver        = null;
-        $this->waiverComment = null;
+        $this->breach              = false;
+        $this->irregularityComment = null;
+        $this->waiver              = null;
+        $this->waiverComment       = null;
     }
 }
