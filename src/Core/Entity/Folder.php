@@ -98,7 +98,7 @@ class Folder
     {
         $this->drive = $drive;
 
-        if (null === $this->drive->getFolder($parentPath)) {
+        if ('/' !== $parentPath && null === $this->drive->getFolder($parentPath)) {
             throw new InvalidArgumentException(sprintf('Given path %s is not a folder in drive', $parentPath));
         }
 
