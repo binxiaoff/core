@@ -41,7 +41,9 @@ use Unilend\Core\Model\Bitmask;
  *         }
  *     },
  *     itemOperations={
- *         "get",
+ *         "get": {
+ *             "security": "is_granted('view', object)"
+ *         },
  *         "patch": {
  *             "denormalization_context": {
  *                 "groups": {"agency:participation:update", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}

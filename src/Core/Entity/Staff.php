@@ -343,12 +343,16 @@ class Staff implements TraceableStatusAwareInterface
     /**
      * @return iterable|Staff[]
      */
-    public function getManagedStaff(): iterable
+    public function getInheritedRightStaff(): iterable
     {
+        // Non-manager only get self in collection
         if (false === $this->manager) {
+            yield $this;
+
             return;
         }
 
+        // Manager get self in collection (he is present in his team) and other people (manager or not) in his team and its descendents
         /** @var Team $team */
         foreach ([$this->team, ...$this->team->getDescendents()] as $team) {
             yield from $team->getStaff();
@@ -358,9 +362,9 @@ class Staff implements TraceableStatusAwareInterface
     /**
      * @return iterable|User[]
      */
-    public function getManagedUsers(): iterable
+    public function getInheritedRightUsers(): iterable
     {
-        foreach ($this->getManagedStaff() as $staff) {
+        foreach ($this->getInheritedRightStaff() as $staff) {
             yield $staff->getUser();
         }
     }

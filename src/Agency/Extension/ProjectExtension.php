@@ -53,6 +53,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             ->setParameter($userParameterName, $user)
         ;
 
+        // TODO Handle project publication and participation
         if ($staff) {
             $participationAlias       = static::prefix('participation');
             $participationPoolAlias   = static::prefix('participationPool');
@@ -76,7 +77,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
                         )
                     )
                 )
-                ->setParameter($managedUserParameterName, iterator_to_array($staff->getManagedUsers(), false))
+                ->setParameter($managedUserParameterName, iterator_to_array($staff->getInheritedRightUsers(), false))
                 ->setParameter($companyParameterName, $staff->getCompany())
                 ->setParameter($publishedStatusParameterName, Project::STATUS_PUBLISHED)
             ;

@@ -74,7 +74,7 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canBorrower(Project $project, User $user)
     {
-        return $this->borrowerMemberRepository->existsByProjectAndUser($project, $user);
+        return $this->borrowerMemberRepository->existsByProjectAndUser($project, $user) && $project->isPublished();
     }
 
     /**
@@ -90,13 +90,14 @@ class ProjectVoter extends AbstractEntityVoter
             return false;
         }
 
+        // Fetch users whom connected user can get permission as he had them
         $managedUsers = $staff->getInheritedRightUsers();
 
         $company = $staff->getCompany();
 
         foreach ($managedUsers as $managedUser) {
             if ($this->participationMemberRepository->existsByProjectAndCompanyAndUser($project, $company, $managedUser)) {
-                return true;
+                return $project->isPublished(); // Participant can only be participant on project if project is published
             }
         }
 

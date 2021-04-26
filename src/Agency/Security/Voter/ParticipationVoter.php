@@ -12,12 +12,8 @@ class ParticipationVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_DELETE = 'delete';
-
-    protected function canDelete(Participation $participation, User $user): bool
-    {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject()) && false === $participation->isAgent();
-    }
 
     public function canView(Participation $participation, User $user)
     {
@@ -25,7 +21,7 @@ class ParticipationVoter extends AbstractEntityVoter
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $participation->getProject());
     }
 
-    public function canEdit(Participation $participation, User $user)
+    public function canEdit(Participation $participation, User $user): bool
     {
         if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject())) {
             return true;
@@ -40,13 +36,13 @@ class ParticipationVoter extends AbstractEntityVoter
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_PARTICIPANT, $participation->getProject()) && $staff->getCompany();
     }
 
-    public function canDelete(Participation $participation, User $user)
+    public function canCreate(Participation $participation, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject());
     }
 
-    public function canCreate(Participation $participation, User $user)
+    protected function canDelete(Participation $participation, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject());
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject()) && false === $participation->isAgent();
     }
 }
