@@ -49,7 +49,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             ->distinct()
             ->leftJoin("{$rootAlias}.borrowers", $borrowerAlias)
             ->leftJoin("{$borrowerAlias}.members", $borrowerMemberAlias)
-            ->andWhere("{$borrowerMemberAlias}.user = :{$userParameterName}")
+            ->orWhere("{$borrowerMemberAlias}.user = :{$userParameterName}")
             ->setParameter($userParameterName, $user)
         ;
 
@@ -57,15 +57,26 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             $participationAlias       = static::prefix('participation');
             $participationMemberAlias = static::prefix('participationMember');
 
-            $managedUserParameterName = static::prefix('managedUsers');
-            $companyParameterName     = static::prefix('company');
+            $managedUserParameterName     = static::prefix('managedUsers');
+            $companyParameterName         = static::prefix('company');
+            $publishedStatusParameterName = static::prefix('publishedStatus');
 
             $queryBuilder
                 ->leftJoin("{$rootAlias}.participations", $participationAlias)
                 ->leftJoin("{$participationAlias}.members", $participationMemberAlias)
-                ->orWhere("{$participationMemberAlias}.user IN (:{$managedUserParameterName}) and {$participationAlias}.participant = :{$companyParameterName}")
+                ->orWhere(
+                    $queryBuilder->expr()->andX(
+                        "{$participationMemberAlias}.user IN (:{$managedUserParameterName})",
+                        "{$participationAlias}.participant = :{$companyParameterName}",
+                        $queryBuilder->expr()->orX(
+                            "{$rootAlias}.agent = :{$companyParameterName}",
+                            "{$rootAlias}.currentStatus >= :{$publishedStatusParameterName}"
+                        )
+                    )
+                )
                 ->setParameter($managedUserParameterName, iterator_to_array($staff->getManagedUsers(), false))
                 ->setParameter($companyParameterName, $staff->getCompany())
+                ->setParameter($publishedStatusParameterName, Project::STATUS_PUBLISHED)
             ;
         }
     }
