@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Agency\Entity\Embeddable;
+namespace Unilend\Test\Agency\Unit\Entity\Embeddable;
 
 use PHPUnit\Framework\TestCase;
 use Unilend\Agency\Entity\Embeddable\Inequality;
