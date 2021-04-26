@@ -81,7 +81,7 @@ class TermHistory
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private ?string $breachComment;
+    private ?string $irregularityComment;
 
     /**
      * true if waiver is granted
@@ -129,11 +129,11 @@ class TermHistory
         $this->validationDate = $term->getValidationDate();
 
         // Irregularity fields
-        $this->grantedDelay  = $term->getGrantedDelay();
-        $this->breach        = $term->hasBreach();
-        $this->breachComment = $term->getBreachComment();
-        $this->waiver        = $term->getWaiver();
-        $this->waiverComment = $term->getWaiverComment();
+        $this->grantedDelay        = $term->getGrantedDelay();
+        $this->breach              = $term->hasBreach();
+        $this->irregularityComment = $term->getIrregularityComment();
+        $this->waiver              = $term->getWaiver();
+        $this->waiverComment       = $term->getWaiverComment();
     }
 
     public function getValidation(): ?bool
@@ -182,14 +182,14 @@ class TermHistory
         return $this;
     }
 
-    public function getBreachComment(): ?string
+    public function getIrregularityComment(): ?string
     {
-        return $this->breachComment;
+        return $this->irregularityComment;
     }
 
-    public function setBreachComment(?string $breachComment): TermHistory
+    public function setIrregularityComment(?string $irregularityComment): TermHistory
     {
-        $this->breachComment = $breachComment;
+        $this->irregularityComment = $irregularityComment;
 
         return $this;
     }
