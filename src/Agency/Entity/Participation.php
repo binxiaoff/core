@@ -58,7 +58,7 @@ use Unilend\Core\Model\Bitmask;
  *         },
  *         "dataroom_shared_agency_participation": {
  *             "method": "GET",
- *             "path": "/agency/participation/{publicId}/dataroom/confidential/{path?}",
+ *             "path": "/agency/participations/{publicId}/dataroom/confidential/{path?}",
  *             "controller": Get::class,
  *             "security": "is_granted('view', object)",
  *             "requirements": {
