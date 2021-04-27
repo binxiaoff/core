@@ -23,7 +23,7 @@ class FooCompanyFixtures extends AbstractCompanyFixtures
      */
     protected function getTeams(Team $companyRootTeam)
     {
-        $teams = array_map($this->getTeamFactory($companyRootTeam), ['A' => 'A']);
+        $teams = array_map($this->getTeamFactory($companyRootTeam), ['A' => 'A', 'B' => 'B']);
         $teams += array_map($this->getTeamFactory($teams['A']), ['1' => '1']);
 
         return $teams;
@@ -50,10 +50,16 @@ class FooCompanyFixtures extends AbstractCompanyFixtures
                     $this->createManager($this->getReference('user:a'), $team),
                 ];
 
+            case 'B':
+                return [
+                    $this->createManager($this->getReference('user:e'), $team),
+                ];
+
             case '1':
                 return [
-                    $this->createStaff($this->getReference('user:b'), $team),
+                    $this->createStaff($this->getReference('user:b'), $team)->setAgencyProjectCreationPermission(true),
                     $this->createStaff($this->getReference('user:c'), $team),
+                    $this->createStaff($this->getReference('user:d'), $team),
                 ];
         }
 

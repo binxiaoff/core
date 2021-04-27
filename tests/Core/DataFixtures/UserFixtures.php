@@ -35,11 +35,10 @@ class UserFixtures extends AbstractFixtures
     {
         $manager->getConnection()->getConfiguration()->setSQLLogger(null);
 
+        // User with symbols are meant to be staffless
         $users = [
-            ...array_map([$this, 'createInitializedUser'], range(1, 10)),
-            ...array_map([$this, 'createUser'], range(11, 20)), // These users are meant to be unitialized
-            ...array_map([$this, 'createInitializedUser'], range('a', 'z')),
-            ...array_map([$this, 'createInitializedUser'], ['€', '@', '$', '£', '+']), // These users are meant to be staff-less
+            ...array_map([$this, 'createInitializedUser'], [...range(1, 10), ...range(21, 25), ...range('a', 'z'), '€', '@', '$', '£', '+']),
+            ...array_map([$this, 'createUser'], [...range(11, 20), 'uninitialized']), // These users are meant to be uninitialized
         ];
 
         array_walk($users, [$manager, 'persist']);
@@ -77,14 +76,6 @@ class UserFixtures extends AbstractFixtures
         $this->initialize($user);
 
         return $user;
-    }
-
-    /**
-     * @return object|string
-     */
-    public static function getReferenceName(User $user)
-    {
-        return $user->getPublicId();
     }
 
     /**

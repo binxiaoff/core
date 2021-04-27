@@ -43,7 +43,6 @@ class DraftProject extends AbstractProjectFixtures
             fn (Company $company) => $this->createTestPrimaryParticipation($project, $company),
             [
                 'bar' => $this->getReference('company:bar'),
-                'qux' => $this->getReference('company:qux'),
             ]
         );
 
@@ -52,7 +51,7 @@ class DraftProject extends AbstractProjectFixtures
         $borrower = $this->createTestBorrower($project, $staff);
 
         $borrower->setReferent(new BorrowerMember($borrower, $this->getReference('user:+')));
-        $borrower->setSignatory(new BorrowerMember($borrower, $this->getReference('user:+')));
+        $borrower->setSignatory(new BorrowerMember($borrower, $this->getReference('user:d')));
 
         array_map(
             [$manager, 'persist'],
