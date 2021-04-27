@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Agency\DataFixtures;
 
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
@@ -17,6 +18,7 @@ use Unilend\Agency\Entity\Embeddable\Inequality;
 use Unilend\Agency\Entity\MarginImpact;
 use Unilend\Agency\Entity\MarginRule;
 use Unilend\Agency\Entity\Participation;
+use Unilend\Agency\Entity\ParticipationMember;
 use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Entity\Tranche;
@@ -24,6 +26,7 @@ use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\DataFixtures\CompanyFixtures;
 use Unilend\Core\DataFixtures\StaffFixtures;
 use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Constant\LegalForm;
 use Unilend\Core\Entity\Constant\MathOperator;
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
@@ -31,9 +34,11 @@ use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
+use Unilend\Core\Model\Bitmask;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -46,6 +51,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         /** @var Staff $staff */
         $staff = $this->getReference(StaffFixtures::ADMIN);
+
+        $this->login($staff);
 
         $project = new Project(
             $staff,
@@ -62,7 +69,14 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         $agencyContact = (new NullablePerson())->setFirstName($this->faker->firstName)->setLastName($this->faker->lastName);
         $project->setAgencyContact($agencyContact);
-
+        $project->setAgentSiren($this->generateSiren());
+        $project->setAgentLegalForm(LegalForm::EURL);
+        $project->setIban($this->faker->iban());
+        $project->setBic('AGRIMQMX');
+        $project->setHeadOffice($this->faker->address);
+        $project->setAgentRCS(implode(' ', ['RCS', mb_strtoupper($this->faker->city), $this->faker->randomDigit % 2 ? 'A' : 'B', $project->getAgentSiren()]));
+        $project->setAgentCapital(new NullableMoney('EUR', '0'));
+        $project->setBankInstitution('bank institution');
         $project->setPrincipalSyndicationType(SyndicationType::PRIMARY);
         $project->setPrincipalParticipationType(ParticipationType::DIRECT);
 
@@ -101,6 +115,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $marginRule = $this->createMarginRule($financialCovenant, $tranches);
 
         $agentParticipation = $project->getAgentParticipation();
+        $agentParticipation->setResponsibilities((new Bitmask(0))->add(Participation::RESPONSIBILITY_AGENT));
         $agentParticipation->addAllocation(new ParticipationTrancheAllocation($agentParticipation, $tranches[0], new Money('EUR', '2000000')));
 
         $participations = [
@@ -113,6 +128,11 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
                 [CompanyFixtures::COMPANIES[4], CompanyFixtures::COMPANIES[3]]
             ),
         ];
+
+        /** @var Participation $participation */
+        foreach ($participations as $participation) {
+            $participation->setAllocations(new ArrayCollection([new ParticipationTrancheAllocation($participation, $tranches[0], new Money('EUR', '20000'))]));
+        }
 
         array_map([$manager, 'persist'], [
             ...$borrowers,
@@ -202,16 +222,20 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
-     * @return Participation
+     * @throws Exception
      */
-    private function createParticipation(Project $project, Company $participant, bool $secondary = false)
+    private function createParticipation(Project $project, Company $participant, bool $secondary = false): Participation
     {
-        return new Participation(
+        $participation = new Participation(
             $project,
             $participant,
             new Money('EUR', (string) $this->faker->numberBetween(100000)),
             $secondary
         );
+
+        $participation->setReferent(new ParticipationMember($participation, new User($this->faker->email)));
+
+        return $participation;
     }
 
     /**

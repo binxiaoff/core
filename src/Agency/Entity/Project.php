@@ -7,6 +7,7 @@ namespace Unilend\Agency\Entity;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -17,6 +18,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Agency\Controller\Project\GetTerm;
 use Unilend\Agency\Entity\Versioned\VersionedProject;
 use Unilend\Agency\Filter\ApiPlatform\ProjectFilter;
@@ -36,6 +38,7 @@ use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Model\Bitmask;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 use Unilend\Core\Validator\Constraints\Siren;
 use Unilend\Syndication\Entity\Project as ArrangementProject;
 
@@ -132,6 +135,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *     }
  * )
  *
+ * @ApiFilter(filterClass=NumericFilter::class, properties={"currentStatus"})
  * @ApiFilter(filterClass=ProjectFilter::class, arguments={})
  */
 class Project
@@ -139,6 +143,10 @@ class Project
     use PublicizeIdentityTrait;
     use TimestampableTrait;
     use BlamableAddedTrait;
+    use ConstantsAwareTrait;
+
+    public const STATUS_DRAFT     = 10;
+    public const STATUS_PUBLISHED = 20;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
@@ -469,23 +477,24 @@ class Project
     private iterable $participations;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Agency\Entity\ProjectStatus", cascade={"persist"})
-     * @ORM\JoinColumn(name="id_current_status")
+     * @ORM\Column(type="smallint", nullable=false)
      *
      * @Assert\NotBlank
-     * @Assert\Valid
-     * @Assert\Expression("this === value.getProject()")
+     * @Assert\Choice(callback={Project::class, "getAvailableStatuses"})
      *
      * @Groups({"agency:project:read", "agency:project:write"})
      */
-    private ProjectStatus $currentStatus;
+    private int $currentStatus;
 
     /**
-     * @var iterable|ProjectStatus[]
+     * @var iterable|ProjectStatusHistory[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\ProjectStatus", orphanRemoval=true, cascade={"persist"}, mappedBy="project", fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="ProjectStatusHistory", orphanRemoval=true, mappedBy="project", cascade={"persist", "remove"})
      *
-     * @Assert\Count(min="1")
+     * @Assert\All({
+     *     @Assert\Expression("value.getProject() === this")
+     * })
+     * @Assert\Valid
      */
     private iterable $statuses;
 
@@ -496,7 +505,7 @@ class Project
      *
      * @Groups({"agency:project:read", "agency:project:write"})
      *
-     * @Assert\Valid
+     * @Assert\Valid(groups={"Default", "Project"})
      * @Assert\All({
      *     @Assert\Expression("value.getProject() === this")
      * })
@@ -579,8 +588,8 @@ class Project
         $this->secondaryParticipationType = null;
         $this->secondaryRiskType          = null;
 
-        $this->currentStatus = new ProjectStatus($this, $addedBy, ProjectStatus::DRAFT);
-        $this->statuses      = new ArrayCollection([$this->currentStatus]);
+        $this->statuses      = new ArrayCollection();
+        $this->currentStatus = static::STATUS_DRAFT;
 
         // This part is weird but compliant to figma models: those fields are editable
         $this->agentDisplayName = $this->agent->getDisplayName();
@@ -1029,12 +1038,12 @@ class Project
         return $this;
     }
 
-    public function getCurrentStatus(): ProjectStatus
+    public function getCurrentStatus(): int
     {
         return $this->currentStatus;
     }
 
-    public function setCurrentStatus(ProjectStatus $currentStatus): Project
+    public function setCurrentStatus(int $currentStatus): Project
     {
         $this->currentStatus = $currentStatus;
 
@@ -1042,7 +1051,7 @@ class Project
     }
 
     /**
-     * @return iterable|ProjectStatus[]
+     * @return iterable|ProjectStatusHistory[]
      */
     public function getStatuses(): iterable
     {
@@ -1073,7 +1082,7 @@ class Project
 
     public function isPublished(): bool
     {
-        return ProjectStatus::DRAFT > $this->getCurrentStatus()->getStatus();
+        return static::STATUS_PUBLISHED === $this->currentStatus;
     }
 
     /**
@@ -1122,5 +1131,38 @@ class Project
     public function getSource(): ?ArrangementProject
     {
         return $this->source;
+    }
+
+    /**
+     * @return array|int[]
+     */
+    public static function getAvailableStatuses(): array
+    {
+        return static::getConstants('STATUS_');
+    }
+
+    /**
+     * @param $payload
+     *
+     * @Assert\Callback
+     */
+    public function validateStatusTransition(ExecutionContextInterface $context, $payload)
+    {
+        $statuses = array_values(static::getAvailableStatuses());
+
+        sort($statuses);
+
+        reset($statuses);
+
+        while (($status = current($statuses)) && $status < $this->currentStatus) {
+            if (false === $this->statuses->exists(fn ($_, ProjectStatusHistory $history) => $history->getStatus() === $status)) {
+                $context->buildViolation('Agency.Project.missingStatus', [
+                    'missingStatus' => $status,
+                    'nextStatus'    => $this->currentStatus,
+                ])->addViolation();
+            }
+
+            next($statuses);
+        }
     }
 }
