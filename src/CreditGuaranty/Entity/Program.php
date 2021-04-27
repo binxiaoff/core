@@ -37,7 +37,23 @@ use Unilend\Core\Validator\Constraints\PreviousValue;
  *         "delete": {"security": "is_granted('delete', object)"}
  *     },
  *     collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)"},
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *             "openapi_context": {
+ *                 "parameters": {
+ *                     {
+ *                         "in": "query",
+ *                         "name": "import",
+ *                         "schema": {
+ *                             "type": "string",
+ *                             "minimum": 0,
+ *                             "maximum": 1
+ *                         },
+ *                         "description": "Public id of the existing program from which you want to copy"
+ *                     }
+ *                 }
+ *             }
+ *         },
  *         "get"
  *     }
  * )
