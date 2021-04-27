@@ -12,6 +12,12 @@ class ParticipationVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_DELETE = 'delete';
+
+    protected function canDelete(Participation $participation, User $user)
+    {
+        $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject()) && false === $participation->isAgent();
+    }
 
     /**
      * @param Participation $participation
