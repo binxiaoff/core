@@ -14,21 +14,17 @@ use Unilend\Core\Entity\UserStatus;
 
 class UserFixtures extends AbstractFixtures
 {
-    /**
-     * @var UserPasswordEncoderInterface
-     */
+    public const DEFAULT_PASSWORD = '0000';
+
     private UserPasswordEncoderInterface $passwordEncoder;
 
-    /**
-     * @param UserPasswordEncoderInterface $passwordEncoder
-     */
     public function __construct(UserPasswordEncoderInterface $passwordEncoder)
     {
         $this->passwordEncoder = $passwordEncoder;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws ReflectionException
      * @throws Exception
@@ -36,7 +32,7 @@ class UserFixtures extends AbstractFixtures
     public function load(ObjectManager $manager)
     {
         $manager->getConnection()->getConfiguration()->setSQLLogger(null);
-        foreach (range(1, 20) as $index) {
+        foreach (range(1, 25) as $index) {
             $user = new User('user' . $index . '@test.com');
 
             $reference = 'user:' . $index;
@@ -45,19 +41,25 @@ class UserFixtures extends AbstractFixtures
 
             $this->setPublicId($user, $reference);
 
-            if ($index <= 10) {
-                $this->initialize($user);
-            }
+            $this->initialize($user);
 
             $manager->persist($user);
         }
+
+        $user = new User('user_uninitialized@test.com');
+
+        $reference = 'user:uninitialized';
+
+        $this->addReference($reference, $user);
+
+        $this->setPublicId($user, $reference);
+
+        $manager->persist($user);
 
         $manager->flush();
     }
 
     /**
-     * @param User $user
-     *
      * @return object|string
      */
     public static function getReferenceName(User $user)
@@ -66,8 +68,6 @@ class UserFixtures extends AbstractFixtures
     }
 
     /**
-     * @param User $user
-     *
      * @throws Exception
      */
     private function initialize(User $user)
@@ -76,7 +76,7 @@ class UserFixtures extends AbstractFixtures
         $user->setLastName(Person::firstNameFemale());
         $user->setPhone('+33600000000');
         $user->setJobFunction('job');
-        $user->setPassword($this->passwordEncoder->encodePassword($user, '0000'));
+        $user->setPassword($this->passwordEncoder->encodePassword($user, static::DEFAULT_PASSWORD));
         $user->setCurrentStatus(new UserStatus($user, UserStatus::STATUS_CREATED));
     }
 }
