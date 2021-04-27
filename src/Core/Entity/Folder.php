@@ -56,6 +56,8 @@ class Folder
 
     /**
      * @ORM\Column(type="text", nullable=false)
+     *
+     * @Groups({"folder:read"})
      */
     private string $path;
 

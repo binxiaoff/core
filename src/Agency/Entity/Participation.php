@@ -16,6 +16,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Agency\Controller\Participation\Get;
+use Unilend\Agency\Controller\Participation\Post;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
@@ -25,9 +26,6 @@ use Unilend\Core\Model\Bitmask;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "validation_groups": {Participation::class, "getCurrentValidationGroups"}
- *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:participation:read",
@@ -40,7 +38,20 @@ use Unilend\Core\Model\Bitmask;
  *                 "groups": {"agency:participation:create", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}
  *             },
  *             "security_post_denormalize": "is_granted('create', object)",
- *         }
+ *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
+ *         },
+ *         "dataroom_agency_participation": {
+ *             "method": "POST",
+ *             "path": "/agency/participations/{publicId}/dataroom/confidential/{path?}",
+ *             "controller": Post::class,
+ *             "deserialize": false,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *             },
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
@@ -51,10 +62,10 @@ use Unilend\Core\Model\Bitmask;
  *                 "groups": {"agency:participation:update", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}
  *             },
  *             "security_post_denormalize": "is_granted('edit', object)",
+ *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)"
- *         }
  *         },
  *         "dataroom_shared_agency_participation": {
  *             "method": "GET",
