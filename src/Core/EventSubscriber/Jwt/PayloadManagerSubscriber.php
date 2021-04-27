@@ -10,6 +10,7 @@ use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Unilend\Core\Repository\UserRepository;
 use Unilend\Core\Service\Jwt\PayloadManagerInterface;
 
 class PayloadManagerSubscriber implements EventSubscriberInterface
@@ -18,7 +19,9 @@ class PayloadManagerSubscriber implements EventSubscriberInterface
 
     private JWTTokenManagerInterface $jwtManager;
 
-    public function __construct(JWTTokenManagerInterface $jwtManager, iterable $payloadManagers = [])
+    private UserRepository $userRepository;
+
+    public function __construct(JWTTokenManagerInterface $jwtManager, UserRepository $userRepository, iterable $payloadManagers = [])
     {
         $this->payloadManagers = [];
 
@@ -26,7 +29,8 @@ class PayloadManagerSubscriber implements EventSubscriberInterface
             $this->addPayloadManager($jwtPayloadManager);
         }
 
-        $this->jwtManager = $jwtManager;
+        $this->jwtManager     = $jwtManager;
+        $this->userRepository = $userRepository;
     }
 
     public static function getSubscribedEvents(): array
@@ -87,11 +91,16 @@ class PayloadManagerSubscriber implements EventSubscriberInterface
         // Remove generated token
         unset($data['token']);
 
-        $data['tokens'] = [$this->jwtManager->create($event->getUser())];
+        $user = $event->getUser();
+
+        // Needed because on refresh token request the given user is of Symfony basic User class
+        $user = $this->userRepository->findOneBy(['email' => $user->getUsername()]);
+
+        $data['tokens'] = [$this->jwtManager->create($user)];
 
         /** @var PayloadManagerInterface $jwtPayloadManager */
         foreach ($this->payloadManagers as $jwtPayloadManager) {
-            foreach ($jwtPayloadManager->getPayloads($event->getUser()) as $payload) {
+            foreach ($jwtPayloadManager->getPayloads($user) as $payload) {
                 $payload['@scope'] = $jwtPayloadManager::getScope();
                 $data['tokens'][]  = $this->jwtManager->createFromPayload($event->getUser(), $payload);
             }
