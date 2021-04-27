@@ -42,7 +42,7 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canView(Project $project, User $user): bool
     {
-        return $this->canParticipant($project, $user) || $this->canBorrower($project, $user);
+        return $this->canParticipant($project, $user) || $this->canBorrower($project, $user) || $this->canAgent($project, $user);
     }
 
     /**
@@ -56,6 +56,7 @@ class ProjectVoter extends AbstractEntityVoter
             return false;
         }
 
+        // Est-ce que l'on devrai vérifier l'héritage pour la création des projets.
         return $staff->getCompany() === $project->getAgent() && $staff->hasAgencyProjectCreationPermission();
     }
 
@@ -84,6 +85,11 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canParticipant(Project $project, User $user)
     {
+        // Participant can only be participant on project if project is published
+        if (false === $project->isPublished()) {
+            return false;
+        }
+
         $staff = $user->getCurrentStaff();
 
         if (null === $staff) {
@@ -96,8 +102,10 @@ class ProjectVoter extends AbstractEntityVoter
         $company = $staff->getCompany();
 
         foreach ($managedUsers as $managedUser) {
-            if ($this->participationMemberRepository->existsByProjectAndCompanyAndUser($project, $company, $managedUser)) {
-                return $project->isPublished(); // Participant can only be participant on project if project is published
+            $participationMember = $this->participationMemberRepository->findByProjectAndCompanyAndUser($project, $company, $managedUser);
+
+            if ($participationMember) {
+                return false === $participationMember->getParticipation()->isArchived();
             }
         }
 
@@ -117,6 +125,21 @@ class ProjectVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $staff->getCompany() === $project->getAgent() && $this->canParticipant($project, $user);
+        if ($staff->getCompany() !== $project->getAgent()) {
+            return false;
+        }
+
+        // Fetch users whom connected user can get permission as he had them
+        $managedUsers = $staff->getInheritedRightUsers();
+
+        $company = $staff->getCompany();
+
+        foreach ($managedUsers as $managedUser) {
+            if ($this->participationMemberRepository->findByProjectAndCompanyAndUser($project, $company, $managedUser)) {
+                return true; // Participant can only be participant on project if project is published
+            }
+        }
+
+        return false;
     }
 }

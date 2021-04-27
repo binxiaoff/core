@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Agency\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
 use Unilend\Agency\Entity\ParticipationMember;
@@ -29,10 +28,10 @@ class ParticipationMemberRepository extends ServiceEntityRepository
     /**
      * @throws NonUniqueResultException
      */
-    public function existsByProjectAndCompanyAndUser(Project $project, Company $company, User $user): bool
+    public function findByProjectAndCompanyAndUser(Project $project, Company $company, User $user): ?ParticipationMember
     {
-        $return = $this->createQueryBuilder('pm')
-            ->select('pm.id')
+        return $this->createQueryBuilder('pm')
+            ->select('pm')
             ->innerJoin('pm.participation', 'p')
             ->where('p.project = :project')
             ->andWhere('pm.user = :user')
@@ -44,9 +43,7 @@ class ParticipationMemberRepository extends ServiceEntityRepository
                 'company' => $company,
             ])
             ->getQuery()
-            ->getOneOrNullResult(AbstractQuery::HYDRATE_SINGLE_SCALAR)
+            ->getOneOrNullResult()
         ;
-
-        return $return ? true : false;
     }
 }

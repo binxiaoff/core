@@ -23,6 +23,10 @@ class ParticipationVoter extends AbstractEntityVoter
 
     public function canEdit(Participation $participation, User $user): bool
     {
+        if ($participation->isArchived()) {
+            return false;
+        }
+
         if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject())) {
             return true;
         }

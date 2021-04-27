@@ -528,16 +528,16 @@ class Participation
         return $this;
     }
 
+    public function isArchived(): bool
+    {
+        return null !== $this->archivingDate;
+    }
+
     /**
      * @return iterable|ParticipationMember[]
      */
     private function getMemberByType(string $type): iterable
     {
         return $this->members->filter(fn (ParticipationMember $member) => $type === $member->getType())->toArray();
-    }
-
-    private function isArchived(): bool
-    {
-        return null !== $this->archivingDate;
     }
 }
