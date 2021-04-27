@@ -12,14 +12,18 @@ use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Core\Entity\User;
+use Unilend\Core\Repository\UserRepository;
 
 class UserSubscriber implements EventSubscriberInterface
 {
     private IriConverterInterface $iriConverter;
 
-    public function __construct(IriConverterInterface $iriConverter)
+    private UserRepository $userRepository;
+
+    public function __construct(IriConverterInterface $iriConverter, UserRepository $repository)
     {
-        $this->iriConverter = $iriConverter;
+        $this->iriConverter   = $iriConverter;
+        $this->userRepository = $repository;
     }
 
     /**
@@ -37,7 +41,12 @@ class UserSubscriber implements EventSubscriberInterface
     {
         $payload = $event->getData();
 
-        $payload['user'] = $this->iriConverter->getIriFromItem($event->getUser());
+        $user = $event->getUser();
+
+        // Needed because on refresh token request the given user is of Symfony basic User class
+        $user = $this->userRepository->findOneBy(['email' => $user->getUsername()]);
+
+        $payload['user'] = $this->iriConverter->getIriFromItem($user);
 
         $event->setData($payload);
     }
