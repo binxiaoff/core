@@ -31,12 +31,10 @@ class ParticipationMemberRepository extends ServiceEntityRepository
     public function findByProjectAndCompanyAndUser(Project $project, Company $company, User $user): ?ParticipationMember
     {
         return $this->createQueryBuilder('pm')
-            ->select('pm')
             ->innerJoin('pm.participation', 'p')
             ->where('p.project = :project')
             ->andWhere('pm.user = :user')
             ->andWhere('p.participant = :company')
-            ->setMaxResults(1)
             ->setParameters([
                 'user'    => $user,
                 'project' => $project,

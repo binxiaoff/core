@@ -132,19 +132,6 @@ class ProjectVoterTest extends KernelTestCase
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
-
-            'VIEW: connected user with archived company cannot can view published project' => [
-                'staff_company:qux_user:b',
-                'published',
-                VoterInterface::ACCESS_DENIED,
-            ],
-
-            'VIEW: connected manager with archived company cannot can view published project' => [
-                'staff_company:qux_user:a',
-                'published',
-                VoterInterface::ACCESS_DENIED,
-            ],
-
             'VIEW: unknown user in project cannot can view draft project' => [
                 'user:£',
                 'draft',
@@ -363,11 +350,6 @@ class ProjectVoterTest extends KernelTestCase
             ],
             'PARTICIPANT: Connected user with unkown bank in project is not participant in published project' => [
                 'staff_company:basic_user:1',
-                'published',
-                VoterInterface::ACCESS_DENIED,
-            ],
-            'PARTICIPANT: Connected user with archived bank is not participant in published project' => [
-                'staff_company:qux_user:b',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],

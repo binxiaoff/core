@@ -22,8 +22,7 @@ class BorrowerVoter extends AbstractEntityVoter
 
     public function canEdit(Borrower $borrower, User $user)
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $borrower->getProject())
-            || $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_BORROWER, $borrower->getProject())
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_BORROWER, $borrower->getProject())
             || $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_AGENT, $borrower->getProject());
     }
 

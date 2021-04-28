@@ -105,7 +105,7 @@ class ProjectVoter extends AbstractEntityVoter
             $participationMember = $this->participationMemberRepository->findByProjectAndCompanyAndUser($project, $company, $managedUser);
 
             if ($participationMember) {
-                return false === $participationMember->getParticipation()->isArchived();
+                return true;
             }
         }
 
