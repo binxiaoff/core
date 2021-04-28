@@ -27,6 +27,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *     denormalizationContext={"groups": {"creditGuaranty:programEligibility:write"}},
  *     itemOperations={
  *         "get": {
+ *             "security": "is_granted('view', object)",
  *             "normalization_context": {
  *                 "groups": {
  *                     "creditGuaranty:programEligibility:read",
@@ -37,10 +38,11 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *                 }
  *             }
  *         },
- *         "delete"
+ *         "delete": {"security": "is_granted('delete', object)"}
  *     },
  *     collectionOperations={
  *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {"groups": {"creditGuaranty:programEligibility:write", "creditGuaranty:programEligibility:create"}}
  *         }
  *     }

@@ -62,7 +62,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'companyGroupTag' => Program::COMPANY_GROUP_TAG_AGRICULTURE,
                 'funds'           => ['currency' => 'EUR', 'amount' => '200000000'],
                 'addedBy'         => StaffFixtures::CASA,
-                'currentStatus'   => ProgramStatus::STATUS_CANCELLED,
+                'currentStatus'   => ProgramStatus::STATUS_ARCHIVED,
                 'cappedAt'        => random_int(10, 40) / 100,
             ],
             self::REFERENCE_COMMERCIALIZED => [

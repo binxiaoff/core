@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
@@ -16,6 +17,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\Constant\CARatingType;
 use Unilend\Core\Entity\Embeddable\Money;
@@ -23,7 +25,7 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Interfaces\StatusInterface;
 use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\BlamableUserAddedTrait;
 use Unilend\Core\Entity\Traits\CloneableTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
@@ -34,7 +36,7 @@ use Unilend\Core\Validator\Constraints\PreviousValue;
  *     normalizationContext={"groups": {"creditGuaranty:program:read", "creditGuaranty:programStatus:read", "timestampable:read", "money:read", "nullableMoney:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:program:write", "money:write", "nullableMoney:write"}},
  *     itemOperations={
- *         "get",
+ *         "get": {"security": "is_granted('view', object)"},
  *         "patch": {"security": "is_granted('edit', object)"},
  *         "delete": {"security": "is_granted('delete', object)"}
  *     },
@@ -72,7 +74,7 @@ class Program implements TraceableStatusAwareInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
-    use BlamableAddedTrait;
+    use BlamableUserAddedTrait;
     use CloneableTrait;
 
     public const COMPANY_GROUP_TAG_CORPORATE   = 'corporate';
@@ -233,6 +235,16 @@ class Program implements TraceableStatusAwareInterface
      */
     private ?int $reservationDuration;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\JoinColumn(name="id_managing_company", nullable=false)
+     *
+     * @ApiProperty(readableLink=false)
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:create"})
+     */
+    private Company $managingCompany;
+
     // Subresource
 
     /**
@@ -299,7 +311,8 @@ class Program implements TraceableStatusAwareInterface
         $this->name                    = $name;
         $this->companyGroupTag         = $companyGroupTag;
         $this->funds                   = $funds;
-        $this->addedBy                 = $addedBy;
+        $this->addedBy                 = $addedBy->getUser();
+        $this->managingCompany         = $addedBy->getCompany();
         $this->statuses                = new ArrayCollection();
         $this->guarantyCost            = new NullableMoney();
         $this->added                   = new DateTimeImmutable();
@@ -475,6 +488,18 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
+    public function getManagingCompany(): Company
+    {
+        return $this->managingCompany;
+    }
+
+    public function archive(Staff $archivedBy): Program
+    {
+        $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_ARCHIVED, $archivedBy));
+
+        return $this;
+    }
+
     /**
      * Used in an expression constraints.
      */
@@ -498,9 +523,9 @@ class Program implements TraceableStatusAwareInterface
         return ProgramStatus::STATUS_DISTRIBUTED === $this->getCurrentStatus()->getStatus();
     }
 
-    public function isCancelled(): bool
+    public function isArchived(): bool
     {
-        return ProgramStatus::STATUS_CANCELLED === $this->getCurrentStatus()->getStatus();
+        return ProgramStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
     }
 
     /**

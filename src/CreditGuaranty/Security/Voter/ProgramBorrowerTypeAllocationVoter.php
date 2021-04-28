@@ -15,13 +15,10 @@ class ProgramBorrowerTypeAllocationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_DELETE = 'delete';
 
     /**
-     * @param ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation
-     * @param User                          $user
-     *
-     * @return bool
+     * @param ProgramBorrowerTypeAllocation $subject
      */
-    protected function isGrantedAll($programBorrowerTypeAllocation, User $user): bool
+    protected function isGrantedAll($subject, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProgramVoter::ATTRIBUTE_EDIT, $programBorrowerTypeAllocation->getProgram());
+        return $this->authorizationChecker->isGranted($subject->getProgram(), ProgramVoter::ATTRIBUTE_EDIT);
     }
 }

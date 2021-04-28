@@ -26,11 +26,12 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *             "read": false,
  *             "output": false,
  *         },
- *         "patch",
- *         "delete"
+ *         "patch": {"security": "is_granted('edit', object)"},
+ *         "delete": {"security": "is_granted('delete', object)"}
  *     },
  *     collectionOperations={
  *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {"groups": {"creditGuaranty:programEligibilityCondition:write", "creditGuaranty:programEligibilityCondition:create"}}
  *         }
  *     }

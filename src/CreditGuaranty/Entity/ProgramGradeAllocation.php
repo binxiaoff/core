@@ -23,8 +23,12 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *     normalizationContext={"groups": {"creditGuaranty:programGradeAllocation:read", "creditGuaranty:program:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:programGradeAllocation:write"}},
  *     itemOperations={
- *         "get",
- *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"},
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *         "patch": {"security": "is_granted('edit', object)"},
  *         "delete": {"security": "is_granted('delete', object)"}
  *     },
  *     collectionOperations={
