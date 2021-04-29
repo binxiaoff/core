@@ -82,8 +82,6 @@ class ProgramEligibilityConfiguration
      *
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_program_choice_option", onDelete="CASCADE")
-     *
-     * @Groups({"creditGuaranty:programEligibilityConfiguration:read"})
      */
     private ?ProgramChoiceOption $programChoiceOption;
 
@@ -156,6 +154,14 @@ class ProgramEligibilityConfiguration
     public function getProgramEligibilityConditionsCount(): int
     {
         return $this->programEligibilityConditions->count();
+    }
+
+    /**
+     * @Groups({"creditGuaranty:programEligibilityConfiguration:read"})
+     */
+    public function getDescription(): ?string
+    {
+        return $this->getProgramChoiceOption() ? $this->getProgramChoiceOption()->getDescription() : null;
     }
 
     /**

@@ -109,6 +109,14 @@ class ProgramEligibility
     }
 
     /**
+     * @Groups({"creditGuaranty:programEligibility:read"})
+     */
+    public function getFieldCategory(): string
+    {
+        return $this->field->getCategory();
+    }
+
+    /**
      * @return Collection|ProgramEligibilityConfiguration[]
      */
     public function getProgramEligibilityConfigurations()

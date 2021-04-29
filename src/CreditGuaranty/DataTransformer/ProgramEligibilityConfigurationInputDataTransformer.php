@@ -18,10 +18,6 @@ class ProgramEligibilityConfigurationInputDataTransformer implements DataTransfo
     private ValidatorInterface $validator;
     private ProgramChoiceOptionRepository $programChoiceOptionRepository;
 
-    /**
-     * @param ValidatorInterface            $validator
-     * @param ProgramChoiceOptionRepository $programChoiceOptionRepository
-     */
     public function __construct(ValidatorInterface $validator, ProgramChoiceOptionRepository $programChoiceOptionRepository)
     {
         $this->validator                     = $validator;
@@ -40,13 +36,9 @@ class ProgramEligibilityConfigurationInputDataTransformer implements DataTransfo
      * @todo: check user's permission when the habilitation is available
      *
      * @param ProgramEligibilityConfigurationInput $object
-     * @param string                               $to
-     * @param array                                $context
      *
      * @throws ORMException
      * @throws OptimisticLockException
-     *
-     * @return ProgramEligibilityConfiguration
      */
     public function transform($object, string $to, array $context = []): ProgramEligibilityConfiguration
     {
@@ -55,11 +47,11 @@ class ProgramEligibilityConfigurationInputDataTransformer implements DataTransfo
         $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([
             'program'     => $object->programEligibility->getProgram(),
             'field'       => $object->programEligibility->getField(),
-            'description' => $object->value,
+            'description' => $object->description,
         ]);
 
         if (null === $programChoiceOption) {
-            $programChoiceOption = new ProgramChoiceOption($object->programEligibility->getProgram(), $object->value, $object->programEligibility->getField());
+            $programChoiceOption = new ProgramChoiceOption($object->programEligibility->getProgram(), $object->description, $object->programEligibility->getField());
             $this->programChoiceOptionRepository->save($programChoiceOption);
         }
 

@@ -26,5 +26,5 @@ class ProgramEligibilityConfigurationInput
      *
      * @Groups({"creditGuaranty:programEligibilityConfiguration:write"})
      */
-    public string $value;
+    public string $description;
 }
