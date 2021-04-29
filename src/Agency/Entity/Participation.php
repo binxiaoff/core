@@ -55,10 +55,10 @@ use Unilend\Core\Model\Bitmask;
  * )
  * @ORM\Entity
  * @ORM\Table(name="agency_participation", uniqueConstraints={
- *     @ORM\UniqueConstraint(columns={"id_project", "id_participant"})
+ *     @ORM\UniqueConstraint(columns={"id_participation_pool", "id_participant"})
  * })
  *
- * @UniqueEntity(fields={"project", "participant"})
+ * @UniqueEntity(fields={"pool", "participant"})
  *
  * @ApiFilter(
  *     filterClass=GroupFilter::class,
@@ -81,16 +81,14 @@ class Participation
     public const RESPONSIBILITY_DEPUTY_ARRANGER = 1 << 2;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Project::class, inversedBy="participations")
-     * @ORM\JoinColumn(name="id_project", nullable=false)
-     *
-     * @Groups({"agency:participation:read", "agency:participation:create"})
+     * @ORM\ManyToOne(targetEntity=ParticipationPool::class, inversedBy="participations")
+     * @ORM\JoinColumn(name="id_participation_pool", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
      *
      * @ApiProperty(readableLink=false)
      */
-    private Project $project;
+    private ParticipationPool $pool;
 
     /**
      * @ORM\ManyToOne(targetEntity=Company::class)
@@ -197,13 +195,6 @@ class Participation
     private Collection $allocations;
 
     /**
-     * @ORM\Column(type="boolean")
-     *
-     * @Groups({"agency:participation:read", "agency:participation:write"})
-     */
-    private bool $secondary;
-
-    /**
      * @ORM\OneToOne(targetEntity=ParticipationMember::class)
      * @ORM\JoinColumn(name="id_referent", onDelete="SET NULL")
      *
@@ -235,16 +226,14 @@ class Participation
     private ?DateTimeImmutable $archivingDate;
 
     public function __construct(
-        Project $project,
+        ParticipationPool $project,
         Company $participant,
-        Money $finalAllocation,
-        bool $secondary = false
+        Money $finalAllocation
     ) {
         $this->responsibilities         = new Bitmask(0);
-        $this->project                  = $project;
+        $this->pool                     = $project;
         $this->finalAllocation          = $finalAllocation;
         $this->participant              = $participant;
-        $this->secondary                = $secondary;
         $this->prorata                  = false;
         $this->participantCommission    = '0';
         $this->arrangerCommission       = null;
@@ -260,9 +249,14 @@ class Participation
         return $this->participant;
     }
 
+    public function getPool(): ParticipationPool
+    {
+        return $this->pool;
+    }
+
     public function getProject(): Project
     {
-        return $this->project;
+        return $this->pool->getProject();
     }
 
     public function getResponsibilities(): Bitmask
@@ -350,7 +344,7 @@ class Participation
 
     public function isSecondary(): bool
     {
-        return $this->secondary;
+        return $this->getPool()->isSecondary();
     }
 
     public function getParticipantCommission(): ?string

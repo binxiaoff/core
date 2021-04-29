@@ -142,12 +142,15 @@ class ProjectFilter extends AbstractContextAwareFilter
             return null;
         }
 
-        $rootAlias          = $queryBuilder->getRootAliases()[0];
-        $participationAlias = static::prefix('participation');
+        $rootAlias              = $queryBuilder->getRootAliases()[0];
+        $participationAlias     = static::prefix('participation');
+        $participationPoolAlias = static::prefix('participationPool');
 
         $companyParameterName = static::prefix('company') . '_participant';
 
-        $queryBuilder->leftJoin($rootAlias . '.participations', $participationAlias)
+        $queryBuilder
+            ->leftJoin("{$rootAlias}.participationPools", $participationPoolAlias)
+            ->leftJoin($participationPoolAlias . '.participations', $participationAlias)
             ->setParameter($companyParameterName, $company)
         ;
 

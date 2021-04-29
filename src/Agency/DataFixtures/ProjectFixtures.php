@@ -77,8 +77,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $project->setAgentRCS(implode(' ', ['RCS', mb_strtoupper($this->faker->city), $this->faker->randomDigit % 2 ? 'A' : 'B', $project->getAgentSiren()]));
         $project->setAgentCapital(new NullableMoney('EUR', '0'));
         $project->setBankInstitution('bank institution');
-        $project->setPrincipalSyndicationType(SyndicationType::PRIMARY);
-        $project->setPrincipalParticipationType(ParticipationType::DIRECT);
+        $project->getPrimaryParticipationPool()->setSyndicationType(SyndicationType::PRIMARY);
+        $project->getPrimaryParticipationPool()->setParticipationType(ParticipationType::DIRECT);
 
         /** @var Borrower[]|array $borrowers */
         $borrowers = array_map(fn () => $this->createBorrower($project, $staff), range(0, 3));
@@ -227,10 +227,9 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     private function createParticipation(Project $project, Company $participant, bool $secondary = false): Participation
     {
         $participation = new Participation(
-            $project,
+            $project->getParticipationPools()[$secondary],
             $participant,
             new Money('EUR', (string) $this->faker->numberBetween(100000)),
-            $secondary
         );
 
         $participation->setReferent(new ParticipationMember($participation, new User($this->faker->email)));
