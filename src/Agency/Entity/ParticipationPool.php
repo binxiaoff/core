@@ -7,6 +7,7 @@ namespace Unilend\Agency\Entity;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -68,7 +69,7 @@ class ParticipationPool
      *
      * @Groups({"agency:participationPool:read"})
      */
-    private iterable $participations;
+    private Collection $participations;
 
     /**
      * @ORM\Column(type="string", length=30, nullable=true)
@@ -125,12 +126,12 @@ class ParticipationPool
     /**
      * @return ArrayCollection|iterable
      */
-    public function getParticipations()
+    public function getParticipations(): Participation
     {
         return $this->participations;
     }
 
-    public function addParticipation(Participation $participation)
+    public function addParticipation(Participation $participation): ParticipationPool
     {
         if ($this->project->findParticipationByParticipant($participation->getParticipant())) {
             return $this;
@@ -141,9 +142,11 @@ class ParticipationPool
         return $this;
     }
 
-    public function removeParticipation(Participation $participation)
+    public function removeParticipation(Participation $participation): ParticipationPool
     {
         $this->participations->removeElement($participation);
+
+        return $this;
     }
 
     public function getSyndicationType(): ?string
