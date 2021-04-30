@@ -10,8 +10,6 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use ReflectionClass;
-use ReflectionException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -636,18 +634,11 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @throws ReflectionException
-     */
     public function duplicate(Staff $duplicatedBy): Program
     {
-        $duplicatedProgram = clone $this;
+        $duplicatedProgram          = clone $this;
+        $duplicatedProgram->addedBy = $duplicatedBy;
         $duplicatedProgram->setCurrentStatus(new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $duplicatedBy));
-
-        $reflection = new ReflectionClass(__CLASS__);
-        $property   = $reflection->getProperty('addedBy');
-        $property->setAccessible(true);
-        $property->setValue($duplicatedProgram, $duplicatedBy);
 
         return $duplicatedProgram;
     }
@@ -693,6 +684,9 @@ class Program implements TraceableStatusAwareInterface
         $clonedArrayCollection = new ArrayCollection();
         foreach ($collectionToDuplicate as $item) {
             $clonedItem = clone $item;
+            if (false === method_exists($clonedItem, 'setProgram')) {
+                throw new \LogicException(sprintf('Cannot find the method setProgram of the class %s. Make sure it exists or it is accessible.', get_class($clonedItem)));
+            }
             $clonedItem->setProgram($this);
             $clonedArrayCollection->add($clonedItem);
         }
