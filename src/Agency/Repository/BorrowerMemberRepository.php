@@ -44,6 +44,6 @@ class BorrowerMemberRepository extends ServiceEntityRepository
             ->getOneOrNullResult(AbstractQuery::HYDRATE_SINGLE_SCALAR)
         ;
 
-        return $return ? true : false;
+        return (bool) $return;
     }
 }
