@@ -26,9 +26,17 @@ class ProgramContactFixtures extends AbstractFixtures implements DependentFixtur
     }
 
     /**
+     * @return string[]
+     */
+    public function getDependencies(): array
+    {
+        return [ProgramFixtures::class];
+    }
+
+    /**
      * @throws Exception
      */
-    public function buildProgramContacts(Program $program, ObjectManager $manager): void
+    private function buildProgramContacts(Program $program, ObjectManager $manager): void
     {
         $workingScope = ['Aide à la réservation', 'Eligibilité et process', 'Gestion des recouvrements et des appels en garantie', 'Reporting', 'Bagage commercial'];
         for ($i = 1; $i <= random_int(1, 5); ++$i) {
@@ -48,15 +56,5 @@ class ProgramContactFixtures extends AbstractFixtures implements DependentFixtur
             );
             $manager->persist($programContact);
         }
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getDependencies(): array
-    {
-        return [
-            ProgramFixtures::class,
-        ];
     }
 }

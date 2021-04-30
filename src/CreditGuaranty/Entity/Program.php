@@ -10,6 +10,8 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use ReflectionClass;
+use ReflectionException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -502,7 +504,7 @@ class Program implements TraceableStatusAwareInterface
     /**
      * @param Collection|ProgramContact[] $programContacts
      */
-    public function setProgramContacts($programContacts): Program
+    public function setProgramContacts(Collection $programContacts): Program
     {
         $this->programContacts = $programContacts;
 
@@ -520,7 +522,7 @@ class Program implements TraceableStatusAwareInterface
     /**
      * @param Collection|ProgramEligibility[] $programEligibilities
      */
-    public function setProgramEligibilities($programEligibilities): Program
+    public function setProgramEligibilities(Collection $programEligibilities): Program
     {
         $this->programEligibilities = $programEligibilities;
 
@@ -543,7 +545,7 @@ class Program implements TraceableStatusAwareInterface
     /**
      * @param Collection|Participation[] $participations
      */
-    public function setParticipations($participations): Program
+    public function setParticipations(Collection $participations): Program
     {
         $this->participations = $participations;
 
@@ -553,7 +555,7 @@ class Program implements TraceableStatusAwareInterface
     /**
      * @param Collection|ProgramGradeAllocation[] $programGradeAllocations
      */
-    public function setProgramGradeAllocations($programGradeAllocations): Program
+    public function setProgramGradeAllocations(Collection $programGradeAllocations): Program
     {
         $this->programGradeAllocations = $programGradeAllocations;
 
@@ -634,20 +636,18 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    public function setAddedBy(Staff $addedBy): Program
-    {
-        $this->addedBy = $addedBy;
-
-        return $this;
-    }
-
+    /**
+     * @throws ReflectionException
+     */
     public function duplicate(Staff $duplicatedBy): Program
     {
         $duplicatedProgram = clone $this;
-        $duplicatedProgram
-            ->setCurrentStatus(new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $duplicatedBy))
-            ->setAddedBy($duplicatedBy)
-        ;
+        $duplicatedProgram->setCurrentStatus(new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $duplicatedBy));
+
+        $reflection = new ReflectionClass(__CLASS__);
+        $property   = $reflection->getProperty('addedBy');
+        $property->setAccessible(true);
+        $property->setValue($duplicatedProgram, $duplicatedBy);
 
         return $duplicatedProgram;
     }

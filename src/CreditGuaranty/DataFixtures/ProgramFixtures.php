@@ -54,7 +54,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'addedBy'              => StaffFixtures::CASA,
                 'currentStatus'        => ProgramStatus::STATUS_DRAFT,
                 'cappedAt'             => random_int(10, 40) / 100,
-                'description'          => 'La description pour la pogramme en brouillon',
+                'description'          => 'La description pour le programme en brouillon',
                 'distributionDeadline' => new \DateTimeImmutable(),
             ],
             self::REFERENCE_CANCELLED => [
@@ -72,7 +72,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'addedBy'              => StaffFixtures::CASA,
                 'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,
                 'cappedAt'             => random_int(10, 40) / 100,
-                'description'          => 'La description pour la pogramme en distribution',
+                'description'          => 'La description pour le programme en distribution',
                 'distributionDeadline' => new \DateTimeImmutable(),
                 'distributionProcess'  => [
                     'Création d’un dossier emprunteur',
