@@ -6,52 +6,23 @@ namespace Unilend\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
 use Unilend\Core\DataFixtures\{AbstractFixtures};
-use Unilend\CreditGuaranty\Entity\{Program, ProgramContact};
+use Unilend\CreditGuaranty\Entity\Program;
+use Unilend\CreditGuaranty\Entity\ProgramContact;
 
 class ProgramContactFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     /**
-     * @param ObjectManager $manager
+     * @throws Exception
      */
     public function load(ObjectManager $manager): void
     {
-        $programReferenceNames = [
-            ProgramFixtures::REFERENCE_CANCELLED,
-            ProgramFixtures::REFERENCE_COMMERCIALIZED,
-            ProgramFixtures::REFERENCE_DRAFT,
-            ProgramFixtures::REFERENCE_PAUSED,
-        ];
-
-        foreach ($programReferenceNames as $programReferenceName) {
-            $program = $this->getReference($programReferenceName);
-
+        /** @var Program $program */
+        foreach ($this->getReferences(ProgramFixtures::ALL_PROGRAMS) as $program) {
             $this->buildProgramContacts($program, $manager);
         }
         $manager->flush();
-    }
-
-    /**
-     * @param Program       $program
-     * @param ObjectManager $manager
-     */
-    public function buildProgramContacts(Program $program, ObjectManager $manager)
-    {
-        $workingScope = ['Aide à la réservation', 'Eligibilité et process', 'Gestion des recouvrements et des appels en garantie', 'Reporting', 'Bagage commercial'];
-        for ($i = 1; $i <= rand(1, 5); $i++) {
-            $firstName = $this->faker->firstName;
-            $lastName = $this->faker->lastName;
-            $email = transliterator_transliterate('NFKC; [:Nonspacing Mark:] Remove; NFKC; Any-Latin; Latin-ASCII', $firstName . '.' . $lastName . '@' . $this->faker->domainName);
-            $programContact = new ProgramContact(
-                $program,
-                $firstName,
-                $lastName,
-                $workingScope[array_rand($workingScope)],
-                strtolower($email),
-                $this->faker->phoneNumber
-            );
-            $manager->persist($programContact);
-        }
     }
 
     /**
@@ -59,8 +30,31 @@ class ProgramContactFixtures extends AbstractFixtures implements DependentFixtur
      */
     public function getDependencies(): array
     {
-        return [
-            ProgramFixtures::class,
-        ];
+        return [ProgramFixtures::class];
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function buildProgramContacts(Program $program, ObjectManager $manager): void
+    {
+        $workingScope = ['Aide à la réservation', 'Eligibilité et process', 'Gestion des recouvrements et des appels en garantie', 'Reporting', 'Bagage commercial'];
+        for ($i = 1; $i <= random_int(1, 5); ++$i) {
+            $firstName = $this->faker->firstName;
+            $lastName  = $this->faker->lastName;
+            $email     = transliterator_transliterate(
+                'NFKC; [:Nonspacing Mark:] Remove; NFKC; Any-Latin; Latin-ASCII',
+                $firstName . '.' . $lastName . '@' . $this->faker->domainName
+            );
+            $programContact = new ProgramContact(
+                $program,
+                $firstName,
+                $lastName,
+                $workingScope[array_rand($workingScope)],
+                mb_strtolower($email),
+                $this->faker->phoneNumber
+            );
+            $manager->persist($programContact);
+        }
     }
 }

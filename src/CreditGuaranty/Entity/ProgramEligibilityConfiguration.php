@@ -16,6 +16,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\Traits\CloneableTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
@@ -65,6 +66,7 @@ class ProgramEligibilityConfiguration
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+    use CloneableTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibility", inversedBy="programEligibilityConfigurations")
@@ -107,7 +109,10 @@ class ProgramEligibilityConfiguration
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition", mappedBy="programEligibilityConfiguration", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(
+     *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition",
+     *     mappedBy="programEligibilityConfiguration", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     * )
      */
     private Collection $programEligibilityConditions;
 
@@ -126,6 +131,13 @@ class ProgramEligibilityConfiguration
         return $this->programEligibility;
     }
 
+    public function setProgramEligibility(ProgramEligibility $programEligibility): ProgramEligibilityConfiguration
+    {
+        $this->programEligibility = $programEligibility;
+
+        return $this;
+    }
+
     public function setEligible(bool $eligible): ProgramEligibilityConfiguration
     {
         $this->eligible = $eligible;
@@ -141,6 +153,13 @@ class ProgramEligibilityConfiguration
     public function getProgramChoiceOption(): ?ProgramChoiceOption
     {
         return $this->programChoiceOption;
+    }
+
+    public function setProgramChoiceOption(?ProgramChoiceOption $programChoiceOption): ProgramEligibilityConfiguration
+    {
+        $this->programChoiceOption = $programChoiceOption;
+
+        return $this;
     }
 
     public function getValue(): ?string
@@ -230,5 +249,17 @@ class ProgramEligibilityConfiguration
                 ;
             }
         }
+    }
+
+    protected function onClone(): void
+    {
+        $clonedProgramEligibilityConditions = new ArrayCollection();
+        foreach ($this->programEligibilityConditions as $item) {
+            $clonedItem = clone $item;
+            $clonedItem->setProgramEligibilityConfiguration($this);
+            $clonedProgramEligibilityConditions->add($clonedItem);
+        }
+
+        $this->programEligibilityConditions = $clonedProgramEligibilityConditions;
     }
 }

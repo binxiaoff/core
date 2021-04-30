@@ -10,11 +10,13 @@ use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\DataFixtures\CompanyFixtures;
 use Unilend\Core\Entity\Constant\CARegionalBank;
 use Unilend\CreditGuaranty\Entity\Participation;
+use Unilend\CreditGuaranty\Entity\Program;
 
 class ParticipationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
+        /** @var Program $program */
         foreach ($this->getReferences(ProgramFixtures::ALL_PROGRAMS) as $program) {
             $CARegionalBanks = CARegionalBank::REGIONAL_BANKS;
             shuffle($CARegionalBanks);

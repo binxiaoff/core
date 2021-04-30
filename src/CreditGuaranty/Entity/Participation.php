@@ -4,37 +4,44 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\{Company, Constant\CARegionalBank, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Constant\CARegionalBank;
+use Unilend\Core\Entity\Traits\CloneableTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups":{"creditGuaranty:participation:read", "creditGuaranty:participation:read", "timestampable:read"}},
+ *     normalizationContext={"groups": {"creditGuaranty:participation:read", "creditGuaranty:participation:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:participation:write"}},
- *      itemOperations={
- *          "get": {
+ *     itemOperations={
+ *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
- *          },
- *          "patch",
- *          "delete"
- *      },
- *      collectionOperations={
- *         "post"
+ *         },
+ *         "patch",
+ *         "delete"
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "denormalization_context": {"groups": {"creditGuaranty:participation:write", "creditGuaranty:participation:create"}}
+ *         }
  *     }
  * )
  *
  * @ORM\Entity
  * @ORM\Table(
- *      name="credit_guaranty_program_participation",
- *      uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"id_company", "id_program"})
- *      }
+ *     name="credit_guaranty_program_participation",
+ *     uniqueConstraints={
+ *         @ORM\UniqueConstraint(columns={"id_company", "id_program"})
+ *     }
  * )
  * @ORM\HasLifecycleCallbacks
  *
@@ -44,6 +51,7 @@ class Participation
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+    use CloneableTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="participations")
@@ -51,7 +59,7 @@ class Participation
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:participation:read", "creditGuaranty:participation:write"})
+     * @Groups({"creditGuaranty:participation:read", "creditGuaranty:participation:create"})
      */
     private Program $program;
 
@@ -78,11 +86,6 @@ class Participation
      */
     private string $quota;
 
-    /**
-     * @param Program $program
-     * @param Company $participant
-     * @param string  $quota
-     */
     public function __construct(Program $program, Company $participant, string $quota)
     {
         $this->program     = $program;
@@ -91,35 +94,28 @@ class Participation
         $this->added       = new \DateTimeImmutable();
     }
 
-    /**
-     * @return Program
-     */
     public function getProgram(): Program
     {
         return $this->program;
     }
 
-    /**
-     * @return Company
-     */
+    public function setProgram(Program $program): Participation
+    {
+        $this->program = $program;
+
+        return $this;
+    }
+
     public function getParticipant(): Company
     {
         return $this->participant;
     }
 
-    /**
-     * @return string
-     */
     public function getQuota(): string
     {
         return $this->quota;
     }
 
-    /**
-     * @param string $quota
-     *
-     * @return Participation
-     */
     public function setQuota(string $quota): Participation
     {
         $this->quota = $quota;
@@ -127,9 +123,6 @@ class Participation
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isParticipantValid(): bool
     {
         return in_array($this->getParticipant()->getShortCode(), CARegionalBank::REGIONAL_BANKS, true);

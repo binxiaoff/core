@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\Traits\CloneableTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
@@ -53,6 +54,7 @@ class ProgramBorrowerTypeAllocation
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+    use CloneableTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programBorrowerTypeAllocations")
@@ -94,6 +96,13 @@ class ProgramBorrowerTypeAllocation
     public function getProgram(): Program
     {
         return $this->program;
+    }
+
+    public function setProgram(Program $program): ProgramBorrowerTypeAllocation
+    {
+        $this->program = $program;
+
+        return $this;
     }
 
     public function getProgramChoiceOption(): ProgramChoiceOption

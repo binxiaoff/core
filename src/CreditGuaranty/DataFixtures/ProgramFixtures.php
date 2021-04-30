@@ -6,6 +6,7 @@ namespace Unilend\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\DataFixtures\CompanyGroupFixture;
@@ -20,16 +21,17 @@ use Unilend\CreditGuaranty\Entity\ProgramStatus;
 
 class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    public const REFERENCE_DRAFT          = 'draft_program';
-    public const REFERENCE_CANCELLED      = 'cancelled_program';
-    public const REFERENCE_COMMERCIALIZED = 'commercialized_program';
-    public const REFERENCE_PAUSED         = 'paused_program';
-    public const ALL_PROGRAMS             = [
+    public const ALL_PROGRAMS = [
         self::REFERENCE_CANCELLED,
         self::REFERENCE_COMMERCIALIZED,
         self::REFERENCE_DRAFT,
         self::REFERENCE_PAUSED,
     ];
+
+    private const REFERENCE_DRAFT          = 'draft_program';
+    private const REFERENCE_CANCELLED      = 'cancelled_program';
+    private const REFERENCE_COMMERCIALIZED = 'commercialized_program';
+    private const REFERENCE_PAUSED         = 'paused_program';
 
     private CompanyGroupTagRepository $companyGroupTagRepository;
 
@@ -40,7 +42,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function load(ObjectManager $manager): void
     {
@@ -52,7 +54,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'addedBy'              => StaffFixtures::CASA,
                 'currentStatus'        => ProgramStatus::STATUS_DRAFT,
                 'cappedAt'             => random_int(10, 40) / 100,
-                'description'          => 'La description pour la pogramme en brouillon',
+                'description'          => 'La description pour le programme en brouillon',
                 'distributionDeadline' => new \DateTimeImmutable(),
             ],
             self::REFERENCE_CANCELLED => [
@@ -70,7 +72,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'addedBy'              => StaffFixtures::CASA,
                 'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,
                 'cappedAt'             => random_int(10, 40) / 100,
-                'description'          => 'La description pour la pogramme en brouillon',
+                'description'          => 'La description pour le programme en distribution',
                 'distributionDeadline' => new \DateTimeImmutable(),
                 'distributionProcess'  => [
                     'Création d’un dossier emprunteur',
