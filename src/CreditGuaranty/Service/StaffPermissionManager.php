@@ -19,8 +19,18 @@ class StaffPermissionManager
     public function hasPermissions(Staff $staff, int $permissions): bool
     {
         $staffPermission = $this->staffPermissionRepository->findOneBy(['staff' => $staff]);
-        if ($staffPermission) {
-            return $staffPermission->getPermissions()->has($permissions);
+        if ($staffPermission && $staffPermission->getPermissions()->has($permissions)) {
+            return true;
+        }
+
+        foreach ($staff->getManagedStaff() as $managedStaff) {
+            if ($managedStaff === $staff) {
+                continue;
+            }
+            $staffPermission = $this->staffPermissionRepository->findOneBy(['staff' => $managedStaff]);
+            if ($staffPermission && $staffPermission->getPermissions()->has($permissions)) {
+                return true;
+            }
         }
 
         return false;
