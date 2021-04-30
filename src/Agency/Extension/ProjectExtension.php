@@ -55,6 +55,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
 
         if ($staff) {
             $participationAlias       = static::prefix('participation');
+            $participationPoolAlias   = static::prefix('participationPool');
             $participationMemberAlias = static::prefix('participationMember');
 
             $managedUserParameterName     = static::prefix('managedUsers');
@@ -62,7 +63,8 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             $publishedStatusParameterName = static::prefix('publishedStatus');
 
             $queryBuilder
-                ->leftJoin("{$rootAlias}.participations", $participationAlias)
+                ->leftJoin("{$rootAlias}.participationPools", $participationPoolAlias)
+                ->leftJoin("{$participationPoolAlias}.participations", $participationAlias)
                 ->leftJoin("{$participationAlias}.members", $participationMemberAlias)
                 ->orWhere(
                     $queryBuilder->expr()->andX(

@@ -14,9 +14,9 @@ class ParticipationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_CREATE = 'create';
     public const ATTRIBUTE_DELETE = 'delete';
 
-    protected function canDelete(Participation $participation, User $user)
+    protected function canDelete(Participation $participation, User $user): bool
     {
-        $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject()) && false === $participation->isAgent();
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject()) && false === $participation->isAgent();
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
@@ -26,9 +27,6 @@ use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\FundingSpecificity;
-use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
-use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
-use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
@@ -298,80 +296,20 @@ class Project
     private bool $silentSyndication;
 
     /**
-     * @ORM\Column(type="string", length=30, nullable=true)
+     * This collection will be indexed by secondary.
+     * This is either true or false. False means primary and true means secondary.
      *
-     * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
-     * @Assert\NotBlank(groups={"published"})
+     * @var Collection|ParticipationPool[]
      *
-     * @Groups({"agency:project:write", "agency:project:read"})
+     * @ORM\OneToMany(targetEntity=ParticipationPool::class, mappedBy="project", indexBy="secondary", cascade={"persist", "remove"})
+     *
+     * @Assert\All({
+     *     @Assert\Expression("value.getProject() === this")
+     * })
+     * @Assert\Valid
+     * @Assert\Count(min=2, max=2)
      */
-    private ?string $principalSyndicationType;
-
-    /**
-     * @ORM\Column(type="string", length=30, nullable=true)
-     *
-     * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:write", "agency:project:read"})
-     */
-    private ?string $principalParticipationType;
-
-    /**
-     * @ORM\Column(type="string", nullable=true, length=30)
-     *
-     * @Assert\Choice(callback={RiskType::class, "getConstList"})
-     * @Assert\Expression(
-     *     expression="(false === this.isPrincipalSubParticipation() and null === value) or (this.isPrincipalSubParticipation() and value)",
-     *     groups={"published"}
-     * )
-     *
-     * @Groups({"agency:project:write", "agency:project:read"})
-     */
-    private ?string $principalRiskType;
-
-    /**
-     * @ORM\Column(type="string", length=30, nullable=true)
-     *
-     * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
-     * @Assert\Expression(
-     *     expression="(this.hasSilentSyndication() and value) or (false === this.hasSilentSyndication() and null === value)",
-     *     groups={"published"}
-     * )
-     *
-     * @Groups({"agency:project:write", "agency:project:read"})
-     */
-    private ?string $secondarySyndicationType;
-
-    /**
-     * @ORM\Column(type="string", length=30, nullable=true)
-     *
-     * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
-     * @Assert\Expression(
-     *     expression="(this.hasSilentSyndication() and value) or (false === this.hasSilentSyndication() and null === value)",
-     *     groups={"published"}
-     * )
-     *
-     * @Groups({"agency:project:write", "agency:project:read"})
-     */
-    private ?string $secondaryParticipationType;
-
-    /**
-     * @ORM\Column(type="string", nullable=true, length=30)
-     *
-     * @Assert\Choice(callback={RiskType::class, "getConstList"})
-     * @Assert\Expression(
-     *     expression="(false === this.isSecondarySubParticipation() and null === value) or (this.isSecondarySubParticipation() and value)",
-     *     groups={"published"}
-     * ),
-     * @Assert\Expression(
-     * expression="(this.hasSilentSyndication()) or (false === this.hasSilentSyndication() and null === value)"),
-     *     groups={"published"}
-     * )
-     *
-     * @Groups({"agency:project:write", "agency:project:read"})
-     */
-    private ?string $secondaryRiskType;
+    private Collection $participationPools;
 
     /**
      * @var Collection|Tranche[]
@@ -461,20 +399,6 @@ class Project
      * @Groups({"agency:project:read", "agency:project:write"})
      */
     private NullablePerson $agencyContact;
-
-    /**
-     * @var Participation[]|iterable
-     *
-     * @ORM\OneToMany(targetEntity=Participation::class, mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
-     *
-     * @Groups({"agency:project:read"})
-     *
-     * @Assert\Valid
-     * @Assert\All({
-     *     @Assert\Expression("value.getProject() === this")
-     * })
-     */
-    private iterable $participations;
 
     /**
      * @ORM\Column(type="smallint", nullable=false)
@@ -570,23 +494,18 @@ class Project
         $this->contractEndDate    = $contractEndDate;
         $this->title              = $title;
 
-        $this->borrowers = new ArrayCollection();
-        $this->tranches  = new ArrayCollection();
-        $participation   = new Participation($this, $this->agent, new Money($this->globalFundingMoney->getCurrency()));
+        $this->borrowers          = new ArrayCollection();
+        $this->tranches           = new ArrayCollection();
+        $this->participationPools = new ArrayCollection([false => new ParticipationPool($this, false), true => new ParticipationPool($this, true)]);
+
+        $participation = new Participation($this->getPrimaryParticipationPool(), $this->agent, new Money($this->globalFundingMoney->getCurrency()));
         $participation->setResponsibilities(new Bitmask(Participation::RESPONSIBILITY_AGENT));
         $participation->setAgentCommission('0');
         $participation->setMembers(new ArrayCollection([new ParticipationMember($participation, $addedBy->getUser())]));
-        $this->participations = new ArrayCollection([$participation]);
+
+        $this->participationPools[false]->addParticipation($participation);
 
         $this->silentSyndication = false;
-
-        $this->principalSyndicationType   = null;
-        $this->principalParticipationType = null;
-        $this->principalRiskType          = null;
-
-        $this->secondarySyndicationType   = null;
-        $this->secondaryParticipationType = null;
-        $this->secondaryRiskType          = null;
 
         $this->statuses      = new ArrayCollection();
         $this->currentStatus = static::STATUS_DRAFT;
@@ -769,94 +688,6 @@ class Project
         return $this;
     }
 
-    public function getPrincipalSyndicationType(): ?string
-    {
-        return $this->principalSyndicationType;
-    }
-
-    public function setPrincipalSyndicationType(?string $principalSyndicationType): Project
-    {
-        $this->principalSyndicationType = $principalSyndicationType;
-
-        return $this;
-    }
-
-    public function getPrincipalParticipationType(): ?string
-    {
-        return $this->principalParticipationType;
-    }
-
-    public function setPrincipalParticipationType(?string $principalParticipationType): Project
-    {
-        $this->principalParticipationType = $principalParticipationType;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isPrincipalSubParticipation()
-    {
-        return ParticipationType::SUB_PARTICIPATION === $this->principalParticipationType;
-    }
-
-    public function getPrincipalRiskType(): ?string
-    {
-        return $this->principalRiskType;
-    }
-
-    public function setPrincipalRiskType(?string $principalRiskType): Project
-    {
-        $this->principalRiskType = $principalRiskType;
-
-        return $this;
-    }
-
-    public function getSecondarySyndicationType(): ?string
-    {
-        return $this->secondarySyndicationType;
-    }
-
-    public function setSecondarySyndicationType(?string $secondarySyndicationType): Project
-    {
-        $this->secondarySyndicationType = $secondarySyndicationType;
-
-        return $this;
-    }
-
-    public function getSecondaryParticipationType(): ?string
-    {
-        return $this->secondaryParticipationType;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isSecondarySubParticipation()
-    {
-        return ParticipationType::SUB_PARTICIPATION === $this->secondaryParticipationType;
-    }
-
-    public function setSecondaryParticipationType(?string $secondaryParticipationType): Project
-    {
-        $this->secondaryParticipationType = $secondaryParticipationType;
-
-        return $this;
-    }
-
-    public function getSecondaryRiskType(): ?string
-    {
-        return $this->secondaryRiskType;
-    }
-
-    public function setSecondaryRiskType(?string $secondaryRiskType): Project
-    {
-        $this->secondaryRiskType = $secondaryRiskType;
-
-        return $this;
-    }
-
     /**
      * @return Borrower[]|iterable
      */
@@ -1017,25 +848,46 @@ class Project
     /**
      * @return iterable|Participation[]
      */
-    public function getParticipations()
+    public function getParticipations(): iterable
     {
-        return $this->participations;
+        foreach ($this->participationPools as $pool) {
+            yield from $pool->getParticipations();
+        }
     }
 
     public function addParticipation(Participation $participation): Project
     {
-        if (false === $this->participations->exists(fn ($key, Participation $item) => $item->getParticipant() === $participation->getParticipant())) {
-            $this->participations->add($participation);
+        if ($this->findParticipationByParticipant($participation->getParticipant())) {
+            return $this;
         }
+
+        $this->participationPools[$participation->getPool()->isSecondary()]->addParticipation($participation);
 
         return $this;
     }
 
-    public function removeParticipation(Participation $participation): Project
+    /**
+     * @return ArrayCollection|Collection|ParticipationPool[]
+     */
+    public function getParticipationPools(): Collection
     {
-        $this->participations->removeElement($participation);
+        return $this->participationPools;
+    }
 
-        return $this;
+    /**
+     * @ApiProperty
+     */
+    public function getPrimaryParticipationPool(): ParticipationPool
+    {
+        return $this->participationPools[false];
+    }
+
+    /**
+     * @ApiProperty
+     */
+    public function getSecondaryParticipationPool(): ParticipationPool
+    {
+        return $this->participationPools[true];
     }
 
     public function getCurrentStatus(): int
@@ -1125,7 +977,13 @@ class Project
 
     public function findParticipationByParticipant(Company $participant): ?Participation
     {
-        return $this->participations->filter(fn (Participation $participation) => $participation->getParticipant() === $participant)->first() ?: null;
+        foreach ($this->getParticipations() as $participation) {
+            if ($participation->getParticipant() === $participant) {
+                return $participation;
+            }
+        }
+
+        return null;
     }
 
     public function getSource(): ?ArrangementProject
