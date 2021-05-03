@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -61,8 +59,6 @@ use Unilend\Core\Validator\Constraints\PreviousValue;
  *         "get"
  *     }
  * )
- *
- * @ApiFilter(SearchFilter::class, properties={"companyGroupTag.code"})
  *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_program")
