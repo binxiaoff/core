@@ -1,0 +1,9 @@
+# This file exists to avoid server_version discovery
+# after installation when running tests without a db
+doctrine:
+  dbal:
+    connections:
+      default:
+        server_version: 8.0.20
+      migration:
+        server_version: 8.0.20
