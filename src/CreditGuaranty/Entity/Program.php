@@ -211,6 +211,10 @@ class Program implements TraceableStatusAwareInterface
      * @Assert\Valid
      *
      * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramStatus", mappedBy="program", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     *
+     * @ORM\OrderBy({"added": "ASC"})
+     *
+     * @Groups({"creditGuaranty:program:read"})
      */
     private Collection $statuses;
 
