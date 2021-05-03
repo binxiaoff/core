@@ -126,7 +126,7 @@ class ParticipationPool
     /**
      * @return ArrayCollection|iterable
      */
-    public function getParticipations(): Participation
+    public function getParticipations(): Collection
     {
         return $this->participations;
     }
