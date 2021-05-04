@@ -1,8 +1,45 @@
-# Select what we should cache
-before_script:
-    - rm -rf vendor
-    - composer install
+###
+# Global configuration
+###
+# This image is private, credentials are given through DOCKER_AUTH_CONFIG
+image: klstech/php-ci:7.4.16
+
+variables:
+  APP_ENV: test
+  ### Uncomment the following if using the mysql service
+  # MYSQL_DATABASE: unilend
+  # MYSQL_USER: tests
+  # MYSQL_ROOT_PASSWORD: rootPassw0rd
+  # MYSQL_PASSWORD: myPassw0rd
+  # DATABASE_URL: 'mysql://tests:myPassw0rd@db:3306/unilend?charset=utf8mb4'
+  # DATABASE_URL_MIGRATION: 'mysql://tests:myPassw0rd@db:3306/unilend?charset=utf8mb4'
+
+cache:
+  - &vendors_cache
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - vendor/
+  - &composer_cache
+    key: composer
+    paths:
+      - .composer-cache/
+
+###
+# Job configuration
+###
+stages:
+  - test
 
 test:application:
-    script:
-        - php -dpcov.enabled=1  bin/phpunit --coverage-text --colors=never --testsuite='unit'
+  ### Uncomment the following if using a database
+  # services:
+  #   - name: mysql:8.0.20
+  #     alias: db
+  stage: test
+  before_script:
+    - composer config -g cache-dir "$(pwd)/.composer-cache"
+    - composer install
+  script:
+    - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='unit'
+  tags:
+    - docker
