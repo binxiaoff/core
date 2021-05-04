@@ -34,7 +34,7 @@ class ProgramExtension implements QueryCollectionExtensionInterface
         /** @var Staff $staff */
         $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
 
-        if (null === $staff) {
+        if (null === $staff || $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_PROGRAM)) {
             $queryBuilder->andWhere('1 = 0');
 
             return;
@@ -53,10 +53,6 @@ class ProgramExtension implements QueryCollectionExtensionInterface
                 ->andWhere("{$rootAlias}.companyGroupTag in (:companyGroupTags)")
                 ->setParameter('companyGroupTags', $staff->getCompanyGroupTags())
             ;
-        }
-
-        if (false === $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_PROGRAM)) {
-            $queryBuilder->andWhere('1 = 0');
         }
 
         if ($staff->isManager()) {

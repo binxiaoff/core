@@ -18,15 +18,10 @@ class StaffPermissionManager
 
     public function hasPermissions(Staff $staff, int $permissions): bool
     {
-        $staffPermission = $this->staffPermissionRepository->findOneBy(['staff' => $staff]);
-        if ($staffPermission && $staffPermission->getPermissions()->has($permissions)) {
-            return true;
-        }
+        //todo: use the new getInheritedRightStaff() method
+        $staffToCheck = $staff->isManager() ? $staff->getManagedStaff() : [$staff];
 
-        foreach ($staff->getManagedStaff() as $managedStaff) {
-            if ($managedStaff === $staff) {
-                continue;
-            }
+        foreach ($staffToCheck as $managedStaff) {
             $staffPermission = $this->staffPermissionRepository->findOneBy(['staff' => $managedStaff]);
             if ($staffPermission && $staffPermission->getPermissions()->has($permissions)) {
                 return true;

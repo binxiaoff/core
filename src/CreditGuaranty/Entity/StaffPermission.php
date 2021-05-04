@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -16,7 +18,7 @@ use Unilend\Core\Model\Bitmask;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"creditGuaranty:staffPermission:read", "staff:read", "user:read"}},
+ *     normalizationContext={"groups": {"creditGuaranty:staffPermission:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:staffPermission:write", "permission:write"}},
  *     itemOperations={
  *         "get",
@@ -27,6 +29,17 @@ use Unilend\Core\Model\Bitmask;
  *         "get"
  *     }
  * )
+ *
+ * @ApiFilter(
+ *     filterClass=GroupFilter::class,
+ *     arguments={
+ *         "whitelist": {
+ *             "staff:read",
+ *             "user:read"
+ *         }
+ *     }
+ * )
+ *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_staff_permission")
  */
