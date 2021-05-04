@@ -42,8 +42,8 @@ class TermVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_BORROWER, $term->getProject())
-            || $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_AGENT, $term->getProject());
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $term->getProject())
+            || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $term->getProject());
     }
 
     /**

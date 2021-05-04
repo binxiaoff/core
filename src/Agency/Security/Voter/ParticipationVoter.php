@@ -32,8 +32,8 @@ class ParticipationVoter extends AbstractEntityVoter
         }
 
         if (
-            $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_AGENT, $participation->getProject())
-            || $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_BORROWER, $participation->getProject())
+            $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participation->getProject())
+            || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $participation->getProject())
         ) {
             return true;
         }
@@ -68,7 +68,7 @@ class ParticipationVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_PARTICIPANT, $participation->getProject())
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PARTICIPANT, $participation->getProject())
             && $staff->getCompany() === $participation->getParticipant();
     }
 
