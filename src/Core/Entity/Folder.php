@@ -6,7 +6,6 @@ namespace Unilend\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
@@ -35,8 +34,16 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
  *     },
  *     collectionOperations={}
  * )
+ *
+ * @ORM\AssociationOverrides({
+ *     @ORM\AssociationOverride(name="files",
+ *         joinTable=@ORM\JoinTable(
+ *             name="core_folder_file",
+ *         )
+ *     ),
+ * })
  */
-class Folder
+class Folder extends AbstractFolder
 {
     use TimestampableAddedOnlyTrait;
     use PublicizeIdentityTrait;
@@ -97,11 +104,12 @@ class Folder
     /**
      * @param string|null $parentPath
      */
-    public function __construct(string $name, Drive $drive, string $parentPath)
+    public function __construct(string $name, Drive $drive, string $parentPath = '/')
     {
+        parent::__construct();
         $this->drive = $drive;
 
-        if ('/' !== $parentPath && null === $this->drive->getFolder($parentPath)) {
+        if (null === $this->drive->getFolder($parentPath)) {
             throw new InvalidArgumentException(sprintf('Given path %s is not a folder in drive', $parentPath));
         }
 
@@ -109,7 +117,6 @@ class Folder
         $this->path     = ('/' === $parentPath ? '' : $parentPath) . DIRECTORY_SEPARATOR . $name;
         $this->pathHash = hash('crc32b', $this->path);
         $this->added    = new DateTimeImmutable();
-        $this->files    = new ArrayCollection();
         $this->setPublicId();
     }
 
@@ -129,54 +136,114 @@ class Folder
     }
 
     /**
-     * @return Collection|Folder[]
-     */
-    public function getChildrenFolders(): Collection
-    {
-        return $this->drive->getFolders()->filter(function (Folder $folder) {
-            return $this !== $folder && 0 === mb_strpos($folder->getPath(), $this->getPath());
-        });
-    }
-
-    /**
      * @Groups({"folder:read"})
      *
      * @MaxDepth(1)
      */
-    public function getContent(): Collection
+    public function getContent(): array
     {
-        return new ArrayCollection([...array_values($this->getChildrenFolders()->toArray()), ...array_values($this->files->toArray())]);
+        return $this->list();
     }
 
     /**
-     * @param $name
+     * @param string|Folder $relativePath
      */
-    public function mkdir($name): Folder
+    public function deleteFolder($relativePath): AbstractFolder
     {
-        return $this->drive->mkFolder($name, $this->getPath());
-    }
-
-    public function rmFile(File $file)
-    {
-        $this->files->removeElement($file);
-    }
-
-    public function rmFolder(string $relativePath)
-    {
-        $this->drive->rmFolder($this->path . DIRECTORY_SEPARATOR . $relativePath);
-    }
-
-    public function getFile(string $publicId): ?File
-    {
-        return $this->files[$publicId];
-    }
-
-    public function addFile(File $file): Folder
-    {
-        if (false === $this->files->contains($file)) {
-            $this->files->add($file);
-        }
+        $this->drive->deleteFolder($this->normalizePath($relativePath));
 
         return $this;
+    }
+
+    public function getFile(string $path): ?File
+    {
+        return parent::getFile($this->normalizePath($path));
+    }
+
+    public function getFolder(string $relativePath): ?AbstractFolder
+    {
+        return $this->drive->getFolder($this->normalizePath($relativePath));
+    }
+
+    public function createFolder(string $path): AbstractFolder
+    {
+        $this->drive->createFolder($this->normalizePath($path));
+
+        return $this;
+    }
+
+    /**
+     * @param string|Folder $toDelete
+     */
+    public function delete($toDelete): Folder
+    {
+        $this->drive->delete($this->normalizePath($toDelete));
+
+        return $this;
+    }
+
+    public function exist(string $path): bool
+    {
+        return $this->drive->exist($this->normalizePath($path));
+    }
+
+    public function get(string $path): ?object
+    {
+        return $this->drive->get($this->normalizePath($path));
+    }
+
+    /**
+     * @return Collection|Folder[]
+     */
+    public function getFolders(?int $depth = null): Collection
+    {
+        if ($depth < 1) {
+            throw new \InvalidArgumentException('The depth parameter must strictly be above 0');
+        }
+
+        return $this->drive->getFolders(count(explode(DIRECTORY_SEPARATOR, $this->path)) + (int) $depth - 1)
+            ->filter(fn (Folder $folder) => 0 === mb_strpos($folder->getPath(), $this->path) && $this->path !== $folder->getPath())
+        ;
+    }
+
+    public function deleteFile($path): Folder
+    {
+        if ($path instanceof File) {
+            $this->removeFile($path);
+        }
+
+        $this->drive->deleteFile($this->normalizePath($path));
+
+        return $this;
+    }
+
+    /**
+     * @param string|Folder $test
+     */
+    private function assertDescendent($test)
+    {
+        if ($test instanceof self) {
+            $test = $test->getPath();
+        }
+
+        if (str_starts_with(DIRECTORY_SEPARATOR, $test) && false === str_starts_with($test, $this->path)) {
+            throw new \LogicException();
+        }
+    }
+
+    /**
+     * @param string|Folder $path
+     */
+    private function normalizePath($path)
+    {
+        $this->assertDescendent($path);
+
+        if ($path instanceof self) {
+            $path = $path->getPath();
+        }
+
+        $relativePath = 0 === mb_strpos($path, DIRECTORY_SEPARATOR) ? mb_substr($path, mb_strlen($this->path) + 1) : $path;
+
+        return $this->path . DIRECTORY_SEPARATOR . $relativePath;
     }
 }

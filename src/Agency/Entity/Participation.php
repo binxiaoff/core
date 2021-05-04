@@ -226,13 +226,6 @@ class Participation
     private Collection $allocations;
 
     /**
-     * @ORM\Column(type="boolean")
-     *
-     * @Groups({"agency:participation:read", "agency:participation:write"})
-     */
-    private bool $secondary;
-
-    /**
      * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_confidential_drive", nullable=false, unique=true)
      */
