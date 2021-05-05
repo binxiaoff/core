@@ -77,7 +77,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
                         )
                     )
                 )
-                ->setParameter($managedUserParameterName, iterator_to_array($staff->getInheritedRightUsers(), false))
+                ->setParameter($managedUserParameterName, iterator_to_array($staff->getManagedUsers(), false))
                 ->setParameter($companyParameterName, $staff->getCompany())
                 ->setParameter($publishedStatusParameterName, Project::STATUS_PUBLISHED)
             ;

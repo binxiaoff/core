@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Generator;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -341,9 +342,9 @@ class Staff implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return iterable|Staff[]
+     * @return Generator|Staff[]
      */
-    public function getInheritedRightStaff(): iterable
+    public function getManagedStaff(): Generator
     {
         // Non-manager only get self in collection
         if (false === $this->manager) {
@@ -360,11 +361,11 @@ class Staff implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return iterable|User[]
+     * @return Generator|User[]
      */
-    public function getInheritedRightUsers(): iterable
+    public function getManagedUsers(): Generator
     {
-        foreach ($this->getInheritedRightStaff() as $staff) {
+        foreach ($this->getManagedStaff() as $staff) {
             yield $staff->getUser();
         }
     }
