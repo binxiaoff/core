@@ -34,7 +34,7 @@ class ProgramExtension implements QueryCollectionExtensionInterface
         /** @var Staff|null $staff */
         $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
 
-        if (null === $staff || $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_PROGRAM)) {
+        if (null === $staff || false === $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_PROGRAM)) {
             $queryBuilder->andWhere('1 = 0');
 
             return;
