@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * @ORM\MappedSuperclass
@@ -123,4 +126,21 @@ abstract class AbstractFolder
 
         return $result;
     }
+
+    /**
+     * @Groups({"abstractFolder:read"})
+     *
+     * @MaxDepth(1)
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
+     */
+    public function getContent(): array
+    {
+        return $this->list();
+    }
+
+    /**
+     * @Groups({"abstractFolder:read"})
+     */
+    abstract public function getPath(): string;
 }

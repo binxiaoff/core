@@ -11,10 +11,10 @@ use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use Unilend\Core\Exception\Drive\FolderAlreadyExistsException;
 
 /**
  * @ORM\Entity
@@ -64,8 +64,6 @@ class Folder extends AbstractFolder
 
     /**
      * @ORM\Column(type="text", nullable=false)
-     *
-     * @Groups({"folder:read"})
      */
     private string $path;
 
@@ -102,7 +100,7 @@ class Folder extends AbstractFolder
     private Drive $drive;
 
     /**
-     * @param string|null $parentPath
+     * @throws FolderAlreadyExistsException
      */
     public function __construct(string $name, Drive $drive, string $parentPath = '/')
     {
@@ -111,6 +109,10 @@ class Folder extends AbstractFolder
 
         if (null === $this->drive->getFolder($parentPath)) {
             throw new InvalidArgumentException(sprintf('Given path %s is not a folder in drive', $parentPath));
+        }
+
+        if ($drive->exist($parentPath . DIRECTORY_SEPARATOR . $name)) {
+            throw new FolderAlreadyExistsException();
         }
 
         $this->name     = $name;
@@ -136,16 +138,6 @@ class Folder extends AbstractFolder
     }
 
     /**
-     * @Groups({"folder:read"})
-     *
-     * @MaxDepth(1)
-     */
-    public function getContent(): array
-    {
-        return $this->list();
-    }
-
-    /**
      * @param string|Folder $relativePath
      */
     public function deleteFolder($relativePath): AbstractFolder
@@ -165,6 +157,9 @@ class Folder extends AbstractFolder
         return $this->drive->getFolder($this->normalizePath($relativePath));
     }
 
+    /**
+     * @throws FolderAlreadyExistsException
+     */
     public function createFolder(string $path): AbstractFolder
     {
         $this->drive->createFolder($this->normalizePath($path));

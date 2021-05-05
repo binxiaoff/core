@@ -4,19 +4,29 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
-use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Exception\Drive\FolderAlreadyExistsException;
 
 /**
- * Represent a collection of folders akin to a filesystem with a base folder root who has path /.
+ * Represent a collection of folders akin to a filesystem with a base folder (represented by it self) root who has path /.
  *
  * Mainly used in dataroom
+ *
+ * @ApiResource(
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         }
+ *     }
+ * )
  *
  * @ORM\Entity
  * @ORM\Table(name="core_drive")
@@ -53,12 +63,15 @@ class Drive extends AbstractFolder
     public function getFolders(?int $depth = null): Collection
     {
         if ($depth < 1 && null !== $depth) {
-            throw new \InvalidArgumentException('The depth parameter must strictly be above 0');
+            throw new InvalidArgumentException('The depth parameter must strictly be above 0');
         }
 
         return $this->folders->filter(fn (Folder $folder) => null === $depth || count(explode(DIRECTORY_SEPARATOR, $folder->getPath())) <= ($depth + 1));
     }
 
+    /**
+     * @throws FolderAlreadyExistsException
+     */
     public function createFolder(string $path): Drive
     {
         $path = $this->canonicalizePath($path);
@@ -75,10 +88,7 @@ class Drive extends AbstractFolder
 
         $this->createFolder($parentPath);
 
-        if ($this->exist($path)) {
-            throw new InvalidArgumentException('Path already exist');
-        }
-
+        // The verification of path existant is made in the constructor
         $folder = new Folder($lastItem, $this, DIRECTORY_SEPARATOR . $parentPath);
 
         $this->folders[$folder->getPath()] = $folder;
@@ -138,7 +148,7 @@ class Drive extends AbstractFolder
             return $folder;
         }
 
-        $parentFolder = $this->getFolder(\dirname($path));
+        $parentFolder = $this->getFolder(dirname($path));
 
         if (null === $parentFolder) {
             return null;
@@ -164,7 +174,7 @@ class Drive extends AbstractFolder
             return true;
         }
 
-        $parentPath = \dirname($path);
+        $parentPath = dirname($path);
 
         $parentFolder = DIRECTORY_SEPARATOR === $parentPath ? $this : $this->folders[$parentPath];
 
@@ -183,9 +193,9 @@ class Drive extends AbstractFolder
             $this->removeFile($toDelete);
         }
 
-        $parentFolder = \is_string($toDelete) ? $this->getFolder(\dirname($toDelete)) : null;
+        $parentFolder = is_string($toDelete) ? $this->getFolder(dirname($toDelete)) : null;
 
-        $toDelete = \is_string($toDelete) ? $this->get($toDelete) : $toDelete;
+        $toDelete = is_string($toDelete) ? $this->get($toDelete) : $toDelete;
 
         if ($toDelete instanceof Folder) {
             $this->deleteFolder($toDelete);
@@ -200,29 +210,24 @@ class Drive extends AbstractFolder
         return $this;
     }
 
-    /**
-     * @Groups({"folder:read"})
-     *
-     * @MaxDepth(1)
-     */
-    public function getContent(): array
-    {
-        return $this->list();
-    }
-
     public function deleteFile($path): AbstractFolder
     {
         if ($path instanceof File) {
             $this->removeFile($path);
         }
 
-        $parentFolder = \is_string($path) ? $this->getFolder(\dirname($path)) : null;
+        $parentFolder = is_string($path) ? $this->getFolder(dirname($path)) : null;
 
         if ($path instanceof File && $parentFolder) {
             $parentFolder->removeFile($path);
         }
 
         return $this;
+    }
+
+    public function getPath(): string
+    {
+        return DIRECTORY_SEPARATOR;
     }
 
     private function canonicalizePath($path)

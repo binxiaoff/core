@@ -11,6 +11,7 @@ use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Entity\Folder;
 use Unilend\Core\Entity\User;
+use Unilend\Core\Exception\Drive\FolderAlreadyExistsException;
 
 /**
  * @coversDefaultClass \Unilend\Core\Entity\Drive
@@ -36,6 +37,9 @@ class DriveTest extends TestCase
         static::assertCount($expectedCount, $result);
     }
 
+    /**
+     * @throws FolderAlreadyExistsException
+     */
     public function providerGetFolders(): iterable
     {
         $drive = new Drive();
@@ -60,6 +64,8 @@ class DriveTest extends TestCase
      * @dataProvider providerCreateFolder
      *
      * @covers ::createFolder
+     *
+     * @throws FolderAlreadyExistsException
      */
     public function testCreateFolder(Drive $drive, string $path, ?string $exceptionClass = null): void
     {
@@ -73,6 +79,8 @@ class DriveTest extends TestCase
     }
 
     /**
+     * @throws FolderAlreadyExistsException
+     *
      * @return string[]
      */
     public function providerCreateFolder(): iterable
@@ -94,7 +102,7 @@ class DriveTest extends TestCase
         $drive = new Drive();
         $drive->createFolder('/existingFolder');
 
-        yield 'It throw an exception when the folder already exist' => [$drive, 'existingFolder', InvalidArgumentException::class];
+        yield 'It throw an exception when the folder already exist' => [$drive, 'existingFolder', FolderAlreadyExistsException::class];
     }
 
     /**
@@ -123,6 +131,9 @@ class DriveTest extends TestCase
         }
     }
 
+    /**
+     * @throws FolderAlreadyExistsException
+     */
     public function providerDeleteFolder(): iterable
     {
         $testDrives = array_map(static fn () => (new Drive())->createFolder(implode('/', ['toto', 'tata', 'titi'])), range(0, 5));
@@ -157,6 +168,9 @@ class DriveTest extends TestCase
         static::assertSame($expectedResult, $result);
     }
 
+    /**
+     * @throws FolderAlreadyExistsException
+     */
     public function providerGetFolder(): iterable
     {
         $drive = new Drive();
@@ -193,6 +207,9 @@ class DriveTest extends TestCase
         static::assertSame($expected, $result);
     }
 
+    /**
+     * @throws FolderAlreadyExistsException
+     */
     public function providerGet(): iterable
     {
         $drive = $this->getCommonDrive();
@@ -261,6 +278,9 @@ class DriveTest extends TestCase
         static::assertFalse($drive->exist($testPath));
     }
 
+    /**
+     * @throws FolderAlreadyExistsException
+     */
     public function providerDelete(): iterable
     {
         yield from [
@@ -306,6 +326,9 @@ class DriveTest extends TestCase
         }
     }
 
+    /**
+     * @throws FolderAlreadyExistsException
+     */
     public function providerGetContent(): iterable
     {
         $simpleDrive = (new Drive())->createFolder('/toto');
@@ -338,6 +361,9 @@ class DriveTest extends TestCase
         }
     }
 
+    /**
+     * @throws FolderAlreadyExistsException
+     */
     public function providerList(): iterable
     {
         $simpleDrive = (new Drive())->createFolder('/toto');
@@ -370,6 +396,9 @@ class DriveTest extends TestCase
         ];
     }
 
+    /**
+     * @throws FolderAlreadyExistsException
+     */
     private function getCommonDrive(): Drive
     {
         $drive = new Drive();
