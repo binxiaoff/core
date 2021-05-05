@@ -65,7 +65,7 @@ class StaffPermission
     {
         $this->staff       = $staff;
         $this->permissions = new Bitmask($permissions);
-        $this->added       = new \DateTimeImmutable();
+        $this->added       = new DateTimeImmutable();
     }
 
     public function getStaff(): Staff
