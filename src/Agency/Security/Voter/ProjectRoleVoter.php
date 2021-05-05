@@ -75,10 +75,8 @@ class ProjectRoleVoter extends Voter
 
     /**
      * @throws NonUniqueResultException
-     *
-     * @return bool
      */
-    protected function isBorrower(Project $project, TokenInterface $token)
+    protected function isBorrower(Project $project, TokenInterface $token): bool
     {
         $user = $token->getUser();
 
@@ -91,10 +89,8 @@ class ProjectRoleVoter extends Voter
 
     /**
      * @throws NonUniqueResultException
-     *
-     * @return bool
      */
-    protected function isParticipant(Project $project, TokenInterface $token)
+    protected function isParticipant(Project $project, TokenInterface $token): bool
     {
         // Participant can only be participant on project if project is published
         if (false === $project->isPublished()) {
@@ -108,7 +104,7 @@ class ProjectRoleVoter extends Voter
         }
 
         // Fetch users whom connected user can get permission as he had them
-        $managedUsers = $staff->getInheritedRightUsers();
+        $managedUsers = $staff->getManagedUsers();
 
         $company = $staff->getCompany();
 
@@ -125,10 +121,8 @@ class ProjectRoleVoter extends Voter
 
     /**
      * @throws NonUniqueResultException
-     *
-     * @return bool
      */
-    protected function isAgent(Project $project, TokenInterface $token)
+    protected function isAgent(Project $project, TokenInterface $token): bool
     {
         $staff = $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
 
@@ -137,7 +131,7 @@ class ProjectRoleVoter extends Voter
         }
 
         // Fetch users whom connected user can get permission as he had them
-        $managedUsers = $staff->getInheritedRightUsers();
+        $managedUsers = $staff->getManagedUsers();
 
         $company = $staff->getCompany();
 

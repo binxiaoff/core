@@ -32,7 +32,8 @@ class ParticipationMemberRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('pm')
             ->innerJoin('pm.participation', 'p')
-            ->where('p.project = :project')
+            ->innerJoin('p.pool', 'po')
+            ->where('po.project = :project')
             ->andWhere('pm.user = :user')
             ->andWhere('p.participant = :company')
             ->setParameters([

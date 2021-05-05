@@ -68,20 +68,18 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
     public function createTestPrimaryParticipation(Project $project, Company $participant): Participation
     {
         return new Participation(
-            $project,
+            $project->getPrimaryParticipationPool(),
             $participant,
-            new Money('eur', '4000000'),
-            false
+            new Money('eur', '4000000')
         );
     }
 
     public function createTestSecondaryParticipation(Project $project, Company $participant): Participation
     {
         return new Participation(
-            $project,
+            $project->getSecondaryParticipationPool(),
             $participant,
-            new Money('eur', '4000000'),
-            true
+            new Money('eur', '4000000')
         );
     }
 

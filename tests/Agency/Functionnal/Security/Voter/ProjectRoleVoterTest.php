@@ -8,7 +8,6 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Security\Voter\ProjectRoleVoter;
-use Unilend\Agency\Security\Voter\ProjectVoter;
 
 /**
  * @coversDefaultClass \Unilend\Agency\Security\Voter\ProjectRoleVoter
@@ -78,7 +77,7 @@ class ProjectRoleVoterTest extends AbstractProjectVoterTest
             ]);
         }
 
-        yield from $this->formatProviderData(ProjectVoter::ROLE_AGENT, $tests);
+        yield from $this->formatProviderData(ProjectRoleVoter::ROLE_AGENT, $tests);
     }
 
     public function providerParticipant(): iterable
@@ -151,7 +150,7 @@ class ProjectRoleVoterTest extends AbstractProjectVoterTest
             ],
         ];
 
-        yield from $this->formatProviderData(ProjectVoter::ROLE_PARTICIPANT, $tests);
+        yield from $this->formatProviderData(ProjectRoleVoter::ROLE_PARTICIPANT, $tests);
     }
 
     public function providerBorrower(): iterable
@@ -199,6 +198,6 @@ class ProjectRoleVoterTest extends AbstractProjectVoterTest
             ],
         ];
 
-        yield from $this->formatProviderData(ProjectVoter::ROLE_BORROWER, $tests);
+        yield from $this->formatProviderData(ProjectRoleVoter::ROLE_BORROWER, $tests);
     }
 }
