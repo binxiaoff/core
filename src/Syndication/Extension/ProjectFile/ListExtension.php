@@ -13,25 +13,19 @@ use Unilend\Syndication\Entity\ProjectFile;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
-    /** @var Security */
     private Security $security;
 
-    /**
-     * @param Security $security
-     */
     public function __construct(Security $security)
     {
         $this->security = $security;
     }
 
-    /**
-     * @param QueryBuilder                $queryBuilder
-     * @param QueryNameGeneratorInterface $queryNameGenerator
-     * @param string                      $resourceClass
-     * @param string|null                 $operationName
-     */
-    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
-    {
+    public function applyToCollection(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        string $resourceClass,
+        string $operationName = null
+    ): void {
         if (ProjectFile::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
@@ -40,12 +34,19 @@ class ListExtension implements QueryCollectionExtensionInterface
         $user  = $this->security->getUser();
         $staff = $user instanceof User ? $user->getCurrentStaff() : null;
 
+        if (null === $staff) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
+
         // External banks can't access to KYC files
         if (!$staff->getCompany()->isCAGMember()) {
             $rootAlias = $queryBuilder->getRootAliases()[0];
             $queryBuilder
                 ->andWhere($rootAlias . '.type != :kyc')
-                ->setParameter('kyc', ProjectFile::PROJECT_FILE_TYPE_KYC);
+                ->setParameter('kyc', ProjectFile::PROJECT_FILE_TYPE_KYC)
+            ;
         }
     }
 }

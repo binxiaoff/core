@@ -9,32 +9,28 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\{MessageStatus, MessageThread, User};
-use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
+use Unilend\Core\Entity\MessageStatus;
+use Unilend\Core\Entity\MessageThread;
+use Unilend\Core\Entity\User;
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectStatus;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
-    /**
-     * @var Security
-     */
     private Security $security;
 
-    /**
-     * @param Security $security
-     */
     public function __construct(Security $security)
     {
         $this->security = $security;
     }
 
-    /**
-     * @param QueryBuilder                $queryBuilder
-     * @param QueryNameGeneratorInterface $queryNameGenerator
-     * @param string                      $resourceClass
-     * @param string|null                 $operationName
-     */
-    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
-    {
+    public function applyToCollection(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        string $resourceClass,
+        string $operationName = null
+    ): void {
         $user = $this->security->getUser();
 
         if (!$user instanceof User) {
@@ -47,6 +43,12 @@ class ListExtension implements QueryCollectionExtensionInterface
 
         $staff = $user->getCurrentStaff();
 
+        if (null === $staff) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
+
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
             ->innerJoin($rootAlias . '.message', 'msg')
@@ -57,9 +59,10 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->andWhere($rootAlias . '.recipient = :staff')
             ->andWhere('pst.status > :project_current_status')
             ->setParameters([
-                'staff' => $staff,
+                'staff'                  => $staff,
                 'project_current_status' => ProjectStatus::STATUS_DRAFT,
             ])
-            ->orderBy('msg.messageThread', 'ASC');
+            ->orderBy('msg.messageThread', 'ASC')
+        ;
     }
 }

@@ -11,44 +11,45 @@ use RuntimeException;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectStatus;
 use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
-    /** @var Security */
     private Security $security;
-    /** @var ProjectParticipationMemberRepository */
     private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
 
-    /**
-     * @param Security                             $security
-     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
-     */
     public function __construct(Security $security, ProjectParticipationMemberRepository $projectParticipationMemberRepository)
     {
-        $this->security      = $security;
+        $this->security                             = $security;
         $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
     }
 
-    /**
-     * @param QueryBuilder                $queryBuilder
-     * @param QueryNameGeneratorInterface $queryNameGenerator
-     * @param string                      $resourceClass
-     * @param string|null                 $operationName
-     */
-    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
-    {
+    public function applyToCollection(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        string $resourceClass,
+        string $operationName = null
+    ): void {
         if (ProjectParticipation::class !== $resourceClass) {
             return;
         }
+
         /** @var User $user */
         $user = $this->security->getUser();
+
         if (!$user instanceof User) {
             return;
         }
 
         $staff = $user->getCurrentStaff();
+
+        if (null === $staff) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
 
         if (false === $staff instanceof Staff) {
             throw new RuntimeException('There should not be access to this class without a staff');

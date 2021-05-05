@@ -9,41 +9,32 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\{MessageThread, User};
-use Unilend\Syndication\Entity\{Project,
-    ProjectParticipation,
-    ProjectParticipationMember,
-    ProjectStatus};
+use Unilend\Core\Entity\MessageThread;
+use Unilend\Core\Entity\User;
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectStatus;
 use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
-    /** @var Security */
     private Security $security;
-    /** @var ProjectParticipationMemberRepository */
     private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
 
-    /**
-     * ListExtension constructor.
-     *
-     * @param Security                             $security
-     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
-     */
     public function __construct(Security $security, ProjectParticipationMemberRepository $projectParticipationMemberRepository)
     {
-        $this->security                = $security;
+        $this->security                             = $security;
         $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
     }
 
-    /**
-     * @param QueryBuilder                $queryBuilder
-     * @param QueryNameGeneratorInterface $queryNameGenerator
-     * @param string                      $resourceClass
-     * @param string|null                 $operationName
-     */
-    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
-    {
+    public function applyToCollection(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        string $resourceClass,
+        string $operationName = null
+    ): void {
         $user = $this->security->getUser();
+
         if (!$user instanceof User) {
             return;
         }
@@ -53,7 +44,10 @@ class ListExtension implements QueryCollectionExtensionInterface
         }
 
         $staff = $user->getCurrentStaff();
+
         if (null === $staff) {
+            $queryBuilder->andWhere('1 = 0');
+
             return;
         }
 
@@ -87,6 +81,7 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
             ->setParameter('staff', $staff)
             ->setParameter('managedStaffMember', $this->projectParticipationMemberRepository->findActiveByManager($staff))
-            ->orderBy('p.title', 'ASC');
+            ->orderBy('p.title', 'ASC')
+        ;
     }
 }

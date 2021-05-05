@@ -27,7 +27,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
         QueryNameGeneratorInterface $queryNameGenerator,
         string $resourceClass,
         string $operationName = null
-    ) {
+    ): void {
         if (false === (Project::class === $resourceClass)) {
             return;
         }
@@ -36,8 +36,14 @@ class ProjectExtension implements QueryCollectionExtensionInterface
 
         $token = $this->security->getToken();
 
-        /** @var Staff $staff */
+        /** @var Staff|null $staff */
         $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+
+        if (null === $staff) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
 
         $rootAlias           = $queryBuilder->getRootAliases()[0];
         $borrowerAlias       = static::prefix('borrower');
@@ -84,7 +90,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
         }
     }
 
-    private static function prefix(string $name)
+    private static function prefix(string $name): string
     {
         return static::PREFIX . '_' . $name;
     }
