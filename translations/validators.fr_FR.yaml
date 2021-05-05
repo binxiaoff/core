@@ -1,3 +1,71 @@
+Agency:
+    Contact:
+        type:
+            unique: Il ne peut y avoir qu'un seul contact agency par projet
+
+    Tranche:
+        commission:
+            incomplete: Ce champ est manquant pour valider la commission de la tranche
+            invalidLoanType: Le type de prêt ne permet d'avoir une commission
+
+    Participation:
+        responsabilities:
+            agent: Vous devez être l'agent du projet pour sélectionner activer le bit
+            secondary: Etant dans la syndication silencieuse, vous ne pouvez pas avoir de responsabilité
+            arranger: Vous ne pouvez pas être arranger et co-arrangeur
+        commission:
+            agent: Vous devez être agent pour remplir cette commission
+            arrangeur: Vous devez être arrangeur pour remplir cette commission
+            deputyArrangeur: Vous devez être co-arrangeur pour remplir cette commission
+
+    ParticipantTrancheAllocation:
+        project: La tranche et la participation n'ont pas le même projet
+
+    Covenant:
+        covenantRules:
+            financialNature: Le nombre de règles n'est pas correct
+            otherNature: Il ne peut y avoir de règle pour cette nature d'engagement
+            missingYear: Il manque la règle pour l'année {{ missingYear }}
+
+    CovenantRule:
+        yearUnicity: Il ne peut y avoir qu'une règle par année
+        inconsistentYear: L'année doit être comprise entre la date de départ du covenant et sa date de fin
+
+    MarginImpact:
+        unicity: Il ne peut y avoir qu'une marge par tranche
+
+    MarginRule:
+        inconsistentCovenant: On ne peut ajouter de règle d'impact sur les marges qu'aux engagements de nature financière
+
+    Inequality:
+        maxValue:
+            incorrectOperator: Il ne peut y avoir de valeur maximal que si l'operateur est "between"
+            greaterThan: La valeur maximale doit être strictement supérieur à la valeur
+
+    Term:
+        borrowerComment:
+            neededBorrowerAction: Il faut que l'emprunteur ait rempli la valeur ou le document pour mettre un commentaire
+        borrowerInput:
+            otherCovenant: Cette valeur doit être vide pour les engagements de nature "Autre"
+        borrowerInputDate:
+            otherCovenant: Cette valeur doit être vide pour les engagements de nature "Autre"
+            borrowerInput: Cette valeur doit être synchronisée avec l'état de la valeur demandée à l'emprunteur
+        validatonDate:
+            validation: Cette valeur doit être synchronisée avec l'état de la validation de l'agent
+        breach:
+            invalidTermRequired: L'échec de la validation de l'agent est requise pour avoir un bris
+        irregularityComment:
+            irregularityRequired: La constatation d'irrégularité est requise pour mettre ce commentaire
+        waiver:
+            breachRequired: Le bris est requis pour le waiver
+        waiverComment:
+            waiverStatusRequired: Le waiver doit être statué pour ce commentaire
+        grantedDelay:
+            invalidTermRequired: L'échec de la validation de l'agent est requise pour avoir accorder un delais supplémentaire
+        sharingDate:
+            agentValidationRequired: Il faut une validation (réussite ou échec) avant de partager le résultat
+        archivingDate:
+            poolSharingRequired: Il faut partager le resultat au pool avant d'archiver
 Core:
     AcceptationsLegalDocs:
         legalDoc:
@@ -30,6 +98,7 @@ Core:
             unicity: Un utilisateur ne peut être présent dans deux équipes de la même entité
     StatusInterface:
         duplicated: Le nouveau statut est en doublons avec le dernier.
+        invalid: Le nouveau statut n'est pas valable.
     Users:
         email:
             unique: Cet utilisateur dispose déjà d'un compte KLS
@@ -105,3 +174,49 @@ ProjectParticipationMember:
             expression: Cette valeur n'est pas cohérente avec le statut de syndication de cette tranche
         commissionRate:
             expression: Cette valeur n'est pas cohérente avec celui du type de la commission
+
+CreditGuaranty:
+    Program:
+        name:
+            unique: Le nom d'une programme doit être unique.
+        companyGroupTag:
+            invalid: Le marché choisi n'est pas valable.
+        distributionProcess:
+            textMax: Les textes de chaque étape ne peut excéder une longeur de %limit%.
+        funds:
+            greater: Vous ne pouvez pas réduire le montant total sur un programme en cours.
+            draft: Vous ne pouvez que réduire le montant total sur un programme en brouillon.
+        cappedAt:
+            notChangeable: Vous ne pouvez pas modifier le CAP sur un programme en cours.
+            greater: Vous ne pouvez pas réduire le montant du CAP sur un programme en cours.
+            draft: Vous ne pouvez que modifier le CAP ou réduire son montant sur un programme en brouillon.
+
+
+    ProgramEligibilityConfiguration:
+        programChoiceOption:
+            invalid: La value n'est pas valable.
+            program:
+                invalid: Vous ne pouvez pas mettre programChoiceOption d'un autre program.
+            field:
+                invalid: Vous ne pouvez pas mettre programChoiceOption d'un autre champ.
+        value:
+            invalid: La value n'est pas valable.
+    ProgramEligibility:
+        field:
+            unsupportedType: le type criteria n'est pas valable.
+    ProgramGradeAllocation:
+        grade:
+            invalid: Le grade choisi n'est pas valable.
+    ProgramEligibilityConfigurationInput:
+        programEligibility:
+            type:
+                onlyList: Vous ne pouvez que créer une configuration du type "list" pour l'éligibilité.
+    ProgramEligibilityCondition:
+        value:
+            outOfRange: Merci de mettre un chiffre entre 0 et 1 pour une comparaison de type "rate".
+        operandField:
+            nonComparable: Le champs choisi n'est pas comparable.
+        rightOperandField:
+            selfComparaison: Vous ne pouvez pas comparer un champ à lui-même.
+            empty: rightOperandField est requis pour une comparaison de type "rate".
+            notEmpty: rightOperandField doit être vide pour une comparaison de type "value".

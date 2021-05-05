@@ -38,6 +38,14 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Syndication\Entity\ProjectParticipationMember, method: setArchivedBy }
 
+    Unilend\Agency\Listener\Doctrine\TermListener:
+        tags:
+            - { name: doctrine.event_listener, event: onFlush }
+
+    Unilend\Agency\Listener\Doctrine\CovenantListener:
+        tags:
+            - { name: doctrine.event_listener, event: onFlush }
+            - { name: doctrine.event_listener, event: postUpdate }
 
     # Message Dispatcher
     Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\User\UserUpdatedListener:
@@ -103,5 +111,9 @@ services:
             - { name: doctrine.event_listener, event: onFlush }
 
     Unilend\Syndication\Listener\Doctrine\Lifecycle\ProjectParticipationTrancheUpdatedListener:
+        tags:
+            - { name: doctrine.event_listener, event: onFlush }
+
+    Unilend\CreditGuaranty\Listener\Doctrine\Lifecycle\ProgramCreatedListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }

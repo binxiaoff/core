@@ -5,36 +5,22 @@ declare(strict_types=1);
 namespace Unilend\Core\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\Entity\{Company, CompanyGroup, CompanyStatus, Team, User};
 
 class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    public const CALS = 'COMPANY_CALS';
-    public const CASA = 'COMPANY_CASA';
-    public const COMPANY1 = 'COMPANY1';
-    public const COMPANY2 = 'COMPANY2';
-    public const COMPANY3 = 'COMPANY3';
-    public const COMPANY4 = 'COMPANY4';
-    public const COMPANY5 = 'COMPANY5';
+    public const REFERENCE_PREFIX = 'company:';
+    public const CALS = self::REFERENCE_PREFIX . Company::SHORT_CODE_CALS;
+    public const CASA = self::REFERENCE_PREFIX . Company::SHORT_CODE_CASA;
+
     public const COMPANY_MANY_STAFF = 'COMPANY_MANY_STAFF';
-    public const COMPANY_NOT_SIGNED = 'COMPANY_NOT_SIGNED';
-    public const COMPANY_NOT_SIGNED_NO_MEMBERS = 'COMPANY_NOT_SIGNED_NO_MEMBERS';
+    private const COMPANY_NOT_SIGNED = 'COMPANY_NOT_SIGNED';
+    private const COMPANY_NOT_SIGNED_NO_MEMBERS = 'COMPANY_NOT_SIGNED_NO_MEMBERS';
     public const COMPANY_EXTERNAL = 'COMPANY_EXTERNAL';
-    public const COMPANIES = [
-        self::COMPANY1,
-        self::COMPANY2,
-        self::COMPANY3,
-        self::COMPANY4,
-        self::COMPANY5,
-        self::COMPANY_EXTERNAL,
-        self::COMPANY_NOT_SIGNED,
-    ];
 
     private const CA_SHORTCODE = [
         'ALVO', 'ATVD', 'BRPI', 'CENL', 'CEST', 'CM2SE', 'CHPE',
@@ -44,6 +30,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         'ILVI', 'COUE', 'FINI', 'LANG', 'MORB', 'NEST', 'L&HL', 'NORF',
         'NMPY', 'NORS', 'PRCA', 'PYGA', 'SRAL', 'SMED', 'VALF', 'CIB', 'LCL',
     ];
+
     private const OTHER_SHORTCODE = [
         'SOGE', 'BNP', 'LBP', 'HSBC', 'GCDN', 'CMDC', 'BARC',
         'OBC', 'ABN', 'RABO', 'PASCHI', 'FORTIS', 'CCOP', 'NATIXIS',
@@ -52,19 +39,17 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         'CEBPL', 'CEPAC', 'CECA', 'CEAL', 'CEBFC', 'CEMP', 'CEGEE',
     ];
 
-    /** @var EntityManagerInterface */
-    private EntityManagerInterface $entityManager;
+    public const COMPANIES = [
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[0],
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[1],
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[2],
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[3],
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[4],
+        self::COMPANY_EXTERNAL,
+        self::COMPANY_NOT_SIGNED,
+    ];
 
-    /**
-     * @param TokenStorageInterface  $tokenStorage
-     * @param EntityManagerInterface $entityManager
-     */
-    public function __construct(TokenStorageInterface $tokenStorage, EntityManagerInterface $entityManager)
-    {
-        $this->entityManager = $entityManager;
-
-        parent::__construct($tokenStorage);
-    }
+    private ObjectManager $entityManager;
 
     /**
      * @param ObjectManager $manager
@@ -74,50 +59,53 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     public function load(ObjectManager $manager): void
     {
+        $this->entityManager = $manager;
+        /** @var CompanyGroup $CAGroup */
+        $CAGroup = $this->getReference('companyGroup/CA');
+
        // Main company
         /** @var User $user */
         $user    = $this->getReference(UserFixtures::ADMIN);
         $domain  = explode('@', $user->getEmail())[1];
-        $company = $this->createCompany(Company::COMPANY_NAME_CALS, 'CALS')->setEmailDomain($domain)->setCompanyGroup($this->getReference('companyGroup/CA'));
+        $company = $this->createCompany('CA Lending Services', Company::SHORT_CODE_CALS)->setEmailDomain($domain)->setCompanyGroup($CAGroup);
         $this->addReference(self::CALS, $company);
 
         $company = $this->createCompany('Crédit Agricole SA', Company::SHORT_CODE_CASA)
             ->setEmailDomain('credit-agricole-sa.fr')
-            ->setCompanyGroup($this->getReference('companyGroup/CA'));
+            ->setCompanyGroup($CAGroup);
         $this->addReference(self::CASA, $company);
 
-        // Fake bank
-        for ($i = 1; $i <= 5; $i++) {
-            $company = $this->createCompany("CA Bank $i", static::CA_SHORTCODE[$i])->setCompanyGroup($this->getReference('companyGroup/CA'));
-            $this->addReference(self::COMPANIES[$i - 1], $company);
-        }
-
-        for ($i = 6; $i <= 20; $i++) {
-            $this->createCompany("CA Bank $i", static::CA_SHORTCODE[$i])->setCompanyGroup($this->getReference('companyGroup/CA'));
+        // CA banks
+        foreach (self::CA_SHORTCODE as $index => $shortCode) {
+            $this->addReference(
+                self::REFERENCE_PREFIX . $shortCode,
+                $this->createCompany("CA Bank $index", $shortCode)->setCompanyGroup($CAGroup)
+            );
         }
 
         // External bank
         $company = $this->createCompany('External Bank')->setShortCode(static::OTHER_SHORTCODE[0]);
         $this->addReference(self::COMPANY_EXTERNAL, $company);
 
-        // Fake bank
+        // Other external banks
         for ($i = 1; $i <= 5; $i++) {
             $this->createCompany("External Bank $i")->setShortCode(static::OTHER_SHORTCODE[$i]);
         }
 
-        $this->addReference(
-            self::COMPANY_NOT_SIGNED,
-            $this->createCompany('Not signed Bank', static::CA_SHORTCODE[21], CompanyStatus::STATUS_PROSPECT)->setCompanyGroup($this->getReference('companyGroup/CA'))
-        );
-        $this->addReference(
-            self::COMPANY_NOT_SIGNED_NO_MEMBERS,
-            $this->createCompany('Not signed no member Bank', static::CA_SHORTCODE[22], CompanyStatus::STATUS_PROSPECT)->setCompanyGroup($this->getReference('companyGroup/CA'))
-        );
+        /** @var Company $company */
+        $company = $this->getReference(self::REFERENCE_PREFIX . self::CA_SHORTCODE[21]);
+        $company->setDisplayName('Not signed Bank');
+        $this->addReference(self::COMPANY_NOT_SIGNED, $company);
 
-        $this->addReference(
-            self::COMPANY_MANY_STAFF,
-            $this->createCompany('Many staff', static::CA_SHORTCODE[23])->setCompanyGroup($this->getReference('companyGroup/CA'))
-        );
+        /** @var Company $company */
+        $company = $this->getReference(self::REFERENCE_PREFIX . self::CA_SHORTCODE[22]);
+        $company->setDisplayName('Not signed no member Bank');
+        $this->addReference(self::COMPANY_NOT_SIGNED_NO_MEMBERS, $company);
+
+        /** @var Company $company */
+        $company = $this->getReference(self::REFERENCE_PREFIX . self::CA_SHORTCODE[23]);
+        $company->setDisplayName('Many staff');
+        $this->addReference(self::COMPANY_MANY_STAFF, $company);
 
         $manager->flush();
     }

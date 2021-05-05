@@ -4,23 +4,14 @@ $finder = PhpCsFixer\Finder::create()
     ->in(['bin', 'public', 'src', 'tests'])
 ;
 
-$rules = [
-    'ordered_imports' => [
-        'imports_order' => ['class', 'function', 'const'],
-        'sort_algorithm' => 'alpha',
-    ],
-];
-
 return PhpCsFixer\Config::create()
     ->setRules([
-        '@Symfony'                               => true,
-        '@PhpCsFixer'                            => true,
+        '@PhpCsFixer'                            => true, // Includes @Symfony which includes @PSR12 which includes @PSR2
         '@DoctrineAnnotation'                    => true,
-        '@PHP71Migration'                        => true,
-        '@PHPUnit60Migration:risky'              => true,
-        'array_syntax'                           => ['syntax' => 'short'],
-        'no_superfluous_phpdoc_tags'             => false,
-        'single_import_per_statement'            => false,
+        '@PHP74Migration'                        => true,
+        '@PHPUnit75Migration:risky'              => true,
+        'no_unused_imports'                      => true,
+        'ordered_imports'                        => ['imports_order' => ['class', 'function', 'const'], 'sort_algorithm' => 'alpha'],
         'binary_operator_spaces'                 => ['default' => 'align_single_space_minimal'],
         'concat_space'                           => ['spacing' => 'one'],
         'combine_nested_dirname'                 => true, //risky
@@ -40,6 +31,7 @@ return PhpCsFixer\Config::create()
         'random_api_migration'                   => true, //risky
         'declare_strict_types'                   => true, //risky
     ])
-    ->setRules($rules)
     ->setFinder($finder)
-    ;
+    ->setRiskyAllowed(true)
+    ->setIndent('    ')
+;

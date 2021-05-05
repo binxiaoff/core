@@ -134,7 +134,7 @@ class Team
     {
         $team = new Team();
         $team->company = $company;
-        $team->name = 'root';
+        $team->name = $company->getDisplayName();
 
         return $team;
     }

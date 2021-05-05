@@ -162,7 +162,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         // NDA File
         $ndaFile = (new File());
-        $ndaFileVersion = (new FileVersion('/fake.pdf', $staff, $ndaFile, 'user_attachment', '', 'application/pdf'))->setOriginalName($title . ' NDA.pdf');
+        $ndaFileVersion = (new FileVersion('/fake.pdf', $staff->getUser(), $ndaFile, 'user_attachment', '', 'application/pdf', $staff->getCompany()))
+            ->setOriginalName($title . ' NDA.pdf');
         $ndaFile->setCurrentFileVersion($ndaFileVersion);
 
         $companyGroupTags = $staff->getCompany()->getCompanyGroupTags();

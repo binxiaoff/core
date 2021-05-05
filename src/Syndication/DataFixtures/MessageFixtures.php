@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\DataFixtures;
 
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;

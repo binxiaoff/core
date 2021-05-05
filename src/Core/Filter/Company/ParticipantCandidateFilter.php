@@ -6,7 +6,7 @@ namespace Unilend\Core\Filter\Company;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\{Filter\AbstractContextAwareFilter, Util\QueryNameGeneratorInterface};
 use Doctrine\ORM\QueryBuilder;
-use InvalidArgumentException;
+use Symfony\Component\HttpFoundation\Request;
 use Unilend\Core\Entity\Company;
 
 class ParticipantCandidateFilter extends AbstractContextAwareFilter
@@ -20,7 +20,7 @@ class ParticipantCandidateFilter extends AbstractContextAwareFilter
     {
         $description[self::PARAMETER_NAME] = [
             'property' => self::PARAMETER_NAME,
-            'type' => 'bool',
+            'type'     => 'bool',
             'required' => false,
         ];
 
@@ -38,38 +38,12 @@ class ParticipantCandidateFilter extends AbstractContextAwareFilter
         string $resourceClass,
         string $operationName = null
     ): void {
-        if (self::PARAMETER_NAME === $property && true === $this->normalizeValue($value)) {
+        if (self::PARAMETER_NAME === $property && Company::class === $resourceClass && Request::METHOD_GET === strtoupper($operationName)) {
             $alias = $queryBuilder->getRootAliases()[0];
             $queryBuilder
                 ->andWhere($alias . '.shortCode not in (:nonEligibleCompanies)')
                 ->setParameter('nonEligibleCompanies', Company::NON_ELIGIBLE_TO_PARTICIPANT)
             ;
         }
-    }
-
-    /**
-     * @param $value
-     *
-     * @return bool|null
-     */
-    private function normalizeValue($value): ?bool
-    {
-        if (\in_array($value, [true, 'true', '1'], true)) {
-            return true;
-        }
-
-        if (\in_array($value, [false, 'false', '0'], true)) {
-            return false;
-        }
-
-        $this->getLogger()->notice('Invalid filter ignored', [
-            'exception' => new InvalidArgumentException(sprintf(
-                'Invalid boolean value for "%s" property, expected one of ( "%s" )',
-                self::PARAMETER_NAME,
-                implode('" | "', ['true', 'false', '1', '0'])
-            )),
-        ]);
-
-        return null;
     }
 }

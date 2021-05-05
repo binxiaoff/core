@@ -7,15 +7,19 @@ namespace Unilend\Core\Entity;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
-use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Entity\Interfaces\StatusInterface;
+use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
@@ -30,8 +34,8 @@ use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
  *             "output": false,
  *         },
  *         "patch": {
- *              "security": "is_granted('edit', object)",
- *              "denormalization_context": {"groups": {"staff:update", "staffStatus:create"}}
+ *             "security": "is_granted('edit', object)",
+ *             "denormalization_context": {"groups": {"staff:update", "staffStatus:create"}}
  *         }
  *     },
  *     collectionOperations={
@@ -62,8 +66,6 @@ class Staff implements TraceableStatusAwareInterface
     public const SERIALIZER_GROUP_OWNER_READ = 'staff:owner:read';
 
     /**
-     * @var User
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User", inversedBy="staff", cascade={"persist", "refresh"})
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_user", referencedColumnName="id", nullable=false)
@@ -78,10 +80,7 @@ class Staff implements TraceableStatusAwareInterface
      */
     private User $user;
 
-
     /**
-     * @var Team
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Team", inversedBy="staff")
      * @ORM\JoinColumn(name="id_team", nullable=false)
      *
@@ -92,8 +91,6 @@ class Staff implements TraceableStatusAwareInterface
     private Team $team;
 
     /**
-     * @var bool
-     *
      * @ORM\Column(type="boolean")
      *
      * @Groups({"staff:read", "staff:create", "staff:update"})
@@ -101,8 +98,6 @@ class Staff implements TraceableStatusAwareInterface
     private bool $manager;
 
     /**
-     * @var StaffStatus|null
-     *
      * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\StaffStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
@@ -125,8 +120,6 @@ class Staff implements TraceableStatusAwareInterface
     private Collection $statuses;
 
     /**
-     * @var bool
-     *
      * @ORM\Column(type="boolean")
      *
      * @Groups({"staff:read", "staff:create", "staff:update"})
@@ -134,8 +127,6 @@ class Staff implements TraceableStatusAwareInterface
     private bool $arrangementProjectCreationPermission;
 
     /**
-     * @var bool
-     *
      * @ORM\Column(type="boolean")
      *
      * @Groups({"staff:read", "staff:create", "staff:update"})
@@ -143,8 +134,6 @@ class Staff implements TraceableStatusAwareInterface
     private bool $agencyProjectCreationPermission;
 
     /**
-     * @var Collection
-     *
      * @ORM\ManyToMany(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
      * @ORM\JoinTable(name="core_staff_company_group_tag")
      *
@@ -153,35 +142,29 @@ class Staff implements TraceableStatusAwareInterface
      * @ApiProperty(readableLink=false, writableLink=false)
      *
      * @Assert\All({
-     *    @Assert\Choice(callback="getAvailableCompanyGroupTags")
+     *     @Assert\Choice(callback="getAvailableCompanyGroupTags")
      * })
      * @Assert\Unique
      */
     private Collection $companyGroupTags;
 
     /**
-     * @param User       $user
-     * @param Team       $team
-     * @param Staff|null $addedBy
-     *
      * @throws Exception
      */
     public function __construct(User $user, Team $team, ?Staff $addedBy = null)
     {
-        $this->companyGroupTags = new ArrayCollection();
-        $this->added            = new DateTimeImmutable();
-        $this->user             = $user;
-        $this->team             = $team;
-        $this->manager          = false;
-        $this->statuses         = new ArrayCollection();
+        $this->companyGroupTags                     = new ArrayCollection();
+        $this->added                                = new DateTimeImmutable();
+        $this->user                                 = $user;
+        $this->team                                 = $team;
+        $this->manager                              = false;
+        $this->statuses                             = new ArrayCollection();
         $this->arrangementProjectCreationPermission = false;
-        $this->agencyProjectCreationPermission = false;
+        $this->agencyProjectCreationPermission      = false;
         $this->setCurrentStatus(new StaffStatus($this, StaffStatus::STATUS_ACTIVE, $addedBy ?? $this));
     }
 
     /**
-     * @return Company
-     *
      * @Groups({"staff:read"})
      */
     public function getCompany(): Company
@@ -189,27 +172,16 @@ class Staff implements TraceableStatusAwareInterface
         return $this->team->getCompany();
     }
 
-    /**
-     * @return Team
-     */
     public function getTeam(): Team
     {
         return $this->team;
     }
 
-    /**
-     * @return User
-     */
     public function getUser(): User
     {
         return $this->user;
     }
 
-    /**
-     * @param User $user
-     *
-     * @return Staff
-     */
     public function setUser(User $user): Staff
     {
         $this->user = $user;
@@ -217,11 +189,6 @@ class Staff implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @param bool $manager
-     *
-     * @return Staff
-     */
     public function setManager(bool $manager): Staff
     {
         $this->manager = $manager;
@@ -229,17 +196,11 @@ class Staff implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isManager(): bool
     {
         return $this->manager;
     }
 
-    /**
-     * @return bool
-     */
     public function isActive(): bool
     {
         return $this->getCurrentStatus() && StaffStatus::STATUS_ACTIVE === $this->getCurrentStatus()->getStatus();
@@ -247,8 +208,6 @@ class Staff implements TraceableStatusAwareInterface
 
     /**
      * @param StatusInterface|StaffStatus $currentStatus
-     *
-     * @return Staff
      */
     public function setCurrentStatus(StatusInterface $currentStatus): Staff
     {
@@ -257,9 +216,6 @@ class Staff implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isArchived(): bool
     {
         return $this->getCurrentStatus() && StaffStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
@@ -273,9 +229,6 @@ class Staff implements TraceableStatusAwareInterface
         return $this->statuses;
     }
 
-    /**
-     * @return StaffStatus
-     */
     public function getCurrentStatus(): StaffStatus
     {
         return $this->currentStatus;
@@ -283,8 +236,6 @@ class Staff implements TraceableStatusAwareInterface
 
     /**
      * @Groups({Staff::SERIALIZER_GROUP_OWNER_READ})
-     *
-     * @return array
      */
     public function getActivatedModules(): array
     {
@@ -307,11 +258,6 @@ class Staff implements TraceableStatusAwareInterface
         return $this->getCompany()->getCompanyGroupTags();
     }
 
-    /**
-     * @param CompanyGroupTag $tag
-     *
-     * @return Staff
-     */
     public function addCompanyGroupTag(CompanyGroupTag $tag): Staff
     {
         $companyGroup = $this->getCompany()->getCompanyGroup();
@@ -331,11 +277,6 @@ class Staff implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @param CompanyGroupTag $tag
-     *
-     * @return Staff
-     */
     public function removeCompanyGroupTag(CompanyGroupTag $tag): Staff
     {
         $this->companyGroupTags->removeElement($tag);
@@ -343,11 +284,6 @@ class Staff implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @param Team $team
-     *
-     * @return Staff
-     */
     public function setTeam(Team $team): Staff
     {
         $this->team = $team;
@@ -355,27 +291,16 @@ class Staff implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function hasArrangementProjectCreationPermission(): bool
     {
         return $this->arrangementProjectCreationPermission;
     }
 
-    /**
-     * @return bool
-     */
     public function hasAgencyProjectCreationPermission(): bool
     {
         return $this->agencyProjectCreationPermission;
     }
 
-    /**
-     * @param bool $arrangementProjectCreationPermission
-     *
-     * @return Staff
-     */
     public function setArrangementProjectCreationPermission(bool $arrangementProjectCreationPermission): Staff
     {
         $this->arrangementProjectCreationPermission = $arrangementProjectCreationPermission;
@@ -383,11 +308,6 @@ class Staff implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @param bool $agencyProjectCreationPermission
-     *
-     * @return Staff
-     */
     public function setAgencyProjectCreationPermission(bool $agencyProjectCreationPermission): Staff
     {
         $this->agencyProjectCreationPermission = $agencyProjectCreationPermission;
@@ -395,9 +315,6 @@ class Staff implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isGrantedLogin(): bool
     {
         $company = $this->getCompany();
@@ -410,8 +327,6 @@ class Staff implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return bool
-     *
      * @Groups({"staff:read"})
      */
     public function isAdmin(): bool
@@ -426,11 +341,34 @@ class Staff implements TraceableStatusAwareInterface
     }
 
     /**
-     * Assert there is only one staff for each company for a given user
+     * @return iterable|Staff[]
+     */
+    public function getManagedStaff(): iterable
+    {
+        if (false === $this->manager) {
+            return;
+        }
+
+        /** @var Team $team */
+        foreach ([$this->team, ...$this->team->getDescendents()] as $team) {
+            yield from $team->getStaff();
+        }
+    }
+
+    /**
+     * @return iterable|User[]
+     */
+    public function getManagedUsers(): iterable
+    {
+        foreach ($this->getManagedStaff() as $staff) {
+            yield $staff->getUser();
+        }
+    }
+
+    /**
+     * Assert there is only one staff for each company for a given user.
      *
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
      */
     public function validateCompanyUnicity(ExecutionContextInterface $context)
     {
@@ -439,7 +377,8 @@ class Staff implements TraceableStatusAwareInterface
                 $context->buildViolation('Staff.company.unicity')
                     ->atPath('team')
                     ->setInvalidValue($this->team)
-                    ->addViolation();
+                    ->addViolation()
+                ;
             }
         }
     }

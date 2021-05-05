@@ -52,6 +52,8 @@ PHP
  - You may use the ``filter_var`` function to validate and clean the external input data. In some case, the usage of this function is insufficient, thus, the additional checks may be required.
  - Use complete name for variables, methods and classes. Abbreviations should be avoided.
  - Do not assign a variable in an if statement.
+ - Do not group the import statements.
+ - The annotation ``@var`` is not required if it's the same as the type hint. But it should be not ignore if the cases that the type hint cannot cover. For exemple, such as ``@var string[]``
 
 API platform
  - Serializer group naming convention: the group name is named in format ``entityName[:decorator]:action``. ``entityName`` and ``decorator`` is in lower camel case. The available actions are follow:

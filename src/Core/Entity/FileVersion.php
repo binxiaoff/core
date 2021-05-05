@@ -9,9 +9,9 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
@@ -38,7 +38,6 @@ class FileVersion
 {
     use ConstantsAwareTrait;
     use TimestampableTrait;
-    use BlamableAddedTrait;
     use PublicizeIdentityTrait;
 
     public const FILE_SYSTEM_USER_ATTACHMENT    = 'user_attachment';
@@ -49,7 +48,7 @@ class FileVersion
      *
      * @ORM\Column(length=191)
      */
-    private $path;
+    private string $path;
 
     /**
      * @var string
@@ -58,7 +57,7 @@ class FileVersion
      *
      * @Groups({"fileVersion:read"})
      */
-    private $originalName;
+    private string $originalName;
 
     /**
      * @var FileVersionSignature[]
@@ -72,13 +71,11 @@ class FileVersion
     /**
      * The size of the file in bytes.
      *
-     * @var int
-     *
      * @ORM\Column(type="integer", nullable=true)
      *
      * @Groups({"fileVersion:read"})
      */
-    private $size;
+    private ?int $size = null;
 
     /**
      * @var Collection|FileDownload[]
@@ -91,45 +88,60 @@ class FileVersion
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\File", inversedBy="fileVersions")
      * @ORM\JoinColumn(name="id_file", nullable=false)
      */
-    private $file;
+    private File $file;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $fileSystem;
+    private string $fileSystem;
 
     /**
-     * @var|null string
+     * @var string|null string
      *
      * @ORM\Column(length=512, nullable=true)
      */
-    private $encryptionKey;
+    private ?string $encryptionKey;
 
     /**
      * @var string|null
      */
-    private $plainEncryptionKey;
+    private ?string $plainEncryptionKey;
 
     /**
-     * @var|null string
+     * @var string|null string
      *
      * @ORM\Column(length=150, nullable=true)
      *
      * @Groups({"fileVersion:read"})
      */
-    private $mimeType;
+    private ?string $mimeType;
 
     /**
-     * @param string      $path
-     * @param Staff       $addedBy
-     * @param File        $file
-     * @param string      $fileSystem
-     * @param string|null $plainEncryptionKey
-     * @param string|null $mimeType
+     * @var User
      *
-     * @throws Exception
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\JoinColumn(name="added_by", referencedColumnName="id", nullable=false)
      */
-    public function __construct(string $path, Staff $addedBy, File $file, string $fileSystem, ?string $plainEncryptionKey, ?string $mimeType)
+    private User $addedBy;
+
+    /**
+     * @var Company|null
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=true)
+     */
+    private ?Company $company;
+
+    /**
+     * @param string       $path
+     * @param User         $addedBy
+     * @param File         $file
+     * @param string       $fileSystem
+     * @param string|null  $plainEncryptionKey
+     * @param string|null  $mimeType
+     * @param Company|null $company
+     */
+    public function __construct(string $path, User $addedBy, File $file, string $fileSystem, ?string $plainEncryptionKey = null, ?string $mimeType = null, ?Company $company = null)
     {
         $this->signatures           = new ArrayCollection();
         $this->fileVersionDownloads = new ArrayCollection();
@@ -139,7 +151,9 @@ class FileVersion
         $this->added                = new DateTimeImmutable();
         $this->fileSystem           = $fileSystem;
         $this->plainEncryptionKey   = $plainEncryptionKey;
+        $this->encryptionKey        = null;
         $this->mimeType             = $mimeType;
+        $this->company              = $company;
     }
 
     /**
@@ -316,5 +330,21 @@ class FileVersion
         $fileVersions = $this->getFile()->getFileVersions();
 
         return $fileVersions->indexOf($this) + 1;
+    }
+
+    /**
+     * @return User
+     */
+    public function getAddedBy(): User
+    {
+        return $this->addedBy;
+    }
+
+    /**
+     * @return Company|null
+     */
+    public function getCompany(): ?Company
+    {
+        return $this->company;
     }
 }

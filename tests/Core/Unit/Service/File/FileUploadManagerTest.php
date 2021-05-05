@@ -78,8 +78,6 @@ class FileUploadManagerTest extends TestCase
         $uploader   = new User('test@' . Internet::safeEmailDomain());
         $uploaderId = Base::randomDigitNotNull() + 1;
         $idUsersReflectionProperty->setValue($uploader, $uploaderId);
-        $company = new Company('test', 'test');
-        $uploaderStaff = new Staff($uploader, $company->getRootTeam(), $this->prophesize(Staff::class)->reveal());
 
         $filePath         = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';
         $originalFileName = Base::asciify(str_repeat('*', 20));
@@ -104,7 +102,7 @@ class FileUploadManagerTest extends TestCase
 
         $this->createTestObject()->upload(
             $uploadedFile,
-            $uploaderStaff,
+            $uploader,
             $file,
             $context
         );
@@ -127,7 +125,7 @@ class FileUploadManagerTest extends TestCase
         static::assertSame(1, mb_strlen(array_shift($uploadedFilePathDirectories)), 'first mandatory subdirectory');
         static::assertSame(1, mb_strlen(array_shift($uploadedFilePathDirectories)), 'second mandatory subdirectory');
 
-        static::assertSame($uploaderStaff, $file->getCurrentFileVersion()->getAddedBy());
+        static::assertSame($uploader, $file->getCurrentFileVersion()->getAddedBy());
         static::assertStringContainsString((string) $uploader->getId(), $file->getCurrentFileVersion()->getPath());
         static::assertSame('application/x-empty', $file->getCurrentFileVersion()->getMimeType());
         static::assertSame($encryptionKey, $file->getCurrentFileVersion()->getPlainEncryptionKey());

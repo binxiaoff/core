@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Validator\Constraints\PreviousValue;
 
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Validator\Constraints\AbstractMoneyPreviousValueComparisonValidator;
 
 class MoneyNotAssignableValidator extends AbstractMoneyPreviousValueComparisonValidator
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
-    protected function compareValues(MoneyInterface $value, MoneyInterface $previousValue): bool
+    protected function compareValues($value, $previousValue): bool
     {
         return null === $value->getAmount() || null !== $previousValue->getAmount();
     }

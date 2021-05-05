@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace Unilend\Core\DataFixtures;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use JsonException;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\CompanyGroup;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\StaffStatus;
-use Unilend\Core\Entity\User;
+use Unilend\Core\Entity\{Company, Staff, StaffStatus, User};
 
 class StaffFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     public const ADMIN = 'STAFF_ADMIN';
+    public const CASA  = 'STAFF_CASA';
 
     /**
      * @param ObjectManager $manager
@@ -38,6 +34,18 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
 
         // We set the user in the tokenStorage to avoid conflict with StaffLogListener
         $this->login($adminStaff);
+
+        // Create a CASA staff
+        /** @var Company $casaCompany */
+        $casaCompany    = $this->getReference(CompanyFixtures::CASA);
+        $casaAdminStaff = $this->insertStaff($admin, $casaCompany, $manager);
+        $this->addAllCompanyGroupTag($casaAdminStaff);
+
+        /** @var User $managerUser */
+        $managerUser      = $this->getReference(UserFixtures::MANAGER);
+        $casaManagerStaff = $this->insertStaff($managerUser, $casaCompany, $manager);
+        $this->addAllCompanyGroupTag($casaAdminStaff);
+        $this->addReference(self::CASA, $casaManagerStaff);
 
         $data = [
             UserFixtures::AUDITOR => [
@@ -61,6 +69,9 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
             $user = $this->getReference($userReference);
             $company = $datum['company'] ?? $adminCompany;
             $staff = $this->createStaff($user, $company);
+            if (false === \in_array($userReference, [UserFixtures::AUDITOR, UserFixtures::ACCOUNTANT], true)) {
+                $staff->setArrangementProjectCreationPermission(true);
+            }
             $this->addStaffReference($staff);
             $manager->persist($staff);
         }

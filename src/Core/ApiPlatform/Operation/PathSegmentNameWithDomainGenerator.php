@@ -9,10 +9,10 @@ use Doctrine\Inflector\InflectorFactory;
 
 class PathSegmentNameWithDomainGenerator implements PathSegmentNameGeneratorInterface
 {
-    private const API_DOMAINS = ['core', 'syndication'];
+    private const API_DOMAINS = ['core', 'syndication', 'agency', 'credit_guaranty'];
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getSegmentName(string $name, bool $collection = true): string
     {

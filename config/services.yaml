@@ -51,11 +51,16 @@ services:
         # The directory Unilend contains the legacy bundles. The services are managed by their own configurations.
         exclude: [
             '%kernel.project_dir%/src/Kernel.php',
-            '%kernel.project_dir%/src/{Core,Syndication}/{Console,Entity,Migrations,Controller,Tests,Traits,Listener}'
+            '%kernel.project_dir%/src/{Core,Syndication,Agency,CreditGuaranty}/{Console,Entity,Migrations,Controller,Tests,Traits,Listener/Doctrine}'
         ]
 
     Unilend\Core\Controller\:
         resource: '%kernel.project_dir%/src/Core/Controller'
+        tags:
+            - { name: 'controller.service_arguments' }
+
+    Unilend\Agency\Controller\:
+        resource: '%kernel.project_dir%/src/Agency/Controller'
         tags:
             - { name: 'controller.service_arguments' }
 
@@ -152,6 +157,10 @@ services:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
+    Unilend\Agency\Serializer\ContextBuilder\ProjectContextBuilder:
+        decorates: 'api_platform.serializer.context_builder'
+        autoconfigure: false
+
     Unilend\Core\Service\ElectronicSignature\XmlSigner:
         $publicKey: '%psn.public_key%'
         $privateKey: '%psn.private_key%'
@@ -179,3 +188,7 @@ services:
 
     Unilend\Core\ApiPlatform\Metadata\Metadata\Resource\Factory\ShortNameResourceMetadataFactory:
         decorates: 'api_platform.metadata.resource.metadata_factory'
+
+    Unilend\Core\EventSubscriber\Jwt\PayloadManagerSubscriber:
+        calls:
+            - addPayloadManager: ['@Unilend\Core\Service\Jwt\StaffPayloadManager']

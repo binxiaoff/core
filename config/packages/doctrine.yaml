@@ -9,54 +9,74 @@ doctrine:
         default_connection: default
         connections:
             default:
-                schema_filter: '/^(?!core_messenger_messages|core_staff_log).*$/'
                 url: '%env(DATABASE_URL)%'
-                driver_class: 'Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver'
-                default_table_options:
-                    charset: utf8mb4
-                    collate: utf8mb4_unicode_ci
-                mapping_types:
-                    enum: string
-                options:
-                    x_reconnect_attempts: 3
+                <<: &connection_configuration
+                    # Remove from doctrine refresh_token (Refresh JWT token table)
+                    # Remove from doctrine messenger_messages (Symfony messenger queue table)
+                    # Remove from doctrine core_staff_log (Old table kept for reference)
+                    schema_filter: '/^(?!refresh_token|messenger_messages|core_staff_log).*$/'
+                    driver_class: 'Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver'
+                    default_table_options:
+                        charset: utf8mb4
+                        collate: utf8mb4_unicode_ci
+                    mapping_types:
+                        enum: string
+                    options:
+                        x_reconnect_attempts: 3
             # connection dedicated to Doctrine Migration bundle
             migration:
-                schema_filter: '/^(?!core_messenger_messages|core_staff_log).*$/'
                 url: '%env(DATABASE_URL_MIGRATION)%'
-                driver_class: 'Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver'
-                default_table_options:
-                    charset: utf8mb4
-                    collate: utf8mb4_unicode_ci
-                mapping_types:
-                    enum: string
-                options:
-                    x_reconnect_attempts: 3
+                <<: *connection_configuration
         types:
             bitmask: Unilend\Core\Doctrine\Types\BitmaskType
     orm:
         auto_generate_proxy_classes: "%kernel.debug%"
-        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
-        auto_mapping: true
-        mappings:
-            Unilend\Syndication:
-                is_bundle: false
-                type: annotation
-                dir: '%kernel.project_dir%/src/Syndication/Entity'
-                prefix: 'Unilend\Syndication\Entity'
-                alias: Unilend
-            Unilend\Core:
-                is_bundle: false
-                type: annotation
-                dir: '%kernel.project_dir%/src/Core/Entity'
-                prefix: 'Unilend\Core\Entity'
-                alias: Unilend\Core
-        hydrators:
-            HYDRATE_COLUMN: Unilend\Core\Doctrine\ORM\ColumnHydrator
-        filters:
-            softdeletable:
-                class: 'Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter'
-                enabled: true
-
+        default_entity_manager: default
+        entity_managers:
+            default:
+                connection: default
+                auto_mapping: true
+                <<: &entity_manager_configuration
+                    naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                    mappings:
+                        Unilend\Syndication:
+                            is_bundle: false
+                            type: annotation
+                            dir: '%kernel.project_dir%/src/Syndication/Entity'
+                            prefix: 'Unilend\Syndication\Entity'
+                            alias: Unilend
+                        Unilend\Core:
+                            is_bundle: false
+                            type: annotation
+                            dir: '%kernel.project_dir%/src/Core/Entity'
+                            prefix: 'Unilend\Core\Entity'
+                            alias: Unilend\Core
+                        Unilend\Agency:
+                            is_bundle: false
+                            type: annotation
+                            dir: '%kernel.project_dir%/src/Agency/Entity'
+                            prefix: 'Unilend\Agency\Entity'
+                            alias: Unilend\Agency
+                        Unilend\CreditGuaranty:
+                            is_bundle: false
+                            type: annotation
+                            dir: '%kernel.project_dir%/src/CreditGuaranty/Entity'
+                            prefix: 'Unilend\CreditGuaranty\Entity'
+                            alias: Unilend\CreditGuaranty
+                    hydrators:
+                        HYDRATE_COLUMN: 'Unilend\Core\Doctrine\ORM\ColumnHydrator'
+                    filters:
+                        softdeletable:
+                            class: 'Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter'
+                            enabled: true
+                        term:
+                            class: Unilend\Agency\Filter\Doctrine\TermFilter
+                            enabled: true
+            # entity manager dedicated to Doctrine Migration bundle (Doctrine Migration bundle ignores the option --conn, if it finds some entity manager)
+            migration:
+                connection: migration
+                auto_mapping: false
+                <<: *entity_manager_configuration
 services:
     doctrine.result_cache_provider:
         class: Symfony\Component\Cache\DoctrineProvider

@@ -34,9 +34,8 @@ class LendingRate
     public const FLOOR_TYPE_NONE       = 'none';
     public const FLOOR_TYPE_INDEX      = 'index';
     public const FLOOR_TYPE_INDEX_RATE = 'index_rate';
+
     /**
-     * @var string|null
-     *
      * @ORM\Column(length=20, nullable=true)
      *
      * @Assert\Choice(callback="getIndexes")
@@ -47,8 +46,6 @@ class LendingRate
 
     /**
      * The margin to be added on the indexed rate.
-     *
-     * @var string|null
      *
      * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
      *
@@ -63,8 +60,6 @@ class LendingRate
     /**
      * Have floor = X. Floor the indexed rate + margin to X if it's lower than X.
      *
-     * @var string|null
-     *
      * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
@@ -75,8 +70,6 @@ class LendingRate
     protected ?string $floor = null;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(length=20, nullable=true)
      *
      * @Assert\Choice(callback="getFloorTypes")
@@ -85,12 +78,6 @@ class LendingRate
      */
     protected ?string $floorType = null;
 
-    /**
-     * @param string|null $indexType
-     * @param string|null $margin
-     * @param string|null $floor
-     * @param string|null $floorType
-     */
     public function __construct(?string $indexType = null, ?string $margin = null, ?string $floor = null, ?string $floorType = null)
     {
         $this->setIndexType($indexType);
@@ -99,19 +86,11 @@ class LendingRate
         $this->setFloorType($floorType);
     }
 
-    /**
-     * @return string|null
-     */
     public function getIndexType(): ?string
     {
         return $this->indexType;
     }
 
-    /**
-     * @param string|null $indexType
-     *
-     * @return self
-     */
     public function setIndexType(?string $indexType): self
     {
         $this->indexType = $indexType;
@@ -123,19 +102,11 @@ class LendingRate
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getMargin(): ?string
     {
         return $this->margin;
     }
 
-    /**
-     * @param string|null $margin
-     *
-     * @return self
-     */
     public function setMargin(?string $margin): self
     {
         $this->margin = '' === $margin ? null : $margin;
@@ -143,19 +114,11 @@ class LendingRate
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getFloor(): ?string
     {
         return $this->floor;
     }
 
-    /**
-     * @param string|null $floor
-     *
-     * @return self
-     */
     public function setFloor(?string $floor): self
     {
         $this->floor = '' === $floor ? null : $floor;
@@ -163,33 +126,21 @@ class LendingRate
         return $this;
     }
 
-    /**
-     * @return array
-     */
     public static function getIndexes(): array
     {
         return self::getConstants('INDEX_');
     }
 
-    /**
-     * @return string|null
-     */
     public function getFloorType(): ?string
     {
         return $this->floorType;
     }
 
-    /**
-     * @param string|null $floorType
-     */
     public function setFloorType(?string $floorType): void
     {
         $this->floorType = $floorType;
     }
 
-    /**
-     * @return array
-     */
     public static function getFloorTypes(): array
     {
         return self::getConstants('FLOOR_TYPE_');
@@ -197,8 +148,6 @@ class LendingRate
 
     /**
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
      */
     public function validate(ExecutionContextInterface $context): void
     {
@@ -210,7 +159,9 @@ class LendingRate
                 if ($floorType || $this->getMargin() || $this->getFloor()) {
                     $context->buildViolation('Core.LendingRate.indexType.empty')->atPath('indexType')->addViolation();
                 }
+
                 break;
+
             case self::INDEX_FIXED:
                 if (null !== $this->getFloor()) {
                     $context->buildViolation('Core.LendingRate.floor.illegal')->atPath('floor')->addViolation();
@@ -219,7 +170,9 @@ class LendingRate
                 if (null !== $floorType) {
                     $context->buildViolation('Core.LendingRate.floorType.illegal')->atPath('floorType')->addViolation();
                 }
+
                 break;
+
             default:
                 if (null !== $floorType && null === $this->getFloor()) {
                     $context->buildViolation('Core.LendingRate.floor.empty')->atPath('floor')->addViolation();
