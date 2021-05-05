@@ -15,8 +15,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Agency\Controller\Participation\Get;
-use Unilend\Agency\Controller\Participation\Post;
+use Unilend\Core\Controller\Dataroom\Get;
+use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
@@ -67,20 +67,35 @@ use Unilend\Core\Model\Bitmask;
  *         "delete": {
  *             "security": "is_granted('delete', object)"
  *         },
- *         "dataroom_shared_agency_participation": {
+ *         "get_dataroom": {
  *             "method": "GET",
- *             "path": "/agency/participations/{publicId}/dataroom/confidential/{path?}",
+ *             "deserialize": false,
+ *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
  *             "controller": Get::class,
- *             "security": "is_granted('view', object)",
  *             "requirements": {
  *                 "path": ".+"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
  *             },
  *             "defaults": {
  *                 "path": "/",
  *             },
+ *         },
+ *         "post_dataroom": {
+ *             "method": "POST",
+ *             "deserialize": false,
+ *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
  *             "normalization_context": {
- *                 "groups": {"folder:read"}
- *             }
+ *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *             },
  *         },
  *     }
  * )

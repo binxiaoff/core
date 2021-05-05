@@ -18,12 +18,12 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Agency\Controller\Project\Get;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Agency\Controller\Project\GetTerm;
-use Unilend\Agency\Controller\Project\Post;
 use Unilend\Agency\Entity\Versioned\VersionedProject;
 use Unilend\Agency\Filter\ApiPlatform\ProjectFilter;
+use Unilend\Core\Controller\Dataroom\Get;
+use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\Constant\CAInternalRating;
@@ -80,59 +80,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *                     }
  *                 }
  *             }
- *         },
- *         "dataroom_shared_agency_borrower": {
- *             "method": "POST",
- *             "deserialize": false,
- *             "path": "/agency/projects/{publicId}/dataroom/shared/borrower/{path?}",
- *             "controller": Post::class,
- *             "requirements": {
- *                 "path": ".+"
- *             },
- *             "defaults": {
- *                 "path": "/",
- *                 "sharedDrive": "borrower"
- *             },
- *         },
- *         "dataroom_shared_agency_agent_borrower": {
- *             "method": "POST",
- *             "deserialize": false,
- *             "path": "/agency/projects/{publicId}/dataroom/shared/agentBorrower/{path?}",
- *             "controller": Post::class,
- *             "requirements": {
- *                 "path": ".+"
- *             },
- *             "defaults": {
- *                 "path": "/",
- *                 "sharedDrive": "agentBorrower"
- *             },
- *         },
- *         "dataroom_shared_agency_principal_participant": {
- *             "method": "POST",
- *             "deserialize": false,
- *             "path": "/agency/projects/{publicId}/dataroom/shared/agentPrincipalParticipant/{path?}",
- *             "controller": Post::class,
- *             "requirements": {
- *                 "path": ".+"
- *             },
- *             "defaults": {
- *                 "path": "/",
- *                 "sharedDrive": "agentPrincipalParticipant"
- *             },
- *         },
- *         "dataroom_shared_agency_secondary_participant": {
- *             "method": "POST",
- *             "deserialize": false,
- *             "path": "/agency/projects/{publicId}/dataroom/shared/agentSecondaryParticipant/{path?}",
- *             "controller": Post::class,
- *             "requirements": {
- *                 "path": ".+"
- *             },
- *             "defaults": {
- *                 "path": "/",
- *                 "sharedDrive": "agentSecondaryParticipant"
- *             },
- *         },
+ *         }
  *     },
  *     itemOperations={
  *         "get": {
@@ -158,79 +106,64 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             },
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
- *         "dataroom_shared_agency_agent_borrower": {
+ *         "get_dataroom_shared": {
  *             "method": "GET",
- *             "path": "/agency/projects/{publicId}/dataroom/shared/agentBorrower/{path?}",
+ *             "path": "/agency/projects/{publicId}/borrowers/dataroom/shared/{path?}",
  *             "controller": Get::class,
  *             "requirements": {
  *                 "path": ".+"
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "sharedDrive": "agentBorrower"
+ *                 "drive": "shared"
  *             },
  *             "normalization_context": {
- *                 "groups": {"folder:read"}
+ *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
  *             }
  *         },
- *         "dataroom_shared_agency_borrower": {
+ *         "post_borrower_dataroom_shared": {
+ *             "method": "POST",
+ *             "path": "/agency/projects/{publicId}/borrowers/dataroom/shared/{path?}",
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "drive": "shared"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "get_borrower_dataroom_confidential": {
  *             "method": "GET",
- *             "path": "/agency/projects/{publicId}/dataroom/shared/borrower/{path?}",
+ *             "path": "/agency/projects/{publicId}/borrowers/dataroom/confidential/{path?}",
  *             "controller": Get::class,
  *             "requirements": {
  *                 "path": ".+"
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "sharedDrive": "borrower"
+ *                 "drive": "confidential"
  *             },
  *             "normalization_context": {
- *                 "groups": {"folder:read"}
+ *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
  *             }
  *         },
- *         "dataroom_shared_agency_principal_participant": {
- *             "method": "GET",
- *             "path": "/agency/projects/{publicId}/dataroom/shared/agentPrincipalParticipant/{path?}",
- *             "controller": Get::class,
+ *         "post_borrower_dataroom_confidential": {
+ *             "method": "POST",
+ *             "path": "/agency/projects/{publicId}/borrowers/dataroom/confidential/{path?}",
+ *             "controller": Post::class,
  *             "requirements": {
  *                 "path": ".+"
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "sharedDrive": "agentPrincipalParticipant"
+ *                 "drive": "confidential"
  *             },
  *             "normalization_context": {
- *                 "groups": {"folder:read"}
- *             }
- *         },
- *         "dataroom_shared_agency_secondary_participant": {
- *             "method": "GET",
- *             "path": "/agency/projects/{publicId}/dataroom/shared/agentSecondaryParticipant/{path?}",
- *             "controller": Get::class,
- *             "requirements": {
- *                 "path": ".+"
- *             },
- *             "defaults": {
- *                 "path": "/",
- *                 "sharedDrive": "agentSecondaryParticipant"
- *             },
- *             "normalization_context": {
- *                 "groups": {"folder:read"}
- *             }
- *         },
- *         "dataroom_confidential": {
- *             "method": "GET",
- *             "path": "/agency/projects/{publicId}/dataroom/confidential/{path?}",
- *             "controller": Get::class,
- *             "security": "is_granted('view', object)",
- *             "requirements": {
- *                 "path": ".+"
- *             },
- *             "defaults": {
- *                 "path": "/"
- *             },
- *             "normalization_context": {
- *                 "groups": {"folder:read"}
+ *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
  *             }
  *         }
  *     }
@@ -271,11 +204,6 @@ class Project
 
     public const STATUS_DRAFT     = 10;
     public const STATUS_PUBLISHED = 20;
-
-    public const PROJECT_DRIVE_BORROWER                    = 'project_drive_borrower';
-    public const PROJECT_DRIVE_AGENT_BORROWER              = 'project_drive_agent_borrower';
-    public const PROJECT_DRIVE_AGENT_PRINCIPAL_PARTICIPANT = 'project_drive_agent_principal_participant';
-    public const PROJECT_DRIVE_AGENT_SECONDARY_PARTICIPANT = 'project_drive_agent_secondary_participant';
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
@@ -571,21 +499,15 @@ class Project
 
     /**
      * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_agent_borrower_drive", nullable=false, unique=true)
+     * @ORM\JoinColumn(name="id_borrower_shared_drive", nullable=false, unique=true)
      */
-    private Drive $agentBorrowerDrive;
+    private Drive $borrowerSharedDrive;
 
     /**
      * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_agent_principal_borrower_drive", nullable=false, unique=true)
+     * @ORM\JoinColumn(name="id_borrower_confidential_drive", nullable=false, unique=true)
      */
-    private Drive $agentPrincipalParticipantDrive;
-
-    /**
-     * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_agent_secondary_borrower_drive", nullable=false, unique=true)
-     */
-    private Drive $agentSecondaryParticipantDrive;
+    private Drive $borrowerConfidentialDrive;
 
     /**
      * @ORM\ManyToOne(targetEntity=ArrangementProject::class, cascade={"persist"})
@@ -596,13 +518,7 @@ class Project
     private ?ArrangementProject $source;
 
     /**
-     * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_borrower_drive", nullable=false, unique=true)
-     */
-    private Drive $borrowerDrive;
-
-    /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function __construct(
         Staff $addedBy,
@@ -651,10 +567,8 @@ class Project
         $this->agentDisplayName = $this->agent->getDisplayName();
         $this->agentSiren       = $this->agent->getSiren();
 
-        $this->agentBorrowerDrive             = new Drive();
-        $this->agentPrincipalParticipantDrive = new Drive();
-        $this->agentSecondaryParticipantDrive = new Drive();
-        $this->borrowerDrive                  = new Drive();
+        $this->borrowerConfidentialDrive = new Drive();
+        $this->borrowerSharedDrive       = new Drive();
 
         $this->source = $source;
         if ($source) {
@@ -1088,19 +1002,14 @@ class Project
         return $validationGroups;
     }
 
-    public function getAgentBorrowerDrive(): Drive
+    public function getBorrowerSharedDrive(): Drive
     {
-        return $this->agentBorrowerDrive;
+        return $this->borrowerSharedDrive;
     }
 
-    public function getAgentPrincipalParticipantDrive(): Drive
+    public function getBorrowerConfidentialDrive(): Drive
     {
-        return $this->agentPrincipalParticipantDrive;
-    }
-
-    public function getAgentSecondaryParticipantDrive(): Drive
-    {
-        return $this->agentSecondaryParticipantDrive;
+        return $this->borrowerConfidentialDrive;
     }
 
     public function getAgentParticipation(): Participation
@@ -1155,18 +1064,5 @@ class Project
 
             next($statuses);
         }
-    }
-
-    /**
-     * @return Drive
-     */
-    public function getBorrowerDrive(): Drive
-    {
-        return $this->borrowerDrive;
-    }
-
-    public static function getFileTypes(): array
-    {
-        return self::getConstants('PROJECT_DRIVE_');
     }
 }
