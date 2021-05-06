@@ -18,7 +18,6 @@ class ParticipationMemberVoter extends AbstractEntityVoter
      */
     protected function isGrantedAll($participationMember, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ParticipationVoter::ATTRIBUTE_EDIT, $participationMember->getParticipation())
-            || $participationMember->getParticipation()->findMemberByUser($user);
+        return $this->authorizationChecker->isGranted(ParticipationVoter::ATTRIBUTE_EDIT, $participationMember->getParticipation());
     }
 }

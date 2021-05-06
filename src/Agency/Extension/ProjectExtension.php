@@ -53,6 +53,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             ->setParameter($userParameterName, $user)
         ;
 
+        // TODO Handle project publication and participation
         if ($staff) {
             $participationAlias       = static::prefix('participation');
             $participationPoolAlias   = static::prefix('participationPool');

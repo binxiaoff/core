@@ -8,6 +8,7 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Faker\Provider\fr_FR\Person;
 use ReflectionException;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\UserStatus;
@@ -18,8 +19,9 @@ class UserFixtures extends AbstractFixtures
 
     private UserPasswordEncoderInterface $passwordEncoder;
 
-    public function __construct(UserPasswordEncoderInterface $passwordEncoder)
+    public function __construct(TokenStorageInterface $tokenStorage, UserPasswordEncoderInterface $passwordEncoder)
     {
+        parent::__construct($tokenStorage);
         $this->passwordEncoder = $passwordEncoder;
     }
 
@@ -32,39 +34,48 @@ class UserFixtures extends AbstractFixtures
     public function load(ObjectManager $manager)
     {
         $manager->getConnection()->getConfiguration()->setSQLLogger(null);
-        foreach (range(1, 25) as $index) {
-            $user = new User('user' . $index . '@test.com');
 
-            $reference = 'user:' . $index;
+        // User with symbols are meant to be staffless
+        $users = [
+            ...array_map([$this, 'createInitializedUser'], [...range(1, 10), ...range(21, 25), ...range('a', 'z'), '€', '@', '$', '£', '+']),
+            ...array_map([$this, 'createUser'], [...range(11, 20), 'uninitialized']), // These users are meant to be uninitialized
+        ];
 
-            $this->addReference($reference, $user);
-
-            $this->setPublicId($user, $reference);
-
-            $this->initialize($user);
-
-            $manager->persist($user);
-        }
-
-        $user = new User('user_uninitialized@test.com');
-
-        $reference = 'user:uninitialized';
-
-        $this->addReference($reference, $user);
-
-        $this->setPublicId($user, $reference);
-
-        $manager->persist($user);
+        array_walk($users, [$manager, 'persist']);
 
         $manager->flush();
     }
 
     /**
-     * @return object|string
+     * @param mixed $identification
+     *
+     * @throws ReflectionException
+     * @throws Exception
      */
-    public static function getReferenceName(User $user)
+    private function createUser($identification): User
     {
-        return $user->getPublicId();
+        $user = new User('user_' . $identification . '@test.com');
+
+        $reference = 'user:' . $identification;
+
+        $this->addReference($reference, $user);
+
+        $this->setPublicId($user, $reference);
+
+        return $user;
+    }
+
+    /**
+     * @throws ReflectionException
+     * @throws Exception
+     */
+    private function createInitializedUser(string $identification): User
+    {
+        $user = $this->createUser($identification);
+
+        $this->initialize($user);
+
+        return $user;
     }
 
     /**

@@ -19,6 +19,7 @@ class TrancheVoter extends AbstractEntityVoter
      */
     protected function isGrantedAll($tranche, User $user): bool
     {
+        // TODO See if borrower can see tranche
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $tranche->getProject());
     }
 }
