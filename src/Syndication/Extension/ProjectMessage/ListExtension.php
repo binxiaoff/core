@@ -31,34 +31,29 @@ class ListExtension implements QueryCollectionExtensionInterface
             return;
         }
 
-        /** @var User $user */
-        $user = $this->security->getUser();
+        $token = $this->security->getToken();
 
-        if (!$user instanceof User) {
-            return;
-        }
+        /** @var Staff|null $staff */
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
 
-        $staff = $user->getCurrentStaff();
-
-        if (null === $staff) {
+        if (false === ($staff instanceof Staff)) {
             $queryBuilder->andWhere('1 = 0');
 
             return;
         }
 
-        if (!$staff instanceof Staff) {
-            return;
-        }
-
         $rootAlias = $queryBuilder->getRootAliases()[0];
+
         $queryBuilder
             ->distinct()
             ->innerJoin($rootAlias . '.participation', 'pp')
             ->leftJoin('pp.projectParticipationMembers', 'ppc')
             ->leftJoin('pp.project', 'project')
             ->andWhere('(ppc.staff = :staff AND ppc.archived IS NULL) OR :company = organizer.company')
-            ->setParameter('staff', $staff)
-            ->setParameter('company', $staff->getCompany())
+            ->setParameters([
+                'staff'   => $staff,
+                'company' => $staff->getCompany(),
+            ])
         ;
     }
 }

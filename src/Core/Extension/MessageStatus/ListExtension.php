@@ -11,6 +11,7 @@ use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\MessageStatus;
 use Unilend\Core\Entity\MessageThread;
+use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectParticipation;
@@ -31,25 +32,23 @@ class ListExtension implements QueryCollectionExtensionInterface
         string $resourceClass,
         string $operationName = null
     ): void {
-        $user = $this->security->getUser();
-
-        if (!$user instanceof User) {
-            return;
-        }
-
         if (MessageStatus::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
 
-        $staff = $user->getCurrentStaff();
+        $token = $this->security->getToken();
 
-        if (null === $staff) {
+        /** @var Staff|null $staff */
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+
+        if (false === ($staff instanceof Staff)) {
             $queryBuilder->andWhere('1 = 0');
 
             return;
         }
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
+
         $queryBuilder
             ->innerJoin($rootAlias . '.message', 'msg')
             ->innerJoin(MessageThread::class, 'msgtd', Join::WITH, 'msg.messageThread = msgtd.id')

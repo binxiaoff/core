@@ -10,6 +10,7 @@ use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Agency\Entity\Project;
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 
 class ProjectExtension implements QueryCollectionExtensionInterface
 {
@@ -34,12 +35,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
 
         $user = $this->security->getUser();
 
-        $token = $this->security->getToken();
-
-        /** @var Staff|null $staff */
-        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
-
-        if (null === $staff) {
+        if (false === ($user instanceof User)) {
             $queryBuilder->andWhere('1 = 0');
 
             return;
@@ -59,35 +55,44 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             ->setParameter($userParameterName, $user)
         ;
 
+        $token = $this->security->getToken();
+
+        /** @var Staff|null $staff */
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+
+        if (false === ($staff instanceof Staff)) {
+            return;
+        }
+
         // TODO Handle project publication and participation
-        if ($staff) {
-            $participationAlias       = static::prefix('participation');
-            $participationPoolAlias   = static::prefix('participationPool');
-            $participationMemberAlias = static::prefix('participationMember');
+        $participationAlias       = static::prefix('participation');
+        $participationPoolAlias   = static::prefix('participationPool');
+        $participationMemberAlias = static::prefix('participationMember');
 
-            $managedUserParameterName     = static::prefix('managedUsers');
-            $companyParameterName         = static::prefix('company');
-            $publishedStatusParameterName = static::prefix('publishedStatus');
+        $managedUserParameterName     = static::prefix('managedUsers');
+        $companyParameterName         = static::prefix('company');
+        $publishedStatusParameterName = static::prefix('publishedStatus');
 
-            $queryBuilder
-                ->leftJoin("{$rootAlias}.participationPools", $participationPoolAlias)
-                ->leftJoin("{$participationPoolAlias}.participations", $participationAlias)
-                ->leftJoin("{$participationAlias}.members", $participationMemberAlias)
-                ->orWhere(
-                    $queryBuilder->expr()->andX(
-                        "{$participationMemberAlias}.user IN (:{$managedUserParameterName})",
-                        "{$participationAlias}.participant = :{$companyParameterName}",
-                        $queryBuilder->expr()->orX(
-                            "{$rootAlias}.agent = :{$companyParameterName}",
-                            "{$rootAlias}.currentStatus >= :{$publishedStatusParameterName}"
-                        )
+        $queryBuilder
+            ->leftJoin("{$rootAlias}.participationPools", $participationPoolAlias)
+            ->leftJoin("{$participationPoolAlias}.participations", $participationAlias)
+            ->leftJoin("{$participationAlias}.members", $participationMemberAlias)
+            ->orWhere(
+                $queryBuilder->expr()->andX(
+                    "{$participationMemberAlias}.user IN (:{$managedUserParameterName})",
+                    "{$participationAlias}.participant = :{$companyParameterName}",
+                    $queryBuilder->expr()->orX(
+                        "{$rootAlias}.agent = :{$companyParameterName}",
+                        "{$rootAlias}.currentStatus >= :{$publishedStatusParameterName}"
                     )
                 )
-                ->setParameter($managedUserParameterName, iterator_to_array($staff->getManagedUsers(), false))
-                ->setParameter($companyParameterName, $staff->getCompany())
-                ->setParameter($publishedStatusParameterName, Project::STATUS_PUBLISHED)
-            ;
-        }
+            )
+            ->setParameters([
+                $managedUserParameterName     => iterator_to_array($staff->getManagedUsers(), false),
+                $companyParameterName         => $staff->getCompany(),
+                $publishedStatusParameterName => Project::STATUS_PUBLISHED,
+            ])
+        ;
     }
 
     private static function prefix(string $name): string

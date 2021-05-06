@@ -10,6 +10,7 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\MessageThread;
+use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectParticipation;
@@ -33,25 +34,23 @@ class ListExtension implements QueryCollectionExtensionInterface
         string $resourceClass,
         string $operationName = null
     ): void {
-        $user = $this->security->getUser();
-
-        if (!$user instanceof User) {
-            return;
-        }
-
         if (MessageThread::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
 
-        $staff = $user->getCurrentStaff();
+        $token = $this->security->getToken();
 
-        if (null === $staff) {
+        /** @var Staff|null $staff */
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+
+        if (false === ($staff instanceof Staff)) {
             $queryBuilder->andWhere('1 = 0');
 
             return;
         }
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
+
         $queryBuilder
             ->innerJoin(ProjectParticipation::class, 'pp', Join::WITH, $rootAlias . '.projectParticipation = pp.id')
             ->leftJoin('pp.projectParticipationMembers', 'ppc')
@@ -77,10 +76,12 @@ class ListExtension implements QueryCollectionExtensionInterface
                     )
                 )
             )
-            ->setParameter('user', $staff->getUser())
-            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
-            ->setParameter('staff', $staff)
-            ->setParameter('managedStaffMember', $this->projectParticipationMemberRepository->findActiveByManager($staff))
+            ->setParameters([
+                'user'               => $staff->getUser(),
+                'displayableStatus'  => ProjectStatus::DISPLAYABLE_STATUSES,
+                'staff'              => $staff,
+                'managedStaffMember' => $this->projectParticipationMemberRepository->findActiveByManager($staff),
+            ])
             ->orderBy('p.title', 'ASC')
         ;
     }

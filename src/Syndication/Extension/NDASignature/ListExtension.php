@@ -7,7 +7,6 @@ namespace Unilend\Syndication\Extension\NDASignature;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
-use RuntimeException;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
@@ -32,23 +31,15 @@ class ListExtension implements QueryCollectionExtensionInterface
             return;
         }
 
-        /** @var User $user */
-        $user = $this->security->getUser();
+        $token = $this->security->getToken();
 
-        if (!$user instanceof User) {
-            return;
-        }
+        /** @var Staff|null $staff */
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
 
-        $staff = $user->getCurrentStaff();
-
-        if (null === $staff) {
+        if (false === ($staff instanceof Staff)) {
             $queryBuilder->andWhere('1 = 0');
 
             return;
-        }
-
-        if (false === $staff instanceof Staff) {
-            throw new RuntimeException('There should not be access to this class without a staff');
         }
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
