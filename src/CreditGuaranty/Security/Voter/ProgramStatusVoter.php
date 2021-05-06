@@ -6,16 +6,14 @@ namespace Unilend\CreditGuaranty\Security\Voter;
 
 use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\CreditGuaranty\Entity\ProgramGradeAllocation;
+use Unilend\CreditGuaranty\Entity\ProgramStatus;
 
-class ProgramGradeAllocationVoter extends AbstractEntityVoter
+class ProgramStatusVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_DELETE = 'delete';
 
     /**
-     * @param ProgramGradeAllocation $subject
+     * @param ProgramStatus $subject
      */
     protected function isGrantedAll($subject, User $user): bool
     {

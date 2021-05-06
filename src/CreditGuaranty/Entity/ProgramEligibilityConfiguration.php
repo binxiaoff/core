@@ -37,12 +37,13 @@ use Unilend\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
  *                 }
  *             }
  *         },
- *         "patch",
- *         "delete"
+ *         "patch": {"security": "is_granted('edit', object)"},
+ *         "delete": {"security": "is_granted('delete', object)"}
  *     },
  *     collectionOperations={
  *         "post": {
- *             "input": ProgramEligibilityConfigurationInput::class
+ *             "input": ProgramEligibilityConfigurationInput::class,
+ *             "security_post_denormalize": "is_granted('create', object)"
  *         }
  *     }
  * )

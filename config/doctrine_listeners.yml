@@ -125,3 +125,7 @@ services:
     Unilend\Agency\Listener\Doctrine\ProjectListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
+
+    Unilend\CreditGuaranty\Listener\Doctrine\Lifecycle\ProgramDeleteListener:
+        tags:
+            - { name: doctrine.event_listener, event: onFlush }

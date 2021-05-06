@@ -8,20 +8,26 @@ use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Security\Core\Security;
 use Unilend\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
 use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
 use Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
 use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
+use Unilend\CreditGuaranty\Security\Voter\ProgramChoiceOptionVoter;
+use Unilend\CreditGuaranty\Security\Voter\ProgramEligibilityConfigurationVoter;
 
 class ProgramEligibilityConfigurationInputDataTransformer implements DataTransformerInterface
 {
-    private ValidatorInterface $validator;
+    private ValidatorInterface            $validator;
     private ProgramChoiceOptionRepository $programChoiceOptionRepository;
+    private Security                      $security;
 
-    public function __construct(ValidatorInterface $validator, ProgramChoiceOptionRepository $programChoiceOptionRepository)
+    public function __construct(ValidatorInterface $validator, ProgramChoiceOptionRepository $programChoiceOptionRepository, Security $security)
     {
         $this->validator                     = $validator;
         $this->programChoiceOptionRepository = $programChoiceOptionRepository;
+        $this->security                      = $security;
     }
 
     /**
@@ -33,8 +39,6 @@ class ProgramEligibilityConfigurationInputDataTransformer implements DataTransfo
     }
 
     /**
-     * @todo: check user's permission when the habilitation is available
-     *
      * @param ProgramEligibilityConfigurationInput $object
      *
      * @throws ORMException
@@ -52,9 +56,17 @@ class ProgramEligibilityConfigurationInputDataTransformer implements DataTransfo
 
         if (null === $programChoiceOption) {
             $programChoiceOption = new ProgramChoiceOption($object->programEligibility->getProgram(), $object->description, $object->programEligibility->getField());
+            if (false === $this->security->isGranted(ProgramChoiceOptionVoter::ATTRIBUTE_CREATE, $programChoiceOption)) {
+                throw new AccessDeniedException();
+            }
             $this->programChoiceOptionRepository->save($programChoiceOption);
         }
 
-        return new ProgramEligibilityConfiguration($object->programEligibility, $programChoiceOption, null, true);
+        $programEligibilityConfiguration = new ProgramEligibilityConfiguration($object->programEligibility, $programChoiceOption, null, true);
+        if (false === $this->security->isGranted(ProgramEligibilityConfigurationVoter::ATTRIBUTE_CREATE, $programEligibilityConfiguration)) {
+            throw new AccessDeniedException();
+        }
+
+        return $programEligibilityConfiguration;
     }
 }

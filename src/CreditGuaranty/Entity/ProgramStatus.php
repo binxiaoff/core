@@ -22,7 +22,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *     normalizationContext={"groups": {"creditGuaranty:programStatus:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:programStatus:write"}},
  *     collectionOperations={
- *         "post"
+ *         "post": {"security_post_denormalize": "is_granted('create', object)"}
  *     },
  *     itemOperations={
  *         "get": {
@@ -47,16 +47,16 @@ class ProgramStatus implements StatusInterface
     use PublicizeIdentityTrait;
     use BlamableAddedTrait;
 
-    public const STATUS_CANCELLED   = -10;
+    public const STATUS_ARCHIVED    = -10;
     public const STATUS_DRAFT       = 10;
     public const STATUS_DISTRIBUTED = 20;
     public const STATUS_PAUSED      = 30;
 
     public const ALLOWED_STATUS = [
-        self::STATUS_CANCELLED   => [],
-        self::STATUS_DRAFT       => [self::STATUS_CANCELLED, self::STATUS_DISTRIBUTED],
-        self::STATUS_DISTRIBUTED => [self::STATUS_CANCELLED, self::STATUS_PAUSED],
-        self::STATUS_PAUSED      => [self::STATUS_CANCELLED, self::STATUS_DISTRIBUTED],
+        self::STATUS_ARCHIVED    => [],
+        self::STATUS_DRAFT       => [self::STATUS_DISTRIBUTED],
+        self::STATUS_DISTRIBUTED => [self::STATUS_ARCHIVED, self::STATUS_PAUSED],
+        self::STATUS_PAUSED      => [self::STATUS_ARCHIVED, self::STATUS_DISTRIBUTED],
     ];
 
     /**
@@ -68,8 +68,6 @@ class ProgramStatus implements StatusInterface
     private Program $program;
 
     /**
-     * @var int
-     *
      * @ORM\Column(type="smallint")
      *
      * @Assert\Choice(callback="getPossibleStatuses")
@@ -78,11 +76,6 @@ class ProgramStatus implements StatusInterface
      */
     private int $status;
 
-    /**
-     * @param Program $program
-     * @param int     $status
-     * @param Staff   $addedBy
-     */
     public function __construct(Program $program, int $status, Staff $addedBy)
     {
         $this->program = $program;
@@ -91,25 +84,16 @@ class ProgramStatus implements StatusInterface
         $this->added   = new DateTimeImmutable();
     }
 
-    /**
-     * @return Program
-     */
     public function getProgram(): Program
     {
         return $this->program;
     }
 
-    /**
-     * @return int
-     */
     public function getStatus(): int
     {
         return $this->status;
     }
 
-    /**
-     * @return array
-     */
     public static function getPossibleStatuses(): array
     {
         return static::getConstants('STATUS_');
