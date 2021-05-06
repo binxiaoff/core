@@ -29,13 +29,20 @@ use Unilend\Core\Model\Bitmask;
  *     normalizationContext={
  *         "groups": {
  *             "agency:participation:read",
- *             "money:read"
+ *             "money:read",
+ *             "agency:projectPartaker:read"
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
  *             "denormalization_context": {
- *                 "groups": {"agency:participation:create", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}
+ *                 "groups": {
+ *                     "agency:participation:create",
+ *                     "agency:projectPartaker:write",
+ *                     "agency:participation:write",
+ *                     "money:write",
+ *                     "agency:participationTrancheAllocation:write"
+ *                 }
  *             },
  *             "security_post_denormalize": "is_granted('create', object)",
  *         }
@@ -44,7 +51,13 @@ use Unilend\Core\Model\Bitmask;
  *         "get",
  *         "patch": {
  *             "denormalization_context": {
- *                 "groups": {"agency:participation:update", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}
+ *                 "groups": {
+ *                     "agency:participation:update",
+ *                     "agency:participation:write",
+ *                     "agency:projectPartaker:write",
+ *                     "money:write",
+ *                     "agency:participationTrancheAllocation:write"
+ *                 }
  *             },
  *             "security_post_denormalize": "is_granted('edit', object)",
  *         },
@@ -230,6 +243,8 @@ class Participation
         Company $participant,
         Money $finalAllocation
     ) {
+        // TODO Replace with correct siren once CALS-3776 is done
+        parent::__construct('00000000', $capital);
         $this->responsibilities         = new Bitmask(0);
         $this->pool                     = $project;
         $this->finalAllocation          = $finalAllocation;

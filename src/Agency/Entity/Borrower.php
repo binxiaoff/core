@@ -25,7 +25,8 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *     normalizationContext={
  *         "groups": {
  *             "agency:borrower:read",
- *             "money:read"
+ *             "money:read",
+ *             "agency:projectPartaker:read",
  *         }
  *     },
  *     collectionOperations={
@@ -34,6 +35,7 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *                 "groups": {
  *                     "agency:borrower:create",
  *                     "agency:borrower:write",
+ *                     "agency:projectPartaker:write",
  *                     "money:write",
  *                     "agency:borrowerMember:create",
  *                     "agency:borrowerMember:write",
@@ -46,9 +48,6 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *     },
  *     itemOperations={
  *         "get": {
- *             "normalization_context": {
- *                 "groups": {"agency:borrower:read", "money:read"}
- *             },
  *             "security": "is_granted('view', object)",
  *         },
  *         "delete": {
@@ -56,7 +55,12 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *         },
  *         "patch": {
  *             "denormalization_context": {
- *                 "groups": {"agency:borrower:update", "agency:borrower:write", "money:write"}
+ *                 "groups": {
+ *                     "agency:borrower:update",
+ *                     "agency:projectPartaker:write",
+ *                     "agency:borrower:write",
+ *                     "money:write"
+ *                 }
  *             },
  *             "security_post_denormalize": "is_granted('edit', object)",
  *         }

@@ -34,7 +34,6 @@ use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
@@ -69,13 +68,10 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         $agencyContact = (new NullablePerson())->setFirstName($this->faker->firstName)->setLastName($this->faker->lastName);
         $project->setAgencyContact($agencyContact);
-        $project->setAgentSiren($this->generateSiren());
         $project->setAgentLegalForm(LegalForm::EURL);
         $project->setIban($this->faker->iban());
         $project->setBic('AGRIMQMX');
         $project->setHeadOffice($this->faker->address);
-        $project->setAgentRCS(implode(' ', ['RCS', mb_strtoupper($this->faker->city), $this->faker->randomDigit % 2 ? 'A' : 'B', $project->getAgentSiren()]));
-        $project->setAgentCapital(new NullableMoney('EUR', '0'));
         $project->setBankInstitution('bank institution');
         $project->getPrimaryParticipationPool()->setSyndicationType(SyndicationType::PRIMARY);
         $project->getPrimaryParticipationPool()->setParticipationType(ParticipationType::DIRECT);
@@ -165,7 +161,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     private function createBorrower(Project $project, Staff $staff)
     {
         $siren = $this->generateSiren();
-        $city  = $this->faker->city;
 
         $borrower = new Borrower(
             $project,
@@ -174,7 +169,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             'SARL',
             new Money('EUR', (string) $this->faker->randomFloat(0, 100000)),
             $this->faker->address,
-            implode(' ', ['RCS', mb_strtoupper($city), $this->faker->randomDigit % 2 ? 'A' : 'B', $siren]),
+            $siren,
         );
 
         $borrower->setReferent(new BorrowerMember($borrower, new User($this->faker->email)));
@@ -230,6 +225,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $project->getParticipationPools()[$secondary],
             $participant,
             new Money('EUR', (string) $this->faker->numberBetween(100000)),
+            new Money('EUR', (string) $this->faker->numberBetween(40000000)),
         );
 
         $participation->setReferent(new ParticipationMember($participation, new User($this->faker->email)));
