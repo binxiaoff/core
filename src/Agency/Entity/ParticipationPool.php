@@ -242,4 +242,9 @@ class ParticipationPool
 
         return $validationGroups;
     }
+
+    public function getSharedDrive(): Drive
+    {
+        return $this->sharedDrive;
+    }
 }
