@@ -165,7 +165,10 @@ class File
         return $this;
     }
 
-    public function getName(): string
+    /**
+     * @Groups({"file:read"})
+     */
+    public function getName(): ?string
     {
         if (null === $this->getCurrentFileVersion()) {
             return '';
