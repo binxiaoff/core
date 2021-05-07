@@ -7,54 +7,46 @@ namespace Unilend\Syndication\Extension\ProjectParticipation;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
-use RuntimeException;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectStatus;
 use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
-    /** @var Security */
     private Security $security;
-    /** @var ProjectParticipationMemberRepository */
     private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
 
-    /**
-     * @param Security                             $security
-     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
-     */
     public function __construct(Security $security, ProjectParticipationMemberRepository $projectParticipationMemberRepository)
     {
-        $this->security      = $security;
+        $this->security                             = $security;
         $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
     }
 
-    /**
-     * @param QueryBuilder                $queryBuilder
-     * @param QueryNameGeneratorInterface $queryNameGenerator
-     * @param string                      $resourceClass
-     * @param string|null                 $operationName
-     */
-    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
-    {
+    public function applyToCollection(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        string $resourceClass,
+        string $operationName = null
+    ): void {
         if (ProjectParticipation::class !== $resourceClass) {
             return;
         }
-        /** @var User $user */
-        $user = $this->security->getUser();
-        if (!$user instanceof User) {
+
+        $token = $this->security->getToken();
+
+        /** @var Staff|null $staff */
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+
+        if (false === ($staff instanceof Staff)) {
+            $queryBuilder->andWhere('1 = 0');
+
             return;
         }
 
-        $staff = $user->getCurrentStaff();
-
-        if (false === $staff instanceof Staff) {
-            throw new RuntimeException('There should not be access to this class without a staff');
-        }
-
         $rootAlias = $queryBuilder->getRootAliases()[0];
+
         $queryBuilder
             ->distinct()
             ->leftJoin("{$rootAlias}.projectParticipationMembers", 'ppc')
@@ -75,10 +67,12 @@ class ListExtension implements QueryCollectionExtensionInterface
                     ),
                 )
             )
-            ->setParameter('company', $staff->getCompany())
-            ->setParameter('staff', $staff)
-            ->setParameter('managedStaffMember', $this->projectParticipationMemberRepository->findActiveByManager($staff))
-            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
+            ->setParameters([
+                'company'            => $staff->getCompany(),
+                'staff'              => $staff,
+                'managedStaffMember' => $this->projectParticipationMemberRepository->findActiveByManager($staff),
+                'displayableStatus'  => ProjectStatus::DISPLAYABLE_STATUSES,
+            ])
         ;
     }
 }

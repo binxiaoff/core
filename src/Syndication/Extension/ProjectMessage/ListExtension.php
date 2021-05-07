@@ -14,48 +14,46 @@ use Unilend\Syndication\Entity\ProjectMessage;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
-    /** @var Security */
-    private $security;
+    private Security $security;
 
-    /**
-     * @param Security $security
-     */
     public function __construct(Security $security)
     {
         $this->security = $security;
     }
 
-    /**
-     * @param QueryBuilder                $queryBuilder
-     * @param QueryNameGeneratorInterface $queryNameGenerator
-     * @param string                      $resourceClass
-     * @param string|null                 $operationName
-     */
-    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
-    {
+    public function applyToCollection(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        string $resourceClass,
+        string $operationName = null
+    ): void {
         if (ProjectMessage::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
-        /** @var User $user */
-        $user = $this->security->getUser();
-        if (!$user instanceof User) {
-            return;
-        }
 
-        $staff = $user->getCurrentStaff();
-        if (!$staff instanceof Staff) {
+        $token = $this->security->getToken();
+
+        /** @var Staff|null $staff */
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+
+        if (false === ($staff instanceof Staff)) {
+            $queryBuilder->andWhere('1 = 0');
+
             return;
         }
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
+
         $queryBuilder
             ->distinct()
             ->innerJoin($rootAlias . '.participation', 'pp')
             ->leftJoin('pp.projectParticipationMembers', 'ppc')
             ->leftJoin('pp.project', 'project')
             ->andWhere('(ppc.staff = :staff AND ppc.archived IS NULL) OR :company = organizer.company')
-            ->setParameter('staff', $staff)
-            ->setParameter('company', $staff->getCompany())
+            ->setParameters([
+                'staff'   => $staff,
+                'company' => $staff->getCompany(),
+            ])
         ;
     }
 }

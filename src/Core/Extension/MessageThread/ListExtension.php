@@ -9,55 +9,48 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\{MessageThread, User};
-use Unilend\Syndication\Entity\{Project,
-    ProjectParticipation,
-    ProjectParticipationMember,
-    ProjectStatus};
+use Unilend\Core\Entity\MessageThread;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectStatus;
 use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
-    /** @var Security */
     private Security $security;
-    /** @var ProjectParticipationMemberRepository */
     private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
 
-    /**
-     * ListExtension constructor.
-     *
-     * @param Security                             $security
-     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
-     */
     public function __construct(Security $security, ProjectParticipationMemberRepository $projectParticipationMemberRepository)
     {
-        $this->security                = $security;
+        $this->security                             = $security;
         $this->projectParticipationMemberRepository = $projectParticipationMemberRepository;
     }
 
-    /**
-     * @param QueryBuilder                $queryBuilder
-     * @param QueryNameGeneratorInterface $queryNameGenerator
-     * @param string                      $resourceClass
-     * @param string|null                 $operationName
-     */
-    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
-    {
-        $user = $this->security->getUser();
-        if (!$user instanceof User) {
-            return;
-        }
-
+    public function applyToCollection(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        string $resourceClass,
+        string $operationName = null
+    ): void {
         if (MessageThread::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
 
-        $staff = $user->getCurrentStaff();
-        if (null === $staff) {
+        $token = $this->security->getToken();
+
+        /** @var Staff|null $staff */
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+
+        if (false === ($staff instanceof Staff)) {
+            $queryBuilder->andWhere('1 = 0');
+
             return;
         }
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
+
         $queryBuilder
             ->innerJoin(ProjectParticipation::class, 'pp', Join::WITH, $rootAlias . '.projectParticipation = pp.id')
             ->leftJoin('pp.projectParticipationMembers', 'ppc')
@@ -83,10 +76,13 @@ class ListExtension implements QueryCollectionExtensionInterface
                     )
                 )
             )
-            ->setParameter('user', $staff->getUser())
-            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
-            ->setParameter('staff', $staff)
-            ->setParameter('managedStaffMember', $this->projectParticipationMemberRepository->findActiveByManager($staff))
-            ->orderBy('p.title', 'ASC');
+            ->setParameters([
+                'user'               => $staff->getUser(),
+                'displayableStatus'  => ProjectStatus::DISPLAYABLE_STATUSES,
+                'staff'              => $staff,
+                'managedStaffMember' => $this->projectParticipationMemberRepository->findActiveByManager($staff),
+            ])
+            ->orderBy('p.title', 'ASC')
+        ;
     }
 }
