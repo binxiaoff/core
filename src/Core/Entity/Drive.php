@@ -9,7 +9,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
-use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Exception\Drive\FolderAlreadyExistsException;
 
@@ -44,8 +43,6 @@ class Drive extends AbstractFolder
 
     /**
      * @var Folder[]|Collection
-     *
-     * @Assert\Count(min="1")
      *
      * @ORM\OneToMany(targetEntity=Folder::class, indexBy="path", mappedBy="drive", cascade={"persist", "remove"}, orphanRemoval=true)
      */
