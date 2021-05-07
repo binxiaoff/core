@@ -58,6 +58,7 @@ use Unilend\Core\Model\Bitmask;
  *         "get_dataroom": {
  *             "method": "GET",
  *             "deserialize": false,
+ *             "security": "is_granted('view', object)",
  *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
  *             "controller": Get::class,
  *             "requirements": {
@@ -73,6 +74,7 @@ use Unilend\Core\Model\Bitmask;
  *         "post_dataroom": {
  *             "method": "POST",
  *             "deserialize": false,
+ *             "security": "is_granted('view', object)",
  *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
  *             "controller": Post::class,
  *             "requirements": {

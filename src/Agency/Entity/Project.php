@@ -109,6 +109,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *         "get_dataroom_shared": {
  *             "method": "GET",
  *             "path": "/agency/projects/{publicId}/borrowers/dataroom/shared/{path?}",
+ *             "security": "is_granted('agent', object) || is_granted('borrower', object)",
  *             "controller": Get::class,
  *             "requirements": {
  *                 "path": ".+"
@@ -124,6 +125,8 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *         "post_borrower_dataroom_shared": {
  *             "method": "POST",
  *             "path": "/agency/projects/{publicId}/borrowers/dataroom/shared/{path?}",
+ *             "security": "is_granted('agent', object) || is_granted('borrower', object)",
+ *             "deserialize": false,
  *             "controller": Post::class,
  *             "requirements": {
  *                 "path": ".+"
@@ -139,6 +142,8 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *         "get_borrower_dataroom_confidential": {
  *             "method": "GET",
  *             "path": "/agency/projects/{publicId}/borrowers/dataroom/confidential/{path?}",
+ *             "security": "is_granted('borrower', object)",
+ *             "deserialize": false,
  *             "controller": Get::class,
  *             "requirements": {
  *                 "path": ".+"
@@ -154,6 +159,8 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *         "post_borrower_dataroom_confidential": {
  *             "method": "POST",
  *             "path": "/agency/projects/{publicId}/borrowers/dataroom/confidential/{path?}",
+ *             "security": "is_granted('borrower', object)",
+ *             "deserialize": false,
  *             "controller": Post::class,
  *             "requirements": {
  *                 "path": ".+"

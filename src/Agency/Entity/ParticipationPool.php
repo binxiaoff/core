@@ -22,9 +22,6 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "validation_groups": {ParticipationPool::class, "getCurrentValidationGroups"}
- *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:participationPool:read",
@@ -35,7 +32,8 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "security": "is_granted('view', object)"
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object)"
+ *             "security": "is_granted('edit', object)",
+ *             "validation_groups": {ParticipationPool::class, "getCurrentValidationGroups"}
  *         },
  *         "get_dataroom": {
  *             "method": "GET",
