@@ -39,19 +39,7 @@ use Unilend\Core\Model\Bitmask;
  *             },
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
- *         },
- *         "dataroom_agency_participation": {
- *             "method": "POST",
- *             "path": "/agency/participations/{publicId}/dataroom/confidential/{path?}",
- *             "controller": Post::class,
- *             "deserialize": false,
- *             "requirements": {
- *                 "path": ".+"
- *             },
- *             "defaults": {
- *                 "path": "/",
- *             },
- *         },
+ *         }
  *     },
  *     itemOperations={
  *         "get": {
