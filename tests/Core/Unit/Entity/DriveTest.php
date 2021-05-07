@@ -397,6 +397,28 @@ class DriveTest extends TestCase
     }
 
     /**
+     * @covers ::isNameValid
+     *
+     * @dataProvider providerIsNameValid
+     */
+    public function testIsNameValid(Drive $drive, string $tested, bool $expected)
+    {
+        static::assertSame($expected, $drive->isNameValid($tested));
+    }
+
+    public function providerIsNameValid(): array
+    {
+        $drive = new Drive();
+
+        return [
+            'A name containing a / is invalid'  => [$drive, 'azeze/azeaze', false],
+            'A name starting with / is invalid' => [$drive, '/dazazd/azddza', false],
+            'A name ending with / is invalid'   => [$drive, 'azdazd/', false],
+            'A name without / is valid'         => [$drive, 'toto', true],
+        ];
+    }
+
+    /**
      * @throws FolderAlreadyExistsException
      */
     private function getCommonDrive(): Drive

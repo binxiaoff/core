@@ -227,7 +227,12 @@ class Drive extends AbstractFolder
         return DIRECTORY_SEPARATOR;
     }
 
-    private function canonicalizePath($path)
+    public function isNameValid(string $string): bool
+    {
+        return false === mb_strpos($string, DIRECTORY_SEPARATOR);
+    }
+
+    private function canonicalizePath(string $path): string
     {
         return DIRECTORY_SEPARATOR . trim($path, DIRECTORY_SEPARATOR);
     }
