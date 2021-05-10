@@ -22,10 +22,15 @@ class PublishedProject extends DraftProject
 
         $manager->persist($project);
 
-        $participation       = $this->createTestPrimaryParticipation($project, $this->getReference('company:qux'));
-        $participationMember = new ParticipationMember($participation, $this->getReference('user:b'));
-        $participation->addMember($participationMember);
-        $participation->archive();
+        $quxParticipation    = $this->createTestPrimaryParticipation($project, $this->getReference('company:qux'));
+        $participationMember = new ParticipationMember($quxParticipation, $this->getReference('user:b'));
+        $quxParticipation->addMember($participationMember);
+        $quxParticipation->archive();
+
+        $loxParticipation    = $this->createTestSecondaryParticipation($project, $this->getReference('company:lox'));
+        $participationMember = new ParticipationMember($loxParticipation, $this->getReference('user:b'));
+        $loxParticipation->addMember($participationMember);
+        $loxParticipation->archive();
 
         $borrower       = $this->createTestBorrower($project, $project->getAddedBy());
         $borrowerMember = new BorrowerMember($borrower, $this->getReference('user:@'));
@@ -36,7 +41,8 @@ class PublishedProject extends DraftProject
             [$manager, 'persist'],
             [
                 $project,
-                $participation,
+                $quxParticipation,
+                $loxParticipation,
                 $participationMember,
                 $borrower,
                 $borrowerMember,

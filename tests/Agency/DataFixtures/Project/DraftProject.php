@@ -9,7 +9,6 @@ use Exception;
 use Unilend\Agency\Entity\BorrowerMember;
 use Unilend\Agency\Entity\ParticipationMember;
 use Unilend\Agency\Entity\Project;
-use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Test\Core\DataFixtures\Companies\BarCompanyFixtures;
 use Unilend\Test\Core\DataFixtures\Companies\FooCompanyFixtures;
@@ -39,14 +38,11 @@ class DraftProject extends AbstractProjectFixtures
 
         $this->setPublicId($project, $this->getName());
 
-        $participations = array_map(
-            fn (Company $company) => $this->createTestPrimaryParticipation($project, $company),
-            [
-                'bar' => $this->getReference('company:bar'),
-            ]
-        );
+        $barParticipation = $this->createTestPrimaryParticipation($project, $this->getReference('company:bar'));
+        $barParticipation->addMember(new ParticipationMember($barParticipation, $this->getReference('user:b')));
 
-        $participations['bar']->addMember(new ParticipationMember($participations['bar'], $this->getReference('user:b')));
+        $tuxParticipation = $this->createTestSecondaryParticipation($project, $this->getReference('company:tux'));
+        $tuxParticipation->addMember(new ParticipationMember($tuxParticipation, $this->getReference('user:b')));
 
         $borrower = $this->createTestBorrower($project, $staff);
 
@@ -57,7 +53,8 @@ class DraftProject extends AbstractProjectFixtures
             [$manager, 'persist'],
             [
                 $project,
-                ...array_values($participations),
+                $barParticipation,
+                $tuxParticipation,
                 $borrower,
                 new ParticipationMember($project->getAgentParticipation(), $this->getReference('user:c')),
             ]
