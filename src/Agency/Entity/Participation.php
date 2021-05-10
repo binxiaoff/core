@@ -417,6 +417,11 @@ class Participation extends AbstractProjectPartaker
         return $this->getPool()->isSecondary();
     }
 
+    public function isPrimary(): bool
+    {
+        return $this->getPool()->isPrimary();
+    }
+
     public function getParticipantCommission(): ?string
     {
         return $this->participantCommission;

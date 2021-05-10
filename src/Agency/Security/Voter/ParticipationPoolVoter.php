@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Agency\Security\Voter;
 
 use Unilend\Agency\Entity\ParticipationPool;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class ParticipationPoolVoter extends AbstractEntityVoter
@@ -18,8 +19,26 @@ class ParticipationPoolVoter extends AbstractEntityVoter
             && false === $participationPool->getProject()->isArchived();
     }
 
-    public function canView(ParticipationPool $participationPool): bool
+    public function canView(ParticipationPool $participationPool, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $participationPool->getProject());
+        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participationPool->getProject())) {
+            return true;
+        }
+
+        if (
+            $participationPool->isSecondary()
+            && $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_SECONDARY_PARTICIPANT, $participationPool->getProject())
+        ) {
+            return true;
+        }
+
+        if (
+            $participationPool->isPrimary()
+            && $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PRIMARY_PARTICIPANT, $participationPool->getProject())
+        ) {
+            return true;
+        }
+
+        return false;
     }
 }

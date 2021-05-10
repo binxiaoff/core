@@ -873,6 +873,10 @@ class Project
 
     /**
      * @return iterable|Participation[]
+     *
+     * @ApiProperty(security="is_granted('agent', this)")
+     *
+     * @Groups({"agency:project:read"})
      */
     public function getParticipations(): iterable
     {
