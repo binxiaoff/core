@@ -37,7 +37,6 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *         },
  *         "get_dataroom": {
  *             "method": "GET",
- *             "deserialize": false,
  *             "path": "/agency/participation_pools/{publicId}/dataroom/{path?}",
  *             "security": "is_granted('view', object)",
  *             "controller": Get::class,

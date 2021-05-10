@@ -143,7 +143,6 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "method": "GET",
  *             "path": "/agency/projects/{publicId}/borrowers/dataroom/confidential/{path?}",
  *             "security": "is_granted('borrower', object)",
- *             "deserialize": false,
  *             "controller": Get::class,
  *             "requirements": {
  *                 "path": ".+"
