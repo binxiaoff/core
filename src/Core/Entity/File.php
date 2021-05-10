@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\ArchivableTrait;
 use Unilend\Core\Entity\Traits\BlamableArchivedTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
@@ -129,12 +130,24 @@ class File
     private ?FileVersion $currentFileVersion = null;
 
     /**
+     * Name is nullable for now because they are used in arrangement
+     * Name is needed because we need the client name.
+     *
+     * @ORM\Column(type="string", length=191, nullable=true)
+     *
+     * @Assert\Regex(pattern="#[^\/]+#")
+     * @Assert\Length(max=191)
+     */
+    private ?string $name;
+
+    /**
      * @throws Exception
      */
-    public function __construct()
+    public function __construct(?string $name = null)
     {
         $this->added        = new DateTimeImmutable();
         $this->fileVersions = new ArrayCollection();
+        $this->name         = $name;
     }
 
     /**
@@ -170,11 +183,7 @@ class File
      */
     public function getName(): ?string
     {
-        if (null === $this->getCurrentFileVersion()) {
-            return '';
-        }
-
-        return $this->getCurrentFileVersion()->getOriginalName();
+        return $this->name;
     }
 
     /**
