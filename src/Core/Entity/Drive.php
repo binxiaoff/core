@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Exception\Drive\FolderAlreadyExistsException;
 
@@ -45,6 +46,8 @@ class Drive extends AbstractFolder
      * @var Folder[]|Collection
      *
      * @ORM\OneToMany(targetEntity=Folder::class, indexBy="path", mappedBy="drive", cascade={"persist", "remove"}, orphanRemoval=true)
+     *
+     * @Assert\Valid
      */
     private Collection $folders;
 
@@ -73,20 +76,20 @@ class Drive extends AbstractFolder
     {
         $path = $this->canonicalizePath($path);
 
-        $explodedPath = array_filter(explode(DIRECTORY_SEPARATOR, $path));
-
-        if (empty($explodedPath)) {
+        if ($this->exist($path)) {
             return $this;
         }
 
+        $explodedPath = array_filter(explode(DIRECTORY_SEPARATOR, $path));
+
         $lastItem = array_pop($explodedPath);
 
-        $parentPath = implode(DIRECTORY_SEPARATOR, $explodedPath);
+        $parentPath = $this->canonicalizePath(implode(DIRECTORY_SEPARATOR, $explodedPath));
 
         $this->createFolder($parentPath);
 
         // The verification of path existant is made in the constructor
-        $folder = new Folder($lastItem, $this, DIRECTORY_SEPARATOR . $parentPath);
+        $folder = new Folder($lastItem, $this, $this->canonicalizePath($parentPath));
 
         $this->folders[$folder->getPath()] = $folder;
 
@@ -225,11 +228,6 @@ class Drive extends AbstractFolder
     public function getPath(): string
     {
         return DIRECTORY_SEPARATOR;
-    }
-
-    public function isNameValid(string $string): bool
-    {
-        return false === mb_strpos($string, DIRECTORY_SEPARATOR);
     }
 
     private function canonicalizePath(string $path): string

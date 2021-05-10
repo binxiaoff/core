@@ -78,13 +78,12 @@ class DriveTest extends TestCase
         static::assertTrue($drive->exist($path));
     }
 
-    /**
-     * @throws FolderAlreadyExistsException
-     *
-     * @return string[]
-     */
     public function providerCreateFolder(): iterable
     {
+        $drive = new Drive();
+        $drive->createFolder('/existingFolder');
+        $drive->createFolder('/one');
+
         $folders = [
             'It ignores attempt to create /'                                         => '/',
             'It can create a folder directly when given path has leading /'          => implode('/', ['onelevel']),
@@ -93,16 +92,14 @@ class DriveTest extends TestCase
             'It can create all folders recursively when given path has suffixed /'   => implode('/', ['several', 'level', 'depth']) . '/',
             'It can create a folder directly when given path has no affixed /'       => 'onelevelwithoutleadingslash',
             'It can create all folders recursively when given path has no affixed /' => 'several' . implode('/', ['level', 'without', 'leading', 'slash']),
+            'It does not throw an exception when folder already exist'               => 'existingFolder',
+            'It handles nested folders with the same name 1'                         => '/one/one',
+            'It handles nested folders with the same name 2'                         => '/one/one/one',
         ];
 
         foreach ($folders as $test => $folder) {
-            yield $test => [new Drive(), $folder];
+            yield $test => [$drive, $folder];
         }
-
-        $drive = new Drive();
-        $drive->createFolder('/existingFolder');
-
-        yield 'It throw an exception when the folder already exist' => [$drive, 'existingFolder', FolderAlreadyExistsException::class];
     }
 
     /**
@@ -397,28 +394,6 @@ class DriveTest extends TestCase
     }
 
     /**
-     * @covers ::isNameValid
-     *
-     * @dataProvider providerIsNameValid
-     */
-    public function testIsNameValid(Drive $drive, string $tested, bool $expected)
-    {
-        static::assertSame($expected, $drive->isNameValid($tested));
-    }
-
-    public function providerIsNameValid(): array
-    {
-        $drive = new Drive();
-
-        return [
-            'A name containing a / is invalid'  => [$drive, 'azeze/azeaze', false],
-            'A name starting with / is invalid' => [$drive, '/dazazd/azddza', false],
-            'A name ending with / is invalid'   => [$drive, 'azdazd/', false],
-            'A name without / is valid'         => [$drive, 'toto', true],
-        ];
-    }
-
-    /**
      * @throws FolderAlreadyExistsException
      */
     private function getCommonDrive(): Drive
@@ -440,7 +415,7 @@ class DriveTest extends TestCase
 
     private function generateMockFile(string $name): File
     {
-        $file = new File();
+        $file = new File($name);
 
         $fileVersion = new FileVersion('', new User('test@test.com'), $file, '');
         $fileVersion->setOriginalName($name);
