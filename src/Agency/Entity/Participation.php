@@ -85,7 +85,7 @@ use Unilend\Core\Model\Bitmask;
  *     }
  * )
  */
-class Participation
+class Participation extends AbstractProjectPartaker
 {
     use PublicizeIdentityTrait;
 
@@ -241,10 +241,10 @@ class Participation
     public function __construct(
         ParticipationPool $project,
         Company $participant,
-        Money $finalAllocation
+        Money $finalAllocation,
+        Money $capital
     ) {
-        // TODO Replace with correct siren once CALS-3776 is done
-        parent::__construct('00000000', $capital);
+        parent::__construct($participant->getSiren(), $capital);
         $this->responsibilities         = new Bitmask(0);
         $this->pool                     = $project;
         $this->finalAllocation          = $finalAllocation;
