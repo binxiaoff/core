@@ -666,7 +666,7 @@ class Program implements TraceableStatusAwareInterface
     public function duplicate(Staff $duplicatedBy): Program
     {
         $duplicatedProgram          = clone $this;
-        $duplicatedProgram->addedBy = $duplicatedBy;
+        $duplicatedProgram->addedBy = $duplicatedBy->getUser();
         $duplicatedProgram->setCurrentStatus(new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $duplicatedBy));
 
         return $duplicatedProgram;
