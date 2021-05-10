@@ -10,6 +10,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Exception\Drive\FolderAlreadyExistsException;
 
 /**
  * @ORM\MappedSuperclass
@@ -26,6 +28,11 @@ abstract class AbstractFolder
      * @ORM\JoinTable(
      *     inverseJoinColumns={@ORM\JoinColumn(name="file_id", referencedColumnName="id", unique=true)}
      * )
+     *
+     * @Assert\All({
+     *     @Assert\Expression("value.getName()")
+     * })
+     * @Assert\Valid
      */
     protected Collection $files;
 
@@ -46,7 +53,7 @@ abstract class AbstractFolder
 
     public function addFile(File $file): AbstractFolder
     {
-        if (false === $this->files->contains($file)) {
+        if (false === $this->exist($file->getName())) {
             $this->files->add($file);
         }
 
@@ -80,6 +87,8 @@ abstract class AbstractFolder
 
     /**
      * Return calling AbstractFolder.
+     *
+     * @throws FolderAlreadyExistsException
      */
     abstract public function createFolder(string $path): AbstractFolder;
 

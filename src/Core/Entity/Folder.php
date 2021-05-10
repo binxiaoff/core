@@ -49,20 +49,6 @@ class Folder extends AbstractFolder
     use PublicizeIdentityTrait;
 
     /**
-     * @var File[]|Collection
-     *
-     * This is a OneToMany unidirectionnal relation : Folder <-× File
-     * https://www.doctrine-project.org/projects/doctrine-orm/en/2.8/reference/association-mapping.html#one-to-many-unidirectional-with-join-table
-     *
-     * @ORM\ManyToMany(targetEntity=File::class, cascade={"persist", "remove"}, indexBy="publicId")
-     * @ORM\JoinTable(
-     *     name="core_folder_file",
-     *     inverseJoinColumns={@ORM\JoinColumn(name="file_id", referencedColumnName="id", unique=true)}
-     * )
-     */
-    protected Collection $files;
-
-    /**
      * @ORM\Column(type="text", nullable=false)
      */
     private string $path;
@@ -79,11 +65,9 @@ class Folder extends AbstractFolder
     private string $pathHash;
 
     /**
-     * @Assert\Length(max="100")
-     * @Assert\AtLeastOneOf({
-     *     @Assert\NotBlank,
-     *     @Assert\Expression("'/' == this.getPath()")
-     * })
+     * @Assert\Length(max="50")
+     * @Assert\NotBlank
+     * @Assert\Regex(pattern="#[^\/]+#")
      *
      * @ORM\Column(type="string", length=50, nullable=false)
      *
@@ -93,6 +77,7 @@ class Folder extends AbstractFolder
 
     /**
      * @Assert\NotBlank
+     * @Assert\Valid
      *
      * @ORM\ManyToOne(targetEntity=Drive::class, inversedBy="folders", cascade={"persist"})
      * @ORM\JoinColumn(name="id_drive", nullable=false)
@@ -111,7 +96,7 @@ class Folder extends AbstractFolder
             throw new InvalidArgumentException(sprintf('Given path %s is not a folder in drive', $parentPath));
         }
 
-        if ($drive->exist($parentPath . DIRECTORY_SEPARATOR . $name)) {
+        if ($drive->exist(('/' === $parentPath ? '' : $parentPath) . DIRECTORY_SEPARATOR . $name)) {
             throw new FolderAlreadyExistsException();
         }
 
