@@ -464,7 +464,7 @@ class Project
         $this->added   = new DateTimeImmutable();
         $this->addedBy = $addedBy;
         $this->agent   = new Agent($this, $addedBy->getCompany());
-
+        $this->agent->addMember(new AgentMember($this->agent, $addedBy->getUser(), $addedBy->getUser()));
         $this->agent->setContact(
             (new NullablePerson())
                 ->setFirstName($currentUser->getFirstName())

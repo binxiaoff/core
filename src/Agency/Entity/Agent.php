@@ -13,6 +13,7 @@ use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Validator\Constraints\Siren;
 
 /**
@@ -265,11 +266,6 @@ class Agent
         return $this->siren;
     }
 
-    /**
-     * @param string|null $siren
-     *
-     * @return Agent
-     */
     public function setSiren(?string $siren): Agent
     {
         $this->siren = $siren;
@@ -287,5 +283,25 @@ class Agent
         $this->contact = $contact;
 
         return $this;
+    }
+
+    public function addMember(AgentMember $member): Agent
+    {
+        if (null === $this->findMemberByUser($member->getUser())) {
+            $this->members[] = $member;
+        }
+
+        return $this;
+    }
+
+    public function findMemberByUser(User $user): ?AgentMember
+    {
+        foreach ($this->members as $member) {
+            if ($member->getUser() === $user) {
+                return $member;
+            }
+        }
+
+        return null;
     }
 }
