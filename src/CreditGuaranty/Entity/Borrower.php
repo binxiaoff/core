@@ -178,7 +178,7 @@ class Borrower
         return $this;
     }
 
-    public function getCreationInProgress(): ?bool
+    public function isCreationInProgress(): ?bool
     {
         return $this->creationInProgress;
     }
