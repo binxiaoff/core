@@ -570,6 +570,14 @@ class Program implements TraceableStatusAwareInterface
     }
 
     /**
+     * @return Collection|Participation[]
+     */
+    public function getParticipations(): Collection
+    {
+        return $this->participations;
+    }
+
+    /**
      * @param Collection|Participation[] $participations
      */
     public function setParticipations(Collection $participations): Program

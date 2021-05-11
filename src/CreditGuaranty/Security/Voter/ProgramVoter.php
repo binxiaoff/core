@@ -8,6 +8,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
+use Unilend\CreditGuaranty\Entity\Participation;
 use Unilend\CreditGuaranty\Entity\Program;
 use Unilend\CreditGuaranty\Entity\StaffPermission;
 use Unilend\CreditGuaranty\Service\StaffPermissionManager;
@@ -41,9 +42,12 @@ class ProgramVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff
-            && $staff->getCompany() === $program->getManagingCompany()
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_PROGRAM)
-            && $this->checkCompanyGroupTag($program, $staff);
+            && (
+                $this->canViewByManager($program, $staff)
+                || $this->canViewByParticipant($program, $staff)
+            )
+        ;
     }
 
     protected function canEdit(Program $program, User $user): bool
@@ -62,6 +66,20 @@ class ProgramVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff && $this->canEdit($program, $staff->getUser());
+    }
+
+    private function canViewByManager(Program $program, Staff $staff): bool
+    {
+        return $staff->getCompany() === $program->getManagingCompany() && $this->checkCompanyGroupTag($program, $staff);
+    }
+
+    private function canViewByParticipant(Program $program, Staff $staff): bool
+    {
+        $participants = $program->getParticipations()->map(function (Participation $participation) {
+            return $participation->getParticipant();
+        });
+
+        return $participants->contains($staff->getCompany());
     }
 
     private function checkCompanyGroupTag(Program $program, Staff $staff): bool
