@@ -105,6 +105,9 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             },
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)",
+ *         },
  *         "get_borrower_dataroom_shared": {
  *             "method": "GET",
  *             "path": "/agency/projects/{publicId}/borrowers/dataroom/shared/{path?}",
@@ -237,6 +240,7 @@ class Project
 
     public const STATUS_DRAFT     = 10;
     public const STATUS_PUBLISHED = 20;
+    public const STATUS_ARCHIVED  = -10;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
@@ -963,6 +967,34 @@ class Project
         return static::STATUS_PUBLISHED === $this->currentStatus;
     }
 
+    public function isArchived(): bool
+    {
+        return static::STATUS_ARCHIVED === $this->currentStatus;
+    }
+
+    public function isDraft(): bool
+    {
+        return static::STATUS_DRAFT === $this->currentStatus;
+    }
+
+    public function publish(): Project
+    {
+        if ($this->isDraft()) {
+            $this->currentStatus = static::STATUS_PUBLISHED;
+        }
+
+        return $this;
+    }
+
+    public function archive(): Project
+    {
+        if (false === $this->isDraft()) {
+            $this->currentStatus = static::STATUS_ARCHIVED;
+        }
+
+        return $this;
+    }
+
     /**
      * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups.
      *
@@ -1029,6 +1061,8 @@ class Project
     {
         $statuses = array_values(static::getAvailableStatuses());
 
+        $statuses = array_filter($statuses, static fn (int $status) => $status > 0);
+
         sort($statuses);
 
         reset($statuses);
@@ -1036,8 +1070,8 @@ class Project
         while (($status = current($statuses)) && $status < $this->currentStatus) {
             if (false === $this->statuses->exists(fn ($_, ProjectStatusHistory $history) => $history->getStatus() === $status)) {
                 $context->buildViolation('Agency.Project.missingStatus', [
-                    'missingStatus' => $status,
-                    'nextStatus'    => $this->currentStatus,
+                    '{{ missingStatus }}' => $status,
+                    '{{ nextStatus }}'    => $this->currentStatus,
                 ])->addViolation();
             }
 

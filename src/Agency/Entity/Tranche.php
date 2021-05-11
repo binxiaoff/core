@@ -104,7 +104,7 @@ class Tranche
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="tranches")
-     * @ORM\JoinColumn(name="id_project", onDelete="CASCADE")
+     * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
      *
