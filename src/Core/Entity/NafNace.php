@@ -6,48 +6,56 @@ namespace Unilend\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\IdentityTrait;
-use Unilend\Core\Repository\NafNaceRepository;
 
 /**
- * @ORM\Entity(repositoryClass=NafNaceRepository::class)
- * @ORM\Table(
- *     name="core_naf_nace",
- *     uniqueConstraints={
- *         @ORM\UniqueConstraint(columns={"naf_code", "nace_code"})
- *     }
- * )
+ * @ORM\Entity
+ * @ORM\Table(name="core_naf_nace")
  *
- * @UniqueEntity(fields={"nafCode", "naceCode"})
+ * @UniqueEntity("nafCode")
+ * @UniqueEntity("naceCode")
  */
 class NafNace
 {
     use IdentityTrait;
 
     /**
-     * @ORM\Column(type="string", length=5, nullable=false)
+     * @ORM\Column(type="string", length=5, nullable=false, unique=true)
+     *
+     * @Assert\NotBlank
+     * @Assert\Length(5)
      */
     private string $nafCode;
 
     /**
-     * @ORM\Column(type="string", length=7, nullable=false)
+     * @ORM\Column(type="string", length=7, nullable=false, unique=true)
+     *
+     * @Assert\NotBlank
+     * @Assert\Length(7)
      */
     private string $naceCode;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=false)
+     *
+     * @Assert\NotBlank
+     * @Assert\Length(max=255)
      */
     private string $nafTitle;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=false)
+     *
+     * @Assert\NotBlank
+     * @Assert\Length(max=255)
      */
     private string $naceTitle;
 
     public function __construct(string $nafCode, string $naceCode, string $nafTitle, string $naceTitle)
     {
-        $this->nafCode  = $nafCode;
-        $this->naceCode = $naceCode;
+        $this->nafCode   = $nafCode;
+        $this->naceCode  = $naceCode;
         $this->nafTitle  = $nafTitle;
         $this->naceTitle = $naceTitle;
     }
@@ -57,23 +65,9 @@ class NafNace
         return $this->nafCode;
     }
 
-    public function setNafCode(string $nafCode): NafNace
-    {
-        $this->nafCode = $nafCode;
-
-        return $this;
-    }
-
     public function getNaceCode(): string
     {
         return $this->naceCode;
-    }
-
-    public function setNaceCode(string $naceCode): NafNace
-    {
-        $this->naceCode = $naceCode;
-
-        return $this;
     }
 
     public function getNafTitle(): string
@@ -81,22 +75,8 @@ class NafNace
         return $this->nafTitle;
     }
 
-    public function setNafTitle(string $nafTitle): NafNace
-    {
-        $this->nafTitle = $nafTitle;
-
-        return $this;
-    }
-
     public function getNaceTitle(): string
     {
         return $this->naceTitle;
-    }
-
-    public function setNaceTitle(string $naceTitle): NafNace
-    {
-        $this->naceTitle = $naceTitle;
-
-        return $this;
     }
 }
