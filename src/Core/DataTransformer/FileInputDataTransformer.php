@@ -15,6 +15,8 @@ use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
+use Unilend\Agency\Entity\Term;
+use Unilend\Agency\Security\Voter\TermVoter;
 use Unilend\Core\DTO\FileInput;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\File;
@@ -50,9 +52,6 @@ class FileInputDataTransformer
 
     private MessageRepository $messageRepository;
 
-    /**
-     * FileInputDataTransformer constructor.
-     */
     public function __construct(
         ValidatorInterface $validator,
         Security $security,
@@ -106,6 +105,10 @@ class FileInputDataTransformer
 
         if ($targetEntity instanceof Message) {
             $file = $this->uploadMessageFile($targetEntity, $fileInput, $user, $file);
+        }
+
+        if ($targetEntity instanceof Term) {
+            $file = $this->uploadTermDocument($targetEntity, $fileInput, $user);
         }
 
         return $file;
@@ -280,6 +283,30 @@ class FileInputDataTransformer
         );
 
         $projectParticipation->setNda($file);
+
+        return $file;
+    }
+
+    /**
+     * @throws EnvironmentIsBrokenException
+     * @throws FileExistsException
+     * @throws IOException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return File
+     */
+    private function uploadTermDocument(Term $targetEntity, FileInput $fileInput, User $user)
+    {
+        if (false === $this->security->isGranted(TermVoter::ATTRIBUTE_EDIT, $targetEntity)) {
+            throw new AccessDeniedException();
+        }
+
+        $file = new File();
+
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $user, $file, ['termId' => $targetEntity->getId()]);
+
+        $targetEntity->setBorrowerDocument($file);
 
         return $file;
     }
