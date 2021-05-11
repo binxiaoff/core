@@ -26,7 +26,8 @@ class CovenantVoter extends AbstractEntityVoter
 
     protected function canCreate(Covenant $covenant, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $covenant->getProject());
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $covenant->getProject())
+            && false === $covenant->getProject()->isArchived();
     }
 
     /**
@@ -36,7 +37,8 @@ class CovenantVoter extends AbstractEntityVoter
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $covenant->getProject())
             && false === $covenant->isPublished()
-            && false === $covenant->isArchived();
+            && false === $covenant->isArchived()
+            && false === $covenant->getProject()->isArchived();
     }
 
     /**
@@ -44,6 +46,6 @@ class CovenantVoter extends AbstractEntityVoter
      */
     protected function canDelete(Covenant $covenant, User $user)
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $covenant->getProject());
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $covenant->getProject()) && false === $covenant->getProject()->isArchived();
     }
 }
