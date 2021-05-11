@@ -41,7 +41,7 @@ class ProjectVoter extends AbstractEntityVoter
         }
 
         // Est-ce que l'on devrai vérifier l'héritage pour la création des projets.
-        return $staff->getCompany() === $project->getAgent() && $staff->hasAgencyProjectCreationPermission();
+        return $staff->getCompany() === $project->getAgentCompany() && $staff->hasAgencyProjectCreationPermission();
     }
 
     protected function canEdit(Project $project, User $user): bool

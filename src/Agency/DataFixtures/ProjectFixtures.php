@@ -67,12 +67,17 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $manager->persist($project);
 
         $agencyContact = (new NullablePerson())->setFirstName($this->faker->firstName)->setLastName($this->faker->lastName);
-        $project->setAgencyContact($agencyContact);
-        $project->setAgentLegalForm(LegalForm::EURL);
-        $project->setIban($this->faker->iban());
-        $project->setBic('AGRIMQMX');
-        $project->setHeadOffice($this->faker->address);
-        $project->setBankInstitution('bank institution');
+        $project->getAgent()
+            ->setContact($agencyContact)
+            ->setSiren($this->generateSiren())
+            ->setLegalForm(LegalForm::EURL)
+            ->setIban($this->faker->iban())
+            ->setBic('AGRIMQMX')
+            ->setHeadOffice($this->faker->address)
+            ->setRcs(implode(' ', ['RCS', mb_strtoupper($this->faker->city), $this->faker->randomDigit % 2 ? 'A' : 'B', $project->getAgent()->getSiren()]))
+            ->setCapital(new NullableMoney('EUR', '0'))
+            ->setBankInstitution('bank institution')
+        ;
         $project->getPrimaryParticipationPool()->setSyndicationType(SyndicationType::PRIMARY);
         $project->getPrimaryParticipationPool()->setParticipationType(ParticipationType::DIRECT);
 

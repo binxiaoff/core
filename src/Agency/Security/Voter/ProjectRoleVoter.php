@@ -149,7 +149,7 @@ class ProjectRoleVoter extends Voter
 
         $staff = $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
 
-        if (null === $staff) {
+        if (null === $staff || ($staff->getCompany() !== $project->getAgentCompany())) {
             return false;
         }
 
