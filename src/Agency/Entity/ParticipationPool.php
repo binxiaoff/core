@@ -41,7 +41,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "security": "is_granted('view', object)",
  *             "controller": Get::class,
  *             "normalization_context": {
- *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
  *             },
  *             "requirements": {
  *                 "path": ".+"
@@ -57,7 +57,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "security": "is_granted('view', object)",
  *             "controller": Post::class,
  *             "normalization_context": {
- *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
  *             },
  *             "requirements": {
  *                 "path": ".+"

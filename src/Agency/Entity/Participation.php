@@ -64,7 +64,7 @@ use Unilend\Core\Model\Bitmask;
  *                 "path": ".+"
  *             },
  *             "normalization_context": {
- *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
  *             },
  *             "defaults": {
  *                 "path": "/",
@@ -80,7 +80,7 @@ use Unilend\Core\Model\Bitmask;
  *                 "path": ".+"
  *             },
  *             "normalization_context": {
- *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
  *             },
  *             "defaults": {
  *                 "path": "/",

@@ -119,7 +119,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *                 "drive": "shared"
  *             },
  *             "normalization_context": {
- *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
  *             }
  *         },
  *         "post_borrower_dataroom_shared": {
@@ -136,7 +136,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *                 "drive": "shared"
  *             },
  *             "normalization_context": {
- *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
  *             }
  *         },
  *         "get_borrower_dataroom_confidential": {
@@ -152,7 +152,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *                 "drive": "confidential"
  *             },
  *             "normalization_context": {
- *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
  *             }
  *         },
  *         "post_borrower_dataroom_confidential": {
@@ -169,7 +169,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *                 "drive": "confidential"
  *             },
  *             "normalization_context": {
- *                 "groups": {"folder:read", "drive:read", "abstractFolder:read", "file:read"}
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
  *             }
  *         }
  *     }
