@@ -569,12 +569,9 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return Collection|Participation[]
-     */
-    public function getParticipations(): Collection
+    public function hasParticipant(Company $company): bool
     {
-        return $this->participations;
+        return $this->getParticipants()->contains($company);
     }
 
     /**
@@ -753,5 +750,15 @@ class Program implements TraceableStatusAwareInterface
         }
 
         return $clonedProgramChoiceOption;
+    }
+
+    /**
+     * @return Collection|Company[]
+     */
+    private function getParticipants(): Collection
+    {
+        return $this->participations->map(function (Participation $participation) {
+            return $participation->getParticipant();
+        });
     }
 }
