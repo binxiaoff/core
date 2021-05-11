@@ -137,7 +137,7 @@ abstract class AbstractFolder
     }
 
     /**
-     * @Groups({"abstractFolder:read"})
+     * @Groups({"core:abstractFolder:read"})
      *
      * @MaxDepth(1)
      *
@@ -149,7 +149,7 @@ abstract class AbstractFolder
     }
 
     /**
-     * @Groups({"abstractFolder:read"})
+     * @Groups({"core:abstractFolder:read"})
      */
     abstract public function getPath(): string;
 }

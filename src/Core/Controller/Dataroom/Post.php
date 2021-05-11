@@ -61,7 +61,7 @@ class Post
         }
 
         if (0 === $request->files->count()) {
-            // No file to upload  => we are tring to create a folder
+            // No file to upload  => we are trying to create a folder
             $this->handleFolder($parentFolder, $request);
         } else {
             // File are in the request => we are trying to upload files
@@ -71,7 +71,7 @@ class Post
         return $parentFolder;
     }
 
-    private function handleFolder(AbstractFolder $parent, Request $request)
+    private function handleFolder(AbstractFolder $parent, Request $request): void
     {
         // Only handle post parameter or json body
         $name = $request->request->get('name') ?? $request->toArray()['name'] ?? null;
@@ -99,7 +99,7 @@ class Post
      * @throws OptimisticLockException
      * @throws Exception
      */
-    private function handleFiles(AbstractFolder $parent, Request $request, User $user)
+    private function handleFiles(AbstractFolder $parent, Request $request, User $user): void
     {
         $files = array_values($request->files->all());
 

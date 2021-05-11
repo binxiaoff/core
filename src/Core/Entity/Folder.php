@@ -71,7 +71,7 @@ class Folder extends AbstractFolder
      *
      * @ORM\Column(type="string", length=50, nullable=false)
      *
-     * @Groups({"folder:read"})
+     * @Groups({"core:folder:read"})
      */
     private string $name;
 

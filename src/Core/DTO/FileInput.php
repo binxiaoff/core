@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Agency\Entity\Term;
 use Unilend\Core\Entity\Message;
-use Unilend\Syndication\Entity\Project as SyndicationProject;
+use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectFile;
 use Unilend\Syndication\Entity\ProjectParticipation;
 
@@ -94,11 +94,10 @@ class FileInput
     private static function getFileTypesEntityMapping(): array
     {
         return [
-            SyndicationProject::class   => array_merge(SyndicationProject::getProjectFileTypes(), ProjectFile::getProjectFileTypes()),
+            Project::class              => array_merge(Project::getProjectFileTypes(), ProjectFile::getProjectFileTypes()),
             ProjectParticipation::class => ProjectParticipation::getFileTypes(),
             Message::class              => Message::getFileTypes(),
             Term::class                 => Term::getFileTypes(),
-            //Folder::class             => Project::getFileTypes(),
         ];
     }
 }
