@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\BlamableUserAddedTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\User;
 
 /**
- * @ORM\Table(name="agency_agent_member")
+ * @ORM\Table(name="agency_agent_member", uniqueConstraints={
+ *     @ORM\UniqueConstraint(columns={"id_agent", "id_user"})
+ * })
  * @ORM\Entity
+ *
+ * @UniqueEntity(fields={"agent", "user"})
  */
 class AgentMember
 {
@@ -21,12 +27,16 @@ class AgentMember
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Agent", inversedBy="members")
      * @ORM\JoinColumn(name="id_agent", nullable=false, onDelete="CASCADE")
+     *
+     * @Assert\NotBlank
      */
     private Agent $agent;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
      * @ORM\JoinColumn(name="id_user", nullable=false, onDelete="CASCADE")
+     *
+     * @Assert\NotBlank
      */
     private User $user;
 

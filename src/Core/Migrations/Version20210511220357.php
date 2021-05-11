@@ -7,19 +7,15 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
 final class Version20210511220357 extends AbstractMigration
 {
-    public function getDescription() : string
+    public function getDescription(): string
     {
-        return '';
+        return '[Agency] CALS-3803 Add Agent and AgentMember entities';
     }
 
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE agency_agent (id INT AUTO_INCREMENT NOT NULL, id_project INT NOT NULL, id_agent INT NOT NULL, display_name VARCHAR(300) DEFAULT NULL, siren VARCHAR(9) DEFAULT NULL, legal_form VARCHAR(255) DEFAULT NULL, head_office VARCHAR(255) DEFAULT NULL, rcs VARCHAR(255) DEFAULT NULL, bank_institution VARCHAR(255) DEFAULT NULL, bic VARCHAR(11) DEFAULT NULL, iban VARCHAR(34) DEFAULT NULL, public_id VARCHAR(36) NOT NULL, capital_amount NUMERIC(15, 2) DEFAULT NULL, capital_currency VARCHAR(3) DEFAULT NULL, agency_contact_first_name VARCHAR(255) DEFAULT NULL, agency_contact_last_name VARCHAR(255) DEFAULT NULL, agency_contact_parent_unit VARCHAR(255) DEFAULT NULL, agency_contact_occupation VARCHAR(255) DEFAULT NULL, agency_contact_email VARCHAR(255) DEFAULT NULL, agency_contact_phone VARCHAR(35) DEFAULT NULL, UNIQUE INDEX UNIQ_284713B3B5B48B91 (public_id), UNIQUE INDEX UNIQ_284713B3F12E799E (id_project), INDEX IDX_284713B3C80EDDAD (id_agent), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE agency_agent_member (id INT AUTO_INCREMENT NOT NULL, id_agent INT NOT NULL, id_user INT NOT NULL, added_by INT NOT NULL, public_id VARCHAR(36) NOT NULL, UNIQUE INDEX UNIQ_925D3B7BB5B48B91 (public_id), INDEX IDX_925D3B7BC80EDDAD (id_agent), INDEX IDX_925D3B7B6B3CA4B (id_user), INDEX IDX_925D3B7B699B6BAF (added_by), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('ALTER TABLE agency_agent ADD CONSTRAINT FK_284713B3F12E799E FOREIGN KEY (id_project) REFERENCES agency_project (id) ON DELETE CASCADE');
@@ -35,9 +31,8 @@ final class Version20210511220357 extends AbstractMigration
         $this->addSql('CREATE UNIQUE INDEX UNIQ_B74A64DB609C91B2 ON core_naf_nace (nace_code)');
     }
 
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE agency_agent_member DROP FOREIGN KEY FK_925D3B7BC80EDDAD');
         $this->addSql('DROP TABLE agency_agent');
         $this->addSql('DROP TABLE agency_agent_member');

@@ -26,7 +26,9 @@ class Agent
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="agent")
-     * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
+     * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE", unique=true)
+     *
+     * @Assert\NotBlank
      */
     private Project $project;
 
@@ -34,6 +36,12 @@ class Agent
      * @var Collection|AgentMember[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\AgentMember", mappedBy="agent")
+     *
+     * @Assert\Count(min=1)
+     * @Assert\Valid
+     * @Assert\All({
+     *     @Assert\Expression("value.getAgent() == this")
+     * })
      */
     private Collection $members;
 
