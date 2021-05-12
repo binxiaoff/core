@@ -14,7 +14,6 @@ use Unilend\Core\Entity\Traits\IdentityTrait;
  * @ORM\Table(name="core_naf_nace")
  *
  * @UniqueEntity("nafCode")
- * @UniqueEntity("naceCode")
  */
 class NafNace
 {
@@ -29,7 +28,7 @@ class NafNace
     private string $nafCode;
 
     /**
-     * @ORM\Column(type="string", length=7, nullable=false, unique=true)
+     * @ORM\Column(type="string", length=7, nullable=false)
      *
      * @Assert\NotBlank
      * @Assert\Length(7)
