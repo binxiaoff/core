@@ -10,21 +10,21 @@ use Unilend\CreditGuaranty\Entity\ProgramEligibility;
 class ProgramEligibilityVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_EDIT   = 'view';
+    public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_DELETE = 'delete';
 
     protected function canView(ProgramEligibility $programEligibility): bool
     {
-        return $this->authorizationChecker->isGranted($programEligibility->getProgram(), ProgramVoter::ATTRIBUTE_VIEW);
+        return $this->authorizationChecker->isGranted(ProgramVoter::ATTRIBUTE_VIEW, $programEligibility->getProgram());
     }
 
     protected function canCreate(ProgramEligibility $programEligibility): bool
     {
-        return $this->authorizationChecker->isGranted($programEligibility->getProgram(), ProgramVoter::ATTRIBUTE_EDIT);
+        return $this->authorizationChecker->isGranted(ProgramVoter::ATTRIBUTE_EDIT, $programEligibility->getProgram());
     }
 
     protected function canDelete(ProgramEligibility $programEligibility): bool
     {
-        return $this->authorizationChecker->isGranted($programEligibility->getProgram(), ProgramVoter::ATTRIBUTE_EDIT);
+        return $this->authorizationChecker->isGranted(ProgramVoter::ATTRIBUTE_EDIT, $programEligibility->getProgram());
     }
 }
