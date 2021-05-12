@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\NafNace;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 
@@ -37,17 +38,18 @@ class Project
     private ProgramChoiceOption $investmentThematic;
 
     /**
-     * @ORM\Column(length=5)
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\NafNace")
+     * @ORM\JoinColumn(name="id_naf_nace", nullable=false)
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
-    private string $nafCode;
+    private NafNace $nafNace;
 
-    public function __construct(Money $fundingMoney, ProgramChoiceOption $investmentThematic, string $nafCode)
+    public function __construct(Money $fundingMoney, ProgramChoiceOption $investmentThematic, NafNace $nafNace)
     {
         $this->fundingMoney       = $fundingMoney;
         $this->investmentThematic = $investmentThematic;
-        $this->nafCode            = $nafCode;
+        $this->nafNace            = $nafNace;
         $this->added              = new DateTimeImmutable();
     }
 
@@ -75,14 +77,14 @@ class Project
         return $this;
     }
 
-    public function getNafCode(): string
+    public function getNafNace(): NafNace
     {
-        return $this->nafCode;
+        return $this->nafNace;
     }
 
-    public function setNafCode(string $nafCode): Project
+    public function setNafNace(NafNace $nafNace): Project
     {
-        $this->nafCode = $nafCode;
+        $this->nafNace = $nafNace;
 
         return $this;
     }
