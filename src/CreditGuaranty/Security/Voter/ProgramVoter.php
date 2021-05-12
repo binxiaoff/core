@@ -41,9 +41,13 @@ class ProgramVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff
-            && $staff->getCompany() === $program->getManagingCompany()
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_PROGRAM)
-            && $this->checkCompanyGroupTag($program, $staff);
+            && (
+                $staff->getCompany() === $program->getManagingCompany()
+                || $program->hasParticipant($staff->getCompany())
+            )
+            && $this->checkCompanyGroupTag($program, $staff)
+        ;
     }
 
     protected function canEdit(Program $program, User $user): bool
