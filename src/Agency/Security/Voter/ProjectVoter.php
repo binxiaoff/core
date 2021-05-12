@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Security\Voter;
 
-use Exception;
 use Unilend\Agency\Entity\Project;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;

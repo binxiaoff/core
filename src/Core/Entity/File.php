@@ -12,7 +12,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\{ArchivableTrait, BlamableArchivedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\Traits\ArchivableTrait;
+use Unilend\Core\Entity\Traits\BlamableArchivedTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Entity
@@ -118,8 +122,6 @@ class File
     private Collection $fileVersions;
 
     /**
-     * @var FileVersion|null
-     *
      * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\FileVersion", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_file_version")
      *
@@ -128,12 +130,24 @@ class File
     private ?FileVersion $currentFileVersion = null;
 
     /**
+     * Name is nullable for now because they are used in arrangement
+     * Name is needed because we need the client name.
+     *
+     * @ORM\Column(type="string", length=191, nullable=true)
+     *
+     * @Assert\Regex(pattern="#[^\/]+#")
+     * @Assert\Length(max=191)
+     */
+    private ?string $name;
+
+    /**
      * @throws Exception
      */
-    public function __construct()
+    public function __construct(?string $name = null)
     {
         $this->added        = new DateTimeImmutable();
         $this->fileVersions = new ArrayCollection();
+        $this->name         = $name;
     }
 
     /**
@@ -144,17 +158,12 @@ class File
         return $this->fileVersions;
     }
 
-    /**
-     * @return FileVersion|null
-     */
     public function getCurrentFileVersion(): ?FileVersion
     {
         return $this->currentFileVersion;
     }
 
     /**
-     * @param FileVersion $fileVersion
-     *
      * @return $this
      */
     public function setCurrentFileVersion(FileVersion $fileVersion): File
@@ -170,8 +179,14 @@ class File
     }
 
     /**
-     * @param FileVersion $version
-     *
+     * @Groups({"file:read"})
+     */
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
      * @return $this
      */
     private function addVersion(FileVersion $version): File

@@ -12,16 +12,16 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Controller\Dataroom\Get;
+use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
+use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "validation_groups": {ParticipationPool::class, "getCurrentValidationGroups"}
- *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:participationPool:read",
@@ -32,8 +32,40 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "security": "is_granted('view', object)"
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object)"
+ *             "security": "is_granted('edit', object)",
+ *             "validation_groups": {ParticipationPool::class, "getCurrentValidationGroups"}
  *         },
+ *         "get_dataroom": {
+ *             "method": "GET",
+ *             "path": "/agency/participation_pools/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('view', object)",
+ *             "controller": Get::class,
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             },
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             },
+ *         },
+ *         "post_dataroom": {
+ *             "method": "POST",
+ *             "deserialize": false,
+ *             "path": "/agency/participation_pools/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('view', object)",
+ *             "controller": Post::class,
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             },
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             },
+ *         }
  *     }
  * )
  *
@@ -111,11 +143,18 @@ class ParticipationPool
      */
     private bool $secondary;
 
+    /**
+     * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
+     * @ORM\JoinColumn(nullable=false, unique=true)
+     */
+    private Drive $sharedDrive;
+
     public function __construct(Project $project, bool $secondary)
     {
         $this->project        = $project;
         $this->participations = new ArrayCollection();
         $this->secondary      = $secondary;
+        $this->sharedDrive    = new Drive();
     }
 
     public function getProject(): Project
@@ -199,5 +238,10 @@ class ParticipationPool
         }
 
         return $validationGroups;
+    }
+
+    public function getSharedDrive(): Drive
+    {
+        return $this->sharedDrive;
     }
 }

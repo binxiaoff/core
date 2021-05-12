@@ -5,6 +5,11 @@ api_platform:
     version: '1.0.0'
     enable_entrypoint: '%kernel.debug%'
     enable_docs: true
+    formats:
+        jsonld: [ 'application/ld+json' ]
+        json: [ 'application/json' ]
+        html: [ 'text/html' ]
+        file: [ 'application/octet-stream' ]
     mapping:
         paths: ['%kernel.project_dir%/src/Syndication/Entity', '%kernel.project_dir%/src/Core/Entity', '%kernel.project_dir%/src/Agency/Entity', '%kernel.project_dir%/src/CreditGuaranty/Entity']
     patch_formats:

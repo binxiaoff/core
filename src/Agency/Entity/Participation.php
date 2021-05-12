@@ -15,7 +15,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Controller\Dataroom\Get;
+use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\User;
@@ -23,9 +26,6 @@ use Unilend\Core\Model\Bitmask;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "validation_groups": {Participation::class, "getCurrentValidationGroups"}
- *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:participation:read",
@@ -38,6 +38,7 @@ use Unilend\Core\Model\Bitmask;
  *                 "groups": {"agency:participation:create", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}
  *             },
  *             "security_post_denormalize": "is_granted('create', object)",
+ *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
  *         }
  *     },
  *     itemOperations={
@@ -49,10 +50,42 @@ use Unilend\Core\Model\Bitmask;
  *                 "groups": {"agency:participation:update", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}
  *             },
  *             "security_post_denormalize": "is_granted('edit', object)",
+ *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)"
- *         }
+ *         },
+ *         "get_dataroom": {
+ *             "method": "GET",
+ *             "security": "is_granted('view', object)",
+ *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *             },
+ *         },
+ *         "post_dataroom": {
+ *             "method": "POST",
+ *             "deserialize": false,
+ *             "security": "is_granted('view', object)",
+ *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *             },
+ *         },
  *     }
  * )
  * @ORM\Entity
@@ -197,6 +230,12 @@ class Participation
     private Collection $allocations;
 
     /**
+     * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
+     * @ORM\JoinColumn(name="id_confidential_drive", nullable=false, unique=true)
+     */
+    private Drive $confidentialDrive;
+
+    /**
      * @ORM\OneToOne(targetEntity=ParticipationMember::class)
      * @ORM\JoinColumn(name="id_referent", onDelete="SET NULL")
      *
@@ -244,6 +283,7 @@ class Participation
         $this->allocations              = new ArrayCollection();
         $this->archivingDate            = null;
         $this->members                  = new ArrayCollection();
+        $this->confidentialDrive        = new Drive();
     }
 
     public function getParticipant(): Company
@@ -478,6 +518,11 @@ class Participation
     public function getWaiverMembers(): iterable
     {
         return $this->getMemberByType(ParticipationMember::TYPE_WAIVER);
+    }
+
+    public function getConfidentialDrive(): Drive
+    {
+        return $this->confidentialDrive;
     }
 
     /**
