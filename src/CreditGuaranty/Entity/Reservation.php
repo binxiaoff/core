@@ -146,14 +146,35 @@ class Reservation implements TraceableStatusAwareInterface
         return $this->borrower;
     }
 
+    public function setBorrower(Borrower $borrower): Reservation
+    {
+        $this->borrower = $borrower;
+
+        return $this;
+    }
+
     public function getBorrowerBusinessActivity(): ?BorrowerBusinessActivity
     {
         return $this->borrowerBusinessActivity;
     }
 
+    public function setBorrowerBusinessActivity(?BorrowerBusinessActivity $borrowerBusinessActivity): Reservation
+    {
+        $this->borrowerBusinessActivity = $borrowerBusinessActivity;
+
+        return $this;
+    }
+
     public function getProject(): ?Project
     {
         return $this->project;
+    }
+
+    public function setProject(?Project $project): Reservation
+    {
+        $this->project = $project;
+
+        return $this;
     }
 
     public function getFinancingObjects()
