@@ -46,13 +46,28 @@ class ProjectVoterTest extends AbstractProjectVoterTest
                 'draft',
                 VoterInterface::ACCESS_GRANTED,
             ],
-            'VIEW: agent project member can view draft project' => [
-                'staff_company:foo_user:c',
+            'VIEW: project creator manager can view draft project' => [
+                'staff_company:foo_user:a',
                 'draft',
                 VoterInterface::ACCESS_GRANTED,
             ],
+            'VIEW: agent participation member can not view draft project' => [
+                'staff_company:foo_user:c',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'VIEW: agent participation member manager can not view draft project' => [
+                'staff_company:foo_user:e',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
             'VIEW: project creator can view published project' => [
                 'staff_company:foo_user:b',
+                'published',
+                VoterInterface::ACCESS_GRANTED,
+            ],
+            'VIEW: project creator manager agent can view published project' => [
+                'staff_company:foo_user:a',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
@@ -61,13 +76,8 @@ class ProjectVoterTest extends AbstractProjectVoterTest
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
-            'VIEW: manager agent can view draft project' => [
-                'staff_company:foo_user:a',
-                'draft',
-                VoterInterface::ACCESS_GRANTED,
-            ],
-            'VIEW: manager agent can view published project' => [
-                'staff_company:foo_user:a',
+            'VIEW: agent project member manager can view published project' => [
+                'staff_company:foo_user:e',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
@@ -146,30 +156,40 @@ class ProjectVoterTest extends AbstractProjectVoterTest
                 'draft',
                 VoterInterface::ACCESS_GRANTED,
             ],
-            'EDIT: agent project member can edit draft project' => [
-                'staff_company:foo_user:c',
+            'EDIT: project creator manager can edit draft project' => [
+                'staff_company:foo_user:a',
                 'draft',
                 VoterInterface::ACCESS_GRANTED,
+            ],
+            'EDIT: agent company participation member can not edit draft project' => [
+                'staff_company:foo_user:c',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'EDIT: agent company participation manager can not edit draft project' => [
+                'staff_company:foo_user:e',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
             ],
             'EDIT: project creator can edit published project' => [
                 'staff_company:foo_user:b',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
-            'EDIT: agent project member can edit published project' => [
+            'EDIT: project creator manager can edit published project' => [
+                'staff_company:foo_user:a',
+                'published',
+                VoterInterface::ACCESS_GRANTED,
+            ],
+            'EDIT: agent company participation member can not edit published project' => [
                 'staff_company:foo_user:c',
                 'published',
-                VoterInterface::ACCESS_GRANTED,
+                VoterInterface::ACCESS_DENIED,
             ],
-            'EDIT: manager agent can edit draft project' => [
-                'staff_company:foo_user:a',
-                'draft',
-                VoterInterface::ACCESS_GRANTED,
-            ],
-            'EDIT: manager agent can edit published project' => [
-                'staff_company:foo_user:a',
+            'EDIT: agent company participation member manager can not edit published project' => [
+                'staff_company:foo_user:e',
                 'published',
-                VoterInterface::ACCESS_GRANTED,
+                VoterInterface::ACCESS_DENIED,
             ],
 
             'EDIT: participant cannot edit draft project' => [

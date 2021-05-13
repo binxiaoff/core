@@ -89,7 +89,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
 
         // Agent condition
         $agentAlias       = static::prefix('agent');
-        $agentMemberAlias = static::prefix('agent');
+        $agentMemberAlias = static::prefix('agentMember');
 
         $queryBuilder
             ->leftJoin("{$rootAlias}.agent", $agentAlias)

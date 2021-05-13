@@ -53,12 +53,12 @@ class FooCompanyFixtures extends AbstractCompanyFixtures
             case 'B':
                 return [
                     $this->createManager($this->getReference('user:e'), $team),
+                    $this->createStaff($this->getReference('user:c'), $team),
                 ];
 
             case '1':
                 return [
                     $this->createStaff($this->getReference('user:b'), $team)->setAgencyProjectCreationPermission(true),
-                    $this->createStaff($this->getReference('user:c'), $team),
                     $this->createStaff($this->getReference('user:d'), $team),
                 ];
         }

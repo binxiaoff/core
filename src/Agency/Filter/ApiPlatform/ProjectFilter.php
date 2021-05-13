@@ -155,7 +155,7 @@ class ProjectFilter extends AbstractContextAwareFilter
             ->leftJoin($participationPoolAlias . '.participations', $participationAlias)
             ->leftJoin($participationAlias . '.members', $participationMemberAlias)
             ->setParameter($companyParameterName, $staff->getCompany())
-            ->setParameter($usersParameterName, $staff->getManagedUsers())
+            ->setParameter($usersParameterName, iterator_to_array($staff->getManagedUsers()))
         ;
 
         return "{$participationAlias}.participant = :{$companyParameterName} and {$participationMemberAlias}.user IN (:{$usersParameterName})";

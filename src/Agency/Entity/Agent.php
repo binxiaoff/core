@@ -35,7 +35,7 @@ class Agent
     /**
      * @var Collection|AgentMember[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\AgentMember", mappedBy="agent")
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\AgentMember", mappedBy="agent", cascade={"persist", "remove"})
      *
      * @Assert\Count(min=1)
      * @Assert\Valid
