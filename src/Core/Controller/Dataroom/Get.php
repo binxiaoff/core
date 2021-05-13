@@ -49,12 +49,6 @@ class Get
     {
         $return = $data->get($request->get('path'));
 
-        $user = $this->security->getUser();
-
-        if (false === ($user instanceof User)) {
-            throw new AccessDeniedException();
-        }
-
         if (null === $return) {
             throw new NotFoundHttpException();
         }
@@ -63,6 +57,12 @@ class Get
             $return instanceof File
             && in_array('application/octet-stream', $request->getAcceptableContentTypes(), true)
         ) {
+            $user = $this->security->getUser();
+
+            if (false === ($user instanceof User)) {
+                throw new AccessDeniedException();
+            }
+
             $this->fileDownloadRepository->save(new FileDownload($return->getCurrentFileVersion(), $user, 'dataroom'));
             $return = $this->fileDownloadManager->download($return->getCurrentFileVersion());
         }

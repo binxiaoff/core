@@ -26,6 +26,10 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Core\Entity\FileVersion, method: blockUpdating }
 
+    Unilend\Core\Listener\Doctrine\Entity\Folder\FolderDeletedListener:
+        tags:
+            - { name: doctrine.orm.entity_listener, event: preRemove, entity: Unilend\Core\Entity\Folder, method: cascadeDeletion }
+
     Unilend\Syndication\Listener\Doctrine\Entity\Project\ProjectCreatedListener:
         tags:
             - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Syndication\Entity\Project, method: purify }
