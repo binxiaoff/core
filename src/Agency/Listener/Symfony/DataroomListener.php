@@ -10,6 +10,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Unilend\Agency\Entity\Participation;
 use Unilend\Agency\Entity\ParticipationPool;
 use Unilend\Agency\Entity\Project;
+use Unilend\Core\Controller\Dataroom\Delete;
 use Unilend\Core\Controller\Dataroom\Get;
 use Unilend\Core\Controller\Dataroom\Post;
 
@@ -32,7 +33,7 @@ class DataroomListener implements EventSubscriberInterface
     {
         $controller = $event->getController();
 
-        if (false === \is_object($controller) || false === \in_array(\get_class($controller), [Get::class, Post::class])) {
+        if (false === \is_object($controller) || false === \in_array(\get_class($controller), [Get::class, Post::class, Delete::class])) {
             return;
         }
 
