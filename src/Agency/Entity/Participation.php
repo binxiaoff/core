@@ -343,6 +343,7 @@ class Participation extends AbstractProjectPartaker
 
     public function isAgent(): bool
     {
+        // TODO deduce from data instead if possible
         return $this->responsibilities->has(static::RESPONSIBILITY_AGENT);
     }
 
