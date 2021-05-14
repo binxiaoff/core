@@ -4,17 +4,31 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\IdentityTrait;
 
 /**
+ * @ApiResource(
+ *     attributes={
+ *         "pagination_enabled": false
+ *     },
+ *     collectionOperations={"get"},
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *     }
+ * )
+ *
  * @ORM\Entity
  * @ORM\Table(name="core_naf_nace")
  *
  * @UniqueEntity("nafCode")
- * @UniqueEntity("naceCode")
  */
 class NafNace
 {
@@ -29,7 +43,7 @@ class NafNace
     private string $nafCode;
 
     /**
-     * @ORM\Column(type="string", length=7, nullable=false, unique=true)
+     * @ORM\Column(type="string", length=7, nullable=false)
      *
      * @Assert\NotBlank
      * @Assert\Length(7)
