@@ -29,13 +29,20 @@ use Unilend\Core\Model\Bitmask;
  *     normalizationContext={
  *         "groups": {
  *             "agency:participation:read",
- *             "money:read"
+ *             "money:read",
+ *             "agency:projectPartaker:read"
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
  *             "denormalization_context": {
- *                 "groups": {"agency:participation:create", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}
+ *                 "groups": {
+ *                     "agency:participation:create",
+ *                     "agency:projectPartaker:write",
+ *                     "agency:participation:write",
+ *                     "money:write",
+ *                     "agency:participationTrancheAllocation:write"
+ *                 }
  *             },
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
@@ -47,7 +54,13 @@ use Unilend\Core\Model\Bitmask;
  *         },
  *         "patch": {
  *             "denormalization_context": {
- *                 "groups": {"agency:participation:update", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}
+ *                 "groups": {
+ *                     "agency:participation:update",
+ *                     "agency:participation:write",
+ *                     "agency:projectPartaker:write",
+ *                     "money:write",
+ *                     "agency:participationTrancheAllocation:write"
+ *                 }
  *             },
  *             "security_post_denormalize": "is_granted('edit', object)",
  *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
@@ -107,7 +120,7 @@ use Unilend\Core\Model\Bitmask;
  *     }
  * )
  */
-class Participation
+class Participation extends AbstractProjectPartaker
 {
     use PublicizeIdentityTrait;
 
@@ -269,8 +282,10 @@ class Participation
     public function __construct(
         ParticipationPool $project,
         Company $participant,
-        Money $finalAllocation
+        Money $finalAllocation,
+        Money $capital
     ) {
+        parent::__construct($participant->getSiren(), $capital);
         $this->responsibilities         = new Bitmask(0);
         $this->pool                     = $project;
         $this->finalAllocation          = $finalAllocation;

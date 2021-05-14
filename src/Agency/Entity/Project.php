@@ -38,7 +38,6 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Model\Bitmask;
 use Unilend\Core\Traits\ConstantsAwareTrait;
-use Unilend\Core\Validator\Constraints\Siren;
 use Unilend\Syndication\Entity\Project as ArrangementProject;
 
 /**
@@ -233,17 +232,6 @@ class Project
     private ?string $agentDisplayName;
 
     /**
-     * @ORM\Column(type="string", length=9, nullable=true)
-     *
-     * @Siren
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $agentSiren;
-
-    /**
      * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\NotBlank(groups={"published"})
@@ -260,22 +248,6 @@ class Project
      * @Groups({"agency:project:read", "agency:project:write"})
      */
     private ?string $headOffice;
-
-    /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?NullableMoney $agentCapital;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $agentRCS;
 
     /**
      * @ORM\Column(type="string", nullable=true)
@@ -557,7 +529,13 @@ class Project
         $this->tranches           = new ArrayCollection();
         $this->participationPools = new ArrayCollection([false => new ParticipationPool($this, false), true => new ParticipationPool($this, true)]);
 
-        $participation = new Participation($this->getPrimaryParticipationPool(), $this->agent, new Money($this->globalFundingMoney->getCurrency()));
+        $participation = new Participation(
+            $this->getPrimaryParticipationPool(),
+            $this->agent,
+            new Money($this->globalFundingMoney->getCurrency()),
+            new Money($this->globalFundingMoney->getCurrency())
+        );
+
         $participation->setResponsibilities(new Bitmask(Participation::RESPONSIBILITY_AGENT));
         $participation->setAgentCommission('0');
         $participation->setMembers(new ArrayCollection([new ParticipationMember($participation, $addedBy->getUser())]));
@@ -571,7 +549,6 @@ class Project
 
         // This part is weird but compliant to figma models: those fields are editable
         $this->agentDisplayName = $this->agent->getDisplayName();
-        $this->agentSiren       = $this->agent->getSiren();
 
         $this->borrowerConfidentialDrive = new Drive();
         $this->borrowerSharedDrive       = new Drive();
@@ -599,18 +576,6 @@ class Project
         return $this;
     }
 
-    public function getAgentSiren(): ?string
-    {
-        return $this->agentSiren;
-    }
-
-    public function setAgentSiren(?string $agentSiren): Project
-    {
-        $this->agentSiren = $agentSiren;
-
-        return $this;
-    }
-
     public function getAgentLegalForm(): ?string
     {
         return $this->agentLegalForm;
@@ -631,30 +596,6 @@ class Project
     public function setHeadOffice(?string $headOffice): Project
     {
         $this->headOffice = $headOffice;
-
-        return $this;
-    }
-
-    public function getAgentCapital(): ?NullableMoney
-    {
-        return $this->agentCapital;
-    }
-
-    public function setAgentCapital(?NullableMoney $agentCapital): Project
-    {
-        $this->agentCapital = $agentCapital;
-
-        return $this;
-    }
-
-    public function getAgentRCS(): ?string
-    {
-        return $this->agentRCS;
-    }
-
-    public function setAgentRCS(?string $agentRCS): Project
-    {
-        $this->agentRCS = $agentRCS;
 
         return $this;
     }

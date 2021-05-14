@@ -18,14 +18,14 @@ use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\User;
-use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
 
 /**
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
  *             "agency:borrower:read",
- *             "money:read"
+ *             "money:read",
+ *             "agency:projectPartaker:read",
  *         }
  *     },
  *     collectionOperations={
@@ -34,6 +34,7 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *                 "groups": {
  *                     "agency:borrower:create",
  *                     "agency:borrower:write",
+ *                     "agency:projectPartaker:write",
  *                     "money:write",
  *                     "agency:borrowerMember:create",
  *                     "agency:borrowerMember:write",
@@ -46,9 +47,6 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *     },
  *     itemOperations={
  *         "get": {
- *             "normalization_context": {
- *                 "groups": {"agency:borrower:read", "money:read"}
- *             },
  *             "security": "is_granted('view', object)",
  *         },
  *         "delete": {
@@ -56,7 +54,12 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *         },
  *         "patch": {
  *             "denormalization_context": {
- *                 "groups": {"agency:borrower:update", "agency:borrower:write", "money:write"}
+ *                 "groups": {
+ *                     "agency:borrower:update",
+ *                     "agency:projectPartaker:write",
+ *                     "agency:borrower:write",
+ *                     "money:write"
+ *                 }
  *             },
  *             "security_post_denormalize": "is_granted('edit', object)",
  *         }
@@ -76,7 +79,7 @@ use Unilend\Core\Validator\Constraints\Rcs as AssertRcs;
  *     }
  * )
  */
-class Borrower
+class Borrower extends AbstractProjectPartaker
 {
     use PublicizeIdentityTrait;
     use BlamableAddedTrait;
@@ -112,16 +115,6 @@ class Borrower
     private string $legalForm;
 
     /**
-     * @Assert\Valid
-     * @Assert\NotBlank
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:write"})
-     *
-     * @ORM\Embedded(class=Money::class)
-     */
-    private Money $capital;
-
-    /**
      * @ORM\Column(type="string", length=100)
      *
      * @Assert\Length(max="100")
@@ -130,18 +123,6 @@ class Borrower
      * @Groups({"agency:borrower:read", "agency:borrower:write"})
      */
     private string $headquarterAddress;
-
-    /**
-     * @ORM\Column(type="string", length=100)
-     *
-     * @Assert\NotBlank
-     * @Assert\Length(max="100")
-     *
-     * @AssertRcs
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:write"})
-     */
-    private string $matriculationNumber;
 
     /**
      * @ORM\OneToOne(targetEntity=BorrowerMember::class)
@@ -202,14 +183,13 @@ class Borrower
         string $headquarterAddress,
         string $matriculationNumber
     ) {
-        $this->project             = $project;
-        $this->addedBy             = $addedBy;
-        $this->corporateName       = $corporateName;
-        $this->legalForm           = $legalForm;
-        $this->capital             = $capital;
-        $this->headquarterAddress  = $headquarterAddress;
-        $this->matriculationNumber = $matriculationNumber;
-        $this->members             = new ArrayCollection();
+        parent::__construct($matriculationNumber, $capital);
+        $this->project            = $project;
+        $this->addedBy            = $addedBy;
+        $this->corporateName      = $corporateName;
+        $this->legalForm          = $legalForm;
+        $this->headquarterAddress = $headquarterAddress;
+        $this->members            = new ArrayCollection();
     }
 
     public function getProject(): Project
@@ -241,18 +221,6 @@ class Borrower
         return $this;
     }
 
-    public function getCapital(): Money
-    {
-        return $this->capital;
-    }
-
-    public function setCapital(Money $capital): Borrower
-    {
-        $this->capital = $capital;
-
-        return $this;
-    }
-
     public function getHeadquarterAddress(): string
     {
         return $this->headquarterAddress;
@@ -261,18 +229,6 @@ class Borrower
     public function setHeadquarterAddress(string $headquarterAddress): Borrower
     {
         $this->headquarterAddress = $headquarterAddress;
-
-        return $this;
-    }
-
-    public function getMatriculationNumber(): string
-    {
-        return $this->matriculationNumber;
-    }
-
-    public function setMatriculationNumber(string $matriculationNumber): Borrower
-    {
-        $this->matriculationNumber = $matriculationNumber;
 
         return $this;
     }
