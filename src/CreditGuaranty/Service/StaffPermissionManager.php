@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\CreditGuaranty\Service;
 
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Model\Bitmask;
 use Unilend\CreditGuaranty\Repository\StaffPermissionRepository;
 
 class StaffPermissionManager
@@ -18,8 +19,7 @@ class StaffPermissionManager
 
     public function hasPermissions(Staff $staff, int $permissions): bool
     {
-        //todo: use the new getInheritedRightStaff() method
-        $staffToCheck = $staff->isManager() ? $staff->getManagedStaff() : [$staff];
+        $staffToCheck = $staff->getManagedStaff();
 
         foreach ($staffToCheck as $managedStaff) {
             $staffPermission = $this->staffPermissionRepository->findOneBy(['staff' => $managedStaff]);
@@ -29,5 +29,12 @@ class StaffPermissionManager
         }
 
         return false;
+    }
+
+    public function canGrant(Staff $staff, Bitmask $permissions): bool
+    {
+        $staffPermission = $this->staffPermissionRepository->findOneBy(['staff' => $staff]);
+        //Since the "grant permissions" have the same positon as "permissions" that a user can grant, we can check it by using has().
+        return $staffPermission && $staffPermission->getGrantPermissions()->has($permissions);
     }
 }
