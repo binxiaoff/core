@@ -703,7 +703,6 @@ class Project
         return 0 < count(
             $this->getSecondaryParticipationPool()
                 ->getParticipations()
-                ->filter(fn (Participation $participation) => false === $participation->isArchived())
         );
     }
 
