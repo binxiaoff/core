@@ -58,8 +58,9 @@ class StaffPermission
     public const PERMISSION_CREATE_RESERVATION = 1 << 4;
     public const PERMISSION_EDIT_RESERVATION   = 1 << 5;
 
-    // The grant permission is in the same position as the corresponding permission to grant,
-    // so that we can easily check if a staff can grant a given permission.
+    // The grant permission is in the same position as the corresponding permission to grant, so that we can easily check if a staff can grant a given permission.
+    // A typical admin of program managing company (CASA) has 1111 (or 15 in decimal).
+    // A typical admin of participant has 111001 (or 57 in decimal)
     public const PERMISSION_GRANT_READ_PROGRAM   = 1 << 0;
     public const PERMISSION_GRANT_CREATE_PROGRAM = 1 << 1;
     public const PERMISSION_GRANT_EDIT_PROGRAM   = 1 << 2;
