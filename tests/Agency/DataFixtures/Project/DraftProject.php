@@ -21,7 +21,7 @@ class DraftProject extends AbstractProjectFixtures
      *
      * @throws Exception
      */
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $staff = $this->getReference('staff_company:foo_user:b');
 
@@ -29,14 +29,14 @@ class DraftProject extends AbstractProjectFixtures
 
         $project = new Project(
             $staff,
-            $this->getName(),
+            static::getName(),
             'riskGroupName',
             new Money('EUR', '200000000'),
             new \DateTimeImmutable(),
             new \DateTimeImmutable()
         );
 
-        $this->setPublicId($project, $this->getName());
+        $this->setPublicId($project, static::getName());
 
         $barParticipation = $this->createTestPrimaryParticipation($project, $this->getReference('company:bar'));
         $barParticipation->addMember(new ParticipationMember($barParticipation, $this->getReference('user:b')));
@@ -60,7 +60,7 @@ class DraftProject extends AbstractProjectFixtures
             ]
         );
 
-        $this->setReference('project:' . $this->getName(), $project);
+        $this->setReference(static::getReferenceName(), $project);
 
         $manager->flush();
     }
@@ -77,8 +77,13 @@ class DraftProject extends AbstractProjectFixtures
         ];
     }
 
-    protected function getName()
+    protected static function getName(): string
     {
         return 'draft';
+    }
+
+    protected static function getReferenceName(): string
+    {
+        return 'project:' . static::getName();
     }
 }

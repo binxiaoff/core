@@ -109,7 +109,7 @@ class ProjectRoleVoter extends Voter
      */
     protected function isSecondaryParticipant(Project $project, TokenInterface $token): bool
     {
-        return $this->isParticipant($project, $token, true);
+        return $this->isParticipant($project, $token, true) && $project->hasSilentSyndication();
     }
 
     /**
@@ -164,7 +164,7 @@ class ProjectRoleVoter extends Voter
             if ($participationMember) {
                 $participation = $participationMember->getParticipation();
 
-                return false === $participation->isArchived() && $secondary === $participation->isSecondary();
+                return $secondary === $participation->isSecondary();
             }
         }
 

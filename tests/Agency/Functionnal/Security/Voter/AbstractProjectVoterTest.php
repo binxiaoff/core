@@ -48,6 +48,11 @@ abstract class AbstractProjectVoterTest extends KernelTestCase
             ;
     }
 
+    protected function getProjects(EntityManagerInterface $em, array $tests)
+    {
+        return $this->fetchEntities($em, Project::class, array_column($tests, 1));
+    }
+
     protected function formatProviderData(string $attribute, array $tests = []): iterable
     {
         static::bootKernel();
@@ -55,7 +60,7 @@ abstract class AbstractProjectVoterTest extends KernelTestCase
         /** @var EntityManagerInterface $em */
         $em = static::$container->get(EntityManagerInterface::class);
 
-        $projects = $this->fetchEntities($em, Project::class, array_column($tests, 1));
+        $projects = $this->getProjects($em, $tests);
 
         $staffs = $this->fetchEntities($em, Staff::class, array_column($tests, 0));
 

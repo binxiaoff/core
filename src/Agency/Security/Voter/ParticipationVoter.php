@@ -64,10 +64,23 @@ class ParticipationVoter extends AbstractEntityVoter
             && $staff->getCompany() === $participation->getParticipant();
     }
 
-    public function canCreate(Participation $participation, User $user): bool
+    protected function canCreate(Participation $participation, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject())
             && false === $participation->getProject()->isArchived();
+    }
+
+    /**
+     * @param Participation $subject
+     */
+    protected function fulfillPreconditions($subject, User $user): bool
+    {
+        // No one can interact secondary participant if there is no silent syndication
+        if ($subject->isSecondary() && false === $subject->getProject()->hasSilentSyndication()) {
+            return false;
+        }
+
+        return parent::fulfillPreconditions($subject, $user);
     }
 
     protected function canDelete(Participation $participation, User $user): bool

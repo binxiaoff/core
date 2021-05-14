@@ -128,22 +128,42 @@ class ProjectRoleVoterTest extends AbstractProjectVoterTest
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
-            'PARTICIPANT: Connected user with participant bank is not participant in draft project' => [
+            'PARTICIPANT: Connected user with participant bank is not participant in draft project (primary)' => [
                 'staff_company:bar_user:b',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
-            'PARTICIPANT: Connected manager with participant bank is not participant in draft project' => [
+            'PARTICIPANT: Connected user with participant bank is not participant in draft project (secondary)' => [
+                'staff_company:tux_user:b',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT: Connected manager with participant bank is not participant in draft project (primary)' => [
                 'staff_company:bar_user:a',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
-            'PARTICIPANT: Connected user with participant bank is participant in published project' => [
+            'PARTICIPANT: Connected manager with participant bank is not participant in draft project (secondary)' => [
+                'staff_company:tux_user:a',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT: Connected user with participant bank is participant in published project (primary)' => [
                 'staff_company:bar_user:b',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
-            'PARTICIPANT: Connected manager with participant bank is  participant in published project' => [
+            'PARTICIPANT: Connected user with participant bank is participant in published project (secondary)' => [
+                'staff_company:tux_user:b',
+                'published',
+                VoterInterface::ACCESS_GRANTED,
+            ],
+            'PARTICIPANT: Connected manager with participant bank is participant in published project (primary)' => [
+                'staff_company:bar_user:a',
+                'published',
+                VoterInterface::ACCESS_GRANTED,
+            ],
+            'PARTICIPANT: Connected manager with participant bank is participant in published project (secondary)' => [
                 'staff_company:bar_user:a',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
@@ -151,6 +171,197 @@ class ProjectRoleVoterTest extends AbstractProjectVoterTest
         ];
 
         yield from $this->formatProviderData(ProjectRoleVoter::ROLE_PARTICIPANT, $tests);
+    }
+
+    public function providerPrimaryParticipant(): iterable
+    {
+        $tests = [
+            'PARTICIPANT (primary): Connected user without staff cannot is not primary participant in draft project' => [
+                'user:a',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (primary): Connected user without staff cannot is not primary participant in published project' => [
+                'user:a',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (primary): Connected user with unknown bank in project is not primary participant in draft project' => [
+                'staff_company:basic_user:1',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (primary): Connected user with unknown bank in project is not primary participant in published project' => [
+                'staff_company:basic_user:1',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (primary): Connected user project creator is not primary participant in draft project' => [
+                'staff_company:foo_user:b',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (primary): Connected user agent is not primary participant in draft project' => [
+                'staff_company:foo_user:c',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (primary): Connected manager of project creator is not primary participant in draft project' => [
+                'staff_company:foo_user:a',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (primary): Connected user project creator is primary participant in published project' => [
+                'staff_company:foo_user:b',
+                'published',
+                VoterInterface::ACCESS_GRANTED,
+            ],
+            'PARTICIPANT (primary): Connected manager of project creator is primary participant in published project' => [
+                'staff_company:foo_user:a',
+                'published',
+                VoterInterface::ACCESS_GRANTED,
+            ],
+            'PARTICIPANT (primary): Connected user with participant bank in primary pool is not primary participant in draft project' => [
+                'staff_company:bar_user:b',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (primary): Connected user with participant bank in secondary pool is not primary participant in draft project' => [
+                'staff_company:tux_user:b',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (primary): Connected manager with participant bank in primary pool is not primary participant in draft project' => [
+                'staff_company:bar_user:a',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (primary): Connected manager with participant bank in secondary pool is not primary participant in draft project' => [
+                'staff_company:tux_user:a',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (primary): Connected user with participant bank in primary pool is primary participant in published project' => [
+                'staff_company:bar_user:b',
+                'published',
+                VoterInterface::ACCESS_GRANTED,
+            ],
+            'PARTICIPANT (primary): Connected user with participant bank in secondary pool is not primary participant in published project' => [
+                'staff_company:tux_user:b',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (primary): Connected manager with participant bank in primary pool is primary participant in published project' => [
+                'staff_company:bar_user:a',
+                'published',
+                VoterInterface::ACCESS_GRANTED,
+            ],
+            'PARTICIPANT (primary): Connected manager with participant bank in secondary pool is not primary participant in published project' => [
+                'staff_company:tux_user:a',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+        ];
+
+        yield from $this->formatProviderData(ProjectRoleVoter::ROLE_PRIMARY_PARTICIPANT, $tests);
+    }
+
+    public function providerSecondaryParticipant(): iterable
+    {
+        $tests = [
+            'PARTICIPANT (secondary): Connected user without staff cannot is not secondary participant in draft project' => [
+                'user:a',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected user without staff cannot is not secondary participant in published project' => [
+                'user:a',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected user with unknown bank in project is not secondary participant in draft project' => [
+                'staff_company:basic_user:1',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected user with unknown bank in project is not secondary participant in published project' => [
+                'staff_company:basic_user:1',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected user project creator is not secondary participant in draft project' => [
+                'staff_company:foo_user:b',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected user agent is not secondary participant in draft project' => [
+                'staff_company:foo_user:c',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected manager of project creator is not secondary participant in draft project' => [
+                'staff_company:foo_user:a',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected user project creator is not secondary participant in published project' => [
+                'staff_company:foo_user:b',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected manager of project creator is not secondary participant in published project' => [
+                'staff_company:foo_user:a',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected user with participant bank in primary pool is not secondary participant in draft project' => [
+                'staff_company:bar_user:b',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected user with participant bank in secondary pool is not secondary participant in draft project with silent pool enabled' => [
+                'staff_company:tux_user:b',
+                'draft_silent_pool_enabled',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected user with participant bank in secondary pool is not secondary participant in draft project with silent pool disabled' => [
+                'staff_company:tux_user:b',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected manager with participant bank in primary pool is not secondary participant in draft project' => [
+                'staff_company:bar_user:a',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected manager with participant bank in secondary pool is not secondary participant in draft project' => [
+                'staff_company:tux_user:a',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected user with participant bank in primary pool is not secondary participant in published project' => [
+                'staff_company:bar_user:b',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected user with participant bank in secondary pool is secondary participant in published project' => [
+                'staff_company:tux_user:b',
+                'published',
+                VoterInterface::ACCESS_GRANTED,
+            ],
+            'PARTICIPANT (secondary): Connected manager with participant bank in primary pool is not secondary participant in published project' => [
+                'staff_company:bar_user:a',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT (secondary): Connected manager with participant bank in secondary pool is secondary participant in published project' => [
+                'staff_company:tux_user:a',
+                'published',
+                VoterInterface::ACCESS_GRANTED,
+            ],
+        ];
+
+        yield from $this->formatProviderData(ProjectRoleVoter::ROLE_SECONDARY_PARTICIPANT, $tests);
     }
 
     public function providerBorrower(): iterable

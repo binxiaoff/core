@@ -8,15 +8,17 @@ use Doctrine\Persistence\ObjectManager;
 use Unilend\Agency\Entity\BorrowerMember;
 use Unilend\Agency\Entity\ParticipationMember;
 use Unilend\Agency\Entity\Project;
+use Unilend\Test\Core\DataFixtures\Companies\LoxCompanyFixtures;
+use Unilend\Test\Core\DataFixtures\Companies\QuxCompanyFixtures;
 
 class PublishedProject extends DraftProject
 {
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         parent::load($manager);
 
         /** @var Project $project */
-        $project = $this->getReference('project:published');
+        $project = $this->getReference(static::getReferenceName());
 
         $this->publishProject($project);
 
@@ -52,7 +54,15 @@ class PublishedProject extends DraftProject
         $manager->flush();
     }
 
-    protected function getName(): string
+    public function getDependencies(): array
+    {
+        return array_merge(parent::getDependencies(), [
+            QuxCompanyFixtures::class,
+            LoxCompanyFixtures::class,
+        ]);
+    }
+
+    protected static function getName(): string
     {
         return 'published';
     }

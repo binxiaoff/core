@@ -71,7 +71,6 @@ class ProjectVoterTest extends AbstractProjectVoterTest
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
-
             'VIEW: participant cannot view draft project' => [
                 'staff_company:bar_user:b',
                 'draft',
@@ -237,7 +236,6 @@ class ProjectVoterTest extends AbstractProjectVoterTest
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
-
             'EDIT: unknown user in project cannot can edit draft project' => [
                 'user:£',
                 'draft',
