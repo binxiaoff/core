@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Action\NotFoundAction;
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -17,6 +20,28 @@ use Unilend\Core\Entity\User;
 use Unilend\Core\Validator\Constraints\Siren;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={
+ *         "groups": {
+ *             "agency:agent:read",
+ *             "nullableMoney:read"
+ *         }
+ *     },
+ *     collectionOperations={},
+ *     itemOperations={
+ *         "get": {
+ *             "controller": NotFoundAction::class,
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *         "patch": {
+ *             "security": "is_granted('edit', object)",
+ *             "denormalization_context": {
+ *                 "groups": {"agency:agent:write"}
+ *             }
+ *         }
+ *     }
+ * )
  * @ORM\Table(name="agency_agent")
  * @ORM\Entity
  */
@@ -29,6 +54,10 @@ class Agent
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE", unique=true)
      *
      * @Assert\NotBlank
+     *
+     * @Groups({"agency:agent:read"})
+     *
+     * @ApiProperty(readableLink=false)
      */
     private Project $project;
 
@@ -42,16 +71,18 @@ class Agent
      * @Assert\All({
      *     @Assert\Expression("value.getAgent() == this")
      * })
+     *
+     * @Groups({"agency:agent:read"})
      */
     private Collection $members;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_agent", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      * })
      *
-     * @Groups({"agency:project:read"})
+     * @Groups({"agency:agent:read"})
      *
      * @Assert\NotBlank
      */
@@ -62,7 +93,7 @@ class Agent
      *
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"agency:project:read", "agency:project:write"})
+     * @Groups({"agency:agent:read", "agency:agent:write"})
      */
     private ?string $displayName;
 
@@ -73,7 +104,7 @@ class Agent
      *
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"agency:project:read", "agency:project:write"})
+     * @Groups({"agency:agent:read", "agency:agent:write"})
      */
     private ?string $siren;
 
@@ -82,7 +113,7 @@ class Agent
      *
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"agency:project:read", "agency:project:write"})
+     * @Groups({"agency:agent:read", "agency:agent:write"})
      */
     private ?string $legalForm;
 
@@ -91,14 +122,14 @@ class Agent
      *
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"agency:project:read", "agency:project:write"})
+     * @Groups({"agency:agent:read", "agency:agent:write"})
      */
     private ?string $headOffice;
 
     /**
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
-     * @Groups({"agency:project:read", "agency:project:write"})
+     * @Groups({"agency:agent:read", "agency:agent:write"})
      */
     private ?NullableMoney $capital;
 
@@ -107,7 +138,7 @@ class Agent
      *
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"agency:project:read", "agency:project:write"})
+     * @Groups({"agency:agent:read", "agency:agent:write"})
      */
     private ?string $rcs;
 
@@ -116,7 +147,7 @@ class Agent
      *
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"agency:project:read", "agency:project:write"})
+     * @Groups({"agency:agent:read", "agency:agent:write"})
      */
     private ?string $bankInstitution;
 
@@ -126,7 +157,7 @@ class Agent
      * @Assert\Bic
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"agency:project:read", "agency:project:write"})
+     * @Groups({"agency:agent:read", "agency:agent:write"})
      */
     private ?string $bic;
 
@@ -136,7 +167,7 @@ class Agent
      * @Assert\Iban
      * @Assert\NotBlank(groups={"published"})
      *
-     * @Groups({"agency:project:read", "agency:project:write"})
+     * @Groups({"agency:agent:read", "agency:agent:write"})
      */
     private ?string $iban;
 
@@ -145,7 +176,7 @@ class Agent
      *
      * @Assert\Valid
      *
-     * @Groups({"agency:project:read", "agency:project:write"})
+     * @Groups({"agency:agent:read", "agency:agent:write"})
      */
     private NullablePerson $contact;
 

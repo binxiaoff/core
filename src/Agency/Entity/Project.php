@@ -212,15 +212,18 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *     filterClass=GroupFilter::class,
  *     arguments={
  *         "whitelist": {
- *             "agency:contact:read",
+ *             "company:read",
+ *             "companyGroupTag:read",
+ *             "agency:agent:read",
+ *             "agency:agentMember:read",
  *             "agency:borrower:read",
- *             "agency:tranche:read",
+ *             "agency:borrowerMember:read",
  *             "agency:borrowerTrancheShare:read",
  *             "agency:participation:read",
  *             "agency:participationPool:read",
+ *             "agency:participationMember:read",
  *             "agency:participationTrancheAllocation:read",
- *             "company:read",
- *             "companyGroupTag:read",
+ *             "agency:tranche:read",
  *             "agency:covenant:read",
  *             "agency:term:read"
  *         }
@@ -243,6 +246,8 @@ class Project
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Agency\Entity\Agent", mappedBy="project", cascade={"persist", "remove"})
+     *
+     * @Groups({"agency:project:read"})
      */
     private Agent $agent;
 

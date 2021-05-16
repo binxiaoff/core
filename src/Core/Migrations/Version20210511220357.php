@@ -26,9 +26,6 @@ final class Version20210511220357 extends AbstractMigration
         $this->addSql('ALTER TABLE agency_project DROP FOREIGN KEY FK_59B349BFC80EDDAD');
         $this->addSql('DROP INDEX IDX_59B349BFC80EDDAD ON agency_project');
         $this->addSql('ALTER TABLE agency_project DROP id_agent, DROP agent_display_name, DROP agent_siren, DROP agent_legal_form, DROP head_office, DROP agent_rcs, DROP agent_capital_amount, DROP agent_capital_currency, DROP bank_institution, DROP bic, DROP iban, DROP agency_contact_first_name, DROP agency_contact_last_name, DROP agency_contact_parent_unit, DROP agency_contact_occupation, DROP agency_contact_email, DROP agency_contact_phone');
-        $this->addSql('DROP INDEX UNIQ_B74A64DBBF3D7168609C91B2 ON core_naf_nace');
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_B74A64DBBF3D7168 ON core_naf_nace (naf_code)');
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_B74A64DB609C91B2 ON core_naf_nace (nace_code)');
     }
 
     public function down(Schema $schema): void
@@ -39,8 +36,5 @@ final class Version20210511220357 extends AbstractMigration
         $this->addSql('ALTER TABLE agency_project ADD id_agent INT NOT NULL, ADD agent_display_name VARCHAR(300) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD agent_siren VARCHAR(9) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD agent_legal_form VARCHAR(255) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD head_office VARCHAR(255) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD agent_rcs VARCHAR(255) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD agent_capital_amount NUMERIC(15, 2) DEFAULT NULL, ADD agent_capital_currency VARCHAR(3) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD bank_institution VARCHAR(255) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD bic VARCHAR(11) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD iban VARCHAR(34) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD agency_contact_first_name VARCHAR(255) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD agency_contact_last_name VARCHAR(255) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD agency_contact_parent_unit VARCHAR(255) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD agency_contact_occupation VARCHAR(255) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD agency_contact_email VARCHAR(255) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD agency_contact_phone VARCHAR(35) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`');
         $this->addSql('ALTER TABLE agency_project ADD CONSTRAINT FK_59B349BFC80EDDAD FOREIGN KEY (id_agent) REFERENCES core_company (id) ON UPDATE NO ACTION ON DELETE NO ACTION');
         $this->addSql('CREATE INDEX IDX_59B349BFC80EDDAD ON agency_project (id_agent)');
-        $this->addSql('DROP INDEX UNIQ_B74A64DBBF3D7168 ON core_naf_nace');
-        $this->addSql('DROP INDEX UNIQ_B74A64DB609C91B2 ON core_naf_nace');
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_B74A64DBBF3D7168609C91B2 ON core_naf_nace (naf_code, nace_code)');
     }
 }
