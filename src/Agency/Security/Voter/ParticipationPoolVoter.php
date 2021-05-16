@@ -13,18 +13,6 @@ class ParticipationPoolVoter extends AbstractEntityVoter
     public const ATTRIBUTE_EDIT = 'edit';
     public const ATTRIBUTE_VIEW = 'view';
 
-    /**
-     * @param ParticipationPool $subject
-     */
-    protected function fulfillPreconditions($subject, User $user): bool
-    {
-        if ($subject->isSecondary() && false === $subject->getProject()->hasSilentSyndication()) {
-            return false;
-        }
-
-        return parent::fulfillPreconditions($subject, $user);
-    }
-
     protected function canEdit(ParticipationPool $participationPool): bool
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participationPool->getProject())

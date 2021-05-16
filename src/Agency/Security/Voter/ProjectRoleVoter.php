@@ -23,7 +23,7 @@ class ProjectRoleVoter extends Voter
     public const ROLE_AGENT       = 'agent';
 
     public const ROLE_PRIMARY_PARTICIPANT   = 'primary_participant';
-    public const ROLE_SECONDARY_PARTICIPANT = 'primary_participant';
+    public const ROLE_SECONDARY_PARTICIPANT = 'secondary_participant';
 
     private BorrowerMemberRepository $borrowerMemberRepository;
 
@@ -85,7 +85,7 @@ class ProjectRoleVoter extends Voter
     /**
      * @throws NonUniqueResultException
      */
-    protected function isBorrower(Project $project, TokenInterface $token): bool
+    private function isBorrower(Project $project, TokenInterface $token): bool
     {
         $user = $token->getUser();
 
@@ -99,7 +99,7 @@ class ProjectRoleVoter extends Voter
     /**
      * @throws NonUniqueResultException
      */
-    protected function isPrimaryParticipant(Project $project, TokenInterface $token): bool
+    private function isPrimaryParticipant(Project $project, TokenInterface $token): bool
     {
         return $this->isParticipant($project, $token, false);
     }
@@ -107,7 +107,7 @@ class ProjectRoleVoter extends Voter
     /**
      * @throws NonUniqueResultException
      */
-    protected function isSecondaryParticipant(Project $project, TokenInterface $token): bool
+    private function isSecondaryParticipant(Project $project, TokenInterface $token): bool
     {
         return $this->isParticipant($project, $token, true) && $project->hasSilentSyndication();
     }
@@ -115,7 +115,7 @@ class ProjectRoleVoter extends Voter
     /**
      * @throws NonUniqueResultException
      */
-    protected function isAgent(Project $project, TokenInterface $token): bool
+    private function isAgent(Project $project, TokenInterface $token): bool
     {
         $staff = $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
 
