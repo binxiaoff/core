@@ -64,12 +64,12 @@ class ProjectRoleVoterTest extends AbstractProjectVoterTest
                     $project,
                     VoterInterface::ACCESS_DENIED,
                 ],
-                "AGENT: Connected user with agent company is agent in {$project} project" => [
-                    'staff_company:foo_user:c',
+                "AGENT: project creator connected with agent company is agent in {$project} project" => [
+                    'staff_company:foo_user:b',
                     $project,
                     VoterInterface::ACCESS_GRANTED,
                 ],
-                "AGENT: Connected manager with agent company and subordinate in members is agent in {$project} project" => [
+                "AGENT: project creator  manager connected with agent company in {$project} project" => [
                     'staff_company:foo_user:a',
                     $project,
                     VoterInterface::ACCESS_GRANTED,
@@ -108,8 +108,13 @@ class ProjectRoleVoterTest extends AbstractProjectVoterTest
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
-            'PARTICIPANT: Connected user agent is not participant in draft project' => [
+            'PARTICIPANT: Connected user participant (agent company) is not participant in draft project' => [
                 'staff_company:foo_user:c',
+                'draft',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT: Connected user manager participant (agent company) is not participant in draft project' => [
+                'staff_company:foo_user:e',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
@@ -118,13 +123,23 @@ class ProjectRoleVoterTest extends AbstractProjectVoterTest
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
-            'PARTICIPANT: Connected user project creator is participant in published project' => [
+            'PARTICIPANT: Connected user project creator is not participant in published project' => [
                 'staff_company:foo_user:b',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT: Connected manager of project creator is not participant in published project' => [
+                'staff_company:foo_user:a',
+                'published',
+                VoterInterface::ACCESS_DENIED,
+            ],
+            'PARTICIPANT: Connected user with participant bank (agent company) is participant  in published project' => [
+                'staff_company:foo_user:c',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
-            'PARTICIPANT: Connected manager of project creator is  participant in published project' => [
-                'staff_company:foo_user:a',
+            'PARTICIPANT: Connected manager with participant bank (agent company) is participant in published project' => [
+                'staff_company:foo_user:e',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],

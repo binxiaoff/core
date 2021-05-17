@@ -41,11 +41,12 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             return;
         }
 
+        $userParameterName = static::prefix('user');
+
+        // Borrower condition
         $rootAlias           = $queryBuilder->getRootAliases()[0];
         $borrowerAlias       = static::prefix('borrower');
         $borrowerMemberAlias = static::prefix('borrowerMember');
-
-        $userParameterName = static::prefix('user');
 
         $queryBuilder
             ->distinct()
@@ -64,14 +65,14 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             return;
         }
 
-        // TODO Handle project publication and participation
-        $participationAlias       = static::prefix('participation');
-        $participationPoolAlias   = static::prefix('participationPool');
-        $participationMemberAlias = static::prefix('participationMember');
-
         $managedUserParameterName     = static::prefix('managedUsers');
         $companyParameterName         = static::prefix('company');
         $publishedStatusParameterName = static::prefix('publishedStatus');
+
+        // Participant condition
+        $participationAlias       = static::prefix('participation');
+        $participationPoolAlias   = static::prefix('participationPool');
+        $participationMemberAlias = static::prefix('participationMember');
 
         $queryBuilder
             ->leftJoin("{$rootAlias}.participationPools", $participationPoolAlias)
@@ -81,12 +82,27 @@ class ProjectExtension implements QueryCollectionExtensionInterface
                 $queryBuilder->expr()->andX(
                     "{$participationMemberAlias}.user IN (:{$managedUserParameterName})",
                     "{$participationAlias}.participant = :{$companyParameterName}",
-                    $queryBuilder->expr()->orX(
-                        "{$rootAlias}.agent = :{$companyParameterName}",
-                        "{$rootAlias}.currentStatus >= :{$publishedStatusParameterName}"
-                    )
+                    "{$rootAlias}.currentStatus >= :{$publishedStatusParameterName}"
                 )
             )
+        ;
+
+        // Agent condition
+        $agentAlias       = static::prefix('agent');
+        $agentMemberAlias = static::prefix('agentMember');
+
+        $queryBuilder
+            ->leftJoin("{$rootAlias}.agent", $agentAlias)
+            ->leftJoin("{$agentAlias}.members", $agentMemberAlias)
+            ->orWhere(
+                $queryBuilder->expr()->andX(
+                    "{$agentMemberAlias}.user IN (:{$managedUserParameterName})",
+                    "{$agentAlias}.company = :{$companyParameterName}",
+                )
+            )
+        ;
+
+        $queryBuilder
             ->setParameter($managedUserParameterName, iterator_to_array($staff->getManagedUsers(), false))
             ->setParameter($companyParameterName, $staff->getCompany())
             ->setParameter($publishedStatusParameterName, Project::STATUS_PUBLISHED)

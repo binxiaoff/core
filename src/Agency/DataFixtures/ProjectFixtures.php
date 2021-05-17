@@ -67,12 +67,16 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $manager->persist($project);
 
         $agencyContact = (new NullablePerson())->setFirstName($this->faker->firstName)->setLastName($this->faker->lastName);
-        $project->setAgencyContact($agencyContact);
-        $project->setAgentLegalForm(LegalForm::EURL);
-        $project->setIban($this->faker->iban());
-        $project->setBic('AGRIMQMX');
-        $project->setHeadOffice($this->faker->address);
-        $project->setBankInstitution('bank institution');
+        $project->getAgent()
+            ->setContact($agencyContact)
+            ->setLegalForm(LegalForm::EURL)
+            ->setIban($this->faker->iban())
+            ->setBic('AGRIMQMX')
+            ->setHeadOffice($this->faker->address)
+            ->setRcs(implode(' ', ['RCS', mb_strtoupper($this->faker->city), $this->faker->randomDigit % 2 ? 'A' : 'B', $project->getAgent()->getMatriculationNumber()]))
+            ->setCapital(new Money('EUR', '0'))
+            ->setBankInstitution('bank institution')
+        ;
         $project->getPrimaryParticipationPool()->setSyndicationType(SyndicationType::PRIMARY);
         $project->getPrimaryParticipationPool()->setParticipationType(ParticipationType::DIRECT);
 
@@ -166,7 +170,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $this->faker->company,
             'SARL',
             new Money(
-                $project->getGlobalFundingMoney()->getCurrency(),
+                $project->getCurrency(),
                 (string) $this->faker->randomFloat(0, 100000)
             ),
             $this->faker->address,

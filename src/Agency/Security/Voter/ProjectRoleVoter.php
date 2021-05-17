@@ -8,6 +8,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Unilend\Agency\Entity\Project;
+use Unilend\Agency\Repository\AgentMemberRepository;
 use Unilend\Agency\Repository\BorrowerMemberRepository;
 use Unilend\Agency\Repository\ParticipationMemberRepository;
 use Unilend\Core\Entity\User;
@@ -31,14 +32,18 @@ class ProjectRoleVoter extends Voter
 
     private UserRepository $userRepository;
 
+    private AgentMemberRepository $agentMemberRepository;
+
     public function __construct(
         UserRepository $userRepository,
+        AgentMemberRepository $agentMemberRepository,
         BorrowerMemberRepository $borrowerMemberRepository,
         ParticipationMemberRepository $participationMemberRepository
     ) {
         $this->borrowerMemberRepository      = $borrowerMemberRepository;
         $this->participationMemberRepository = $participationMemberRepository;
         $this->userRepository                = $userRepository;
+        $this->agentMemberRepository         = $agentMemberRepository;
     }
 
     public static function getAvailableRoles(): array
@@ -149,17 +154,15 @@ class ProjectRoleVoter extends Voter
 
         $staff = $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
 
-        if (null === $staff) {
+        if (null === $staff || ($staff->getCompany() !== $project->getAgentCompany())) {
             return false;
         }
 
         // Fetch users whom connected user can get permission as he had them
         $managedUsers = $staff->getManagedUsers();
 
-        $company = $staff->getCompany();
-
         foreach ($managedUsers as $managedUser) {
-            $participationMember = $this->participationMemberRepository->findByProjectAndCompanyAndUser($project, $company, $managedUser);
+            $participationMember = $this->agentMemberRepository->findOneByProjectAndUser($project, $managedUser);
 
             if ($participationMember) {
                 $participation = $participationMember->getParticipation();

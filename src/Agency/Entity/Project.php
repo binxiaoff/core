@@ -31,7 +31,6 @@ use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\FundingSpecificity;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
@@ -213,15 +212,19 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *     filterClass=GroupFilter::class,
  *     arguments={
  *         "whitelist": {
- *             "agency:contact:read",
+ *             "company:read",
+ *             "companyGroupTag:read",
+ *             "agency:agent:read",
+ *             "agency:projectPartaker:read",
+ *             "agency:agentMember:read",
  *             "agency:borrower:read",
- *             "agency:tranche:read",
+ *             "agency:borrowerMember:read",
  *             "agency:borrowerTrancheShare:read",
  *             "agency:participation:read",
  *             "agency:participationPool:read",
+ *             "agency:participationMember:read",
  *             "agency:participationTrancheAllocation:read",
- *             "company:read",
- *             "companyGroupTag:read",
+ *             "agency:tranche:read",
  *             "agency:covenant:read",
  *             "agency:term:read"
  *         }
@@ -243,72 +246,11 @@ class Project
     public const STATUS_ARCHIVED  = -10;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_agent", referencedColumnName="id", nullable=false)
-     * })
+     * @ORM\OneToOne(targetEntity="Unilend\Agency\Entity\Agent", mappedBy="project", cascade={"persist", "remove"})
      *
      * @Groups({"agency:project:read"})
-     *
-     * @Assert\NotBlank
      */
-    private Company $agent;
-
-    /**
-     * @ORM\Column(type="string", length=300, nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $agentDisplayName;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $agentLegalForm;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $headOffice;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $bankInstitution;
-
-    /**
-     * @ORM\Column(type="string", length=11, nullable=true)
-     *
-     * @Assert\Bic
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $bic;
-
-    /**
-     * @ORM\Column(type="string", length=34, nullable=true)
-     *
-     * @Assert\Iban
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $iban;
+    private Agent $agent;
 
     /**
      * @var string|null
@@ -454,15 +396,6 @@ class Project
     private ?string $description = null;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullablePerson", columnPrefix="agency_contact_")
-     *
-     * @Assert\Valid
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private NullablePerson $agencyContact;
-
-    /**
      * @ORM\Column(type="smallint", nullable=false)
      *
      * @Assert\NotBlank
@@ -532,17 +465,10 @@ class Project
         DateTimeImmutable $contractEndDate,
         ?ArrangementProject $source = null
     ) {
+        $currentUser = $addedBy->getUser();
+
         $this->added   = new DateTimeImmutable();
         $this->addedBy = $addedBy;
-        $this->agent   = $addedBy->getCompany();
-
-        $currentUser         = $addedBy->getUser();
-        $this->agencyContact = (new NullablePerson())
-            ->setFirstName($currentUser->getFirstName())
-            ->setLastName($currentUser->getLastName())
-            ->setEmail($currentUser->getEmail())
-            ->setPhone($currentUser->getPhone())
-        ;
 
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
@@ -554,24 +480,29 @@ class Project
         $this->tranches           = new ArrayCollection();
         $this->participationPools = new ArrayCollection([false => new ParticipationPool($this, false), true => new ParticipationPool($this, true)]);
 
-        $participation = new Participation(
-            $this->getPrimaryParticipationPool(),
-            $this->agent,
-            new Money($this->globalFundingMoney->getCurrency()),
-            new Money($this->globalFundingMoney->getCurrency())
+        $this->agent = new Agent($this, $addedBy->getCompany());
+        $this->agent->addMember(new AgentMember($this->agent, $addedBy->getUser(), $addedBy->getUser()));
+        $this->agent->setContact(
+            (new NullablePerson())
+                ->setFirstName($currentUser->getFirstName())
+                ->setLastName($currentUser->getLastName())
+                ->setEmail($currentUser->getEmail())
+                ->setPhone($currentUser->getPhone())
         );
 
+        $participation = new Participation(
+            $this->getPrimaryParticipationPool(),
+            $this->agent->getCompany(),
+            new Money($this->getCurrency()),
+            new Money($this->getCurrency())
+        );
         $participation->setResponsibilities(new Bitmask(Participation::RESPONSIBILITY_AGENT));
         $participation->setAgentCommission('0');
-        $participation->setMembers(new ArrayCollection([new ParticipationMember($participation, $addedBy->getUser())]));
 
         $this->participationPools[false]->addParticipation($participation);
 
         $this->statuses      = new ArrayCollection();
         $this->currentStatus = static::STATUS_DRAFT;
-
-        // This part is weird but compliant to figma models: those fields are editable
-        $this->agentDisplayName = $this->agent->getDisplayName();
 
         $this->borrowerConfidentialDrive = new Drive();
         $this->borrowerSharedDrive       = new Drive();
@@ -582,93 +513,14 @@ class Project
         }
     }
 
-    public function getAgent(): Company
+    public function getAgent(): Agent
     {
         return $this->agent;
     }
 
-    public function getAgentDisplayName(): ?string
+    public function getAgentCompany(): Company
     {
-        return $this->agentDisplayName;
-    }
-
-    public function setAgentDisplayName(?string $agentDisplayName): Project
-    {
-        $this->agentDisplayName = $agentDisplayName;
-
-        return $this;
-    }
-
-    public function getAgentLegalForm(): ?string
-    {
-        return $this->agentLegalForm;
-    }
-
-    public function setAgentLegalForm(?string $agentLegalForm): Project
-    {
-        $this->agentLegalForm = $agentLegalForm;
-
-        return $this;
-    }
-
-    public function getHeadOffice(): ?string
-    {
-        return $this->headOffice;
-    }
-
-    public function setHeadOffice(?string $headOffice): Project
-    {
-        $this->headOffice = $headOffice;
-
-        return $this;
-    }
-
-    public function getAgencyContact(): NullablePerson
-    {
-        return $this->agencyContact;
-    }
-
-    public function setAgencyContact(NullablePerson $agencyContact): Project
-    {
-        $this->agencyContact = $agencyContact;
-
-        return $this;
-    }
-
-    public function getBankInstitution(): ?string
-    {
-        return $this->bankInstitution;
-    }
-
-    public function setBankInstitution(?string $bankInstitution): Project
-    {
-        $this->bankInstitution = $bankInstitution;
-
-        return $this;
-    }
-
-    public function getBic(): ?string
-    {
-        return $this->bic;
-    }
-
-    public function setBic(?string $bic): Project
-    {
-        $this->bic = $bic;
-
-        return $this;
-    }
-
-    public function getIban(): ?string
-    {
-        return $this->iban;
-    }
-
-    public function setIban(?string $iban): Project
-    {
-        $this->iban = $iban;
-
-        return $this;
+        return $this->agent->getCompany();
     }
 
     public function setRiskGroupName(string $riskGroupName): Project
@@ -1019,7 +871,7 @@ class Project
 
     public function getAgentParticipation(): Participation
     {
-        return $this->findParticipationByParticipant($this->getAgent());
+        return $this->findParticipationByParticipant($this->getAgentCompany());
     }
 
     public function findParticipationByParticipant(Company $participant): ?Participation
@@ -1036,6 +888,11 @@ class Project
     public function getSource(): ?ArrangementProject
     {
         return $this->source;
+    }
+
+    public function getCurrency(): string
+    {
+        return $this->getGlobalFundingMoney()->getCurrency();
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Security\Voter;
 
+use Exception;
 use Unilend\Agency\Entity\Project;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
@@ -40,8 +41,8 @@ class ProjectVoter extends AbstractEntityVoter
             return false;
         }
 
-        // Est-ce que l'on devrai vérifier l'héritage pour la création des projets.
-        return $staff->getCompany() === $project->getAgent() && $staff->hasAgencyProjectCreationPermission();
+        // Est-ce que l'on devrai vérifier l'héritage pour la création des projets ? .
+        return $staff->getCompany() === $project->getAgentCompany() && $staff->hasAgencyProjectCreationPermission();
     }
 
     protected function canEdit(Project $project, User $user): bool
