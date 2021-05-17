@@ -9,6 +9,9 @@ use Doctrine\Persistence\ObjectManager;
 use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\DataFixtures\NafNaceFixtures;
 use Unilend\Core\DataFixtures\StaffFixtures;
+use Unilend\Core\Entity\Constant\CAInternalRating;
+use Unilend\Core\Entity\Constant\CAInternalRetailRating;
+use Unilend\Core\Entity\Constant\CARatingType;
 use Unilend\Core\Entity\Embeddable\Address;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
@@ -38,11 +41,9 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     public function getDependencies(): array
     {
         return [
-            FieldFixtures::class,
             NafNaceFixtures::class,
             ProgramFixtures::class,
             ProgramChoiceOptionFixtures::class,
-            StaffFixtures::class,
         ];
     }
 
@@ -59,13 +60,6 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
     private function loadData(ObjectManager $manager): iterable
     {
-        $address = (new Address())
-            ->setRoadNumber((string) $this->faker->randomDigit)
-            ->setRoadName($this->faker->streetAddress)
-            ->setCity($this->faker->city)
-            ->setPostCode($this->faker->countryCode)
-        ;
-
         /** @var Staff $addedBy */
         $addedBy = $this->getReference(StaffFixtures::ADMIN);
 
@@ -74,40 +68,40 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
         yield self::RESERVATION_DRAFT => [
             'program'                  => $program,
-            'borrower'                 => $this->createBorrower($manager, $program, $address),
+            'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
             'addedBy'                  => $addedBy,
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($address),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'currentStatus'            => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_SENT => [
             'program'                  => $program,
-            'borrower'                 => $this->createBorrower($manager, $program, $address),
+            'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
             'addedBy'                  => $addedBy,
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($address),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($manager, $program),
             'currentStatus'            => ReservationStatus::STATUS_SENT,
         ];
         yield self::RESERVATION_CONFIRMED_BY_MANAGING_COMPANY => [
             'program'                  => $program,
-            'borrower'                 => $this->createBorrower($manager, $program, $address),
+            'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
             'addedBy'                  => $addedBy,
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($address),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($manager, $program),
             'currentStatus'            => ReservationStatus::STATUS_CONFIRMED_BY_MANAGING_COMPANY,
         ];
         yield self::RESERVATION_CONFIRMED_BY_FEI => [
             'program'                  => $program,
-            'borrower'                 => $this->createBorrower($manager, $program, $address),
+            'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
             'addedBy'                  => $addedBy,
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($address),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($manager, $program),
             'currentStatus'            => ReservationStatus::STATUS_CONFIRMED_BY_FEI,
         ];
         yield self::RESERVATION_CONTRACT_FORMALIZED => [
             'program'                  => $program,
-            'borrower'                 => $this->createBorrower($manager, $program, $address),
+            'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
             'addedBy'                  => $addedBy,
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($address),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($manager, $program),
             'currentStatus'            => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
         ];
@@ -134,6 +128,16 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         return $reservation;
     }
 
+    private function createAddress(): Address
+    {
+        return (new Address())
+            ->setRoadNumber((string) $this->faker->randomDigit)
+            ->setRoadName($this->faker->streetAddress)
+            ->setCity($this->faker->city)
+            ->setPostCode($this->faker->countryCode)
+        ;
+    }
+
     private function createBorrower(ObjectManager $manager, Program $program, Address $address): Borrower
     {
         $fieldRepository               = $manager->getRepository(Field::class);
@@ -156,7 +160,9 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'field'   => $legalFormField,
         ]);
 
-        return (new Borrower($this->faker->company, 'grade'))
+        $grades = CARatingType::CA_INTERNAL_RETAIL_RATING === $program->getRatingType() ? CAInternalRetailRating::getConstList() : CAInternalRating::getConstList();
+
+        return (new Borrower($this->faker->company, $grades[array_rand($grades)]))
             ->setBorrowerType($borrowerType)
             ->setLegalForm($legalForm)
             ->setTaxNumber('12 23 45 678 987')
