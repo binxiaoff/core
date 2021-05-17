@@ -298,7 +298,7 @@ class Participation extends AbstractProjectPartaker
         Money $finalAllocation,
         Money $capital
     ) {
-        parent::__construct($participant->getSiren(), $capital);
+        parent::__construct($participant->getSiren() ?? '', $capital);
         $this->responsibilities         = new Bitmask(0);
         $this->pool                     = $project;
         $this->finalAllocation          = $finalAllocation;

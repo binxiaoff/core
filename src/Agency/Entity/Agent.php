@@ -13,17 +13,18 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\User;
-use Unilend\Core\Validator\Constraints\Siren;
 
 /**
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
  *             "agency:agent:read",
+ *             "agency:projectPartaker:read",
  *             "nullableMoney:read"
  *         }
  *     },
@@ -37,7 +38,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
- *                 "groups": {"agency:agent:write"}
+ *                 "groups": {"agency:agent:write", "agency:projectPartaker:write"}
  *             }
  *         }
  *     }
@@ -45,7 +46,7 @@ use Unilend\Core\Validator\Constraints\Siren;
  * @ORM\Table(name="agency_agent")
  * @ORM\Entity
  */
-class Agent
+class Agent extends AbstractProjectPartaker
 {
     use PublicizeIdentityTrait;
 
@@ -98,17 +99,6 @@ class Agent
     private ?string $displayName;
 
     /**
-     * @ORM\Column(type="string", length=9, nullable=true)
-     *
-     * @Siren
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:agent:read", "agency:agent:write"})
-     */
-    private ?string $siren;
-
-    /**
      * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\NotBlank(groups={"published"})
@@ -125,22 +115,6 @@ class Agent
      * @Groups({"agency:agent:read", "agency:agent:write"})
      */
     private ?string $headOffice;
-
-    /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
-     *
-     * @Groups({"agency:agent:read", "agency:agent:write"})
-     */
-    private ?NullableMoney $capital;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:agent:read", "agency:agent:write"})
-     */
-    private ?string $rcs;
 
     /**
      * @ORM\Column(type="string", nullable=true)
@@ -182,10 +156,10 @@ class Agent
 
     public function __construct(Project $project, Company $company)
     {
+        parent::__construct($company->getSiren() ?? '', new Money($project->getCurrency(), '0'));
         $this->project     = $project;
         $this->company     = $company;
         $this->members     = new ArrayCollection();
-        $this->siren       = $company->getSiren();
         $this->displayName = $company->getDisplayName();
     }
 
@@ -240,30 +214,6 @@ class Agent
         return $this;
     }
 
-    public function getCapital(): ?NullableMoney
-    {
-        return $this->capital;
-    }
-
-    public function setCapital(?NullableMoney $capital): Agent
-    {
-        $this->capital = $capital;
-
-        return $this;
-    }
-
-    public function getRcs(): ?string
-    {
-        return $this->rcs;
-    }
-
-    public function setRcs(?string $rcs): Agent
-    {
-        $this->rcs = $rcs;
-
-        return $this;
-    }
-
     public function getBankInstitution(): ?string
     {
         return $this->bankInstitution;
@@ -296,18 +246,6 @@ class Agent
     public function setIban(?string $iban): Agent
     {
         $this->iban = $iban;
-
-        return $this;
-    }
-
-    public function getSiren(): ?string
-    {
-        return $this->siren;
-    }
-
-    public function setSiren(?string $siren): Agent
-    {
-        $this->siren = $siren;
 
         return $this;
     }

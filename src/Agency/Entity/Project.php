@@ -215,6 +215,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "company:read",
  *             "companyGroupTag:read",
  *             "agency:agent:read",
+ *             "agency:projectPartaker:read",
  *             "agency:agentMember:read",
  *             "agency:borrower:read",
  *             "agency:borrowerMember:read",
@@ -468,15 +469,6 @@ class Project
 
         $this->added   = new DateTimeImmutable();
         $this->addedBy = $addedBy;
-        $this->agent   = new Agent($this, $addedBy->getCompany());
-        $this->agent->addMember(new AgentMember($this->agent, $addedBy->getUser(), $addedBy->getUser()));
-        $this->agent->setContact(
-            (new NullablePerson())
-                ->setFirstName($currentUser->getFirstName())
-                ->setLastName($currentUser->getLastName())
-                ->setEmail($currentUser->getEmail())
-                ->setPhone($currentUser->getPhone())
-        );
 
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
@@ -488,11 +480,21 @@ class Project
         $this->tranches           = new ArrayCollection();
         $this->participationPools = new ArrayCollection([false => new ParticipationPool($this, false), true => new ParticipationPool($this, true)]);
 
+        $this->agent = new Agent($this, $addedBy->getCompany());
+        $this->agent->addMember(new AgentMember($this->agent, $addedBy->getUser(), $addedBy->getUser()));
+        $this->agent->setContact(
+            (new NullablePerson())
+                ->setFirstName($currentUser->getFirstName())
+                ->setLastName($currentUser->getLastName())
+                ->setEmail($currentUser->getEmail())
+                ->setPhone($currentUser->getPhone())
+        );
+
         $participation = new Participation(
             $this->getPrimaryParticipationPool(),
             $this->agent->getCompany(),
-            new Money($this->globalFundingMoney->getCurrency()),
-            new Money($this->globalFundingMoney->getCurrency())
+            new Money($this->getCurrency()),
+            new Money($this->getCurrency())
         );
         $participation->setResponsibilities(new Bitmask(Participation::RESPONSIBILITY_AGENT));
         $participation->setAgentCommission('0');
@@ -886,6 +888,11 @@ class Project
     public function getSource(): ?ArrangementProject
     {
         return $this->source;
+    }
+
+    public function getCurrency(): string
+    {
+        return $this->getGlobalFundingMoney()->getCurrency();
     }
 
     /**
