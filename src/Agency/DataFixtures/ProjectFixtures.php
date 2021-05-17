@@ -160,8 +160,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     private function createBorrower(Project $project, Staff $staff)
     {
-        $siren = $this->generateSiren();
-
         $borrower = new Borrower(
             $project,
             $staff,
@@ -172,31 +170,13 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
                 (string) $this->faker->randomFloat(0, 100000)
             ),
             $this->faker->address,
-            $siren,
+            $this->faker->siren(false), // Works because Faker is set to Fr_fr.
         );
 
         $borrower->setReferent(new BorrowerMember($borrower, new User($this->faker->email)));
         $borrower->setSignatory(new BorrowerMember($borrower, new User($this->faker->email)));
 
         return $borrower;
-    }
-
-    /**
-     * @return string
-     */
-    private function generateSiren()
-    {
-        // A siren use the Luhn algorithm to validate. Its final length (number + checksum must be 9)
-        // https://fr.wikipedia.org/wiki/Luhn_algorithm
-        // https://fr.wikipedia.org/wiki/Syst%C3%A8me_d%27identification_du_r%C3%A9pertoire_des_entreprises#Calcul_et_validit%C3%A9_d'un_num%C3%A9ro_SIREN
-        $siren    = $this->faker->randomNumber(8); // First we generate a 8 digit long number
-        $siren    = mb_str_split((string) $siren); // Conversion and split into an array
-        $checksum = array_map(static fn ($i, $d) => 1 === $i % 2 ? array_sum(mb_str_split((string) ($d * 2))) : $d, range(0, 7), $siren); // Double each odd index digit
-        $checksum = array_sum($checksum); // Sum the resulting array
-        $checksum *= 9; // Multiply it by 9
-        $checksum %= 10; // Checksum is the last digit of the sum
-
-        return implode('', [...$siren, $checksum]);
     }
 
     /**

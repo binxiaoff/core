@@ -8,6 +8,7 @@ use Closure;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
+use Faker;
 use ReflectionException;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyAdmin;
@@ -20,24 +21,24 @@ use Unilend\Test\Core\DataFixtures\UserFixtures;
 
 abstract class AbstractCompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    /**
-     * @return array
-     */
     public function getDependencies(): array
     {
         return [UserFixtures::class];
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws ReflectionException
      * @throws Exception
      */
     final public function load(ObjectManager $manager)
     {
+        $faker = Faker\Factory::create('fr_FR');
+
         $manager->getConnection()->getConfiguration()->setSQLLogger(null);
-        $company = new Company($this->getName(), $this->getName());
+        // Works because Faker is set to Fr_fr
+        $company = new Company($this->getName(), $this->getName(), $faker->siren(false));
         $manager->persist($company->getRootTeam());
         $company->setShortCode($this->getShortCode());
         $company->setBankCode($this->getBankCode());
@@ -72,37 +73,24 @@ abstract class AbstractCompanyFixtures extends AbstractFixtures implements Depen
         $manager->clear();
     }
 
-    /**
-     * @return string
-     */
     abstract protected function getName(): string;
 
     /**
-     * @param Team $companyRootTeam
-     *
      * @return mixed
      */
     abstract protected function getTeams(Team $companyRootTeam);
 
-    /**
-     * @return string
-     */
     protected function getShortCode(): string
     {
         return static::getName();
     }
 
-    /**
-     * @return string
-     */
     protected function getBankCode(): string
     {
         return static::getName();
     }
 
     /**
-     * @param Company $company
-     *
      * @return array|CompanyAdmin[]
      */
     abstract protected function getAdmins(Company $company): array;
@@ -115,12 +103,9 @@ abstract class AbstractCompanyFixtures extends AbstractFixtures implements Depen
     abstract protected function getStaff(Team $team): array;
 
     /**
-     * @param User $user
-     * @param Team $team
+     * @throws Exception
      *
      * @return Staff
-     *
-     * @throws Exception
      */
     protected function createManager(User $user, Team $team)
     {
@@ -131,23 +116,15 @@ abstract class AbstractCompanyFixtures extends AbstractFixtures implements Depen
     }
 
     /**
-     * @param User $user
-     * @param Team $team
+     * @throws Exception
      *
      * @return Staff
-     *
-     * @throws Exception
      */
     protected function createStaff(User $user, Team $team)
     {
         return new Staff($user, $team);
     }
 
-    /**
-     * @param Team $parent
-     *
-     * @return Closure
-     */
     final protected function getTeamFactory(Team $parent): Closure
     {
         return static function ($name) use ($parent) {
@@ -155,9 +132,6 @@ abstract class AbstractCompanyFixtures extends AbstractFixtures implements Depen
         };
     }
 
-    /**
-     * @return CompanyGroup|null
-     */
     protected function getCompanyGroup(): ?CompanyGroup
     {
         return null;
