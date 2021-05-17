@@ -139,12 +139,12 @@ class Company implements TraceableStatusAwareInterface
     private string $companyName;
 
     /**
-     * @ORM\Column(type="string", length=9, nullable=true, unique=true)
+     * @ORM\Column(type="string", length=9, unique=true)
      *
      * @Assert\Length(9)
      * @Assert\Luhn
      */
-    private ?string $siren;
+    private string $siren;
 
     /**
      * @ORM\Column(type="string", length=10, unique=true)
@@ -232,7 +232,7 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @throws Exception
      */
-    public function __construct(string $displayName, string $companyName)
+    public function __construct(string $displayName, string $companyName, string $siren)
     {
         $this->displayName  = $displayName;
         $this->companyName  = $companyName;
@@ -241,6 +241,7 @@ class Company implements TraceableStatusAwareInterface
         $this->added        = new DateTimeImmutable();
         $this->admins       = new ArrayCollection();
         $this->companyGroup = null;
+        $this->siren        = $siren;
         $moduleCodes        = CompanyModule::getAvailableModuleCodes();
         $this->modules      = new ArrayCollection(array_map(function ($module) {
             return new CompanyModule($module, $this);
@@ -273,12 +274,12 @@ class Company implements TraceableStatusAwareInterface
         return $this->companyName;
     }
 
-    public function getSiren(): ?string
+    public function getSiren(): string
     {
         return $this->siren;
     }
 
-    public function setSiren(?string $siren): Company
+    public function setSiren(string $siren): Company
     {
         $this->siren = $siren;
 

@@ -6,9 +6,17 @@ namespace Unilend\Test\Syndication\Unit\Entity;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\Entity\{Company, Embeddable\Money, Staff, User};
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\Project;
 
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
 class ProjectTest extends TestCase
 {
     /**
@@ -18,8 +26,8 @@ class ProjectTest extends TestCase
     {
         // We need a mocked staff since we can't construct Staff by itself
         $mockedStaff = $this->getMockBuilder(Staff::class)->disableOriginalConstructor()->getMock();
-        $company = new Company('Company 1', 'Company 1');
-        $user = new User('contact@demo.fr');
+        $company     = new Company('Company 1', 'Company 1', '850890666');
+        $user        = new User('contact@demo.fr');
         $user->setFirstName('Firstname');
         $user->setLastName('Lastname');
         $user->setJobFunction('JobFunction');
@@ -31,13 +39,12 @@ class ProjectTest extends TestCase
         // Contact should be hydrated
         $contact = $project->getPrivilegedContactPerson();
 
-        static::assertEquals('Firstname', $contact->getFirstName());
-        static::assertEquals('Lastname', $contact->getLastName());
-        static::assertEquals('contact@demo.fr', $contact->getEmail());
-        static::assertEquals('JobFunction', $contact->getOccupation());
-        static::assertEquals('05000000', $contact->getPhone());
+        static::assertSame('Firstname', $contact->getFirstName());
+        static::assertSame('Lastname', $contact->getLastName());
+        static::assertSame('contact@demo.fr', $contact->getEmail());
+        static::assertSame('JobFunction', $contact->getOccupation());
+        static::assertSame('05000000', $contact->getPhone());
     }
-
 
     /**
      * @throws \Exception
@@ -45,14 +52,14 @@ class ProjectTest extends TestCase
     public function testProjectParticipationMember()
     {
         $rootStaff = $this->getMockBuilder(Staff::class)->disableOriginalConstructor()->getMock();
-        $company = new Company('Company', 'company');
-        $user = new User('email@email.fr');
-        $staff = new Staff($user, $company->getRootTeam(), $rootStaff);
+        $company   = new Company('Company', 'company', '850890666');
+        $user      = new User('email@email.fr');
+        $staff     = new Staff($user, $company->getRootTeam(), $rootStaff);
         $user->setCurrentStaff($staff);
         $project = new Project($staff, 'risk1', new Money('EUR', '10000'));
-        self::assertCount(1, $project->getProjectParticipations());
-        self::assertCount(1, $project->getProjectParticipations()[0]->getProjectParticipationMembers());
-        self::assertSame(
+        static::assertCount(1, $project->getProjectParticipations());
+        static::assertCount(1, $project->getProjectParticipations()[0]->getProjectParticipationMembers());
+        static::assertSame(
             $staff,
             $project->getProjectParticipations()[0]->getProjectParticipationMembers()[0]->getStaff()
         );

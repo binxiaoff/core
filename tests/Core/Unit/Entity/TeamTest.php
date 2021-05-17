@@ -10,19 +10,19 @@ use Unilend\Core\Entity\Team;
 
 /**
  * @coversDefaultClass \Unilend\Core\Entity\Team
+ *
+ * @internal
  */
 class TeamTest extends TestCase
 {
     /**
-     * @return void
-     *
      * @covers ::createTeam
      */
     public function testCreateTeam()
     {
-        $company = new Company('company', 'company');
+        $company = new Company('company', 'company', '850890666');
 
-        $name = 'test';
+        $name        = 'test';
         $createdTeam = Team::createTeam($name, $company->getRootTeam());
 
         static::assertSame($company->getRootTeam(), $createdTeam->getParent());
@@ -39,7 +39,7 @@ class TeamTest extends TestCase
      */
     public function testCreateRootTeam()
     {
-        $company = new Company('company', 'company');
+        $company = new Company('company', 'company', '850890666');
 
         $rootTeam = Team::createRootTeam($company);
 
@@ -150,7 +150,7 @@ class TeamTest extends TestCase
             '3' => [],
         ];
 
-        $company = new Company('team', 'team');
+        $company = new Company('team', 'team', '850890666');
 
         // Inner function to create tree (use recursion)
         // passing reference to the function to allow recursion

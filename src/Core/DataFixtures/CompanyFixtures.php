@@ -9,18 +9,32 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
-use Unilend\Core\Entity\{Company, CompanyGroup, CompanyStatus, Team, User};
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\CompanyGroup;
+use Unilend\Core\Entity\CompanyStatus;
+use Unilend\Core\Entity\Team;
+use Unilend\Core\Entity\User;
 
 class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     public const REFERENCE_PREFIX = 'company:';
-    public const CALS = self::REFERENCE_PREFIX . Company::SHORT_CODE_CALS;
-    public const CASA = self::REFERENCE_PREFIX . Company::SHORT_CODE_CASA;
+    public const CALS             = self::REFERENCE_PREFIX . Company::SHORT_CODE_CALS;
+    public const CASA             = self::REFERENCE_PREFIX . Company::SHORT_CODE_CASA;
 
     public const COMPANY_MANY_STAFF = 'COMPANY_MANY_STAFF';
-    private const COMPANY_NOT_SIGNED = 'COMPANY_NOT_SIGNED';
+    public const COMPANY_EXTERNAL   = 'COMPANY_EXTERNAL';
+
+    public const COMPANIES = [
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[0],
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[1],
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[2],
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[3],
+        self::REFERENCE_PREFIX . self::CA_SHORTCODE[4],
+        self::COMPANY_EXTERNAL,
+        self::COMPANY_NOT_SIGNED,
+    ];
+    private const COMPANY_NOT_SIGNED            = 'COMPANY_NOT_SIGNED';
     private const COMPANY_NOT_SIGNED_NO_MEMBERS = 'COMPANY_NOT_SIGNED_NO_MEMBERS';
-    public const COMPANY_EXTERNAL = 'COMPANY_EXTERNAL';
 
     private const CA_SHORTCODE = [
         'ALVO', 'ATVD', 'BRPI', 'CENL', 'CEST', 'CM2SE', 'CHPE',
@@ -39,21 +53,9 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         'CEBPL', 'CEPAC', 'CECA', 'CEAL', 'CEBFC', 'CEMP', 'CEGEE',
     ];
 
-    public const COMPANIES = [
-        self::REFERENCE_PREFIX . self::CA_SHORTCODE[0],
-        self::REFERENCE_PREFIX . self::CA_SHORTCODE[1],
-        self::REFERENCE_PREFIX . self::CA_SHORTCODE[2],
-        self::REFERENCE_PREFIX . self::CA_SHORTCODE[3],
-        self::REFERENCE_PREFIX . self::CA_SHORTCODE[4],
-        self::COMPANY_EXTERNAL,
-        self::COMPANY_NOT_SIGNED,
-    ];
-
     private ObjectManager $entityManager;
 
     /**
-     * @param ObjectManager $manager
-     *
      * @throws ReflectionException
      * @throws Exception
      */
@@ -63,7 +65,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         /** @var CompanyGroup $CAGroup */
         $CAGroup = $this->getReference('companyGroup/CA');
 
-       // Main company
+        // Main company
         /** @var User $user */
         $user    = $this->getReference(UserFixtures::ADMIN);
         $domain  = explode('@', $user->getEmail())[1];
@@ -72,14 +74,15 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         $company = $this->createCompany('Crédit Agricole SA', Company::SHORT_CODE_CASA)
             ->setEmailDomain('credit-agricole-sa.fr')
-            ->setCompanyGroup($CAGroup);
+            ->setCompanyGroup($CAGroup)
+        ;
         $this->addReference(self::CASA, $company);
 
         // CA banks
         foreach (self::CA_SHORTCODE as $index => $shortCode) {
             $this->addReference(
                 self::REFERENCE_PREFIX . $shortCode,
-                $this->createCompany("CA Bank $index", $shortCode)->setCompanyGroup($CAGroup)
+                $this->createCompany("CA Bank {$index}", $shortCode)->setCompanyGroup($CAGroup)
             );
         }
 
@@ -88,8 +91,8 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         $this->addReference(self::COMPANY_EXTERNAL, $company);
 
         // Other external banks
-        for ($i = 1; $i <= 5; $i++) {
-            $this->createCompany("External Bank $i")->setShortCode(static::OTHER_SHORTCODE[$i]);
+        for ($i = 1; $i <= 5; ++$i) {
+            $this->createCompany("External Bank {$i}")->setShortCode(static::OTHER_SHORTCODE[$i]);
         }
 
         /** @var Company $company */
@@ -119,23 +122,19 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
-     * @param string|null $name
-     * @param string|null $shortcode
-     * @param int         $status
-     *
-     * @return Company
-     *
      * @throws ReflectionException
      * @throws Exception
      */
     private function createCompany(string $name = null, string $shortcode = null, int $status = CompanyStatus::STATUS_SIGNED): Company
     {
         $companyName = $name ?: $this->faker->company;
-        $vatTypes = Company::getPossibleVatTypes();
-        $company     = (new Company($companyName, $companyName))
+        $vatTypes    = Company::getPossibleVatTypes();
+        // Works because Faker is set to Fr_fr
+        $company = (new Company($companyName, $companyName, $this->faker->siren(false)))
             ->setBankCode((string) $this->faker->randomNumber(8, true))
             ->setShortCode($shortcode ?: $this->faker->regexify('[A-Za-z0-9]{10}'))
-            ->setApplicableVat($vatTypes[array_rand($vatTypes)]);
+            ->setApplicableVat($vatTypes[array_rand($vatTypes)])
+        ;
         $this->forcePublicId($company, Urlizer::urlize($companyName));
         $companyStatus = new CompanyStatus($company, $status);
         $company->setCurrentStatus($companyStatus);

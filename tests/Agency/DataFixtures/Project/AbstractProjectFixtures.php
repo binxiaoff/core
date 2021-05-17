@@ -31,7 +31,7 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
             LegalForm::SARL,
             new Money('eur', '40000000'),
             '50, rue de la Boetie 75008 Paris',
-            'RCS VANNES B 514919844'
+            '514919844'
         );
     }
 
@@ -70,6 +70,7 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
         return new Participation(
             $project->getPrimaryParticipationPool(),
             $participant,
+            new Money('eur', '4000000'),
             new Money('eur', '4000000')
         );
     }
@@ -79,6 +80,7 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
         return new Participation(
             $project->getSecondaryParticipationPool(),
             $participant,
+            new Money('eur', '4000000'),
             new Money('eur', '4000000')
         );
     }
