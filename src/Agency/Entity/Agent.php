@@ -168,7 +168,7 @@ class Agent extends AbstractProjectPartaker
         return $this->project;
     }
 
-    public function getMembers()
+    public function getMembers(): Collection
     {
         return $this->members;
     }
