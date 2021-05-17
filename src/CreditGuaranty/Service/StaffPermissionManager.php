@@ -34,7 +34,7 @@ class StaffPermissionManager
     public function canGrant(Staff $staff, Bitmask $permissions): bool
     {
         $staffPermission = $this->staffPermissionRepository->findOneBy(['staff' => $staff]);
-        //Since the "grant permissions" have the same positon as "permissions" that a user can grant, we can check it by using has().
+        // Since the "grant permissions" have the same positon as "permissions" that an user can grant, we can check it by using has().
         return $staffPermission && $staffPermission->getGrantPermissions()->has($permissions);
     }
 }

@@ -55,7 +55,7 @@ class StaffPermissionVoter extends AbstractEntityVoter
             return false;
         }
 
-        //To simply the code, we verify only the permissions already set. As a company can only be a participant or a manager (not both), the code works.
+        // To simplify the code, we only verify the permissions already set. As a company can only be a participant or a manager (not both), the code works.
         return $staff->getCompany() === $staffPermission->getStaff()->getCompany() && $this->staffPermissionManager->canGrant($staff, $staffPermission->getPermissions());
     }
 
