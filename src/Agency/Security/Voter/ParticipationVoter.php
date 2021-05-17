@@ -15,7 +15,7 @@ class ParticipationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_DELETE = 'delete';
 
-    public function canView(Participation $participation, User $user)
+    protected function canView(Participation $participation, User $user)
     {
         if (false === $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $participation->getProject())) {
             return false;
@@ -40,7 +40,7 @@ class ParticipationVoter extends AbstractEntityVoter
         return false;
     }
 
-    public function canEdit(Participation $participation, User $user): bool
+    protected function canEdit(Participation $participation, User $user): bool
     {
         if ($participation->getProject()->isArchived()) {
             return false;
