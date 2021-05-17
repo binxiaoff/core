@@ -9,7 +9,6 @@ use Exception;
 use Unilend\Agency\Entity\BorrowerMember;
 use Unilend\Agency\Entity\ParticipationMember;
 use Unilend\Agency\Entity\Project;
-use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Test\Core\DataFixtures\Companies\BarCompanyFixtures;
 use Unilend\Test\Core\DataFixtures\Companies\FooCompanyFixtures;
@@ -22,7 +21,7 @@ class DraftProject extends AbstractProjectFixtures
      *
      * @throws Exception
      */
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $staff = $this->getReference('staff_company:foo_user:b');
 
@@ -30,23 +29,20 @@ class DraftProject extends AbstractProjectFixtures
 
         $project = new Project(
             $staff,
-            $this->getName(),
+            static::getName(),
             'riskGroupName',
             new Money('EUR', '200000000'),
             new \DateTimeImmutable(),
             new \DateTimeImmutable()
         );
 
-        $this->setPublicId($project, $this->getName());
+        $this->setPublicId($project, static::getName());
 
-        $participations = array_map(
-            fn (Company $company) => $this->createTestPrimaryParticipation($project, $company),
-            [
-                'bar' => $this->getReference('company:bar'),
-            ]
-        );
+        $barParticipation = $this->createTestPrimaryParticipation($project, $this->getReference('company:bar'));
+        $barParticipation->addMember(new ParticipationMember($barParticipation, $this->getReference('user:b')));
 
-        $participations['bar']->addMember(new ParticipationMember($participations['bar'], $this->getReference('user:b')));
+        $tuxParticipation = $this->createTestSecondaryParticipation($project, $this->getReference('company:tux'));
+        $tuxParticipation->addMember(new ParticipationMember($tuxParticipation, $this->getReference('user:b')));
 
         $borrower = $this->createTestBorrower($project, $staff);
 
@@ -57,13 +53,14 @@ class DraftProject extends AbstractProjectFixtures
             [$manager, 'persist'],
             [
                 $project,
-                ...array_values($participations),
+                $barParticipation,
+                $tuxParticipation,
                 $borrower,
                 new ParticipationMember($project->getAgentParticipation(), $this->getReference('user:c')),
             ]
         );
 
-        $this->setReference('project:' . $this->getName(), $project);
+        $this->setReference(static::getReferenceName(), $project);
 
         $manager->flush();
     }
@@ -80,8 +77,13 @@ class DraftProject extends AbstractProjectFixtures
         ];
     }
 
-    protected function getName()
+    protected static function getName(): string
     {
         return 'draft';
+    }
+
+    protected static function getReferenceName(): string
+    {
+        return 'project:' . static::getName();
     }
 }

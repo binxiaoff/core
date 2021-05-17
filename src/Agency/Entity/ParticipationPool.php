@@ -242,6 +242,11 @@ class ParticipationPool
         return $this->secondary;
     }
 
+    public function isPrimary(): bool
+    {
+        return false === $this->isSecondary();
+    }
+
     public function getCurrentValidationGroups(self $pool): array
     {
         $validationGroups = ['Default', 'ParticipationPool'];

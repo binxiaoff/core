@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Security\Voter;
 
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Agency\Entity\Participation;
-use Unilend\Agency\Repository\ParticipationRepository;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
@@ -17,42 +15,32 @@ class ParticipationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_DELETE = 'delete';
 
-    private ParticipationRepository $participationRepository;
-
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker, ParticipationRepository $participationRepository)
-    {
-        parent::__construct($authorizationChecker);
-        $this->participationRepository = $participationRepository;
-    }
-
-    public function canView(Participation $participation, User $user)
+    protected function canView(Participation $participation, User $user)
     {
         if (false === $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $participation->getProject())) {
             return false;
         }
 
-        if (
-            $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participation->getProject())
-            || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $participation->getProject())
-        ) {
+        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participation->getProject())) {
             return true;
         }
 
-        $staff = $user->getCurrentStaff();
-
-        if (null === $staff) {
-            return false;
+        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER) && $participation->isPrimary()) {
+            return true;
         }
 
-        $company = $staff->getCompany();
+        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PRIMARY_PARTICIPANT) && $participation->isPrimary()) {
+            return true;
+        }
 
-        /** @var Participation $connectedUserParticipation */
-        $connectedUserParticipation = $this->participationRepository->findOneBy(['participant' => $company, 'project' => $participation->getProject()]);
+        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_SECONDARY_PARTICIPANT) && $participation->isSecondary()) {
+            return true;
+        }
 
-        return $connectedUserParticipation && $connectedUserParticipation->isSecondary() === $participation->isSecondary();
+        return false;
     }
 
-    public function canEdit(Participation $participation, User $user): bool
+    protected function canEdit(Participation $participation, User $user): bool
     {
         if ($participation->getProject()->isArchived()) {
             return false;
@@ -76,10 +64,23 @@ class ParticipationVoter extends AbstractEntityVoter
             && $staff->getCompany() === $participation->getParticipant();
     }
 
-    public function canCreate(Participation $participation, User $user): bool
+    protected function canCreate(Participation $participation, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject())
             && false === $participation->getProject()->isArchived();
+    }
+
+    /**
+     * @param Participation $subject
+     */
+    protected function fulfillPreconditions($subject, User $user): bool
+    {
+        // No one can interact secondary participant if there is no silent syndication
+        if ($subject->isSecondary() && false === $subject->getProject()->hasSilentSyndication()) {
+            return false;
+        }
+
+        return parent::fulfillPreconditions($subject, $user);
     }
 
     protected function canDelete(Participation $participation, User $user): bool

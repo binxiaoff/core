@@ -22,6 +22,9 @@ class ProjectRoleVoter extends Voter
     public const ROLE_PARTICIPANT = 'participant';
     public const ROLE_AGENT       = 'agent';
 
+    public const ROLE_PRIMARY_PARTICIPANT   = 'primary_participant';
+    public const ROLE_SECONDARY_PARTICIPANT = 'secondary_participant';
+
     private BorrowerMemberRepository $borrowerMemberRepository;
 
     private ParticipationMemberRepository $participationMemberRepository;
@@ -66,7 +69,13 @@ class ProjectRoleVoter extends Voter
                 return $this->isBorrower($subject, $token);
 
             case self::ROLE_PARTICIPANT:
-                return $this->isParticipant($subject, $token);
+                return $this->isPrimaryParticipant($subject, $token) || $this->isSecondaryParticipant($subject, $token);
+
+            case self::ROLE_PRIMARY_PARTICIPANT:
+                return $this->isPrimaryParticipant($subject, $token);
+
+            case self::ROLE_SECONDARY_PARTICIPANT:
+                return $this->isSecondaryParticipant($subject, $token);
 
             default:
                 throw new \LogicException('This code should never be reached');
@@ -76,7 +85,7 @@ class ProjectRoleVoter extends Voter
     /**
      * @throws NonUniqueResultException
      */
-    protected function isBorrower(Project $project, TokenInterface $token): bool
+    private function isBorrower(Project $project, TokenInterface $token): bool
     {
         $user = $token->getUser();
 
@@ -90,7 +99,48 @@ class ProjectRoleVoter extends Voter
     /**
      * @throws NonUniqueResultException
      */
-    protected function isParticipant(Project $project, TokenInterface $token): bool
+    private function isPrimaryParticipant(Project $project, TokenInterface $token): bool
+    {
+        return $this->isParticipant($project, $token, false);
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     */
+    private function isSecondaryParticipant(Project $project, TokenInterface $token): bool
+    {
+        return $this->isParticipant($project, $token, true) && $project->hasSilentSyndication();
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     */
+    private function isAgent(Project $project, TokenInterface $token): bool
+    {
+        $staff = $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
+
+        if (null === $staff || ($staff->getCompany() !== $project->getAgent())) {
+            return false;
+        }
+
+        // Fetch users whom connected user can get permission as he had them
+        $managedUsers = $staff->getManagedUsers();
+
+        $company = $staff->getCompany();
+
+        foreach ($managedUsers as $managedUser) {
+            if ($this->participationMemberRepository->findByProjectAndCompanyAndUser($project, $company, $managedUser)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     */
+    private function isParticipant(Project $project, TokenInterface $token, bool $secondary): bool
     {
         // Participant can only be participant on project if project is published
         if (false === $project->isPublished()) {
@@ -112,32 +162,9 @@ class ProjectRoleVoter extends Voter
             $participationMember = $this->participationMemberRepository->findByProjectAndCompanyAndUser($project, $company, $managedUser);
 
             if ($participationMember) {
-                return true;
-            }
-        }
+                $participation = $participationMember->getParticipation();
 
-        return false;
-    }
-
-    /**
-     * @throws NonUniqueResultException
-     */
-    protected function isAgent(Project $project, TokenInterface $token): bool
-    {
-        $staff = $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
-
-        if (null === $staff || ($staff->getCompany() !== $project->getAgent())) {
-            return false;
-        }
-
-        // Fetch users whom connected user can get permission as he had them
-        $managedUsers = $staff->getManagedUsers();
-
-        $company = $staff->getCompany();
-
-        foreach ($managedUsers as $managedUser) {
-            if ($this->participationMemberRepository->findByProjectAndCompanyAndUser($project, $company, $managedUser)) {
-                return true;
+                return $secondary === $participation->isSecondary();
             }
         }
 

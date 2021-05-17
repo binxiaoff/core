@@ -358,13 +358,6 @@ class Project
     private Money $globalFundingMoney;
 
     /**
-     * @ORM\Column(type="boolean")
-     *
-     * @Groups({"agency:project:write", "agency:project:read"})
-     */
-    private bool $silentSyndication;
-
-    /**
      * This collection will be indexed by secondary.
      * This is either true or false. False means primary and true means secondary.
      *
@@ -574,8 +567,6 @@ class Project
 
         $this->participationPools[false]->addParticipation($participation);
 
-        $this->silentSyndication = false;
-
         $this->statuses      = new ArrayCollection();
         $this->currentStatus = static::STATUS_DRAFT;
 
@@ -704,16 +695,15 @@ class Project
         return $this;
     }
 
+    /**
+     * @Groups({"agency:project:read"})
+     */
     public function hasSilentSyndication(): bool
     {
-        return $this->silentSyndication;
-    }
-
-    public function setSilentSyndication(bool $silentSyndication): Project
-    {
-        $this->silentSyndication = $silentSyndication;
-
-        return $this;
+        return 0 < count(
+            $this->getSecondaryParticipationPool()
+                ->getParticipations()
+        );
     }
 
     /**
@@ -873,6 +863,10 @@ class Project
 
     /**
      * @return iterable|Participation[]
+     *
+     * @ApiProperty(security="is_granted('agent', this)")
+     *
+     * @Groups({"agency:project:read"})
      */
     public function getParticipations(): iterable
     {

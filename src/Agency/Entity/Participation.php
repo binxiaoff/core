@@ -343,6 +343,7 @@ class Participation extends AbstractProjectPartaker
 
     public function isAgent(): bool
     {
+        // TODO deduce from data instead if possible
         return $this->responsibilities->has(static::RESPONSIBILITY_AGENT);
     }
 
@@ -415,6 +416,11 @@ class Participation extends AbstractProjectPartaker
     public function isSecondary(): bool
     {
         return $this->getPool()->isSecondary();
+    }
+
+    public function isPrimary(): bool
+    {
+        return $this->getPool()->isPrimary();
     }
 
     public function getParticipantCommission(): ?string
