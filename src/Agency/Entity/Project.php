@@ -96,7 +96,6 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:project:write",
- *                     "agency:projectStatus:create",
  *                     "money:write",
  *                     "nullablePerson:write",
  *                     "nullableMoney:write",
@@ -188,6 +187,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "agency:tranche:read",
  *             "agency:borrowerTrancheShare:read",
  *             "agency:participation:read",
+ *             "agency:participationPool:read",
  *             "agency:participationTrancheAllocation:read",
  *             "company:read",
  *             "companyGroupTag:read",
@@ -869,7 +869,9 @@ class Project
     }
 
     /**
-     * @ApiProperty
+     * @ApiProperty(security="is_granted('agent', object)")
+     *
+     * @Groups({"agency:project:read"})
      */
     public function getPrimaryParticipationPool(): ParticipationPool
     {
@@ -877,7 +879,9 @@ class Project
     }
 
     /**
-     * @ApiProperty
+     * @ApiProperty(security="is_granted('agent', object)")
+     *
+     * @Groups({"agency:project:read"})
      */
     public function getSecondaryParticipationPool(): ParticipationPool
     {
