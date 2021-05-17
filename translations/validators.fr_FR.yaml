@@ -193,8 +193,6 @@ CreditGuaranty:
             notChangeable: Vous ne pouvez pas modifier le CAP sur un programme en cours.
             greater: Vous ne pouvez pas réduire le montant du CAP sur un programme en cours.
             draft: Vous ne pouvez que modifier le CAP ou réduire son montant sur un programme en brouillon.
-
-
     ProgramEligibilityConfiguration:
         programChoiceOption:
             invalid: La value n'est pas valable.
@@ -223,3 +221,6 @@ CreditGuaranty:
             selfComparaison: Vous ne pouvez pas comparer un champ à lui-même.
             empty: rightOperandField est requis pour une comparaison de type "rate".
             notEmpty: rightOperandField doit être vide pour une comparaison de type "value".
+    Borrower:
+        grade:
+            invalid: Le grade choisi n'est pas valable.

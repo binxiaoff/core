@@ -18,7 +18,7 @@ use Unilend\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"creditGuaranty:programBorrowerTypeAllocation:read", "creditGuaranty:programChoiceOption:read", "timestampable:read"}},
+ *     normalizationContext={"groups": {"creditGuaranty:programBorrowerTypeAllocation:read", "timestampable:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -70,8 +70,6 @@ class ProgramBorrowerTypeAllocation
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_program_choice_option", nullable=false, onDelete="CASCADE")
-     *
-     * @Groups({"creditGuaranty:programBorrowerTypeAllocation:read"})
      */
     private ProgramChoiceOption $programChoiceOption;
 

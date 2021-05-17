@@ -24,14 +24,13 @@ use Unilend\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
 /**
  * @ApiResource(
  *     attributes={"pagination_enabled": false},
- *     normalizationContext={"groups": {"creditGuaranty:programEligibilityConfiguration:read", "creditGuaranty:programChoiceOption:read", "timestampable:read"}},
+ *     normalizationContext={"groups": {"creditGuaranty:programEligibilityConfiguration:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:programEligibilityConfiguration:write"}},
  *     itemOperations={
  *         "get": {
  *             "normalization_context": {
  *                 "groups": {
  *                     "creditGuaranty:programEligibilityConfiguration:read",
- *                     "creditGuaranty:programChoiceOption:read",
  *                     "creditGuaranty:programEligibilityCondition:read",
  *                     "timestampable:read"
  *                 }
