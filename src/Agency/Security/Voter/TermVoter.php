@@ -42,8 +42,9 @@ class TermVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $term->getProject())
-            || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $term->getProject());
+        return ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $term->getProject())
+            || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $term->getProject()))
+            && false === $term->getProject()->isArchived();
     }
 
     /**
@@ -54,7 +55,8 @@ class TermVoter extends AbstractEntityVoter
         return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_EDIT, $term->getCovenant())
             && false === $term->isArchived()
             && $term->isShared()
-            && $term->getStartDate() >= $this->getToday();
+            && $term->getStartDate() >= $this->getToday()
+            && false === $term->getProject()->isArchived();
     }
 
     /**

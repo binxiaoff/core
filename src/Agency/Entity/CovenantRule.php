@@ -36,7 +36,7 @@ class CovenantRule
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Covenant", inversedBy="covenantRules")
-     * @ORM\JoinColumn(name="id_covenant")
+     * @ORM\JoinColumn(name="id_covenant", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
      * @Assert\Expression("this.getCovenant().isFinancial()")

@@ -13,6 +13,7 @@ class ProjectVoter extends AbstractEntityVoter
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_DELETE = 'delete';
 
     /**
      * @throws Exception
@@ -45,6 +46,13 @@ class ProjectVoter extends AbstractEntityVoter
 
     protected function canEdit(Project $project, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project);
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
+            && false === $project->isArchived();
+    }
+
+    protected function canDelete(Project $project, User $user): bool
+    {
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
+            && false === $project->isArchived();
     }
 }

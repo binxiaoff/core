@@ -30,6 +30,7 @@ class ProjectListener
 
         $uow = $em->getUnitOfWork();
 
+        $projectClassMetadata              = $em->getClassMetadata(Project::class);
         $projectStatusHistoryClassMetadata = $em->getClassMetadata(ProjectStatusHistory::class);
 
         $token = $this->security->getToken();
@@ -64,6 +65,27 @@ class ProjectListener
 
                     $uow->computeChangeSet($projectStatusHistoryClassMetadata, $projectStatusHistory);
                 }
+            }
+        }
+
+        foreach ($uow->getScheduledEntityDeletions() as $entity) {
+            if ($entity instanceof Project && false === $entity->isDraft()) {
+                if (false === ($currentStaff instanceof Staff)) {
+                    throw new LogicException(sprintf('ProjectStatus history only accept %s as valid addedBy', Staff::class));
+                }
+
+                if ($entity->isPublished()) {
+                    $entity->archive();
+
+                    $projectStatusHistory = new ProjectStatusHistory($entity, $currentStaff);
+
+                    $em->persist($projectStatusHistory);
+
+                    $uow->computeChangeSet($projectStatusHistoryClassMetadata, $projectStatusHistory);
+                }
+
+                $em->persist($entity);
+                $uow->computeChangeSet($projectClassMetadata, $entity);
             }
         }
     }
