@@ -14,10 +14,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\User;
 
 /**
  * @ApiResource(
@@ -48,7 +45,20 @@ use Unilend\Core\Entity\User;
  */
 class Agent extends AbstractProjectPartaker
 {
-    use PublicizeIdentityTrait;
+    /**
+     * @var Collection|AgentMember[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\AgentMember", mappedBy="agent", cascade={"persist", "remove"})
+     *
+     * @Assert\Count(min=1)
+     * @Assert\Valid
+     * @Assert\All({
+     *     @Assert\Expression("value.getAgent() == this")
+     * })
+     *
+     * @Groups({"agency:agent:read"})
+     */
+    protected Collection $members;
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="agent")
@@ -63,25 +73,8 @@ class Agent extends AbstractProjectPartaker
     private Project $project;
 
     /**
-     * @var Collection|AgentMember[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\AgentMember", mappedBy="agent", cascade={"persist", "remove"})
-     *
-     * @Assert\Count(min=1)
-     * @Assert\Valid
-     * @Assert\All({
-     *     @Assert\Expression("value.getAgent() == this")
-     * })
-     *
-     * @Groups({"agency:agent:read"})
-     */
-    private Collection $members;
-
-    /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_company", nullable=false)
      *
      * @Groups({"agency:agent:read"})
      *
@@ -97,53 +90,6 @@ class Agent extends AbstractProjectPartaker
      * @Groups({"agency:agent:read", "agency:agent:write"})
      */
     private ?string $displayName;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:agent:read", "agency:agent:write"})
-     */
-    private ?string $legalForm;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:agent:read", "agency:agent:write"})
-     */
-    private ?string $headOffice;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:agent:read", "agency:agent:write"})
-     */
-    private ?string $bankInstitution;
-
-    /**
-     * @ORM\Column(type="string", length=11, nullable=true)
-     *
-     * @Assert\Bic
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:agent:read", "agency:agent:write"})
-     */
-    private ?string $bic;
-
-    /**
-     * @ORM\Column(type="string", length=34, nullable=true)
-     *
-     * @Assert\Iban
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:agent:read", "agency:agent:write"})
-     */
-    private ?string $iban;
 
     /**
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullablePerson", columnPrefix="agency_contact_")
@@ -168,11 +114,6 @@ class Agent extends AbstractProjectPartaker
         return $this->project;
     }
 
-    public function getMembers(): Collection
-    {
-        return $this->members;
-    }
-
     public function getCompany(): Company
     {
         return $this->company;
@@ -190,66 +131,6 @@ class Agent extends AbstractProjectPartaker
         return $this;
     }
 
-    public function getLegalForm(): ?string
-    {
-        return $this->legalForm;
-    }
-
-    public function setLegalForm(?string $legalForm): Agent
-    {
-        $this->legalForm = $legalForm;
-
-        return $this;
-    }
-
-    public function getHeadOffice(): ?string
-    {
-        return $this->headOffice;
-    }
-
-    public function setHeadOffice(?string $headOffice): Agent
-    {
-        $this->headOffice = $headOffice;
-
-        return $this;
-    }
-
-    public function getBankInstitution(): ?string
-    {
-        return $this->bankInstitution;
-    }
-
-    public function setBankInstitution(?string $bankInstitution): Agent
-    {
-        $this->bankInstitution = $bankInstitution;
-
-        return $this;
-    }
-
-    public function getBic(): ?string
-    {
-        return $this->bic;
-    }
-
-    public function setBic(?string $bic): Agent
-    {
-        $this->bic = $bic;
-
-        return $this;
-    }
-
-    public function getIban(): ?string
-    {
-        return $this->iban;
-    }
-
-    public function setIban(?string $iban): Agent
-    {
-        $this->iban = $iban;
-
-        return $this;
-    }
-
     public function getContact(): NullablePerson
     {
         return $this->contact;
@@ -260,25 +141,5 @@ class Agent extends AbstractProjectPartaker
         $this->contact = $contact;
 
         return $this;
-    }
-
-    public function addMember(AgentMember $member): Agent
-    {
-        if (null === $this->findMemberByUser($member->getUser())) {
-            $this->members[] = $member;
-        }
-
-        return $this;
-    }
-
-    public function findMemberByUser(User $user): ?AgentMember
-    {
-        foreach ($this->members as $member) {
-            if ($member->getUser() === $user) {
-                return $member;
-            }
-        }
-
-        return null;
     }
 }

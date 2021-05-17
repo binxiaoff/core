@@ -36,8 +36,6 @@ class PublishedProject extends DraftProject
 
         $borrower       = $this->createTestBorrower($project, $project->getAddedBy());
         $borrowerMember = new BorrowerMember($borrower, $this->getReference('user:@'));
-        $borrower->setSignatory($borrowerMember);
-        $borrower->setReferent($borrowerMember);
 
         array_map(
             [$manager, 'persist'],

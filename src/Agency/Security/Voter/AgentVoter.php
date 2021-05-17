@@ -20,6 +20,7 @@ class AgentVoter extends AbstractEntityVoter
 
     protected function canEdit(Agent $agent, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $agent->getProject());
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $agent->getProject())
+            && false === $agent->getProject()->isArchived();
     }
 }

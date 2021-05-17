@@ -10,7 +10,6 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Unilend\Agency\Entity\Borrower;
-use Unilend\Agency\Entity\BorrowerMember;
 use Unilend\Agency\Entity\BorrowerTrancheShare;
 use Unilend\Agency\Entity\Covenant;
 use Unilend\Agency\Entity\CovenantRule;
@@ -18,7 +17,6 @@ use Unilend\Agency\Entity\Embeddable\Inequality;
 use Unilend\Agency\Entity\MarginImpact;
 use Unilend\Agency\Entity\MarginRule;
 use Unilend\Agency\Entity\Participation;
-use Unilend\Agency\Entity\ParticipationMember;
 use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Entity\Tranche;
@@ -36,7 +34,6 @@ use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Model\Bitmask;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -164,9 +161,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     private function createBorrower(Project $project, Staff $staff)
     {
-        $borrower = new Borrower(
+        return new Borrower(
             $project,
-            $staff,
             $this->faker->company,
             'SARL',
             new Money(
@@ -176,11 +172,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $this->faker->address,
             $this->faker->siren(false), // Works because Faker is set to Fr_fr.
         );
-
-        $borrower->setReferent(new BorrowerMember($borrower, new User($this->faker->email)));
-        $borrower->setSignatory(new BorrowerMember($borrower, new User($this->faker->email)));
-
-        return $borrower;
     }
 
     /**
@@ -208,16 +199,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     private function createParticipation(Project $project, Company $participant, bool $secondary = false): Participation
     {
-        $participation = new Participation(
+        return new Participation(
             $project->getParticipationPools()[$secondary],
             $participant,
             new Money('EUR', (string) $this->faker->numberBetween(100000)),
             new Money('EUR', (string) $this->faker->numberBetween(40000000)),
         );
-
-        $participation->setReferent(new ParticipationMember($participation, new User($this->faker->email)));
-
-        return $participation;
     }
 
     /**

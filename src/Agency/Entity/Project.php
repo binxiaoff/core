@@ -362,9 +362,7 @@ class Project
 
     /**
      * @ORM\ManyToOne(targetEntity=CompanyGroupTag::class)
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_company_group_tag", referencedColumnName="id")
-     * })
+     * @ORM\JoinColumn(name="id_company_group_tag", referencedColumnName="id")
      *
      * Remove assertion for external banks (they may have no companyGroupTag)
      * @Assert\NotBlank

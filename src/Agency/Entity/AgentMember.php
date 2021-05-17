@@ -13,22 +13,21 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\BlamableUserAddedTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\User;
 
 /**
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
- *             "agency:agentMember:read"
+ *             "agency:agentMember:read",
+ *             "agency:projectMember:read"
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
- *                 "groups": {"agency:agentMember:create", "user:create", "user:write"}
+ *                 "groups": {"agency:agentMember:create", "agency:projectMember:write", "agency:projectMember:write", "user:create", "user:write"}
  *             }
  *         }
  *     },
@@ -56,11 +55,8 @@ use Unilend\Core\Entity\User;
  *     }
  * )
  */
-class AgentMember
+class AgentMember extends AbstractProjectMember
 {
-    use PublicizeIdentityTrait;
-    use BlamableUserAddedTrait;
-
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Agent", inversedBy="members")
      * @ORM\JoinColumn(name="id_agent", nullable=false, onDelete="CASCADE")
@@ -73,21 +69,10 @@ class AgentMember
      */
     private Agent $agent;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
-     * @ORM\JoinColumn(name="id_user", nullable=false, onDelete="CASCADE")
-     *
-     * @Assert\NotBlank
-     *
-     * @Groups({"agency:agentMember:read", "agency:agentMember:create"})
-     */
-    private User $user;
-
-    public function __construct(Agent $agent, User $user, User $addedBy)
+    public function __construct(Agent $agent, User $user)
     {
-        $this->agent   = $agent;
-        $this->user    = $user;
-        $this->addedBy = $addedBy;
+        parent::__construct($user);
+        $this->agent = $agent;
     }
 
     public function getAgent(): Agent
@@ -95,8 +80,8 @@ class AgentMember
         return $this->agent;
     }
 
-    public function getUser(): User
+    public function getProject(): Project
     {
-        return $this->user;
+        return $this->getAgent()->getProject();
     }
 }

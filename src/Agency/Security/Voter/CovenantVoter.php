@@ -46,6 +46,7 @@ class CovenantVoter extends AbstractEntityVoter
      */
     protected function canDelete(Covenant $covenant, User $user)
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $covenant->getProject()) && false === $covenant->getProject()->isArchived();
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $covenant->getProject())
+            && false === $covenant->getProject()->isArchived();
     }
 }

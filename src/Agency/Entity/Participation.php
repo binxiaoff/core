@@ -21,8 +21,6 @@ use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Model\Bitmask;
 
 /**
@@ -135,11 +133,23 @@ use Unilend\Core\Model\Bitmask;
  */
 class Participation extends AbstractProjectPartaker
 {
-    use PublicizeIdentityTrait;
-
     public const RESPONSIBILITY_AGENT           = 1 << 0;
     public const RESPONSIBILITY_ARRANGER        = 1 << 1;
     public const RESPONSIBILITY_DEPUTY_ARRANGER = 1 << 2;
+
+    /**
+     * @var Collection|ParticipationMember[]
+     *
+     * @ORM\OneToMany(targetEntity=ParticipationMember::class, mappedBy="participation", cascade={"persist", "remove"}, orphanRemoval=true)
+     *
+     * @Assert\Valid
+     * @Assert\All({
+     *     @Assert\Expression("value.getParticipation() === this")
+     * })
+     *
+     * @Groups({"agency:participation:read"})
+     */
+    protected Collection $members;
 
     /**
      * @ORM\ManyToOne(targetEntity=ParticipationPool::class, inversedBy="participations")
@@ -262,32 +272,6 @@ class Participation extends AbstractProjectPartaker
      * @ORM\JoinColumn(name="id_confidential_drive", nullable=false, unique=true)
      */
     private Drive $confidentialDrive;
-
-    /**
-     * @ORM\OneToOne(targetEntity=ParticipationMember::class)
-     * @ORM\JoinColumn(name="id_referent", onDelete="SET NULL")
-     *
-     * @Assert\NotBlank(groups="published")
-     * @Assert\Choice(callback="getMembers")
-     * @Assert\Valid
-     *
-     * @Groups({"agency:participation:read", "agency:participation:write"})
-     */
-    private ?ParticipationMember $referent;
-
-    /**
-     * @var Collection|ParticipationMember[]
-     *
-     * @ORM\OneToMany(targetEntity=ParticipationMember::class, mappedBy="participation", cascade={"persist", "remove"}, orphanRemoval=true)
-     *
-     * @Assert\Valid
-     * @Assert\All({
-     *     @Assert\Expression("value.getParticipation() === this")
-     * })
-     *
-     * @Groups({"agency:participation:read"})
-     */
-    private Collection         $members;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
@@ -461,101 +445,6 @@ class Participation extends AbstractProjectPartaker
         return $this;
     }
 
-    /**
-     * @return array|ParticipationMember[]
-     */
-    public function getMembers(): array
-    {
-        return $this->members->toArray();
-    }
-
-    /**
-     * @param iterable|ParticipationMember[] $members
-     *
-     * @return Participation
-     */
-    public function setMembers(iterable $members)
-    {
-        $this->members = $members;
-
-        return $this;
-    }
-
-    public function addMember(ParticipationMember $member): Participation
-    {
-        if (null === $this->findMemberByUser($member->getUser())) {
-            $this->members[] = $member;
-        }
-
-        return $this;
-    }
-
-    public function removeMember(ParticipationMember $member): Participation
-    {
-        if ($this->members->removeElement($member)) {
-            // Do not merge into parent if construct because we need the removal to take place
-            if ($this->referent === $member) {
-                $this->referent = null;
-            }
-        }
-
-        return $this;
-    }
-
-    public function findMemberByUser(User $user): ?ParticipationMember
-    {
-        foreach ($this->members as $member) {
-            if ($member->getUser() === $user) {
-                return $member;
-            }
-        }
-
-        return null;
-    }
-
-    public function getReferent(): ?ParticipationMember
-    {
-        return $this->referent;
-    }
-
-    public function setReferent(ParticipationMember $referent): Participation
-    {
-        $this->referent = $this->findMemberByUser($referent->getUser()) ?? $referent;
-        $this->addMember($this->referent);
-
-        return $this;
-    }
-
-    /**
-     * @return iterable|ParticipationMember[]
-     *
-     * @Groups({"agency:participation:read"})
-     */
-    public function getBackOfficeMembers(): iterable
-    {
-        return $this->getMemberByType(ParticipationMember::TYPE_BACK_OFFICE);
-    }
-
-    /**
-     * @return iterable|ParticipationMember[]
-     *
-     * @Groups({"agency:participation:read"})
-     */
-    public function getLegalMembers(): iterable
-    {
-        return $this->getMemberByType(ParticipationMember::TYPE_LEGAL);
-    }
-
-    /**
-     * @return iterable|ParticipationMember[]
-     *
-     * @Groups({"agency:participation:read"})
-     */
-    public function getWaiverMembers(): iterable
-    {
-        return $this->getMemberByType(ParticipationMember::TYPE_WAIVER);
-    }
-
     public function getConfidentialDrive(): Drive
     {
         return $this->confidentialDrive;
@@ -612,13 +501,5 @@ class Participation extends AbstractProjectPartaker
     public function isArchived(): bool
     {
         return null !== $this->archivingDate;
-    }
-
-    /**
-     * @return iterable|ParticipationMember[]
-     */
-    private function getMemberByType(string $type): iterable
-    {
-        return $this->members->filter(fn (ParticipationMember $member) => $type === $member->getType())->toArray();
     }
 }

@@ -9,26 +9,25 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
-use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Entity\User;
 
 /**
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
- *             "agency:borrowerMember:read"
+ *             "agency:borrowerMember:read",
+ *             "agency:projectMember:read"
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
- *                 "groups": {"agency:borrowerMember:create", "agency:borrowerMember:write", "user:create", "user:write"}
+ *                 "groups": {"agency:borrowerMember:create", "agency:projectMember:write", "agency:projectMember:create", "user:create", "user:write"}
  *             }
  *         }
  *     },
@@ -46,6 +45,8 @@ use Unilend\Core\Entity\User;
  * })
  * @ORM\Entity
  *
+ * @UniqueEntity(fields={"borrower", "user"})
+ *
  * @ApiFilter(
  *     filterClass=GroupFilter::class,
  *     arguments={
@@ -55,20 +56,8 @@ use Unilend\Core\Entity\User;
  *     }
  * )
  */
-class BorrowerMember
+class BorrowerMember extends AbstractProjectMember
 {
-    use PublicizeIdentityTrait;
-    use TimestampableAddedOnlyTrait;
-
-    /**
-     * @Groups({"agency:borrowerMember:read", "agency:borrowerMember:write"})
-     *
-     * @Assert\Length(max=200)
-     *
-     * @ORM\Column(type="string", length=200, nullable=true)
-     */
-    protected ?string $projectFunction;
-
     /**
      * @ORM\ManyToOne(targetEntity=Borrower::class, inversedBy="members")
      * @ORM\JoinColumn(name="id_borrower", onDelete="CASCADE", nullable=false)
@@ -82,21 +71,9 @@ class BorrowerMember
      */
     private Borrower $borrower;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class, cascade={"persist"})
-     * @ORM\JoinColumn(name="id_user")
-     *
-     * @Assert\NotBlank
-     * @Assert\Valid
-     *
-     * @Groups({"agency:borrowerMember:read", "agency:borrowerMember:create"})
-     */
-    private User $user;
-
     public function __construct(Borrower $borrower, User $user)
     {
-        $this->added    = new DateTimeImmutable();
-        $this->user     = $user;
+        parent::__construct($user);
         $this->borrower = $borrower;
     }
 
@@ -105,25 +82,8 @@ class BorrowerMember
         return $this->borrower->getProject();
     }
 
-    public function getUser(): User
-    {
-        return $this->user;
-    }
-
     public function getBorrower(): Borrower
     {
         return $this->borrower;
-    }
-
-    public function getProjectFunction(): ?string
-    {
-        return $this->projectFunction;
-    }
-
-    public function setProjectFunction(?string $projectFunction): BorrowerMember
-    {
-        $this->projectFunction = $projectFunction;
-
-        return $this;
     }
 }
