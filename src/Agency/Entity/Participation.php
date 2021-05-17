@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Controller\Dataroom\Delete;
 use Unilend\Core\Controller\Dataroom\Get;
 use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
@@ -94,6 +95,18 @@ use Unilend\Core\Model\Bitmask;
  *             },
  *             "normalization_context": {
  *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *             },
+ *         },
+ *         "delete_dataroom": {
+ *             "method": "DELETE",
+ *             "security": "is_granted('view', object)",
+ *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
+ *             "controller": DELETE::class,
+ *             "requirements": {
+ *                 "path": ".+"
  *             },
  *             "defaults": {
  *                 "path": "/",

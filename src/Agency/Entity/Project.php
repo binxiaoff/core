@@ -22,6 +22,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Agency\Controller\Project\GetTerm;
 use Unilend\Agency\Entity\Versioned\VersionedProject;
 use Unilend\Agency\Filter\ApiPlatform\ProjectFilter;
+use Unilend\Core\Controller\Dataroom\Delete;
 use Unilend\Core\Controller\Dataroom\Get;
 use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
@@ -104,7 +105,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             },
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
- *         "get_dataroom_shared": {
+ *         "get_borrower_dataroom_shared": {
  *             "method": "GET",
  *             "path": "/agency/projects/{publicId}/borrowers/dataroom/shared/{path?}",
  *             "security": "is_granted('agent', object) || is_granted('borrower', object)",
@@ -135,6 +136,19 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             },
  *             "normalization_context": {
  *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "delete_borrower_dataroom_shared": {
+ *             "method": "DELETE",
+ *             "path": "/agency/projects/{publicId}/borrowers/dataroom/shared/{path?}",
+ *             "security": "is_granted('agent', object) || is_granted('borrower', object)",
+ *             "controller": Delete::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "drive": "shared"
  *             }
  *         },
  *         "get_borrower_dataroom_confidential": {
@@ -168,6 +182,20 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             },
  *             "normalization_context": {
  *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "delete_borrower_dataroom_confidential": {
+ *             "method": "DELETE",
+ *             "path": "/agency/projects/{publicId}/borrowers/dataroom/confidential/{path?}",
+ *             "security": "is_granted('borrower', object)",
+ *             "deserialize": false,
+ *             "controller": Delete::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "drive": "confidential"
  *             }
  *         }
  *     }

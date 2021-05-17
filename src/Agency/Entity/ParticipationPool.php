@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Controller\Dataroom\Delete;
 use Unilend\Core\Controller\Dataroom\Get;
 use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
@@ -59,6 +60,18 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "normalization_context": {
  *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
  *             },
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             },
+ *         },
+ *         "delete_dataroom": {
+ *             "method": "DELETE",
+ *             "path": "/agency/participation_pools/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('view', object)",
+ *             "controller": Delete::class,
  *             "requirements": {
  *                 "path": ".+"
  *             },
