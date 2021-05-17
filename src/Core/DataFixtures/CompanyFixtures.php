@@ -127,7 +127,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     private function createCompany(string $name = null, string $shortcode = null, int $status = CompanyStatus::STATUS_SIGNED): Company
     {
-        $companyName = $name ?: $this->faker->company;
+        $companyName = $name ?? $this->faker->company;
         $vatTypes    = Company::getPossibleVatTypes();
         // Works because Faker is set to Fr_fr
         $company = (new Company($companyName, $companyName, $this->faker->siren(false)))
