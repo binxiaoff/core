@@ -15,8 +15,6 @@ use Unilend\Core\Entity\User;
 
 class ParticipationExtension implements QueryCollectionExtensionInterface
 {
-    private const PREFIX = 'ParticipationExtension';
-
     private Security $security;
 
     public function __construct(Security $security)
@@ -39,9 +37,9 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
         }
 
         // Variable used
-        $userParameterName              = static::prefix('user');
-        $borrowerSecondaryParameterName = static::prefix('secondary');
-        $publishedStatusParameterName   = static::prefix('publishedStatus');
+        $userParameterName              = $queryNameGenerator->generateParameterName('user');
+        $borrowerSecondaryParameterName = $queryNameGenerator->generateParameterName('borrowerSecondary');
+        $publishedStatusParameterName   = $queryNameGenerator->generateParameterName('publishedParameterName');
 
         $queryBuilder
             ->setParameter($userParameterName, $user)
@@ -51,10 +49,10 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
 
         // Borrower condition
         $rootAlias                      = $queryBuilder->getRootAliases()[0];
-        $borrowerAlias                  = static::prefix('borrower');
-        $borrowerMemberAlias            = static::prefix('borrowerMember');
-        $borrowerParticipationPoolAlias = static::prefix('borrowerParticipationPool');
-        $borrowerProjectAlias           = static::prefix('borrowerProject');
+        $borrowerAlias                  = $queryNameGenerator->generateJoinAlias('borrower');
+        $borrowerMemberAlias            = $queryNameGenerator->generateJoinAlias('borrowerMember');
+        $borrowerParticipationPoolAlias = $queryNameGenerator->generateJoinAlias('borrowerParticipation');
+        $borrowerProjectAlias           = $queryNameGenerator->generateJoinAlias('borrowerProject');
 
         $queryBuilder
             ->distinct()
@@ -81,8 +79,8 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
         }
 
         // Variable used (need staff)
-        $managedUserParameterName = static::prefix('managedUsers');
-        $companyParameterName     = static::prefix('company');
+        $managedUserParameterName = $queryNameGenerator->generateParameterName('managedUsers');
+        $companyParameterName     = $queryNameGenerator->generateParameterName('company');
 
         $queryBuilder
             ->setParameter($managedUserParameterName, iterator_to_array($staff->getManagedUsers(), false))
@@ -90,10 +88,10 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
         ;
 
         // Participant condition
-        $participationParticipationPoolAlias    = static::prefix('participationParticipationPool');
-        $participationProjectAlias              = static::prefix('participationProjectPool');
-        $currentCompanyParticipationAlias       = static::prefix('currentCompanyParticipation');
-        $currentCompanyParticipationMemberAlias = static::prefix('currentParticipationMember');
+        $participationParticipationPoolAlias    = $queryNameGenerator->generateJoinAlias('participationPool');
+        $participationProjectAlias              = $queryNameGenerator->generateJoinAlias('participationProject');
+        $currentCompanyParticipationAlias       = $queryNameGenerator->generateJoinAlias('currentCompanyParticipation');
+        $currentCompanyParticipationMemberAlias = $queryNameGenerator->generateJoinAlias('currentCompanyParticipationMember');
 
         $queryBuilder
             ->leftJoin("{$rootAlias}.pool", $participationParticipationPoolAlias)
@@ -110,10 +108,10 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
         ;
 
         // Agent condition
-        $agentAlias                  = static::prefix('agent');
-        $agentMemberAlias            = static::prefix('agentMember');
-        $agentProjectAlias           = static::prefix('agentProject');
-        $agentParticipationPoolAlias = static::prefix('agentParticipationPool');
+        $agentAlias                  = $queryNameGenerator->generateJoinAlias('agent');
+        $agentMemberAlias            = $queryNameGenerator->generateJoinAlias('agentMember');
+        $agentProjectAlias           = $queryNameGenerator->generateJoinAlias('agentProject');
+        $agentParticipationPoolAlias = $queryNameGenerator->generateJoinAlias('agentParticipation');
 
         $queryBuilder
             ->leftJoin("{$rootAlias}.pool", $agentParticipationPoolAlias)
@@ -127,10 +125,5 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
                 )
             )
         ;
-    }
-
-    private static function prefix(string $name): string
-    {
-        return static::PREFIX . '_' . $name;
     }
 }
