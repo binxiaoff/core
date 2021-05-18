@@ -28,7 +28,7 @@ use Unilend\Core\Entity\User;
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
- *                 "groups": {"agency:agentMember:create", "agency:projectMember:write", "agency:projectMember:write", "user:create", "user:write"}
+ *                 "groups": {"agency:agentMember:create", "agency:agentMember:write", "agency:projectMember:write", "agency:projectMember:create", "user:create", "user:write"}
  *             }
  *         }
  *     },
