@@ -330,6 +330,7 @@ class Project
      *     @Assert\Expression("value.getProject() === this")
      * })
      *
+     * TODO Create custom endpoint to handle security
      * @ApiSubresource
      */
     private Collection $tranches;
@@ -430,6 +431,7 @@ class Project
      *     @Assert\Expression("value.getProject() === this")
      * })
      *
+     * TODO Create custom endpoint to handle security
      * @ApiSubresource
      */
     private Collection $covenants;
