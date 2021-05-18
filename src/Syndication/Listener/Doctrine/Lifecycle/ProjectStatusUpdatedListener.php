@@ -4,42 +4,39 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\Listener\Doctrine\Lifecycle;
 
-use Doctrine\ORM\{EntityManager, Event\OnFlushEventArgs, ORMException};
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Event\OnFlushEventArgs;
+use Doctrine\ORM\ORMException;
 use Exception;
 use RuntimeException;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\{Embeddable\Offer,
-    Project,
-    ProjectParticipation,
-    ProjectParticipationStatus,
-    ProjectParticipationTranche,
-    ProjectStatus,
-    Tranche};
+use Unilend\Syndication\Entity\Embeddable\Offer;
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectParticipationStatus;
+use Unilend\Syndication\Entity\ProjectParticipationTranche;
+use Unilend\Syndication\Entity\ProjectStatus;
+use Unilend\Syndication\Entity\Tranche;
 
 /**
- * TODO Refactor because we should not use doctrine for automatic status action
+ * TODO Refactor because we should not use doctrine for automatic status action.
  */
 class ProjectStatusUpdatedListener
 {
     private Security $security;
 
-    /**
-     * @param Security $security
-     */
     public function __construct(Security $security)
     {
         $this->security = $security;
     }
 
     /**
-     * @param OnFlushEventArgs $args
-     *
      * @throws Exception
      */
     public function onFlush(OnFlushEventArgs $args): void
     {
-        $em = $args->getEntityManager();
+        $em  = $args->getEntityManager();
         $uow = $em->getUnitOfWork();
 
         foreach ($uow->getScheduledEntityInsertions() as $entity) {
@@ -55,11 +52,7 @@ class ProjectStatusUpdatedListener
         }
     }
 
-
     /**
-     * @param Project       $project
-     * @param EntityManager $em
-     *
      * @throws Exception
      */
     private function onStatusChange(Project $project, EntityManager $em): void
@@ -77,9 +70,6 @@ class ProjectStatusUpdatedListener
     }
 
     /**
-     * @param Project       $project
-     * @param EntityManager $em
-     *
      * @throws Exception
      */
     private function transferInvitationReply(Project $project, EntityManager $em): void
@@ -92,7 +82,7 @@ class ProjectStatusUpdatedListener
         // Ensure to have the correct previous status (in case current status have been added to statuses array)
         // $previousStatus = $previousStatus === $projectStatus ? $statuses[$statuses->count() - 2] : $previousStatus;
 
-        if (false === $previousStatus || $previousStatus->getStatus() !== ProjectStatus::STATUS_PARTICIPANT_REPLY) {
+        if (false === $previousStatus || ProjectStatus::STATUS_PARTICIPANT_REPLY !== $previousStatus->getStatus()) {
             return;
         }
 
@@ -116,9 +106,6 @@ class ProjectStatusUpdatedListener
     }
 
     /**
-     * @param Project       $project
-     * @param EntityManager $em
-     *
      * @throws ORMException
      * @throws Exception
      */
@@ -132,7 +119,7 @@ class ProjectStatusUpdatedListener
         $tranches = $project->getTranches();
 
         $arrangerParticipation = $project->getArrangerProjectParticipation();
-        $uow = $em->getUnitOfWork();
+        $uow                   = $em->getUnitOfWork();
 
         $projectParticipationTrancheClassMetadata = $em->getClassMetadata(ProjectParticipationTranche::class);
 
@@ -156,13 +143,10 @@ class ProjectStatusUpdatedListener
     }
 
     /**
-     * @param Project       $project
-     * @param EntityManager $em
-     *
      * @throws ORMException
      * @throws Exception
      */
-    private function archiveUndecidedParticipant(Project $project, EntityManager $em)
+    private function archiveUndecidedParticipant(Project $project, EntityManager $em): void
     {
         /** @var User $user */
         $user = $this->security->getUser();
@@ -171,12 +155,16 @@ class ProjectStatusUpdatedListener
 
         $participations = $project->getProjectParticipations();
 
-        $projectParticipationClassMetadata = $em->getClassMetadata(ProjectParticipation::class);
+        $projectParticipationClassMetadata       = $em->getClassMetadata(ProjectParticipation::class);
         $projectParticipationStatusClassMetadata = $em->getClassMetadata(ProjectParticipationStatus::class);
 
         $uow = $em->getUnitOfWork();
 
         foreach ($participations as $participation) {
+            if ($participation->isArrangerParticipation()) {
+                continue;
+            }
+
             $currentStatus = $participation->getCurrentStatus();
 
             if (null === $currentStatus) {
