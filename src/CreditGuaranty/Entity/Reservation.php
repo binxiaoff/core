@@ -45,7 +45,9 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *         "delete"
  *     },
  *     collectionOperations={
- *         "post",
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)"
+ *         },
  *         "get"
  *     }
  * )
@@ -68,7 +70,7 @@ class Reservation implements TraceableStatusAwareInterface
     private Program $program;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Borrower", inversedBy="reservation", orphanRemoval=true, cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Borrower", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
      * @ORM\JoinColumn(name="id_borrower", nullable=false)
      *
      * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
@@ -76,7 +78,7 @@ class Reservation implements TraceableStatusAwareInterface
     private Borrower $borrower;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\BorrowerBusinessActivity")
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\BorrowerBusinessActivity", cascade={"persist", "remove"}, orphanRemoval=true)
      * @ORM\JoinColumn(name="id_borrower_business_activity")
      *
      * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
@@ -84,7 +86,7 @@ class Reservation implements TraceableStatusAwareInterface
     private ?BorrowerBusinessActivity $borrowerBusinessActivity = null;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Project")
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Project", cascade={"persist", "remove"}, orphanRemoval=true)
      * @ORM\JoinColumn(name="id_project")
      *
      * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
