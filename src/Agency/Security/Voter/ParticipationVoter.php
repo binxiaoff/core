@@ -50,10 +50,6 @@ class ParticipationVoter extends AbstractEntityVoter
             return false;
         }
 
-        if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject())) {
-            return true;
-        }
-
         $staff = $user->getCurrentStaff();
 
         if (null === $staff) {
