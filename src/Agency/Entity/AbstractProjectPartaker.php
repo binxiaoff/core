@@ -123,6 +123,7 @@ abstract class AbstractProjectPartaker
         $this->capital             = $capital;
         $this->rcs                 = null;
         $this->added               = new DateTimeImmutable();
+        $this->setPublicId();
     }
 
     abstract public function getProject(): Project;

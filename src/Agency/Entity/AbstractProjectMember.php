@@ -60,6 +60,7 @@ abstract class AbstractProjectMember
         $this->added     = new DateTimeImmutable();
         $this->referent  = false;
         $this->signatory = false;
+        $this->setPublicId();
     }
 
     abstract public function getProject(): Project;
