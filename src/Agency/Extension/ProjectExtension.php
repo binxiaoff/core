@@ -41,7 +41,8 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             return;
         }
 
-        $userParameterName = static::prefix('user');
+        $userParameterName            = static::prefix('user');
+        $publishedStatusParameterName = static::prefix('publishedStatus');
 
         // Borrower condition
         $rootAlias           = $queryBuilder->getRootAliases()[0];
@@ -52,8 +53,12 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             ->distinct()
             ->leftJoin("{$rootAlias}.borrowers", $borrowerAlias)
             ->leftJoin("{$borrowerAlias}.members", $borrowerMemberAlias)
-            ->orWhere("{$borrowerMemberAlias}.user = :{$userParameterName}")
+            ->orWhere($queryBuilder->expr()->andX(
+                "{$borrowerMemberAlias}.user = :{$userParameterName}",
+                "{$rootAlias}.currentStatus IN (:{$publishedStatusParameterName})"
+            ))
             ->setParameter($userParameterName, $user)
+            ->setParameter($publishedStatusParameterName, [Project::STATUS_PUBLISHED, Project::STATUS_ARCHIVED])
         ;
 
         $token = $this->security->getToken();
@@ -65,9 +70,8 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             return;
         }
 
-        $managedUserParameterName     = static::prefix('managedUsers');
-        $companyParameterName         = static::prefix('company');
-        $publishedStatusParameterName = static::prefix('publishedStatus');
+        $managedUserParameterName = static::prefix('managedUsers');
+        $companyParameterName     = static::prefix('company');
 
         // Participant condition
         $participationAlias       = static::prefix('participation');
@@ -82,7 +86,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
                 $queryBuilder->expr()->andX(
                     "{$participationMemberAlias}.user IN (:{$managedUserParameterName})",
                     "{$participationAlias}.participant = :{$companyParameterName}",
-                    "{$rootAlias}.currentStatus >= :{$publishedStatusParameterName}"
+                    "{$rootAlias}.currentStatus IN (:{$publishedStatusParameterName})"
                 )
             )
         ;
@@ -105,7 +109,6 @@ class ProjectExtension implements QueryCollectionExtensionInterface
         $queryBuilder
             ->setParameter($managedUserParameterName, iterator_to_array($staff->getManagedUsers(), false))
             ->setParameter($companyParameterName, $staff->getCompany())
-            ->setParameter($publishedStatusParameterName, Project::STATUS_PUBLISHED)
         ;
     }
 
