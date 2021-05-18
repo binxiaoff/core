@@ -304,6 +304,17 @@ class Company implements TraceableStatusAwareInterface
         return iterator_count($this->getStaff());
     }
 
+    public function findStaffByUser(User $user): ?Staff
+    {
+        foreach ($this->getStaff() as $staff) {
+            if ($staff->getUser() === $user) {
+                return $staff;
+            }
+        }
+
+        return null;
+    }
+
     public function getEmailDomain(): ?string
     {
         return $this->emailDomain;

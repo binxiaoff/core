@@ -82,6 +82,8 @@ abstract class AbstractProjectPartaker
     /**
      * @var AbstractProjectMember[]|Collection
      *
+     * @Assert\Valid
+     *
      * @Groups({"agency:projectPartaker:read"})
      */
     protected Collection $members;
@@ -273,9 +275,21 @@ abstract class AbstractProjectPartaker
 
     /**
      * @return Collection|AbstractProjectMember[]
+     *
+     * @Assert\Count(max=1)
      */
     public function getReferents(): Collection
     {
         return $this->members->filter(fn (AbstractProjectMember $member) => $member->isReferent());
+    }
+
+    /**
+     * @return Collection|AbstractProjectMember[]
+     *
+     * @Assert\Count(max=1)
+     */
+    public function getSignatory(): Collection
+    {
+        return $this->members->filter(fn (AbstractProjectMember $member) => $member->isSignatory());
     }
 }

@@ -11,6 +11,7 @@ use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Repository\AgentMemberRepository;
 use Unilend\Agency\Repository\BorrowerMemberRepository;
 use Unilend\Agency\Repository\ParticipationMemberRepository;
+use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\UserRepository;
 use Unilend\Core\Traits\ConstantsAwareTrait;
@@ -122,6 +123,7 @@ class ProjectRoleVoter extends Voter
      */
     private function isAgent(Project $project, TokenInterface $token): bool
     {
+        /** @var Staff $staff */
         $staff = $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
 
         if (null === $staff || ($staff->getCompany() !== $project->getAgentCompany())) {

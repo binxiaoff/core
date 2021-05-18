@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\User;
 
 /**
@@ -62,6 +63,7 @@ class AgentMember extends AbstractProjectMember
      * @ORM\JoinColumn(name="id_agent", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
+     * @Assert\Valid
      *
      * @Groups({"agency:agentMember:read", "agency:agentMember:create"})
      *
@@ -83,5 +85,25 @@ class AgentMember extends AbstractProjectMember
     public function getProject(): Project
     {
         return $this->getAgent()->getProject();
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateUser(ExecutionContextInterface $context)
+    {
+        $company = $this->agent->getCompany();
+
+        $staff = $company->findStaffByUser($this->getUser());
+
+        if (null === $staff || $staff->isArchived()) {
+            $context->buildViolation('Agency.AgentMember.user.missingStaff')
+                ->setParameter('email', $this->getUser()->getEmail())
+                ->setParameter('company', $company->getDisplayName())
+                ->setInvalidValue($this->getUser())
+                ->atPath('user')
+                ->addViolation()
+            ;
+        }
     }
 }

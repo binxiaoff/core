@@ -12,6 +12,7 @@ use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\User;
 
 /**
@@ -82,5 +83,25 @@ class ParticipationMember extends AbstractProjectMember
     public function getParticipation(): Participation
     {
         return $this->participation;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateUser(ExecutionContextInterface $context)
+    {
+        $company = $this->participation->getParticipant();
+
+        $staff = $company->findStaffByUser($this->getUser());
+
+        if (null === $staff || $staff->isArchived()) {
+            $context->buildViolation('Agency.ParticipationMember.user.missingStaff')
+                ->setParameter('email', $this->getUser()->getEmail())
+                ->setParameter('company', $company->getDisplayName())
+                ->setInvalidValue($this->getUser())
+                ->atPath('user')
+                ->addViolation()
+            ;
+        }
     }
 }
