@@ -187,6 +187,20 @@ class File
     }
 
     /**
+     * @Groups({"file:read"})
+     */
+    public function getMimeType(): ?string
+    {
+        $currentFileVersion = $this->getCurrentFileVersion();
+
+        if ($currentFileVersion) {
+            return $currentFileVersion->getMimeType();
+        }
+
+        return null;
+    }
+
+    /**
      * @return $this
      */
     private function addVersion(FileVersion $version): File
