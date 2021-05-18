@@ -56,7 +56,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
                 "{$rootAlias}.currentStatus IN (:{$publishedStatusParameterName})"
             ))
             ->setParameter($userParameterName, $user)
-            ->setParameter($publishedStatusParameterName, [Project::STATUS_PUBLISHED, Project::STATUS_ARCHIVED])
+            ->setParameter($publishedStatusParameterName, [Project::STATUS_PUBLISHED, Project::STATUS_ARCHIVED, Project::STATUS_FINISHED])
         ;
 
         $token = $this->security->getToken();

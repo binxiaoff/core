@@ -16,7 +16,7 @@ class ParticipationPoolVoter extends AbstractEntityVoter
     protected function canEdit(ParticipationPool $participationPool): bool
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participationPool->getProject())
-            && false === $participationPool->getProject()->isArchived();
+            && false === $participationPool->getProject()->isEditable();
     }
 
     protected function canView(ParticipationPool $participationPool, User $user): bool

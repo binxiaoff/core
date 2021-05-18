@@ -31,7 +31,7 @@ class ParticipationMemberVoter extends AbstractEntityVoter
     {
         $project = $participationMember->getProject();
 
-        if ($project->isArchived()) {
+        if ($project->isEditable()) {
             return false;
         }
 

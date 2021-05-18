@@ -44,7 +44,7 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
         $queryBuilder
             ->setParameter($userParameterName, $user)
             ->setParameter($borrowerSecondaryParameterName, false)
-            ->setParameter($publishedStatusParameterName, [Project::STATUS_PUBLISHED, Project::STATUS_ARCHIVED])
+            ->setParameter($publishedStatusParameterName, [Project::STATUS_PUBLISHED, Project::STATUS_ARCHIVED, Project::STATUS_FINISHED])
         ;
 
         // Borrower condition
