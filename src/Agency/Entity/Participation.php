@@ -34,6 +34,7 @@ use Unilend\Core\Model\Bitmask;
  *         }
  *     },
  *     collectionOperations={
+ *         "get",
  *         "post": {
  *             "denormalization_context": {
  *                 "groups": {
@@ -130,6 +131,12 @@ use Unilend\Core\Model\Bitmask;
  *             "user:read"
  *         }
  *     }
+ * )
+ *
+ * TODO The .publicId might be dropped in favor of using iri for filter when https://github.com/api-platform/core/issues/3575 is solved
+ * @ApiFilter(
+ *     filterClass=SearchFilter::class,
+ *     properties={"participant.publicId": "exact", "pool.project.publicId": "exact"}
  * )
  */
 class Participation extends AbstractProjectPartaker
