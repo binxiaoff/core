@@ -72,12 +72,10 @@ class ListExtension implements QueryCollectionExtensionInterface
                     )
                 )
             ))
-            ->setParameters([
-                'user'               => $staff->getUser(),
-                'displayableStatus'  => ProjectStatus::DISPLAYABLE_STATUSES,
-                'staff'              => $staff,
-                'managedStaffMember' => $this->projectParticipationMemberRepository->findActiveByManager($staff),
-            ])
+            ->setParameter('user', $staff->getUser())
+            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
+            ->setParameter('staff', $staff)
+            ->setParameter('managedStaffMember', $this->projectParticipationMemberRepository->findActiveByManager($staff))
         ;
     }
 }

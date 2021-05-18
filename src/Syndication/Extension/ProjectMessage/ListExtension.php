@@ -50,10 +50,8 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->leftJoin('pp.projectParticipationMembers', 'ppc')
             ->leftJoin('pp.project', 'project')
             ->andWhere('(ppc.staff = :staff AND ppc.archived IS NULL) OR :company = organizer.company')
-            ->setParameters([
-                'staff'   => $staff,
-                'company' => $staff->getCompany(),
-            ])
+            ->setParameter('staff', $staff)
+            ->setParameter('company', $staff->getCompany())
         ;
     }
 }

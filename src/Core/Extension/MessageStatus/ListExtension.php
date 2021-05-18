@@ -57,10 +57,8 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'p.currentStatus = pst.id')
             ->andWhere($rootAlias . '.recipient = :staff')
             ->andWhere('pst.status > :project_current_status')
-            ->setParameters([
-                'staff'                  => $staff,
-                'project_current_status' => ProjectStatus::STATUS_DRAFT,
-            ])
+            ->setParameter('staff', $staff)
+            ->setParameter('project_current_status', ProjectStatus::STATUS_DRAFT)
             ->orderBy('msg.messageThread', 'ASC')
         ;
     }
