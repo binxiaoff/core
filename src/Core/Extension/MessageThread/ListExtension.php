@@ -14,6 +14,7 @@ use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectParticipationMember;
 use Unilend\Syndication\Entity\ProjectStatus;
 use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
@@ -53,35 +54,27 @@ class ListExtension implements QueryCollectionExtensionInterface
 
         $queryBuilder
             ->innerJoin(ProjectParticipation::class, 'pp', Join::WITH, $rootAlias . '.projectParticipation = pp.id')
-            ->leftJoin('pp.projectParticipationMembers', 'ppc')
+            ->leftJoin(ProjectParticipationMember::class, 'ppm', Join::WITH, 'ppm.projectParticipation = pp.id AND ppm.archived IS NULL')
             ->innerJoin(Project::class, 'p', Join::WITH, 'p.id = pp.project')
             ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'pst.project = p.id')
             ->andWhere(
                 $queryBuilder->expr()->orX(
-                    // you are the project owner
-                    'p.submitterUser = :user',
-                    // or you fulfill the two following conditions :
+                    // you are the arranger
+                    'p.submitterCompany = :company',
+                    // or you are member of participation OR you managed a member of a participation
                     $queryBuilder->expr()->andX(
-                        // you are non archived member of participation OR you managed a member of a participation
+                        'pst.status in (:displayableStatus)',
                         $queryBuilder->expr()->orX(
-                            $queryBuilder->expr()->andX('ppc.staff = :staff', 'ppc.archived IS NULL'),
-                            'ppc IN (:managedStaffMember)',
-                        ),
-                        // you are in arranger company OR your participant and the project is in displayable status
-                        // part of the condition is in inner join
-                        $queryBuilder->expr()->orX(
-                            'pst.status in (:displayableStatus)',
-                            'pp.participant = p.submitterCompany'
+                            'ppm.staff = :staff',
+                            'ppm IN (:managedStaffMember)',
                         )
                     )
                 )
             )
-            ->setParameters([
-                'user'               => $staff->getUser(),
-                'displayableStatus'  => ProjectStatus::DISPLAYABLE_STATUSES,
-                'staff'              => $staff,
-                'managedStaffMember' => $this->projectParticipationMemberRepository->findActiveByManager($staff),
-            ])
+            ->setParameter('company', $staff->getCompany())
+            ->setParameter('displayableStatus', ProjectStatus::DISPLAYABLE_STATUSES)
+            ->setParameter('staff', $staff)
+            ->setParameter('managedStaffMember', $this->projectParticipationMemberRepository->findActiveByManager($staff))
             ->orderBy('p.title', 'ASC')
         ;
     }
