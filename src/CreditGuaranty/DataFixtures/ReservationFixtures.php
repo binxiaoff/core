@@ -29,11 +29,13 @@ use Unilend\CreditGuaranty\Entity\ReservationStatus;
 
 class ReservationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    public const RESERVATION_DRAFT                         = 'reservation_draft';
-    public const RESERVATION_SENT                          = 'reservation_sent';
-    public const RESERVATION_CONFIRMED_BY_MANAGING_COMPANY = 'reservation_confirmed_by_managing_company';
-    public const RESERVATION_CONFIRMED_BY_FEI              = 'reservation_confirmed_by_fei';
-    public const RESERVATION_CONTRACT_FORMALIZED           = 'reservation_contract_formalized';
+    public const RESERVATION_DRAFT                              = 'reservation_draft';
+    public const RESERVATION_SENT                               = 'reservation_sent';
+    public const RESERVATION_WAITING_FOR_FEI                    = 'reservation_waiting_for_fei';
+    public const RESERVATION_REQUEST_FOR_ADDITIONAL_INFORMATION = 'reservation_request_for_additional_information';
+    public const RESERVATION_ACCEPTED_BY_MANAGING_COMPANY       = 'reservation_accepted_by_managing_company';
+    public const RESERVATION_CONTRACT_FORMALIZED                = 'reservation_contract_formalized';
+    public const RESERVATION_REFUSED_BY_MANAGING_COMPANY        = 'reservation_refused_by_managing_company';
 
     /**
      * @return string[]
@@ -81,21 +83,29 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'project'                  => $this->createProject($manager, $program),
             'currentStatus'            => ReservationStatus::STATUS_SENT,
         ];
-        yield self::RESERVATION_CONFIRMED_BY_MANAGING_COMPANY => [
+        yield self::RESERVATION_WAITING_FOR_FEI => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
             'addedBy'                  => $addedBy,
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($manager, $program),
-            'currentStatus'            => ReservationStatus::STATUS_CONFIRMED_BY_MANAGING_COMPANY,
+            'currentStatus'            => ReservationStatus::STATUS_WAITING_FOR_FEI,
         ];
-        yield self::RESERVATION_CONFIRMED_BY_FEI => [
+        yield self::RESERVATION_REQUEST_FOR_ADDITIONAL_INFORMATION => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
             'addedBy'                  => $addedBy,
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($manager, $program),
-            'currentStatus'            => ReservationStatus::STATUS_CONFIRMED_BY_FEI,
+            'currentStatus'            => ReservationStatus::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION,
+        ];
+        yield self::RESERVATION_ACCEPTED_BY_MANAGING_COMPANY => [
+            'program'                  => $program,
+            'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
+            'addedBy'                  => $addedBy,
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'project'                  => $this->createProject($manager, $program),
+            'currentStatus'            => ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
         ];
         yield self::RESERVATION_CONTRACT_FORMALIZED => [
             'program'                  => $program,
@@ -104,6 +114,14 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($manager, $program),
             'currentStatus'            => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
+        ];
+        yield self::RESERVATION_REFUSED_BY_MANAGING_COMPANY => [
+            'program'                  => $program,
+            'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
+            'addedBy'                  => $addedBy,
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'project'                  => $this->createProject($manager, $program),
+            'currentStatus'            => ReservationStatus::STATUS_REFUSED_BY_MANAGING_COMPANY,
         ];
     }
 
