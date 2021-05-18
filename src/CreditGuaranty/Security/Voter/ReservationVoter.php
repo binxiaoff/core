@@ -10,12 +10,14 @@ use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\CreditGuaranty\Entity\Program;
 use Unilend\CreditGuaranty\Entity\Reservation;
+use Unilend\CreditGuaranty\Entity\ReservationStatus;
 use Unilend\CreditGuaranty\Entity\StaffPermission;
 use Unilend\CreditGuaranty\Service\StaffPermissionManager;
 
 class ReservationVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_VIEW   = 'view';
 
     private StaffPermissionManager $staffPermissionManager;
 
@@ -33,6 +35,22 @@ class ReservationVoter extends AbstractEntityVoter
         return $staff
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_CREATE_RESERVATION)
             && $program->hasParticipant($staff->getCompany())
+            && $this->checkCompanyGroupTag($program, $staff)
+        ;
+    }
+
+    protected function canView(Reservation $reservation, User $user): bool
+    {
+        $staff   = $user->getCurrentStaff();
+        $program = $reservation->getProgram();
+
+        /** @var ReservationStatus $reservationCurrentStatus */
+        $reservationCurrentStatus = $reservation->getCurrentStatus();
+
+        return $staff
+            && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_RESERVATION)
+            && $program->hasParticipant($staff->getCompany())
+            && $staff->getCompany() === $reservationCurrentStatus->getAddedBy()->getCompany()
             && $this->checkCompanyGroupTag($program, $staff)
         ;
     }

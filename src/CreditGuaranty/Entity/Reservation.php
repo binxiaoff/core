@@ -40,7 +40,9 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *         "nullableMoney:write"
  *     }},
  *     itemOperations={
- *         "get",
+ *         "get": {
+ *             "security": "is_granted('view', object)"
+ *         },
  *         "patch",
  *         "delete"
  *     },
