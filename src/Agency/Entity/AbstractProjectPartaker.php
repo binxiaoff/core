@@ -275,8 +275,6 @@ abstract class AbstractProjectPartaker
 
     /**
      * @return Collection|AbstractProjectMember[]
-     *
-     * @Assert\Count(max=1)
      */
     public function getReferents(): Collection
     {
@@ -285,8 +283,6 @@ abstract class AbstractProjectPartaker
 
     /**
      * @return Collection|AbstractProjectMember[]
-     *
-     * @Assert\Count(max=1)
      */
     public function getSignatory(): Collection
     {
