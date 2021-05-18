@@ -28,6 +28,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "agency:participationPool:read",
  *         }
  *     },
+ *     collectionOperations={},
  *     itemOperations={
  *         "get": {
  *             "security": "is_granted('view', object)"
