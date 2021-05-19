@@ -10,6 +10,7 @@ use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\CreditGuaranty\Entity\Program;
 use Unilend\CreditGuaranty\Entity\Reservation;
+use Unilend\CreditGuaranty\Entity\ReservationStatus;
 use Unilend\CreditGuaranty\Entity\StaffPermission;
 use Unilend\CreditGuaranty\Service\StaffPermissionManager;
 
@@ -17,6 +18,7 @@ class ReservationVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
     public const ATTRIBUTE_VIEW   = 'view';
+    public const ATTRIBUTE_DELETE = 'delete';
 
     private StaffPermissionManager $staffPermissionManager;
 
@@ -47,6 +49,14 @@ class ReservationVoter extends AbstractEntityVoter
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_RESERVATION)
             && $staff->getCompany() === $reservation->getManagingCompany()
             && $this->checkCompanyGroupTag($program, $staff)
+        ;
+    }
+
+    protected function canDelete(Reservation $reservation, User $user): bool
+    {
+        return $this->canCreate($reservation, $user)
+            // @todo rename status after CALS-3673 is merged
+            && ReservationStatus::STATUS_CONFIRMED_BY_MANAGING_COMPANY !== $reservation->getCurrentStatus()->getStatus()
         ;
     }
 
