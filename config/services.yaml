@@ -12,7 +12,7 @@ parameters:
     maintenance: '%env(MAINTENANCE_MODE)%'
     slack.webhook.support: '%env(SLACK_WEBHOOK_URL)%'
     slack.webhook.security: https://hooks.slack.com/services/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
-    security.recipients: ['tech@ca-lendingservices.com']
+    security.recipients: ['tech@kls-platform.com']
     file_encryption.kek_file: '%env(FILE_ENCRYPTION_KEK_FILE)%'
     file_encryption.kek_passphrase: '%env(FILE_ENCRYPTION_KEK_PASSPHRASE)%'
     psn.public_key: '%env(base64:PSN_PUBLIC_KEY)%'
