@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Interfaces\StatusInterface;
 use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Core\Entity\Staff;
@@ -70,6 +71,14 @@ class Reservation implements TraceableStatusAwareInterface
      * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
      */
     private Program $program;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\JoinColumn(name="id_managing_company", nullable=false)
+     *
+     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:create"})
+     */
+    private Company $managingCompany;
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Borrower", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
@@ -133,6 +142,7 @@ class Reservation implements TraceableStatusAwareInterface
     public function __construct(Program $program, Borrower $borrower, Staff $addedBy)
     {
         $this->program          = $program;
+        $this->managingCompany  = $addedBy->getCompany();
         $this->borrower         = $borrower;
         $this->financingObjects = new ArrayCollection();
         $this->added            = new DateTimeImmutable();
@@ -143,6 +153,11 @@ class Reservation implements TraceableStatusAwareInterface
     public function getProgram(): Program
     {
         return $this->program;
+    }
+
+    public function getManagingCompany(): Company
+    {
+        return $this->managingCompany;
     }
 
     public function getBorrower(): Borrower

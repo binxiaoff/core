@@ -10,7 +10,6 @@ use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\CreditGuaranty\Entity\Program;
 use Unilend\CreditGuaranty\Entity\Reservation;
-use Unilend\CreditGuaranty\Entity\ReservationStatus;
 use Unilend\CreditGuaranty\Entity\StaffPermission;
 use Unilend\CreditGuaranty\Service\StaffPermissionManager;
 
@@ -44,13 +43,9 @@ class ReservationVoter extends AbstractEntityVoter
         $staff   = $user->getCurrentStaff();
         $program = $reservation->getProgram();
 
-        /** @var ReservationStatus $reservationCurrentStatus */
-        $reservationCurrentStatus = $reservation->getCurrentStatus();
-
         return $staff
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_RESERVATION)
-            && $program->hasParticipant($staff->getCompany())
-            && $staff->getCompany() === $reservationCurrentStatus->getAddedBy()->getCompany()
+            && $staff->getCompany() === $reservation->getManagingCompany()
             && $this->checkCompanyGroupTag($program, $staff)
         ;
     }
