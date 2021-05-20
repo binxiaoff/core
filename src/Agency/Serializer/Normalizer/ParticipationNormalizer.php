@@ -57,7 +57,7 @@ class ParticipationNormalizer implements ContextAwareDenormalizerInterface, Deno
             }
         }
 
-        return $this->nestedDenormalize($data, $type, $format, $context, ['allocation']);
+        return $this->nestedDenormalize($data, $type, $format, $context, ['allocations']);
     }
 
     /**
