@@ -7,7 +7,6 @@ namespace Unilend\Core\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use JsonException;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\StaffStatus;
@@ -44,7 +43,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         /** @var User $admin */
         $admin = $this->getReference(UserFixtures::ADMIN);
 
-        $adminStaff = $this->insertStaff($admin, $adminCompany, []);
+        $adminStaff = $this->insertStaff($admin, $adminCompany);
         $this->addReference(self::ADMIN, $adminStaff);
         $this->addStaffReference($adminStaff);
 
@@ -73,14 +72,10 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
 
     /**
      * Creates a new staff attached to the company.
-     *
-     * @throws JsonException
      */
-    private function insertStaff(User $user, Company $company, array $roles = []): Staff
+    private function insertStaff(User $user, Company $company): Staff
     {
         // We need to use SQL since we cannot instantiate Staff entity
-        $rolesEncoded = json_encode($roles, JSON_THROW_ON_ERROR);
-
         $sql = <<<SQL
                 INSERT INTO `core_staff`
                     (id_team, id_user, manager, updated, added, public_id, arrangement_project_creation_permission, agency_project_creation_permission) VALUES 
