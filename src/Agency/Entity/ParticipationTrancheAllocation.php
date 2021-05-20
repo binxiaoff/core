@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -48,6 +49,8 @@ class ParticipationTrancheAllocation
      * @ORM\JoinColumn(name="id_participation", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
+     *
+     * @ApiProperty(readableLink=false)
      *
      * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:write"})
      */

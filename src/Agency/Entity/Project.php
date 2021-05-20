@@ -220,13 +220,16 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "agency:borrower:read",
  *             "agency:borrowerMember:read",
  *             "agency:borrowerTrancheShare:read",
+ *             "agency:participationPool:read",
  *             "agency:participation:read",
  *             "agency:participationPool:read",
  *             "agency:participationMember:read",
  *             "agency:participationTrancheAllocation:read",
  *             "agency:tranche:read",
  *             "agency:covenant:read",
- *             "agency:term:read"
+ *             "agency:term:read",
+ *             "agency:borrowerMember:read",
+ *             "user:read",
  *         }
  *     }
  * )

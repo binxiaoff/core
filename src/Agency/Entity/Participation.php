@@ -147,6 +147,8 @@ class Participation extends AbstractProjectPartaker
      *
      * @Assert\NotBlank
      *
+     * @Groups({"agency:participation:read"})
+     *
      * @ApiProperty(readableLink=false)
      */
     private ParticipationPool $pool;
