@@ -18,7 +18,7 @@ use Unilend\Core\Entity\User;
 class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     public const REFERENCE_PREFIX = 'company:';
-    public const CALS             = self::REFERENCE_PREFIX . Company::SHORT_CODE_CALS;
+    public const KLS              = self::REFERENCE_PREFIX . Company::SHORT_CODE_KLS;
     public const CASA             = self::REFERENCE_PREFIX . Company::SHORT_CODE_CASA;
 
     public const COMPANY_MANY_STAFF = 'COMPANY_MANY_STAFF';
@@ -56,6 +56,17 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
     private ObjectManager $entityManager;
 
     /**
+     * @return string[]
+     */
+    public function getDependencies(): array
+    {
+        return [
+            UserFixtures::class,
+            CompanyGroupFixture::class,
+        ];
+    }
+
+    /**
      * @throws ReflectionException
      * @throws Exception
      */
@@ -69,8 +80,8 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         /** @var User $user */
         $user    = $this->getReference(UserFixtures::ADMIN);
         $domain  = explode('@', $user->getEmail())[1];
-        $company = $this->createCompany('CA Lending Services', Company::SHORT_CODE_CALS)->setEmailDomain($domain)->setCompanyGroup($CAGroup);
-        $this->addReference(self::CALS, $company);
+        $company = $this->createCompany('CA Lending Services', Company::SHORT_CODE_KLS)->setEmailDomain($domain)->setCompanyGroup($CAGroup);
+        $this->addReference(self::KLS, $company);
 
         $company = $this->createCompany('Crédit Agricole SA', Company::SHORT_CODE_CASA)
             ->setEmailDomain('credit-agricole-sa.fr')
@@ -111,14 +122,6 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         $this->addReference(self::COMPANY_MANY_STAFF, $company);
 
         $manager->flush();
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getDependencies(): array
-    {
-        return [UserFixtures::class, CompanyGroupFixture::class];
     }
 
     /**

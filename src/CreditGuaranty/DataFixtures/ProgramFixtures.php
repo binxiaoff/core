@@ -82,9 +82,10 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                     'Signature du client et contractualisation',
                     'Renseignement du N° de prêt et montant des réalisations',
                 ],
-                'guarantyDuration' => 240,
-                'guarantyCoverage' => '0.07',
-                'guarantyCost'     => ['currency' => 'EUR', 'amount' => '1000'],
+                'guarantyDuration'    => 240,
+                'guarantyCoverage'    => '0.07',
+                'guarantyCost'        => ['currency' => 'EUR', 'amount' => '1000'],
+                'reservationDuration' => 2,
             ],
             self::REFERENCE_PAUSED => [
                 'name'            => 'Programme en pause',
@@ -149,6 +150,10 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         if (false === empty($programDatum['guarantyCost'])) {
             $program->setGuarantyCost(new NullableMoney($programDatum['guarantyCost']['currency'], $programDatum['guarantyCost']['amount']));
+        }
+
+        if (false === empty($programDatum['reservationDuration'])) {
+            $program->setReservationDuration($programDatum['reservationDuration']);
         }
 
         $cARatingType = CARatingType::getConstList();

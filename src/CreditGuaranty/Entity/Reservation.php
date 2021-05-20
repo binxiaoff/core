@@ -239,4 +239,11 @@ class Reservation implements TraceableStatusAwareInterface
 
         return $this;
     }
+
+    public function archive(Staff $archivedBy): Reservation
+    {
+        $this->setCurrentStatus(new ReservationStatus($this, ReservationStatus::STATUS_ARCHIVED, $archivedBy));
+
+        return $this;
+    }
 }

@@ -29,11 +29,16 @@ use Unilend\CreditGuaranty\Entity\ReservationStatus;
 
 class ReservationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    public const RESERVATION_DRAFT                         = 'reservation_draft';
-    public const RESERVATION_SENT                          = 'reservation_sent';
-    public const RESERVATION_CONFIRMED_BY_MANAGING_COMPANY = 'reservation_confirmed_by_managing_company';
-    public const RESERVATION_CONFIRMED_BY_FEI              = 'reservation_confirmed_by_fei';
-    public const RESERVATION_CONTRACT_FORMALIZED           = 'reservation_contract_formalized';
+    public const RESERVATION_DRAFT                              = 'reservation_draft';
+    public const RESERVATION_SENT                               = 'reservation_sent';
+    public const RESERVATION_WAITING_FOR_FEI                    = 'reservation_waiting_for_fei';
+    public const RESERVATION_REQUEST_FOR_ADDITIONAL_INFORMATION = 'reservation_request_for_additional_information';
+    public const RESERVATION_ACCEPTED_BY_MANAGING_COMPANY       = 'reservation_accepted_by_managing_company';
+    public const RESERVATION_CONTRACT_FORMALIZED                = 'reservation_contract_formalized';
+    public const RESERVATION_ARCHIVED                           = 'reservation_archived';
+    public const RESERVATION_REFUSED_BY_MANAGING_COMPANY        = 'reservation_refused_by_managing_company';
+
+    private ObjectManager $entityManager;
 
     /**
      * @return string[]
@@ -49,8 +54,10 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
     public function load(ObjectManager $manager): void
     {
-        foreach ($this->loadData($manager) as $reference => $reservationData) {
-            $reservation = $this->buildReservation($manager, $reservationData);
+        $this->entityManager = $manager;
+
+        foreach ($this->loadData() as $reference => $reservationData) {
+            $reservation = $this->buildReservation($reservationData);
             $manager->persist($reservation);
             $this->addReference($reference, $reservation);
         }
@@ -58,7 +65,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $manager->flush();
     }
 
-    private function loadData(ObjectManager $manager): iterable
+    private function loadData(): iterable
     {
         /** @var Staff $addedBy */
         $addedBy = $this->getReference(StaffFixtures::ADMIN);
@@ -68,62 +75,86 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
         yield self::RESERVATION_DRAFT => [
             'program'                  => $program,
-            'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
+            'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $addedBy,
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'currentStatus'            => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_SENT => [
             'program'                  => $program,
-            'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
+            'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $addedBy,
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
-            'project'                  => $this->createProject($manager, $program),
+            'project'                  => $this->createProject($program),
             'currentStatus'            => ReservationStatus::STATUS_SENT,
         ];
-        yield self::RESERVATION_CONFIRMED_BY_MANAGING_COMPANY => [
+        yield self::RESERVATION_WAITING_FOR_FEI => [
             'program'                  => $program,
-            'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
+            'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $addedBy,
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
-            'project'                  => $this->createProject($manager, $program),
-            'currentStatus'            => ReservationStatus::STATUS_CONFIRMED_BY_MANAGING_COMPANY,
+            'project'                  => $this->createProject($program),
+            'currentStatus'            => ReservationStatus::STATUS_WAITING_FOR_FEI,
         ];
-        yield self::RESERVATION_CONFIRMED_BY_FEI => [
+        yield self::RESERVATION_REQUEST_FOR_ADDITIONAL_INFORMATION => [
             'program'                  => $program,
-            'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
+            'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $addedBy,
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
-            'project'                  => $this->createProject($manager, $program),
-            'currentStatus'            => ReservationStatus::STATUS_CONFIRMED_BY_FEI,
+            'project'                  => $this->createProject($program),
+            'currentStatus'            => ReservationStatus::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION,
+        ];
+        yield self::RESERVATION_ACCEPTED_BY_MANAGING_COMPANY => [
+            'program'                  => $program,
+            'borrower'                 => $this->createBorrower($program, $this->createAddress()),
+            'addedBy'                  => $addedBy,
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'project'                  => $this->createProject($program),
+            'currentStatus'            => ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
         ];
         yield self::RESERVATION_CONTRACT_FORMALIZED => [
             'program'                  => $program,
-            'borrower'                 => $this->createBorrower($manager, $program, $this->createAddress()),
+            'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $addedBy,
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
-            'project'                  => $this->createProject($manager, $program),
+            'project'                  => $this->createProject($program),
             'currentStatus'            => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
+        ];
+        yield self::RESERVATION_ARCHIVED => [
+            'program'                  => $program,
+            'borrower'                 => $this->createBorrower($program, $this->createAddress()),
+            'addedBy'                  => $addedBy,
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'project'                  => $this->createProject($program),
+            'currentStatus'            => ReservationStatus::STATUS_ARCHIVED,
+        ];
+        yield self::RESERVATION_REFUSED_BY_MANAGING_COMPANY => [
+            'program'                  => $program,
+            'borrower'                 => $this->createBorrower($program, $this->createAddress()),
+            'addedBy'                  => $addedBy,
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'project'                  => $this->createProject($program),
+            'currentStatus'            => ReservationStatus::STATUS_REFUSED_BY_MANAGING_COMPANY,
         ];
     }
 
-    private function buildReservation(ObjectManager $manager, array $reservationData): Reservation
+    private function buildReservation(array $reservationData): Reservation
     {
         $reservation = new Reservation($reservationData['program'], $reservationData['borrower'], $reservationData['addedBy']);
 
         if (false === empty($reservationData['borrowerBusinessActivity'])) {
-            $manager->persist($reservationData['borrowerBusinessActivity']);
+            $this->entityManager->persist($reservationData['borrowerBusinessActivity']);
             $reservation->setBorrowerBusinessActivity($reservationData['borrowerBusinessActivity']);
         }
 
         if (false === empty($reservationData['project'])) {
-            $manager->persist($reservationData['project']);
+            $this->entityManager->persist($reservationData['project']);
             $reservation->setProject($reservationData['project']);
         }
 
-        $reservationStatus = new ReservationStatus($reservation, $reservationData['currentStatus'], $reservationData['addedBy']);
-        $manager->persist($reservationStatus);
-        $reservation->setCurrentStatus($reservationStatus);
+        $currentReservationStatus = new ReservationStatus($reservation, $reservationData['currentStatus'], $reservationData['addedBy']);
+        $this->createReservationStatuses($currentReservationStatus);
+        $reservation->setCurrentStatus($currentReservationStatus);
 
         return $reservation;
     }
@@ -138,10 +169,10 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         ;
     }
 
-    private function createBorrower(ObjectManager $manager, Program $program, Address $address): Borrower
+    private function createBorrower(Program $program, Address $address): Borrower
     {
-        $fieldRepository               = $manager->getRepository(Field::class);
-        $programChoiceOptionRepository = $manager->getRepository(ProgramChoiceOption::class);
+        $fieldRepository               = $this->entityManager->getRepository(Field::class);
+        $programChoiceOptionRepository = $this->entityManager->getRepository(ProgramChoiceOption::class);
 
         /** @var Field $borrowerTypeField */
         $borrowerTypeField = $fieldRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
@@ -186,10 +217,10 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         ;
     }
 
-    private function createProject(ObjectManager $manager, Program $program): Project
+    private function createProject(Program $program): Project
     {
-        $fieldRepository   = $manager->getRepository(Field::class);
-        $nafNaceRepository = $manager->getRepository(NafNace::class);
+        $fieldRepository   = $this->entityManager->getRepository(Field::class);
+        $nafNaceRepository = $this->entityManager->getRepository(NafNace::class);
 
         /** @var Field $investmentThematicField */
         $investmentThematicField = $fieldRepository->findOneBy(['fieldAlias' => FieldAlias::INVESTMENT_THEMATIC]);
@@ -200,8 +231,28 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $fundingMoney       = new Money('EUR', (string) $this->faker->randomNumber());
         $investmentThematic = new ProgramChoiceOption($program, 'Project ' . $this->faker->sentence, $investmentThematicField);
 
-        $manager->persist($investmentThematic);
+        $this->entityManager->persist($investmentThematic);
 
         return new Project($fundingMoney, $investmentThematic, $nafNace);
+    }
+
+    private function createReservationStatuses(ReservationStatus $currentReservationStatus): void
+    {
+        if (ReservationStatus::STATUS_DRAFT === $currentReservationStatus->getStatus()) {
+            $this->entityManager->persist($currentReservationStatus);
+
+            return;
+        }
+
+        foreach (ReservationStatus::ALLOWED_STATUS as $allowedStatus => $allowedStatuses) {
+            $previousReservationStatus = new ReservationStatus($currentReservationStatus->getReservation(), $allowedStatus, $currentReservationStatus->getAddedBy());
+            $this->entityManager->persist($previousReservationStatus);
+
+            if (in_array($currentReservationStatus->getStatus(), $allowedStatuses, true)) {
+                break;
+            }
+        }
+
+        $this->entityManager->persist($currentReservationStatus);
     }
 }

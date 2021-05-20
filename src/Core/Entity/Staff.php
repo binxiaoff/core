@@ -66,6 +66,8 @@ class Staff implements TraceableStatusAwareInterface
 
     public const SERIALIZER_GROUP_OWNER_READ = 'staff:owner:read';
 
+    public const ID_ADMIN = 1;
+
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User", inversedBy="staff", cascade={"persist", "refresh"})
      * @ORM\JoinColumns({

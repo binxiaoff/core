@@ -47,18 +47,40 @@ class ReservationStatus implements StatusInterface
     use PublicizeIdentityTrait;
     use BlamableAddedTrait;
 
-    public const STATUS_DRAFT                         = 10;
-    public const STATUS_SENT                          = 20;
-    public const STATUS_CONFIRMED_BY_MANAGING_COMPANY = 30;
-    public const STATUS_CONFIRMED_BY_FEI              = 35;
-    public const STATUS_CONTRACT_FORMALIZED           = 40;
+    public const STATUS_DRAFT                              = 10;
+    public const STATUS_SENT                               = 20;
+    public const STATUS_WAITING_FOR_FEI                    = 30;
+    public const STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION = 40;
+    public const STATUS_ACCEPTED_BY_MANAGING_COMPANY       = 50;
+    public const STATUS_CONTRACT_FORMALIZED                = 60;
+    public const STATUS_ARCHIVED                           = -10;
+    public const STATUS_REFUSED_BY_MANAGING_COMPANY        = -20;
 
     public const ALLOWED_STATUS = [
-        self::STATUS_DRAFT                         => [self::STATUS_SENT],
-        self::STATUS_SENT                          => [self::STATUS_CONFIRMED_BY_MANAGING_COMPANY],
-        self::STATUS_CONFIRMED_BY_MANAGING_COMPANY => [self::STATUS_CONFIRMED_BY_FEI],
-        self::STATUS_CONFIRMED_BY_FEI              => [self::STATUS_CONTRACT_FORMALIZED],
-        self::STATUS_CONTRACT_FORMALIZED           => [],
+        self::STATUS_DRAFT => [self::STATUS_SENT],
+        self::STATUS_SENT  => [
+            self::STATUS_WAITING_FOR_FEI,
+            self::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION,
+            self::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
+            self::STATUS_ARCHIVED,
+            self::STATUS_REFUSED_BY_MANAGING_COMPANY,
+        ],
+        self::STATUS_WAITING_FOR_FEI => [
+            self::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
+            self::STATUS_ARCHIVED,
+            self::STATUS_REFUSED_BY_MANAGING_COMPANY,
+        ],
+        self::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION => [
+            self::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
+            self::STATUS_ARCHIVED,
+            self::STATUS_REFUSED_BY_MANAGING_COMPANY,
+        ],
+        self::STATUS_ACCEPTED_BY_MANAGING_COMPANY => [
+            self::STATUS_CONTRACT_FORMALIZED,
+            self::STATUS_ARCHIVED,
+        ],
+        self::STATUS_ARCHIVED                    => [],
+        self::STATUS_REFUSED_BY_MANAGING_COMPANY => [],
     ];
 
     /**

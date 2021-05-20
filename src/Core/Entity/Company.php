@@ -111,7 +111,7 @@ class Company implements TraceableStatusAwareInterface
     public const VAT_METROPOLITAN = 'metropolitan'; // Default tva category : 20 %
     public const VAT_OVERSEAS     = 'overseas'; // Overseas tva category (Guadeloupe, Martinique, Reunion) : 8.5 %
 
-    public const SHORT_CODE_CALS = 'CALS';
+    public const SHORT_CODE_KLS  = 'KLS';
     public const SHORT_CODE_CASA = 'CASA';
 
     public const NON_ELIGIBLE_TO_PARTICIPANT = [self::SHORT_CODE_CASA];
