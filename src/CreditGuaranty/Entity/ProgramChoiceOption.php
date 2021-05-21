@@ -8,10 +8,12 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\Traits\ArchivableTrait;
 use Unilend\Core\Entity\Traits\CloneableTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
@@ -56,6 +58,7 @@ class ProgramChoiceOption
     use PublicizeIdentityTrait;
     use TimestampableTrait;
     use CloneableTrait;
+    use ArchivableTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programChoiceOptions")
@@ -131,5 +134,13 @@ class ProgramChoiceOption
         }
 
         return in_array($this->description, $this->getField()->getPredefinedItems(), true);
+    }
+
+    /**
+     * @Groups({"creditGuaranty:programChoiceOption:read"})
+     */
+    public function getArchived(): ?DateTime
+    {
+        return $this->archived;
     }
 }
