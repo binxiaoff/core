@@ -143,4 +143,16 @@ class ProgramChoiceOption
     {
         return $this->archived;
     }
+
+    public function isArchived(): bool
+    {
+        return null !== $this->archived;
+    }
+
+    public function archive(): ProgramChoiceOption
+    {
+        $this->setArchived(new DateTime());
+
+        return $this;
+    }
 }

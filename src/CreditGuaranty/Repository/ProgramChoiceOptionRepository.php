@@ -18,9 +18,12 @@ use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
  */
 class ProgramChoiceOptionRepository extends ServiceEntityRepository
 {
+    private ManagerRegistry $managerRegistry;
+
     public function __construct(ManagerRegistry $managerRegistry)
     {
         parent::__construct($managerRegistry, ProgramChoiceOption::class);
+        $this->managerRegistry = $managerRegistry;
     }
 
     /**
@@ -40,5 +43,10 @@ class ProgramChoiceOptionRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->remove($programChoiceOption);
         $this->getEntityManager()->flush();
+    }
+
+    public function resetManager(): void
+    {
+        $this->managerRegistry->resetManager();
     }
 }
