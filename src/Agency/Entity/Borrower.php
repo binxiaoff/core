@@ -70,7 +70,8 @@ use Unilend\Core\Entity\Embeddable\Money;
  *     arguments={
  *         "whitelist": {
  *             "agency:borrowerMember:read",
- *             "user:read"
+ *             "user:read",
+ *             "agency:projectMember:read"
  *         }
  *     }
  * )
