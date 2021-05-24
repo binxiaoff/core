@@ -44,7 +44,9 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *         "get": {
  *             "security": "is_granted('view', object)"
  *         },
- *         "patch",
+ *         "patch": {
+ *             "security": "is_granted('edit', object)"
+ *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)"
  *         }
