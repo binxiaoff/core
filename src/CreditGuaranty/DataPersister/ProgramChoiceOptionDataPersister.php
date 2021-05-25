@@ -8,7 +8,6 @@ use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Unilend\CreditGuaranty\Entity\Field;
 use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
 use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
 
@@ -23,9 +22,7 @@ class ProgramChoiceOptionDataPersister implements DataPersisterInterface
 
     public function supports($data): bool
     {
-        return $data instanceof ProgramChoiceOption
-            && Field::TYPE_LIST === $data->getField()->getType()
-        ;
+        return $data instanceof ProgramChoiceOption;
     }
 
     /**
@@ -46,13 +43,13 @@ class ProgramChoiceOptionDataPersister implements DataPersisterInterface
      */
     public function remove($data): void
     {
+        if ($data->isArchived()) {
+            return;
+        }
+
         try {
             $this->programChoiceOptionRepository->remove($data);
         } catch (ForeignKeyConstraintViolationException $exception) {
-            if ($data->isArchived()) {
-                return;
-            }
-
             // we have to reset registry manager because it closes on exception
             $this->programChoiceOptionRepository->resetManager();
 
