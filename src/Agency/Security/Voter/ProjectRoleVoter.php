@@ -124,17 +124,15 @@ class ProjectRoleVoter extends Voter
     {
         $staff = $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
 
-        if (null === $staff || ($staff->getCompany() !== $project->getAgent())) {
+        if (null === $staff || ($staff->getCompany() !== $project->getAgentCompany())) {
             return false;
         }
 
         // Fetch users whom connected user can get permission as he had them
         $managedUsers = $staff->getManagedUsers();
 
-        $company = $staff->getCompany();
-
         foreach ($managedUsers as $managedUser) {
-            if ($this->participationMemberRepository->findByProjectAndCompanyAndUser($project, $company, $managedUser)) {
+            if ($this->agentMemberRepository->findOneByProjectAndUser($project, $managedUser)) {
                 return true;
             }
         }
@@ -154,7 +152,7 @@ class ProjectRoleVoter extends Voter
 
         $staff = $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
 
-        if (null === $staff || ($staff->getCompany() !== $project->getAgentCompany())) {
+        if (null === $staff) {
             return false;
         }
 
@@ -162,7 +160,7 @@ class ProjectRoleVoter extends Voter
         $managedUsers = $staff->getManagedUsers();
 
         foreach ($managedUsers as $managedUser) {
-            $participationMember = $this->agentMemberRepository->findOneByProjectAndUser($project, $managedUser);
+            $participationMember = $this->participationMemberRepository->findByProjectAndCompanyAndUser($project, $staff->getCompany(), $managedUser);
 
             if ($participationMember) {
                 $participation = $participationMember->getParticipation();
