@@ -54,11 +54,15 @@ class ReservationVoter extends AbstractEntityVoter
 
     protected function canEdit(Reservation $reservation, User $user): bool
     {
-        $staff = $user->getCurrentStaff();
+        $staff   = $user->getCurrentStaff();
+        $program = $reservation->getProgram();
 
-        return $this->canCreate($reservation, $user)
+        return $staff
+            && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_EDIT_RESERVATION)
+            && $program->hasParticipant($staff->getCompany())
             && $reservation->getManagingCompany() === $staff->getCompany()
-            ;
+            && $this->checkCompanyGroupTag($program, $staff)
+        ;
     }
 
     protected function canDelete(Reservation $reservation, User $user): bool
