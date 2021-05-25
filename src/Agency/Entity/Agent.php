@@ -14,6 +14,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 
 /**
@@ -103,7 +104,7 @@ class Agent extends AbstractProjectPartaker
 
     public function __construct(Project $project, Company $company)
     {
-        parent::__construct($company->getSiren() ?? '', new Money($project->getCurrency(), '0'));
+        parent::__construct($company->getSiren() ?? '');
         $this->project       = $project;
         $this->company       = $company;
         $this->members       = new ArrayCollection();
@@ -238,19 +239,17 @@ class Agent extends AbstractProjectPartaker
     /**
      * @Groups({"agency:agent:read"})
      */
-    public function getCapital(): Money
+    public function getCapital(): NullableMoney
     {
-        return $this->capital;
+        return parent::getCapital();
     }
 
     /**
      * @Groups({"agency:agent:write"})
      */
-    public function setCapital(Money $capital): AbstractProjectPartaker
+    public function setCapital(NullableMoney $capital): AbstractProjectPartaker
     {
-        $this->capital = $capital;
-
-        return $this;
+        return parent::setCapital($capital);
     }
 
     /**

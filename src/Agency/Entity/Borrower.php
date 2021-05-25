@@ -12,14 +12,14 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 
 /**
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
  *             "agency:borrower:read",
- *             "money:read"
+ *             "nullableMoney:read"
  *         }
  *     },
  *     collectionOperations={
@@ -28,6 +28,8 @@ use Unilend\Core\Entity\Embeddable\Money;
  *                 "groups": {
  *                     "agency:borrower:create",
  *                     "agency:borrower:write",
+ *                     "agency:projectPartaker:write",
+ *                     "nullableMoney:write",
  *                     "agency:borrowerMember:create",
  *                     "agency:borrowerMember:write",
  *                     "money:write",
@@ -49,6 +51,7 @@ use Unilend\Core\Entity\Embeddable\Money;
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:borrower:write",
+ *                     "nullableMoney:write"
  *                     "agency:borrowerMember:create",
  *                     "agency:borrowerMember:write",
  *                     "money:write",
@@ -116,7 +119,7 @@ class Borrower extends AbstractProjectPartaker
         Project $project,
         string $corporateName,
         string $legalForm,
-        Money $capital,
+        NullableMoney $capital,
         string $headOffice,
         string $matriculationNumber
     ) {

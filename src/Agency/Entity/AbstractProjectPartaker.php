@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Entity\User;
@@ -91,12 +91,13 @@ abstract class AbstractProjectPartaker
     protected string $matriculationNumber;
 
     /**
-     * @Assert\Valid
-     * @Assert\NotBlank
+     * @ORM\Embedded(class=NullableMoney::class)
      *
-     * @ORM\Embedded(class=Money::class)
+     * @Assert\Valid
+     *
+     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
-    protected Money $capital;
+    private NullableMoney $capital;
 
     /**
      * @ORM\Column(type="string", length=40, nullable=true)
@@ -105,10 +106,10 @@ abstract class AbstractProjectPartaker
      */
     protected ?string $rcs;
 
-    public function __construct(string $matriculationNumber, Money $capital)
+    public function __construct(string $matriculationNumber, ?NullableMoney $capital = null)
     {
         $this->matriculationNumber = $matriculationNumber;
-        $this->capital             = $capital;
+        $this->capital             = $capital ?: new NullableMoney();
         $this->rcs                 = null;
         $this->added               = new DateTimeImmutable();
         $this->setPublicId();
@@ -119,6 +120,16 @@ abstract class AbstractProjectPartaker
     public function getMatriculationNumber(): string
     {
         return $this->matriculationNumber;
+    }
+
+    public function getCapital(): NullableMoney
+    {
+        return $this->capital;
+    }
+
+    public function getRcs(): ?string
+    {
+        return $this->rcs;
     }
 
     public function setMatriculationNumber(string $matriculationNumber): AbstractProjectPartaker
@@ -133,7 +144,7 @@ abstract class AbstractProjectPartaker
         return $this->capital;
     }
 
-    public function setCapital(Money $capital): AbstractProjectPartaker
+    public function setCapital(NullableMoney $capital): AbstractProjectPartaker
     {
         $this->capital = $capital;
 

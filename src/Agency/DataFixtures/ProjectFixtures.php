@@ -36,6 +36,8 @@ use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\UserStatus;
@@ -412,7 +414,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $project,
             $this->faker->company,
             'SARL',
-            new Money(
+            new NullableMoney(
                 $project->getCurrency(),
                 (string) $this->faker->randomFloat(0, 100000)
             ),
@@ -482,7 +484,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $project->getParticipationPools()[$secondary],
             $participant,
             new Money('EUR', (string) $this->faker->numberBetween(100000)),
-            new Money('EUR', (string) $this->faker->numberBetween(40000000)),
         );
 
         $participation->setLegalForm(LegalForm::SARL);

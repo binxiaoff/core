@@ -45,7 +45,7 @@ class ParticipationTrancheAllocation
     use PublicizeIdentityTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Participation::class, inversedBy="allocations")
+     * @ORM\ManyToOne(targetEntity=Participation::class, inversedBy="allocations", cascade={"persist"})
      * @ORM\JoinColumn(name="id_participation", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank

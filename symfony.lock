@@ -52,6 +52,9 @@
     "behat/transliterator": {
         "version": "v1.2.0"
     },
+    "box/spout": {
+        "version": "v3.3.0"
+    },
     "clue/stream-filter": {
         "version": "v1.4.1"
     },

@@ -142,8 +142,7 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
                 $agencyParticipation = new Participation(
                     $agencyProject->getPrimaryParticipationPool(),
                     $arrangementParticipation->getParticipant(),
-                    $finalAllocation,
-                    new Money($agencyProject->getGlobalFundingMoney()->getCurrency())
+                    $finalAllocation
                 );
 
                 $agencyProject->addParticipation($agencyParticipation);

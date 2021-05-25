@@ -13,16 +13,13 @@ trait BlamableAddedTrait
     /**
      * @var Staff
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff", cascade={"persist"})
      * @ORM\JoinColumn(name="added_by", referencedColumnName="id", nullable=false)
      *
      * @Groups({"blameable:read"})
      */
     private $addedBy;
 
-    /**
-     * @return Staff
-     */
     public function getAddedBy(): Staff
     {
         return $this->addedBy;
