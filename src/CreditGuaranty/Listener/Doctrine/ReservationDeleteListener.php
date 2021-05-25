@@ -7,6 +7,7 @@ namespace Unilend\CreditGuaranty\Listener\Doctrine;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Unilend\Core\Entity\Staff;
 use Unilend\CreditGuaranty\Entity\Reservation;
 use Unilend\CreditGuaranty\Entity\ReservationStatus;
@@ -28,6 +29,10 @@ class ReservationDeleteListener
         $token = $this->tokenStorage->getToken();
         $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
 
+        if (false === ($staff instanceof Staff)) {
+            throw new AccessDeniedException();
+        }
+
         $em                             = $args->getEntityManager();
         $uow                            = $em->getUnitOfWork();
         $reservationClassMetadata       = $em->getClassMetadata(Reservation::class);
@@ -38,7 +43,7 @@ class ReservationDeleteListener
                 continue;
             }
 
-            if ($staff instanceof Staff && false === $entity->isArchived()) {
+            if (false === $entity->isArchived()) {
                 $entity->archive($staff);
             }
 
