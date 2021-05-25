@@ -19,6 +19,7 @@ use Unilend\CreditGuaranty\Entity\Borrower;
 use Unilend\CreditGuaranty\Entity\BorrowerBusinessActivity;
 use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
 use Unilend\CreditGuaranty\Entity\Field;
+use Unilend\CreditGuaranty\Entity\FinancingObject;
 use Unilend\CreditGuaranty\Entity\Program;
 use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
 use Unilend\CreditGuaranty\Entity\Project;
@@ -113,6 +114,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_TOUL)->getParticipant()->getStaff()->current(),
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'financingObjects'         => [$this->createFinancingObject($program), $this->createFinancingObject($program)],
             'project'                  => $this->createProject($program),
             'currentStatus'            => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
         ];
@@ -129,6 +131,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'financingObjects'         => [$this->createFinancingObject($program)],
             'project'                  => $this->createProject($program),
             'currentStatus'            => ReservationStatus::STATUS_REFUSED_BY_MANAGING_COMPANY,
         ];
@@ -143,7 +146,31 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             $reservation->setBorrowerBusinessActivity($reservationData['borrowerBusinessActivity']);
         }
 
+        $totalAmount = 0;
+
+        if (false === empty($reservationData['financingObjects'])) {
+            foreach ($reservationData['financingObjects'] as $financingObjectData) {
+                /** @var Money $loanMoney */
+                $loanMoney = $financingObjectData['loanMoney'];
+
+                $financingObject = new FinancingObject(
+                    $reservation,
+                    $financingObjectData['financingObject'],
+                    $financingObjectData['loanType'],
+                    $financingObjectData['loanDuration'],
+                    $loanMoney,
+                    $financingObjectData['releasedOnInvoice']
+                );
+
+                $this->entityManager->persist($financingObject);
+                $totalAmount += (float) $loanMoney->getAmount();
+            }
+        }
+
         if (false === empty($reservationData['project'])) {
+            /** @var Project $project */
+            $project = $reservationData['project'];
+            $project->setFundingMoney(new Money('EUR', (string) $totalAmount));
             $this->entityManager->persist($reservationData['project']);
             $reservation->setProject($reservationData['project']);
         }
@@ -228,6 +255,40 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $this->entityManager->persist($investmentThematic);
 
         return new Project($fundingMoney, $investmentThematic, $nafNace);
+    }
+
+    private function createFinancingObject(Program $program): array
+    {
+        $programChoiceOptionRepository = $this->entityManager->getRepository(ProgramChoiceOption::class);
+        $fieldRepository               = $this->entityManager->getRepository(Field::class);
+
+        /** @var Field $financingObjectField */
+        $financingObjectField = $fieldRepository->findOneBy(['fieldAlias' => FieldAlias::FINANCING_OBJECT]);
+        $financingObject      = $programChoiceOptionRepository->findOneBy(['field' => $financingObjectField]);
+
+        if (null === $financingObject) {
+            $financingObject = new ProgramChoiceOption($program, $this->faker->text(255), $financingObjectField);
+            $this->entityManager->persist($financingObject);
+        }
+
+        /** @var Field $loanTypeField */
+        $loanTypeField = $fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LOAN_TYPE]);
+        $loanType      = $programChoiceOptionRepository->findOneBy(['field' => $loanTypeField]);
+
+        if (null === $loanType) {
+            $loanType = new ProgramChoiceOption($program, $this->faker->text(255), $loanTypeField);
+            $this->entityManager->persist($loanType);
+        }
+
+        $loanMoney = new Money('EUR', (string) $this->faker->randomNumber());
+
+        return [
+            'financingObject'   => $financingObject,
+            'loanType'          => $loanType,
+            'loanDuration'      => $this->faker->randomNumber(2),
+            'loanMoney'         => $loanMoney,
+            'releasedOnInvoice' => $this->faker->boolean,
+        ];
     }
 
     private function createReservationStatuses(ReservationStatus $currentReservationStatus): void
