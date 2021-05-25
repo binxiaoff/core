@@ -57,7 +57,7 @@ class FinancingObject
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
-    private int $duration;
+    private int $loanDuration;
 
     /**
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
@@ -66,7 +66,7 @@ class FinancingObject
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
-    private Money $money;
+    private Money $loanMoney;
 
     /**
      * @ORM\Column(type="boolean")
@@ -75,13 +75,19 @@ class FinancingObject
      */
     private bool $releasedOnInvoice;
 
-    public function __construct(Reservation $reservation, ProgramChoiceOption $financingObject, ProgramChoiceOption $loanType, int $duration, Money $money, bool $releasedOnInvoice)
-    {
+    public function __construct(
+        Reservation $reservation,
+        ProgramChoiceOption $financingObject,
+        ProgramChoiceOption $loanType,
+        int $loanDuration,
+        Money $loanMoney,
+        bool $releasedOnInvoice
+    ) {
         $this->reservation       = $reservation;
         $this->financingObject   = $financingObject;
         $this->loanType          = $loanType;
-        $this->duration          = $duration;
-        $this->money             = $money;
+        $this->loanDuration      = $loanDuration;
+        $this->loanMoney         = $loanMoney;
         $this->releasedOnInvoice = $releasedOnInvoice;
         $this->added             = new DateTimeImmutable();
     }
@@ -115,26 +121,26 @@ class FinancingObject
         return $this;
     }
 
-    public function getDuration(): int
+    public function getLoanDuration(): int
     {
-        return $this->duration;
+        return $this->loanDuration;
     }
 
-    public function setDuration(int $duration): FinancingObject
+    public function setLoanDuration(int $loanDuration): FinancingObject
     {
-        $this->duration = $duration;
+        $this->loanDuration = $loanDuration;
 
         return $this;
     }
 
-    public function getMoney(): Money
+    public function getLoanMoney(): Money
     {
-        return $this->money;
+        return $this->loanMoney;
     }
 
-    public function setMoney(Money $money): FinancingObject
+    public function setLoanMoney(Money $loanMoney): FinancingObject
     {
-        $this->money = $money;
+        $this->loanMoney = $loanMoney;
 
         return $this;
     }
