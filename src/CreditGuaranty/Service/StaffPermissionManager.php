@@ -6,6 +6,7 @@ namespace Unilend\CreditGuaranty\Service;
 
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Model\Bitmask;
+use Unilend\CreditGuaranty\Entity\Program;
 use Unilend\CreditGuaranty\Repository\StaffPermissionRepository;
 
 class StaffPermissionManager
@@ -36,5 +37,10 @@ class StaffPermissionManager
         $staffPermission = $this->staffPermissionRepository->findOneBy(['staff' => $staff]);
         // Since the "grant permissions" have the same positon as "permissions" that an user can grant, we can check it by using has().
         return $staffPermission && $staffPermission->getGrantPermissions()->has($permissions);
+    }
+
+    public function checkCompanyGroupTag(Program $program, Staff $staff): bool
+    {
+        return $staff->isAdmin() || in_array($program->getCompanyGroupTag(), $staff->getCompanyGroupTags(), true);
     }
 }

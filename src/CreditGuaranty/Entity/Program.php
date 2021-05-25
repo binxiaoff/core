@@ -27,6 +27,7 @@ use Unilend\Core\Entity\Traits\BlamableUserAddedTrait;
 use Unilend\Core\Entity\Traits\CloneableTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Core\Validator\Constraints\PreviousValue;
 
 /**
@@ -253,7 +254,8 @@ class Program implements TraceableStatusAwareInterface
      * @ApiSubresource
      *
      * @ORM\OneToMany(
-     *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramGradeAllocation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramGradeAllocation",
+     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}, indexBy="grade"
      * )
      */
     private Collection $programGradeAllocations;
@@ -265,7 +267,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ORM\OneToMany(
      *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation",
-     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}, indexBy="id_program_choice_option"
      * )
      */
     private Collection $programBorrowerTypeAllocations;
@@ -302,23 +304,41 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\Participation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
+     * @ORM\OneToMany(
+     *     targetEntity="Unilend\CreditGuaranty\Entity\Participation",
+     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}, indexBy="id_company"
+     * )
      */
     private Collection $participations;
 
+    /**
+     * @var Collection|Reservation[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(
+     *     targetEntity="Unilend\CreditGuaranty\Entity\Reservation",
+     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     * )
+     */
+    private Collection $reservations;
+
     public function __construct(string $name, CompanyGroupTag $companyGroupTag, Money $funds, Staff $addedBy)
     {
-        $this->name                    = $name;
-        $this->companyGroupTag         = $companyGroupTag;
-        $this->funds                   = $funds;
-        $this->addedBy                 = $addedBy->getUser();
-        $this->managingCompany         = $addedBy->getCompany();
-        $this->statuses                = new ArrayCollection();
-        $this->guarantyCost            = new NullableMoney();
-        $this->added                   = new DateTimeImmutable();
-        $this->programGradeAllocations = new ArrayCollection();
+        $this->name                           = $name;
+        $this->companyGroupTag                = $companyGroupTag;
+        $this->funds                          = $funds;
+        $this->addedBy                        = $addedBy->getUser();
+        $this->managingCompany                = $addedBy->getCompany();
+        $this->guarantyCost                   = new NullableMoney();
+        $this->statuses                       = new ArrayCollection();
+        $this->programGradeAllocations        = new ArrayCollection();
+        $this->programBorrowerTypeAllocations = new ArrayCollection();
+        $this->programChoiceOptions           = new ArrayCollection();
+        $this->participations                 = new ArrayCollection();
+        $this->reservations                   = new ArrayCollection();
+        $this->added                          = new DateTimeImmutable();
         $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_DRAFT, $addedBy));
-        $this->programChoiceOptions = new ArrayCollection();
     }
 
     public function getName(): string
@@ -585,6 +605,14 @@ class Program implements TraceableStatusAwareInterface
     }
 
     /**
+     * @return Collection|Participation[]
+     */
+    public function getParticipations(): Collection
+    {
+        return $this->participations;
+    }
+
+    /**
      * @param Collection|ProgramGradeAllocation[] $programGradeAllocations
      */
     public function setProgramGradeAllocations(Collection $programGradeAllocations): Program
@@ -592,6 +620,14 @@ class Program implements TraceableStatusAwareInterface
         $this->programGradeAllocations = $programGradeAllocations;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|ProgramGradeAllocation[]
+     */
+    public function getProgramGradeAllocations(): Collection
+    {
+        return $this->programGradeAllocations;
     }
 
     /**
@@ -668,6 +704,31 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
+    /**
+     * @param array $filtre Possible criteria for the filtre are
+     *                      - grade: borrower's grade
+     *                      - borrowerType: borrower type (ProgramChoiceOption) id
+     *                      - exclude: an array of project ids to exclude
+     */
+    public function getTotalProjectFunds(array $filtre = []): Money
+    {
+        $totalProjectFunds = new Money($this->funds->getCurrency());
+        foreach ($this->reservations as $reservation) {
+            if ($reservation->isSent()) {
+                if (false === $this->applyTotalProjectFundsFilters($reservation, $filtre)) {
+                    continue;
+                }
+
+                if (false === $reservation->getProject() instanceof Project) {
+                    throw new \RuntimeException(sprintf('Cannot find the project for reservation %d. Please check the date.', $reservation->getId()));
+                }
+                $totalProjectFunds = MoneyCalculator::add($reservation->getProject()->getFundingMoney(), $totalProjectFunds);
+            }
+        }
+
+        return $totalProjectFunds;
+    }
+
     public function duplicate(Staff $duplicatedBy): Program
     {
         $duplicatedProgram          = clone $this;
@@ -708,6 +769,32 @@ class Program implements TraceableStatusAwareInterface
         }
 
         return $this;
+    }
+
+    private function applyTotalProjectFundsFilters(Reservation $reservation, array $filtre): bool
+    {
+        if (false === $reservation->getBorrower()->getBorrowerType() instanceof ProgramChoiceOption) {
+            throw new \RuntimeException(sprintf('Cannot find the borrower type for reservation %d. Please check the date.', $reservation->getId()));
+        }
+
+        if (isset($filtre['grade']) && $reservation->getBorrower()->getGrade() !== $filtre['grade']) {
+            return false;
+        }
+
+        if (isset($filtre['borrowerType']) && $reservation->getBorrower()->getBorrowerType()->getId() !== $filtre['borrowerType']) {
+            return false;
+        }
+
+        if (isset($filtre['exclude'])) {
+            if (is_int($filtre['exclude'])) {
+                $filtre['exclude'] = [$filtre['exclude']];
+            }
+            if (in_array($reservation->getProgram()->getId(), $filtre['exclude'], true)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

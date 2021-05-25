@@ -69,7 +69,7 @@ class Reservation implements TraceableStatusAwareInterface
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="reservations")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
      * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
@@ -249,6 +249,11 @@ class Reservation implements TraceableStatusAwareInterface
         $this->setCurrentStatus(new ReservationStatus($this, ReservationStatus::STATUS_ARCHIVED, $archivedBy));
 
         return $this;
+    }
+
+    public function isSent(): bool
+    {
+        return ReservationStatus::STATUS_SENT <= $this->getCurrentStatus()->getStatus();
     }
 
     public function isArchived(): bool

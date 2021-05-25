@@ -17,6 +17,7 @@ class ReservationStatusVoter extends AbstractEntityVoter
      */
     protected function isGrantedAll($subject, User $user): bool
     {
-        return $this->authorizationChecker->isGranted($subject->getAttachedObject(), ProgramVoter::ATTRIBUTE_EDIT);
+        return $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $subject->getReservation()->getProgram())
+            || $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_PARTICIPANT, $subject->getReservation()->getProgram());
     }
 }
