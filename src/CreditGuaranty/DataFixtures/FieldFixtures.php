@@ -20,10 +20,10 @@ class FieldFixtures extends AbstractSQLFixtures
         ('3e2201f1-493f-475d-b84f-ee44e9065ea2', 'creation_in_progress', 'general', 'bool', 'Unilend\\CreditGuaranty\\Entity\\Borrower::creationInProgress', 0, NULL, NULL),
         ('a5ebc5fa-ebd6-450e-9c44-1aab84e65bbb', 'receiving_grant', 'general', 'bool', 'Unilend\\CreditGuaranty\\Entity\\BorrowerBusinessActivity::grant', 0, NULL, NULL),
         ('0393c13d-1511-4d60-975e-ead448ed5d13', 'subsidiary', 'general', 'bool', 'Unilend\\CreditGuaranty\\Entity\\BorrowerBusinessActivity::subsidiary', 0, NULL, NULL),
-        ('46c2d1b3-61fa-4d2f-a3f3-0336feecd2e2', 'borrower_type', 'profile', 'list', 'Unilend\\CreditGuaranty\\Entity\\Borrower::type', 0, NULL, NULL),
+        ('46c2d1b3-61fa-4d2f-a3f3-0336feecd2e2', 'borrower_type', 'profile', 'list', 'Unilend\\CreditGuaranty\\Entity\\Borrower::borrowerType', 0, NULL, NULL),
         ('56d4b239-8b5a-41f0-9e65-4ced292b0c0c', 'company_name', 'profile', 'other', 'Unilend\\CreditGuaranty\\Entity\\Borrower::companyName', 0, NULL, NULL),
         ('bc84acbb-e1fe-4878-9e7b-7999c7a38282', 'company_address', 'profile', 'other', 'Unilend\\CreditGuaranty\\Entity\\BorrowerBusinessActivity::address', 0, NULL, NULL),
-        ('4bd9fc81-aaaa-4753-913e-86c6b193fd85', 'borrower_identity', 'profile', 'other', 'Unilend\\CreditGuaranty\\Entity\\Borrower::publicId', 0, NULL, NULL),
+        ('4bd9fc81-aaaa-4753-913e-86c6b193fd85', 'beneficiary_name', 'profile', 'other', 'Unilend\\CreditGuaranty\\Entity\\Borrower::beneficiaryName', 0, NULL, NULL),
         ('8f86ff38-1bfa-4608-a74d-7a40052d3f41', 'beneficiary_address', 'profile', 'other', 'Unilend\\CreditGuaranty\\Entity\\Borrower::address', 0, NULL, NULL),
         ('093a2142-ab5d-4b57-afb0-e8749131740b', 'tax_number', 'profile', 'other', 'Unilend\\CreditGuaranty\\Entity\\Borrower::taxNumber', 0, NULL, NULL),
         ('eef6e5ac-8de6-4084-a06b-dd2974141d94', 'legal_form', 'profile', 'list', 'Unilend\\CreditGuaranty\\Entity\\Borrower::legalForm', 0, NULL, '["SARL","SAS","SASU","EURL","SA","SELAS"]'),
@@ -42,11 +42,10 @@ class FieldFixtures extends AbstractSQLFixtures
         ('3dbe7d2c-2b78-4f72-ab52-ca3703e39f5b', 'project_total_amount', 'project', 'other', 'Unilend\\CreditGuaranty\\Entity\\Project::fundingMoney', 1, 'money', NULL),
         ('a2f8bca2-0662-4569-a334-57bd00972dcc', 'naf_code_project', 'project', 'list', 'Unilend\\CreditGuaranty\\Entity\\Project::nafNace::nafCode', 1, NULL, NULL),
         ('8cb4b512-fa4c-4638-9a28-11d16b450459', 'financing_object', 'project', 'list', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::financingObject', 0, NULL, NULL),
-        ('a82acccf-565e-4a97-9ed4-ce8aaf280244', 'financing_object_amount', 'project', 'other', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::loanMoney', 1, 'money', NULL),
         ('675056b4-49bb-40a7-bafe-9bcc86ad7b99', 'loan_type', 'loan', 'list', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::loanType', 0, NULL, '["term_loan","short_term","revolving_credit","stand_by","signature_commitment"]'),
         ('e9861e5b-0513-4c7b-9799-2f5a7dc267a4', 'loan_duration', 'loan', 'list', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::loanDuration', 0, NULL, null),
         ('f6f933e3-8164-430d-a670-390d0fc48311', 'loan_deferral', 'loan', 'other', '', 1, 'month', NULL),
         ('604ac6ee-86e2-49ab-aac0-bab8b1d20b30', 'loan_released_on_invoice', 'loan', 'bool', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::releasedOnInvoice', 0, NULL, NULL),
-        ('61d56903-32f7-4ea7-beb9-142122202120', 'loan_object_amount', 'loan', 'other', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::loanMoney', 1, 'money', NULL);
+        ('61d56903-32f7-4ea7-beb9-142122202120', 'loan_amount', 'loan', 'other', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::loanMoney', 1, 'money', NULL);
         INSERT_FIELDS;
 }

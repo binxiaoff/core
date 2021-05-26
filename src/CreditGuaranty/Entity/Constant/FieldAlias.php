@@ -23,12 +23,11 @@ class FieldAlias extends AbstractEnum
 
     // number
     public const EMPLOYEES_NUMBER                  = 'employees_number';
-    public const FINANCING_OBJECT_AMOUNT           = 'financing_object_amount';
     public const GRANT_AMOUNT                      = 'grant_amount';
     public const LAST_FIVE_YEAR_TURNOVER           = '5_years_average_turnover';
     public const LAST_YEAR_TURNOVER                = 'last_year_turnover';
     public const LOAN_DEFERRAL                     = 'loan_deferral';
-    public const LOAN_OBJECT_AMOUNT                = 'loan_object_amount';
+    public const LOAN_AMOUNT                       = 'loan_amount';
     public const LOW_DENSITY_MEDICAL_AREA_EXERCISE = 'low_density_medical_area_exercise';
     public const PROJECT_TOTAL_AMOUNT              = 'project_total_amount';
     public const TOTAL_ASSETS                      = 'total_assets';
@@ -45,7 +44,7 @@ class FieldAlias extends AbstractEnum
 
     // Other
     public const BENEFICIARY_ADDRESS = 'beneficiary_address';
-    public const BORROWER_IDENTITY   = 'borrower_identity';
+    public const BENEFICIARY_NAME    = 'beneficiary_name';
     public const COMPANY_ADDRESS     = 'company_address';
     public const COMPANY_NAME        = 'company_name';
     public const SIREN               = 'siren';
