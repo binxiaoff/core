@@ -107,6 +107,24 @@ class ParticipationMember extends AbstractProjectMember
     }
 
     /**
+     * @Groups({"agency:borrowerMember:read"})
+     */
+    public function getProjectFunction(): ?string
+    {
+        return $this->projectFunction;
+    }
+
+    /**
+     * @Groups({"agency:borrowerMember:write"})
+     */
+    public function setProjectFunction(?string $projectFunction): AbstractProjectMember
+    {
+        $this->projectFunction = $projectFunction;
+
+        return $this;
+    }
+
+    /**
      * @Groups({"agency:participationMember:read"})
      */
     public function isReferent(): bool

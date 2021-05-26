@@ -80,9 +80,15 @@ class BorrowerMember extends AbstractProjectMember
         $this->borrower = $borrower;
     }
 
+
+    public function getBorrower(): Borrower
+    {
+        return $this->borrower;
+    }
+
     public function getProject(): Project
     {
-        return $this->borrower->getProject();
+        return $this->getBorrower()->getProject();
     }
 
     /**
@@ -99,6 +105,24 @@ class BorrowerMember extends AbstractProjectMember
     public function setUser(User $user): AbstractProjectMember
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrowerMember:read"})
+     */
+    public function getProjectFunction(): ?string
+    {
+        return $this->projectFunction;
+    }
+
+    /**
+     * @Groups({"agency:borrowerMember:write"})
+     */
+    public function setProjectFunction(?string $projectFunction): AbstractProjectMember
+    {
+        $this->projectFunction = $projectFunction;
 
         return $this;
     }
