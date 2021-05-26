@@ -17,6 +17,7 @@ class ReservationVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
     public const ATTRIBUTE_VIEW   = 'view';
+    public const ATTRIBUTE_DELETE = 'delete';
 
     private StaffPermissionManager $staffPermissionManager;
 
@@ -48,6 +49,11 @@ class ReservationVoter extends AbstractEntityVoter
             && $staff->getCompany() === $reservation->getManagingCompany()
             && $this->checkCompanyGroupTag($program, $staff)
         ;
+    }
+
+    protected function canDelete(Reservation $reservation, User $user): bool
+    {
+        return $this->canCreate($reservation, $user);
     }
 
     private function checkCompanyGroupTag(Program $program, Staff $staff): bool

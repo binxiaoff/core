@@ -45,7 +45,9 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *             "security": "is_granted('view', object)"
  *         },
  *         "patch",
- *         "delete"
+ *         "delete": {
+ *             "security": "is_granted('delete', object)"
+ *         }
  *     },
  *     collectionOperations={
  *         "post": {
@@ -135,7 +137,7 @@ class Reservation implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\FinancingObject", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\FinancingObject", mappedBy="reservation", orphanRemoval=true, fetch="EXTRA_LAZY")
      */
     private Collection $financingObjects;
 
@@ -245,5 +247,10 @@ class Reservation implements TraceableStatusAwareInterface
         $this->setCurrentStatus(new ReservationStatus($this, ReservationStatus::STATUS_ARCHIVED, $archivedBy));
 
         return $this;
+    }
+
+    public function isArchived(): bool
+    {
+        return ReservationStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
     }
 }

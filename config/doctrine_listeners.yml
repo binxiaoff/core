@@ -130,6 +130,10 @@ services:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\CreditGuaranty\Listener\Doctrine\Lifecycle\ProgramDeleteListener:
+    Unilend\CreditGuaranty\Listener\Doctrine\ProgramDeleteListener:
+        tags:
+            - { name: doctrine.event_listener, event: onFlush }
+
+    Unilend\CreditGuaranty\Listener\Doctrine\ReservationDeleteListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
