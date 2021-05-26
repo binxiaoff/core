@@ -705,17 +705,17 @@ class Program implements TraceableStatusAwareInterface
     }
 
     /**
-     * @param array $filtre Possible criteria for the filtre are
+     * @param array $filter Possible criteria for the filter are
      *                      - grade: borrower's grade
      *                      - borrowerType: borrower type (ProgramChoiceOption) id
      *                      - exclude: an array of project ids to exclude
      */
-    public function getTotalProjectFunds(array $filtre = []): Money
+    public function getTotalProjectFunds(array $filter = []): Money
     {
         $totalProjectFunds = new Money($this->funds->getCurrency());
         foreach ($this->reservations as $reservation) {
             if ($reservation->isSent()) {
-                if (false === $this->applyTotalProjectFundsFilters($reservation, $filtre)) {
+                if (false === $this->applyTotalProjectFundsFilters($reservation, $filter)) {
                     continue;
                 }
 
@@ -771,25 +771,25 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    private function applyTotalProjectFundsFilters(Reservation $reservation, array $filtre): bool
+    private function applyTotalProjectFundsFilters(Reservation $reservation, array $filter): bool
     {
         if (false === $reservation->getBorrower()->getBorrowerType() instanceof ProgramChoiceOption) {
             throw new \RuntimeException(sprintf('Cannot find the borrower type for reservation %d. Please check the date.', $reservation->getId()));
         }
 
-        if (isset($filtre['grade']) && $reservation->getBorrower()->getGrade() !== $filtre['grade']) {
+        if (isset($filter['grade']) && $reservation->getBorrower()->getGrade() !== $filter['grade']) {
             return false;
         }
 
-        if (isset($filtre['borrowerType']) && $reservation->getBorrower()->getBorrowerType()->getId() !== $filtre['borrowerType']) {
+        if (isset($filter['borrowerType']) && $reservation->getBorrower()->getBorrowerType()->getId() !== $filter['borrowerType']) {
             return false;
         }
 
-        if (isset($filtre['exclude'])) {
-            if (is_int($filtre['exclude'])) {
-                $filtre['exclude'] = [$filtre['exclude']];
+        if (isset($filter['exclude'])) {
+            if (is_int($filter['exclude'])) {
+                $filter['exclude'] = [$filter['exclude']];
             }
-            if (in_array($reservation->getProgram()->getId(), $filtre['exclude'], true)) {
+            if (in_array($reservation->getProgram()->getId(), $filter['exclude'], true)) {
                 return false;
             }
         }

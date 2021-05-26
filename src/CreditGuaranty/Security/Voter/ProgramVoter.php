@@ -42,10 +42,9 @@ class ProgramVoter extends AbstractEntityVoter
         return $staff
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_PROGRAM)
             && (
-                $staff->getCompany() === $program->getManagingCompany()
-                || $program->hasParticipant($staff->getCompany())
+                $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $program)
+                || $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_PARTICIPANT, $program)
             )
-            && $this->staffPermissionManager->checkCompanyGroupTag($program, $staff)
         ;
     }
 
@@ -54,9 +53,8 @@ class ProgramVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff
-            && $staff->getCompany() === $program->getManagingCompany()
+            && $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $program)
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_EDIT_PROGRAM)
-            && $this->staffPermissionManager->checkCompanyGroupTag($program, $staff)
             && ($program->isInDraft() || $program->isPaused());
     }
 

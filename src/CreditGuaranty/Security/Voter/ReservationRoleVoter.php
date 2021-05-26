@@ -8,15 +8,14 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Traits\ConstantsAwareTrait;
-use Unilend\CreditGuaranty\Entity\Program;
+use Unilend\CreditGuaranty\Entity\Reservation;
 use Unilend\CreditGuaranty\Service\StaffPermissionManager;
 
-class ProgramRoleVoter extends Voter
+class ReservationRoleVoter extends Voter
 {
     use ConstantsAwareTrait;
 
-    public const ROLE_MANAGER     = 'manager';
-    public const ROLE_PARTICIPANT = 'participant';
+    public const ROLE_MANAGER = 'manager';
 
     private StaffPermissionManager $staffPermissionManager;
 
@@ -32,7 +31,7 @@ class ProgramRoleVoter extends Voter
 
     protected function supports(string $attribute, $subject): bool
     {
-        return $subject instanceof Program && \in_array($attribute, static::getAvailableRoles(), true);
+        return $subject instanceof Reservation && \in_array($attribute, static::getAvailableRoles(), true);
     }
 
     protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
@@ -43,25 +42,15 @@ class ProgramRoleVoter extends Voter
             return false;
         }
 
-        switch ($attribute) {
-            case self::ROLE_MANAGER:
-                return $this->isManager($subject, $staff);
-
-            case self::ROLE_PARTICIPANT:
-                return $this->isParticipant($subject, $staff);
-
-            default:
-                throw new \LogicException('This code should never be reached');
+        if (self::ROLE_MANAGER === $attribute) {
+            return $this->isManager($subject, $staff);
         }
+
+        throw new \LogicException('This code should never be reached');
     }
 
-    private function isManager(Program $program, Staff $staff): bool
+    private function isManager(Reservation $reservation, Staff $staff): bool
     {
-        return $staff->getCompany() === $program->getManagingCompany() && $this->staffPermissionManager->checkCompanyGroupTag($program, $staff);
-    }
-
-    private function isParticipant(Program $program, Staff $staff): bool
-    {
-        return $program->hasParticipant($staff->getCompany()) && $this->staffPermissionManager->checkCompanyGroupTag($program, $staff);
+        return $staff->getCompany() === $reservation->getManagingCompany() && $this->staffPermissionManager->checkCompanyGroupTag($reservation->getProgram(), $staff);
     }
 }

@@ -33,8 +33,7 @@ class ReservationVoter extends AbstractEntityVoter
 
         return $staff
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_CREATE_RESERVATION)
-            && $program->hasParticipant($staff->getCompany())
-            && $this->staffPermissionManager->checkCompanyGroupTag($program, $staff)
+            && $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_PARTICIPANT, $program)
         ;
     }
 
@@ -45,21 +44,20 @@ class ReservationVoter extends AbstractEntityVoter
 
         return $staff
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_RESERVATION)
-            && ($reservation->getManagingCompany() === $staff->getCompany() || $program->getManagingCompany() === $staff->getCompany())
-            && $this->staffPermissionManager->checkCompanyGroupTag($program, $staff)
+            && (
+                $this->authorizationChecker->isGranted(ReservationRoleVoter::ROLE_MANAGER, $reservation)
+                || $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $program)
+            )
         ;
     }
 
     protected function canEdit(Reservation $reservation, User $user): bool
     {
-        $staff   = $user->getCurrentStaff();
-        $program = $reservation->getProgram();
+        $staff = $user->getCurrentStaff();
 
         return $staff
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_EDIT_RESERVATION)
-            && $program->hasParticipant($staff->getCompany())
-            && $reservation->getManagingCompany() === $staff->getCompany()
-            && $this->staffPermissionManager->checkCompanyGroupTag($program, $staff)
+            && $this->authorizationChecker->isGranted(ReservationRoleVoter::ROLE_MANAGER, $reservation)
         ;
     }
 
