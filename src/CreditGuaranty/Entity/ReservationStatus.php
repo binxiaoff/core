@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Interfaces\StatusInterface;
 use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Core\Entity\Staff;
@@ -86,6 +87,8 @@ class ReservationStatus implements StatusInterface
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", inversedBy="statuses")
      * @ORM\JoinColumn(name="id_reservation", nullable=false, onDelete="CASCADE")
+     *
+     * @Groups({"creditGuaranty:reservationStatus:write"})
      */
     private Reservation $reservation;
 
@@ -132,5 +135,39 @@ class ReservationStatus implements StatusInterface
     public function getAdded(): DateTimeImmutable
     {
         return $this->added;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function valideAvailability(ExecutionContextInterface $context): void
+    {
+        $lastStatus = $this->getAttachedObject()->getStatuses()->last();
+
+        // We check the value only if it has previous status and only when we are adding a new status.
+        if (false === $lastStatus instanceof self || $this->id || self::STATUS_SENT !== $this->status) {
+            return;
+        }
+
+        $project = $this->getReservation()->getProject();
+        if (false === $project instanceof Project) {
+            throw new \RuntimeException(sprintf('Cannot find the project for reservation %d. Please check the date.', $this->getReservation()->getId()));
+        }
+
+        if (false === $project->checkBalance()) {
+            $context->buildViolation('CreditGuaranty.project.fundingMoney.balanceExceeded')->atPath('project.fundingMoney')->addViolation();
+        }
+
+        if (false === $project->checkQuota()) {
+            $context->buildViolation('CreditGuaranty.project.fundingMoney.quotaExceeded')->atPath('project.fundingMoney')->addViolation();
+        }
+
+        if (false === $project->checkGradeAllocation()) {
+            $context->buildViolation('CreditGuaranty.project.fundingMoney.gradeAllocationExceeded')->atPath('project.fundingMoney')->addViolation();
+        }
+
+        if (false === $project->checkBorrowerTypeAllocation()) {
+            $context->buildViolation('CreditGuaranty.project.fundingMoney.borrowerTypeAllocationExceeded')->atPath('project.fundingMoney')->addViolation();
+        }
     }
 }

@@ -8,9 +8,11 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\NafNace;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\Core\Service\MoneyCalculator;
 
 /**
  * @ORM\Entity
@@ -21,6 +23,11 @@ class Project
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+
+    /**
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", mappedBy="project")
+     */
+    private Reservation $reservation;
 
     /**
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
@@ -87,5 +94,71 @@ class Project
         $this->nafNace = $nafNace;
 
         return $this;
+    }
+
+    public function checkBalance(): bool
+    {
+        $program    = $this->reservation->getProgram();
+        $totalFunds = $this->getTotalFunds($program);
+
+        return MoneyCalculator::compare($totalFunds, $program->getFunds()) <= 0;
+    }
+
+    public function checkQuota(): bool
+    {
+        $program       = $this->reservation->getProgram();
+        $participation = $program->getParticipations()->get($this->reservation->getManagingCompany()->getId());
+
+        if (false === $participation instanceof Participation) {
+            throw new \RuntimeException(sprintf(
+                'Cannot find the participation company %d for reservation %d. Please check the date.',
+                $this->reservation->getManagingCompany()->getId(),
+                $this->getId()
+            ));
+        }
+
+        $ratio = MoneyCalculator::ratio($this->getFundingMoney(), $program->getFunds());
+
+        return bccomp((string) $ratio, $participation->getQuota(), 4) <= 0;
+    }
+
+    public function checkGradeAllocation(): bool
+    {
+        $program    = $this->reservation->getProgram();
+        $grade      = $this->reservation->getBorrower()->getGrade();
+        $gradeFunds = $this->getTotalFunds($program, ['grade' => $grade]);
+        $ratio      = MoneyCalculator::ratio($gradeFunds, $program->getFunds());
+        /** @var ProgramGradeAllocation $programGradeAllocation */
+        $programGradeAllocation = $program->getProgramGradeAllocations()->get($grade);
+
+        return bccomp((string) $ratio, $programGradeAllocation->getMaxAllocationRate(), 4) <= 0;
+    }
+
+    public function checkBorrowerTypeAllocation(): bool
+    {
+        $program      = $this->reservation->getProgram();
+        $borrowerType = $this->reservation->getBorrower()->getBorrowerType();
+        if (false === $borrowerType instanceof ProgramChoiceOption) {
+            throw new \RuntimeException(sprintf(
+                'Cannot find the borrower type %d for reservation %d. Please check the date.',
+                $borrowerType->getId(),
+                $this->reservation->getId()
+            ));
+        }
+        $borrowerTypeFunds = $this->getTotalFunds($program, ['borrowerType' => $borrowerType->getId()]);
+        $ratio             = MoneyCalculator::ratio($borrowerTypeFunds, $program->getFunds());
+        /** @var ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation */
+        $programBorrowerTypeAllocation = $program->getProgramBorrowerTypeAllocations()->get($borrowerType->getId());
+
+        return bccomp((string) $ratio, $programBorrowerTypeAllocation->getMaxAllocationRate(), 4) <= 0;
+    }
+
+    private function getTotalFunds(Program $program, array $filters = []): MoneyInterface
+    {
+        // Since the current project can be in the "total" or not according to its status,
+        // we exclude it from the "total", then add it back manually to the "total", so that we get always the same "total" all the time.
+        $filters = array_merge(['exclude' => $this->getId()], $filters);
+
+        return MoneyCalculator::add($program->getTotalProjectFunds($filters), $this->getFundingMoney());
     }
 }

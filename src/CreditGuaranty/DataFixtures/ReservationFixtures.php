@@ -8,7 +8,6 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\DataFixtures\NafNaceFixtures;
-use Unilend\Core\DataFixtures\StaffFixtures;
 use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\CAInternalRetailRating;
 use Unilend\Core\Entity\Constant\CARatingType;
@@ -16,7 +15,6 @@ use Unilend\Core\Entity\Embeddable\Address;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\NafNace;
-use Unilend\Core\Entity\Staff;
 use Unilend\CreditGuaranty\Entity\Borrower;
 use Unilend\CreditGuaranty\Entity\BorrowerBusinessActivity;
 use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
@@ -49,6 +47,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             NafNaceFixtures::class,
             ProgramFixtures::class,
             ProgramChoiceOptionFixtures::class,
+            ParticipationFixtures::class,
         ];
     }
 
@@ -67,23 +66,20 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
     private function loadData(): iterable
     {
-        /** @var Staff $addedBy */
-        $addedBy = $this->getReference(StaffFixtures::ADMIN);
-
         /** @var Program $program */
         $program = $this->getReference('commercialized_program');
 
         yield self::RESERVATION_DRAFT => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
-            'addedBy'                  => $addedBy,
+            'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'currentStatus'            => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_SENT => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
-            'addedBy'                  => $addedBy,
+            'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($program),
             'currentStatus'            => ReservationStatus::STATUS_SENT,
@@ -91,7 +87,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         yield self::RESERVATION_WAITING_FOR_FEI => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
-            'addedBy'                  => $addedBy,
+            'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($program),
             'currentStatus'            => ReservationStatus::STATUS_WAITING_FOR_FEI,
@@ -99,7 +95,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         yield self::RESERVATION_REQUEST_FOR_ADDITIONAL_INFORMATION => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
-            'addedBy'                  => $addedBy,
+            'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_TOUL)->getParticipant()->getStaff()->current(),
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($program),
             'currentStatus'            => ReservationStatus::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION,
@@ -107,7 +103,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         yield self::RESERVATION_ACCEPTED_BY_MANAGING_COMPANY => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
-            'addedBy'                  => $addedBy,
+            'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_TOUL)->getParticipant()->getStaff()->current(),
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($program),
             'currentStatus'            => ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
@@ -115,7 +111,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         yield self::RESERVATION_CONTRACT_FORMALIZED => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
-            'addedBy'                  => $addedBy,
+            'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_TOUL)->getParticipant()->getStaff()->current(),
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($program),
             'currentStatus'            => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
@@ -123,7 +119,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         yield self::RESERVATION_ARCHIVED => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
-            'addedBy'                  => $addedBy,
+            'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($program),
             'currentStatus'            => ReservationStatus::STATUS_ARCHIVED,
@@ -131,7 +127,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         yield self::RESERVATION_REFUSED_BY_MANAGING_COMPANY => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
-            'addedBy'                  => $addedBy,
+            'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
             'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
             'project'                  => $this->createProject($program),
             'currentStatus'            => ReservationStatus::STATUS_REFUSED_BY_MANAGING_COMPANY,
@@ -179,14 +175,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         /** @var Field $legalFormField */
         $legalFormField = $fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LEGAL_FORM]);
 
-        /** @var ProgramChoiceOption $borrowerType */
-        $borrowerType = $programChoiceOptionRepository->findOneBy([
+        $borrowerTypes = $programChoiceOptionRepository->findBy([
             'program' => $program,
             'field'   => $borrowerTypeField,
         ]);
 
-        /** @var ProgramChoiceOption $legalForm */
-        $legalForm = $programChoiceOptionRepository->findOneBy([
+        $legalForms = $programChoiceOptionRepository->findBy([
             'program' => $program,
             'field'   => $legalFormField,
         ]);
@@ -194,8 +188,8 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $grades = CARatingType::CA_INTERNAL_RETAIL_RATING === $program->getRatingType() ? CAInternalRetailRating::getConstList() : CAInternalRating::getConstList();
 
         return (new Borrower($this->faker->company, $grades[array_rand($grades)]))
-            ->setBorrowerType($borrowerType)
-            ->setLegalForm($legalForm)
+            ->setBorrowerType($borrowerTypes[array_rand($borrowerTypes)])
+            ->setLegalForm($legalForms[array_rand($legalForms)])
             ->setTaxNumber('12 23 45 678 987')
             ->setBeneficiaryName($this->faker->name)
             ->setAddress($address)
