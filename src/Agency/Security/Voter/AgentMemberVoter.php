@@ -16,7 +16,7 @@ class AgentMemberVoter extends AbstractEntityVoter
     {
         $project = $agentMember->getProject();
 
-        if ($project->isEditable()) {
+        if (!$project->isEditable()) {
             return false;
         }
 

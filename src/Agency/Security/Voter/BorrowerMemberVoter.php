@@ -17,7 +17,7 @@ class BorrowerMemberVoter extends AbstractEntityVoter
     {
         $project = $borrowerMember->getProject();
 
-        if ($project->isEditable()) {
+        if (!$project->isEditable()) {
             return false;
         }
 

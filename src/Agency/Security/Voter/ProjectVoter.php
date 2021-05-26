@@ -48,12 +48,12 @@ class ProjectVoter extends AbstractEntityVoter
     protected function canEdit(Project $project, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
-            && false === $project->isEditable();
+            && true === $project->isEditable();
     }
 
     protected function canDelete(Project $project, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
-            && false === $project->isEditable();
+            && true === $project->isEditable();
     }
 }

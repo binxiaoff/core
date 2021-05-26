@@ -44,7 +44,7 @@ class TermVoter extends AbstractEntityVoter
 
         return ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $term->getProject())
             || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $term->getProject()))
-            && false === $term->getProject()->isEditable();
+            && true === $term->getProject()->isEditable();
     }
 
     /**
@@ -56,7 +56,7 @@ class TermVoter extends AbstractEntityVoter
             && false === $term->isArchived()
             && $term->isShared()
             && $term->getStartDate() >= $this->getToday()
-            && false === $term->getProject()->isEditable();
+            && true === $term->getProject()->isEditable();
     }
 
     /**

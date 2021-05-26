@@ -22,19 +22,19 @@ class BorrowerVoter extends AbstractEntityVoter
 
     public function canEdit(Borrower $borrower, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $borrower->getProject())
-            && false === $borrower->getProject()->isArchived();
+        return ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $borrower->getProject()) || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $borrower->getProject()))
+            && true === $borrower->getProject()->isEditable();
     }
 
     public function canDelete(Borrower $borrower, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $borrower->getProject())
-            && false === $borrower->getProject()->isEditable();
+            && true === $borrower->getProject()->isEditable();
     }
 
     public function canCreate(Borrower $borrower, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $borrower->getProject())
-            && false === $borrower->getProject()->isEditable();
+            && true === $borrower->getProject()->isEditable();
     }
 }
