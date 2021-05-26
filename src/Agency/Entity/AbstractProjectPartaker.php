@@ -7,7 +7,6 @@ namespace Unilend\Agency\Entity;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
@@ -27,8 +26,6 @@ abstract class AbstractProjectPartaker
      * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
     protected ?string $corporateName;
 
@@ -36,8 +33,6 @@ abstract class AbstractProjectPartaker
      * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
     protected ?string $legalForm;
 
@@ -45,8 +40,6 @@ abstract class AbstractProjectPartaker
      * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
     protected ?string $headOffice;
 
@@ -54,18 +47,21 @@ abstract class AbstractProjectPartaker
      * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
     protected ?string $bankInstitution;
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     *
+     * @Assert\NotBlank(groups={"published"})
+     */
+    protected ?string $bankAddress;
 
     /**
      * @ORM\Column(type="string", length=11, nullable=true)
      *
      * @Assert\Bic
      * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
     protected ?string $bic;
 
@@ -74,8 +70,6 @@ abstract class AbstractProjectPartaker
      *
      * @Assert\Iban
      * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
     protected ?string $iban;
 
@@ -83,8 +77,6 @@ abstract class AbstractProjectPartaker
      * @var AbstractProjectMember[]|Collection
      *
      * @Assert\Valid
-     *
-     * @Groups({"agency:projectPartaker:read"})
      */
     protected Collection $members;
 
@@ -95,29 +87,23 @@ abstract class AbstractProjectPartaker
      * @Assert\Length(max="9")
      *
      * @AssertSiren
-     *
-     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
-    private string $matriculationNumber;
+    protected string $matriculationNumber;
 
     /**
      * @Assert\Valid
      * @Assert\NotBlank
      *
-     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
-     *
      * @ORM\Embedded(class=Money::class)
      */
-    private Money $capital;
+    protected Money $capital;
 
     /**
      * @ORM\Column(type="string", length=40, nullable=true)
      *
      * @Assert\Length(max="9")
-     *
-     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
-    private ?string $rcs;
+    protected ?string $rcs;
 
     public function __construct(string $matriculationNumber, Money $capital)
     {

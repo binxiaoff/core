@@ -216,7 +216,6 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "company:read",
  *             "companyGroupTag:read",
  *             "agency:agent:read",
- *             "agency:projectPartaker:read",
  *             "agency:agentMember:read",
  *             "agency:borrower:read",
  *             "agency:borrowerMember:read",
@@ -229,7 +228,6 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "agency:tranche:read",
  *             "agency:covenant:read",
  *             "agency:term:read",
- *             "agency:borrowerMember:read",
  *             "user:read",
  *         }
  *     }
@@ -344,15 +342,13 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true)
      *
-     * @Groups({"agency:project:read"})
-     *
-     * @MaxDepth(1)
-     *
      * @Assert\Valid
      * @Assert\Count(min="1", groups={"published"})
      * @Assert\All({
      *     @Assert\Expression("value.getProject() === this")
      * })
+     *
+     * @ApiSubresource
      */
     private iterable $borrowers;
 

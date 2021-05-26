@@ -6,7 +6,6 @@ namespace Unilend\Agency\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
@@ -21,8 +20,6 @@ abstract class AbstractProjectMember
     use TimestampableAddedOnlyTrait;
 
     /**
-     * @Groups({"agency:projectMember:read", "agency:projectMember:write"})
-     *
      * @Assert\Length(max=200)
      *
      * @ORM\Column(type="string", length=200, nullable=true)
@@ -35,24 +32,18 @@ abstract class AbstractProjectMember
      *
      * @Assert\NotBlank
      * @Assert\Valid
-     *
-     * @Groups({"agency:projectMember:read", "agency:projectMember:create"})
      */
-    private User $user;
+    protected User $user;
 
     /**
      * @ORM\Column(type="boolean")
-     *
-     * @Groups({"agency:projectMember:read", "agency:projectMember:write"})
      */
-    private bool $referent;
+    protected bool $referent;
 
     /**
      * @ORM\Column(type="boolean")
-     *
-     * @Groups({"agency:projectMember:read", "agency:projectMember:write"})
      */
-    private bool $signatory;
+    protected bool $signatory;
 
     public function __construct(User $user)
     {

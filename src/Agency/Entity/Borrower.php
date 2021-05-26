@@ -20,8 +20,7 @@ use Unilend\Core\Entity\Embeddable\Money;
  *     normalizationContext={
  *         "groups": {
  *             "agency:borrower:read",
- *             "money:read",
- *             "agency:projectPartaker:read",
+ *             "money:read"
  *         }
  *     },
  *     collectionOperations={
@@ -30,10 +29,9 @@ use Unilend\Core\Entity\Embeddable\Money;
  *                 "groups": {
  *                     "agency:borrower:create",
  *                     "agency:borrower:write",
- *                     "agency:projectPartaker:write",
- *                     "money:write",
  *                     "agency:borrowerMember:create",
  *                     "agency:borrowerMember:write",
+ *                     "money:write",
  *                     "user:create",
  *                     "user:write"
  *                 }
@@ -51,10 +49,12 @@ use Unilend\Core\Entity\Embeddable\Money;
  *         "patch": {
  *             "denormalization_context": {
  *                 "groups": {
- *                     "agency:borrower:update",
- *                     "agency:projectPartaker:write",
  *                     "agency:borrower:write",
- *                     "money:write"
+ *                     "agency:borrowerMember:create",
+ *                     "agency:borrowerMember:write",
+ *                     "money:write",
+ *                     "user:create",
+ *                     "user:write"
  *                 }
  *             },
  *             "security_post_denormalize": "is_granted('edit', object)",
@@ -70,8 +70,7 @@ use Unilend\Core\Entity\Embeddable\Money;
  *     arguments={
  *         "whitelist": {
  *             "agency:borrowerMember:read",
- *             "user:read",
- *             "agency:projectMember:read"
+ *             "user:read"
  *         }
  *     }
  * )
@@ -88,7 +87,7 @@ class Borrower extends AbstractProjectPartaker
      *     @Assert\Expression("value.getBorrower() === this")
      * })
      *
-     * @Groups({"agency:borrower:read"})
+     * @Groups({"agency:borrower:read", "agency:borrower:write"})
      */
     protected Collection $members;
 
@@ -99,8 +98,6 @@ class Borrower extends AbstractProjectPartaker
      * @Assert\NotBlank
      *
      * @Groups({"agency:borrower:read", "agency:borrower:create"})
-     *
-     * @ApiProperty(readableLink=false)
      */
     private Project $project;
 
@@ -121,14 +118,14 @@ class Borrower extends AbstractProjectPartaker
         string $corporateName,
         string $legalForm,
         Money $capital,
-        string $headquarterAddress,
+        string $headOffice,
         string $matriculationNumber
     ) {
         parent::__construct($matriculationNumber, $capital);
         $this->project       = $project;
         $this->corporateName = $corporateName;
         $this->legalForm     = $legalForm;
-        $this->headOffice    = $headquarterAddress;
+        $this->headOffice    = $headOffice;
         $this->members       = new ArrayCollection();
     }
 
@@ -152,5 +149,192 @@ class Borrower extends AbstractProjectPartaker
         $this->trancheShares = $trancheShares;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getBankInstitution(): ?string
+    {
+        return $this->bankInstitution;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setBankInstitution(?string $bankInstitution): AbstractProjectPartaker
+    {
+        $this->bankInstitution = $bankInstitution;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getBankAddress(): ?string
+    {
+        return $this->bankAddress;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setBankAddress(?string $bankAddress): AbstractProjectPartaker
+    {
+        $this->bankAddress = $bankAddress;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getBic(): ?string
+    {
+        return $this->bic;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setBic(?string $bic): AbstractProjectPartaker
+    {
+        $this->bic = $bic;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getIban(): ?string
+    {
+        return $this->iban;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setIban(?string $iban): AbstractProjectPartaker
+    {
+        $this->iban = $iban;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getMatriculationNumber(): string
+    {
+        return $this->matriculationNumber;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setMatriculationNumber(string $matriculationNumber): AbstractProjectPartaker
+    {
+        $this->matriculationNumber = $matriculationNumber;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getCapital(): Money
+    {
+        return $this->capital;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setCapital(Money $capital): AbstractProjectPartaker
+    {
+        $this->capital = $capital;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getRcs(): ?string
+    {
+        return $this->rcs;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setRcs(?string $rcs): AbstractProjectPartaker
+    {
+        $this->rcs = $rcs;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getCorporateName(): string
+    {
+        return $this->corporateName;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setCorporateName(?string $corporateName): AbstractProjectPartaker
+    {
+        $this->corporateName = $corporateName;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getHeadOffice(): string
+    {
+        return $this->headOffice;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setHeadOffice(?string $headOffice): AbstractProjectPartaker
+    {
+        $this->headOffice = $headOffice;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getLegalForm(): string
+    {
+        return $this->legalForm;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setLegalForm(?string $legalForm): AbstractProjectPartaker
+    {
+        $this->legalForm = $legalForm;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function isCompleted(){
+        return $this->getBankInstitution() && $this->getBankAddress() && $this->getIban() && $this->getBic();
     }
 }
