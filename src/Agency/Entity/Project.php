@@ -325,8 +325,6 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Tranche", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
-     * @Groups({"agency:project:read"})
-     *
      * @Assert\Valid
      * @Assert\All({
      *     @Assert\Expression("value.getProject() === this")
@@ -738,8 +736,6 @@ class Project
      * @return iterable|Participation[]
      *
      * @ApiProperty(security="is_granted('agent', object)")
-     *
-     * @Groups({"agency:project:read"})
      */
     public function getParticipations(): iterable
     {

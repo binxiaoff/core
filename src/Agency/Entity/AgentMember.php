@@ -20,15 +20,19 @@ use Unilend\Core\Entity\User;
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
- *             "agency:agentMember:read",
- *             "agency:projectMember:read"
+ *             "agency:agentMember:read"
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
- *                 "groups": {"agency:agentMember:create", "agency:agentMember:write", "agency:projectMember:write", "agency:projectMember:create", "user:create", "user:write"}
+ *                 "groups": {
+ *                     "agency:agentMember:create",
+ *                     "agency:agentMember:write",
+ *                     "user:create",
+ *                     "user:write"
+ *                 }
  *             }
  *         }
  *     },
@@ -37,6 +41,14 @@ use Unilend\Core\Entity\User;
  *             "controller": NotFoundAction::class,
  *             "read": false,
  *             "output": false,
+ *         },
+ *         "patch": {
+ *             "security": "is_granted('edit', object)",
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "agency:agentMember:write"
+ *                 }
+ *             }
  *         }
  *     }
  * )
@@ -46,15 +58,6 @@ use Unilend\Core\Entity\User;
  * @ORM\Entity
  *
  * @UniqueEntity(fields={"agent", "user"})
- *
- * @ApiFilter(
- *     filterClass=GroupFilter::class,
- *     arguments={
- *         "whitelist": {
- *             "user:read"
- *         }
- *     }
- * )
  */
 class AgentMember extends AbstractProjectMember
 {
@@ -85,6 +88,60 @@ class AgentMember extends AbstractProjectMember
     public function getProject(): Project
     {
         return $this->getAgent()->getProject();
+    }
+
+    /**
+     * @Groups({"agency:agentMember:read"})
+     */
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    /**
+     * @Groups({"agency:agentMember:create"})
+     */
+    public function setUser(User $user): AbstractProjectMember
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agentMember:read"})
+     */
+    public function isReferent(): bool
+    {
+        return $this->referent;
+    }
+
+    /**
+     * @Groups({"agency:agentMember:write"})
+     */
+    public function setReferent(bool $referent): AbstractProjectMember
+    {
+        $this->referent = $referent;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agentMember:read"})
+     */
+    public function isSignatory(): bool
+    {
+        return $this->signatory;
+    }
+
+    /**
+     * @Groups({"agency:agentMember:write"})
+     */
+    public function setSignatory(bool $signatory): AbstractProjectMember
+    {
+        $this->signatory = $signatory;
+
+        return $this;
     }
 
     /**

@@ -58,15 +58,6 @@ use Unilend\Core\Entity\User;
  * @ORM\Entity
  *
  * @UniqueEntity(fields={"borrower", "user"})
- *
- * @ApiFilter(
- *     filterClass=GroupFilter::class,
- *     arguments={
- *         "whitelist": {
- *             "user:read"
- *         }
- *     }
- * )
  */
 class BorrowerMember extends AbstractProjectMember
 {
@@ -147,6 +138,5 @@ class BorrowerMember extends AbstractProjectMember
 
         return $this;
     }
-
 
 }

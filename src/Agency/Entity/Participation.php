@@ -29,8 +29,7 @@ use Unilend\Core\Model\Bitmask;
  *     normalizationContext={
  *         "groups": {
  *             "agency:participation:read",
- *             "money:read",
- *             "agency:projectPartaker:read"
+ *             "nullableMoney:read"
  *         }
  *     },
  *     collectionOperations={
@@ -39,7 +38,6 @@ use Unilend\Core\Model\Bitmask;
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:participation:create",
- *                     "agency:projectPartaker:write",
  *                     "agency:participation:write",
  *                     "money:write",
  *                     "agency:participationTrancheAllocation:write"
@@ -56,9 +54,7 @@ use Unilend\Core\Model\Bitmask;
  *         "patch": {
  *             "denormalization_context": {
  *                 "groups": {
- *                     "agency:participation:update",
  *                     "agency:participation:write",
- *                     "agency:projectPartaker:write",
  *                     "money:write",
  *                     "agency:participationTrancheAllocation:write"
  *                 }
@@ -120,18 +116,6 @@ use Unilend\Core\Model\Bitmask;
  * })
  *
  * @UniqueEntity(fields={"pool", "participant"})
- *
- * @ApiFilter(
- *     filterClass=GroupFilter::class,
- *     arguments={
- *         "whitelist": {
- *             "agency:participationTrancheAllocation:read",
- *             "agency:participationMember:read",
- *             "company:read",
- *             "user:read"
- *         }
- *     }
- * )
  *
  * TODO The .publicId might be dropped in favor of using iri for filter when https://github.com/api-platform/core/issues/3575 is solved
  * @ApiFilter(
@@ -456,6 +440,186 @@ class Participation extends AbstractProjectPartaker
     public function getConfidentialDrive(): Drive
     {
         return $this->confidentialDrive;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getBankInstitution(): ?string
+    {
+        return $this->bankInstitution;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setBankInstitution(?string $bankInstitution): AbstractProjectPartaker
+    {
+        $this->bankInstitution = $bankInstitution;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getBankAddress(): ?string
+    {
+        return $this->bankAddress;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setBankAddress(?string $bankAddress): AbstractProjectPartaker
+    {
+        $this->bankAddress = $bankAddress;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getBic(): ?string
+    {
+        return $this->bic;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setBic(?string $bic): AbstractProjectPartaker
+    {
+        $this->bic = $bic;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getIban(): ?string
+    {
+        return $this->iban;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setIban(?string $iban): AbstractProjectPartaker
+    {
+        $this->iban = $iban;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getMatriculationNumber(): string
+    {
+        return $this->matriculationNumber;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setMatriculationNumber(string $matriculationNumber): AbstractProjectPartaker
+    {
+        $this->matriculationNumber = $matriculationNumber;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getCapital(): Money
+    {
+        return $this->capital;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setCapital(Money $capital): AbstractProjectPartaker
+    {
+        $this->capital = $capital;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getRcs(): ?string
+    {
+        return $this->rcs;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setRcs(?string $rcs): AbstractProjectPartaker
+    {
+        $this->rcs = $rcs;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getCorporateName(): ?string
+    {
+        return $this->corporateName;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setCorporateName(?string $corporateName): AbstractProjectPartaker
+    {
+        $this->corporateName = $corporateName;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getHeadOffice(): ?string
+    {
+        return $this->headOffice;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setHeadOffice(?string $headOffice): AbstractProjectPartaker
+    {
+        $this->headOffice = $headOffice;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getLegalForm(): ?string
+    {
+        return $this->legalForm;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setLegalForm(?string $legalForm): AbstractProjectPartaker
+    {
+        $this->legalForm = $legalForm;
+
+        return $this;
     }
 
     /**

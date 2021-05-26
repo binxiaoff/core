@@ -280,7 +280,7 @@ class Borrower extends AbstractProjectPartaker
     /**
      * @Groups({"agency:borrower:read"})
      */
-    public function getCorporateName(): string
+    public function getCorporateName(): ?string
     {
         return $this->corporateName;
     }
@@ -298,7 +298,7 @@ class Borrower extends AbstractProjectPartaker
     /**
      * @Groups({"agency:borrower:read"})
      */
-    public function getHeadOffice(): string
+    public function getHeadOffice(): ?string
     {
         return $this->headOffice;
     }
@@ -316,7 +316,7 @@ class Borrower extends AbstractProjectPartaker
     /**
      * @Groups({"agency:borrower:read"})
      */
-    public function getLegalForm(): string
+    public function getLegalForm(): ?string
     {
         return $this->legalForm;
     }

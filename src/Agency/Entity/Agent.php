@@ -21,7 +21,6 @@ use Unilend\Core\Entity\Embeddable\NullablePerson;
  *     normalizationContext={
  *         "groups": {
  *             "agency:agent:read",
- *             "agency:projectPartaker:read",
  *             "nullableMoney:read"
  *         }
  *     },
@@ -35,7 +34,7 @@ use Unilend\Core\Entity\Embeddable\NullablePerson;
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
- *                 "groups": {"agency:agent:write", "agency:projectPartaker:write"}
+ *                 "groups": {"agency:agent:write"}
  *             }
  *         }
  *     }
@@ -56,7 +55,7 @@ class Agent extends AbstractProjectPartaker
      *     @Assert\Expression("value.getAgent() == this")
      * })
      *
-     * @Groups({"agency:agent:read"})
+     * @Groups({"agency:agent:read", "agency:agent:write"})
      */
     protected Collection $members;
 
@@ -139,6 +138,186 @@ class Agent extends AbstractProjectPartaker
     public function setContact(NullablePerson $contact): Agent
     {
         $this->contact = $contact;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agent:read"})
+     */
+    public function getBankInstitution(): ?string
+    {
+        return $this->bankInstitution;
+    }
+
+    /**
+     * @Groups({"agency:agent:write"})
+     */
+    public function setBankInstitution(?string $bankInstitution): AbstractProjectPartaker
+    {
+        $this->bankInstitution = $bankInstitution;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agent:read"})
+     */
+    public function getBankAddress(): ?string
+    {
+        return $this->bankAddress;
+    }
+
+    /**
+     * @Groups({"agency:agent:write"})
+     */
+    public function setBankAddress(?string $bankAddress): AbstractProjectPartaker
+    {
+        $this->bankAddress = $bankAddress;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agent:read"})
+     */
+    public function getBic(): ?string
+    {
+        return $this->bic;
+    }
+
+    /**
+     * @Groups({"agency:agent:write"})
+     */
+    public function setBic(?string $bic): AbstractProjectPartaker
+    {
+        $this->bic = $bic;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agent:read"})
+     */
+    public function getIban(): ?string
+    {
+        return $this->iban;
+    }
+
+    /**
+     * @Groups({"agency:agent:write"})
+     */
+    public function setIban(?string $iban): AbstractProjectPartaker
+    {
+        $this->iban = $iban;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agent:read"})
+     */
+    public function getMatriculationNumber(): string
+    {
+        return $this->matriculationNumber;
+    }
+
+    /**
+     * @Groups({"agency:agent:write"})
+     */
+    public function setMatriculationNumber(string $matriculationNumber): AbstractProjectPartaker
+    {
+        $this->matriculationNumber = $matriculationNumber;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agent:read"})
+     */
+    public function getCapital(): Money
+    {
+        return $this->capital;
+    }
+
+    /**
+     * @Groups({"agency:agent:write"})
+     */
+    public function setCapital(Money $capital): AbstractProjectPartaker
+    {
+        $this->capital = $capital;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agent:read"})
+     */
+    public function getRcs(): ?string
+    {
+        return $this->rcs;
+    }
+
+    /**
+     * @Groups({"agency:agent:write"})
+     */
+    public function setRcs(?string $rcs): AbstractProjectPartaker
+    {
+        $this->rcs = $rcs;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agent:read"})
+     */
+    public function getCorporateName(): ?string
+    {
+        return $this->corporateName;
+    }
+
+    /**
+     * @Groups({"agency:agent:write"})
+     */
+    public function setCorporateName(?string $corporateName): AbstractProjectPartaker
+    {
+        $this->corporateName = $corporateName;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agent:read"})
+     */
+    public function getHeadOffice(): ?string
+    {
+        return $this->headOffice;
+    }
+
+    /**
+     * @Groups({"agency:agent:write"})
+     */
+    public function setHeadOffice(?string $headOffice): AbstractProjectPartaker
+    {
+        $this->headOffice = $headOffice;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agent:read"})
+     */
+    public function getLegalForm(): ?string
+    {
+        return $this->legalForm;
+    }
+
+    /**
+     * @Groups({"agency:agent:write"})
+     */
+    public function setLegalForm(?string $legalForm): AbstractProjectPartaker
+    {
+        $this->legalForm = $legalForm;
 
         return $this;
     }

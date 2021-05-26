@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -26,6 +28,8 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *     normalizationContext={
  *         "groups": {
  *             "agency:participationPool:read",
+ *             "money:read",
+ *             "nullableMoney:read",
  *         }
  *     },
  *     collectionOperations={},
@@ -87,6 +91,17 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *     @ORM\UniqueConstraint(name="uniq_participant_pool_project_secondary", columns={"id_project", "secondary"})
  * })
  * @ORM\Entity
+ *
+ * @ApiFilter(
+ *     filterClass=GroupFilter::class,
+ *     arguments={
+ *         "whitelist": {
+ *             "company:read",
+ *             "agency:participation:read",
+ *             "agency:participationTrancheAllocation:read",
+ *         }
+ *     }
+ * )
  *
  * @UniqueEntity(fields={"project", "secondary"})
  */
