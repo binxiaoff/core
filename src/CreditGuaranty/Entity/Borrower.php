@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -15,6 +17,33 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={"groups": {
+ *         "creditGuaranty:borrower:read",
+ *         "timestampable:read"
+ *     }},
+ *     denormalizationContext={"groups": {
+ *         "creditGuaranty:borrower:write"
+ *     }},
+ *     itemOperations={
+ *         "get": {
+ *             "security": "is_granted('view', object.getReservation())"
+ *         },
+ *         "patch": {
+ *             "security": "is_granted('edit', object.getReservation())"
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object.getReservation())"
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object.getReservation())"
+ *         },
+ *         "get"
+ *     }
+ * )
+ *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_borrower")
  * @ORM\HasLifecycleCallbacks
@@ -105,7 +134,12 @@ class Borrower
         $this->companyName = $companyName;
         $this->grade       = $grade;
         $this->address     = new Address();
-        $this->added       = new \DateTimeImmutable();
+        $this->added       = new DateTimeImmutable();
+    }
+
+    public function getReservation(): Reservation
+    {
+        return $this->reservation;
     }
 
     public function getCompanyName(): string

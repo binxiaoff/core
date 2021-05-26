@@ -85,6 +85,8 @@ class Reservation implements TraceableStatusAwareInterface
     private Company $managingCompany;
 
     /**
+     * @ApiSubresource
+     *
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Borrower", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
      * @ORM\JoinColumn(name="id_borrower", nullable=false)
      *
@@ -93,7 +95,9 @@ class Reservation implements TraceableStatusAwareInterface
     private Borrower $borrower;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\BorrowerBusinessActivity", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ApiSubresource
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\BorrowerBusinessActivity", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
      * @ORM\JoinColumn(name="id_borrower_business_activity")
      *
      * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
@@ -101,7 +105,9 @@ class Reservation implements TraceableStatusAwareInterface
     private ?BorrowerBusinessActivity $borrowerBusinessActivity = null;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Project", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ApiSubresource
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Project", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
      * @ORM\JoinColumn(name="id_project")
      *
      * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})

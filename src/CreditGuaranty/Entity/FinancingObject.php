@@ -15,7 +15,34 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
- * @ApiResource
+ * @ApiResource(
+ *     normalizationContext={"groups": {
+ *         "creditGuaranty:financingObject:read",
+ *         "timestampable:read",
+ *         "money:read"
+ *     }},
+ *     denormalizationContext={"groups": {
+ *         "creditGuaranty:financingObject:write",
+ *         "money:write"
+ *     }},
+ *     itemOperations={
+ *         "get": {
+ *             "security": "is_granted('view', object.getReservation())"
+ *         },
+ *         "patch": {
+ *             "security": "is_granted('edit', object.getReservation())"
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object.getReservation())"
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object.getReservation())"
+ *         },
+ *         "get"
+ *     }
+ * )
  *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_financing_object")

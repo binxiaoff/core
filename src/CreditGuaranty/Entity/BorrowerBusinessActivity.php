@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -14,6 +15,35 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={"groups": {
+ *         "creditGuaranty:borrowerCompany:read",
+ *         "timestampable:read",
+ *         "nullableMoney:read"
+ *     }},
+ *     denormalizationContext={"groups": {
+ *         "creditGuaranty:borrowerCompany:write",
+ *         "nullableMoney:write"
+ *     }},
+ *     itemOperations={
+ *         "get": {
+ *             "security": "is_granted('view', object.getReservation())"
+ *         },
+ *         "patch": {
+ *             "security": "is_granted('edit', object.getReservation())"
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object.getReservation())"
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object.getReservation())"
+ *         },
+ *         "get"
+ *     }
+ * )
+ *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_borrower_business_activity")
  * @ORM\HasLifecycleCallbacks
@@ -22,6 +52,11 @@ class BorrowerBusinessActivity
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+
+    /**
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", mappedBy="borrowerBusinessActivity")
+     */
+    private Reservation $reservation;
 
     /**
      * @ORM\Column(type="string", length=14, nullable=true)
@@ -99,6 +134,11 @@ class BorrowerBusinessActivity
         $this->totalAssets              = new NullableMoney();
         $this->grant                    = new NullableMoney();
         $this->added                    = new DateTimeImmutable();
+    }
+
+    public function getReservation(): Reservation
+    {
+        return $this->reservation;
     }
 
     public function getSiret(): ?string

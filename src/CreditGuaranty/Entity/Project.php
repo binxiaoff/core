@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -15,6 +16,35 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Service\MoneyCalculator;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={"groups": {
+ *         "creditGuaranty:project:read",
+ *         "timestampable:read",
+ *         "money:read"
+ *     }},
+ *     denormalizationContext={"groups": {
+ *         "creditGuaranty:project:write",
+ *         "money:write"
+ *     }},
+ *     itemOperations={
+ *         "get": {
+ *             "security": "is_granted('view', object.getReservation())"
+ *         },
+ *         "patch": {
+ *             "security": "is_granted('edit', object.getReservation())"
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object.getReservation())"
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object.getReservation())"
+ *         },
+ *         "get"
+ *     }
+ * )
+ *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_project")
  * @ORM\HasLifecycleCallbacks
@@ -58,6 +88,11 @@ class Project
         $this->investmentThematic = $investmentThematic;
         $this->nafNace            = $nafNace;
         $this->added              = new DateTimeImmutable();
+    }
+
+    public function getReservation(): Reservation
+    {
+        return $this->reservation;
     }
 
     public function getFundingMoney(): Money
