@@ -17,6 +17,7 @@ class ReservationVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
     public const ATTRIBUTE_VIEW   = 'view';
+    public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_DELETE = 'delete';
 
     private StaffPermissionManager $staffPermissionManager;
@@ -46,7 +47,20 @@ class ReservationVoter extends AbstractEntityVoter
 
         return $staff
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_RESERVATION)
-            && $staff->getCompany() === $reservation->getManagingCompany()
+            && ($reservation->getManagingCompany() === $staff->getCompany() || $program->getManagingCompany() === $staff->getCompany())
+            && $this->checkCompanyGroupTag($program, $staff)
+        ;
+    }
+
+    protected function canEdit(Reservation $reservation, User $user): bool
+    {
+        $staff   = $user->getCurrentStaff();
+        $program = $reservation->getProgram();
+
+        return $staff
+            && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_EDIT_RESERVATION)
+            && $program->hasParticipant($staff->getCompany())
+            && $reservation->getManagingCompany() === $staff->getCompany()
             && $this->checkCompanyGroupTag($program, $staff)
         ;
     }
