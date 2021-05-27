@@ -13,6 +13,7 @@ use Unilend\Core\Entity\Embeddable\Address;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 
 /**
  * @ApiResource(
@@ -46,7 +47,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  * @ORM\Table(name="credit_guaranty_borrower_business_activity")
  * @ORM\HasLifecycleCallbacks
  */
-class BorrowerBusinessActivity
+class BorrowerBusinessActivity implements ProgramAwareInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -137,6 +138,11 @@ class BorrowerBusinessActivity
     public function getReservation(): Reservation
     {
         return $this->reservation;
+    }
+
+    public function getProgram(): Program
+    {
+        return $this->getReservation()->getProgram();
     }
 
     public function getSiret(): ?string

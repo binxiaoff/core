@@ -8,12 +8,15 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\NafNace;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Service\MoneyCalculator;
+use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 
 /**
  * @ApiResource(
@@ -47,7 +50,7 @@ use Unilend\Core\Service\MoneyCalculator;
  * @ORM\Table(name="credit_guaranty_project")
  * @ORM\HasLifecycleCallbacks
  */
-class Project
+class Project implements ProgramAwareInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -91,6 +94,11 @@ class Project
     public function getReservation(): Reservation
     {
         return $this->reservation;
+    }
+
+    public function getProgram(): Program
+    {
+        return $this->getReservation()->getProgram();
     }
 
     public function getFundingMoney(): Money
@@ -200,6 +208,16 @@ class Project
         $programBorrowerTypeAllocation = $program->getProgramBorrowerTypeAllocations()->get($borrowerType->getId());
 
         return bccomp((string) $ratio, $programBorrowerTypeAllocation->getMaxAllocationRate(), 4) <= 0;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateProgramChoiceOption(ExecutionContextInterface $context): void
+    {
+        if ($this->investmentThematic->getProgram() !== $this->reservation->getProgram()) {
+            $context->buildViolation('CreditGuaranty.programChoiceOption.investmentThematic.programInvalid')->atPath('investmentThematic.program')->addViolation();
+        }
     }
 
     private function getTotalFunds(Program $program, array $filters = []): MoneyInterface

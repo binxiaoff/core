@@ -10,9 +10,11 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 
 /**
  * @ApiResource(
@@ -46,7 +48,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  * @ORM\Table(name="credit_guaranty_financing_object")
  * @ORM\HasLifecycleCallbacks
  */
-class FinancingObject
+class FinancingObject implements ProgramAwareInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -126,6 +128,11 @@ class FinancingObject
         return $this->reservation;
     }
 
+    public function getProgram(): Program
+    {
+        return $this->getReservation()->getProgram();
+    }
+
     public function getFinancingObject(): ProgramChoiceOption
     {
         return $this->financingObject;
@@ -200,5 +207,19 @@ class FinancingObject
     public function getUpdated(): ?DateTimeImmutable
     {
         return $this->updated;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateProgramChoiceOption(ExecutionContextInterface $context): void
+    {
+        if ($this->financingObject->getProgram() !== $this->reservation->getProgram()) {
+            $context->buildViolation('CreditGuaranty.programChoiceOption.financingObject.programInvalid')->atPath('financingObject.program')->addViolation();
+        }
+
+        if ($this->loanType->getProgram() !== $this->reservation->getProgram()) {
+            $context->buildViolation('CreditGuaranty.programChoiceOption.loanType.programInvalid')->atPath('loanType.program')->addViolation();
+        }
     }
 }

@@ -9,12 +9,14 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\CAInternalRetailRating;
 use Unilend\Core\Entity\Constant\CARatingType;
 use Unilend\Core\Entity\Embeddable\Address;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 
 /**
  * @ApiResource(
@@ -22,7 +24,8 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *         "creditGuaranty:borrower:read"
  *     }},
  *     denormalizationContext={"groups": {
- *         "creditGuaranty:borrower:write"
+ *         "creditGuaranty:borrower:write",
+ *         "creditGuaranty:programChoiceOption:write"
  *     }},
  *     itemOperations={
  *         "get": {
@@ -42,7 +45,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  * @ORM\Table(name="credit_guaranty_borrower")
  * @ORM\HasLifecycleCallbacks
  */
-class Borrower
+class Borrower implements ProgramAwareInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -134,6 +137,11 @@ class Borrower
     public function getReservation(): Reservation
     {
         return $this->reservation;
+    }
+
+    public function getProgram(): Program
+    {
+        return $this->getReservation()->getProgram();
     }
 
     public function getCompanyName(): string
@@ -246,5 +254,19 @@ class Borrower
     public function getUpdated(): ?DateTimeImmutable
     {
         return $this->updated;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateProgramChoiceOption(ExecutionContextInterface $context): void
+    {
+        if ($this->borrowerType->getProgram() !== $this->reservation->getProgram()) {
+            $context->buildViolation('CreditGuaranty.programChoiceOption.borrowerType.programInvalid')->atPath('borrowerType.program')->addViolation();
+        }
+
+        if ($this->legalForm->getProgram() !== $this->reservation->getProgram()) {
+            $context->buildViolation('CreditGuaranty.programChoiceOption.legalForm.programInvalid')->atPath('legalForm.program')->addViolation();
+        }
     }
 }

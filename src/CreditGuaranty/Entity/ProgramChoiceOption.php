@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Traits\ArchivableTrait;
 use Unilend\Core\Entity\Traits\CloneableTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
@@ -82,8 +83,6 @@ class ProgramChoiceOption
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Field")
      * @ORM\JoinColumn(name="id_field", nullable=false)
-     *
-     * @Groups({"creditGuaranty:programChoiceOption:read", "creditGuaranty:programChoiceOption:create"})
      */
     private Field $field;
 
@@ -154,5 +153,27 @@ class ProgramChoiceOption
         $this->setArchived(new DateTime());
 
         return $this;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:programChoiceOption:read"})
+     */
+    public function getFieldAlias(): string
+    {
+        return $this->field->getFieldAlias();
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateNew(ExecutionContextInterface $context): void
+    {
+        if (null !== $this->id) {
+            return;
+        }
+
+        if (count($this->field->getPredefinedItems()) && in_array($this->description, $this->field->getPredefinedItems())) {
+            $context->buildViolation('CreditGuaranty.programChoiceOption.duplicated')->atPath('description')->addViolation();
+        }
     }
 }
