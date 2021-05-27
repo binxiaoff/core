@@ -279,8 +279,6 @@ class Tranche
      *     @Assert\Expression("value.getTranche() === this")
      * })
      *
-     * @ApiProperty(readableLink=false)
-     *
      * @Groups({"agency:tranche:read"})
      */
     private Collection $allocations;
