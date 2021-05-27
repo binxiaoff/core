@@ -131,7 +131,7 @@ class Participation
     {
         $count = 0;
         foreach ($this->getProgram()->getReservations() as $reservation) {
-            if ($reservation->getManagingCompany() === $this->getParticipant()) {
+            if ($reservation->isSent() && $reservation->getManagingCompany() === $this->getParticipant()) {
                 ++$count;
             }
         }
