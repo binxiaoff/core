@@ -296,6 +296,14 @@ class Company implements TraceableStatusAwareInterface
         }
     }
 
+    /**
+     * @Groups({"company:read"})
+     */
+    public function getStaffCount(): int
+    {
+        return iterator_count($this->getStaff());
+    }
+
     public function getEmailDomain(): ?string
     {
         return $this->emailDomain;
