@@ -19,7 +19,6 @@ use Unilend\Core\Service\MoneyCalculator;
  * @ApiResource(
  *     normalizationContext={"groups": {
  *         "creditGuaranty:project:read",
- *         "timestampable:read",
  *         "money:read"
  *     }},
  *     denormalizationContext={"groups": {
@@ -28,20 +27,19 @@ use Unilend\Core\Service\MoneyCalculator;
  *     }},
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object.getReservation())"
+ *             "security": "is_granted('view', object)"
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object.getReservation())"
+ *             "security": "is_granted('edit', object)"
  *         },
  *         "delete": {
- *             "security": "is_granted('delete', object.getReservation())"
+ *             "security": "is_granted('delete', object)"
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
- *             "security_post_denormalize": "is_granted('create', object.getReservation())"
- *         },
- *         "get"
+ *             "security_post_denormalize": "is_granted('create', object)"
+ *         }
  *     }
  * )
  *
@@ -129,6 +127,22 @@ class Project
         $this->nafNace = $nafNace;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAdded(): DateTimeImmutable
+    {
+        return $this->added;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getUpdated(): ?DateTimeImmutable
+    {
+        return $this->updated;
     }
 
     public function checkBalance(): bool

@@ -18,7 +18,6 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  * @ApiResource(
  *     normalizationContext={"groups": {
  *         "creditGuaranty:financingObject:read",
- *         "timestampable:read",
  *         "money:read"
  *     }},
  *     denormalizationContext={"groups": {
@@ -27,20 +26,19 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *     }},
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object.getReservation())"
+ *             "security": "is_granted('view', object)"
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object.getReservation())"
+ *             "security": "is_granted('edit', object)"
  *         },
  *         "delete": {
- *             "security": "is_granted('delete', object.getReservation())"
+ *             "security": "is_granted('delete', object)"
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
- *             "security_post_denormalize": "is_granted('create', object.getReservation())"
- *         },
- *         "get"
+ *             "security_post_denormalize": "is_granted('create', object)"
+ *         }
  *     }
  * )
  *
@@ -59,19 +57,23 @@ class FinancingObject
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:write"})
      */
     private Reservation $reservation;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_financing_object", nullable=false)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
     private ProgramChoiceOption $financingObject;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_loan_type", nullable=false)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
     private ProgramChoiceOption $loanType;
 
@@ -182,5 +184,21 @@ class FinancingObject
         $this->releasedOnInvoice = $releasedOnInvoice;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:financingObject:read"})
+     */
+    public function getAdded(): DateTimeImmutable
+    {
+        return $this->added;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:financingObject:read"})
+     */
+    public function getUpdated(): ?DateTimeImmutable
+    {
+        return $this->updated;
     }
 }

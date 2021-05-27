@@ -17,30 +17,28 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
 /**
  * @ApiResource(
  *     normalizationContext={"groups": {
- *         "creditGuaranty:borrowerCompany:read",
- *         "timestampable:read",
+ *         "creditGuaranty:borrowerBusinessActivity:read",
  *         "nullableMoney:read"
  *     }},
  *     denormalizationContext={"groups": {
- *         "creditGuaranty:borrowerCompany:write",
+ *         "creditGuaranty:borrowerBusinessActivity:write",
  *         "nullableMoney:write"
  *     }},
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object.getReservation())"
+ *             "security": "is_granted('view', object)"
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object.getReservation())"
+ *             "security": "is_granted('edit', object)"
  *         },
  *         "delete": {
- *             "security": "is_granted('delete', object.getReservation())"
+ *             "security": "is_granted('delete', object)"
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
- *             "security_post_denormalize": "is_granted('create', object.getReservation())"
- *         },
- *         "get"
+ *             "security_post_denormalize": "is_granted('create', object)"
+ *         }
  *     }
  * )
  *
@@ -63,7 +61,7 @@ class BorrowerBusinessActivity
      *
      * @Assert\NotBlank(allowNull=true)
      *
-     * @Groups({"creditGuaranty:borrowerCompany:read", "creditGuaranty:borrowerCompany:write"})
+     * @Groups({"creditGuaranty:borrowerBusinessActivity:read", "creditGuaranty:borrowerBusinessActivity:write"})
      */
     private ?string $siret;
 
@@ -72,7 +70,7 @@ class BorrowerBusinessActivity
      *
      * @Assert\Valid
      *
-     * @Groups({"creditGuaranty:borrowerCompany:read", "creditGuaranty:borrowerCompany:write"})
+     * @Groups({"creditGuaranty:borrowerBusinessActivity:read", "creditGuaranty:borrowerBusinessActivity:write"})
      */
     private Address $address;
 
@@ -81,7 +79,7 @@ class BorrowerBusinessActivity
      *
      * @Assert\Positive
      *
-     * @Groups({"creditGuaranty:borrowerCompany:read", "creditGuaranty:borrowerCompany:write"})
+     * @Groups({"creditGuaranty:borrowerBusinessActivity:read", "creditGuaranty:borrowerBusinessActivity:write"})
      */
     private ?int $employeesNumber;
 
@@ -90,7 +88,7 @@ class BorrowerBusinessActivity
      *
      * @Assert\Valid
      *
-     * @Groups({"creditGuaranty:borrowerCompany:read", "creditGuaranty:borrowerCompany:write"})
+     * @Groups({"creditGuaranty:borrowerBusinessActivity:read", "creditGuaranty:borrowerBusinessActivity:write"})
      */
     private NullableMoney $lastYearTurnover;
 
@@ -99,7 +97,7 @@ class BorrowerBusinessActivity
      *
      * @Assert\Valid
      *
-     * @Groups({"creditGuaranty:borrowerCompany:read", "creditGuaranty:borrowerCompany:write"})
+     * @Groups({"creditGuaranty:borrowerBusinessActivity:read", "creditGuaranty:borrowerBusinessActivity:write"})
      */
     private NullableMoney $fiveYearsAverageTurnover;
 
@@ -108,7 +106,7 @@ class BorrowerBusinessActivity
      *
      * @Assert\Valid
      *
-     * @Groups({"creditGuaranty:borrowerCompany:read", "creditGuaranty:borrowerCompany:write"})
+     * @Groups({"creditGuaranty:borrowerBusinessActivity:read", "creditGuaranty:borrowerBusinessActivity:write"})
      */
     private NullableMoney $totalAssets;
 
@@ -117,7 +115,7 @@ class BorrowerBusinessActivity
      *
      * @Assert\Valid
      *
-     * @Groups({"creditGuaranty:borrowerCompany:read", "creditGuaranty:borrowerCompany:write"})
+     * @Groups({"creditGuaranty:borrowerBusinessActivity:read", "creditGuaranty:borrowerBusinessActivity:write"})
      */
     private NullableMoney $grant;
 
@@ -235,5 +233,21 @@ class BorrowerBusinessActivity
         $this->subsidiary = $subsidiary;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:borrowerBusinessActivity:read"})
+     */
+    public function getAdded(): DateTimeImmutable
+    {
+        return $this->added;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:borrowerBusinessActivity:read"})
+     */
+    public function getUpdated(): ?DateTimeImmutable
+    {
+        return $this->updated;
     }
 }

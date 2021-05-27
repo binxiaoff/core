@@ -19,29 +19,23 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
 /**
  * @ApiResource(
  *     normalizationContext={"groups": {
- *         "creditGuaranty:borrower:read",
- *         "timestampable:read"
+ *         "creditGuaranty:borrower:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "creditGuaranty:borrower:write"
  *     }},
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object.getReservation())"
+ *             "security": "is_granted('view', object)"
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object.getReservation())"
+ *             "security": "is_granted('edit', object)"
  *         },
  *         "delete": {
- *             "security": "is_granted('delete', object.getReservation())"
+ *             "security": "is_granted('delete', object)"
  *         }
  *     },
- *     collectionOperations={
- *         "post": {
- *             "security_post_denormalize": "is_granted('create', object.getReservation())"
- *         },
- *         "get"
- *     }
+ *     collectionOperations={}
  * )
  *
  * @ORM\Entity
@@ -152,6 +146,20 @@ class Borrower
         return $this->grade;
     }
 
+    public function isGradeValid(): bool
+    {
+        switch ($this->reservation->getProgram()->getRatingType()) {
+            case CARatingType::CA_INTERNAL_RETAIL_RATING:
+                return \in_array($this->grade, CAInternalRetailRating::getConstList(), true);
+
+            case CARatingType::CA_INTERNAL_RATING:
+                return \in_array($this->grade, CAInternalRating::getConstList(), true);
+
+            default:
+                return false;
+        }
+    }
+
     public function getBorrowerType(): ?ProgramChoiceOption
     {
         return $this->borrowerType;
@@ -224,17 +232,19 @@ class Borrower
         return $this;
     }
 
-    public function isGradeValid(): bool
+    /**
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getAdded(): DateTimeImmutable
     {
-        switch ($this->reservation->getProgram()->getRatingType()) {
-            case CARatingType::CA_INTERNAL_RETAIL_RATING:
-                return \in_array($this->grade, CAInternalRetailRating::getConstList(), true);
+        return $this->added;
+    }
 
-            case CARatingType::CA_INTERNAL_RATING:
-                return \in_array($this->grade, CAInternalRating::getConstList(), true);
-
-            default:
-                return false;
-        }
+    /**
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getUpdated(): ?DateTimeImmutable
+    {
+        return $this->updated;
     }
 }
