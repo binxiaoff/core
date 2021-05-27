@@ -10,6 +10,7 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Unilend\Agency\Entity\Borrower;
+use Unilend\Agency\Entity\BorrowerMember;
 use Unilend\Agency\Entity\BorrowerTrancheShare;
 use Unilend\Agency\Entity\Covenant;
 use Unilend\Agency\Entity\CovenantRule;
@@ -34,6 +35,7 @@ use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Model\Bitmask;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -79,6 +81,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         /** @var Borrower[]|array $borrowers */
         $borrowers = array_map(fn () => $this->createBorrower($project, $staff), range(0, 3));
+
+        $borrowerMembers = [];
+        foreach ($borrowers as $borrower) {
+            $borrowerMembers[] = $this->createBorrowerMember($borrower, true);
+            $borrowerMembers[] = $this->createBorrowerMember($borrower, false);
+        }
 
         /** @var Tranche[]|array $tranches */
         $tranches = array_map(fn () => $this->createTranche($project), range(0, 2));
@@ -133,6 +141,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         array_map([$manager, 'persist'], [
             ...$borrowers,
+            ...$borrowerMembers,
             ...$tranches,
             ...$borrowerTrancheShares,
             ...$participations,
@@ -156,10 +165,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     /**
      * @throws Exception
-     *
-     * @return Borrower
      */
-    private function createBorrower(Project $project, Staff $staff)
+    private function createBorrower(Project $project): Borrower
     {
         return new Borrower(
             $project,
@@ -172,6 +179,18 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $this->faker->address,
             $this->faker->siren(false), // Works because Faker is set to Fr_fr.
         );
+    }
+
+    private function createBorrowerMember(Borrower $borrower, bool $referentOrSignatory): BorrowerMember
+    {
+        $borrowerMember = new BorrowerMember($borrower, new User($this->faker->email));
+        if ($referentOrSignatory) {
+            $borrowerMember->setReferent(true);
+        } else {
+            $borrowerMember->setSignatory(true);
+        }
+
+        return $borrowerMember;
     }
 
     /**
