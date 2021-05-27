@@ -101,7 +101,7 @@ abstract class AbstractProjectPartaker
     /**
      * @ORM\Column(type="string", length=40, nullable=true)
      *
-     * @Assert\Length(max="9")
+     * @Assert\Length(max="40")
      */
     protected ?string $rcs;
 
