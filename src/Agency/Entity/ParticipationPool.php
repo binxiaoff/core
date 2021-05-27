@@ -99,6 +99,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "company:read",
  *             "agency:participation:read",
  *             "agency:participationTrancheAllocation:read",
+ *             "agency:tranche:read"
  *         }
  *     }
  * )
