@@ -738,6 +738,14 @@ class Program implements TraceableStatusAwareInterface
         return $duplicatedProgram;
     }
 
+    /**
+     * @return Collection|Reservation[]
+     */
+    public function getReservations()
+    {
+        return $this->reservations;
+    }
+
     protected function onClone(): Program
     {
         $this

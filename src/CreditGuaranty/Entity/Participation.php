@@ -60,7 +60,7 @@ class Participation
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:participation:read", "creditGuaranty:participation:create"})
+     * @Groups({"creditGuaranty:participation:create"})
      */
     private Program $program;
 
@@ -124,6 +124,24 @@ class Participation
         return $this;
     }
 
+    /**
+     * @Groups({"creditGuaranty:participation:read"})
+     */
+    public function getReservationCount(): int
+    {
+        $count = 0;
+        foreach ($this->getProgram()->getReservations() as $reservation) {
+            if ($reservation->isSent() && $reservation->getManagingCompany() === $this->getParticipant()) {
+                ++$count;
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * Used in an expression assert.
+     */
     public function isParticipantValid(): bool
     {
         return in_array($this->getParticipant()->getShortCode(), CARegionalBank::REGIONAL_BANKS, true);
