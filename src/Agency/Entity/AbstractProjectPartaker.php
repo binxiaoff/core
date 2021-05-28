@@ -212,6 +212,18 @@ abstract class AbstractProjectPartaker
         return $this;
     }
 
+    public function getBankAddress(): ?string
+    {
+        return $this->bankAddress;
+    }
+
+    public function setBankAddress(?string $bankAddress): AbstractProjectPartaker
+    {
+        $this->bankAddress = $bankAddress;
+
+        return $this;
+    }
+
     public function getCorporateName(): ?string
     {
         return $this->corporateName;
