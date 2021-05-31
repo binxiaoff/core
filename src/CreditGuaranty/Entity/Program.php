@@ -20,6 +20,7 @@ use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\Constant\CARatingType;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Interfaces\StatusInterface;
 use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Core\Entity\Staff;
@@ -80,7 +81,7 @@ class Program implements TraceableStatusAwareInterface
     /**
      * @ORM\Column(length=100, unique=true)
      *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write", "creditGuaranty:participation:list"})
      */
     private string $name;
 
@@ -141,7 +142,7 @@ class Program implements TraceableStatusAwareInterface
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write", "creditGuaranty:participation:list"})
      */
     private ?DateTimeImmutable $distributionDeadline;
 
@@ -727,6 +728,14 @@ class Program implements TraceableStatusAwareInterface
         }
 
         return $totalProjectFunds;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:participation:list"})
+     */
+    public function getAmountAvailable(): MoneyInterface
+    {
+        return MoneyCalculator::subtract($this->getFunds(), $this->getTotalProjectFunds());
     }
 
     public function duplicate(Staff $duplicatedBy): Program

@@ -262,6 +262,16 @@ class Reservation implements TraceableStatusAwareInterface
         return ReservationStatus::STATUS_SENT <= $this->getCurrentStatus()->getStatus();
     }
 
+    public function isAcceptedByManagingCompany(): bool
+    {
+        return ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY === $this->getCurrentStatus()->getStatus();
+    }
+
+    public function isFormalized(): bool
+    {
+        return ReservationStatus::STATUS_CONTRACT_FORMALIZED === $this->getCurrentStatus()->getStatus();
+    }
+
     public function isArchived(): bool
     {
         return ReservationStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
