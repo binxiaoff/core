@@ -158,7 +158,7 @@ class ProjectRoleVoter extends Voter
             return false;
         }
 
-        // Fetch users whom connected user can get permission as he had them
+        // Fetch managed users whom connected user can get permission as he had them
         $managedUsers = $staff->getManagedUsers();
 
         foreach ($managedUsers as $managedUser) {

@@ -44,7 +44,7 @@ class TermVoter extends AbstractEntityVoter
 
         return ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $term->getProject())
             || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $term->getProject()))
-            && true === $term->getProject()->isEditable();
+            && $term->getProject()->isEditable();
     }
 
     /**
@@ -52,11 +52,11 @@ class TermVoter extends AbstractEntityVoter
      */
     protected function canDelete(Term $term, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_EDIT, $term->getCovenant())
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $term->getProject())
             && false === $term->isArchived()
             && $term->isShared()
             && $term->getStartDate() >= $this->getToday()
-            && true === $term->getProject()->isEditable();
+            && $term->getProject()->isEditable();
     }
 
     /**

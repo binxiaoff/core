@@ -24,7 +24,7 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
 
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null)
     {
-        if (false === (Participation::class === $resourceClass)) {
+        if (false === (Participation::class === $resourceClass) || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
 
@@ -96,7 +96,7 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
         $queryBuilder
             ->leftJoin("{$rootAlias}.pool", $participationParticipationPoolAlias)
             ->leftJoin("{$participationParticipationPoolAlias}.project", $participationProjectAlias)
-            ->leftJoin("{$participationParticipationPoolAlias}.participations", $currentCompanyParticipationAlias) // Join to fetch currentCompanyParticipation
+            ->leftJoin("{$participationParticipationPoolAlias}.participations", $currentCompanyParticipationAlias)
             ->leftJoin("{$currentCompanyParticipationAlias}.members", $currentCompanyParticipationMemberAlias)
             ->orWhere(
                 $queryBuilder->expr()->andX(

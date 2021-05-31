@@ -42,7 +42,7 @@ class ParticipationVoter extends AbstractEntityVoter
 
     protected function canEdit(Participation $participation, User $user): bool
     {
-        if (!$participation->getProject()->isEditable()) {
+        if (false === $participation->getProject()->isEditable()) {
             return false;
         }
 
@@ -62,14 +62,14 @@ class ParticipationVoter extends AbstractEntityVoter
 
     protected function canCreate(Participation $participation, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject())
-            && true === $participation->getProject()->isEditable();
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participation->getProject())
+            && $participation->getProject()->isEditable();
     }
 
     protected function canDelete(Participation $participation, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject())
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participation->getProject())
             && false === $participation->isAgent()
-            && true === $participation->getProject()->isEditable();
+            && $participation->getProject()->isEditable();
     }
 }

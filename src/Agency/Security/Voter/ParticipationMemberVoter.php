@@ -31,11 +31,11 @@ class ParticipationMemberVoter extends AbstractEntityVoter
     {
         $project = $participationMember->getProject();
 
-        if (!$project->isEditable()) {
+        if (false === $project->isEditable()) {
             return false;
         }
 
-        // Agent can create member for particiation
+        // Agent can create member for participation
         if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)) {
             return true;
         }

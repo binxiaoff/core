@@ -237,7 +237,7 @@ abstract class AbstractProjectPartaker
     }
 
     /**
-     * @return Collection|AbstractProjectPartaker[]
+     * @return Collection|AbstractProjectMember[]
      */
     public function getMembers(): Collection
     {

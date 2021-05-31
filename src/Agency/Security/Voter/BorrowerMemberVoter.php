@@ -17,15 +17,12 @@ class BorrowerMemberVoter extends AbstractEntityVoter
     {
         $project = $borrowerMember->getProject();
 
-        if (!$project->isEditable()) {
-            return false;
-        }
-
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $project)
-            || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project);
+        return $project->isEditable() && (
+            $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $project)
+            || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project));
     }
 
-    protected function canView(BorrowerMember $borrowerMember, User $user)
+    protected function canView(BorrowerMember $borrowerMember, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $borrowerMember);
     }

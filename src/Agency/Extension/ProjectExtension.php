@@ -27,7 +27,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
         string $resourceClass,
         string $operationName = null
     ): void {
-        if (false === (Project::class === $resourceClass)) {
+        if (false === (Project::class === $resourceClass) || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
 

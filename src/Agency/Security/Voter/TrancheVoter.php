@@ -20,6 +20,6 @@ class TrancheVoter extends AbstractEntityVoter
     protected function isGrantedAll($tranche, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $tranche->getProject())
-            && true === $tranche->getProject()->isEditable();
+            && $tranche->getProject()->isEditable();
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -134,7 +133,10 @@ class Borrower extends AbstractProjectPartaker
         return $this->project;
     }
 
-    public function getTrancheShares()
+    /**
+     * @return Collection|BorrowerTrancheShare[]
+     */
+    public function getTrancheShares(): Collection
     {
         return $this->trancheShares;
     }
@@ -334,7 +336,8 @@ class Borrower extends AbstractProjectPartaker
     /**
      * @Groups({"agency:borrower:read"})
      */
-    public function isCompleted(){
+    public function isCompleted()
+    {
         return $this->getBankInstitution() && $this->getBankAddress() && $this->getIban() && $this->getBic();
     }
 }
