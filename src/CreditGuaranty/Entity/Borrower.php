@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -13,13 +15,36 @@ use Unilend\Core\Entity\Constant\CARatingType;
 use Unilend\Core\Entity\Embeddable\Address;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={"groups": {
+ *         "creditGuaranty:borrower:read"
+ *     }},
+ *     denormalizationContext={"groups": {
+ *         "creditGuaranty:borrower:write",
+ *         "creditGuaranty:programChoiceOption:write"
+ *     }},
+ *     itemOperations={
+ *         "get": {
+ *             "security": "is_granted('view', object)"
+ *         },
+ *         "patch": {
+ *             "security": "is_granted('edit', object)"
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)"
+ *         }
+ *     },
+ *     collectionOperations={}
+ * )
+ *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_borrower")
  * @ORM\HasLifecycleCallbacks
  */
-class Borrower
+class Borrower implements ProgramAwareInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -54,6 +79,8 @@ class Borrower
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_borrower_type")
      *
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     *
      * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
     private ?ProgramChoiceOption $borrowerType = null;
@@ -61,6 +88,8 @@ class Borrower
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_legal_form")
+     *
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
      *
      * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
@@ -105,7 +134,17 @@ class Borrower
         $this->companyName = $companyName;
         $this->grade       = $grade;
         $this->address     = new Address();
-        $this->added       = new \DateTimeImmutable();
+        $this->added       = new DateTimeImmutable();
+    }
+
+    public function getReservation(): Reservation
+    {
+        return $this->reservation;
+    }
+
+    public function getProgram(): Program
+    {
+        return $this->getReservation()->getProgram();
     }
 
     public function getCompanyName(): string
@@ -116,6 +155,20 @@ class Borrower
     public function getGrade(): string
     {
         return $this->grade;
+    }
+
+    public function isGradeValid(): bool
+    {
+        switch ($this->reservation->getProgram()->getRatingType()) {
+            case CARatingType::CA_INTERNAL_RETAIL_RATING:
+                return \in_array($this->grade, CAInternalRetailRating::getConstList(), true);
+
+            case CARatingType::CA_INTERNAL_RATING:
+                return \in_array($this->grade, CAInternalRating::getConstList(), true);
+
+            default:
+                return false;
+        }
     }
 
     public function getBorrowerType(): ?ProgramChoiceOption
@@ -190,17 +243,19 @@ class Borrower
         return $this;
     }
 
-    public function isGradeValid(): bool
+    /**
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getAdded(): DateTimeImmutable
     {
-        switch ($this->reservation->getProgram()->getRatingType()) {
-            case CARatingType::CA_INTERNAL_RETAIL_RATING:
-                return \in_array($this->grade, CAInternalRetailRating::getConstList(), true);
+        return $this->added;
+    }
 
-            case CARatingType::CA_INTERNAL_RATING:
-                return \in_array($this->grade, CAInternalRating::getConstList(), true);
-
-            default:
-                return false;
-        }
+    /**
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getUpdated(): ?DateTimeImmutable
+    {
+        return $this->updated;
     }
 }

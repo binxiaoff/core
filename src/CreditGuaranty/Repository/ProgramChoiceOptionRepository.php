@@ -28,6 +28,14 @@ class ProgramChoiceOptionRepository extends ServiceEntityRepository
 
     /**
      * @throws ORMException
+     */
+    public function persist(ProgramChoiceOption $programChoiceOption): void
+    {
+        $this->getEntityManager()->persist($programChoiceOption);
+    }
+
+    /**
+     * @throws ORMException
      * @throws OptimisticLockException
      */
     public function save(ProgramChoiceOption $programChoiceOption): void

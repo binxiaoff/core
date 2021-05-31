@@ -4,22 +4,52 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\NafNace;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Service\MoneyCalculator;
+use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={"groups": {
+ *         "creditGuaranty:project:read",
+ *         "money:read"
+ *     }},
+ *     denormalizationContext={"groups": {
+ *         "creditGuaranty:project:write",
+ *         "money:write"
+ *     }},
+ *     itemOperations={
+ *         "get": {
+ *             "security": "is_granted('view', object)"
+ *         },
+ *         "patch": {
+ *             "security": "is_granted('edit', object)"
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)"
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)"
+ *         }
+ *     }
+ * )
+ *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_project")
  * @ORM\HasLifecycleCallbacks
  */
-class Project
+class Project implements ProgramAwareInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -40,6 +70,8 @@ class Project
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_program_choice_option", nullable=false)
      *
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
     private ProgramChoiceOption $investmentThematic;
@@ -58,6 +90,16 @@ class Project
         $this->investmentThematic = $investmentThematic;
         $this->nafNace            = $nafNace;
         $this->added              = new DateTimeImmutable();
+    }
+
+    public function getReservation(): Reservation
+    {
+        return $this->reservation;
+    }
+
+    public function getProgram(): Program
+    {
+        return $this->getReservation()->getProgram();
     }
 
     public function getFundingMoney(): Money
@@ -94,6 +136,22 @@ class Project
         $this->nafNace = $nafNace;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAdded(): DateTimeImmutable
+    {
+        return $this->added;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getUpdated(): ?DateTimeImmutable
+    {
+        return $this->updated;
     }
 
     public function checkBalance(): bool

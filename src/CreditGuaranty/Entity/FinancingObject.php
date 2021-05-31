@@ -13,15 +13,41 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 
 /**
- * @ApiResource
+ * @ApiResource(
+ *     normalizationContext={"groups": {
+ *         "creditGuaranty:financingObject:read",
+ *         "money:read"
+ *     }},
+ *     denormalizationContext={"groups": {
+ *         "creditGuaranty:financingObject:write",
+ *         "money:write"
+ *     }},
+ *     itemOperations={
+ *         "get": {
+ *             "security": "is_granted('view', object)"
+ *         },
+ *         "patch": {
+ *             "security": "is_granted('edit', object)"
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)"
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)"
+ *         }
+ *     }
+ * )
  *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_financing_object")
  * @ORM\HasLifecycleCallbacks
  */
-class FinancingObject
+class FinancingObject implements ProgramAwareInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -32,19 +58,27 @@ class FinancingObject
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:write"})
      */
     private Reservation $reservation;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_financing_object", nullable=false)
+     *
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
     private ProgramChoiceOption $financingObject;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_loan_type", nullable=false)
+     *
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
     private ProgramChoiceOption $loanType;
 
@@ -95,6 +129,11 @@ class FinancingObject
     public function getReservation(): Reservation
     {
         return $this->reservation;
+    }
+
+    public function getProgram(): Program
+    {
+        return $this->getReservation()->getProgram();
     }
 
     public function getFinancingObject(): ProgramChoiceOption
@@ -155,5 +194,21 @@ class FinancingObject
         $this->releasedOnInvoice = $releasedOnInvoice;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:financingObject:read"})
+     */
+    public function getAdded(): DateTimeImmutable
+    {
+        return $this->added;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:financingObject:read"})
+     */
+    public function getUpdated(): ?DateTimeImmutable
+    {
+        return $this->updated;
     }
 }
