@@ -10,7 +10,6 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
@@ -67,6 +66,8 @@ class FinancingObject implements ProgramAwareInterface
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_financing_object", nullable=false)
      *
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
     private ProgramChoiceOption $financingObject;
@@ -74,6 +75,8 @@ class FinancingObject implements ProgramAwareInterface
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_loan_type", nullable=false)
+     *
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
@@ -207,19 +210,5 @@ class FinancingObject implements ProgramAwareInterface
     public function getUpdated(): ?DateTimeImmutable
     {
         return $this->updated;
-    }
-
-    /**
-     * @Assert\Callback
-     */
-    public function validateProgramChoiceOption(ExecutionContextInterface $context): void
-    {
-        if ($this->financingObject->getProgram() !== $this->reservation->getProgram()) {
-            $context->buildViolation('CreditGuaranty.programChoiceOption.financingObject.programInvalid')->atPath('financingObject.program')->addViolation();
-        }
-
-        if ($this->loanType->getProgram() !== $this->reservation->getProgram()) {
-            $context->buildViolation('CreditGuaranty.programChoiceOption.loanType.programInvalid')->atPath('loanType.program')->addViolation();
-        }
     }
 }

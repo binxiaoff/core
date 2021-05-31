@@ -9,7 +9,6 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\CAInternalRetailRating;
 use Unilend\Core\Entity\Constant\CARatingType;
@@ -80,6 +79,8 @@ class Borrower implements ProgramAwareInterface
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_borrower_type")
      *
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     *
      * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
     private ?ProgramChoiceOption $borrowerType = null;
@@ -87,6 +88,8 @@ class Borrower implements ProgramAwareInterface
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_legal_form")
+     *
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
      *
      * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
@@ -254,19 +257,5 @@ class Borrower implements ProgramAwareInterface
     public function getUpdated(): ?DateTimeImmutable
     {
         return $this->updated;
-    }
-
-    /**
-     * @Assert\Callback
-     */
-    public function validateProgramChoiceOption(ExecutionContextInterface $context): void
-    {
-        if ($this->borrowerType->getProgram() !== $this->reservation->getProgram()) {
-            $context->buildViolation('CreditGuaranty.programChoiceOption.borrowerType.programInvalid')->atPath('borrowerType.program')->addViolation();
-        }
-
-        if ($this->legalForm->getProgram() !== $this->reservation->getProgram()) {
-            $context->buildViolation('CreditGuaranty.programChoiceOption.legalForm.programInvalid')->atPath('legalForm.program')->addViolation();
-        }
     }
 }

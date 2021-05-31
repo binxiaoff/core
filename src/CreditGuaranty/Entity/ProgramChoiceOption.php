@@ -67,7 +67,7 @@ class ProgramChoiceOption
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:programChoiceOption:read", "creditGuaranty:programChoiceOption:create"})
+     * @Groups({"creditGuaranty:programChoiceOption:create"})
      */
     private Program $program;
 
@@ -172,8 +172,8 @@ class ProgramChoiceOption
             return;
         }
 
-        if (count($this->field->getPredefinedItems()) && in_array($this->description, $this->field->getPredefinedItems())) {
-            $context->buildViolation('CreditGuaranty.programChoiceOption.duplicated')->atPath('description')->addViolation();
+        if (count($this->field->getPredefinedItems()) && false === in_array($this->description, $this->field->getPredefinedItems(), true)) {
+            $context->buildViolation('CreditGuaranty.ProgramChoiceOption.invalid')->atPath('description')->addViolation();
         }
     }
 }

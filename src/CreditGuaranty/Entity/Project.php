@@ -9,7 +9,6 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\NafNace;
@@ -70,6 +69,8 @@ class Project implements ProgramAwareInterface
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_program_choice_option", nullable=false)
+     *
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
@@ -208,16 +209,6 @@ class Project implements ProgramAwareInterface
         $programBorrowerTypeAllocation = $program->getProgramBorrowerTypeAllocations()->get($borrowerType->getId());
 
         return bccomp((string) $ratio, $programBorrowerTypeAllocation->getMaxAllocationRate(), 4) <= 0;
-    }
-
-    /**
-     * @Assert\Callback
-     */
-    public function validateProgramChoiceOption(ExecutionContextInterface $context): void
-    {
-        if ($this->investmentThematic->getProgram() !== $this->reservation->getProgram()) {
-            $context->buildViolation('CreditGuaranty.programChoiceOption.investmentThematic.programInvalid')->atPath('investmentThematic.program')->addViolation();
-        }
     }
 
     private function getTotalFunds(Program $program, array $filters = []): MoneyInterface

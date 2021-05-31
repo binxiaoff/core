@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Security\Voter;
 
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 use Unilend\CreditGuaranty\Entity\BorrowerBusinessActivity;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
-use Unilend\CreditGuaranty\Service\StaffPermissionManager;
 
 class BorrowerBusinessActivityVoter extends AbstractEntityVoter
 {
@@ -18,54 +14,23 @@ class BorrowerBusinessActivityVoter extends AbstractEntityVoter
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_DELETE = 'delete';
 
-    private StaffPermissionManager $staffPermissionManager;
-
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker, StaffPermissionManager $staffPermissionManager)
+    protected function canCreate(BorrowerBusinessActivity $borrowerBusinessActivity): bool
     {
-        parent::__construct($authorizationChecker);
-        $this->staffPermissionManager = $staffPermissionManager;
+        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $borrowerBusinessActivity->getReservation());
     }
 
-    protected function canCreate(BorrowerBusinessActivity $borrowerBusinessActivity, User $user): bool
+    protected function canView(BorrowerBusinessActivity $borrowerBusinessActivity): bool
     {
-        $staff       = $user->getCurrentStaff();
-        $reservation = $borrowerBusinessActivity->getReservation();
-        $program     = $reservation->getProgram();
-
-        return $staff
-            && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_CREATE_RESERVATION)
-            && $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_PARTICIPANT, $program)
-        ;
+        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_VIEW, $borrowerBusinessActivity->getReservation());
     }
 
-    protected function canView(BorrowerBusinessActivity $borrowerBusinessActivity, User $user): bool
+    protected function canEdit(BorrowerBusinessActivity $borrowerBusinessActivity): bool
     {
-        $staff       = $user->getCurrentStaff();
-        $reservation = $borrowerBusinessActivity->getReservation();
-        $program     = $reservation->getProgram();
-
-        return $staff
-            && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_RESERVATION)
-            && (
-                $this->authorizationChecker->isGranted(ReservationRoleVoter::ROLE_MANAGER, $reservation)
-                || $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $program)
-            )
-        ;
+        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $borrowerBusinessActivity->getReservation());
     }
 
-    protected function canEdit(BorrowerBusinessActivity $borrowerBusinessActivity, User $user): bool
+    protected function canDelete(BorrowerBusinessActivity $borrowerBusinessActivity): bool
     {
-        $staff       = $user->getCurrentStaff();
-        $reservation = $borrowerBusinessActivity->getReservation();
-
-        return $staff
-            && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_EDIT_RESERVATION)
-            && $this->authorizationChecker->isGranted(ReservationRoleVoter::ROLE_MANAGER, $reservation)
-        ;
-    }
-
-    protected function canDelete(BorrowerBusinessActivity $borrowerBusinessActivity, User $user): bool
-    {
-        return $this->canCreate($borrowerBusinessActivity, $user);
+        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $borrowerBusinessActivity->getReservation());
     }
 }
