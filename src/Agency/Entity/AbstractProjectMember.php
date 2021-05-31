@@ -47,10 +47,11 @@ abstract class AbstractProjectMember
 
     public function __construct(User $user)
     {
-        $this->user      = $user;
-        $this->added     = new DateTimeImmutable();
-        $this->referent  = false;
-        $this->signatory = false;
+        $this->user            = $user;
+        $this->added           = new DateTimeImmutable();
+        $this->referent        = false;
+        $this->signatory       = false;
+        $this->projectFunction = null;
         $this->setPublicId();
     }
 
