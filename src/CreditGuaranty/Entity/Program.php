@@ -81,7 +81,7 @@ class Program implements TraceableStatusAwareInterface
     /**
      * @ORM\Column(length=100, unique=true)
      *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write", "creditGuaranty:participation:list"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:list", "creditGuaranty:program:write"})
      */
     private string $name;
 
@@ -142,7 +142,7 @@ class Program implements TraceableStatusAwareInterface
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write", "creditGuaranty:participation:list"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:list", "creditGuaranty:program:write"})
      */
     private ?DateTimeImmutable $distributionDeadline;
 
@@ -731,7 +731,7 @@ class Program implements TraceableStatusAwareInterface
     }
 
     /**
-     * @Groups({"creditGuaranty:participation:list"})
+     * @Groups({"creditGuaranty:program:list"})
      */
     public function getAmountAvailable(): MoneyInterface
     {

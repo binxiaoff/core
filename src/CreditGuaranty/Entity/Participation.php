@@ -33,10 +33,17 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *     collectionOperations={
  *         "post": {
  *             "post": {"security_post_denormalize": "is_granted('create', object)"},
- *             "denormalization_context": {"groups": {"creditGuaranty:participation:write", "creditGuaranty:participation:create"}}
+ *             "denormalization_context": {"groups": {
+ *                 "creditGuaranty:participation:write",
+ *                 "creditGuaranty:participation:create"
+ *             }}
  *         },
  *         "get": {
- *             "normalization_context": {"groups": {"creditGuaranty:participation:list", "money:read"}}
+ *             "normalization_context": {"groups": {
+ *                 "creditGuaranty:participation:list",
+ *                 "creditGuaranty:program:list",
+ *                 "money:read"
+ *             }}
  *         }
  *     }
  * )

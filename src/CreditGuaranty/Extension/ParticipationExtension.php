@@ -49,7 +49,8 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
 
         $queryBuilder
             ->distinct()
-            ->andWhere("{$rootAlias}.participant = :company")
+            ->innerJoin("{$rootAlias}.program", 'p')
+            ->andWhere("{$rootAlias}.participant = :company OR p.managingCompany = :company")
             ->setParameter('company', $staff->getCompany())
         ;
     }
