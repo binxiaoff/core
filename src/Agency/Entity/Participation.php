@@ -195,7 +195,13 @@ class Participation extends AbstractProjectPartaker
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
-     * @Assert\Expression(expression="null === value || false === this.isAgent()", message="Agency.Participation.commission.agent")
+     * @Assert\AtLeastOneOf(
+     *     constraints={
+     *         @Assert\IsNull,
+     *         @Assert\Expression("this.isAgent()")
+     *     },
+     *     message="Agency.Participation.commission.agent"
+     * )
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
@@ -208,8 +214,13 @@ class Participation extends AbstractProjectPartaker
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      *
-     * @Assert\Expression(expression="null === value || false === this.isArranger()", message="Agency.Participation.commission.arranger")
-     *
+     * @Assert\AtLeastOneOf(
+     *     constraints={
+     *         @Assert\IsNull,
+     *         @Assert\Expression("this.isArranger()")
+     *     },
+     *     message="Agency.Participation.commission.arranger"
+     * )
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
     private ?string $arrangerCommission;
@@ -221,7 +232,13 @@ class Participation extends AbstractProjectPartaker
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      *
-     * @Assert\Expression(expression="null === value || false === this.isDeputyArranger()", message="Agency.Participation.commission.deputyArranger")
+     * @Assert\AtLeastOneOf(
+     *     constraints={
+     *         @Assert\IsNull,
+     *         @Assert\Expression("this.isDeputyArranger()")
+     *     },
+     *     message="Agency.Participation.commission.deputyArranger"
+     * )
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
@@ -311,9 +328,9 @@ class Participation extends AbstractProjectPartaker
         return $this->responsibilities;
     }
 
-    public function setResponsibilities(Bitmask $responsibilities): Participation
+    public function setResponsibilities($responsibilities): Participation
     {
-        $this->responsibilities = $responsibilities;
+        $this->responsibilities = new Bitmask($responsibilities);
 
         return $this;
     }
