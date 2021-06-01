@@ -6,6 +6,7 @@ namespace Unilend\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -18,7 +19,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"creditGuaranty:participation:read", "creditGuaranty:participation:read", "timestampable:read"}},
+ *     normalizationContext={"groups": {"creditGuaranty:participation:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:participation:write"}},
  *     itemOperations={
  *         "get": {
@@ -32,7 +33,17 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *     collectionOperations={
  *         "post": {
  *             "post": {"security_post_denormalize": "is_granted('create', object)"},
- *             "denormalization_context": {"groups": {"creditGuaranty:participation:write", "creditGuaranty:participation:create"}}
+ *             "denormalization_context": {"groups": {
+ *                 "creditGuaranty:participation:write",
+ *                 "creditGuaranty:participation:create"
+ *             }}
+ *         },
+ *         "get": {
+ *             "normalization_context": {"groups": {
+ *                 "creditGuaranty:participation:list",
+ *                 "creditGuaranty:program:list",
+ *                 "money:read"
+ *             }}
  *         }
  *     }
  * )
@@ -58,9 +69,9 @@ class Participation
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="participations")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
-     * @ApiProperty(readableLink=false, writableLink=false)
+     * @ApiProperty(writableLink=false)
      *
-     * @Groups({"creditGuaranty:participation:create"})
+     * @Groups({"creditGuaranty:participation:list", "creditGuaranty:participation:create"})
      */
     private Program $program;
 
@@ -127,16 +138,41 @@ class Participation
     /**
      * @Groups({"creditGuaranty:participation:read"})
      */
+    public function getAdded(): DateTimeImmutable
+    {
+        return $this->added;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:participation:read"})
+     */
+    public function getUpdated(): ?DateTimeImmutable
+    {
+        return $this->updated;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:participation:read", "creditGuaranty:participation:list"})
+     */
     public function getReservationCount(): int
     {
-        $count = 0;
-        foreach ($this->getProgram()->getReservations() as $reservation) {
-            if ($reservation->isSent() && $reservation->getManagingCompany() === $this->getParticipant()) {
-                ++$count;
-            }
-        }
+        return $this->countParticipantReservationByStatus(ReservationStatus::STATUS_SENT);
+    }
 
-        return $count;
+    /**
+     * @Groups({"creditGuaranty:participation:list"})
+     */
+    public function getAcceptedReservationCount(): int
+    {
+        return $this->countParticipantReservationByStatus(ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY);
+    }
+
+    /**
+     * @Groups({"creditGuaranty:participation:list"})
+     */
+    public function getFormalizedReservationCount(): int
+    {
+        return $this->countParticipantReservationByStatus(ReservationStatus::STATUS_CONTRACT_FORMALIZED);
     }
 
     /**
@@ -145,5 +181,30 @@ class Participation
     public function isParticipantValid(): bool
     {
         return in_array($this->getParticipant()->getShortCode(), CARegionalBank::REGIONAL_BANKS, true);
+    }
+
+    private function countParticipantReservationByStatus(int $status): int
+    {
+        $count = 0;
+
+        foreach ($this->getProgram()->getReservations() as $reservation) {
+            if ($reservation->getManagingCompany() !== $this->getParticipant()) {
+                continue;
+            }
+
+            if (ReservationStatus::STATUS_SENT === $status && $reservation->isSent()) {
+                ++$count;
+            }
+
+            if (ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY === $status && $reservation->isAcceptedByManagingCompany()) {
+                ++$count;
+            }
+
+            if (ReservationStatus::STATUS_CONTRACT_FORMALIZED === $status && $reservation->isFormalized()) {
+                ++$count;
+            }
+        }
+
+        return $count;
     }
 }
