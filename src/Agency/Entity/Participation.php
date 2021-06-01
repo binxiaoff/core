@@ -195,7 +195,7 @@ class Participation extends AbstractProjectPartaker
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
-     * @Assert\Expression(expression="(null === value && false === this.isAgent()) || (null !== value && this.isAgent())", message="Agency.Participation.commission.agent")
+     * @Assert\Expression(expression="null === value || false === this.isAgent()", message="Agency.Participation.commission.agent")
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
@@ -208,7 +208,7 @@ class Participation extends AbstractProjectPartaker
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      *
-     * @Assert\Expression(expression="null === value || false === this.isArranger()", message="Agency.Participant.commission.arranger")
+     * @Assert\Expression(expression="null === value || false === this.isArranger()", message="Agency.Participation.commission.arranger")
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
@@ -221,7 +221,7 @@ class Participation extends AbstractProjectPartaker
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      *
-     * @Assert\Expression(expression="null === value || false === this.isDeputyArranger()", message="Agency.Participant.commission.deputyArranger")
+     * @Assert\Expression(expression="null === value || false === this.isDeputyArranger()", message="Agency.Participation.commission.deputyArranger")
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
