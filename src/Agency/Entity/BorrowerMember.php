@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Action\NotFoundAction;
-use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -79,7 +77,6 @@ class BorrowerMember extends AbstractProjectMember
         parent::__construct($user);
         $this->borrower = $borrower;
     }
-
 
     public function getBorrower(): Borrower
     {
@@ -162,5 +159,4 @@ class BorrowerMember extends AbstractProjectMember
 
         return $this;
     }
-
 }
