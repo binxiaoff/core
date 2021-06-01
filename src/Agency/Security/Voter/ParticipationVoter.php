@@ -42,16 +42,12 @@ class ParticipationVoter extends AbstractEntityVoter
 
     protected function canEdit(Participation $participation, User $user): bool
     {
-        if ($participation->getProject()->isArchived()) {
+        if (false === $participation->getProject()->isEditable()) {
             return false;
         }
 
         if ($participation->isArchived()) {
             return false;
-        }
-
-        if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject())) {
-            return true;
         }
 
         $staff = $user->getCurrentStaff();
@@ -66,27 +62,14 @@ class ParticipationVoter extends AbstractEntityVoter
 
     protected function canCreate(Participation $participation, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject())
-            && false === $participation->getProject()->isArchived();
-    }
-
-    /**
-     * @param Participation $subject
-     */
-    protected function fulfillPreconditions($subject, User $user): bool
-    {
-        // No one can interact secondary participant if there is no silent syndication
-        if ($subject->isSecondary() && false === $subject->getProject()->hasSilentSyndication()) {
-            return false;
-        }
-
-        return parent::fulfillPreconditions($subject, $user);
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participation->getProject())
+            && $participation->getProject()->isEditable();
     }
 
     protected function canDelete(Participation $participation, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $participation->getProject())
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participation->getProject())
             && false === $participation->isAgent()
-            && false === $participation->getProject()->isArchived();
+            && $participation->getProject()->isEditable();
     }
 }

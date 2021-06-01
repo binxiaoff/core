@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Serializer\Normalizer;
 
-use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
@@ -14,6 +14,7 @@ use Unilend\Agency\Entity\BorrowerMember;
 class BorrowerNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
     use DenormalizerAwareTrait;
+    use NestedDenormalizationTrait;
 
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
@@ -32,18 +33,19 @@ class BorrowerNormalizer implements ContextAwareDenormalizerInterface, Denormali
     {
         $context[static::ALREADY_CALLED] = true;
 
-        $signatory = $data['signatory'] ?? null;
-        unset($data['signatory']);
-        $referent = $data['referent'] ?? null;
-        unset($data['referent']);
+        $denormalized = $this->nestedDenormalize($data, $type, $format, $context, ['members']);
 
-        $borrower = $this->denormalizer->denormalize($data, $type, $format, $context);
-
-        $context[AbstractObjectNormalizer::OBJECT_TO_POPULATE]                                               = $borrower;
-        $context[AbstractObjectNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][BorrowerMember::class]['borrower'] = $borrower;
-
-        $borrower = $this->denormalizer->denormalize(['signatory' => $signatory, 'referent' => $referent], $type, $format, $context);
-
-        return $borrower;
+        return $denormalized;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
+    {
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][BorrowerMember::class]['borrower'] = $denormalized;
+
+        return $context;
+    }
+
 }

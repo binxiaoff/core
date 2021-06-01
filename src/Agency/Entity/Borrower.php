@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -14,18 +13,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\User;
 
 /**
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
  *             "agency:borrower:read",
- *             "money:read",
- *             "agency:projectPartaker:read",
+ *             "money:read"
  *         }
  *     },
  *     collectionOperations={
@@ -34,10 +28,9 @@ use Unilend\Core\Entity\User;
  *                 "groups": {
  *                     "agency:borrower:create",
  *                     "agency:borrower:write",
- *                     "agency:projectPartaker:write",
- *                     "money:write",
  *                     "agency:borrowerMember:create",
  *                     "agency:borrowerMember:write",
+ *                     "money:write",
  *                     "user:create",
  *                     "user:write"
  *                 }
@@ -55,10 +48,12 @@ use Unilend\Core\Entity\User;
  *         "patch": {
  *             "denormalization_context": {
  *                 "groups": {
- *                     "agency:borrower:update",
- *                     "agency:projectPartaker:write",
  *                     "agency:borrower:write",
- *                     "money:write"
+ *                     "agency:borrowerMember:create",
+ *                     "agency:borrowerMember:write",
+ *                     "money:write",
+ *                     "user:create",
+ *                     "user:write"
  *                 }
  *             },
  *             "security_post_denormalize": "is_granted('edit', object)",
@@ -81,74 +76,6 @@ use Unilend\Core\Entity\User;
  */
 class Borrower extends AbstractProjectPartaker
 {
-    use PublicizeIdentityTrait;
-    use BlamableAddedTrait;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="borrowers")
-     * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
-     *
-     * @Assert\NotBlank
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:create"})
-     *
-     * @ApiProperty(readableLink=false)
-     */
-    private Project $project;
-
-    /**
-     * @ORM\Column(type="string", length=100)
-     *
-     * @Assert\NotBlank
-     * @Assert\Length(max="100")
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:write"})
-     */
-    private string $corporateName;
-
-    /**
-     * @ORM\Column(type="string", length=100)
-     *
-     * @Assert\NotBlank
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:write"})
-     */
-    private string $legalForm;
-
-    /**
-     * @ORM\Column(type="string", length=100)
-     *
-     * @Assert\Length(max="100")
-     * @Assert\NotBlank
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:write"})
-     */
-    private string $headquarterAddress;
-
-    /**
-     * @ORM\OneToOne(targetEntity=BorrowerMember::class)
-     * @ORM\JoinColumn(name="id_signatory", onDelete="SET NULL")
-     *
-     * @Assert\NotBlank
-     * @Assert\Choice(callback="getMembers")
-     * @Assert\Valid
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:write"})
-     */
-    private ?BorrowerMember $signatory;
-
-    /**
-     * @ORM\OneToOne(targetEntity=BorrowerMember::class)
-     * @ORM\JoinColumn(name="id_referent", onDelete="SET NULL")
-     *
-     * @Assert\NotBlank
-     * @Assert\Choice(callback="getMembers")
-     * @Assert\Valid
-     *
-     * @Groups({"agency:borrower:read", "agency:borrower:write"})
-     */
-    private ?BorrowerMember $referent;
-
     /**
      * @var Collection|BorrowerMember[]
      *
@@ -159,9 +86,19 @@ class Borrower extends AbstractProjectPartaker
      *     @Assert\Expression("value.getBorrower() === this")
      * })
      *
-     * @Groups({"agency:borrower:read"})
+     * @Groups({"agency:borrower:read", "agency:borrower:write"})
      */
-    private Collection $members;
+    protected Collection $members;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="borrowers")
+     * @ORM\JoinColumn(name="id_project", nullable=false)
+     *
+     * @Assert\NotBlank
+     *
+     * @Groups({"agency:borrower:read", "agency:borrower:create"})
+     */
+    private Project $project;
 
     /**
      * @var Collection|BorrowerTrancheShare[]
@@ -177,20 +114,18 @@ class Borrower extends AbstractProjectPartaker
 
     public function __construct(
         Project $project,
-        Staff $addedBy,
         string $corporateName,
         string $legalForm,
         Money $capital,
-        string $headquarterAddress,
+        string $headOffice,
         string $matriculationNumber
     ) {
         parent::__construct($matriculationNumber, $capital);
-        $this->project            = $project;
-        $this->addedBy            = $addedBy;
-        $this->corporateName      = $corporateName;
-        $this->legalForm          = $legalForm;
-        $this->headquarterAddress = $headquarterAddress;
-        $this->members            = new ArrayCollection();
+        $this->project       = $project;
+        $this->corporateName = $corporateName;
+        $this->legalForm     = $legalForm;
+        $this->headOffice    = $headOffice;
+        $this->members       = new ArrayCollection();
     }
 
     public function getProject(): Project
@@ -198,108 +133,211 @@ class Borrower extends AbstractProjectPartaker
         return $this->project;
     }
 
-    public function getCorporateName(): string
+    /**
+     * @return Collection|BorrowerTrancheShare[]
+     */
+    public function getTrancheShares(): Collection
+    {
+        return $this->trancheShares;
+    }
+
+    /**
+     * @param Collection|BorrowerTrancheShare[] $trancheShares
+     *
+     * @return Borrower
+     */
+    public function setTrancheShares($trancheShares)
+    {
+        $this->trancheShares = $trancheShares;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getBankInstitution(): ?string
+    {
+        return $this->bankInstitution;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setBankInstitution(?string $bankInstitution): AbstractProjectPartaker
+    {
+        $this->bankInstitution = $bankInstitution;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getBankAddress(): ?string
+    {
+        return $this->bankAddress;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setBankAddress(?string $bankAddress): AbstractProjectPartaker
+    {
+        $this->bankAddress = $bankAddress;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getBic(): ?string
+    {
+        return $this->bic;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setBic(?string $bic): AbstractProjectPartaker
+    {
+        $this->bic = $bic;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getIban(): ?string
+    {
+        return $this->iban;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setIban(?string $iban): AbstractProjectPartaker
+    {
+        $this->iban = $iban;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getMatriculationNumber(): string
+    {
+        return $this->matriculationNumber;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setMatriculationNumber(string $matriculationNumber): AbstractProjectPartaker
+    {
+        $this->matriculationNumber = $matriculationNumber;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getCapital(): Money
+    {
+        return $this->capital;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setCapital(Money $capital): AbstractProjectPartaker
+    {
+        $this->capital = $capital;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getRcs(): ?string
+    {
+        return $this->rcs;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setRcs(?string $rcs): AbstractProjectPartaker
+    {
+        $this->rcs = $rcs;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getCorporateName(): ?string
     {
         return $this->corporateName;
     }
 
-    public function setCorporateName(string $corporateName): Borrower
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setCorporateName(?string $corporateName): AbstractProjectPartaker
     {
         $this->corporateName = $corporateName;
 
         return $this;
     }
 
-    public function getLegalForm(): string
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getHeadOffice(): ?string
+    {
+        return $this->headOffice;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setHeadOffice(?string $headOffice): AbstractProjectPartaker
+    {
+        $this->headOffice = $headOffice;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getLegalForm(): ?string
     {
         return $this->legalForm;
     }
 
-    public function setLegalForm(string $legalForm): Borrower
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setLegalForm(?string $legalForm): AbstractProjectPartaker
     {
         $this->legalForm = $legalForm;
 
         return $this;
     }
 
-    public function getHeadquarterAddress(): string
-    {
-        return $this->headquarterAddress;
-    }
-
-    public function setHeadquarterAddress(string $headquarterAddress): Borrower
-    {
-        $this->headquarterAddress = $headquarterAddress;
-
-        return $this;
-    }
-
-    public function getSignatory(): ?BorrowerMember
-    {
-        return $this->signatory;
-    }
-
-    public function setSignatory(BorrowerMember $signatory): Borrower
-    {
-        $this->signatory = $this->findMemberByUser($signatory->getUser()) ?? $signatory;
-        $this->addMember($this->signatory);
-
-        return $this;
-    }
-
-    public function getReferent(): ?BorrowerMember
-    {
-        return $this->referent;
-    }
-
-    public function setReferent(BorrowerMember $referent): Borrower
-    {
-        $this->referent = $this->findMemberByUser($referent->getUser()) ?? $referent;
-        $this->addMember($this->referent);
-
-        return $this;
-    }
-
     /**
-     * @return array|BorrowerMember[]
+     * @Groups({"agency:borrower:read"})
      */
-    public function getMembers(): array
+    public function isCompleted()
     {
-        return $this->members->toArray();
-    }
-
-    public function addMember(BorrowerMember $member): Borrower
-    {
-        if (null === $this->findMemberByUser($member->getUser())) {
-            $this->members[] = $member;
-        }
-
-        return $this;
-    }
-
-    public function removeMember(BorrowerMember $member): Borrower
-    {
-        if ($this->members->removeElement($member)) {
-            if ($this->referent === $member) {
-                $this->referent = null;
-            }
-
-            if ($this->signatory === $member) {
-                $this->signatory = null;
-            }
-        }
-
-        return $this;
-    }
-
-    public function findMemberByUser(User $user): ?BorrowerMember
-    {
-        foreach ($this->members as $member) {
-            if ($member->getUser() === $user) {
-                return $member;
-            }
-        }
-
-        return null;
+        return $this->getBankInstitution() && $this->getBankAddress() && $this->getIban() && $this->getBic();
     }
 }

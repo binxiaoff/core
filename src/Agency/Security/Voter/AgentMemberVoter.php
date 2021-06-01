@@ -12,11 +12,12 @@ class AgentMemberVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
 
-    /**
-     * @param AgentMember $agentMember
-     */
-    protected function isGrantedAll($agentMember, User $user): bool
+    protected function canCreate(AgentMember $agentMember, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(BorrowerVoter::ATTRIBUTE_EDIT, $agentMember->getAgent());
+        $project = $agentMember->getProject();
+
+        return $project->isEditable()
+            && ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $project)
+            || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project));
     }
 }

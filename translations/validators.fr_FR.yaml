@@ -1,4 +1,8 @@
 Agency:
+    AgentMember:
+        user:
+            missingStaff: L'utilisateur {{ email }} ne peut pas être membre de l'équipe de l'agent sans avoir été habilité pour {{ company }}
+
     Project:
         missingStatus: Vous ne pouvez pas aller de l'état {{ nextStatus }} sans passer par l'état {{ missingStatus }}
 
@@ -20,6 +24,10 @@ Agency:
             agent: Vous devez être agent pour remplir cette commission
             arrangeur: Vous devez être arrangeur pour remplir cette commission
             deputyArrangeur: Vous devez être co-arrangeur pour remplir cette commission
+
+    ParticipationMember:
+        user:
+            missingStaff: L'utilisateur {{ email }} ne peut pas être membre de la participation sans avoir été habilité pour {{ company }}
 
     ParticipantTrancheAllocation:
         project: La tranche et la participation n'ont pas le même projet

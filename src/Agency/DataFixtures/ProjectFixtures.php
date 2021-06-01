@@ -18,7 +18,6 @@ use Unilend\Agency\Entity\Embeddable\Inequality;
 use Unilend\Agency\Entity\MarginImpact;
 use Unilend\Agency\Entity\MarginRule;
 use Unilend\Agency\Entity\Participation;
-use Unilend\Agency\Entity\ParticipationMember;
 use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Entity\Tranche;
@@ -83,6 +82,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         /** @var Borrower[]|array $borrowers */
         $borrowers = array_map(fn () => $this->createBorrower($project, $staff), range(0, 3));
 
+        $borrowerMembers = [];
+        foreach ($borrowers as $borrower) {
+            $borrowerMembers[] = $this->createBorrowerMember($borrower, true);
+            $borrowerMembers[] = $this->createBorrowerMember($borrower, false);
+        }
+
         /** @var Tranche[]|array $tranches */
         $tranches = array_map(fn () => $this->createTranche($project), range(0, 2));
 
@@ -136,6 +141,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         array_map([$manager, 'persist'], [
             ...$borrowers,
+            ...$borrowerMembers,
             ...$tranches,
             ...$borrowerTrancheShares,
             ...$participations,
@@ -159,14 +165,11 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     /**
      * @throws Exception
-     *
-     * @return Borrower
      */
-    private function createBorrower(Project $project, Staff $staff)
+    private function createBorrower(Project $project): Borrower
     {
-        $borrower = new Borrower(
+        return new Borrower(
             $project,
-            $staff,
             $this->faker->company,
             'SARL',
             new Money(
@@ -176,11 +179,18 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $this->faker->address,
             $this->faker->siren(false), // Works because Faker is set to Fr_fr.
         );
+    }
 
-        $borrower->setReferent(new BorrowerMember($borrower, new User($this->faker->email)));
-        $borrower->setSignatory(new BorrowerMember($borrower, new User($this->faker->email)));
+    private function createBorrowerMember(Borrower $borrower, bool $referentOrSignatory): BorrowerMember
+    {
+        $borrowerMember = new BorrowerMember($borrower, new User($this->faker->email));
+        if ($referentOrSignatory) {
+            $borrowerMember->setReferent(true);
+        } else {
+            $borrowerMember->setSignatory(true);
+        }
 
-        return $borrower;
+        return $borrowerMember;
     }
 
     /**
@@ -208,16 +218,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     private function createParticipation(Project $project, Company $participant, bool $secondary = false): Participation
     {
-        $participation = new Participation(
+        return new Participation(
             $project->getParticipationPools()[$secondary],
             $participant,
             new Money('EUR', (string) $this->faker->numberBetween(100000)),
             new Money('EUR', (string) $this->faker->numberBetween(40000000)),
         );
-
-        $participation->setReferent(new ParticipationMember($participation, new User($this->faker->email)));
-
-        return $participation;
     }
 
     /**

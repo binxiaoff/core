@@ -17,16 +17,14 @@ use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Staff;
 use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 
 abstract class AbstractProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    public function createTestBorrower(Project $project, Staff $addedBy): Borrower
+    public function createTestBorrower(Project $project): Borrower
     {
         return new Borrower(
             $project,
-            $addedBy,
             'Michelin',
             LegalForm::SARL,
             new Money('eur', '40000000'),

@@ -14,9 +14,9 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Agency\Controller\Project\GetTerm;
@@ -215,7 +215,6 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "company:read",
  *             "companyGroupTag:read",
  *             "agency:agent:read",
- *             "agency:projectPartaker:read",
  *             "agency:agentMember:read",
  *             "agency:borrower:read",
  *             "agency:borrowerMember:read",
@@ -228,7 +227,6 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "agency:tranche:read",
  *             "agency:covenant:read",
  *             "agency:term:read",
- *             "agency:borrowerMember:read",
  *             "user:read",
  *         }
  *     }
@@ -247,9 +245,12 @@ class Project
     public const STATUS_DRAFT     = 10;
     public const STATUS_PUBLISHED = 20;
     public const STATUS_ARCHIVED  = -10;
+    public const STATUS_FINISHED  = -20;
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Agency\Entity\Agent", mappedBy="project", cascade={"persist", "remove"})
+     *
+     * @Assert\Valid
      *
      * @Groups({"agency:project:read"})
      */
@@ -323,13 +324,12 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Tranche", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
-     * @Groups({"agency:project:read"})
-     *
      * @Assert\Valid
      * @Assert\All({
      *     @Assert\Expression("value.getProject() === this")
      * })
      *
+     * TODO Create custom endpoint to handle security
      * @ApiSubresource
      */
     private Collection $tranches;
@@ -339,15 +339,13 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true)
      *
-     * @Groups({"agency:project:read"})
-     *
-     * @MaxDepth(1)
-     *
      * @Assert\Valid
      * @Assert\Count(min="1", groups={"published"})
      * @Assert\All({
      *     @Assert\Expression("value.getProject() === this")
      * })
+     *
+     * @ApiSubresource
      */
     private iterable $borrowers;
 
@@ -362,9 +360,7 @@ class Project
 
     /**
      * @ORM\ManyToOne(targetEntity=CompanyGroupTag::class)
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_company_group_tag", referencedColumnName="id")
-     * })
+     * @ORM\JoinColumn(name="id_company_group_tag", referencedColumnName="id")
      *
      * Remove assertion for external banks (they may have no companyGroupTag)
      * @Assert\NotBlank
@@ -376,6 +372,8 @@ class Project
     private ?CompanyGroupTag $companyGroupTag;
 
     /**
+     * Date de signature.
+     *
      * @ORM\Column(type="date_immutable")
      *
      * @Groups({"agency:project:write", "agency:project:read"})
@@ -432,6 +430,7 @@ class Project
      *     @Assert\Expression("value.getProject() === this")
      * })
      *
+     * TODO Create custom endpoint to handle security
      * @ApiSubresource
      */
     private Collection $covenants;
@@ -457,7 +456,21 @@ class Project
     private ?ArrangementProject $source;
 
     /**
-     * @throws \Exception
+     * Date de cloture anticipée.
+     *
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Expression("this.isFinished()"),
+     *     @Assert\IsNull
+     * })
+     *
+     * @Groups({"agency:project:write"})
+     */
+    private ?DateTimeImmutable $anticipatedFinishDate;
+
+    /**
+     * @throws Exception
      */
     public function __construct(
         Staff $addedBy,
@@ -484,7 +497,7 @@ class Project
         $this->participationPools = new ArrayCollection([false => new ParticipationPool($this, false), true => new ParticipationPool($this, true)]);
 
         $this->agent = new Agent($this, $addedBy->getCompany());
-        $this->agent->addMember(new AgentMember($this->agent, $addedBy->getUser(), $addedBy->getUser()));
+        $this->agent->addMember(new AgentMember($this->agent, $addedBy->getUser()));
         $this->agent->setContact(
             (new NullablePerson())
                 ->setFirstName($currentUser->getFirstName())
@@ -509,6 +522,8 @@ class Project
 
         $this->borrowerConfidentialDrive = new Drive();
         $this->borrowerSharedDrive       = new Drive();
+
+        $this->anticipatedFinishDate = null;
 
         $this->source = $source;
         if ($source) {
@@ -720,8 +735,6 @@ class Project
      * @return iterable|Participation[]
      *
      * @ApiProperty(security="is_granted('agent', object)")
-     *
-     * @Groups({"agency:project:read"})
      */
     public function getParticipations(): iterable
     {
@@ -811,6 +824,11 @@ class Project
         return $this;
     }
 
+    public function isEditable(): bool
+    {
+        return false === $this->isArchived() && false === $this->isFinished();
+    }
+
     public function isPublished(): bool
     {
         return static::STATUS_PUBLISHED === $this->currentStatus;
@@ -819,6 +837,11 @@ class Project
     public function isArchived(): bool
     {
         return static::STATUS_ARCHIVED === $this->currentStatus;
+    }
+
+    public function isFinished(): bool
+    {
+        return static::STATUS_FINISHED === $this->currentStatus;
     }
 
     public function isDraft(): bool
@@ -906,6 +929,18 @@ class Project
         return static::getConstants('STATUS_');
     }
 
+    public function getAnticipatedFinishDate(): ?DateTimeImmutable
+    {
+        return $this->anticipatedFinishDate;
+    }
+
+    public function setAnticipatedFinishDate(?DateTimeImmutable $anticipatedFinishDate): Project
+    {
+        $this->anticipatedFinishDate = $anticipatedFinishDate;
+
+        return $this;
+    }
+
     /**
      * @param $payload
      *
@@ -913,15 +948,31 @@ class Project
      */
     public function validateStatusTransition(ExecutionContextInterface $context, $payload)
     {
-        $statuses = array_values(static::getAvailableStatuses());
+        $statuses = [];
 
-        $statuses = array_filter($statuses, static fn (int $status) => $status > 0);
+        switch ($this->currentStatus) {
+            case static::STATUS_DRAFT:
+                $statuses = [];
+
+                break;
+
+            case static::STATUS_ARCHIVED:
+            case static::STATUS_FINISHED:
+                $statuses = [static::STATUS_PUBLISHED];
+
+                break;
+
+            case static::STATUS_PUBLISHED:
+                $statuses = [static::STATUS_DRAFT];
+
+                break;
+        }
 
         sort($statuses);
 
         reset($statuses);
 
-        while (($status = current($statuses)) && $status < $this->currentStatus) {
+        while (($status = current($statuses))) {
             if (false === $this->statuses->exists(fn ($_, ProjectStatusHistory $history) => $history->getStatus() === $status)) {
                 $context->buildViolation('Agency.Project.missingStatus', [
                     '{{ missingStatus }}' => $status,

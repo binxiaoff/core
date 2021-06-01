@@ -44,10 +44,7 @@ class DraftProject extends AbstractProjectFixtures
         $tuxParticipation = $this->createTestSecondaryParticipation($project, $this->getReference('company:tux'));
         $tuxParticipation->addMember(new ParticipationMember($tuxParticipation, $this->getReference('user:b')));
 
-        $borrower = $this->createTestBorrower($project, $staff);
-
-        $borrower->setReferent(new BorrowerMember($borrower, $this->getReference('user:+')));
-        $borrower->setSignatory(new BorrowerMember($borrower, $this->getReference('user:d')));
+        $borrower = $this->createTestBorrower($project);
 
         array_map(
             [$manager, 'persist'],
@@ -56,6 +53,8 @@ class DraftProject extends AbstractProjectFixtures
                 $barParticipation,
                 $tuxParticipation,
                 $borrower,
+                new BorrowerMember($borrower, $this->getReference('user:+')),
+                new BorrowerMember($borrower, $this->getReference('user:d')),
                 new ParticipationMember($project->getAgentParticipation(), $this->getReference('user:c')),
             ]
         );

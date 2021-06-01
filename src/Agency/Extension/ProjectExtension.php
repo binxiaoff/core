@@ -14,8 +14,6 @@ use Unilend\Core\Entity\User;
 
 class ProjectExtension implements QueryCollectionExtensionInterface
 {
-    private const PREFIX = 'ProjectExtension';
-
     private Security $security;
 
     public function __construct(Security $security)
@@ -29,7 +27,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
         string $resourceClass,
         string $operationName = null
     ): void {
-        if (false === (Project::class === $resourceClass)) {
+        if (false === (Project::class === $resourceClass) || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
 
@@ -41,19 +39,24 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             return;
         }
 
-        $userParameterName = static::prefix('user');
+        $userParameterName            = $queryNameGenerator->generateParameterName('user');
+        $publishedStatusParameterName = $queryNameGenerator->generateParameterName('publishedStatus');
 
         // Borrower condition
         $rootAlias           = $queryBuilder->getRootAliases()[0];
-        $borrowerAlias       = static::prefix('borrower');
-        $borrowerMemberAlias = static::prefix('borrowerMember');
+        $borrowerAlias       = $queryNameGenerator->generateJoinAlias('borrower');
+        $borrowerMemberAlias = $queryNameGenerator->generateJoinAlias('borrowerMember');
 
         $queryBuilder
             ->distinct()
             ->leftJoin("{$rootAlias}.borrowers", $borrowerAlias)
             ->leftJoin("{$borrowerAlias}.members", $borrowerMemberAlias)
-            ->orWhere("{$borrowerMemberAlias}.user = :{$userParameterName}")
+            ->orWhere($queryBuilder->expr()->andX(
+                "{$borrowerMemberAlias}.user = :{$userParameterName}",
+                "{$rootAlias}.currentStatus IN (:{$publishedStatusParameterName})"
+            ))
             ->setParameter($userParameterName, $user)
+            ->setParameter($publishedStatusParameterName, [Project::STATUS_PUBLISHED, Project::STATUS_ARCHIVED, Project::STATUS_FINISHED])
         ;
 
         $token = $this->security->getToken();
@@ -65,14 +68,13 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             return;
         }
 
-        $managedUserParameterName     = static::prefix('managedUsers');
-        $companyParameterName         = static::prefix('company');
-        $publishedStatusParameterName = static::prefix('publishedStatus');
+        $managedUserParameterName = $queryNameGenerator->generateParameterName('managedUsers');
+        $companyParameterName     = $queryNameGenerator->generateParameterName('company');
 
         // Participant condition
-        $participationAlias       = static::prefix('participation');
-        $participationPoolAlias   = static::prefix('participationPool');
-        $participationMemberAlias = static::prefix('participationMember');
+        $participationAlias       = $queryNameGenerator->generateJoinAlias('participation');
+        $participationPoolAlias   = $queryNameGenerator->generateJoinAlias('participationPool');
+        $participationMemberAlias = $queryNameGenerator->generateJoinAlias('participationMember');
 
         $queryBuilder
             ->leftJoin("{$rootAlias}.participationPools", $participationPoolAlias)
@@ -82,14 +84,14 @@ class ProjectExtension implements QueryCollectionExtensionInterface
                 $queryBuilder->expr()->andX(
                     "{$participationMemberAlias}.user IN (:{$managedUserParameterName})",
                     "{$participationAlias}.participant = :{$companyParameterName}",
-                    "{$rootAlias}.currentStatus >= :{$publishedStatusParameterName}"
+                    "{$rootAlias}.currentStatus IN (:{$publishedStatusParameterName})"
                 )
             )
         ;
 
         // Agent condition
-        $agentAlias       = static::prefix('agent');
-        $agentMemberAlias = static::prefix('agentMember');
+        $agentAlias       = $queryNameGenerator->generateJoinAlias('agent');
+        $agentMemberAlias = $queryNameGenerator->generateJoinAlias('agentMember');
 
         $queryBuilder
             ->leftJoin("{$rootAlias}.agent", $agentAlias)
@@ -105,12 +107,6 @@ class ProjectExtension implements QueryCollectionExtensionInterface
         $queryBuilder
             ->setParameter($managedUserParameterName, iterator_to_array($staff->getManagedUsers(), false))
             ->setParameter($companyParameterName, $staff->getCompany())
-            ->setParameter($publishedStatusParameterName, Project::STATUS_PUBLISHED)
         ;
-    }
-
-    private static function prefix(string $name): string
-    {
-        return static::PREFIX . '_' . $name;
     }
 }

@@ -92,8 +92,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *     filterClass=GroupFilter::class,
  *     arguments={
  *         "whitelist": {
- *             "agency:borrowerTrancheShare:read",
- *             "agency:participationTrancheAllocation:read"
+ *             "agency:borrowerTrancheShare:read"
  *         }
  *     }
  * )
@@ -278,10 +277,6 @@ class Tranche
      * @Assert\All({
      *     @Assert\Expression("value.getTranche() === this")
      * })
-     *
-     * @ApiProperty(readableLink=false)
-     *
-     * @Groups({"agency:tranche:read"})
      */
     private Collection $allocations;
 

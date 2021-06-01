@@ -18,7 +18,7 @@ trait PublicizeIdentityTrait
      *
      * @ApiProperty(identifier=false)
      */
-    private ?int $id = null;
+    protected ?int $id = null;
 
     /**
      * @see https://github.com/ramsey/uuid-doctrine/issues/13
@@ -27,19 +27,13 @@ trait PublicizeIdentityTrait
      *
      * @ApiProperty(identifier=true)
      */
-    private ?string $publicId = null;
+    protected ?string $publicId = null;
 
-    /**
-     * @return int|null
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return string
-     */
     public function getPublicId(): string
     {
         return $this->publicId;

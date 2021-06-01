@@ -21,6 +21,7 @@ class ProjectVoter extends AbstractEntityVoter
      */
     protected function canView(Project $project, User $user): bool
     {
+        // It might be interesting to copy this code in place of $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $project);.
         foreach (ProjectRoleVoter::getAvailableRoles() as $role) {
             if ($this->authorizationChecker->isGranted($role, $project)) {
                 return true;
@@ -41,19 +42,19 @@ class ProjectVoter extends AbstractEntityVoter
             return false;
         }
 
-        // Est-ce que l'on devrai vérifier l'héritage pour la création des projets ? .
+        // Should we verify permission inheritance for agency project creation .
         return $staff->getCompany() === $project->getAgentCompany() && $staff->hasAgencyProjectCreationPermission();
     }
 
     protected function canEdit(Project $project, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
-            && false === $project->isArchived();
+            && $project->isEditable();
     }
 
     protected function canDelete(Project $project, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
-            && false === $project->isArchived();
+            && $project->isEditable();
     }
 }

@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Action\NotFoundAction;
-use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Serializer\Filter\GroupFilter;
-use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\User;
 
 /**
@@ -28,7 +24,12 @@ use Unilend\Core\Entity\User;
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
- *                 "groups": {"agency:participationMember:create", "agency:participationMember:write", "user:create", "user:write"}
+ *                 "groups": {
+ *                     "agency:participationMember:create",
+ *                     "agency:participationMember:write",
+ *                     "user:create",
+ *                     "user:write"
+ *                 }
  *             }
  *         }
  *     },
@@ -37,6 +38,14 @@ use Unilend\Core\Entity\User;
  *             "controller": NotFoundAction::class,
  *             "read": false,
  *             "output": false,
+ *         },
+ *         "patch": {
+ *             "security": "is_granted('edit', object)",
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "agency:participationMember:write"
+ *                 }
+ *             }
  *         }
  *     }
  * )
@@ -45,34 +54,9 @@ use Unilend\Core\Entity\User;
  *     @ORM\UniqueConstraint(columns={"id_user", "id_participation"})
  * })
  * @ORM\Entity
- *
- * @ApiFilter(
- *     filterClass=GroupFilter::class,
- *     arguments={
- *         "whitelist": {
- *             "user:read"
- *         }
- *     }
- * )
  */
-class ParticipationMember
+class ParticipationMember extends AbstractProjectMember
 {
-    use PublicizeIdentityTrait;
-    use TimestampableAddedOnlyTrait;
-
-    public const TYPE_BACK_OFFICE = 'back_office';
-    public const TYPE_WAIVER      = 'waiver';
-    public const TYPE_LEGAL       = 'legal';
-
-    /**
-     * @Groups({"agency:participationMember:read", "agency:participationMember:write"})
-     *
-     * @Assert\Length(max=200)
-     *
-     * @ORM\Column(type="string", length=200, nullable=true)
-     */
-    protected ?string $projectFunction;
-
     /**
      * @ORM\ManyToOne(targetEntity=Participation::class, inversedBy="members")
      * @ORM\JoinColumn(name="id_participation", onDelete="CASCADE", nullable=false)
@@ -86,36 +70,10 @@ class ParticipationMember
      */
     private Participation $participation;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class, cascade={"persist"})
-     * @ORM\JoinColumn(name="id_user")
-     *
-     * @Assert\NotBlank
-     * @Assert\Valid
-     *
-     * @Groups({"agency:participationMember:read", "agency:participationMember:create"})
-     */
-    private User $user;
-
-    /**
-     * @ORM\Column(type="string", nullable=true, length=40)
-     *
-     * @Assert\Choice({ParticipationMember::TYPE_BACK_OFFICE, ParticipationMember::TYPE_LEGAL, ParticipationMember::TYPE_WAIVER})
-     *
-     * @Groups({"agency:participationMember:read", "agency:participationMember:create"})
-     */
-    private ?string $type;
-
     public function __construct(Participation $participation, User $user)
     {
+        parent::__construct($user);
         $this->participation = $participation;
-        $this->added         = new DateTimeImmutable();
-        $this->user          = $user;
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
     }
 
     public function getProject(): Project
@@ -128,27 +86,95 @@ class ParticipationMember
         return $this->participation;
     }
 
-    public function getType(): ?string
+    /**
+     * @Groups({"agency:participationMember:read"})
+     */
+    public function getUser(): User
     {
-        return $this->type;
+        return $this->user;
     }
 
-    public function setType(?string $type): ParticipationMember
+    /**
+     * @Groups({"agency:participationMember:create"})
+     */
+    public function setUser(User $user): AbstractProjectMember
     {
-        $this->type = $type;
+        $this->user = $user;
 
         return $this;
     }
 
+    /**
+     * @Groups({"agency:borrowerMember:read"})
+     */
     public function getProjectFunction(): ?string
     {
         return $this->projectFunction;
     }
 
-    public function setProjectFunction(?string $projectFunction): ParticipationMember
+    /**
+     * @Groups({"agency:borrowerMember:write"})
+     */
+    public function setProjectFunction(?string $projectFunction): AbstractProjectMember
     {
         $this->projectFunction = $projectFunction;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"agency:participationMember:read"})
+     */
+    public function isReferent(): bool
+    {
+        return $this->referent;
+    }
+
+    /**
+     * @Groups({"agency:participationMember:write"})
+     */
+    public function setReferent(bool $referent): AbstractProjectMember
+    {
+        $this->referent = $referent;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participationMember:read"})
+     */
+    public function isSignatory(): bool
+    {
+        return $this->signatory;
+    }
+
+    /**
+     * @Groups({"agency:participationMember:write"})
+     */
+    public function setSignatory(bool $signatory): AbstractProjectMember
+    {
+        $this->signatory = $signatory;
+
+        return $this;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateUser(ExecutionContextInterface $context)
+    {
+        $company = $this->participation->getParticipant();
+
+        $staff = $company->findStaffByUser($this->getUser());
+
+        if (null === $staff || $staff->isArchived()) {
+            $context->buildViolation('Agency.ParticipationMember.user.missingStaff')
+                ->setParameter('email', $this->getUser()->getEmail())
+                ->setParameter('company', $company->getDisplayName())
+                ->setInvalidValue($this->getUser())
+                ->atPath('user')
+                ->addViolation()
+            ;
+        }
     }
 }

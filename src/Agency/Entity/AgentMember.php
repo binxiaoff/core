@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Action\NotFoundAction;
-use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\BlamableUserAddedTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\User;
 
 /**
@@ -28,7 +25,12 @@ use Unilend\Core\Entity\User;
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
- *                 "groups": {"agency:agentMember:create", "user:create", "user:write"}
+ *                 "groups": {
+ *                     "agency:agentMember:create",
+ *                     "agency:agentMember:write",
+ *                     "user:create",
+ *                     "user:write"
+ *                 }
  *             }
  *         }
  *     },
@@ -37,6 +39,14 @@ use Unilend\Core\Entity\User;
  *             "controller": NotFoundAction::class,
  *             "read": false,
  *             "output": false,
+ *         },
+ *         "patch": {
+ *             "security": "is_granted('edit', object)",
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "agency:agentMember:write"
+ *                 }
+ *             }
  *         }
  *     }
  * )
@@ -46,26 +56,15 @@ use Unilend\Core\Entity\User;
  * @ORM\Entity
  *
  * @UniqueEntity(fields={"agent", "user"})
- *
- * @ApiFilter(
- *     filterClass=GroupFilter::class,
- *     arguments={
- *         "whitelist": {
- *             "user:read"
- *         }
- *     }
- * )
  */
-class AgentMember
+class AgentMember extends AbstractProjectMember
 {
-    use PublicizeIdentityTrait;
-    use BlamableUserAddedTrait;
-
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Agent", inversedBy="members")
      * @ORM\JoinColumn(name="id_agent", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
+     * @Assert\Valid
      *
      * @Groups({"agency:agentMember:read", "agency:agentMember:create"})
      *
@@ -73,21 +72,10 @@ class AgentMember
      */
     private Agent $agent;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
-     * @ORM\JoinColumn(name="id_user", nullable=false, onDelete="CASCADE")
-     *
-     * @Assert\NotBlank
-     *
-     * @Groups({"agency:agentMember:read", "agency:agentMember:create"})
-     */
-    private User $user;
-
-    public function __construct(Agent $agent, User $user, User $addedBy)
+    public function __construct(Agent $agent, User $user)
     {
-        $this->agent   = $agent;
-        $this->user    = $user;
-        $this->addedBy = $addedBy;
+        parent::__construct($user);
+        $this->agent = $agent;
     }
 
     public function getAgent(): Agent
@@ -95,8 +83,100 @@ class AgentMember
         return $this->agent;
     }
 
+    public function getProject(): Project
+    {
+        return $this->getAgent()->getProject();
+    }
+
+    /**
+     * @Groups({"agency:agentMember:read"})
+     */
     public function getUser(): User
     {
         return $this->user;
+    }
+
+    /**
+     * @Groups({"agency:agentMember:create"})
+     */
+    public function setUser(User $user): AbstractProjectMember
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrowerMember:read"})
+     */
+    public function getProjectFunction(): ?string
+    {
+        return $this->projectFunction;
+    }
+
+    /**
+     * @Groups({"agency:borrowerMember:write"})
+     */
+    public function setProjectFunction(?string $projectFunction): AbstractProjectMember
+    {
+        $this->projectFunction = $projectFunction;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agentMember:read"})
+     */
+    public function isReferent(): bool
+    {
+        return $this->referent;
+    }
+
+    /**
+     * @Groups({"agency:agentMember:write"})
+     */
+    public function setReferent(bool $referent): AbstractProjectMember
+    {
+        $this->referent = $referent;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:agentMember:read"})
+     */
+    public function isSignatory(): bool
+    {
+        return $this->signatory;
+    }
+
+    /**
+     * @Groups({"agency:agentMember:write"})
+     */
+    public function setSignatory(bool $signatory): AbstractProjectMember
+    {
+        $this->signatory = $signatory;
+
+        return $this;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateUser(ExecutionContextInterface $context)
+    {
+        $company = $this->agent->getCompany();
+
+        $staff = $company->findStaffByUser($this->getUser());
+
+        if (null === $staff || $staff->isArchived()) {
+            $context->buildViolation('Agency.AgentMember.user.missingStaff')
+                ->setParameter('email', $this->getUser()->getEmail())
+                ->setParameter('company', $company->getDisplayName())
+                ->setInvalidValue($this->getUser())
+                ->atPath('user')
+                ->addViolation()
+            ;
+        }
     }
 }
