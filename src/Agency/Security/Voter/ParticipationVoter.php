@@ -56,8 +56,11 @@ class ParticipationVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PARTICIPANT, $participation->getProject())
-            && $staff->getCompany() === $participation->getParticipant();
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participation->getProject())
+            || (
+                $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PARTICIPANT, $participation->getProject())
+                && $staff->getCompany() === $participation->getParticipant()
+            );
     }
 
     protected function canCreate(Participation $participation, User $user): bool
