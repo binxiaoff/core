@@ -763,7 +763,7 @@ class Project
     }
 
     /**
-     * @ApiProperty(security="is_granted('agent', object)")
+     * @ApiProperty(security="is_granted('view', object.getPrimaryParticipationPool())")
      *
      * @Groups({"agency:project:read"})
      */
@@ -773,7 +773,7 @@ class Project
     }
 
     /**
-     * @ApiProperty(security="is_granted('agent', object)")
+     * @ApiProperty(security="is_granted('view', object.getSecondaryParticipationPool())")
      *
      * @Groups({"agency:project:read"})
      */
