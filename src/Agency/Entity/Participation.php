@@ -181,7 +181,7 @@ class Participation extends AbstractProjectPartaker
      * @Assert\Expression(expression="false === (0 === value && this.isSecondary())", message="Agency.Participation.responsabilities.secondary")
      * @Assert\Expression(expression="false === (this.isArranger() && this.isDeputyArranger())", message="Agency.Participation.responsabilities.arranger")
      * @Assert\Expression(
-     *     expression="(this.isAgent() && (this.getParticipant() === this.getProject().getAgent())) || (false === this.isAgent())",
+     *     expression="(this.isAgent() && (this.getParticipant() === this.getProject().getAgentCompany())) || (false === this.isAgent())",
      *     message="Agency.Participation.responsabilities.agent"
      * )
      *
@@ -221,7 +221,7 @@ class Participation extends AbstractProjectPartaker
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      *
-     * @Assert\Expression(expression="null === value || false === this.isCoArranger()", message="Agency.Participant.commission.deputyArranger")
+     * @Assert\Expression(expression="null === value || false === this.isDeputyArranger()", message="Agency.Participant.commission.deputyArranger")
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
