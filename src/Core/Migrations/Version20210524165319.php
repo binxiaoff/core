@@ -47,10 +47,10 @@ final class Version20210524165319 extends AbstractMigration
         $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\Project::investmentThematic' WHERE field_alias = 'investment_thematic'");
         $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\Project::fundingMoney' WHERE field_alias = 'project_total_amount'");
         $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\Project::nafNace::nafCode' WHERE field_alias = 'naf_code_project'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::financingObject' WHERE field_alias = 'financing_object'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::loanType' WHERE field_alias = 'loan_type'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::loanDuration' WHERE field_alias = 'loan_duration'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::releasedOnInvoice' WHERE field_alias = 'loan_released_on_invoice'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\FinancingObjects::financingObject' WHERE field_alias = 'financing_object'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\FinancingObjects::loanType' WHERE field_alias = 'loan_type'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\FinancingObjects::loanDuration' WHERE field_alias = 'loan_duration'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\FinancingObjects::releasedOnInvoice' WHERE field_alias = 'loan_released_on_invoice'");
     }
 
     public function down(Schema $schema): void

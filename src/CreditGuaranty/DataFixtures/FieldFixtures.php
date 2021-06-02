@@ -41,11 +41,11 @@ class FieldFixtures extends AbstractSQLFixtures
         ('23892bef-00b0-4df5-981e-32913e708a2b', 'investment_thematic', 'project', 'list', 'Unilend\\CreditGuaranty\\Entity\\Project::investmentThematic', 0, NULL, NULL),
         ('3dbe7d2c-2b78-4f72-ab52-ca3703e39f5b', 'project_total_amount', 'project', 'other', 'Unilend\\CreditGuaranty\\Entity\\Project::fundingMoney', 1, 'money', NULL),
         ('a2f8bca2-0662-4569-a334-57bd00972dcc', 'naf_code_project', 'project', 'list', 'Unilend\\CreditGuaranty\\Entity\\Project::nafNace::nafCode', 1, NULL, NULL),
-        ('8cb4b512-fa4c-4638-9a28-11d16b450459', 'financing_object', 'project', 'list', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::financingObject', 0, NULL, NULL),
-        ('675056b4-49bb-40a7-bafe-9bcc86ad7b99', 'loan_type', 'loan', 'list', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::loanType', 0, NULL, '["term_loan","short_term","revolving_credit","stand_by","signature_commitment"]'),
-        ('e9861e5b-0513-4c7b-9799-2f5a7dc267a4', 'loan_duration', 'loan', 'list', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::loanDuration', 0, NULL, null),
+        ('8cb4b512-fa4c-4638-9a28-11d16b450459', 'financing_object', 'project', 'list', 'Unilend\\CreditGuaranty\\Entity\\FinancingObjects::financingObject', 0, NULL, NULL),
+        ('675056b4-49bb-40a7-bafe-9bcc86ad7b99', 'loan_type', 'loan', 'list', 'Unilend\\CreditGuaranty\\Entity\\FinancingObjects::loanType', 0, NULL, '["term_loan","short_term","revolving_credit","stand_by","signature_commitment"]'),
+        ('e9861e5b-0513-4c7b-9799-2f5a7dc267a4', 'loan_duration', 'loan', 'list', 'Unilend\\CreditGuaranty\\Entity\\FinancingObjects::loanDuration', 0, NULL, null),
         ('f6f933e3-8164-430d-a670-390d0fc48311', 'loan_deferral', 'loan', 'other', '', 1, 'month', NULL),
-        ('604ac6ee-86e2-49ab-aac0-bab8b1d20b30', 'loan_released_on_invoice', 'loan', 'bool', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::releasedOnInvoice', 0, NULL, NULL),
-        ('61d56903-32f7-4ea7-beb9-142122202120', 'loan_amount', 'loan', 'other', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::loanMoney', 1, 'money', NULL);
+        ('604ac6ee-86e2-49ab-aac0-bab8b1d20b30', 'loan_released_on_invoice', 'loan', 'bool', 'Unilend\\CreditGuaranty\\Entity\\FinancingObjects::releasedOnInvoice', 0, NULL, NULL),
+        ('61d56903-32f7-4ea7-beb9-142122202120', 'loan_amount', 'loan', 'other', 'Unilend\\CreditGuaranty\\Entity\\FinancingObjects::loanMoney', 1, 'money', NULL);
         INSERT_FIELDS;
 }

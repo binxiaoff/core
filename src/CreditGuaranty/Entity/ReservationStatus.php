@@ -80,6 +80,7 @@ class ReservationStatus implements StatusInterface
             self::STATUS_CONTRACT_FORMALIZED,
             self::STATUS_ARCHIVED,
         ],
+        self::STATUS_CONTRACT_FORMALIZED         => [],
         self::STATUS_ARCHIVED                    => [],
         self::STATUS_REFUSED_BY_MANAGING_COMPANY => [],
     ];
