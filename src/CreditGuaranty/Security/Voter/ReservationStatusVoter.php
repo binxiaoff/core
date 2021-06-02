@@ -38,7 +38,6 @@ class ReservationStatusVoter extends AbstractEntityVoter
         return (
             $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $subject->getReservation()->getProgram())
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_GRANT_EDIT_PROGRAM)
-            && $this->staffPermissionManager->checkCompanyGroupTag($subject->getReservation()->getProgram(), $staff)
         )
         || (
             $this->authorizationChecker->isGranted(ReservationRoleVoter::ROLE_MANAGER, $subject->getReservation())

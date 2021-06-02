@@ -102,7 +102,7 @@ class ReservationStatus implements StatusInterface
     private int $status;
 
     /**
-     * @ORM\Column(type="text", nullable=true)
+     * @ORM\Column(type="text", length=65535, nullable=true)
      *
      * @Groups({"creditGuaranty:reservationStatus:read", "creditGuaranty:reservationStatus:write"})
      */

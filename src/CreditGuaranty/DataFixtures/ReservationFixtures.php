@@ -312,7 +312,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             $previousReservationStatus = new ReservationStatus($currentReservationStatus->getReservation(), $allowedStatus, $currentReservationStatus->getAddedBy());
 
             if (ReservationStatus::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION === $allowedStatus) {
-                $previousReservationStatus->setComment($this->faker->text);
+                $previousReservationStatus->setComment($this->faker->text(200));
             }
 
             $this->entityManager->persist($previousReservationStatus);
@@ -323,7 +323,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         }
 
         if (ReservationStatus::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION === $currentReservationStatus->getStatus()) {
-            $currentReservationStatus->setComment($this->faker->text);
+            $currentReservationStatus->setComment($this->faker->text(200));
         }
 
         $this->entityManager->persist($currentReservationStatus);
