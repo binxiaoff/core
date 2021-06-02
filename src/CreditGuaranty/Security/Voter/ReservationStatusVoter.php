@@ -30,17 +30,18 @@ class ReservationStatusVoter extends AbstractEntityVoter
     protected function isGrantedAll($subject, User $user): bool
     {
         $staff = $user->getCurrentStaff();
+
         if (false === $staff instanceof Staff) {
             return false;
         }
 
         return (
-                $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $subject->getReservation()->getProgram())
-                && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_GRANT_EDIT_PROGRAM)
-            )
-            || (
-                $this->authorizationChecker->isGranted(ReservationRoleVoter::ROLE_MANAGER, $subject->getReservation())
-                && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_EDIT_RESERVATION)
-            );
+            $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $subject->getReservation()->getProgram())
+            && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_GRANT_EDIT_PROGRAM)
+        )
+        || (
+            $this->authorizationChecker->isGranted(ReservationRoleVoter::ROLE_MANAGER, $subject->getReservation())
+            && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_EDIT_RESERVATION)
+        );
     }
 }

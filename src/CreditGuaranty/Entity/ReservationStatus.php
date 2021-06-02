@@ -101,6 +101,13 @@ class ReservationStatus implements StatusInterface
      */
     private int $status;
 
+    /**
+     * @ORM\Column(type="text", length=65535, nullable=true)
+     *
+     * @Groups({"creditGuaranty:reservationStatus:read", "creditGuaranty:reservationStatus:write"})
+     */
+    private ?string $comment;
+
     public function __construct(Reservation $reservation, int $status, Staff $addedBy)
     {
         $this->reservation = $reservation;
@@ -122,6 +129,18 @@ class ReservationStatus implements StatusInterface
     public static function getPossibleStatuses(): array
     {
         return static::getConstants('STATUS_');
+    }
+
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    public function setComment(?string $comment): ReservationStatus
+    {
+        $this->comment = $comment;
+
+        return $this;
     }
 
     public function getAttachedObject(): TraceableStatusAwareInterface
