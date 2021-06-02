@@ -102,10 +102,11 @@ class Agent extends AbstractProjectPartaker
     public function __construct(Project $project, Company $company)
     {
         parent::__construct($company->getSiren() ?? '', new Money($project->getCurrency(), '0'));
-        $this->project     = $project;
-        $this->company     = $company;
-        $this->members     = new ArrayCollection();
-        $this->displayName = $company->getDisplayName();
+        $this->project       = $project;
+        $this->company       = $company;
+        $this->members       = new ArrayCollection();
+        $this->displayName   = $company->getDisplayName();
+        $this->corporateName = $company->getDisplayName();
     }
 
     public function getProject(): Project
