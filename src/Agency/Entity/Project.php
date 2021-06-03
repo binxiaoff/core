@@ -337,7 +337,7 @@ class Project
     /**
      * @var Borrower[]|iterable
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
      * @Assert\Valid
      * @Assert\Count(min="1", groups={"published"})
@@ -524,6 +524,7 @@ class Project
         $this->borrowerSharedDrive       = new Drive();
 
         $this->anticipatedFinishDate = null;
+        $this->covenants             = new ArrayCollection();
 
         $this->source = $source;
         if ($source) {
@@ -862,6 +863,15 @@ class Project
     {
         if (false === $this->isDraft()) {
             $this->currentStatus = static::STATUS_ARCHIVED;
+        }
+
+        return $this;
+    }
+
+    public function finish(): Project
+    {
+        if (false === $this->isDraft()) {
+            $this->currentStatus = static::STATUS_FINISHED;
         }
 
         return $this;
