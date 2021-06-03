@@ -83,10 +83,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $this->save($manager, $finishedProject);
         $this->save($manager, $archivedProject);
 
-        $manager->refresh($publishedProject);
-        $manager->refresh($finishedProject);
-        $manager->refresh($archivedProject);
-
         $publishedProject->publish();
 
         $invalidCovenant = $this->createCovenant($publishedProject, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_3M, new DateTimeImmutable('-10 years'));
@@ -126,9 +122,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $this->save($manager, $finishedProject);
         $this->save($manager, $archivedProject);
 
-        $manager->refresh($finishedProject);
-        $manager->refresh($archivedProject);
-
         $finishedProject->finish();
         $this->save($manager, $finishedProject);
 
@@ -151,15 +144,18 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     private function save(ObjectManager $manager, Project $object)
     {
-        $manager->persist($object);
-
         $violations = $this->validator->validate($object, null, Project::getCurrentValidationGroups($object));
 
         if ($violations->count()) {
             throw new Exception(sprintf('%s %s %s', $object->getPublicId(), PHP_EOL, $violations));
         }
 
+        $manager->persist($object);
+
         $manager->flush();
+
+        // Refresh is needed for validation (mimics the normal process of update spanned over multiple request)
+        $manager->refresh($object);
     }
 
     /**
