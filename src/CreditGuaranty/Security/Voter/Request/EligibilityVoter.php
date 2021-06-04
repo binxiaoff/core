@@ -10,7 +10,7 @@ use Unilend\CreditGuaranty\Security\Voter\ReservationVoter;
 
 class EligibilityVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_EDIT = 'edit';
+    public const ATTRIBUTE_CREATE = 'create';
 
     protected function canEdit(Eligibility $eligibility): bool
     {

@@ -18,7 +18,7 @@ class EligibilityChecking
 
     public function __invoke(Eligibility $data): Eligibility
     {
-        $data->eligible = $this->eligibilityChecker->check($data->reservation, $data->category);
+        $data->eligible = $this->eligibilityChecker->checkByCategory($data->reservation, $data->category);
 
         return $data;
     }

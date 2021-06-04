@@ -6,7 +6,6 @@ namespace Unilend\CreditGuaranty\Entity\Request;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
-use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\CreditGuaranty\Controller\EligibilityChecking;
 use Unilend\CreditGuaranty\Entity\Reservation;
 
@@ -17,8 +16,7 @@ use Unilend\CreditGuaranty\Entity\Reservation;
  *             "method": "POST",
  *             "path": "/credit_guaranty/eligibility/checking",
  *             "controller": EligibilityChecking::class,
- *             "security_post_denormalize": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {"creditGuaranty:eligibility:write"}}
+ *             "security_post_denormalize": "is_granted('create', object)",
  *         }
  *     },
  *     itemOperations={
@@ -32,14 +30,8 @@ use Unilend\CreditGuaranty\Entity\Reservation;
  */
 class Eligibility
 {
-    /**
-     * @Groups({"creditGuaranty:eligibility:write"})
-     */
     public Reservation $reservation;
 
-    /**
-     * @Groups({"creditGuaranty:eligibility:write"})
-     */
     public string $category;
 
     public bool $eligible = false;

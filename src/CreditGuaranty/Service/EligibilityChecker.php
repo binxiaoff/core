@@ -6,31 +6,39 @@ namespace Unilend\CreditGuaranty\Service;
 
 use Doctrine\Common\Collections\Collection;
 use LogicException;
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Unilend\CreditGuaranty\Entity\Field;
 use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
 use Unilend\CreditGuaranty\Entity\ProgramEligibility;
 use Unilend\CreditGuaranty\Entity\Reservation;
 use Unilend\CreditGuaranty\Repository\FieldRepository;
+use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
 use Unilend\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
 use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
 
 class EligibilityChecker
 {
     private FieldRepository $fieldRepository;
+    private ProgramChoiceOptionRepository $programChoiceOptionRepository;
     private ProgramEligibilityRepository $programEligibilityRepository;
     private ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository;
+    private PropertyAccessorInterface $propertyAccessor;
 
     public function __construct(
         FieldRepository $fieldRepository,
+        ProgramChoiceOptionRepository $programChoiceOptionRepository,
         ProgramEligibilityRepository $programEligibilityRepository,
-        ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository
+        ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository,
+        PropertyAccessorInterface $propertyAccessor
     ) {
         $this->fieldRepository                           = $fieldRepository;
+        $this->programChoiceOptionRepository             = $programChoiceOptionRepository;
         $this->programEligibilityRepository              = $programEligibilityRepository;
         $this->programEligibilityConfigurationRepository = $programEligibilityConfigurationRepository;
+        $this->propertyAccessor                          = $propertyAccessor;
     }
 
-    public function check(Reservation $reservation, string $category): bool
+    public function checkByCategory(Reservation $reservation, string $category): bool
     {
         $fields = $this->fieldRepository->findBy(['category' => $category]);
 
@@ -40,9 +48,7 @@ class EligibilityChecker
                 continue;
             }
 
-            $values = $this->getValues($field, $reservation);
-
-            if (false === $this->checkEligibility($reservation, $field, $values)) {
+            if (false === $this->checkByField($reservation, $field)) {
                 return false;
             }
         }
@@ -50,7 +56,7 @@ class EligibilityChecker
         return true;
     }
 
-    private function checkEligibility(Reservation $reservation, Field $field, array $values): bool
+    private function checkByField(Reservation $reservation, Field $field): bool
     {
         $programEligibility = $this->programEligibilityRepository->findOneBy([
             'program' => $reservation->getProgram(),
@@ -60,29 +66,55 @@ class EligibilityChecker
         if (null === $programEligibility) {
             throw new LogicException(
                 sprintf(
-                    'Cannot found programEligibility for program (%s) and field (%s)',
-                    $reservation->getProgram()->getPublicId(),
-                    $field->getPublicId()
+                    'Cannot found programEligibility for program #%s and field #%s',
+                    $reservation->getProgram()->getId(),
+                    $field->getId()
                 )
             );
         }
 
-        if (Field::TYPE_OTHER === $field->getType() && false === $this->isOtherEligible($programEligibility, $values[0])) {
-            return false;
+        $accessPath   = explode('::', $field->getTargetPropertyAccessPath());
+        $entityPart   = array_shift($accessPath);
+        $entity       = $this->propertyAccessor->getValue($reservation, $entityPart);
+        $propertyPath = implode('.', $accessPath);
+
+        if ($entity instanceof Collection) {
+            foreach ($entity as $item) {
+                $value = $this->getValue($item, $propertyPath, $reservation, $field);
+
+                if (false === $this->check($programEligibility, $value)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
-        if (Field::TYPE_BOOL === $field->getType() && false === $this->isBooleanEligible($programEligibility, $values[0])) {
-            return false;
-        }
+        $value = $this->getValue($entity, $propertyPath, $reservation, $field);
 
-        if (Field::TYPE_LIST === $field->getType() && false === $this->isListEligible($programEligibility, $values)) {
-            return false;
-        }
-
-        return true;
+        return $this->check($programEligibility, $value);
     }
 
-    private function isOtherEligible(ProgramEligibility $programEligibility, $value): bool
+    private function check(ProgramEligibility $programEligibility, $value): bool
+    {
+        $field = $programEligibility->getField();
+
+        switch ($field->getType()) {
+            case Field::TYPE_OTHER:
+                return $this->checkOther($programEligibility, $value);
+
+            case Field::TYPE_BOOL:
+                return $this->checkBool($programEligibility, (bool) $value);
+
+            case Field::TYPE_LIST:
+                return $this->checkList($programEligibility, $value);
+
+            default:
+                throw new LogicException(sprintf('Unexpected field type %s', $field->getType()));
+        }
+    }
+
+    private function checkOther(ProgramEligibility $programEligibility, $value): bool
     {
         if (null === $value) {
             return false;
@@ -95,8 +127,8 @@ class EligibilityChecker
         if (null === $programEligibilityConfiguration) {
             throw new LogicException(
                 sprintf(
-                    'Cannot found programEligibilityConfiguration for programEligibility (%s)',
-                    $programEligibility->getPublicId()
+                    'Cannot found programEligibilityConfiguration for programEligibility #%s',
+                    $programEligibility->getId()
                 )
             );
         }
@@ -104,7 +136,7 @@ class EligibilityChecker
         return $programEligibilityConfiguration->isEligible();
     }
 
-    private function isBooleanEligible(ProgramEligibility $programEligibility, bool $value): bool
+    private function checkBool(ProgramEligibility $programEligibility, bool $value): bool
     {
         $programEligibilityConfiguration = $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility,
@@ -114,8 +146,8 @@ class EligibilityChecker
         if (null === $programEligibilityConfiguration) {
             throw new LogicException(
                 sprintf(
-                    'Cannot found programEligibilityConfiguration for programEligibility (%s) and value (%s)',
-                    $programEligibility->getPublicId(),
+                    'Cannot found programEligibilityConfiguration for programEligibility #%s and value #%s',
+                    $programEligibility->getId(),
                     (int) $value
                 )
             );
@@ -124,67 +156,51 @@ class EligibilityChecker
         return $programEligibilityConfiguration->isEligible();
     }
 
-    private function isListEligible(ProgramEligibility $programEligibility, array $values): bool
+    private function checkList(ProgramEligibility $programEligibility, ProgramChoiceOption $value): bool
     {
-        foreach ($values as $value) {
-            if (null === $value) {
-                return false;
-            }
+        $programEligibilityConfiguration = $this->programEligibilityConfigurationRepository->findOneBy([
+            'programEligibility'  => $programEligibility,
+            'programChoiceOption' => $value,
+        ]);
 
-            /** @var ProgramChoiceOption $value */
-            $programEligibilityConfiguration = $this->programEligibilityConfigurationRepository->findOneBy([
-                'programEligibility'  => $programEligibility,
-                'programChoiceOption' => $value,
-            ]);
-
-            if (null === $programEligibilityConfiguration) {
-                // an eligibility has at least a configuration ?
-                // if not return true ?
-                continue;
-            }
-
-            if (false === $programEligibilityConfiguration->isEligible()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private function getValues(Field $field, Reservation $reservation): array
-    {
-        $pathParts        = explode('::', $field->getTargetPropertyAccessPath());
-        $entityClassParts = explode('\\', $pathParts[0]);
-        $getEntity        = 'get' . end($entityClassParts);
-        $entities         = $reservation->{$getEntity}();
-
-        if (null === $entities) {
+        if (null === $programEligibilityConfiguration) {
             throw new LogicException(
                 sprintf(
-                    'Cannot get entity/entities from targetPropertyAccessPath (%s), it should not be null.',
-                    $field->getTargetPropertyAccessPath()
+                    'Cannot found programEligibilityConfiguration for programEligibility #%s and programChoiceOption #%s',
+                    $programEligibility->getId(),
+                    $value->getId()
                 )
             );
         }
 
-        $getField    = (Field::TYPE_BOOL === $field->getType() ? 'is' : 'get') . ucfirst($pathParts[1]);
-        $getSubField = (isset($pathParts[2])) ? 'get' . ucfirst($pathParts[2]) : null;
-        $values      = [];
+        return $programEligibilityConfiguration->isEligible();
+    }
 
-        if ($entities instanceof Collection) {
-            foreach ($entities as $entity) {
-                $values[] = $entity->{$getField}();
-            }
-        } else {
-            $values[] = $entities->{$getField}();
+    private function getValue($entity, string $propertyPath, Reservation $reservation, Field $field)
+    {
+        $value = $this->propertyAccessor->getValue($entity, $propertyPath);
+
+        if (Field::TYPE_LIST !== $field->getType() || $value instanceof ProgramChoiceOption) {
+            return $value;
         }
 
-        if (null !== $getSubField) {
-            foreach ($values as $key => $value) {
-                $values[$key] = $value->{$getSubField}();
-            }
+        $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([
+            'program'     => $reservation->getProgram(),
+            'field'       => $field,
+            'description' => $value,
+        ]);
+
+        if (null === $programChoiceOption) {
+            throw new LogicException(
+                sprintf(
+                    'Cannot found programChoiceOption for program #%s, field #%s and description #%s',
+                    $reservation->getProgram()->getId(),
+                    $field->getId(),
+                    $value
+                )
+            );
         }
 
-        return $values;
+        return $programChoiceOption;
     }
 }
