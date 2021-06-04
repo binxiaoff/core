@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -24,11 +25,14 @@ use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Model\Bitmask;
 
 /**
+ * "money:read" is needed for allocation.
+ *
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
  *             "agency:participation:read",
- *             "nullableMoney:read"
+ *             "nullableMoney:read",
+ *             "money:read"
  *         }
  *     },
  *     collectionOperations={
@@ -120,6 +124,15 @@ use Unilend\Core\Model\Bitmask;
  * @ApiFilter(
  *     filterClass=SearchFilter::class,
  *     properties={"participant.publicId": "exact", "pool.project.publicId": "exact"}
+ * )
+ *
+ * @ApiFilter(
+ *     filterClass=GroupFilter::class,
+ *     arguments={
+ *         "whitelist": {
+ *             "agency:participationTrancheAllocation:read"
+ *         }
+ *     }
  * )
  */
 class Participation extends AbstractProjectPartaker
