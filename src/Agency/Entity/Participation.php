@@ -130,7 +130,8 @@ use Unilend\Core\Model\Bitmask;
  *     filterClass=GroupFilter::class,
  *     arguments={
  *         "whitelist": {
- *             "agency:participationTrancheAllocation:read"
+ *             "agency:participationTrancheAllocation:read",
+ *             "agency:participationMember:read"
  *         }
  *     }
  * )
