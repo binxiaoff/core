@@ -17,6 +17,7 @@ use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
+use Unilend\CreditGuaranty\Validator\Constraints\ReservationEligible;
 
 /**
  * @ApiResource(
@@ -40,6 +41,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *     callback={"Unilend\Core\Validator\Constraints\TraceableStatusValidator", "validate"},
  *     payload={ "path": "status", "allowedStatus": self::ALLOWED_STATUS }
  * )
+ * @ReservationEligible
  */
 class ReservationStatus implements StatusInterface
 {
@@ -160,7 +162,7 @@ class ReservationStatus implements StatusInterface
     /**
      * @Assert\Callback
      */
-    public function valideAvailability(ExecutionContextInterface $context): void
+    public function validateAvailability(ExecutionContextInterface $context): void
     {
         $lastStatus = $this->getAttachedObject()->getStatuses()->last();
 
@@ -170,6 +172,7 @@ class ReservationStatus implements StatusInterface
         }
 
         $project = $this->getReservation()->getProject();
+
         if (false === $project instanceof Project) {
             throw new \RuntimeException(sprintf('Cannot find the project for reservation %d. Please check the data.', $this->getReservation()->getId()));
         }

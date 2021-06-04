@@ -235,3 +235,9 @@ CreditGuaranty:
     Borrower:
         grade:
             invalid: Le grade choisi n'est pas valable.
+    Reservation:
+        borrowerBusinessActivity:
+            missing: La réservation ne peut être envoyée, les informations de l'activité de l'entreprise n'ont pas été remplies.
+        financingObject:
+            missing: La réservation ne peut être envoyée, au moins un objet de financement doit être défini.
+        ineligibleCategory: La catégorie {{ category }} de la réservation est inéligible.
