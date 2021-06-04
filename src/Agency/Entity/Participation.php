@@ -131,7 +131,8 @@ use Unilend\Core\Model\Bitmask;
  *     arguments={
  *         "whitelist": {
  *             "agency:participationTrancheAllocation:read",
- *             "agency:participationMember:read"
+ *             "agency:participationMember:read",
+ *             "user:read"
  *         }
  *     }
  * )
