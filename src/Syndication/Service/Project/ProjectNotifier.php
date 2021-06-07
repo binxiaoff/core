@@ -4,48 +4,39 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\Service\Project;
 
-use Doctrine\ORM\{NoResultException, NonUniqueResultException};
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Http\Client\Exception;
 use InvalidArgumentException;
 use JsonException;
+use Nexy\Slack\Attachment;
+use Nexy\Slack\AttachmentField;
+use Nexy\Slack\Client as Slack;
 use Nexy\Slack\Exception\SlackApiException;
-use Nexy\Slack\{Attachment, AttachmentField, Client as Slack, MessageInterface};
+use Nexy\Slack\MessageInterface;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Core\SwiftMailer\MailjetMessage;
-use Unilend\Syndication\Entity\{Project, ProjectStatus};
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectStatus;
 use Unilend\Syndication\Repository\ProjectRepository;
 
 class ProjectNotifier
 {
-    /** @var Slack */
     private Slack $slack;
-    /** @var ProjectRepository */
     private ProjectRepository $projectRepository;
-    /** @var Swift_Mailer */
     private Swift_Mailer $mailer;
-    /**
-     * @var RouterInterface
-     */
     private RouterInterface $router;
 
-    /**
-     * @param Slack             $client
-     * @param ProjectRepository $projectRepository
-     * @param Swift_Mailer      $mailer
-     * @param RouterInterface   $router
-     */
     public function __construct(Slack $client, ProjectRepository $projectRepository, Swift_Mailer $mailer, RouterInterface $router)
     {
-        $this->slack            = $client;
+        $this->slack             = $client;
         $this->projectRepository = $projectRepository;
         $this->mailer            = $mailer;
-        $this->router = $router;
+        $this->router            = $router;
     }
 
     /**
-     * @param Project $project
-     *
      * @throws Exception
      * @throws NoResultException
      * @throws NonUniqueResultException
@@ -57,8 +48,6 @@ class ProjectNotifier
     }
 
     /**
-     * @param Project $project
-     *
      * @throws NoResultException
      * @throws NonUniqueResultException
      * @throws Exception
@@ -70,12 +59,8 @@ class ProjectNotifier
     }
 
     /**
-     * @param Project $project
-     *
      * @throws NoResultException
      * @throws NonUniqueResultException
-     *
-     * @return MessageInterface
      */
     public function createSlackMessage(Project $project): MessageInterface
     {
@@ -92,26 +77,27 @@ class ProjectNotifier
         ;
     }
 
-    /**
-     * @param Project $project
-     *
-     * @return string
-     */
     public function getSlackMessageText(Project $project): string
     {
         switch ($project->getCurrentStatus()->getStatus()) {
             case ProjectStatus::STATUS_DRAFT:
                 return 'Le dosier « ' . $project->getTitle() . ' » vient d’être créé';
+
             case ProjectStatus::STATUS_INTEREST_EXPRESSION:
                 return 'Les sollicitations des marques d\'intérêt ont été envoyées pour le dossier « ' . $project->getTitle() . ' ».';
+
             case ProjectStatus::STATUS_PARTICIPANT_REPLY:
                 return 'Les demandes de réponse ferme ont été envoyées pour le dossier « ' . $project->getTitle() . ' ».';
+
             case ProjectStatus::STATUS_ALLOCATION:
                 return 'Le dossier « ' . $project->getTitle() . ' » vient de passer en phase de contractualisation.';
+
             case ProjectStatus::STATUS_CONTRACTUALISATION:
                 return 'Le dossier « ' . $project->getTitle() . ' » vient d‘être clos.';
+
             case ProjectStatus::STATUS_SYNDICATION_FINISHED:
                 return 'Le dossier « ' . $project->getTitle() . ' » est terminé.';
+
             case ProjectStatus::STATUS_SYNDICATION_CANCELLED:
                 return 'Le dossier « ' . $project->getTitle() . ' » est annulé.';
         }
@@ -120,10 +106,6 @@ class ProjectNotifier
     }
 
     /**
-     * @param Project $project
-     *
-     * @return int
-     *
      * @throws JsonException
      */
     public function notifyUploaded(Project $project): int
@@ -135,7 +117,10 @@ class ProjectNotifier
         }
 
         foreach ($project->getProjectParticipations() as $participation) {
-            if ($participation->getParticipant() !== $project->getSubmitterCompany() && $participation->getParticipant()->hasSigned()) {
+            if (
+                $participation->getParticipant() !== $project->getSubmitterCompany()
+                && ($participation->getParticipant()->hasSigned() || false === $participation->getParticipant()->isCAGMember())
+            ) {
                 foreach ($participation->getActiveProjectParticipationMembers() as $activeProjectParticipationMember) {
                     $message = (new MailjetMessage())
                         ->setTo($activeProjectParticipationMember->getStaff()->getUser()->getEmail())
@@ -144,11 +129,12 @@ class ProjectNotifier
                             'front_viewParticipation_URL' => $this->router->generate('front_viewParticipation', [
                                 'projectParticipationPublicId' => $participation->getPublicId(),
                             ], RouterInterface::ABSOLUTE_URL),
-                            'client_firstName' => $activeProjectParticipationMember->getStaff()->getUser()->getFirstName() ?? '',
+                            'client_firstName'      => $activeProjectParticipationMember->getStaff()->getUser()->getFirstName() ?? '',
                             'project_arranger'      => $project->getSubmitterCompany()->getDisplayName(),
                             'project_title'         => $project->getTitle(),
                             'project_riskGroupName' => $project->getRiskGroupName(),
-                        ]);
+                        ])
+                    ;
                     $sent += $this->mailer->send($message);
                 }
             }
