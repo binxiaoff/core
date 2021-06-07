@@ -764,7 +764,7 @@ class Project
     }
 
     /**
-     * @ApiProperty(security="is_granted('agent', object)")
+     * @ApiProperty(security="is_granted('agent', object) || is_granted('borrower', object) || is_granted('primary_participant', object)")
      *
      * @Groups({"agency:project:read"})
      */
@@ -774,7 +774,7 @@ class Project
     }
 
     /**
-     * @ApiProperty(security="is_granted('agent', object)")
+     * @ApiProperty(security="is_granted('agent', object) || is_granted('secondary_participant', object)")
      *
      * @Groups({"agency:project:read"})
      */

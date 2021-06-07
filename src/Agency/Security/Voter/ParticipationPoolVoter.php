@@ -34,7 +34,10 @@ class ParticipationPoolVoter extends AbstractEntityVoter
 
         if (
             $participationPool->isPrimary()
-            && $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PRIMARY_PARTICIPANT, $participationPool->getProject())
+            && (
+                $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PRIMARY_PARTICIPANT, $participationPool->getProject())
+                || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $participationPool->getProject())
+            )
         ) {
             return true;
         }
