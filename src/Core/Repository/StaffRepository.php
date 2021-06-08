@@ -61,4 +61,12 @@ class StaffRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
+
+    /**
+     * @throws ORMException
+     */
+    public function persist(Staff $staff)
+    {
+        $this->getEntityManager()->persist($staff);
+    }
 }

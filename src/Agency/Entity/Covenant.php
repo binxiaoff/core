@@ -167,7 +167,7 @@ class Covenant
     /**
      * @ORM\Column(name="endDate", type="date_immutable")
      *
-     * @Assert\GreaterThan(propertyPath="startDate")
+     * @Assert\GreaterThanOrEqual(propertyPath="startDate")
      *
      * @Groups({"agency:covenant:read", "agency:covenant:create"})
      */

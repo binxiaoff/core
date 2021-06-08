@@ -13,7 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 

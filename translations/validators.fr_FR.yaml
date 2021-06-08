@@ -19,7 +19,6 @@ Agency:
     Tranche:
         commission:
             incomplete: Ce champ est manquant pour valider la commission de la tranche
-            invalidLoanType: Le type de prêt ne permet d'avoir une commission
 
     Participation:
         responsabilities:

@@ -7,6 +7,7 @@ namespace Unilend\Agency\Entity;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
@@ -91,6 +92,15 @@ abstract class AbstractProjectPartaker
     protected string $matriculationNumber;
 
     /**
+     * @ORM\Column(type="string", length=40, nullable=true)
+     *
+     * @Assert\Length(max="40")
+     */
+    protected ?string $rcs;
+
+    /**
+     * TODO Move this field to borrower (agent and participant do not need a capital).
+     *
      * @ORM\Embedded(class=NullableMoney::class)
      *
      * @Assert\Valid
@@ -98,13 +108,6 @@ abstract class AbstractProjectPartaker
      * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
     private NullableMoney $capital;
-
-    /**
-     * @ORM\Column(type="string", length=40, nullable=true)
-     *
-     * @Assert\Length(max="40")
-     */
-    protected ?string $rcs;
 
     public function __construct(string $matriculationNumber, ?NullableMoney $capital = null)
     {
@@ -139,21 +142,11 @@ abstract class AbstractProjectPartaker
         return $this;
     }
 
-    public function getCapital(): Money
-    {
-        return $this->capital;
-    }
-
     public function setCapital(NullableMoney $capital): AbstractProjectPartaker
     {
         $this->capital = $capital;
 
         return $this;
-    }
-
-    public function getRcs(): ?string
-    {
-        return $this->rcs;
     }
 
     public function setRcs(?string $rcs): AbstractProjectPartaker

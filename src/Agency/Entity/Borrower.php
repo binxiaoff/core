@@ -32,7 +32,6 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
  *                     "nullableMoney:write",
  *                     "agency:borrowerMember:create",
  *                     "agency:borrowerMember:write",
- *                     "money:write",
  *                     "user:create",
  *                     "user:write"
  *                 }
@@ -51,7 +50,7 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:borrower:write",
- *                     "nullableMoney:write"
+ *                     "nullableMoney:write",
  *                     "agency:borrowerMember:create",
  *                     "agency:borrowerMember:write",
  *                     "money:write",
@@ -249,17 +248,17 @@ class Borrower extends AbstractProjectPartaker
     /**
      * @Groups({"agency:borrower:read"})
      */
-    public function getCapital(): Money
+    public function getCapital(): NullableMoney
     {
-        return $this->capital;
+        return parent::getCapital();
     }
 
     /**
      * @Groups({"agency:borrower:write"})
      */
-    public function setCapital(Money $capital): AbstractProjectPartaker
+    public function setCapital(NullableMoney $capital): AbstractProjectPartaker
     {
-        $this->capital = $capital;
+        parent::setCapital($capital);
 
         return $this;
     }

@@ -13,7 +13,7 @@ trait BlamableAddedTrait
     /**
      * @var Staff
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff")
      * @ORM\JoinColumn(name="added_by", referencedColumnName="id", nullable=false)
      *
      * @Groups({"blameable:read"})

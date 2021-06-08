@@ -351,7 +351,7 @@ class Project
     private Collection $tranches;
 
     /**
-     * @var Borrower[]|iterable
+     * @var Borrower[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
@@ -363,7 +363,7 @@ class Project
      *
      * @ApiSubresource
      */
-    private iterable $borrowers;
+    private Collection $borrowers;
 
     /**
      * @Groups({"agency:project:read", "agency:project:write"})
@@ -591,27 +591,41 @@ class Project
     }
 
     /**
-     * @return Borrower[]|iterable
+     * @return Borrower[]|Collection
      */
-    public function getBorrowers(): iterable
+    public function getBorrowers(): Collection
     {
         return $this->borrowers;
     }
 
     /**
-     * @param Borrower[]|iterable $borrowers
+     * @param Borrower[]|Collection $borrowers
      *
      * @return Project
      */
-    public function setBorrowers(iterable $borrowers)
+    public function setBorrowers(Collection $borrowers)
     {
         $this->borrowers = $borrowers;
 
         return $this;
     }
 
+    public function addBorrower(Borrower $borrower): Project
+    {
+        $this->borrowers[] = $borrower;
+
+        return $this;
+    }
+
+    public function removeBorrower(Borrower $borrower): Project
+    {
+        $this->borrowers->removeElement($borrower);
+
+        return $this;
+    }
+
     /**
-     * @return iterable|Tranche[]
+     * @return Collection|Tranche[]
      */
     public function getTranches()
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Command;
 
+use ArrayIterator;
 use Box\Spout\Common\Exception\IOException;
 use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use Box\Spout\Reader\Exception\SharedStringNotFoundException;
@@ -12,15 +13,19 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
-use Iterator;
-use League\Flysystem\FilesystemInterface;
+use InfiniteIterator;
+use InvalidArgumentException;
+use libphonenumber\PhoneNumberFormat;
+use libphonenumber\PhoneNumberUtil;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Unilend\Agency\Entity\Borrower;
 use Unilend\Agency\Entity\BorrowerMember;
 use Unilend\Agency\Entity\BorrowerTrancheShare;
@@ -33,9 +38,7 @@ use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Entity\Tranche;
 use Unilend\Agency\Repository\ProjectRepository;
 use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\FundingSpecificity;
-use Unilend\Core\Entity\Constant\LegalForm;
 use Unilend\Core\Entity\Constant\MathOperator;
 use Unilend\Core\Entity\Constant\Tranche\CommissionType;
 use Unilend\Core\Entity\Constant\Tranche\LoanType;
@@ -54,11 +57,13 @@ use Unilend\Core\Repository\UserRepository;
 
 class ImportProjectCommand extends Command
 {
-    private const SHEET_INDEX_PROJECT      = 0;
-    private const SHEET_INDEX_BORROWERS    = 1;
-    private const SHEET_INDEX_PARTICIPANTS = 2;
-    private const SHEET_INDEX_TRANCHES     = 3;
-    private const SHEET_INDEX_COVENANTS    = 4;
+    private const SHEETS = [
+        'general information',
+        'borrowers',
+        'participants',
+        'tranches',
+        'covenants',
+    ];
 
     private const MAPPING_COMPANY_GROUP_TAG = [
         'Promotion immobilière'    => 'real_estate_development',
@@ -75,17 +80,6 @@ class ImportProjectCommand extends Command
         'Aucune' => null,
         'FSA'    => FundingSpecificity::FSA,
         'LBO'    => FundingSpecificity::LBO,
-    ];
-
-    private const MAPPING_LEGAL_FORM = [
-        'SARL'           => LegalForm::SARL,
-        'SAS'            => LegalForm::SAS,
-        'SASU'           => LegalForm::SASU,
-        'EURL'           => LegalForm::EURL,
-        'SA'             => LegalForm::SA,
-        'SELAS'          => LegalForm::SELAS,
-        'Société Civile' => LegalForm::MANAGEMENT_COMPANY,
-        'SCEA'           => LegalForm::SCEA,
     ];
 
     private const MAPPING_RATE_TYPE = [
@@ -110,6 +104,7 @@ class ImportProjectCommand extends Command
 
     private const MAPPING_LOAN_TYPE = [
         'Term loan'                => LoanType::TERM_LOAN,
+        'Term Loan'                => LoanType::TERM_LOAN,
         'RCF'                      => LoanType::REVOLVING_CREDIT,
         'Court terme'              => LoanType::SHORT_TERM,
         'Stand by'                 => LoanType::STAND_BY,
@@ -151,11 +146,10 @@ class ImportProjectCommand extends Command
         '='  => MathOperator::EQUAL,
     ];
 
-    protected static $defaultName = 'kls:agency:import';
+    // Skipped to keep data in file
+    private const AMUNDI = 'Amundi';
 
     private ArrayCollection $tranches;
-
-    private FilesystemInterface $userAttachmentFilesystem;
 
     private ProjectRepository $projectRepository;
 
@@ -169,32 +163,30 @@ class ImportProjectCommand extends Command
 
     private TokenStorageInterface $tokenStorage;
 
-    private Iterator $sheetIterator;
+    private ValidatorInterface $validator;
 
-    private Project $project;
-
-    private SymfonyStyle $io;
+    private PhoneNumberUtil $phoneNumberUtil;
 
     public function __construct(
-        FilesystemInterface $userAttachmentFilesystem,
         ProjectRepository $projectRepository,
         CompanyRepository $companyRepository,
         StaffRepository $staffRepository,
         CompanyGroupTagRepository $companyGroupTagRepository,
         UserRepository $userRepository,
-        TokenStorageInterface $tokenStorage
+        TokenStorageInterface $tokenStorage,
+        ValidatorInterface $validator,
+        PhoneNumberUtil $phoneNumberUtil
     ) {
         parent::__construct();
 
-        // Set all tranches at once instead of adding tranches one by one in order to be able to use collection index when setting participant allocation
-        $this->tranches                  = new ArrayCollection();
-        $this->userAttachmentFilesystem  = $userAttachmentFilesystem;
         $this->projectRepository         = $projectRepository;
         $this->companyRepository         = $companyRepository;
         $this->staffRepository           = $staffRepository;
         $this->companyGroupTagRepository = $companyGroupTagRepository;
         $this->userRepository            = $userRepository;
         $this->tokenStorage              = $tokenStorage;
+        $this->validator                 = $validator;
+        $this->phoneNumberUtil           = $phoneNumberUtil;
     }
 
     /**
@@ -202,8 +194,13 @@ class ImportProjectCommand extends Command
      */
     protected function configure(): void
     {
-        $this->setDescription('This command imports agency projects from Excel files.');
-        $this->addOption('dry-run', 'd', InputOption::VALUE_NONE, 'Dry run command to check import file data');
+        $this
+            ->setName('kls:agency:import')
+            ->setDescription('This command imports agency projects from Excel files.')
+            ->addOption('dry-run', 'd', InputOption::VALUE_NONE, 'Dry run command to check import file data')
+            ->addArgument('company', InputArgument::REQUIRED, 'Identifier of the agent company')
+            ->addArgument('path', InputArgument::REQUIRED, 'Absolute path to the folder containing project xlsx classified by agent company')
+        ;
     }
 
     /**
@@ -213,78 +210,66 @@ class ImportProjectCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
-        $this->io = new SymfonyStyle($input, $output);
-        $dryRun   = $input->getOption('dry-run');
+        $io     = new SymfonyStyle($input, $output);
+        $dryRun = $input->getOption('dry-run');
 
-        /**
-         * File hierarchy should look like this under storage/protected/import.
-         *
-         * +-- pending
-         * |   +-- 10. Bank 10 name
-         * |   |   +-- file1.xlsx
-         * |   |   +-- file2.xlsx
-         * |   +-- 12. Bank 12 name
-         * |   |   +-- file1.xlsx
-         * |   |   +-- file2.xlsx
-         * +-- processed
-         * |   +-- 1. Bank 1 name
-         * |   |   +-- file1.xlsx
-         * |   |   +-- file2.xlsx
-         * |   +-- 5. Bank 5 name
-         * |   |   +-- file1.xlsx
-         * |   |   +-- file2.xlsx
-         * |   |   +-- file3.xlsx
-         */
-        // @todo Get files (.xlsx) from Flysystem
-        // @todo Parent directory corresponds to company ID then import all files from directory
-        $reader = ReaderEntityFactory::createReaderFromFile('deuport.xlsx');
-        $reader->open('/var/www/var/storage/protected/attachment/deuport.xlsx');
-
-        // @todo ID should be parent directory name
-        $company = $this->companyRepository->find(1);
+        $company = $this->companyRepository->find($input->getArgument('company'))
+            ?? $this->companyRepository->findOneBy(['shortCode' => $input->getArgument('company')]);
 
         if (null === $company) {
-            $this->io->error(sprintf('The company with ID "%s" was not found. Cannot start import.', $input->getArgument('company')));
+            throw new InvalidArgumentException(sprintf('The company with ID "%s" was not found. Cannot start import.', $input->getArgument('company')));
+        }
+
+        $path = $input->getArgument('path');
+
+        $io->info(sprintf('Importing file %s...', $path));
+
+        $reader = ReaderEntityFactory::createXLSXReader();
+        $reader->open($path);
+
+        $sheetIterator = $reader->getSheetIterator();
+        $sheetIterator->rewind();
+
+        $sheets = iterator_to_array($sheetIterator, false);
+
+        if (count($sheets) < count(static::SHEETS)) {
+            throw new Exception(sprintf('5 sheets are expected, %d found', count($sheets)));
+        }
+
+        $indexes = array_flip(static::SHEETS);
+
+        $this->info($io, 'Importing general information...');
+        $project = $this->importGeneralInformation($sheets[$indexes['general information']], $company);
+
+        $this->info($io, 'Importing borrowers...');
+        $project = $this->importBorrowers($sheets[$indexes['borrowers']], $project);
+
+        $this->info($io, 'Importing tranches...');
+        $project = $this->importTranches($sheets[$indexes['tranches']], $project);
+
+        $this->info($io, 'Importing participants...');
+        $project = $this->importParticipants($sheets[$indexes['participants']], $project);
+
+        $this->info($io, 'Importing covenants...');
+        $project = $this->importCovenants($sheets[$indexes['covenants']], $project);
+
+        $reader->close();
+
+        $violations = $this->validator->validate($project, null, Project::getCurrentValidationGroups($project));
+
+        $violationsCount = count($violations);
+
+        if ($violationsCount) {
+            $io->error((string) $violations);
 
             return Command::FAILURE;
         }
 
-        $this->io->writeln(sprintf('Importing files for %s...', $company->getDisplayName()));
-        // @todo
-        $this->io->writeln(sprintf('Importing file %s...', '@todo file name'));
-
-        $this->sheetIterator = $reader->getSheetIterator();
-
-        $importStatus = $this->importGeneralInformation($company);
-        if (Command::SUCCESS !== $importStatus) {
-            return $importStatus;
-        }
-
-        $importStatus = $this->importBorrowers();
-        if (Command::SUCCESS !== $importStatus) {
-            return $importStatus;
-        }
-
-        $importStatus = $this->importTranches();
-        if (Command::SUCCESS !== $importStatus) {
-            return $importStatus;
-        }
-
-        $importStatus = $this->importParticipants();
-        if (Command::SUCCESS !== $importStatus) {
-            return $importStatus;
-        }
-
-        $importStatus = $this->importCovenants();
-        if (Command::SUCCESS !== $importStatus) {
-            return $importStatus;
-        }
-
         if (false === $dryRun) {
-            $this->projectRepository->save($this->project);
-
-            // @todo Move processed files to "processed" directory
+            $this->projectRepository->save($project);
         }
+
+        $this->success($io, 'File successfully imported');
 
         return Command::SUCCESS;
     }
@@ -295,53 +280,33 @@ class ImportProjectCommand extends Command
      * @throws SharedStringNotFoundException
      * @throws NonUniqueResultException
      */
-    private function importGeneralInformation(Company $company): int
+    private function importGeneralInformation(Sheet $sheet, Company $company): Project
     {
-        $this->io->writeln('Importing general information...');
-
-        $sheet       = $this->getSheet(self::SHEET_INDEX_PROJECT);
         $rowIterator = $sheet->getRowIterator();
         $rowIterator->rewind();
         $rowIterator->next();
 
-        $row   = $rowIterator->current();
+        $row = $rowIterator->current();
+
+        if (null === $row) {
+            throw new Exception(sprintf('There should be at least another row in general information sheet'));
+        }
+
         $cells = $row->getCells();
 
-        $internalRating = trim($cells[3]->getValue());
-
-        if (false === in_array($internalRating, CAInternalRating::getConstList(), true)) {
-            $this->io->error(sprintf('Invalid internal rating "%s".', $cells[3]->getValue()));
-
-            return Command::FAILURE;
-        }
+        $internalRating = trim((string) $cells[3]->getValue()) ?: null;
 
         $companyGroupTag = $this->getMapping($cells[6]->getValue(), self::MAPPING_COMPANY_GROUP_TAG);
         $companyGroupTag = $this->companyGroupTagRepository->findOneBy(['code' => $companyGroupTag, 'companyGroup' => $company->getCompanyGroup()]);
 
-        if (null === $companyGroupTag) {
-            $this->io->error(sprintf('Invalid market "%s".', $cells[6]->getValue()));
-        }
-
         $fundingSpecificity = $this->getMapping($cells[7]->getValue(), self::MAPPING_FUNDING_SPECIFICITY);
 
-        if (null !== $fundingSpecificity && false === in_array($fundingSpecificity, FundingSpecificity::getConstList(), true)) {
-            $this->io->error(sprintf('Invalid funding specificity "%s".', $cells[7]->getValue()));
-
-            return Command::FAILURE;
-        }
-
-        $contactEmail = trim($cells[13]->getValue());
-
-        if (false === filter_var($contactEmail, FILTER_VALIDATE_EMAIL)) {
-            $this->io->error(sprintf('Contact email "%s" is not a correct value.', $cells[13]->getValue()));
-
-            return Command::FAILURE;
-        }
+        $contactEmail = trim((string) $cells[13]->getValue());
 
         $staff = $this->staffRepository->findOneByEmailAndCompany($contactEmail, $company);
 
         if (null === $staff) {
-            $user = $this->userRepository->findOneBy(['email' => $contactEmail]);
+            $user = $this->userRepository->findOneBy(['email' => $contactEmail]); // No need to fetch user from project
 
             if (null === $user) {
                 $user = new User($contactEmail);
@@ -349,6 +314,10 @@ class ImportProjectCommand extends Command
 
             $staff = new Staff($user, $company->getRootTeam());
         }
+
+        $company->getRootTeam()->addStaff($staff);
+
+        $this->staffRepository->persist($staff);
 
         $user  = $staff->getUser();
         $token = new UsernamePasswordToken($user, $user->getPassword(), 'api');
@@ -359,23 +328,23 @@ class ImportProjectCommand extends Command
 
         $closingDate        = DateTimeImmutable::createFromMutable($cells[0]->getValue());
         $contractEndDate    = DateTimeImmutable::createFromMutable($cells[1]->getValue());
-        $riskGroupName      = trim($cells[2]->getValue());
-        $title              = trim($cells[4]->getValue());
+        $riskGroupName      = trim((string) $cells[2]->getValue());
+        $title              = trim((string) $cells[4]->getValue());
         $globalFundingMoney = new Money('EUR', (string) $cells[5]->getValue());
-        $description        = trim($cells[8]->getValue());
-        $contactLastName    = trim($cells[9]->getValue());
-        $contactFirstName   = trim($cells[10]->getValue());
-        $contactOccupation  = trim($cells[11]->getValue());
-        $contactPhone       = trim($cells[12]->getValue());
+        $description        = trim((string) $cells[8]->getValue());
+        $contactLastName    = trim((string) $cells[9]->getValue());
+        $contactFirstName   = trim((string) $cells[10]->getValue());
+        $contactOccupation  = trim((string) $cells[11]->getValue());
+        $contactPhone       = $this->phoneNumberUtil->format($this->phoneNumberUtil->parse($cells[12]->getValue(), 'FR'), PhoneNumberFormat::E164);
 
-        $this->project = (new Project($staff, $title, $riskGroupName, $globalFundingMoney, $closingDate, $contractEndDate))
+        $project = (new Project($staff, $title, $riskGroupName, $globalFundingMoney, $closingDate, $contractEndDate))
             ->setInternalRatingScore($internalRating)
             ->setCompanyGroupTag($companyGroupTag)
             ->setFundingSpecificity($fundingSpecificity)
             ->setDescription($description)
         ;
 
-        $this->project
+        $project
             ->getAgent()
             ->setContact(
                 (new NullablePerson())
@@ -387,168 +356,121 @@ class ImportProjectCommand extends Command
             )
         ;
 
-        return Command::SUCCESS;
+        return $project;
     }
 
     /**
      * @throws Exception
      */
-    private function importBorrowers(): int
+    private function importBorrowers(Sheet $sheet, Project $project): Project
     {
-        $this->io->writeln('Importing borrowers...');
-
-        $sheet       = $this->getSheet(self::SHEET_INDEX_BORROWERS);
         $rowIterator = $sheet->getRowIterator();
+        $rowIterator->rewind();
 
-        $borrowers = new ArrayCollection();
-        foreach ($rowIterator as $row) {
-            if (1 === $rowIterator->key()) {
-                continue;
-            }
+        $rowIterator->next(); // Jump header
 
+        while ($rowIterator->valid() && ($row = $rowIterator->current())) {
             $cells = $row->getCells();
 
             $siren = preg_replace('/\D*/', '', $cells[1]->getValue());
 
-            if (1 !== preg_match('/^\d{9}$/', $siren)) {
-                $this->io->error(sprintf('Invalid SIREN "%s".', $cells[1]->getValue()));
-
-                return Command::FAILURE;
-            }
-
-            $legalForm = $this->getMapping($cells[4]->getValue(), self::MAPPING_LEGAL_FORM);
-
-            if (null === $legalForm) {
-                $this->io->error(sprintf('Invalid legal form "%s".', $cells[4]->getValue()));
-
-                return Command::FAILURE;
-            }
-
-            $name    = trim($cells[0]->getValue());
-            $address = trim($cells[2]->getValue());
-            $rcs     = trim($cells[3]->getValue());
+            $name    = trim((string) $cells[0]->getValue());
+            $address = trim((string) $cells[2]->getValue());
+            $rcs     = trim((string) $cells[3]->getValue());
             $capital = preg_replace('/\D*/', '', $cells[5]->getValue());
             $capital = new NullableMoney('EUR', $capital);
 
             $borrower = (new Borrower(
-                $this->project,
-                $this->tokenStorage->getToken()->getAttribute('staff'),
+                $project,
                 $name,
-                $legalForm,
+                $cells[4]->getValue(),
                 $capital,
                 $address,
                 $siren
             ))->setRcs($rcs);
 
-            $signatoryEmail = trim($cells[9]->getValue());
+            $project->addBorrower($borrower);
 
+            $signatoryEmail = trim((string) $cells[9]->getValue());
             if (false === empty($signatoryEmail)) {
-                if (false === filter_var($signatoryEmail, FILTER_VALIDATE_EMAIL)) {
-                    $this->io->error(sprintf('Invalid signatory email "%s".', $cells[9]->getValue()));
-
-                    return Command::FAILURE;
-                }
-
-                $signatoryUser = $this->userRepository->findOneBy(['email' => $signatoryEmail]);
-
-                if (null === $signatoryUser) {
-                    $signatoryUser = (new User($signatoryEmail))
-                        ->setLastName(trim($cells[6]->getValue()))
-                        ->setFirstName(trim($cells[7]->getValue()))
+                $signatoryUser = $this->getProjectUser($signatoryEmail, $project)
+                    ?? $this->userRepository->findOneBy(['email' => $signatoryEmail])
+                    ?? (new User($signatoryEmail))
+                        ->setLastName(trim((string) $cells[6]->getValue()))
+                        ->setFirstName(trim((string) $cells[7]->getValue()))
                     ;
-                }
 
-                $signatory = (new BorrowerMember($borrower, $signatoryUser))
-                    ->setProjectFunction(trim($cells[8]->getValue()))
+                $signatory = $borrower->findMemberByUser($signatoryUser) ?? (new BorrowerMember($borrower, $signatoryUser))
+                    ->setProjectFunction(trim((string) $cells[8]->getValue()))
+                    ->setSignatory(true)
                 ;
-                $borrower->setSignatory($signatory);
+
+                $borrower->addMember($signatory);
             }
 
-            $referentEmail = trim($cells[13]->getValue());
+            $referentEmail = trim((string) $cells[13]->getValue());
 
             if (false === empty($referentEmail)) {
-                if (false === filter_var($referentEmail, FILTER_VALIDATE_EMAIL)) {
-                    $this->io->error(sprintf('Invalid referent email "%s".', $cells[13]->getValue()));
-
-                    return Command::FAILURE;
-                }
-
-                $referentUser = $this->userRepository->findOneBy(['email' => $referentEmail]);
-
-                if (null === $referentUser) {
-                    $referentUser = (new User($referentEmail))
-                        ->setLastName(trim($cells[10]->getValue()))
-                        ->setFirstName(trim($cells[11]->getValue()))
+                $referentUser = $this->getProjectUser($referentEmail, $project)
+                    ?? $this->userRepository->findOneBy(['email' => $referentEmail])
+                    ?? (new User($referentEmail))
+                        ->setLastName(trim((string) $cells[10]->getValue()))
+                        ->setFirstName(trim((string) $cells[11]->getValue()))
                     ;
-                }
 
-                $referent = (new BorrowerMember($borrower, $referentUser))->setProjectFunction(trim($cells[12]->getValue()));
-                $borrower->setReferent($referent);
+                $referent = $borrower->findMemberByUser($referentUser) ?? (new BorrowerMember($borrower, $referentUser))->setProjectFunction(trim((string) $cells[12]->getValue()));
+                $referent->setReferent(true);
+
+                $borrower->addMember($referent);
             }
 
-            $borrowers->add($borrower);
+            $rowIterator->next();
         }
 
-        $this->project->setBorrowers($borrowers);
-
-        return Command::SUCCESS;
+        return $project;
     }
 
     /**
      * @throws Exception
      */
-    private function importTranches(): int
+    private function importTranches(Sheet $sheet, Project $project): Project
     {
-        $this->io->writeln('Importing tranches...');
-
-        $sheet       = $this->getSheet(self::SHEET_INDEX_TRANCHES);
         $rowIterator = $sheet->getRowIterator();
+        $rowIterator->rewind();
 
-        foreach ($rowIterator as $row) {
-            if (1 === $rowIterator->key()) {
-                continue;
-            }
+        $rowIterator->next(); // Jump header
 
+        $colors = new InfiniteIterator(new ArrayIterator(['#3F2865', '#F8B03B', '#E76A16', '#4BB4B4', '#235340', '#254499', '#D373BB']));
+        $colors->rewind();
+
+        while ($rowIterator->valid() && ($row = $rowIterator->current())) {
             $cells = $row->getCells();
 
-            $rateType = $this->getMapping($cells[6]->getValue(), self::MAPPING_RATE_TYPE);
-
-            if (null === $rateType) {
-                $this->io->error(sprintf('Unknown rate type "%s".', $rateType));
-
-                return Command::FAILURE;
-            }
-
-            $index          = (int) $cells[0]->getValue();
-            $name           = trim($cells[1]->getValue());
-            $syndicated     = 'Oui' === trim($cells[2]->getValue());
+            $rateType       = $this->getMapping($cells[6]->getValue(), self::MAPPING_RATE_TYPE);
+            $name           = trim((string) $cells[1]->getValue());
+            $syndicated     = 'Oui' === trim((string) $cells[2]->getValue());
             $money          = new Money('EUR', (string) $cells[3]->getValue());
-            $validityDate   = DateTimeImmutable::createFromMutable($cells[4]->getValue());
+            $validityDate   = $cells[4]->getValue() ? DateTimeImmutable::createFromMutable($cells[4]->getValue()) : null;
             $duration       = (int) $cells[5]->getValue();
             $loanType       = $this->getMapping($cells[10]->getValue(), self::MAPPING_LOAN_TYPE);
             $repaymentType  = $this->getMapping($cells[11]->getValue(), self::MAPPING_REPAYMENT_TYPE);
-            $comment        = trim($cells[14]->getValue());
+            $comment        = trim((string) $cells[14]->getValue());
             $rateMargin     = (string) $cells[7]->getValue();
             $rateFloorType  = LendingRate::INDEX_FIXED === $rateType ? null : $this->getMapping($cells[8]->getValue(), self::MAPPING_RATE_FLOOR_TYPE);
             $rateFloorValue = $rateFloorType ? (string) $cells[9]->getValue() : null;
             $trancheRate    = new LendingRate($rateType, $rateMargin, $rateFloorValue, $rateFloorType);
 
-            // @todo Color?
-            $tranche = (new Tranche($this->project, $name, $syndicated, '#fff', $loanType, $repaymentType, $duration, $money, $trancheRate))
+            $tranche = (new Tranche($project, $name, $syndicated, $colors->current(), $loanType, $repaymentType, $duration, $money, $trancheRate))
                 ->setValidityDate($validityDate)
                 ->setComment($comment)
             ;
+
+            $colors->next();
 
             $commissionType = $this->getMapping($cells[12]->getValue(), self::MAPPING_COMMISSION_TYPE);
             $commissionRate = (string) $cells[13]->getValue();
 
             if (false === empty($commissionType)) {
-                if (empty($commissionRate)) {
-                    $this->io->error(sprintf('Tranche #%s commission rate must not be empty.', $index));
-
-                    return Command::FAILURE;
-                }
-
                 $tranche
                     ->setCommissionType($commissionType)
                     ->setCommissionRate($commissionRate)
@@ -557,68 +479,68 @@ class ImportProjectCommand extends Command
 
             for ($borrowerIndex = 0; $borrowerIndex < 20; ++$borrowerIndex) {
                 $borrowerSiren = (string) $cells[15 + 3 * $borrowerIndex]->getValue();
+                $borrowerSiren = preg_replace('/\D*/', '', $borrowerSiren);
 
                 if (empty($borrowerSiren)) {
                     break;
                 }
 
-                $borrower = $this->project->findBorrowerBySiren($borrowerSiren);
+                $borrower = $project->findBorrowerBySiren($borrowerSiren);
 
                 if (null === $borrower) {
-                    $this->io->error(sprintf('Cannot find borrower with SIREN "%s" for tranche "%s".', $borrowerSiren, $name));
-
-                    return Command::FAILURE;
+                    throw new Exception(sprintf('Cannot find borrower with SIREN "%s" for tranche "%s".', $borrowerSiren, $name));
                 }
 
                 // @todo Need to convert guaranty?
-                $borrowerGuaranty     = trim($cells[16 + 3 * $borrowerIndex]->getValue());
+                $borrowerGuaranty     = trim((string) $cells[16 + 3 * $borrowerIndex]->getValue());
                 $borrowerShare        = new Money('EUR', (string) $cells[17 + 3 * $borrowerIndex]->getValue());
                 $borrowerTrancheShare = new BorrowerTrancheShare($borrower, $tranche, $borrowerShare, $borrowerGuaranty);
 
                 $tranche->addBorrowerShare($borrowerTrancheShare);
             }
 
-            $this->tranches->set($index, $tranche);
+            $project->addTranche($tranche);
+
+            $rowIterator->next();
         }
 
-        $this->project->setTranches($this->tranches);
-
-        return Command::SUCCESS;
+        return $project;
     }
 
     /**
      * @throws Exception
      */
-    private function importParticipants(): int
+    private function importParticipants(Sheet $sheet, Project $project): Project
     {
-        $this->io->writeln('Importing participants...');
-
-        $sheet       = $this->getSheet(self::SHEET_INDEX_PARTICIPANTS);
         $rowIterator = $sheet->getRowIterator();
+        $rowIterator->rewind();
 
-        foreach ($rowIterator as $row) {
-            if (1 === $rowIterator->key()) {
-                continue;
-            }
+        $rowIterator->next(); // Jump header
 
+        while ($rowIterator->valid() && ($row = $rowIterator->current())) {
             $cells = $row->getCells();
 
-            $name                     = trim($cells[0]->getValue());
-            $isArranger               = 'Oui' === trim($cells[1]->getValue());
-            $isDeputyArranger         = 'Oui' === trim($cells[2]->getValue());
-            $isAgent                  = 'Oui' === trim($cells[3]->getValue());
-            $participantCommission    = (string) $cells[4]->getValue();
-            $arrangerCommission       = new NullableMoney('EUR', $cells[5]->getValue() ? (string) $cells[5]->getValue() : $cells[5]->getValue());
-            $deputyArrangerCommission = new NullableMoney('EUR', $cells[6]->getValue() ? (string) $cells[6]->getValue() : $cells[6]->getValue());
-            $agentCommission          = new NullableMoney('EUR', $cells[7]->getValue() ? (string) $cells[7]->getValue() : $cells[7]->getValue());
-            $finalAllocation          = new Money('EUR', (string) $cells[8]->getValue()); // @todo Check whether it corresponds to the sum of allocations?
+            $name                  = str_replace('’', "'", trim((string) $cells[0]->getValue()));
+            $isArranger            = 'Oui' === trim((string) $cells[1]->getValue());
+            $isDeputyArranger      = 'Oui' === trim((string) $cells[2]->getValue());
+            $isAgent               = 'Oui' === trim((string) $cells[3]->getValue());
+            $participantCommission = (string) $cells[4]->getValue();
 
-            $participantCompany = $this->companyRepository->findOneBy(['displayName' => $name]);
+            $arrangerCommission       = new NullableMoney('EUR', (string) $cells[5]->getValue() ?: '0');
+            $deputyArrangerCommission = new NullableMoney('EUR', (string) $cells[6]->getValue() ?: '0');
+            $agentCommission          = new NullableMoney('EUR', (string) $cells[7]->getValue() ?: '0');
+
+            $finalAllocation = new Money('EUR', (string) $cells[8]->getValue());
+
+            if (static::AMUNDI === $name) {
+                continue;
+            }
+            // Handle ' and ’ in display name
+            $participantCompany = $this->companyRepository->findOneBy(['displayName' => $name])
+                ?? $this->companyRepository->findOneBy(['displayName' => trim((string) $cells[0]->getValue())]);
 
             if (null === $participantCompany) {
-                $this->io->error(sprintf('Cannot find company "%s" as a participant.', $cells[0]->getValue()));
-
-                return Command::FAILURE;
+                throw new Exception(sprintf('Cannot find company "%s" (%s) as a participant.', $name, $cells[0]->getValue()));
             }
 
             $participantResponsibilities = new Bitmask(0);
@@ -635,11 +557,11 @@ class ImportProjectCommand extends Command
                 $participantResponsibilities->add(Participation::RESPONSIBILITY_AGENT);
             }
 
-            $participant = $this->project->findParticipationByParticipant($participantCompany);
+            $participant = $project->findParticipationByParticipant($participantCompany);
 
             if (null === $participant) {
-                $participant = (new Participation($this->project->getPrimaryParticipationPool(), $participantCompany, $finalAllocation));
-                $this->project->addParticipation($participant);
+                $participant = (new Participation($project->getPrimaryParticipationPool(), $participantCompany, $finalAllocation));
+                $project->addParticipation($participant);
             }
 
             // @todo Data consistency checks may be needed
@@ -648,7 +570,7 @@ class ImportProjectCommand extends Command
                 ->setArrangerCommission($isArranger ? $arrangerCommission : new NullableMoney()) // @todo Should be amounts, not percentage (CALS-3527)
                 ->setDeputyArrangerCommission($isDeputyArranger ? $deputyArrangerCommission : new NullableMoney()) // @todo Should be amounts, not percentage (CALS-3527)
                 ->setAgentCommission($isAgent ? $agentCommission : new NullableMoney()) // @todo Should be amounts, not percentage (CALS-3527)
-                ->setParticipantCommission((string) $participantCommission)
+                ->setParticipantCommission($participantCommission)
                 ->setFinalAllocation($finalAllocation) // Agent participation was created before final allocation was set so we need to overwrite it
                 //->setProrata(); // @todo Mandatory?
             ;
@@ -661,56 +583,55 @@ class ImportProjectCommand extends Command
                     break;
                 }
 
-                if (false === $this->tranches->containsKey($trancheIndex)) {
-                    $this->io->error(sprintf('Tranche number #%d does not exist. Cannot use it for allocations.', $trancheIndex));
-
-                    return Command::FAILURE;
+                if (false === $project->getTranches()->containsKey($trancheIndex - 1)) {
+                    throw new Exception(sprintf('Tranche number #%d does not exist. Cannot use it for allocations.', $trancheIndex));
                 }
 
                 $participationTrancheAllocation = new ParticipationTrancheAllocation(
                     $participant,
-                    $this->tranches->get($trancheIndex),
+                    $project->getTranches()[$trancheIndex - 1],
                     new Money('EUR', (string) $trancheAllocation)
                 );
                 $participant->addAllocation($participationTrancheAllocation);
             }
+
+            $rowIterator->next();
         }
 
-        return Command::SUCCESS;
+        return $project;
     }
 
     /**
      * @throws Exception
      */
-    private function importCovenants(): int
+    private function importCovenants(Sheet $sheet, Project $project): Project
     {
-        $this->io->writeln('Importing covenants...');
-
-        $sheet       = $this->getSheet(self::SHEET_INDEX_COVENANTS);
         $rowIterator = $sheet->getRowIterator();
+        $rowIterator->rewind();
 
-        foreach ($rowIterator as $row) {
-            if (1 === $rowIterator->key()) {
-                continue;
-            }
+        $rowIterator->next(); // Jump header
 
+        while ($rowIterator->valid() && ($row = $rowIterator->current())) {
             $cells = $row->getCells();
 
             $nature          = $this->getMapping($cells[0]->getValue(), self::MAPPING_COVENANT_NATURE);
-            $name            = trim($cells[1]->getValue());
-            $contractArticle = trim($cells[2]->getValue());
-            $contractExtract = trim($cells[3]->getValue());
-            $description     = trim($cells[4]->getValue());
+            $name            = trim((string) $cells[1]->getValue());
+            $contractArticle = trim((string) $cells[2]->getValue());
+            $contractExtract = trim((string) $cells[3]->getValue());
+            $description     = trim((string) $cells[4]->getValue());
             $startDate       = DateTimeImmutable::createFromMutable($cells[5]->getValue());
-            $delay           = (int) preg_replace('/\D*/', '', $cells[6]->getValue());
-            $endDate         = DateTimeImmutable::createFromMutable($cells[7]->getValue());
+            $delay           = (int) preg_replace('/\D*/', '', $cells[6]->getValue()) ?: 1; //  TODO Discuss with metier about this
             $recurrence      = $this->getMapping($cells[8]->getValue(), self::MAPPING_COVENANT_RECURRENCE);
-            $fixedValue      = trim($cells[10]->getValue());
+            $endDate         = null === $recurrence ? $project->getContractEndDate() : null;
+            $endDate         = $cells[7]->getValue() ? DateTimeImmutable::createFromMutable($cells[7]->getValue()) : $endDate;
+            if (null === $endDate) {
+                throw new Exception(sprintf('You must have an enddate if there is no recurrence (line %d)', $rowIterator->key()));
+            }
             // Value type is useless because the type depends on the type of covenant
             // As long as the column was present in the first import files, it was kept in order to avoid handling multiple file formats
             // $valueType = $cells[9]->getValue();
 
-            $covenant = (new Covenant($this->project, $name, $nature, $startDate, $delay, $endDate))
+            $covenant = (new Covenant($project, $name, $nature, $startDate, $delay, $endDate))
                 ->setContractArticle($contractArticle)
                 ->setContractExtract($contractExtract)
                 ->setDescription($description)
@@ -718,6 +639,7 @@ class ImportProjectCommand extends Command
             ;
 
             if ($covenant->isFinancial()) {
+                $fixedValue = trim((string) $cells[10]->getValue());
                 if ('Oui' === $fixedValue) {
                     $covenantRuleOperator   = $this->getMapping($cells[11]->getValue(), self::MAPPING_COVENANT_RULE_OPERATOR);
                     $covenantRuleValue      = (string) $cells[12]->getValue();
@@ -733,18 +655,24 @@ class ImportProjectCommand extends Command
 
                         $covenantRuleOperator = $this->getMapping($cells[11 + $index * 2]->getValue(), self::MAPPING_COVENANT_RULE_OPERATOR);
 
-                        if (null === $covenantRuleOperator) {
-                            $this->io->error(sprintf('Unknown rule operator "%s" for covenant "%s"', $cells[11]->getValue(), $name));
-
-                            return Command::FAILURE;
+                        if (empty($covenantRuleOperator)) {
+                            throw new Exception(sprintf(
+                                'Missing conventRule operator. There should be a value at cell (%d, %d) since the covenant span %d years',
+                                $rowIterator->key(),
+                                11 + $index * 2,
+                                $covenant->getEndYear() - $covenant->getStartYear() + 1
+                            ));
                         }
 
                         $covenantRuleValue = (string) $cells[12 + $index * 2]->getValue();
 
                         if (empty($covenantRuleValue)) {
-                            $this->io->error(sprintf('Invalid value "%s" for rule of covenant "%s" for the year %s', $covenantRuleValue, $name, $covenantRuleYear));
-
-                            return Command::FAILURE;
+                            throw new Exception(sprintf(
+                                'Missing conventRule value. There should be a value at cell (%d, %d) since the covenant span %d years',
+                                $rowIterator->key(),
+                                12 + $index * 2,
+                                $covenant->getEndYear() - $covenant->getStartYear() + 1
+                            ));
                         }
 
                         $covenantRuleInequality = new Inequality($covenantRuleOperator, $covenantRuleValue);
@@ -752,30 +680,30 @@ class ImportProjectCommand extends Command
                         $covenant->addCovenantRule($covenantRule);
                     }
                 } else {
-                    $this->io->error(sprintf('Fixed value "%s" is not correct for covenant "%s"', $fixedValue, $name));
-
-                    return Command::FAILURE;
+                    throw new InvalidArgumentException(sprintf('Fixed value "%s" is not correct for covenant "%s"', $fixedValue, $name));
                 }
             }
 
-            $this->project->addCovenant($covenant);
+            $project->addCovenant($covenant);
+
+            $rowIterator->next();
         }
 
-        return Command::SUCCESS;
+        return $project;
     }
 
-    /**
-     * @throws Exception
-     */
-    private function getSheet(int $index): Sheet
+    private function info(SymfonyStyle $output, string $message)
     {
-        foreach ($this->sheetIterator as $sheet) {
-            if ($sheet->getIndex() === $index) {
-                return $sheet;
-            }
+        if ($output->isVerbose()) {
+            $output->info($message);
         }
+    }
 
-        throw new Exception(sprintf('Requested sheet with index %d does not exist', $index));
+    private function success(SymfonyStyle $output, string $message)
+    {
+        if ($output->isVerbose()) {
+            $output->success($message);
+        }
     }
 
     private function getMapping(string $value, array $map): ?string
@@ -785,5 +713,24 @@ class ImportProjectCommand extends Command
         $value = trim($value);
 
         return $map[$value] ?? null;
+    }
+
+    private function getProjectUser(string $email, Project $project): ?User
+    {
+        if ($project->getAddedBy()->getUser()->getEmail() === $email) {
+            return $project->getAddedBy()->getUser();
+        }
+
+        foreach ([$project->getBorrowers(), $project->getParticipations(), $project->getAgent()] as $collection) {
+            foreach ($collection as $abstractProjectPartaker) {
+                foreach ($abstractProjectPartaker->getMembers() as $member) {
+                    if ($member->getUser()->getEmail() === $email) {
+                        return $member->getUser();
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }

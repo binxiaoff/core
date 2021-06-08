@@ -24,8 +24,6 @@ use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Model\Bitmask;
 
 /**
@@ -227,7 +225,7 @@ class Participation extends AbstractProjectPartaker
      * @ORM\Embedded(class=NullableMoney::class)
      *
      * @Assert\Valid
-     * -@todo @Assert\AtLeastOneOf(
+     * @Assert\AtLeastOneOf(
      *     constraints={
      *         @Assert\IsNull,
      *         @Assert\Expression("this.isAgent()")
@@ -243,7 +241,7 @@ class Participation extends AbstractProjectPartaker
      * @ORM\Embedded(class=NullableMoney::class)
      *
      * @Assert\Valid
-     * -@todo @Assert\AtLeastOneOf(
+     * @Assert\AtLeastOneOf(
      *     constraints={
      *         @Assert\IsNull,
      *         @Assert\Expression("this.isArranger()")
@@ -258,7 +256,7 @@ class Participation extends AbstractProjectPartaker
      * @ORM\Embedded(class=NullableMoney::class)
      *
      * @Assert\Valid
-     * -@todo @Assert\AtLeastOneOf(
+     * @Assert\AtLeastOneOf(
      *     constraints={
      *         @Assert\IsNull,
      *         @Assert\Expression("this.isDeputyArranger()")

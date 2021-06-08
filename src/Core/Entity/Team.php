@@ -24,8 +24,8 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "output": false,
  *         },
  *         "patch": {
- *              "security_post_denormalize": "is_granted('edit', object)",
- *              "denormalization_context": {"groups": {"team:update"}}
+ *             "security_post_denormalize": "is_granted('edit', object)",
+ *             "denormalization_context": {"groups": {"team:update"}}
  *         }
  *     },
  *     collectionOperations={
@@ -44,8 +44,6 @@ class Team
     use PublicizeIdentityTrait;
 
     /**
-     * @var string
-     *
      * @ORM\Column(type="string", nullable=false)
      *
      * @Groups({"team:create", "team:update", "team:read"})
@@ -53,18 +51,18 @@ class Team
     private string $name;
 
     /**
-     * @var Company|null
-     *
      * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Company", mappedBy="rootTeam", fetch="EAGER")
      */
     private ?Company $company;
 
     /**
-     * @var iterable
-     *
      * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\Staff", mappedBy="team")
      *
      * @Groups({"team:read"})
+     *
+     * @Assert\All({
+     *     @Assert\Expression("value.getTeam() == this")
+     * })
      *
      * @MaxDepth(1)
      */
@@ -88,60 +86,49 @@ class Team
     private Collection $incomingEdges;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * Private to ensure correct object creation via static method
      */
     private function __construct()
     {
-        $this->name = '';
-        $this->company = null;
+        $this->name          = '';
+        $this->company       = null;
         $this->outgoingEdges = new ArrayCollection();
         $this->incomingEdges = new ArrayCollection();
-        $this->staff = new ArrayCollection();
+        $this->staff         = new ArrayCollection();
     }
 
     /**
      * @param $name
-     * @param Team $parent
-     *
-     * @return Team
      */
     public static function createTeam($name, Team $parent): Team
     {
-        $team = new Team();
+        $team       = new Team();
         $team->name = $name;
 
-        $edge = new TeamEdge($parent, $team, 1);
-        $team->incomingEdges[1] = $edge;
+        $edge                    = new TeamEdge($parent, $team, 1);
+        $team->incomingEdges[1]  = $edge;
         $parent->outgoingEdges[] = $edge;
 
         foreach ($parent->getAncestors() as $depth => $ancestor) {
-            $edge = new TeamEdge($ancestor, $team, $depth + 1);
+            $edge                            = new TeamEdge($ancestor, $team, $depth + 1);
             $team->incomingEdges[$depth + 1] = $edge;
-            $ancestor->outgoingEdges[] = $edge;
+            $ancestor->outgoingEdges[]       = $edge;
         }
 
         return $team;
     }
 
-    /**
-     * @param Company $company
-     *
-     * @return Team
-     */
     public static function createRootTeam(Company $company): Team
     {
-        $team = new Team();
+        $team          = new Team();
         $team->company = $company;
-        $team->name = $company->getDisplayName();
+        $team->name    = $company->getDisplayName();
 
         return $team;
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
@@ -163,17 +150,12 @@ class Team
         return $this->outgoingEdges->map(fn (TeamEdge $edge) => $edge->getDescendent())->toArray();
     }
 
-    /**
-     * @return Company
-     */
     public function getCompany(): Company
     {
         return $this->isRoot() ? $this->company : $this->getRoot()->getCompany();
     }
 
     /**
-     * @return Team|null
-     *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
      * @Groups({"team:read"})
@@ -183,9 +165,6 @@ class Team
         return false === $this->isRoot() ? $this->incomingEdges[1]->getAncestor() : null;
     }
 
-    /**
-     * @return array
-     */
     public function getChildren(): array
     {
         return $this->outgoingEdges->filter(fn (TeamEdge $edge) => 1 === $edge->getDepth())->map(fn (TeamEdge $edge) => $edge->getDescendent())->toArray();
@@ -199,9 +178,6 @@ class Team
         return $this->staff;
     }
 
-    /**
-     * @return Team
-     */
     public function getRoot(): Team
     {
         if ($this->isRoot()) {
@@ -221,15 +197,24 @@ class Team
         return 0 === count($this->incomingEdges);
     }
 
-    /**
-     * @param string $name
-     *
-     * @return Team
-     */
     public function setName(string $name): Team
     {
         $this->name = $name;
 
         return $this;
+    }
+
+    public function addStaff(Staff $staff)
+    {
+        if (false === $this->staff->exists(fn (int $key, Staff $s) => $staff->getUser() === $s->getUser())) {
+            $this->staff->add($staff);
+        }
+
+        return $this;
+    }
+
+    public function removeStaff(Staff $staff)
+    {
+        $this->staff->removeElement($staff);
     }
 }
