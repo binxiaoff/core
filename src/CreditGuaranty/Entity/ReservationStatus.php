@@ -170,7 +170,7 @@ class ReservationStatus implements StatusInterface
 
         $project = $this->getReservation()->getProject();
         if (false === $project instanceof Project) {
-            throw new \RuntimeException(sprintf('Cannot find the project for reservation %d. Please check the date.', $this->getReservation()->getId()));
+            throw new \RuntimeException(sprintf('Cannot find the project for reservation %d. Please check the data.', $this->getReservation()->getId()));
         }
 
         if (false === $project->checkBalance()) {

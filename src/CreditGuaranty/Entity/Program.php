@@ -721,7 +721,7 @@ class Program implements TraceableStatusAwareInterface
                 }
 
                 if (false === $reservation->getProject() instanceof Project) {
-                    throw new \RuntimeException(sprintf('Cannot find the project for reservation %d. Please check the date.', $reservation->getId()));
+                    throw new \RuntimeException(sprintf('Cannot find the project for reservation %d. Please check the data.', $reservation->getId()));
                 }
                 $totalProjectFunds = MoneyCalculator::add($reservation->getProject()->getFundingMoney(), $totalProjectFunds);
             }
@@ -791,7 +791,7 @@ class Program implements TraceableStatusAwareInterface
     private function applyTotalProjectFundsFilters(Reservation $reservation, array $filter): bool
     {
         if (false === $reservation->getBorrower()->getBorrowerType() instanceof ProgramChoiceOption) {
-            throw new \RuntimeException(sprintf('Cannot find the borrower type for reservation %d. Please check the date.', $reservation->getId()));
+            throw new \RuntimeException(sprintf('Cannot find the borrower type for reservation %d. Please check the data.', $reservation->getId()));
         }
 
         if (isset($filter['grade']) && $reservation->getBorrower()->getGrade() !== $filter['grade']) {

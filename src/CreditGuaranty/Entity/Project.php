@@ -169,7 +169,7 @@ class Project implements ProgramAwareInterface
 
         if (false === $participation instanceof Participation) {
             throw new \RuntimeException(sprintf(
-                'Cannot find the participation company %d for reservation %d. Please check the date.',
+                'Cannot find the participation company %d for reservation %d. Please check the data.',
                 $this->reservation->getManagingCompany()->getId(),
                 $this->getId()
             ));
@@ -198,7 +198,7 @@ class Project implements ProgramAwareInterface
         $borrowerType = $this->reservation->getBorrower()->getBorrowerType();
         if (false === $borrowerType instanceof ProgramChoiceOption) {
             throw new \RuntimeException(sprintf(
-                'Cannot find the borrower type %d for reservation %d. Please check the date.',
+                'Cannot find the borrower type %d for reservation %d. Please check the data.',
                 $borrowerType->getId(),
                 $this->reservation->getId()
             ));
