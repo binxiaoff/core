@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
@@ -16,6 +17,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Service\MoneyCalculator;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
+use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
 
 /**
  * @ApiResource(
@@ -49,7 +51,7 @@ use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
  * @ORM\Table(name="credit_guaranty_project")
  * @ORM\HasLifecycleCallbacks
  */
-class Project implements ProgramAwareInterface
+class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -68,7 +70,7 @@ class Project implements ProgramAwareInterface
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
-     * @ORM\JoinColumn(name="id_program_choice_option", nullable=false)
+     * @ORM\JoinColumn(name="id_investment_thematic", nullable=false)
      *
      * @Assert\Expression("value.getProgram() === this.getProgram()")
      *
@@ -124,6 +126,16 @@ class Project implements ProgramAwareInterface
         $this->investmentThematic = $investmentThematic;
 
         return $this;
+    }
+
+    /**
+     * @SerializedName("investmentThematic")
+     *
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getInvestmentThematicDescription(): ?string
+    {
+        return $this->investmentThematic->getDescription();
     }
 
     public function getNafNace(): NafNace

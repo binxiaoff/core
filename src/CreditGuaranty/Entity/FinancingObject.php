@@ -9,11 +9,13 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
+use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
 
 /**
  * @ApiResource(
@@ -47,7 +49,7 @@ use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
  * @ORM\Table(name="credit_guaranty_financing_object")
  * @ORM\HasLifecycleCallbacks
  */
-class FinancingObject implements ProgramAwareInterface
+class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -148,6 +150,16 @@ class FinancingObject implements ProgramAwareInterface
         return $this;
     }
 
+    /**
+     * @SerializedName("financingObject")
+     *
+     * @Groups({"creditGuaranty:financingObject:read"})
+     */
+    public function getFinancingObjectDescription(): ?string
+    {
+        return $this->financingObject->getDescription();
+    }
+
     public function getLoanType(): ProgramChoiceOption
     {
         return $this->loanType;
@@ -158,6 +170,16 @@ class FinancingObject implements ProgramAwareInterface
         $this->loanType = $loanType;
 
         return $this;
+    }
+
+    /**
+     * @SerializedName("loanType")
+     *
+     * @Groups({"creditGuaranty:financingObject:read"})
+     */
+    public function getLoanTypeDescription(): ?string
+    {
+        return $this->loanType->getDescription();
     }
 
     public function getLoanDuration(): int

@@ -50,4 +50,12 @@ class FieldAlias extends AbstractEnum
     public const SIREN               = 'siren';
     public const SIRET               = 'siret';
     public const TAX_NUMBER          = 'tax_number';
+
+    public const PROGRAM_CHOICE_OPTION_FIELDS = [
+        self::BORROWER_TYPE,
+        self::FINANCING_OBJECT,
+        self::INVESTMENT_THEMATIC,
+        self::LEGAL_FORM,
+        self::LOAN_TYPE,
+    ];
 }
