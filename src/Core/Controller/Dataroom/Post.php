@@ -9,7 +9,7 @@ use Defuse\Crypto\Exception\IOException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
-use League\Flysystem\FileExistsException;
+use League\Flysystem\FilesystemException;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,7 +28,6 @@ use Unilend\Core\Service\File\FileUploadManager;
 class Post
 {
     private FileUploadManager $fileUploadManager;
-
     private Security $security;
 
     public function __construct(FileUploadManager $fileUploadManager, Security $security)
@@ -39,7 +38,7 @@ class Post
 
     /**
      * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
+     * @throws FilesystemException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
@@ -93,7 +92,7 @@ class Post
 
     /**
      * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
+     * @throws FilesystemException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException

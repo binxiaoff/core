@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Core\Service\ElectronicSignature;
 
 use Exception;
-use League\Flysystem\FileNotFoundException;
+use League\Flysystem\FilesystemException;
 use SimpleXMLElement;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Core\Entity\FileVersionSignature;
@@ -14,19 +14,10 @@ use Unilend\Core\Service\FileSystem\FileSystemHelper;
 class XmlGenerator
 {
     private const KLS_CODE_ENTITY = '14000';
-    /**
-     * @var FileSystemHelper
-     */
-    private $fileSystemHelper;
-    /**
-     * @var RouterInterface
-     */
-    private $router;
 
-    /**
-     * @param FileSystemHelper $fileSystemHelper
-     * @param RouterInterface  $router
-     */
+    private FileSystemHelper $fileSystemHelper;
+    private RouterInterface $router;
+
     public function __construct(FileSystemHelper $fileSystemHelper, RouterInterface $router)
     {
         $this->fileSystemHelper = $fileSystemHelper;
@@ -34,12 +25,8 @@ class XmlGenerator
     }
 
     /**
-     * @param FileVersionSignature $fileVersionSignature
-     *
      * @throws Exception
-     * @throws FileNotFoundException
-     *
-     * @return string
+     * @throws FilesystemException
      */
     public function generate(FileVersionSignature $fileVersionSignature): string
     {

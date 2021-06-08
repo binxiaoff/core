@@ -1,0 +1,8 @@
+oneup_flysystem:
+    filesystems:
+        user_attachment:
+            adapter: user_attachment_adapter
+            alias: KLS\Flysystem\UserAttachmentFilesystem
+        generated_document:
+            adapter: generated_document_adapter
+            alias: KLS\Flysystem\GeneratedDocumentFilesystem

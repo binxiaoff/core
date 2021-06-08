@@ -4,48 +4,32 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Service\ElectronicSignature;
 
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
-use League\Flysystem\FileNotFoundException;
+use League\Flysystem\FilesystemException;
 use Psr\Log\LoggerInterface;
 use SimpleXMLElement;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Contracts\HttpClient\{Exception\ClientExceptionInterface, Exception\RedirectionExceptionInterface, Exception\ServerExceptionInterface,
-    Exception\TransportExceptionInterface, HttpClientInterface, ResponseInterface};
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 use Unilend\Core\Entity\FileVersionSignature;
 use Unilend\Core\Repository\FileVersionSignatureRepository;
 
 class RequestSender
 {
     private const REQUEST_PATH = 'souscription_ca/sgp';
-    /**
-     * @var HttpClientInterface
-     */
-    private $psnClient;
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-    /**
-     * @var XmlSigner
-     */
-    private $xmlSigner;
-    /**
-     * @var XmlGenerator
-     */
-    private $xmlGenerator;
-    /**
-     * @var FileVersionSignatureRepository
-     */
-    private $fileVersionSignatureRepository;
 
-    /**
-     * @param XmlSigner                      $xmlSigner
-     * @param XmlGenerator                   $xmlGenerator
-     * @param FileVersionSignatureRepository $fileVersionSignatureRepository
-     * @param HttpClientInterface            $psnClient
-     * @param LoggerInterface                $logger
-     */
+    private HttpClientInterface $psnClient;
+    private LoggerInterface $logger;
+    private XmlSigner $xmlSigner;
+    private XmlGenerator $xmlGenerator;
+    private FileVersionSignatureRepository $fileVersionSignatureRepository;
+
     public function __construct(
         XmlSigner $xmlSigner,
         XmlGenerator $xmlGenerator,
@@ -61,16 +45,12 @@ class RequestSender
     }
 
     /**
-     * @param FileVersionSignature $fileSignature
-     *
-     *@throws RedirectionExceptionInterface
+     * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
-     * @throws FileNotFoundException
      * @throws Exception
      * @throws ClientExceptionInterface
-     *
-     * @return FileVersionSignature
+     * @throws FilesystemException
      */
     public function requestSignature(FileVersionSignature $fileSignature): FileVersionSignature
     {
@@ -83,15 +63,13 @@ class RequestSender
     }
 
     /**
-     * @param FileVersionSignature $fileSignature
-     * @param ResponseInterface    $response
-     *
      * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws Exception
      */
     private function handleResponse(FileVersionSignature $fileSignature, ResponseInterface $response): void
     {
@@ -144,9 +122,6 @@ class RequestSender
     }
 
     /**
-     * @param FileVersionSignature $fileSignature
-     * @param string               $message
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */

@@ -4,39 +4,31 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Service\File;
 
-use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, IOException};
-use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Exception;
+use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
+use Defuse\Crypto\Exception\IOException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use InvalidArgumentException;
-use League\Flysystem\{FileExistsException, FilesystemInterface};
+use League\Flysystem\FilesystemException;
+use League\Flysystem\FilesystemOperator;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\{Company, Staff};
 use Unilend\Core\Message\File\FileUploaded;
 use Unilend\Core\Repository\FileRepository;
 use Unilend\Core\Service\FileSystem\FileSystemHelper;
 
 class FileUploadManager
 {
-    /** @var FileSystemHelper */
-    private $fileSystemHelper;
-    /** @var FilesystemInterface */
-    private $userAttachmentFilesystem;
-    /** @var FileRepository */
-    private $fileRepository;
-    /** @var MessageBusInterface */
-    private $messageBus;
+    private FileSystemHelper $fileSystemHelper;
+    private FilesystemOperator $userAttachmentFilesystem;
+    private FileRepository $fileRepository;
+    private MessageBusInterface $messageBus;
 
-    /**
-     * @param FileSystemHelper    $fileSystemHelper
-     * @param FilesystemInterface $userAttachmentFilesystem
-     * @param FileRepository      $fileRepository
-     * @param MessageBusInterface $messageBus
-     */
-    public function __construct(FileSystemHelper $fileSystemHelper, FilesystemInterface $userAttachmentFilesystem, FileRepository $fileRepository, MessageBusInterface $messageBus)
+    public function __construct(FileSystemHelper $fileSystemHelper, FilesystemOperator $userAttachmentFilesystem, FileRepository $fileRepository, MessageBusInterface $messageBus)
     {
         $this->fileSystemHelper         = $fileSystemHelper;
         $this->userAttachmentFilesystem = $userAttachmentFilesystem;
@@ -45,14 +37,10 @@ class FileUploadManager
     }
 
     /**
-     * @param UploadedFile $uploadedFile
-     * @param User         $uploader
-     * @param File|null    $file
-     * @param array        $context
-     * @param Company|null $company
+     * @param File|null $file
      *
      * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
+     * @throws FilesystemException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
@@ -60,7 +48,7 @@ class FileUploadManager
     public function upload(UploadedFile $uploadedFile, User $uploader, File $file, array $context = [], ?Company $company = null): void
     {
         $mineType                               = $uploadedFile->getMimeType();
-        [$relativeUploadedPath, $encryptionKey] = $this->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getUserDirectory($uploader));
+        [$relativeUploadedPath, $encryptionKey] = $this->uploadFile($uploadedFile, $this->userAttachmentFilesystem, $this->getUserDirectory($uploader));
 
         $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file, FileVersion::FILE_SYSTEM_USER_ATTACHMENT, $encryptionKey, $mineType, $company);
         $fileVersion
@@ -74,19 +62,11 @@ class FileUploadManager
     }
 
     /**
-     * @param UploadedFile        $file
-     * @param FilesystemInterface $filesystem
-     * @param string              $uploadRootDirectory
-     * @param string|null         $subdirectory
-     * @param bool                $encryption
-     *
      * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
+     * @throws FilesystemException
      * @throws IOException
-     *
-     * @return array
      */
-    private function uploadFile(UploadedFile $file, FilesystemInterface $filesystem, string $uploadRootDirectory, ?string $subdirectory = null, bool $encryption = true): array
+    private function uploadFile(UploadedFile $file, FilesystemOperator $filesystem, ?string $subdirectory = null, string $uploadRootDirectory = '/', bool $encryption = true): array
     {
         $hash         = hash('sha256', $subdirectory ?? uniqid('', true));
         $subdirectory = $hash[0] . DIRECTORY_SEPARATOR . $hash[1] . ($subdirectory ? DIRECTORY_SEPARATOR . $subdirectory : '');
@@ -103,41 +83,27 @@ class FileUploadManager
     }
 
     /**
-     * @param UploadedFile        $uploadedFile
-     * @param FilesystemInterface $filesystem
-     * @param string              $uploadDirectory
-     *
-     * @return string
+     * @throws FilesystemException
      */
-    private function generateFileName(UploadedFile $uploadedFile, FilesystemInterface $filesystem, string $uploadDirectory): string
+    private function generateFileName(UploadedFile $uploadedFile, FilesystemOperator $filesystem, string $uploadDirectory): string
     {
         $originalFilename      = $this->fileSystemHelper->normalizeFileName(pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME));
         $fileNameWithExtension = $originalFilename . '-' . uniqid('', true) . '.' . $uploadedFile->guessExtension() ?? $uploadedFile->getClientOriginalExtension();
 
-        if ($filesystem->has($uploadDirectory . DIRECTORY_SEPARATOR . $fileNameWithExtension)) {
+        if ($filesystem->fileExists($uploadDirectory . DIRECTORY_SEPARATOR . $fileNameWithExtension)) {
             $fileNameWithExtension = $this->generateFileName($uploadedFile, $filesystem, $uploadDirectory);
         }
 
         return $fileNameWithExtension;
     }
 
-    /**
-     * @param string $path
-     *
-     * @return string
-     */
     private function normalizePath(string $path): string
     {
         return DIRECTORY_SEPARATOR === mb_substr($path, -1) ? mb_substr($path, 0, -1) : $path;
     }
 
     /**
-     * @param User $user
-     *
-     * @return string
-
-     **@throws InvalidArgumentException
-     *
+     * @throws InvalidArgumentException
      */
     private function getUserDirectory(User $user): string
     {
