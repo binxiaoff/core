@@ -23,11 +23,13 @@ oneup_flysystem:
                 client: kls.s3_client
                 bucket: '%env(AWS_S3_BUCKET_USER_ATTACHMENT)%'
                 prefix: ''
+                streamReads: false
         generated_document_adapter_s3:
             awss3v3:
                 client: kls.s3_client
                 bucket: '%env(AWS_S3_BUCKET_GENERATED_DOCUMENT)%'
                 prefix: ''
+                streamReads: false
     filesystems:
         user_attachment:
             adapter: user_attachment_adapter_s3
