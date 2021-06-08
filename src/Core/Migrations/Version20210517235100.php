@@ -31,7 +31,9 @@ final class Version20210517235100 extends AbstractMigration
         $this->addSql('DROP INDEX UNIQ_C78A2C4FAE4140F9 ON agency_borrower');
         $this->addSql('ALTER TABLE agency_borrower ADD head_office VARCHAR(255) DEFAULT NULL, ADD bank_institution VARCHAR(255) DEFAULT NULL, ADD bic VARCHAR(11) DEFAULT NULL, ADD iban VARCHAR(34) DEFAULT NULL, ADD added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', DROP added_by, DROP id_signatory, DROP id_referent, DROP headquarter_address, CHANGE corporate_name corporate_name VARCHAR(255) DEFAULT NULL, CHANGE legal_form legal_form VARCHAR(255) DEFAULT NULL');
         $this->addSql('ALTER TABLE agency_borrower ADD CONSTRAINT FK_C78A2C4FF12E799E FOREIGN KEY (id_project) REFERENCES agency_project (id)');
+        $this->addSql('ALTER TABLE agency_borrower_member DROP FOREIGN KEY FK_5B36A3AA6B3CA4B');
         $this->addSql('ALTER TABLE agency_borrower_member ADD referent TINYINT(1) NOT NULL, ADD signatory TINYINT(1) NOT NULL, CHANGE id_user id_user INT NOT NULL');
+        $this->addSql('ALTER TABLE agency_borrower_member ADD CONSTRAINT FK_5B36A3AA6B3CA4B FOREIGN KEY (id_user) REFERENCES core_user (id)');
         $this->addSql('ALTER TABLE agency_participation DROP FOREIGN KEY FK_E0ED689EAE4140F9');
         $this->addSql('DROP INDEX UNIQ_E0ED689EAE4140F9 ON agency_participation');
         $this->addSql('ALTER TABLE agency_participation ADD corporate_name VARCHAR(255) DEFAULT NULL, ADD legal_form VARCHAR(255) DEFAULT NULL, ADD head_office VARCHAR(255) DEFAULT NULL, ADD bank_institution VARCHAR(255) DEFAULT NULL, ADD bic VARCHAR(11) DEFAULT NULL, ADD iban VARCHAR(34) DEFAULT NULL, ADD added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', DROP id_referent');
