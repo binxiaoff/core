@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\CAInternalRetailRating;
@@ -16,6 +17,7 @@ use Unilend\Core\Entity\Embeddable\Address;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
+use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
 
 /**
  * @ApiResource(
@@ -44,7 +46,7 @@ use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
  * @ORM\Table(name="credit_guaranty_borrower")
  * @ORM\HasLifecycleCallbacks
  */
-class Borrower implements ProgramAwareInterface
+class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -81,7 +83,7 @@ class Borrower implements ProgramAwareInterface
      *
      * @Assert\Expression("value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:write"})
      */
     private ?ProgramChoiceOption $borrowerType = null;
 
@@ -91,7 +93,7 @@ class Borrower implements ProgramAwareInterface
      *
      * @Assert\Expression("value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:write"})
      */
     private ?ProgramChoiceOption $legalForm = null;
 
@@ -183,6 +185,20 @@ class Borrower implements ProgramAwareInterface
         return $this;
     }
 
+    /**
+     * @SerializedName("borrowerType")
+     *
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getBorrowerTypeDescription(): ?string
+    {
+        if ($this->borrowerType) {
+            return $this->borrowerType->getDescription();
+        }
+
+        return null;
+    }
+
     public function getLegalForm(): ?ProgramChoiceOption
     {
         return $this->legalForm;
@@ -193,6 +209,20 @@ class Borrower implements ProgramAwareInterface
         $this->legalForm = $legalForm;
 
         return $this;
+    }
+
+    /**
+     * @SerializedName("legalForm")
+     *
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getLegalFormDescription(): ?string
+    {
+        if ($this->legalForm) {
+            return $this->legalForm->getDescription();
+        }
+
+        return null;
     }
 
     public function getTaxNumber(): ?string
