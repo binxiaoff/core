@@ -29,8 +29,8 @@ class AuthenticationTest extends WebTestCase
     public function providerSuccessfulLoginForStaffAccount(): array
     {
         return [
-            'User with staff'                                     => ['user:9'],
-            'User without staff (typically a borrower in agency)' => ['user:21'],
+            'User with staff'                                     => ['user-9'],
+            'User without staff (typically a borrower in agency)' => ['user-21'],
         ];
     }
 
@@ -103,8 +103,8 @@ class AuthenticationTest extends WebTestCase
     public function providerFailedLoginWrongPassword(): array
     {
         return [
-            'User with staff'                                     => ['user:9'],
-            'User without staff (typically a borrower in agency)' => ['user:21'],
+            'User with staff'                                     => ['user-9'],
+            'User without staff (typically a borrower in agency)' => ['user-21'],
         ];
     }
 
@@ -144,7 +144,7 @@ class AuthenticationTest extends WebTestCase
         $client = static::createClient();
 
         /** @var User $user */
-        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => 'user:9']);
+        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => 'user-9']);
 
         $client->request(
             Request::METHOD_POST,
@@ -169,7 +169,7 @@ class AuthenticationTest extends WebTestCase
         $client = static::createClient();
 
         /** @var User $user */
-        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => 'user:uninitialized']);
+        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => 'user-uninitialized']);
 
         $client->request(
             Request::METHOD_POST,
