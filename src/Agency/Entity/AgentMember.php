@@ -47,6 +47,9 @@ use Unilend\Core\Entity\User;
  *                     "agency:agentMember:write"
  *                 }
  *             }
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)"
  *         }
  *     }
  * )
@@ -158,6 +161,14 @@ class AgentMember extends AbstractProjectMember
         $this->signatory = $signatory;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrowerMember:read"})
+     */
+    public function isArchived(): bool
+    {
+        return parent::isArchived();
     }
 
     /**

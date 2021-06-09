@@ -99,7 +99,7 @@ class ProjectRoleVoter extends Voter
         $user = false === $user instanceof User ? $this->userRepository->findOneBy(['email' => $user->getUsername()]) : $user;
 
         // Borrower Member are not enabled until project is published
-        return $this->borrowerMemberRepository->existsByProjectAndUser($project, $user) && $project->isPublished();
+        return $this->borrowerMemberRepository->existsByProjectAndUserAndActive($project, $user) && $project->isPublished();
     }
 
     /**
@@ -134,7 +134,7 @@ class ProjectRoleVoter extends Voter
         $managedUsers = $staff->getManagedUsers();
 
         foreach ($managedUsers as $managedUser) {
-            if ($this->agentMemberRepository->findOneByProjectAndUser($project, $managedUser)) {
+            if ($this->agentMemberRepository->findOneByProjectAndUserAndActive($project, $managedUser)) {
                 return true;
             }
         }
@@ -162,7 +162,7 @@ class ProjectRoleVoter extends Voter
         $managedUsers = $staff->getManagedUsers();
 
         foreach ($managedUsers as $managedUser) {
-            $participationMember = $this->participationMemberRepository->findByProjectAndCompanyAndUser($project, $staff->getCompany(), $managedUser);
+            $participationMember = $this->participationMemberRepository->findByProjectAndCompanyAndUserAndActive($project, $staff->getCompany(), $managedUser);
 
             if ($participationMember) {
                 $participation = $participationMember->getParticipation();

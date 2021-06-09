@@ -8,8 +8,9 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
 use Exception;
 use Unilend\Agency\Entity\Participation;
+use Unilend\Agency\Entity\ParticipationMember;
 
-class ParticipationListener
+class ParticipationMemberListener
 {
     /**
      * Archive on delete participation for published project.
@@ -23,15 +24,15 @@ class ParticipationListener
 
         $uow = $em->getUnitOfWork();
 
-        $participationClassMetadata = $em->getClassMetadata(Participation::class);
+        $classMetadata = $em->getClassMetadata(ParticipationMember::class);
 
         foreach ($uow->getScheduledEntityDeletions() as $entity) {
-            if ($entity instanceof Participation && $entity->getProject()->isPublished()) {
+            if ($entity instanceof ParticipationMember && $entity->getProject()->isPublished()) {
                 $entity->archive();
 
                 $em->persist($entity);
 
-                $uow->computeChangeSet($participationClassMetadata, $entity);
+                $uow->computeChangeSet($classMetadata, $entity);
             }
         }
     }

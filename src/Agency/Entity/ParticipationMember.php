@@ -8,6 +8,7 @@ use ApiPlatform\Core\Action\NotFoundAction;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -46,6 +47,9 @@ use Unilend\Core\Entity\User;
  *                     "agency:participationMember:write"
  *                 }
  *             }
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)"
  *         }
  *     }
  * )
@@ -54,6 +58,8 @@ use Unilend\Core\Entity\User;
  *     @ORM\UniqueConstraint(columns={"id_user", "id_participation"})
  * })
  * @ORM\Entity
+ *
+ * @UniqueEntity(fields={"user", "participation"})
  */
 class ParticipationMember extends AbstractProjectMember
 {
@@ -156,6 +162,14 @@ class ParticipationMember extends AbstractProjectMember
         $this->signatory = $signatory;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"agency:participationMember:read"})
+     */
+    public function isArchived(): bool
+    {
+        return parent::isArchived();
     }
 
     /**

@@ -1,4 +1,10 @@
 Agency:
+    AbstractProjectMember:
+        archived:
+            referent: Un membre referent ne peut pas être archivé
+            signatory: Un membre signataire ne peut pas être archivé
+            draft: Vous ne pouvez pas archiver un membre en draft
+
     AgentMember:
         user:
             missingStaff: L'utilisateur {{ email }} ne peut pas être membre de l'équipe de l'agent sans avoir été habilité pour {{ company }}

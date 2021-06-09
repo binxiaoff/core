@@ -7,12 +7,12 @@ namespace Unilend\Agency\Listener\Doctrine;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
 use Exception;
-use Unilend\Agency\Entity\Participation;
+use Unilend\Agency\Entity\BorrowerMember;
 
-class ParticipationListener
+class BorrowerMemberListener
 {
     /**
-     * Archive on delete participation for published project.
+     * Archive on delete borrower member published project.
      *
      * @throws ORMException
      * @throws Exception
@@ -23,15 +23,15 @@ class ParticipationListener
 
         $uow = $em->getUnitOfWork();
 
-        $participationClassMetadata = $em->getClassMetadata(Participation::class);
+        $classMetadata = $em->getClassMetadata(BorrowerMember::class);
 
         foreach ($uow->getScheduledEntityDeletions() as $entity) {
-            if ($entity instanceof Participation && $entity->getProject()->isPublished()) {
+            if ($entity instanceof BorrowerMember && $entity->getProject()->isPublished()) {
                 $entity->archive();
 
                 $em->persist($entity);
 
-                $uow->computeChangeSet($participationClassMetadata, $entity);
+                $uow->computeChangeSet($classMetadata, $entity);
             }
         }
     }

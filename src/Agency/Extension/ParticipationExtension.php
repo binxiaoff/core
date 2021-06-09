@@ -63,6 +63,7 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
             ->orWhere(
                 $queryBuilder->expr()->andX(
                     "{$borrowerMemberAlias}.user = :{$userParameterName}",
+                    "{$borrowerMemberAlias}.archivingDate IS NULL",
                     "{$borrowerParticipationPoolAlias}.secondary = :{$borrowerSecondaryParameterName}",
                     "{$borrowerProjectAlias}.currentStatus IN (:{$publishedStatusParameterName})"
                 )
@@ -101,6 +102,7 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
             ->orWhere(
                 $queryBuilder->expr()->andX(
                     "{$currentCompanyParticipationMemberAlias}.user IN (:{$managedUserParameterName})",
+                    "{$currentCompanyParticipationMemberAlias}.archivingDate IS NULL",
                     "{$currentCompanyParticipationAlias}.participant = :{$companyParameterName}",
                     "{$participationProjectAlias}.currentStatus IN (:{$publishedStatusParameterName})"
                 )
@@ -121,6 +123,7 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
             ->orWhere(
                 $queryBuilder->expr()->andX(
                     "{$agentMemberAlias}.user IN (:{$managedUserParameterName})",
+                    "{$agentMemberAlias}.archivingDate IS NULL",
                     "{$agentAlias}.company = :{$companyParameterName}",
                 )
             )

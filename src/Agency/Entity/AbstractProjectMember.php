@@ -7,6 +7,7 @@ namespace Unilend\Agency\Entity;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Entity\User;
@@ -45,6 +46,11 @@ abstract class AbstractProjectMember
      */
     protected bool $signatory;
 
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private ?DateTimeImmutable $archivingDate;
+
     public function __construct(User $user)
     {
         $this->user            = $user;
@@ -52,6 +58,7 @@ abstract class AbstractProjectMember
         $this->referent        = false;
         $this->signatory       = false;
         $this->projectFunction = null;
+        $this->archivingDate   = null;
         $this->setPublicId();
     }
 
@@ -96,5 +103,47 @@ abstract class AbstractProjectMember
         $this->signatory = $signatory;
 
         return $this;
+    }
+
+    public function getArchivingDate(): ?DateTimeImmutable
+    {
+        return $this->archivingDate;
+    }
+
+    public function archive(): void
+    {
+        $this->archivingDate = new DateTimeImmutable();
+    }
+
+    public function isArchived(): bool
+    {
+        return null !== $this->archivingDate;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validate(ExecutionContextInterface $context)
+    {
+        if ($this->isArchived() && $this->getProject()->isDraft()) {
+            $context->buildViolation('Agency.AbstractProjectMember.archived.draft')
+                ->atPath('archived')
+                ->addViolation()
+            ;
+        }
+
+        if ($this->isArchived() && $this->isReferent()) {
+            $context->buildViolation('Agency.AbstractProjectMember.archived.referent')
+                ->atPath('archived')
+                ->addViolation()
+            ;
+        }
+
+        if ($this->isArchived() && $this->isSignatory()) {
+            $context->buildViolation('Agency.AbstractProjectMember.archived.signatory')
+                ->atPath('archived')
+                ->addViolation()
+            ;
+        }
     }
 }
