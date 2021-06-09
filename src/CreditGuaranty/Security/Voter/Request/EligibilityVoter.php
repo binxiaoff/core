@@ -12,7 +12,7 @@ class EligibilityVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
 
-    protected function canEdit(Eligibility $eligibility): bool
+    protected function canCreate(Eligibility $eligibility): bool
     {
         return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $eligibility->reservation);
     }

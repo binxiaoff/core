@@ -14,7 +14,7 @@ use Unilend\CreditGuaranty\Entity\Reservation;
  *     collectionOperations={
  *         "post_checking": {
  *             "method": "POST",
- *             "path": "/credit_guaranty/eligibility/checking",
+ *             "path": "/credit_guaranty/eligibilities/checking",
  *             "controller": EligibilityChecking::class,
  *             "security_post_denormalize": "is_granted('create', object)",
  *         }
