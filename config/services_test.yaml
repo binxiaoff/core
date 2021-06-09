@@ -1,6 +1,9 @@
 imports:
   - { resource: services.yaml }
 
+parameters:
+  router.host_api_url: '%env(HOST_API_URL)%'
+
 services:
   _defaults:
     autowire: true
@@ -14,3 +17,6 @@ services:
 
   Unilend\Test\Agency\DataFixtures\:
     resource: '%kernel.project_dir%/tests/Agency/DataFixtures'
+
+  Unilend\Test\CreditGuaranty\DataFixtures\:
+    resource: '%kernel.project_dir%/tests/CreditGuaranty/DataFixtures'
