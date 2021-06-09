@@ -20,37 +20,38 @@ final class Version20210524165319 extends AbstractMigration
         $this->addSql('ALTER TABLE credit_guaranty_financing_object CHANGE duration loan_duration SMALLINT NOT NULL');
 
         $this->addSql("DELETE FROM credit_guaranty_field WHERE field_alias = 'funding_object_amount'");
-        $this->addSql("INSERT INTO credit_guaranty_field (public_id, field_alias, category, type, target_property_access_path, comparable, unit, predefined_items) VALUES ('61d56903-32f7-4ea7-beb9-142122202120', 'loan_amount', 'loan', 'other', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::loanMoney', 1, 'money', NULL)");
+        $this->addSql("INSERT INTO credit_guaranty_field (public_id, field_alias, category, type, target_property_access_path, comparable, unit, predefined_items) VALUES ('61d56903-32f7-4ea7-beb9-142122202120', 'loan_amount', 'loan', 'other', 'financingObject::loanMoney', 1, 'money', NULL)");
 
         $this->addSql("UPDATE credit_guaranty_field SET field_alias = 'creation_in_progress' WHERE field_alias = 'on_going_creation'");
         $this->addSql("UPDATE credit_guaranty_field SET field_alias = 'beneficiary_name' WHERE field_alias = 'borrower_identity'");
         $this->addSql("UPDATE credit_guaranty_field SET field_alias = 'financing_object' WHERE field_alias = 'funding_object'");
         $this->addSql("UPDATE credit_guaranty_field SET category = 'profile' WHERE field_alias = 'legal_form'");
+        $this->addSql("UPDATE credit_guaranty_field SET type = 'other' WHERE field_alias = 'loan_duration'");
 
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\Borrower::creationInProgress' WHERE field_alias = 'creation_in_progress'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\BorrowerBusinessActivity::grant' WHERE field_alias = 'receiving_grant'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\BorrowerBusinessActivity::subsidiary' WHERE field_alias = 'subsidiary'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\Borrower::borrowerType' WHERE field_alias = 'borrower_type'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\Borrower::companyName' WHERE field_alias = 'company_name'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\BorrowerBusinessActivity::address' WHERE field_alias = 'company_address'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\Borrower::beneficiaryName' WHERE field_alias = 'beneficiary_name'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\Borrower::address' WHERE field_alias = 'beneficiary_address'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\Borrower::taxNumber' WHERE field_alias = 'tax_number'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\Borrower::legalForm' WHERE field_alias = 'legal_form'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\BorrowerBusinessActivity::siret' WHERE field_alias = 'siret'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\BorrowerBusinessActivity::address::country' WHERE field_alias = 'activity_country'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\BorrowerBusinessActivity::employeesNumber' WHERE field_alias = 'employees_number'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\BorrowerBusinessActivity::lastYearTurnover' WHERE field_alias = 'last_year_turnover'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\BorrowerBusinessActivity::fiveYearsAverageTurnover' WHERE field_alias = '5_years_average_turnover'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\BorrowerBusinessActivity::totalAssets' WHERE field_alias = 'total_assets'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\BorrowerBusinessActivity::grant' WHERE field_alias = 'grant_amount'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\Project::investmentThematic' WHERE field_alias = 'investment_thematic'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\Project::fundingMoney' WHERE field_alias = 'project_total_amount'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\Project::nafNace::nafCode' WHERE field_alias = 'naf_code_project'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::financingObject' WHERE field_alias = 'financing_object'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::loanType' WHERE field_alias = 'loan_type'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::loanDuration' WHERE field_alias = 'loan_duration'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'Unilend\\CreditGuaranty\\Entity\\FinancingObject::releasedOnInvoice' WHERE field_alias = 'loan_released_on_invoice'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrower::creationInProgress' WHERE field_alias = 'creation_in_progress'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrowerBusinessActivity::receivingGrant' WHERE field_alias = 'receiving_grant'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrowerBusinessActivity::subsidiary' WHERE field_alias = 'subsidiary'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrower::borrowerType' WHERE field_alias = 'borrower_type'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrower::companyName' WHERE field_alias = 'company_name'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrowerBusinessActivity::address' WHERE field_alias = 'company_address'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrower::beneficiaryName' WHERE field_alias = 'beneficiary_name'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrower::address' WHERE field_alias = 'beneficiary_address'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrower::taxNumber' WHERE field_alias = 'tax_number'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrower::legalForm' WHERE field_alias = 'legal_form'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrowerBusinessActivity::siret' WHERE field_alias = 'siret'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrowerBusinessActivity::address::country' WHERE field_alias = 'activity_country'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrowerBusinessActivity::employeesNumber' WHERE field_alias = 'employees_number'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrowerBusinessActivity::lastYearTurnover' WHERE field_alias = 'last_year_turnover'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrowerBusinessActivity::fiveYearsAverageTurnover' WHERE field_alias = '5_years_average_turnover'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrowerBusinessActivity::totalAssets' WHERE field_alias = 'total_assets'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrowerBusinessActivity::grant' WHERE field_alias = 'grant_amount'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'project::investmentThematic' WHERE field_alias = 'investment_thematic'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'project::fundingMoney' WHERE field_alias = 'project_total_amount'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'project::nafNace::nafCode' WHERE field_alias = 'naf_code_project'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'financingObjects::financingObject' WHERE field_alias = 'financing_object'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'financingObjects::loanType' WHERE field_alias = 'loan_type'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'financingObjects::loanDuration' WHERE field_alias = 'loan_duration'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'financingObjects::releasedOnInvoice' WHERE field_alias = 'loan_released_on_invoice'");
     }
 
     public function down(Schema $schema): void
@@ -65,6 +66,7 @@ final class Version20210524165319 extends AbstractMigration
         $this->addSql("UPDATE credit_guaranty_field SET field_alias = 'borrower_identity' WHERE field_alias = 'beneficiary_name'");
         $this->addSql("UPDATE credit_guaranty_field SET field_alias = 'funding_object' WHERE field_alias = 'financing_object'");
         $this->addSql("UPDATE credit_guaranty_field SET category = 'activity' WHERE field_alias = 'legal_form'");
+        $this->addSql("UPDATE credit_guaranty_field SET type = 'list' WHERE field_alias = 'loan_duration'");
         $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = '' WHERE field_alias IN ('on_going_creation', 'receiving_grant', 'subsidiary', 'borrower_type', 'company_name', 'company_address', 'borrower_identity', 'beneficiary_address', 'tax_number', 'legal_form', 'siret', 'activity_country', 'employees_number', 'last_year_turnover', '5_years_average_turnover', 'total_assets', 'grant_amount', 'investment_thematic', 'project_total_amount', 'naf_code_project', 'funding_object', 'funding_object_amount', 'loan_type', 'loan_duration', 'loan_released_on_invoice')");
     }
 }

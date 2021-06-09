@@ -8,6 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+use Unilend\CreditGuaranty\Entity\Program;
 use Unilend\CreditGuaranty\Entity\ProgramEligibility;
 
 /**
@@ -31,5 +32,19 @@ class ProgramEligibilityRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($programEligibility);
         $this->getEntityManager()->flush();
+    }
+
+    public function findFieldCategoriesByProgram(Program $program): array
+    {
+        $categories = $this->createQueryBuilder('pe')
+            ->select('DISTINCT f.category')
+            ->innerJoin('pe.field', 'f')
+            ->where('pe.program = :program')
+            ->setParameter('program', $program)
+            ->getQuery()
+            ->getResult()
+        ;
+
+        return array_column($categories, 'category');
     }
 }

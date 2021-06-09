@@ -30,6 +30,7 @@
         <testsuite name="unit">
             <directory>tests/Core/Unit</directory>
             <directory>tests/Syndication/Unit</directory>
+            <directory>tests/CreditGuaranty/Unit</directory>
         </testsuite>
 
         <testsuite name="functional">

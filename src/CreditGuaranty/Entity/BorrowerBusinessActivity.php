@@ -216,6 +216,11 @@ class BorrowerBusinessActivity
         return $this->grant;
     }
 
+    public function isReceivingGrant(): bool
+    {
+        return null !== $this->getGrant()->getAmount();
+    }
+
     public function setGrant(NullableMoney $grant): BorrowerBusinessActivity
     {
         $this->grant = $grant;
@@ -223,7 +228,7 @@ class BorrowerBusinessActivity
         return $this;
     }
 
-    public function getSubsidiary(): ?bool
+    public function isSubsidiary(): ?bool
     {
         return $this->subsidiary;
     }
