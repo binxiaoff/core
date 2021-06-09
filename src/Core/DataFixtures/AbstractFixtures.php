@@ -23,9 +23,6 @@ abstract class AbstractFixtures extends Fixture
     private TokenStorageInterface $tokenStorage;
     private array $idGenerator = [];
 
-    /**
-     * @param TokenStorageInterface $tokenStorage
-     */
     public function __construct(TokenStorageInterface $tokenStorage)
     {
         $this->faker        = Factory::create('fr_FR');
@@ -34,23 +31,29 @@ abstract class AbstractFixtures extends Fixture
 
     /**
      * @param $entity
-     * @param string $value
      *
      * @throws ReflectionException
      */
     protected function forcePublicId($entity, string $value): void
     {
-        $ref      = new ReflectionClass(get_class($entity));
-        $property = $ref->getProperty('publicId');
-        $property->setAccessible(true);
-        $property->setValue($entity, $value);
+        $this->forcePropertyValue($entity, 'publicId', $value);
     }
 
     /**
-     * @param ObjectManager $manager
-     * @param object        $entity
-     * @param int           $value
+     * @param mixed $entity
+     * @param mixed $value
      *
+     * @throws ReflectionException
+     */
+    protected function forcePropertyValue($entity, string $property, $value)
+    {
+        $ref               = new ReflectionClass(get_class($entity));
+        $reflexionProperty = $ref->getProperty($property);
+        $reflexionProperty->setAccessible(true);
+        $reflexionProperty->setValue($entity, $value);
+    }
+
+    /**
      * @throws ReflectionException
      */
     protected function forceId(ObjectManager $manager, object $entity, int $value): void
@@ -64,8 +67,6 @@ abstract class AbstractFixtures extends Fixture
 
     /**
      * Return multiple references.
-     *
-     * @param array $names
      *
      * @return object[]
      */
@@ -96,8 +97,7 @@ abstract class AbstractFixtures extends Fixture
     }
 
     /**
-     * @param object        $entity
-     * @param ObjectManager $manager
+     * @param object $entity
      */
     protected function restoreAutoIncrement($entity, ObjectManager $manager): void
     {
@@ -112,10 +112,6 @@ abstract class AbstractFixtures extends Fixture
         $metadata->setIdGenerator($generator);
     }
 
-    /**
-     * @param ObjectManager $manager
-     * @param object        $entity
-     */
     private function disableAutoIncrement(ObjectManager $manager, object $entity): void
     {
         $entity = get_class($entity);

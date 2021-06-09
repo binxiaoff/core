@@ -10,6 +10,7 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Unilend\Agency\Entity\Borrower;
 use Unilend\Agency\Entity\BorrowerMember;
@@ -42,10 +43,13 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 {
     private ValidatorInterface $validator;
 
-    public function __construct(TokenStorageInterface $tokenStorage, ValidatorInterface $validator)
+    private UserPasswordEncoderInterface $passwordEncoder;
+
+    public function __construct(TokenStorageInterface $tokenStorage, ValidatorInterface $validator, UserPasswordEncoderInterface $passwordEncoder)
     {
         parent::__construct($tokenStorage);
-        $this->validator = $validator;
+        $this->validator       = $validator;
+        $this->passwordEncoder = $passwordEncoder;
     }
 
     /**
@@ -127,6 +131,54 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         $archivedProject->archive();
         $this->save($manager, $archivedProject);
+
+        $facturationProjects = [
+            '10-04-2022' => null,
+            '10-05-2022' => '15-05-2022',
+            '15-05-2021' => '20-05-2022',
+            '25-05-2019' => '10-06-2021',
+            '15-04-2020' => '05-04-2022',
+            '20-04-2020' => '05-03-2022',
+        ];
+
+        foreach ($facturationProjects as $start => $end) {
+            $project = $this->createPublishableProject($staff);
+
+            $this->forcePropertyValue($project, 'added', new DateTimeImmutable($start));
+
+            $this->save($manager, $project);
+
+            foreach ($project->getStatuses() as $statusHistory) {
+                if (Project::STATUS_DRAFT === $statusHistory->getStatus()) {
+                    $this->forcePropertyValue($statusHistory, 'added', new DateTimeImmutable($start));
+                    $this->save($manager, $statusHistory);
+                }
+            }
+
+            if ($end) {
+                $project->publish();
+
+                $this->save($manager, $project);
+
+                foreach ($project->getStatuses() as $statusHistory) {
+                    if (Project::STATUS_PUBLISHED === $statusHistory->getStatus()) {
+                        $this->forcePropertyValue($statusHistory, 'added', (new DateTimeImmutable($end))->modify('- 2 day'));
+                        $this->save($manager, $statusHistory);
+                    }
+                }
+
+                $project->finish();
+
+                $this->save($manager, $project);
+
+                foreach ($project->getStatuses() as $statusHistory) {
+                    if (Project::STATUS_FINISHED === $statusHistory->getStatus()) {
+                        $this->forcePropertyValue($statusHistory, 'added', new DateTimeImmutable($end));
+                        $this->save($manager, $statusHistory);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -140,11 +192,15 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
+     * @param mixed $object
+     *
      * @throws Exception
      */
-    private function save(ObjectManager $manager, Project $object)
+    private function save(ObjectManager $manager, $object)
     {
-        $violations = $this->validator->validate($object, null, Project::getCurrentValidationGroups($object));
+        $validationGroups = $object instanceof Project ? Project::getCurrentValidationGroups($object) : [];
+
+        $violations = $this->validator->validate($object, null, $validationGroups);
 
         if ($violations->count()) {
             throw new Exception(sprintf('%s %s %s', $object->getPublicId(), PHP_EOL, $violations));
@@ -362,8 +418,19 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         return $borrower;
     }
 
+    /**
+     * @throws Exception
+     */
     private function createBorrowerMember(Borrower $borrower, bool $referent = false, bool $signatory = false): BorrowerMember
     {
+        $user = new User($this->faker->email);
+        $user->setPlainPassword('0000');
+        $user->setLastName($this->faker->lastName);
+        $user->setFirstName($this->faker->firstName);
+        $user->setPhone('+33600000000');
+        $user->setJobFunction('Job function');
+        $user->setPlainPassword('0000');
+        $user->setPassword($this->passwordEncoder->encodePassword($user, $user->getPlainPassword()));
         $borrowerMember = new BorrowerMember($borrower, new User($this->faker->email));
         $borrowerMember->setReferent($referent);
         $borrowerMember->setSignatory($signatory);
