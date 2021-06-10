@@ -6,14 +6,18 @@ namespace Unilend\CreditGuaranty\Entity\Constant;
 
 use Unilend\Core\Entity\Constant\AbstractEnum;
 
+/**
+ * There is a convention that the name of the target class property should be the camel case form of the related constant value in this class.
+ * For exemple, the target property of self::BORROWER_TYPE should be Borrower::borrowerType.
+ */
 class FieldAlias extends AbstractEnum
 {
     // User defined list
     public const BORROWER_TYPE       = 'borrower_type';
     public const FINANCING_OBJECT    = 'financing_object';
     public const INVESTMENT_THEMATIC = 'investment_thematic';
-    public const NAF_CODE_PROJECT    = 'naf_code_project';
-    public const NAF_CODE_COMPANY    = 'naf_code_company';
+    public const PROJECT_NAF_CODE    = 'project_naf_code';
+    public const COMPANY_NAF_CODE    = 'company_naf_code';
 
     // Pre-defined list
     public const ACTIVITY_COUNTRY = 'activity_country';
@@ -57,5 +61,7 @@ class FieldAlias extends AbstractEnum
         self::INVESTMENT_THEMATIC,
         self::LEGAL_FORM,
         self::LOAN_TYPE,
+        self::PROJECT_NAF_CODE,
+        self::COMPANY_NAF_CODE,
     ];
 }
