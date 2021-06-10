@@ -17,6 +17,6 @@ final class Version20210609152906 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'borrower::borrowerNafCode', field_alias = 'borrower_naf_code' WHERE field_alias = 'naf_code_company'");
-        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'project::projectNafCode', field_alias = 'project_naf_code' WHERE field_alias = 'naf_code_project'");
+        $this->addSql("UPDATE credit_guaranty_field SET target_property_access_path = 'project::projectNafCode', field_alias = 'project_naf_code', comparable = 0 WHERE field_alias = 'naf_code_project'");
     }
 }

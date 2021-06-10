@@ -15,7 +15,6 @@ use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\Embeddable\Address;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\NafNace;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Team;
 use Unilend\Core\Entity\User;
@@ -83,6 +82,7 @@ class EligibilityCheckerTest extends TestCase
         $field2                           = new Field('alias_2', $category, 'bool', 'borrower::creationInProgress', false, null, null);
         $field3                           = new Field('alias_3', $category, 'other', '', false, null, null);
         $field4                           = new Field('alias_4', $category, 'list', 'borrower::legalForm', false, null, null);
+        $field5                           = new Field('alias_5', $category, 'list', 'project::projectNafCode', false, null, null);
         $fields                           = [$field1, $field2, $field3, $field4];
         $legalFormOption                  = new ProgramChoiceOption($program, 'legal form', $field4);
         $programEligibility1              = new ProgramEligibility($program, $field1);
@@ -98,7 +98,7 @@ class EligibilityCheckerTest extends TestCase
         $reservation->setProject(new Project(
             $fundingMoney,
             new ProgramChoiceOption($program, 'investment thematic', $field1),
-            new NafNace('N42', 'N.42', 'Naf', 'Nace')
+            new ProgramChoiceOption($program, 'N42', $field5),
         ));
 
         $this->fieldRepository->findBy(['category' => $category])->shouldBeCalledOnce()->willReturn($fields);
@@ -338,6 +338,7 @@ class EligibilityCheckerTest extends TestCase
         $reservation                      = $this->createReservation();
         $program                          = $reservation->getProgram();
         $field1                           = new Field('alias_1', $category, 'list', 'project::investmentThematic', false, null, null);
+        $field2                           = new Field('alias_2', $category, 'list', 'project::projectNafCode', false, null, null);
         $fields                           = [$field1];
         $programChoiceOption1             = new ProgramChoiceOption($program, 'investment thematic', $field1);
         $programEligibility1              = new ProgramEligibility($program, $field1);
@@ -346,7 +347,7 @@ class EligibilityCheckerTest extends TestCase
         $reservation->setProject(new Project(
             new Money('eur', '42'),
             $programChoiceOption1,
-            new NafNace('N42', 'N.42', 'Naf', 'Nace')
+            new ProgramChoiceOption($program, 'N42', $field2),
         ));
 
         $this->fieldRepository->findBy(['category' => $category])->shouldBeCalledOnce()->willReturn($fields);

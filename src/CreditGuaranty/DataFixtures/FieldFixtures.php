@@ -40,7 +40,7 @@ class FieldFixtures extends AbstractSQLFixtures
         ('d5cbbd4c-0101-4d6b-b816-146a1943ee2e', 'low_density_medical_area_exercise', 'activity', 'other', '', 1, 'money', NULL),
         ('23892bef-00b0-4df5-981e-32913e708a2b', 'investment_thematic', 'project', 'list', 'project::investmentThematic', 0, NULL, NULL),
         ('3dbe7d2c-2b78-4f72-ab52-ca3703e39f5b', 'project_total_amount', 'project', 'other', 'project::fundingMoney', 1, 'money', NULL),
-        ('a2f8bca2-0662-4569-a334-57bd00972dcc', 'project_naf_code', 'project', 'list', 'project::projectNafCode', 1, NULL, NULL),
+        ('a2f8bca2-0662-4569-a334-57bd00972dcc', 'project_naf_code', 'project', 'list', 'project::projectNafCode', 0, NULL, NULL),
         ('8cb4b512-fa4c-4638-9a28-11d16b450459', 'financing_object', 'project', 'list', 'financingObjects::financingObject', 0, NULL, NULL),
         ('675056b4-49bb-40a7-bafe-9bcc86ad7b99', 'loan_type', 'loan', 'list', 'financingObjects::loanType', 0, NULL, '["term_loan","short_term","revolving_credit","stand_by","signature_commitment"]'),
         ('e9861e5b-0513-4c7b-9799-2f5a7dc267a4', 'loan_duration', 'loan', 'other', 'financingObjects::loanDuration', 0, NULL, null),
