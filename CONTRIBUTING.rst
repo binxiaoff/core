@@ -67,11 +67,34 @@ The branch must always be created from develop except when:
 Git commit messages:
 ~~~~~~~~~~~~~~~~~~~~
 
-The pattern for commit message summary is:
-``<jira-ticket-key> commit message``.
+We are using `conventional commit <https://www.conventionalcommits.org/en/v1.0.0/>`_,
+the pattern for commit message summary is:
+``<type>(<scope (optional: <jira-ticket-key> commit message``.
+
+The type is defined in the specification and should be from the following list:
+
+- feat
+- fix
+- build
+- chore
+- ci
+- docs
+- style
+- refactor
+- perf
+- test
+
+The scope is defined in the documentation for convential commit linked above,
+and the list of accepted scopes is below:
+
+- core
+- agency
+- arrangement
+- fei
+- cdc
 
 For example:
-``CALS-233 Add translation cache deleting task for deployment``
+``feat(fei): CALS-123 Add method to get eligibility for a program``
 
 And we also define some rules for the message part as follow:
 
@@ -84,7 +107,7 @@ And we also define some rules for the message part as follow:
 -  Use the body to explain what and why vs. how
 
 For more details see:
-``How to Write a Git Commit Message <https://chris.beams.io/posts/git-commit/>``\ \_
+`How to Write a Git Commit Message <https://chris.beams.io/posts/git-commit/>`_
 
 Version number standard
 ~~~~~~~~~~~~~~~~~~~~~~~
