@@ -130,19 +130,6 @@ services:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-
-    Unilend\Agency\Listener\Doctrine\BorrowerMemberListener:
-        tags:
-            - { name: doctrine.event_listener, event: onFlush }
-
-    Unilend\Agency\Listener\Doctrine\AgentMemberListener:
-        tags:
-            - { name: doctrine.event_listener, event: onFlush }
-
-    Unilend\Agency\Listener\Doctrine\ParticipationMemberListener:
-        tags:
-            - { name: doctrine.event_listener, event: onFlush }
-
     Unilend\CreditGuaranty\Listener\Doctrine\ProgramDeleteListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }

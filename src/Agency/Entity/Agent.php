@@ -318,8 +318,6 @@ class Agent extends AbstractProjectPartaker
      */
     public function setLegalForm(?string $legalForm): Agent
     {
-        $this->legalForm = $legalForm;
-
-        return $this;
+        return parent::setLegalForm($legalForm);
     }
 }

@@ -15,7 +15,6 @@ class ParticipationMemberVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_DELETE = 'delete';
     public const ATTRIBUTE_EDIT   = 'edit';
 
     private ParticipationMemberRepository $participationMemberRepository;
@@ -85,26 +84,5 @@ class ParticipationMemberVoter extends AbstractEntityVoter
             && $project->isEditable()
             && $staff->getCompany() === $participationMember->getParticipation()->getParticipant()
         ;
-    }
-
-    protected function canDelete(ParticipationMember $participationMember, User $user)
-    {
-        $staff = $user->getCurrentStaff();
-
-        if (null === $staff) {
-            return false;
-        }
-
-        $project = $participationMember->getProject();
-
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PARTICIPANT, $project)
-                    && false === $participationMember->isArchived()
-                    && false === $participationMember->isSignatory()
-                    && false === $participationMember->isReferent()
-                    && false === $participationMember->getParticipation()->isArchived()
-                    && $participationMember->getUser() !== $user // Forbid autodelete
-                    && $project->isEditable()
-                    && $staff->getCompany() === $participationMember->getParticipation()->getParticipant()
-            ;
     }
 }

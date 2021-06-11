@@ -47,9 +47,6 @@ use Unilend\Core\Entity\User;
  *                     "agency:agentMember:write"
  *                 }
  *             }
- *         },
- *         "delete": {
- *             "security": "is_granted('delete', object)"
  *         }
  *     }
  * )
@@ -110,7 +107,7 @@ class AgentMember extends AbstractProjectMember
     }
 
     /**
-     * @Groups({"agency:borrowerMember:read"})
+     * @Groups({"agency:agentMember:read"})
      */
     public function getProjectFunction(): ?string
     {

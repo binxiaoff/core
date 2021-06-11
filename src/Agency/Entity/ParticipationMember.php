@@ -47,9 +47,6 @@ use Unilend\Core\Entity\User;
  *                     "agency:participationMember:write"
  *                 }
  *             }
- *         },
- *         "delete": {
- *             "security": "is_granted('delete', object)"
  *         }
  *     }
  * )
