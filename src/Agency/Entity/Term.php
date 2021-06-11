@@ -641,6 +641,9 @@ class Term
         return ['Default', 'Term', $term->isFinancial() ? 'Financial' : 'Other'];
     }
 
+    /**
+     * @Groups({"agency:term:read"})
+     */
     public function getProject(): Project
     {
         return $this->covenant->getProject();
