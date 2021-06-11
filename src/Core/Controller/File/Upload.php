@@ -5,35 +5,26 @@ declare(strict_types=1);
 namespace Unilend\Core\Controller\File;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
-use League\Flysystem\FileExistsException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use League\Flysystem\FilesystemException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Core\DataTransformer\FileInputDataTransformer;
 use Unilend\Core\DTO\FileInput;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\File;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\FileRepository;
 
 class Upload
 {
-    /** @var Security */
     private Security $security;
-    /** @var FileInputDataTransformer */
     private FileInputDataTransformer $fileInputDataTransformer;
-    /** @var FileRepository */
     private FileRepository $fileRepository;
-    /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
 
-    /**
-     * @param Security                 $security
-     * @param FileInputDataTransformer $fileInputDataTransformer
-     * @param FileRepository           $fileRepository
-     * @param IriConverterInterface    $iriConverter
-     */
     public function __construct(
         Security $security,
         FileInputDataTransformer $fileInputDataTransformer,
@@ -47,14 +38,7 @@ class Upload
     }
 
     /**
-     * @param Request     $request
-     * @param string|null $id
-     *
-     * @throws FileExistsException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     *
-     * @return File
+     * @throws ORMException|OptimisticLockException|FilesystemException
      */
     public function __invoke(Request $request, ?string $id): File
     {

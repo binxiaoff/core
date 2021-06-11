@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace Unilend\Test\Core\Unit\Service\File;
 
-use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, IOException};
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
+use Defuse\Crypto\Exception\IOException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
-use Faker\Provider\{Base, Internet};
-use League\Flysystem\{FileExistsException, FilesystemInterface};
+use Faker\Provider\Base;
+use Faker\Provider\Internet;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\FilesystemOperator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Message\File\FileUploaded;
 use Unilend\Core\Repository\FileRepository;
@@ -33,7 +34,7 @@ use Unilend\Core\Service\FileSystem\FileSystemHelper;
  */
 class FileUploadManagerTest extends TestCase
 {
-    /** @var FilesystemInterface|ObjectProphecy */
+    /** @var FilesystemOperator|ObjectProphecy */
     private $userAttachmentFilesystem;
 
     /** @var FileSystemHelper|ObjectProphecy */
@@ -50,7 +51,7 @@ class FileUploadManagerTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->userAttachmentFilesystem = $this->prophesize(FilesystemInterface::class);
+        $this->userAttachmentFilesystem = $this->prophesize(FilesystemOperator::class);
         $this->fileSystemHelper         = $this->prophesize(FileSystemHelper::class);
         $this->fileRepository           = $this->prophesize(FileRepository::class);
         $this->messageBus               = $this->prophesize(MessageBusInterface::class);
@@ -61,10 +62,7 @@ class FileUploadManagerTest extends TestCase
      *
      * @dataProvider uploadDataProvider
      *
-     * @param File|null $file
-     * @param array     $context
-     *
-     * @throws FileExistsException
+     * @throws FilesystemException
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws EnvironmentIsBrokenException
@@ -99,6 +97,8 @@ class FileUploadManagerTest extends TestCase
 
         $dispatcher = $this->messageBus->dispatch(Argument::exact(new FileUploaded($file, $context)));
         $dispatcher->willReturn($this->prophesize(Envelope::class)->reveal());
+        $fileExistenceChecker = $this->userAttachmentFilesystem->fileExists(Argument::any());
+        $fileExistenceChecker->willReturn(false);
 
         $this->createTestObject()->upload(
             $uploadedFile,
@@ -111,6 +111,7 @@ class FileUploadManagerTest extends TestCase
         $fileNameNormalizer->shouldHaveBeenCalled();
         $this->fileRepository->save(Argument::exact($file))->shouldHaveBeenCalled();
         $dispatcher->shouldHaveBeenCalled();
+        $fileExistenceChecker->shouldHaveBeenCalled();
 
         $pathInfo                    = pathinfo($file->getCurrentFileVersion()->getPath());
         $uploadedFilename            = $pathInfo['filename'];
@@ -133,8 +134,6 @@ class FileUploadManagerTest extends TestCase
 
     /**
      * @throws Exception
-     *
-     * @return array
      */
     public function uploadDataProvider(): array
     {
@@ -152,9 +151,6 @@ class FileUploadManagerTest extends TestCase
         ];
     }
 
-    /**
-     * @return FileUploadManager
-     */
     protected function createTestObject(): FileUploadManager
     {
         return new FileUploadManager(

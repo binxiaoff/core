@@ -10,7 +10,7 @@ use Defuse\Crypto\Exception\IOException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
-use League\Flysystem\FileExistsException;
+use League\Flysystem\FilesystemException;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -73,7 +73,7 @@ class FileInputDataTransformer
     /**
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws FileExistsException
+     * @throws FilesystemException
      * @throws Exception
      */
     public function transform(FileInput $fileInput, ?File $file): File
@@ -116,7 +116,7 @@ class FileInputDataTransformer
 
     /**
      * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
+     * @throws FilesystemException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
@@ -152,7 +152,7 @@ class FileInputDataTransformer
 
     /**
      * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
+     * @throws FilesystemException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
@@ -205,7 +205,7 @@ class FileInputDataTransformer
 
     /**
      * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
+     * @throws FilesystemException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
@@ -252,14 +252,12 @@ class FileInputDataTransformer
 
     /**
      * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
+     * @throws FilesystemException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
-     *
-     * @return File
      */
-    private function uploadProjectParticipationNda(ProjectParticipation $projectParticipation, FileInput $fileInput, User $user, ?File $file)
+    private function uploadProjectParticipationNda(ProjectParticipation $projectParticipation, FileInput $fileInput, User $user, ?File $file): File
     {
         if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $projectParticipation->getProject())) {
             throw new AccessDeniedException();
@@ -289,14 +287,12 @@ class FileInputDataTransformer
 
     /**
      * @throws EnvironmentIsBrokenException
-     * @throws FileExistsException
+     * @throws FilesystemException
      * @throws IOException
      * @throws ORMException
      * @throws OptimisticLockException
-     *
-     * @return File
      */
-    private function uploadTermDocument(Term $targetEntity, FileInput $fileInput, User $user)
+    private function uploadTermDocument(Term $targetEntity, FileInput $fileInput, User $user): File
     {
         if (false === $this->security->isGranted(TermVoter::ATTRIBUTE_EDIT, $targetEntity)) {
             throw new AccessDeniedException();
@@ -311,7 +307,7 @@ class FileInputDataTransformer
         return $file;
     }
 
-    private static function denyUploadExistingFile(FileInput $request, File $existingFile, object $targetEntity)
+    private static function denyUploadExistingFile(FileInput $request, File $existingFile, object $targetEntity): void
     {
         throw new RuntimeException(sprintf(
             'There is already a %s with id %s on the %s %s. You can only update its version',

@@ -1,5 +1,5 @@
 services:
-    cals.s3_client:
+    kls.s3_client:
         class: Aws\S3\S3Client
         arguments:
             -
@@ -13,25 +13,27 @@ oneup_flysystem:
     adapters:
         user_attachment_adapter:
             local:
-                directory: '%directory.protected%attachment'
+                location: '%directory.protected%attachment'
         generated_document_adapter:
             local:
-                directory: '%directory.protected%generated_document'
+                location: '%directory.protected%generated_document'
         # AWS S3 adapters
         user_attachment_adapter_s3:
             awss3v3:
-                client: cals.s3_client
+                client: kls.s3_client
                 bucket: '%env(AWS_S3_BUCKET_USER_ATTACHMENT)%'
-                prefix: ~
+                prefix: ''
+                streamReads: false
         generated_document_adapter_s3:
             awss3v3:
-                client: cals.s3_client
+                client: kls.s3_client
                 bucket: '%env(AWS_S3_BUCKET_GENERATED_DOCUMENT)%'
-                prefix: ~
+                prefix: ''
+                streamReads: false
     filesystems:
         user_attachment:
-            adapter: user_attachment_adapter
-            alias: League\Flysystem\UserAttachmentFilesystem
+            adapter: user_attachment_adapter_s3
+            alias: user_attachment_filesystem
         generated_document:
-            adapter: generated_document_adapter
-            alias: League\Flysystem\GeneratedDocumentFilesystem
+            adapter: generated_document_adapter_s3
+            alias: generated_document_filesystem
