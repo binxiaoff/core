@@ -9,9 +9,12 @@ use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
+use Unilend\Agency\Entity\AbstractProjectMember;
 use Unilend\Agency\Entity\AgentMember;
+use Unilend\Agency\Entity\BorrowerMember;
+use Unilend\Agency\Entity\ParticipationMember;
 
-class AgentMemberNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
+class AbstractProjectMemberNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
     use ObjectToPopulateTrait;
     use DenormalizerAwareTrait;
@@ -23,7 +26,7 @@ class AgentMemberNormalizer implements ContextAwareDenormalizerInterface, Denorm
      */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
-        return !isset($context[static::ALREADY_CALLED]) && AgentMember::class === $type;
+        return !isset($context[static::ALREADY_CALLED]) && \in_array($type, [AbstractProjectMember::class, BorrowerMember::class, AgentMember::class, ParticipationMember::class]);
     }
 
     /**
@@ -38,13 +41,13 @@ class AgentMemberNormalizer implements ContextAwareDenormalizerInterface, Denorm
         $archived = $data['archived'] ?? false;
         unset($data['archived']);
 
-        /** @var AgentMember $agentMember */
-        $agentMember = $this->denormalizer->denormalize($data, $type, $format, $context);
+        /** @var AbstractProjectMember $projectMember */
+        $projectMember = $this->denormalizer->denormalize($data, $type, $format, $context);
 
-        if ($archived && $agentMember && (false === $agentMember->isArchived())) {
-            $agentMember->archive();
+        if ($archived && $projectMember && (false === $projectMember->isArchived())) {
+            $projectMember->archive();
         }
 
-        return $agentMember;
+        return $projectMember;
     }
 }
