@@ -17,7 +17,7 @@ class FieldAlias extends AbstractEnum
     public const FINANCING_OBJECT    = 'financing_object';
     public const INVESTMENT_THEMATIC = 'investment_thematic';
     public const PROJECT_NAF_CODE    = 'project_naf_code';
-    public const COMPANY_NAF_CODE    = 'company_naf_code';
+    public const BORROWER_NAF_CODE   = 'borrower_naf_code';
 
     // Pre-defined list
     public const ACTIVITY_COUNTRY = 'activity_country';
@@ -62,6 +62,6 @@ class FieldAlias extends AbstractEnum
         self::LEGAL_FORM,
         self::LOAN_TYPE,
         self::PROJECT_NAF_CODE,
-        self::COMPANY_NAF_CODE,
+        self::BORROWER_NAF_CODE,
     ];
 }
