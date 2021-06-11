@@ -15,6 +15,7 @@ class ParticipationMemberVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_EDIT   = 'edit';
 
     private ParticipationMemberRepository $participationMemberRepository;
 
@@ -53,7 +54,7 @@ class ParticipationMemberVoter extends AbstractEntityVoter
         }
 
         // Seek a corresponding member for current connected staff (user and company) and project
-        $participationMember = $this->participationMemberRepository->findByProjectAndCompanyAndUser(
+        $participationMember = $this->participationMemberRepository->findByProjectAndCompanyAndUserAndActive(
             $project,
             $company,
             $user
@@ -65,5 +66,23 @@ class ParticipationMemberVoter extends AbstractEntityVoter
     protected function canView(ParticipationMember $participationMember, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $participationMember->getProject());
+    }
+
+    protected function canEdit(ParticipationMember $participationMember, User $user)
+    {
+        $staff = $user->getCurrentStaff();
+
+        if (null === $staff) {
+            return false;
+        }
+
+        $project = $participationMember->getProject();
+
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PARTICIPANT, $project)
+            && false === $participationMember->isArchived()
+            && false === $participationMember->getParticipation()->isArchived()
+            && $project->isEditable()
+            && $staff->getCompany() === $participationMember->getParticipation()->getParticipant()
+        ;
     }
 }

@@ -107,7 +107,7 @@ class AgentMember extends AbstractProjectMember
     }
 
     /**
-     * @Groups({"agency:borrowerMember:read"})
+     * @Groups({"agency:agentMember:read"})
      */
     public function getProjectFunction(): ?string
     {
@@ -158,6 +158,14 @@ class AgentMember extends AbstractProjectMember
         $this->signatory = $signatory;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrowerMember:read"})
+     */
+    public function isArchived(): bool
+    {
+        return parent::isArchived();
     }
 
     /**

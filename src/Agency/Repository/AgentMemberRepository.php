@@ -27,12 +27,13 @@ class AgentMemberRepository extends ServiceEntityRepository
     /**
      * @throws NonUniqueResultException
      */
-    public function findOneByProjectAndUser(Project $project, User $user): ?AgentMember
+    public function findOneByProjectAndUserAndActive(Project $project, User $user): ?AgentMember
     {
         return $this->createQueryBuilder('am')
             ->innerJoin('am.agent', 'a')
             ->where('a.project = :project')
             ->andWhere('am.user = :user')
+            ->andWhere('am.archivingDate IS NULL')
             ->setParameters([
                 'user'    => $user,
                 'project' => $project,

@@ -28,13 +28,14 @@ class BorrowerMemberRepository extends ServiceEntityRepository
     /**
      * @throws NonUniqueResultException
      */
-    public function existsByProjectAndUser(Project $project, User $user): bool
+    public function existsByProjectAndUserAndActive(Project $project, User $user): bool
     {
         $return = $this->createQueryBuilder('bm')
             ->select('bm.id')
             ->innerJoin('bm.borrower', 'b')
             ->where('b.project = :project')
             ->andWhere('bm.user = :user')
+            ->andWhere('bm.archivingDate IS NULL')
             ->setMaxResults(1)
             ->setParameters([
                 'user'    => $user,

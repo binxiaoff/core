@@ -11,6 +11,7 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 class AgentMemberVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_EDIT   = 'edit';
 
     protected function canCreate(AgentMember $agentMember, User $user): bool
     {
@@ -19,5 +20,14 @@ class AgentMemberVoter extends AbstractEntityVoter
         return $project->isEditable()
             && ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $project)
             || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project));
+    }
+
+    protected function canEdit(AgentMember $agentMember, User $user): bool
+    {
+        $project = $agentMember->getProject();
+
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
+            && $project->isEditable()
+            && false === $agentMember->isArchived();
     }
 }

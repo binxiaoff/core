@@ -159,4 +159,12 @@ class BorrowerMember extends AbstractProjectMember
 
         return $this;
     }
+
+    /**
+     * @Groups({"agency:borrowerMember:read"})
+     */
+    public function isArchived(): bool
+    {
+        return parent::isArchived();
+    }
 }

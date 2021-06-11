@@ -53,6 +53,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             ->leftJoin("{$borrowerAlias}.members", $borrowerMemberAlias)
             ->orWhere($queryBuilder->expr()->andX(
                 "{$borrowerMemberAlias}.user = :{$userParameterName}",
+                "{$borrowerMemberAlias}.archivingDate IS NULL",
                 "{$rootAlias}.currentStatus IN (:{$publishedStatusParameterName})"
             ))
             ->setParameter($userParameterName, $user)
@@ -83,6 +84,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             ->orWhere(
                 $queryBuilder->expr()->andX(
                     "{$participationMemberAlias}.user IN (:{$managedUserParameterName})",
+                    "{$participationMemberAlias}.archivingDate IS NULL",
                     "{$participationAlias}.participant = :{$companyParameterName}",
                     "{$rootAlias}.currentStatus IN (:{$publishedStatusParameterName})"
                 )
@@ -99,6 +101,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             ->orWhere(
                 $queryBuilder->expr()->andX(
                     "{$agentMemberAlias}.user IN (:{$managedUserParameterName})",
+                    "{$agentMemberAlias}.archivingDate IS NULL",
                     "{$agentAlias}.company = :{$companyParameterName}",
                 )
             )

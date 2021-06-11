@@ -316,10 +316,8 @@ class Agent extends AbstractProjectPartaker
     /**
      * @Groups({"agency:agent:write"})
      */
-    public function setLegalForm(?string $legalForm): AbstractProjectPartaker
+    public function setLegalForm(?string $legalForm): Agent
     {
-        $this->legalForm = $legalForm;
-
-        return $this;
+        return parent::setLegalForm($legalForm);
     }
 }

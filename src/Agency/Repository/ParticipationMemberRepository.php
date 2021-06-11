@@ -28,13 +28,14 @@ class ParticipationMemberRepository extends ServiceEntityRepository
     /**
      * @throws NonUniqueResultException
      */
-    public function findByProjectAndCompanyAndUser(Project $project, Company $company, User $user): ?ParticipationMember
+    public function findByProjectAndCompanyAndUserAndActive(Project $project, Company $company, User $user): ?ParticipationMember
     {
         return $this->createQueryBuilder('pm')
             ->innerJoin('pm.participation', 'p')
             ->innerJoin('p.pool', 'po')
             ->where('po.project = :project')
             ->andWhere('pm.user = :user')
+            ->andWhere('pm.archivingDate IS NULL')
             ->andWhere('p.participant = :company')
             ->setParameters([
                 'user'    => $user,

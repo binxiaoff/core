@@ -7,6 +7,8 @@ namespace Unilend\Agency\Entity;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Entity\User;
@@ -45,6 +47,26 @@ abstract class AbstractProjectMember
      */
     protected bool $signatory;
 
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private ?DateTimeImmutable $archivingDate;
+
+    /**
+     * Field used to record the staff archiving the member
+     * Not used in front only kept here for now for audit purposes.
+     * User is used because of borrowers.
+     *
+     * @ORM\OneToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(nullable=true)
+     *
+     * @Assert\AtLeastOneOf({
+     *     @Assert\IsNull,
+     *     @Assert\Expression("value and this.isArchived()")
+     * }, message="Agency.AbstractProjectMember.archiver.archived")
+     */
+    private ?User $archiver;
+
     public function __construct(User $user)
     {
         $this->user            = $user;
@@ -52,6 +74,8 @@ abstract class AbstractProjectMember
         $this->referent        = false;
         $this->signatory       = false;
         $this->projectFunction = null;
+        $this->archivingDate   = null;
+        $this->archiver        = null;
         $this->setPublicId();
     }
 
@@ -96,5 +120,48 @@ abstract class AbstractProjectMember
         $this->signatory = $signatory;
 
         return $this;
+    }
+
+    public function getArchivingDate(): ?DateTimeImmutable
+    {
+        return $this->archivingDate;
+    }
+
+    public function archive(?User $archiver = null): void
+    {
+        $this->archivingDate = new DateTimeImmutable();
+        $this->archiver      = $archiver;
+    }
+
+    public function isArchived(): bool
+    {
+        return null !== $this->archivingDate;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validate(ExecutionContextInterface $context)
+    {
+        if ($this->isArchived() && $this->getProject()->isDraft()) {
+            $context->buildViolation('Agency.AbstractProjectMember.archived.draft')
+                ->atPath('archived')
+                ->addViolation()
+            ;
+        }
+
+        if ($this->isArchived() && $this->isReferent()) {
+            $context->buildViolation('Agency.AbstractProjectMember.archived.referent')
+                ->atPath('archived')
+                ->addViolation()
+            ;
+        }
+
+        if ($this->isArchived() && $this->isSignatory()) {
+            $context->buildViolation('Agency.AbstractProjectMember.archived.signatory')
+                ->atPath('archived')
+                ->addViolation()
+            ;
+        }
     }
 }

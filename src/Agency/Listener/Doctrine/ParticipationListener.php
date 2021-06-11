@@ -12,7 +12,7 @@ use Unilend\Agency\Entity\Participation;
 class ParticipationListener
 {
     /**
-     * Archive on delete published covenant.
+     * Archive on delete participation for published project.
      *
      * @throws ORMException
      * @throws Exception
