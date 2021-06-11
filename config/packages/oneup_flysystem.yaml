@@ -33,7 +33,7 @@ oneup_flysystem:
     filesystems:
         user_attachment:
             adapter: user_attachment_adapter_s3
-            alias: KLS\Flysystem\UserAttachmentFilesystem
+            alias: user_attachment_filesystem
         generated_document:
             adapter: generated_document_adapter_s3
-            alias: KLS\Flysystem\GeneratedDocumentFilesystem
+            alias: generated_document_filesystem
