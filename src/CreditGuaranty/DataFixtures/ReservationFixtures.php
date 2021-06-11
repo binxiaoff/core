@@ -255,7 +255,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setTotalAssets(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setGrant(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setSubsidiary(false)
-            ->setBorrowerNafCode($nafCode)
+            ->setCompanyNafCode($nafCode)
         ;
     }
 

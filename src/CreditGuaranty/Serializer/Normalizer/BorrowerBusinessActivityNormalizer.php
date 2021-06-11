@@ -40,7 +40,7 @@ class BorrowerBusinessActivityNormalizer implements ContextAwareNormalizerInterf
         /** @var array $data */
         $data = $this->normalizer->normalize($object, $format, $context);
 
-        $nafNace = $this->nafNaceRepository->findOneBy(['nafCode' => $object->getBorrowerNafCodeDescription()]);
+        $nafNace = $this->nafNaceRepository->findOneBy(['nafCode' => $object->getCompanyNafCodeDescription()]);
 
         if ($nafNace instanceof NafNace) {
             $data['borrowerNaceCode'] = $nafNace->getNaceCode();

@@ -135,7 +135,7 @@ class BorrowerBusinessActivity implements ProgramAwareInterface, ProgramChoiceOp
      *
      * @Groups({"creditGuaranty:project:write"})
      */
-    private ProgramChoiceOption $borrowerNafCode;
+    private ProgramChoiceOption $companyNafCode;
 
     public function __construct()
     {
@@ -274,27 +274,27 @@ class BorrowerBusinessActivity implements ProgramAwareInterface, ProgramChoiceOp
         return $this->getReservation()->getProgram();
     }
 
-    public function getBorrowerNafCode(): ProgramChoiceOption
+    public function getCompanyNafCode(): ProgramChoiceOption
     {
-        return $this->borrowerNafCode;
+        return $this->companyNafCode;
     }
 
-    public function setBorrowerNafCode(ProgramChoiceOption $borrowerNafCode): BorrowerBusinessActivity
+    public function setCompanyNafCode(ProgramChoiceOption $companyNafCode): BorrowerBusinessActivity
     {
-        $this->borrowerNafCode = $borrowerNafCode;
+        $this->companyNafCode = $companyNafCode;
 
         return $this;
     }
 
     /**
-     * @SerializedName("borrowerNafCode")
+     * @SerializedName("companyNafCode")
      *
      * @Groups({"creditGuaranty:borrowerBusinessActivity:read"})
      */
-    public function getBorrowerNafCodeDescription(): ?string
+    public function getCompanyNafCodeDescription(): ?string
     {
-        if ($this->borrowerNafCode) {
-            return $this->borrowerNafCode->getDescription();
+        if ($this->companyNafCode) {
+            return $this->companyNafCode->getDescription();
         }
 
         return null;
