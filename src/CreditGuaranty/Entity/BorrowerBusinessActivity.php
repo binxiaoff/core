@@ -8,11 +8,14 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Address;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
+use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
 
 /**
  * @ApiResource(
@@ -46,7 +49,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  * @ORM\Table(name="credit_guaranty_borrower_business_activity")
  * @ORM\HasLifecycleCallbacks
  */
-class BorrowerBusinessActivity
+class BorrowerBusinessActivity implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -123,6 +126,16 @@ class BorrowerBusinessActivity
      * @ORM\Column(type="boolean", nullable=true)
      */
     private ?bool $subsidiary;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\JoinColumn(name="id_naf_code")
+     *
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    private ProgramChoiceOption $companyNafCode;
 
     public function __construct()
     {
@@ -254,5 +267,36 @@ class BorrowerBusinessActivity
     public function getUpdated(): ?DateTimeImmutable
     {
         return $this->updated;
+    }
+
+    public function getProgram(): Program
+    {
+        return $this->getReservation()->getProgram();
+    }
+
+    public function getCompanyNafCode(): ProgramChoiceOption
+    {
+        return $this->companyNafCode;
+    }
+
+    public function setCompanyNafCode(ProgramChoiceOption $companyNafCode): BorrowerBusinessActivity
+    {
+        $this->companyNafCode = $companyNafCode;
+
+        return $this;
+    }
+
+    /**
+     * @SerializedName("companyNafCode")
+     *
+     * @Groups({"creditGuaranty:borrowerBusinessActivity:read"})
+     */
+    public function getCompanyNafCodeDescription(): ?string
+    {
+        if ($this->companyNafCode) {
+            return $this->companyNafCode->getDescription();
+        }
+
+        return null;
     }
 }

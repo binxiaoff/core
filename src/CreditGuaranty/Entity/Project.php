@@ -12,7 +12,6 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
-use Unilend\Core\Entity\NafNace;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Service\MoneyCalculator;
@@ -74,23 +73,25 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      *
      * @Assert\Expression("value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
+     * @Groups({"creditGuaranty:project:write"})
      */
     private ProgramChoiceOption $investmentThematic;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\NafNace")
-     * @ORM\JoinColumn(name="id_naf_nace", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\JoinColumn(name="id_naf_code", nullable=false)
      *
-     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:project:write"})
      */
-    private NafNace $nafNace;
+    private ProgramChoiceOption $projectNafCode;
 
-    public function __construct(Money $fundingMoney, ProgramChoiceOption $investmentThematic, NafNace $nafNace)
+    public function __construct(Money $fundingMoney, ProgramChoiceOption $investmentThematic, ProgramChoiceOption $projectNafCode)
     {
         $this->fundingMoney       = $fundingMoney;
         $this->investmentThematic = $investmentThematic;
-        $this->nafNace            = $nafNace;
+        $this->projectNafCode     = $projectNafCode;
         $this->added              = new DateTimeImmutable();
     }
 
@@ -138,16 +139,26 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return $this->investmentThematic->getDescription();
     }
 
-    public function getNafNace(): NafNace
+    public function getProjectNafCode(): ProgramChoiceOption
     {
-        return $this->nafNace;
+        return $this->projectNafCode;
     }
 
-    public function setNafNace(NafNace $nafNace): Project
+    public function setProjectNafCode(ProgramChoiceOption $projectNafCode): Project
     {
-        $this->nafNace = $nafNace;
+        $this->projectNafCode = $projectNafCode;
 
         return $this;
+    }
+
+    /**
+     * @SerializedName("projectNafCode")
+     *
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getProjectNafCodeDescription(): ?string
+    {
+        return $this->projectNafCode->getDescription();
     }
 
     /**

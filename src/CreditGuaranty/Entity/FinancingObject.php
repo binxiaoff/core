@@ -70,7 +70,7 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      *
      * @Assert\Expression("value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:write"})
      */
     private ProgramChoiceOption $financingObject;
 

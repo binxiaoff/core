@@ -16,6 +16,7 @@ use Unilend\Core\Entity\Embeddable\Address;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\NafNace;
+use Unilend\Core\Repository\NafNaceRepository;
 use Unilend\CreditGuaranty\Entity\Borrower;
 use Unilend\CreditGuaranty\Entity\BorrowerBusinessActivity;
 use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
@@ -43,21 +44,24 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     public const RESERVATION_ARCHIVED                           = 'reservation_archived';
     public const RESERVATION_REFUSED_BY_MANAGING_COMPANY        = 'reservation_refused_by_managing_company';
 
-    private ObjectManager $entityManager;
-    private FieldRepository $fieldRepository;
+    private ObjectManager                 $entityManager;
+    private FieldRepository               $fieldRepository;
     private ProgramChoiceOptionRepository $programChoiceOptionRepository;
-    private ProgramEligibilityRepository $programEligibilityRepository;
+    private ProgramEligibilityRepository  $programEligibilityRepository;
+    private NafNaceRepository             $nafNaceRepository;
 
     public function __construct(
         TokenStorageInterface $tokenStorage,
         FieldRepository $fieldRepository,
         ProgramChoiceOptionRepository $programChoiceOptionRepository,
-        ProgramEligibilityRepository $programEligibilityRepository
+        ProgramEligibilityRepository $programEligibilityRepository,
+        NafNaceRepository $nafNaceRepository
     ) {
         parent::__construct($tokenStorage);
         $this->fieldRepository               = $fieldRepository;
         $this->programChoiceOptionRepository = $programChoiceOptionRepository;
         $this->programEligibilityRepository  = $programEligibilityRepository;
+        $this->nafNaceRepository             = $nafNaceRepository;
     }
 
     /**
@@ -95,70 +99,70 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($program, $this->createAddress(), $this->faker->numberBetween(1, 500)),
             'currentStatus'            => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_SENT => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($program, $this->createAddress(), $this->faker->numberBetween(1, 500)),
             'financingObjectsNb'       => $this->faker->numberBetween(1, 3),
-            'project'                  => $this->createProject($program, 1),
+            'project'                  => $this->createProject($program, $this->faker->numberBetween(1, 500)),
             'currentStatus'            => ReservationStatus::STATUS_SENT,
         ];
         yield self::RESERVATION_WAITING_FOR_FEI => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($program, $this->createAddress(), $this->faker->numberBetween(1, 500)),
             'financingObjectsNb'       => $this->faker->numberBetween(1, 3),
-            'project'                  => $this->createProject($program, 2),
+            'project'                  => $this->createProject($program, $this->faker->numberBetween(1, 500)),
             'currentStatus'            => ReservationStatus::STATUS_WAITING_FOR_FEI,
         ];
         yield self::RESERVATION_REQUEST_FOR_ADDITIONAL_INFORMATION => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_TOUL)->getParticipant()->getStaff()->current(),
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($program, $this->createAddress(), $this->faker->numberBetween(1, 500)),
             'financingObjectsNb'       => $this->faker->numberBetween(1, 3),
-            'project'                  => $this->createProject($program, 3),
+            'project'                  => $this->createProject($program, $this->faker->numberBetween(1, 500)),
             'currentStatus'            => ReservationStatus::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION,
         ];
         yield self::RESERVATION_ACCEPTED_BY_MANAGING_COMPANY => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_TOUL)->getParticipant()->getStaff()->current(),
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($program, $this->createAddress(), $this->faker->numberBetween(1, 500)),
             'financingObjectsNb'       => $this->faker->numberBetween(1, 3),
-            'project'                  => $this->createProject($program, 4),
+            'project'                  => $this->createProject($program, $this->faker->numberBetween(1, 500)),
             'currentStatus'            => ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
         ];
         yield self::RESERVATION_CONTRACT_FORMALIZED => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_TOUL)->getParticipant()->getStaff()->current(),
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($program, $this->createAddress(), $this->faker->numberBetween(1, 500)),
             'financingObjectsNb'       => $this->faker->numberBetween(1, 3),
-            'project'                  => $this->createProject($program, 5),
+            'project'                  => $this->createProject($program, $this->faker->numberBetween(1, 500)),
             'currentStatus'            => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
         ];
         yield self::RESERVATION_ARCHIVED => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($program, $this->createAddress(), $this->faker->numberBetween(1, 500)),
             'financingObjectsNb'       => $this->faker->numberBetween(1, 3),
-            'project'                  => $this->createProject($program, 6),
+            'project'                  => $this->createProject($program, $this->faker->numberBetween(1, 500)),
             'currentStatus'            => ReservationStatus::STATUS_ARCHIVED,
         ];
         yield self::RESERVATION_REFUSED_BY_MANAGING_COMPANY => [
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($program, $this->createAddress(), $this->faker->numberBetween(1, 500)),
             'financingObjectsNb'       => $this->faker->numberBetween(1, 3),
-            'project'                  => $this->createProject($program, 7),
+            'project'                  => $this->createProject($program, $this->faker->numberBetween(1, 500)),
             'currentStatus'            => ReservationStatus::STATUS_REFUSED_BY_MANAGING_COMPANY,
         ];
     }
@@ -236,8 +240,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         ;
     }
 
-    private function createBorrowerBusinessActivity(Address $address): BorrowerBusinessActivity
+    private function createBorrowerBusinessActivity(Program $program, Address $address, int $nafNaceId): BorrowerBusinessActivity
     {
+        /** @var NafNace $nafNace */
+        $nafNace = $this->nafNaceRepository->find($nafNaceId);
+        $nafCode = $this->createProgramChoiceOption($program, FieldAlias::PROJECT_NAF_CODE, $nafNace->getNafCode());
+
         return (new BorrowerBusinessActivity())
             ->setSiret((string) $this->faker->numberBetween(10000, 99999))
             ->setAddress($address)
@@ -247,21 +255,20 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setTotalAssets(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setGrant(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setSubsidiary(false)
+            ->setCompanyNafCode($nafCode)
         ;
     }
 
     private function createProject(Program $program, int $nafNaceId): Project
     {
-        $nafNaceRepository = $this->entityManager->getRepository(NafNace::class);
-
-        /** @var NafNace $nafNace */
-        $nafNace = $nafNaceRepository->find($nafNaceId);
-
         $fundingMoney       = new Money('EUR', (string) $this->faker->randomNumber());
         $investmentThematic = $this->createProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, 'Project ' . $this->faker->sentence);
-        $this->createProgramChoiceOption($program, FieldAlias::NAF_CODE_PROJECT, $nafNace->getNafCode());
 
-        return new Project($fundingMoney, $investmentThematic, $nafNace);
+        /** @var NafNace $nafNace */
+        $nafNace = $this->nafNaceRepository->find($nafNaceId);
+        $nafCode = $this->createProgramChoiceOption($program, FieldAlias::PROJECT_NAF_CODE, $nafNace->getNafCode());
+
+        return new Project($fundingMoney, $investmentThematic, $nafCode);
     }
 
     private function createFinancingObject(Reservation $reservation): FinancingObject
