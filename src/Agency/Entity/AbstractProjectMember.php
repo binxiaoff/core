@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Entity\User;
@@ -51,6 +52,21 @@ abstract class AbstractProjectMember
      */
     private ?DateTimeImmutable $archivingDate;
 
+    /**
+     * Field used to record the staff archiving the member
+     * Not used in front only kept here for now for audit purposes.
+     * User is used because of borrowers.
+     *
+     * @ORM\OneToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(nullable=true)
+     *
+     * @Assert\AtLeastOneOf({
+     *     @Assert\IsNull,
+     *     @Assert\Expression("value and this.isArchived()")
+     * }, message="Agency.AbstractProjectMember.archiver.archived")
+     */
+    private ?User $archiver;
+
     public function __construct(User $user)
     {
         $this->user            = $user;
@@ -59,6 +75,7 @@ abstract class AbstractProjectMember
         $this->signatory       = false;
         $this->projectFunction = null;
         $this->archivingDate   = null;
+        $this->archiver        = null;
         $this->setPublicId();
     }
 
@@ -110,9 +127,10 @@ abstract class AbstractProjectMember
         return $this->archivingDate;
     }
 
-    public function archive(): void
+    public function archive(?User $archiver = null): void
     {
         $this->archivingDate = new DateTimeImmutable();
+        $this->archiver      = $archiver;
     }
 
     public function isArchived(): bool

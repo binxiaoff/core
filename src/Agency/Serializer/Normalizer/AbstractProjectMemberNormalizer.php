@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Agency\Serializer\Normalizer;
 
 use Exception;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
@@ -13,6 +14,7 @@ use Unilend\Agency\Entity\AbstractProjectMember;
 use Unilend\Agency\Entity\AgentMember;
 use Unilend\Agency\Entity\BorrowerMember;
 use Unilend\Agency\Entity\ParticipationMember;
+use Unilend\Core\Repository\UserRepository;
 
 class AbstractProjectMemberNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -20,6 +22,18 @@ class AbstractProjectMemberNormalizer implements ContextAwareDenormalizerInterfa
     use DenormalizerAwareTrait;
 
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
+
+    private Security $security;
+
+    private UserRepository $userRepository;
+
+    public function __construct(
+        Security $security,
+        UserRepository $userRepository
+    ) {
+        $this->security       = $security;
+        $this->userRepository = $userRepository;
+    }
 
     /**
      * {@inheritDoc}
@@ -45,7 +59,11 @@ class AbstractProjectMemberNormalizer implements ContextAwareDenormalizerInterfa
         $projectMember = $this->denormalizer->denormalize($data, $type, $format, $context);
 
         if ($archived && $projectMember && (false === $projectMember->isArchived())) {
-            $projectMember->archive();
+            $user = $this->security->getUser();
+
+            $user = $user ? $this->userRepository->findOneBy(['email' => $user->getUsername()]) : null;
+
+            $projectMember->archive($user);
         }
 
         return $projectMember;
