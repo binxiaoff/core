@@ -4,9 +4,7 @@ imports:
 parameters:
     locale: fr_FR
     router.request_context.scheme: https
-    directory.public: /data/sites/unilend/public
     directory.shared: /data/medias/nfs/
-    directory.temporary: '%directory.shared%tmp/'
     directory.protected: '%directory.shared%protected/'
     front.host: '%env(HOST_APP_URL)%'
     maintenance: '%env(MAINTENANCE_MODE)%'
@@ -28,15 +26,12 @@ services:
         bind:
             $consoleLogger: '@monolog.logger.console'
             $defaultLocale: '%locale%'
-            $temporaryDirectory: '%directory.temporary%'
             $templateMessageFQCN: 'Unilend\Core\SwiftMailer\TemplateMessage'
             $numberFormatter: '@number_formatter'
             $currencyFormatter: '@currency_formatter'
             $percentageFormatter: '@percentage_formatter'
             $currencyFormatterNoDecimal: '@currency_formatter_no_decimal'
             $environment: '%kernel.environment%'
-            $publicDirectory: '%directory.public%'
-            $documentRootDirectory: '%directory.protected%/generated_document/'
             $projectDirectory: '%kernel.project_dir%'
             $userAttachmentFilesystem: '@League\Flysystem\UserAttachmentFilesystem'
             $generatedDocumentFilesystem: '@League\Flysystem\GeneratedDocumentFilesystem'
