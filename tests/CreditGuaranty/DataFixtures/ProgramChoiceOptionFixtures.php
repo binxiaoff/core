@@ -7,22 +7,20 @@ namespace Unilend\Test\CreditGuaranty\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
+use Unilend\CreditGuaranty\Entity\Field;
 use Unilend\CreditGuaranty\Entity\Program;
 use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
-use Unilend\CreditGuaranty\Repository\FieldRepository;
 use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    private FieldRepository $fieldRepository;
-
-    public function __construct(TokenStorageInterface $tokenStorage, FieldRepository $fieldRepository)
-    {
-        parent::__construct($tokenStorage);
-        $this->fieldRepository = $fieldRepository;
-    }
+    private const FIELDS = [
+        'field-borrower_type' => [
+            'Installé',
+            'En reconversion',
+            'Agriculture',
+        ],
+    ];
 
     /**
      * @return string[]
@@ -40,32 +38,14 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
      */
     public function load(ObjectManager $manager): void
     {
-        $lists = [
-            FieldAlias::BORROWER_TYPE => [
-                'Installé depuis plus de 7 ans', 'Installé depuis moins de 7 ans',
-                'En reconversion Bio', 'Agriculture céréalière',
-                'Agriculture bovine', 'Producteur de lait',
-                'Exploitant céréalier', 'Ostréiculteur',
-                'Apiculteur', 'Agriculture durable',
-                'Vignoble', 'Jeune agriculteur de moins de 30 ans',
-                'Installé depuis moins de 10 ans', 'Installé depuis plus de 10 ans',
-            ],
-        ];
-
         /** @var Program $program */
         $program = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
-        $fields  = [];
+        /** @var Field $field */
+        $field = $this->getReference('field-borrower_type');
 
-        foreach ($lists as $fieldAlias => $choices) {
-            $nbChoices = count($choices);
-
-            if (false === isset($fields[$fieldAlias])) {
-                $fields[$fieldAlias] = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
-            }
-
-            for ($i = 0; $i <= random_int(0, $nbChoices - 1); ++$i) {
-                $manager->persist(new ProgramChoiceOption($program, $choices[$i], $fields[$fieldAlias]));
-            }
+        foreach (self::FIELDS['field-borrower_type'] as $item) {
+            $programChoiceOption = new ProgramChoiceOption($program, $item, $field);
+            $manager->persist($programChoiceOption);
         }
 
         $manager->flush();

@@ -10,7 +10,7 @@ use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 
 class FieldFixtures extends AbstractFixtures
 {
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         foreach ($this->loadData() as $reference => $fieldData) {
             $field = new Field(
@@ -205,11 +205,11 @@ class FieldFixtures extends AbstractFixtures
             'unit'                     => 'money',
             'predefinedItems'          => null,
         ];
-        yield 'field-naf_code_project' => [
-            'fieldAlias'               => 'naf_code_project',
+        yield 'field-project_naf_code' => [
+            'fieldAlias'               => 'project_naf_code',
             'category'                 => 'project',
             'type'                     => 'list',
-            'targetPropertyAccessPath' => 'project::nafNace::nafCode',
+            'targetPropertyAccessPath' => 'project::projectNafCode',
             'comparable'               => false,
             'unit'                     => null,
             'predefinedItems'          => null,

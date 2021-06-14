@@ -30,7 +30,6 @@ class ProgramEligibilityFixtures extends AbstractFixtures implements DependentFi
         return [
             FieldFixtures::class,
             ProgramFixtures::class,
-            ProgramChoiceOptionFixtures::class,
         ];
     }
 

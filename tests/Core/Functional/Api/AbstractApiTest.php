@@ -13,19 +13,11 @@ use Unilend\Core\Service\Jwt\StaffPayloadManager;
 
 abstract class AbstractApiTest extends ApiTestCase
 {
-    protected function createAuthClient(Staff $staff, ?Client $client = null): Client
+    protected function createAuthClient(Staff $staff): Client
     {
-        $baseUri        = 'https://' . static::$container->getParameter('router.host_api_url');
-        $token          = $this->getStaffToken($staff);
-        $defaultOptions = ['base_uri' => $baseUri, 'auth_bearer' => $token];
+        $token = $this->getStaffToken($staff);
 
-        if ($client instanceof Client) {
-            $client->setDefaultOptions($defaultOptions);
-
-            return $client;
-        }
-
-        return static::createClient([], $defaultOptions);
+        return static::createClient([], ['auth_bearer' => $token]);
     }
 
     private function getStaffToken(Staff $staff): string

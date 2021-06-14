@@ -9,9 +9,6 @@ use Doctrine\Persistence\ObjectManager;
 use Faker;
 use Faker\Generator;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\Entity\Constant\CAInternalRating;
-use Unilend\Core\Entity\Constant\CAInternalRetailRating;
-use Unilend\Core\Entity\Constant\CARatingType;
 use Unilend\Core\Entity\Embeddable\Address;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
@@ -106,15 +103,15 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'program'                  => $program,
             'borrower'                 => $this->createBorrower($program, $this->createAddress()),
             'addedBy'                  => $addedBy,
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress(), true),
             'currentStatus'            => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_SENT => [
             'program'                  => $program,
-            'borrower'                 => $this->createBorrower($program, $this->createAddress()),
+            'borrower'                 => $this->createBorrower($program, $this->createAddress(), true),
             'addedBy'                  => $addedBy,
-            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress()),
-            'financingObjectsNb'       => $this->faker->numberBetween(1, 3),
+            'borrowerBusinessActivity' => $this->createBorrowerBusinessActivity($this->createAddress(), true),
+            'financingObjectsNb'       => 2,
             'project'                  => $this->createProject($program),
             'currentStatus'            => ReservationStatus::STATUS_SENT,
         ];
@@ -165,45 +162,45 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         ;
     }
 
-    private function createBorrower(Program $program, Address $address): Borrower
+    private function createBorrower(Program $program, Address $address, bool $creationInProgress = false): Borrower
     {
         /** @var Field $borrowerTypeField */
         $borrowerTypeField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
         /** @var Field $legalFormField */
         $legalFormField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LEGAL_FORM]);
 
-        $borrowerTypes = $this->programChoiceOptionRepository->findBy([
-            'program' => $program,
-            'field'   => $borrowerTypeField,
+        $borrowerType = $this->programChoiceOptionRepository->findOneBy([
+            'program'     => $program,
+            'field'       => $borrowerTypeField,
+            'description' => 'Installé',
         ]);
-        $legalForms = $this->programChoiceOptionRepository->findBy([
-            'program' => $program,
-            'field'   => $legalFormField,
+        $legalForm = $this->programChoiceOptionRepository->findOneBy([
+            'program'     => $program,
+            'field'       => $legalFormField,
+            'description' => 'SAS',
         ]);
 
-        $grades = CARatingType::CA_INTERNAL_RETAIL_RATING === $program->getRatingType() ? CAInternalRetailRating::getConstList() : CAInternalRating::getConstList();
-
-        return (new Borrower($this->faker->company, $grades[array_rand($grades)]))
-            ->setBorrowerType($borrowerTypes[array_rand($borrowerTypes)])
-            ->setLegalForm($legalForms[array_rand($legalForms)])
+        return (new Borrower('Borrower Company', 'B'))
+            ->setBorrowerType($borrowerType)
+            ->setLegalForm($legalForm)
             ->setTaxNumber('12 23 45 678 987')
-            ->setBeneficiaryName($this->faker->name)
+            ->setBeneficiaryName('Borrower Name')
             ->setAddress($address)
-            ->setCreationInProgress(false)
+            ->setCreationInProgress($creationInProgress)
         ;
     }
 
-    private function createBorrowerBusinessActivity(Address $address): BorrowerBusinessActivity
+    private function createBorrowerBusinessActivity(Address $address, bool $subsidiary = false): BorrowerBusinessActivity
     {
         return (new BorrowerBusinessActivity())
-            ->setSiret((string) $this->faker->numberBetween(10000, 99999))
+            ->setSiret('11111111111111')
             ->setAddress($address)
-            ->setEmployeesNumber($this->faker->randomDigit)
-            ->setLastYearTurnover(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
-            ->setFiveYearsAverageTurnover(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
-            ->setTotalAssets(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
-            ->setGrant(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
-            ->setSubsidiary(false)
+            ->setEmployeesNumber(42)
+            ->setLastYearTurnover(new NullableMoney('EUR', '128'))
+            ->setFiveYearsAverageTurnover(new NullableMoney('EUR', '100'))
+            ->setTotalAssets(new NullableMoney('EUR', '2048'))
+            ->setGrant(new NullableMoney('EUR', '256'))
+            ->setSubsidiary($subsidiary)
         ;
     }
 
@@ -214,50 +211,36 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
         $fundingMoney       = new Money('EUR', (string) $this->faker->randomNumber());
         $investmentThematic = $this->createProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, 'Project ' . $this->faker->sentence);
-        $this->createProgramChoiceOption($program, FieldAlias::NAF_CODE_PROJECT, $nafNace->getNafCode());
+        $projectNafCode     = $this->createProgramChoiceOption($program, FieldAlias::PROJECT_NAF_CODE, $nafNace->getNafCode());
 
-        return new Project($fundingMoney, $investmentThematic, $nafNace);
+        return new Project($fundingMoney, $investmentThematic, $projectNafCode);
     }
 
-    private function createFinancingObject(Reservation $reservation): FinancingObject
+    private function createFinancingObject(Reservation $reservation, bool $releasedOnInvoice = false): FinancingObject
     {
         $program = $reservation->getProgram();
 
         /** @var Field $financingObjectField */
-        $financingObjectField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::FINANCING_OBJECT]);
+        $financingObjectField = $this->getReference('field-financing_object');
         /** @var Field $loanTypeField */
-        $loanTypeField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LOAN_TYPE]);
+        $loanTypeField = $this->getReference('field-loan_type');
 
-        $financingObjects = $this->programChoiceOptionRepository->findBy([
-            'program' => $program,
-            'field'   => $financingObjectField,
-        ]);
-        $loanTypes = $this->programChoiceOptionRepository->findBy([
-            'program' => $program,
-            'field'   => $loanTypeField,
+        $loanType = $this->programChoiceOptionRepository->findOneBy([
+            'program'     => $reservation->getProgram(),
+            'field'       => $loanTypeField,
+            'description' => 'short_term',
         ]);
 
-        if (empty($financingObjects)) {
-            $financingObject = $this->createProgramChoiceOption($program, FieldAlias::FINANCING_OBJECT, $this->faker->text(255));
-        } else {
-            $financingObject = $financingObjects[array_rand($financingObjects)];
-        }
-
-        if (empty($loanTypes)) {
-            $loanType = $this->createProgramChoiceOption($program, FieldAlias::LOAN_TYPE, $this->faker->text(255));
-        } else {
-            $loanType = $loanTypes[array_rand($loanTypes)];
-        }
-
-        $loanMoney = new Money('EUR', (string) $this->faker->randomNumber());
+        $financingObject = $this->createProgramChoiceOption($program, $financingObjectField->getFieldAlias(), $this->faker->text(255));
+        $loanMoney       = new Money('EUR', '200');
 
         return new FinancingObject(
             $reservation,
             $financingObject,
             $loanType,
-            $this->faker->randomNumber(2),
+            12,
             $loanMoney,
-            $this->faker->boolean
+            $releasedOnInvoice
         );
     }
 

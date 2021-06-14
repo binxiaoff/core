@@ -1,9 +1,6 @@
 imports:
   - { resource: services.yaml }
 
-parameters:
-  router.host_api_url: '%env(HOST_API_URL)%'
-
 services:
   _defaults:
     autowire: true

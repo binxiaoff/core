@@ -29,6 +29,11 @@ class EligibilityTest extends AbstractApiTest
         self::bootKernel();
     }
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+    }
+
     public function testGetEligibilitiesNotFoundAction(): void
     {
         /** @var Staff $staff */
@@ -43,56 +48,59 @@ class EligibilityTest extends AbstractApiTest
 
     public function authorizedStaffProvider(): iterable
     {
-        yield 'authorized staff #staff_company:basic_user-1' => [
+        yield 'staff_company:basic_user-1 - reservation draft - general - ineligible' => [
             'staff_company:basic_user-1',
             ReservationFixtures::RESERVATION_DRAFT,
             'general',
-            true,
+            false,
         ];
-        yield 'authorized staff #staff_company:basic_user-2' => [
+        yield 'staff_company:basic_user-2 - reservation draft - profile - eligible' => [
             'staff_company:basic_user-2',
             ReservationFixtures::RESERVATION_DRAFT,
             'profile',
             true,
         ];
-        yield 'authorized staff #staff_company:basic_user-3' => [
+        yield 'staff_company:basic_user-3 - reservation sent - general - eligible' => [
             'staff_company:basic_user-3',
             ReservationFixtures::RESERVATION_SENT,
-            'generale',
+            'general',
             true,
         ];
-        yield 'authorized staff #staff_company:basic_user-4' => [
+        yield 'staff_company:basic_user-4 - reservation sent - profile - eligible' => [
             'staff_company:basic_user-4',
             ReservationFixtures::RESERVATION_SENT,
             'profile',
             true,
         ];
-        yield 'authorized staff #staff_company:basic_user-5' => [
-            'staff_company:basic_user-5',
+        yield 'staff_company:basic_user-4 - reservation sent - activity - eligible' => [
+            'staff_company:basic_user-4',
             ReservationFixtures::RESERVATION_SENT,
             'activity',
             true,
         ];
-        yield 'authorized staff #staff_company:basic_user-11' => [
-            'staff_company:basic_user-11',
+        yield 'staff_company:basic_user-5 - reservation sent - project - eligible' => [
+            'staff_company:basic_user-5',
             ReservationFixtures::RESERVATION_SENT,
             'project',
             true,
+        ];
+        yield 'staff_company:basic_user-11 - reservation sent - loan - ineligible' => [
+            'staff_company:basic_user-11',
+            ReservationFixtures::RESERVATION_SENT,
+            'loan',
+            false,
         ];
     }
 
     /**
      * @dataProvider authorizedStaffProvider
      */
-    public function testPostEligibilitiesCheckingTrue(
+    public function testPostEligibilitiesChecking(
         string $staffPublicId,
         string $reservationPublicId,
         string $category,
         bool $eligible
     ): void {
-        static::ensureKernelShutdown();
-        $client = static::createClient();
-
         /** @var IriConverterInterface $iriConverter */
         $iriConverter = static::$container->get(IriConverterInterface::class);
 
@@ -102,7 +110,7 @@ class EligibilityTest extends AbstractApiTest
         $reservation    = static::$container->get(ReservationRepository::class)->findOneBy(['publicId' => $reservationPublicId]);
         $reservationIri = $iriConverter->getIriFromItem($reservation);
 
-        $response = $this->createAuthClient($staff, $client)
+        $response = $this->createAuthClient($staff)
             ->request(Request::METHOD_POST, self::ENDPOINT_ELIGIBILITY_CHECKING, [
                 'json' => [
                     'reservation' => $reservationIri,
@@ -120,21 +128,18 @@ class EligibilityTest extends AbstractApiTest
 
     public function unauthorizedStaffProvider(): iterable
     {
-        yield 'unauthorized staff #staff_company:basic_user-6' => ['staff_company:basic_user-6'];
-        yield 'unauthorized staff #staff_company:basic_user-7' => ['staff_company:basic_user-7'];
-        yield 'unauthorized staff #staff_company:basic_user-8' => ['staff_company:basic_user-8'];
-        yield 'unauthorized staff #staff_company:basic_user-9' => ['staff_company:basic_user-9'];
-        yield 'unauthorized staff #staff_company:basic_user-10' => ['staff_company:basic_user-10'];
+        yield 'staff_company:basic_user-6' => ['staff_company:basic_user-6'];
+        yield 'staff_company:basic_user-7' => ['staff_company:basic_user-7'];
+        yield 'staff_company:basic_user-8' => ['staff_company:basic_user-8'];
+        yield 'staff_company:basic_user-9' => ['staff_company:basic_user-9'];
+        yield 'staff_company:basic_user-10' => ['staff_company:basic_user-10'];
     }
 
     /**
      * @dataProvider unauthorizedStaffProvider
      */
-    public function testPostEligibilitiesCheckingFalse(string $staffPublicId): void
+    public function testPostEligibilitiesCheckingForbidden(string $staffPublicId): void
     {
-        static::ensureKernelShutdown();
-        $client = static::createClient();
-
         /** @var IriConverterInterface $iriConverter */
         $iriConverter = static::$container->get(IriConverterInterface::class);
 
@@ -144,7 +149,7 @@ class EligibilityTest extends AbstractApiTest
         $reservation    = static::$container->get(ReservationRepository::class)->findOneBy(['publicId' => ReservationFixtures::RESERVATION_DRAFT]);
         $reservationIri = $iriConverter->getIriFromItem($reservation);
 
-        $response = $this->createAuthClient($staff, $client)
+        $response = $this->createAuthClient($staff)
             ->request(Request::METHOD_POST, self::ENDPOINT_ELIGIBILITY_CHECKING, [
                 'json' => [
                     'reservation' => $reservationIri,

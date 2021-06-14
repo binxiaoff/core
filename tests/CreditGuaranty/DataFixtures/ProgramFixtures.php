@@ -56,7 +56,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
             'companyGroupTag'      => 'companyGroup:foo_tag:agriculture',
             'funds'                => ['currency' => 'EUR', 'amount' => '300000000'],
             'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,
-            'cappedAt'             => random_int(10, 40) / 100,
+            'cappedAt'             => '0.15',
             'description'          => 'La description pour le programme en distribution',
             'distributionDeadline' => new \DateTimeImmutable(),
             'distributionProcess'  => [
