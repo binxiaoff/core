@@ -38,6 +38,7 @@ use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
+use Unilend\Core\Entity\UserStatus;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -67,16 +68,16 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $draftProject = $this->createProject($staff);
         $this->forcePublicId($draftProject, 'draft');
 
-        $publishableProject = $this->createPublishableProject($staff);
+        $publishableProject = $this->createPublishableProject($staff, $manager);
         $this->forcePublicId($publishableProject, 'publishable');
 
-        $publishedProject = $this->createPublishableProject($staff);
+        $publishedProject = $this->createPublishableProject($staff, $manager);
         $this->forcePublicId($publishedProject, 'published');
 
-        $finishedProject = $this->createPublishableProject($staff);
+        $finishedProject = $this->createPublishableProject($staff, $manager);
         $this->forcePublicId($finishedProject, 'finished');
 
-        $archivedProject = $this->createPublishableProject($staff);
+        $archivedProject = $this->createPublishableProject($staff, $manager);
         $this->forcePublicId($archivedProject, 'archived');
 
         // There are multiple save to let the doctrine listener trigger
@@ -142,7 +143,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         ];
 
         foreach ($facturationProjects as $start => $end) {
-            $project = $this->createPublishableProject($staff);
+            $project = $this->createPublishableProject($staff, $manager);
 
             $this->forcePropertyValue($project, 'added', new DateTimeImmutable($start));
 
@@ -236,11 +237,11 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     /**
      * @throws Exception
      */
-    private function createPublishableProject(Staff $staff): Project
+    private function createPublishableProject(Staff $staff, ObjectManager $manager): Project
     {
         $project = $this->createProject($staff);
         $this->withPublishableAgentData($project)
-            ->withPublishableBorrowers($project)
+            ->withPublishableBorrowers($project, $manager)
             ->withPublishableTranches($project)
             ->withPublishableBorrowerTrancheShare($project)
             ->withPublishableSyndicationModality($project)
@@ -351,16 +352,16 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     /**
      * @throws Exception
      */
-    private function withPublishableBorrowers(Project $project): ProjectFixtures
+    private function withPublishableBorrowers(Project $project, ObjectManager $manager): ProjectFixtures
     {
         $borrowers = new ArrayCollection();
 
         foreach (range(0, 3) as $index) {
             $borrower = $this->createBorrower($project);
 
-            $borrower->addMember($this->createBorrowerMember($borrower, true));
-            $borrower->addMember($this->createBorrowerMember($borrower, false, true));
-            $borrower->addMember($this->createBorrowerMember($borrower));
+            $borrower->addMember($this->createBorrowerMember($borrower, $manager, true));
+            $borrower->addMember($this->createBorrowerMember($borrower, $manager, false, true));
+            $borrower->addMember($this->createBorrowerMember($borrower, $manager));
 
             $borrowers[] = $borrower;
         }
@@ -421,17 +422,21 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     /**
      * @throws Exception
      */
-    private function createBorrowerMember(Borrower $borrower, bool $referent = false, bool $signatory = false): BorrowerMember
+    private function createBorrowerMember(Borrower $borrower, ObjectManager $manager, bool $referent = false, bool $signatory = false): BorrowerMember
     {
         $user = new User($this->faker->email);
-        $user->setPlainPassword('0000');
         $user->setLastName($this->faker->lastName);
         $user->setFirstName($this->faker->firstName);
         $user->setPhone('+33600000000');
         $user->setJobFunction('Job function');
         $user->setPlainPassword('0000');
         $user->setPassword($this->passwordEncoder->encodePassword($user, $user->getPlainPassword()));
-        $borrowerMember = new BorrowerMember($borrower, new User($this->faker->email));
+        $user->setCurrentStatus(new UserStatus($user, UserStatus::STATUS_CREATED));
+
+        $manager->persist($user);
+        $manager->flush();
+
+        $borrowerMember = new BorrowerMember($borrower, $user);
         $borrowerMember->setReferent($referent);
         $borrowerMember->setSignatory($signatory);
 
