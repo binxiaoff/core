@@ -148,8 +148,6 @@ class Term
      * @Assert\Type("bool")
      *
      * @Groups({"agency:term:read", "agency:term:update"})
-     *
-     * @ApiProperty(security="is_granted('agent', object)")
      */
     private ?bool $validation;
 
@@ -170,8 +168,6 @@ class Term
      * @ORM\Column(type="text", nullable=true)
      *
      * @Groups({"agency:term:read", "agency:term:update"})
-     *
-     * @ApiProperty(security="is_granted('agent', object)")
      */
     private ?string $agentComment;
 
@@ -184,8 +180,6 @@ class Term
      * )
      *
      * @Groups({"agency:term:read", "agency:term:update"})
-     *
-     * @ApiProperty(security="is_granted('agent', object)")
      */
     private bool $breach;
 
@@ -198,8 +192,6 @@ class Term
      * @ORM\Column(type="text", nullable=true)
      *
      * @Groups({"agency:term:read", "agency:term:update"})
-     *
-     * @ApiProperty(security="is_granted('agent', object)")
      */
     private ?string $irregularityComment;
 
@@ -220,8 +212,6 @@ class Term
      * @ORM\Column(type="boolean", nullable=true)
      *
      * @Groups({"agency:term:read", "agency:term:update"})
-     *
-     * @ApiProperty(security="is_granted('agent', object)")
      */
     private ?bool $waiver;
 
@@ -234,8 +224,6 @@ class Term
      * @ORM\Column(type="text", nullable=true)
      *
      * @Groups({"agency:term:read", "agency:term:update"})
-     *
-     * @ApiProperty(security="is_granted('agent', object)")
      */
     private ?string $waiverComment;
 
@@ -249,8 +237,6 @@ class Term
      * @ORM\Column(type="integer", nullable=true)
      *
      * @Groups({"agency:term:read", "agency:term:update"})
-     *
-     * @ApiProperty(security="is_granted('agent', object)")
      */
     private ?int $grantedDelay;
 
@@ -447,9 +433,6 @@ class Term
         return $this;
     }
 
-    /**
-     * @Groups({"agency:term:read"})
-     */
     public function getAgentComment(): ?string
     {
         return $this->agentComment;
@@ -482,9 +465,6 @@ class Term
         return $this->borrowerInputDate;
     }
 
-    /**
-     * @Groups({"agency:term:read"})
-     */
     public function getGrantedDelay(): ?int
     {
         return $this->grantedDelay;
@@ -497,9 +477,6 @@ class Term
         return $this;
     }
 
-    /**
-     * @Groups({"agency:term:read"})
-     */
     public function hasBreach(): bool
     {
         return $this->breach;
@@ -512,9 +489,6 @@ class Term
         return $this;
     }
 
-    /**
-     * @Groups({"agency:term:read"})
-     */
     public function getIrregularityComment(): ?string
     {
         return $this->irregularityComment;
@@ -527,9 +501,6 @@ class Term
         return $this;
     }
 
-    /**
-     * @Groups({"agency:term:read"})
-     */
     public function getWaiver(): ?bool
     {
         return $this->waiver;
@@ -558,9 +529,6 @@ class Term
         return $this;
     }
 
-    /**
-     * @Groups({"agency:term:read"})
-     */
     public function getWaiverComment(): ?string
     {
         return $this->waiverComment;
