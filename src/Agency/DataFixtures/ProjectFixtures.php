@@ -37,7 +37,6 @@ use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\UserStatus;
@@ -344,7 +343,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setBic('AGRIFRPP907')
             ->setHeadOffice($this->faker->address)
             ->setRcs(implode(' ', ['RCS', mb_strtoupper($this->faker->city), $this->faker->randomDigit % 2 ? 'A' : 'B', $project->getAgent()->getMatriculationNumber()]))
-            ->setCapital(new Money('EUR', '0'))
+            ->setCapital(new NullableMoney('EUR', '0'))
             ->setBankInstitution('bank institution')
             ->setBankAddress($this->faker->address)
             ->setCorporateName($this->faker->company)

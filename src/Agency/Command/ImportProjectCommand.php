@@ -220,9 +220,11 @@ class ImportProjectCommand extends Command
             throw new InvalidArgumentException(sprintf('The company with ID "%s" was not found. Cannot start import.', $input->getArgument('company')));
         }
 
+        $this->info($io, sprintf('Found company %s', $company->getDisplayName()));
+
         $path = $input->getArgument('path');
 
-        $io->info(sprintf('Importing file %s...', $path));
+        $this->info($io, sprintf('Importing file %s...', $path));
 
         $reader = ReaderEntityFactory::createXLSXReader();
         $reader->open($path);
@@ -533,6 +535,8 @@ class ImportProjectCommand extends Command
             $finalAllocation = new Money('EUR', (string) $cells[8]->getValue());
 
             if (static::AMUNDI === $name) {
+                $rowIterator->next();
+
                 continue;
             }
             // Handle ' and ’ in display name
@@ -625,7 +629,7 @@ class ImportProjectCommand extends Command
             $endDate         = null === $recurrence ? $project->getContractEndDate() : null;
             $endDate         = $cells[7]->getValue() ? DateTimeImmutable::createFromMutable($cells[7]->getValue()) : $endDate;
             if (null === $endDate) {
-                throw new Exception(sprintf('You must have an enddate if there is no recurrence (line %d)', $rowIterator->key()));
+                throw new Exception(sprintf('You must have an enddate if there is recurrence (line %d)', $rowIterator->key()));
             }
             // Value type is useless because the type depends on the type of covenant
             // As long as the column was present in the first import files, it was kept in order to avoid handling multiple file formats
