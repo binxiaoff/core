@@ -31,8 +31,8 @@ use Unilend\Core\Model\Bitmask;
  *     normalizationContext={
  *         "groups": {
  *             "agency:participation:read",
- *             "nullableMoney:read",
- *             "money:read"
+ *             "money:read",
+ *             "nullableMoney:read"
  *         }
  *     },
  *     collectionOperations={
@@ -119,6 +119,18 @@ use Unilend\Core\Model\Bitmask;
  * })
  *
  * @UniqueEntity(fields={"pool", "participant"})
+ *
+ * @ApiFilter(
+ *     filterClass=GroupFilter::class,
+ *     arguments={
+ *         "whitelist": {
+ *             "company:read",
+ *             "agency:participation:read",
+ *             "agency:participationTrancheAllocation:read",
+ *             "agency:tranche:read"
+ *         }
+ *     }
+ * )
  *
  * TODO The .publicId might be dropped in favor of using iri for filter when https://github.com/api-platform/core/issues/3575 is solved
  * @ApiFilter(

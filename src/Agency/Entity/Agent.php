@@ -7,6 +7,7 @@ namespace Unilend\Agency\Entity;
 use ApiPlatform\Core\Action\NotFoundAction;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -21,7 +22,9 @@ use Unilend\Core\Entity\Embeddable\NullablePerson;
  *     normalizationContext={
  *         "groups": {
  *             "agency:agent:read",
- *             "nullableMoney:read"
+ *             "nullablePerson:read",
+ *             "nullableMoney:read",
+ *             "money:read"
  *         }
  *     },
  *     collectionOperations={},
@@ -34,7 +37,7 @@ use Unilend\Core\Entity\Embeddable\NullablePerson;
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
- *                 "groups": {"agency:agent:write"}
+ *                 "groups": {"agency:agent:write", "nullablePerson:write", "nullableMoney:write", "money:write"}
  *             }
  *         }
  *     }
@@ -55,7 +58,7 @@ class Agent extends AbstractProjectPartaker
      *     @Assert\Expression("value.getAgent() == this")
      * })
      *
-     * @Groups({"agency:agent:read", "agency:agent:write"})
+     * @Groups({"agency:agent:read"})
      */
     protected Collection $members;
 
