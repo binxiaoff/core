@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Embeddable;
+namespace Unilend\CreditGuaranty\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -32,6 +32,13 @@ class Address
      * @Assert\NotBlank(allowNull=true)
      */
     private ?string $city;
+
+    /**
+     * @ORM\Column(type="string", length=30, nullable=true)
+     *
+     * @Assert\NotBlank(allowNull=true)
+     */
+    private ?string $department;
 
     /**
      * @ORM\Column(type="string", length=10, nullable=true)
@@ -79,6 +86,18 @@ class Address
     public function setCity(?string $city): Address
     {
         $this->city = $city;
+
+        return $this;
+    }
+
+    public function getDepartment(): ?string
+    {
+        return $this->department;
+    }
+
+    public function setDepartment(?string $department): Address
+    {
+        $this->department = $department;
 
         return $this;
     }

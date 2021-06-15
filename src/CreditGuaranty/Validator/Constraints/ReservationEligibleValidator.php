@@ -7,7 +7,6 @@ namespace Unilend\CreditGuaranty\Validator\Constraints;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Unilend\CreditGuaranty\Entity\Borrower;
-use Unilend\CreditGuaranty\Entity\BorrowerBusinessActivity;
 use Unilend\CreditGuaranty\Entity\Project;
 use Unilend\CreditGuaranty\Entity\ReservationStatus;
 use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
@@ -39,15 +38,6 @@ class ReservationEligibleValidator extends ConstraintValidator
         if (false === ($reservation->getBorrower() instanceof Borrower)) {
             $this->context->buildViolation('CreditGuaranty.Reservation.borrower.missing')
                 ->atPath('reservation.borrower')
-                ->addViolation()
-            ;
-
-            return;
-        }
-
-        if (false === ($reservation->getBorrowerBusinessActivity() instanceof BorrowerBusinessActivity)) {
-            $this->context->buildViolation('CreditGuaranty.Reservation.borrowerBusinessActivity.missing')
-                ->atPath('reservation.borrowerBusinessActivity')
                 ->addViolation()
             ;
 

@@ -84,14 +84,14 @@ class EligibilityHelperTest extends AbstractEligibilityTest
     public function testGetMoneyValue(): void
     {
         $reservation = $this->createReservation();
-        $entity      = $reservation->getBorrowerBusinessActivity();
-        $field       = new Field('last_year_turnover', 'activity', 'other', 'borrowerBusinessActivity::lastYearTurnover::amount', true, 'money', null);
+        $entity      = $reservation->getBorrower();
+        $field       = new Field('last_year_turnover', 'activity', 'other', 'borrower::turnover::amount', true, 'money', null);
 
-        $this->propertyAccessor->getValue($entity, 'lastYearTurnover.amount')->shouldBeCalledOnce()->willReturn('128');
+        $this->propertyAccessor->getValue($entity, 'turnover.amount')->shouldBeCalledOnce()->willReturn('128');
         $this->programChoiceOptionRepository->findOneBy(Argument::any())->shouldNotBeCalled();
 
         $eligibilityHelper = $this->createTestObject();
-        $result            = $eligibilityHelper->getValue($reservation->getProgram(), $reservation->getBorrowerBusinessActivity(), $field);
+        $result            = $eligibilityHelper->getValue($reservation->getProgram(), $entity, $field);
 
         static::assertSame('128', $result);
     }
@@ -99,8 +99,8 @@ class EligibilityHelperTest extends AbstractEligibilityTest
     public function testGetListValue(): void
     {
         $reservation         = $this->createReservation();
-        $entity              = $reservation->getBorrowerBusinessActivity();
-        $field               = new Field('activity_country', 'activity', 'list', 'borrowerBusinessActivity::address::country', false, null, null);
+        $entity              = $reservation->getBorrower();
+        $field               = new Field('activity_country', 'activity', 'list', 'borrower::address::country', false, null, null);
         $programChoiceOption = new ProgramChoiceOption($reservation->getProgram(), 'FR', $field);
 
         $this->propertyAccessor->getValue($entity, 'address.country')->shouldBeCalledOnce()->willReturn('FR');
@@ -111,7 +111,7 @@ class EligibilityHelperTest extends AbstractEligibilityTest
         ])->shouldBeCalledOnce()->willReturn($programChoiceOption);
 
         $eligibilityHelper = $this->createTestObject();
-        $result            = $eligibilityHelper->getValue($reservation->getProgram(), $reservation->getBorrowerBusinessActivity(), $field);
+        $result            = $eligibilityHelper->getValue($reservation->getProgram(), $entity, $field);
 
         static::assertInstanceOf(ProgramChoiceOption::class, $result);
         static::assertSame($programChoiceOption, $result);
@@ -137,8 +137,8 @@ class EligibilityHelperTest extends AbstractEligibilityTest
     public function testGetListValueExceptionWithProgramChoiceOptionNotFound(): void
     {
         $reservation = $this->createReservation();
-        $entity      = $reservation->getBorrowerBusinessActivity();
-        $field       = new Field('activity_country', 'activity', 'list', 'borrowerBusinessActivity::address::country', false, null, null);
+        $entity      = $reservation->getBorrower();
+        $field       = new Field('activity_country', 'activity', 'list', 'borrower::address::country', false, null, null);
 
         $this->propertyAccessor->getValue($entity, 'address.country')->shouldBeCalledOnce()->willReturn('FR');
         $this->programChoiceOptionRepository->findOneBy([
@@ -150,7 +150,7 @@ class EligibilityHelperTest extends AbstractEligibilityTest
         static::expectException(LogicException::class);
 
         $eligibilityHelper = $this->createTestObject();
-        $eligibilityHelper->getValue($reservation->getProgram(), $reservation->getBorrowerBusinessActivity(), $field);
+        $eligibilityHelper->getValue($reservation->getProgram(), $reservation->getBorrower(), $field);
     }
 
     private function createTestObject(): EligibilityHelper

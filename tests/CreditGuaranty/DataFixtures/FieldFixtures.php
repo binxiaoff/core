@@ -34,29 +34,11 @@ class FieldFixtures extends AbstractFixtures
 
     private function loadData(): iterable
     {
-        yield 'field-creation_in_progress' => [
-            'fieldAlias'               => 'creation_in_progress',
-            'category'                 => 'general',
-            'type'                     => 'bool',
-            'targetPropertyAccessPath' => 'borrower::creationInProgress',
-            'comparable'               => false,
-            'unit'                     => null,
-            'predefinedItems'          => null,
-        ];
-        yield 'field-receiving_grant' => [
-            'fieldAlias'               => 'receiving_grant',
-            'category'                 => 'general',
-            'type'                     => 'bool',
-            'targetPropertyAccessPath' => 'borrowerBusinessActivity::receivingGrant',
-            'comparable'               => false,
-            'unit'                     => null,
-            'predefinedItems'          => null,
-        ];
-        yield 'field-subsidiary' => [
-            'fieldAlias'               => 'subsidiary',
-            'category'                 => 'general',
-            'type'                     => 'bool',
-            'targetPropertyAccessPath' => 'borrowerBusinessActivity::subsidiary',
+        yield 'field-beneficiary_name' => [
+            'fieldAlias'               => 'beneficiary_name',
+            'category'                 => 'profile',
+            'type'                     => 'other',
+            'targetPropertyAccessPath' => 'borrower::beneficiaryName',
             'comparable'               => false,
             'unit'                     => null,
             'predefinedItems'          => null,
@@ -70,6 +52,33 @@ class FieldFixtures extends AbstractFixtures
             'unit'                     => null,
             'predefinedItems'          => null,
         ];
+        yield 'field-young_farmer' => [
+            'fieldAlias'               => 'young_farmer',
+            'category'                 => 'profile',
+            'type'                     => 'bool',
+            'targetPropertyAccessPath' => 'borrower::youngFarmer',
+            'comparable'               => false,
+            'unit'                     => null,
+            'predefinedItems'          => null,
+        ];
+        yield 'field-creation_in_progress' => [
+            'fieldAlias'               => 'creation_in_progress',
+            'category'                 => 'profile',
+            'type'                     => 'bool',
+            'targetPropertyAccessPath' => 'borrower::creationInProgress',
+            'comparable'               => false,
+            'unit'                     => null,
+            'predefinedItems'          => null,
+        ];
+        yield 'field-subsidiary' => [
+            'fieldAlias'               => 'subsidiary',
+            'category'                 => 'profile',
+            'type'                     => 'bool',
+            'targetPropertyAccessPath' => 'borrower::subsidiary',
+            'comparable'               => false,
+            'unit'                     => null,
+            'predefinedItems'          => null,
+        ];
         yield 'field-company_name' => [
             'fieldAlias'               => 'company_name',
             'category'                 => 'profile',
@@ -79,29 +88,38 @@ class FieldFixtures extends AbstractFixtures
             'unit'                     => null,
             'predefinedItems'          => null,
         ];
-        yield 'field-company_address' => [
-            'fieldAlias'               => 'company_address',
-            'category'                 => 'profile',
-            'type'                     => 'other',
-            'targetPropertyAccessPath' => 'borrowerBusinessActivity::address',
-            'comparable'               => false,
-            'unit'                     => null,
-            'predefinedItems'          => null,
-        ];
-        yield 'field-beneficiary_name' => [
-            'fieldAlias'               => 'beneficiary_name',
-            'category'                 => 'profile',
-            'type'                     => 'other',
-            'targetPropertyAccessPath' => 'borrower::beneficiaryName',
-            'comparable'               => false,
-            'unit'                     => null,
-            'predefinedItems'          => null,
-        ];
         yield 'field-beneficiary_address' => [
             'fieldAlias'               => 'beneficiary_address',
             'category'                 => 'profile',
             'type'                     => 'other',
             'targetPropertyAccessPath' => 'borrower::address',
+            'comparable'               => false,
+            'unit'                     => null,
+            'predefinedItems'          => null,
+        ];
+        yield 'field-activity_country' => [
+            'fieldAlias'               => 'activity_country',
+            'category'                 => 'profile',
+            'type'                     => 'list',
+            'targetPropertyAccessPath' => 'borrower::address::country',
+            'comparable'               => false,
+            'unit'                     => null,
+            'predefinedItems'          => ['FR'],
+        ];
+        yield 'field-activity_start_date' => [
+            'fieldAlias'               => 'activity_start_date',
+            'category'                 => 'profile',
+            'type'                     => 'other',
+            'targetPropertyAccessPath' => 'borrower::activityStartDate',
+            'comparable'               => false,
+            'unit'                     => null,
+            'predefinedItems'          => null,
+        ];
+        yield 'field-siret' => [
+            'fieldAlias'               => 'siret',
+            'category'                 => 'profile',
+            'type'                     => 'other',
+            'targetPropertyAccessPath' => 'borrower::siret',
             'comparable'               => false,
             'unit'                     => null,
             'predefinedItems'          => null,
@@ -124,65 +142,47 @@ class FieldFixtures extends AbstractFixtures
             'unit'                     => null,
             'predefinedItems'          => ['SARL', 'SAS', 'SASU', 'EURL', 'SA', 'SELAS'],
         ];
-        yield 'field-siret' => [
-            'fieldAlias'               => 'siret',
-            'category'                 => 'activity',
+        yield 'field-company_naf_code' => [
+            'fieldAlias'               => 'company_naf_code',
+            'category'                 => 'profile',
             'type'                     => 'other',
-            'targetPropertyAccessPath' => 'borrowerBusinessActivity::siret',
+            'targetPropertyAccessPath' => 'borrower::companyNafCode',
             'comparable'               => false,
             'unit'                     => null,
             'predefinedItems'          => null,
         ];
-        yield 'field-activity_country' => [
-            'fieldAlias'               => 'activity_country',
-            'category'                 => 'activity',
-            'type'                     => 'list',
-            'targetPropertyAccessPath' => 'borrowerBusinessActivity::address::country',
-            'comparable'               => false,
-            'unit'                     => null,
-            'predefinedItems'          => ['FR'],
-        ];
         yield 'field-employees_number' => [
             'fieldAlias'               => 'employees_number',
-            'category'                 => 'activity',
+            'category'                 => 'profile',
             'type'                     => 'other',
-            'targetPropertyAccessPath' => 'borrowerBusinessActivity::employeesNumber',
+            'targetPropertyAccessPath' => 'borrower::employeesNumber',
             'comparable'               => true,
             'unit'                     => 'person',
             'predefinedItems'          => null,
         ];
-        yield 'field-last_year_turnover' => [
-            'fieldAlias'               => 'last_year_turnover',
-            'category'                 => 'activity',
+        yield 'field-exploitation_size' => [
+            'fieldAlias'               => 'exploitation_size',
+            'category'                 => 'profile',
             'type'                     => 'other',
-            'targetPropertyAccessPath' => 'borrowerBusinessActivity::lastYearTurnover::amount',
-            'comparable'               => true,
-            'unit'                     => 'money',
+            'targetPropertyAccessPath' => 'borrower::exploitationSize',
+            'comparable'               => false,
+            'unit'                     => null,
             'predefinedItems'          => null,
         ];
-        yield 'field-5_years_average_turnover' => [
-            'fieldAlias'               => '5_years_average_turnover',
-            'category'                 => 'activity',
+        yield 'field-turnover' => [
+            'fieldAlias'               => 'turnover',
+            'category'                 => 'profile',
             'type'                     => 'other',
-            'targetPropertyAccessPath' => 'borrowerBusinessActivity::fiveYearsAverageTurnover::amount',
+            'targetPropertyAccessPath' => 'borrower::turnover::amount',
             'comparable'               => true,
             'unit'                     => 'money',
             'predefinedItems'          => null,
         ];
         yield 'field-total_assets' => [
             'fieldAlias'               => 'total_assets',
-            'category'                 => 'activity',
+            'category'                 => 'profile',
             'type'                     => 'other',
-            'targetPropertyAccessPath' => 'borrowerBusinessActivity::totalAssets::amount',
-            'comparable'               => true,
-            'unit'                     => 'money',
-            'predefinedItems'          => null,
-        ];
-        yield 'field-grant_amount' => [
-            'fieldAlias'               => 'grant_amount',
-            'category'                 => 'activity',
-            'type'                     => 'other',
-            'targetPropertyAccessPath' => 'borrowerBusinessActivity::grant::amount',
+            'targetPropertyAccessPath' => 'borrower::totalAssets::amount',
             'comparable'               => true,
             'unit'                     => 'money',
             'predefinedItems'          => null,
@@ -223,24 +223,6 @@ class FieldFixtures extends AbstractFixtures
             'unit'                     => null,
             'predefinedItems'          => null,
         ];
-        yield 'field-loan_type' => [
-            'fieldAlias'               => 'loan_type',
-            'category'                 => 'loan',
-            'type'                     => 'list',
-            'targetPropertyAccessPath' => 'financingObjects::loanType',
-            'comparable'               => false,
-            'unit'                     => null,
-            'predefinedItems'          => ['term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment'],
-        ];
-        yield 'field-loan_duration' => [
-            'fieldAlias'               => 'loan_duration',
-            'category'                 => 'loan',
-            'type'                     => 'other',
-            'targetPropertyAccessPath' => 'financingObjects::loanDuration',
-            'comparable'               => false,
-            'unit'                     => null,
-            'predefinedItems'          => null,
-        ];
         yield 'field-loan_released_on_invoice' => [
             'fieldAlias'               => 'loan_released_on_invoice',
             'category'                 => 'loan',
@@ -250,6 +232,15 @@ class FieldFixtures extends AbstractFixtures
             'unit'                     => null,
             'predefinedItems'          => null,
         ];
+        yield 'field-loan_type' => [
+            'fieldAlias'               => 'loan_type',
+            'category'                 => 'loan',
+            'type'                     => 'list',
+            'targetPropertyAccessPath' => 'financingObjects::loanType',
+            'comparable'               => false,
+            'unit'                     => null,
+            'predefinedItems'          => ['term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment'],
+        ];
         yield 'field-loan_amount' => [
             'fieldAlias'               => 'loan_amount',
             'category'                 => 'loan',
@@ -257,6 +248,15 @@ class FieldFixtures extends AbstractFixtures
             'targetPropertyAccessPath' => 'financingObjects::loanMoney::amount',
             'comparable'               => true,
             'unit'                     => 'money',
+            'predefinedItems'          => null,
+        ];
+        yield 'field-loan_duration' => [
+            'fieldAlias'               => 'loan_duration',
+            'category'                 => 'loan',
+            'type'                     => 'other',
+            'targetPropertyAccessPath' => 'financingObjects::loanDuration',
+            'comparable'               => false,
+            'unit'                     => null,
             'predefinedItems'          => null,
         ];
     }

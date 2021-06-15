@@ -20,6 +20,15 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'En reconversion',
             'Agriculture',
         ],
+        'field-company_naf_code' => [
+            '0001A',
+        ],
+        'field-project_naf_code' => [
+            '0001A',
+        ],
+        'field-exploitation_size' => [
+            '42',
+        ],
     ];
 
     /**
@@ -40,12 +49,15 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
     {
         /** @var Program $program */
         $program = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
-        /** @var Field $field */
-        $field = $this->getReference('field-borrower_type');
 
-        foreach (self::FIELDS['field-borrower_type'] as $item) {
-            $programChoiceOption = new ProgramChoiceOption($program, $item, $field);
-            $manager->persist($programChoiceOption);
+        foreach (self::FIELDS as $fieldReference => $descriptions) {
+            /** @var Field $field */
+            $field = $this->getReference($fieldReference);
+
+            foreach ($descriptions as $description) {
+                $programChoiceOption = new ProgramChoiceOption($program, $description, $field);
+                $manager->persist($programChoiceOption);
+            }
         }
 
         $manager->flush();

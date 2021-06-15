@@ -244,8 +244,6 @@ CreditGuaranty:
     Reservation:
         borrower:
             missing: La réservation ne peut être envoyée, les informations de l'emprunteur n'ont pas été remplies.
-        borrowerBusinessActivity:
-            missing: La réservation ne peut être envoyée, les informations de l'activité de l'entreprise n'ont pas été remplies.
         project:
             missing: La réservation ne peut être envoyée, les informations du projet n'ont pas été remplies.
         financingObject:

@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Serializer\Normalizer;
 
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Unilend\Core\Entity\NafNace;
 use Unilend\Core\Repository\NafNaceRepository;
-use Unilend\CreditGuaranty\Entity\BorrowerBusinessActivity;
+use Unilend\CreditGuaranty\Entity\Borrower;
 
-class BorrowerBusinessActivityNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class BorrowerNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
+
     private NafNaceRepository $nafNaceRepository;
 
     public function __construct(NafNaceRepository $nafNaceRepository)
@@ -25,15 +27,15 @@ class BorrowerBusinessActivityNormalizer implements ContextAwareNormalizerInterf
 
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
-        return $data instanceof BorrowerBusinessActivity && !isset($context[static::ALREADY_CALLED]);
+        return $data instanceof Borrower && !isset($context[static::ALREADY_CALLED]);
     }
 
     /**
-     * @param BorrowerBusinessActivity $object
+     * @param Borrower $object
      *
-     * {@inheritDoc}
+     * @throws ExceptionInterface
      */
-    public function normalize($object, string $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = []): array
     {
         $context[static::ALREADY_CALLED] = true;
 
