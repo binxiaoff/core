@@ -16,6 +16,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Generator;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -747,7 +748,7 @@ class Project
      *
      * @ApiProperty(security="is_granted('agent', object)")
      */
-    public function getParticipations(): iterable
+    public function getParticipations(): Generator
     {
         foreach ($this->participationPools as $pool) {
             yield from $pool->getParticipations();
@@ -961,12 +962,40 @@ class Project
         return $this;
     }
 
+    public function getParticipants(): Generator
+    {
+        foreach ($this->getParticipations() as $participation) {
+            yield $participation->getParticipant();
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateParticipants(ExecutionContextInterface $context)
+    {
+        $participants = iterator_to_array($this->getParticipants(), false);
+
+        $sirens = array_map(static fn (Company $company) => $company->getSiren(), $participants);
+
+        $sirens = array_count_values($sirens);
+
+        $duplicatedSirens = array_filter($sirens, static fn ($count) => $count > 1);
+
+        foreach ($duplicatedSirens as $siren => $count) {
+            $context->buildViolation('Agency.Project.participations.duplicate')
+                ->setParameter('siren', (string) $siren)
+                ->addViolation()
+            ;
+        }
+    }
+
     /**
      * @param $payload
      *
      * @Assert\Callback
      */
-    public function validateStatusTransition(ExecutionContextInterface $context, $payload)
+    public function validateStatusTransition(ExecutionContextInterface $context)
     {
         $statuses = [];
 

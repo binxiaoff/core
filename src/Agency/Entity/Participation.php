@@ -16,6 +16,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Controller\Dataroom\Delete;
 use Unilend\Core\Controller\Dataroom\Get;
 use Unilend\Core\Controller\Dataroom\Post;
@@ -704,5 +705,25 @@ class Participation extends AbstractProjectPartaker
     public function isArchived(): bool
     {
         return null !== $this->archivingDate;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateParticipant(ExecutionContextInterface $context)
+    {
+        foreach ($this->getProject()->getParticipations() as $participation) {
+            if (
+                $participation !== $this
+                && $participation->getParticipant()->getSiren() === $this->getParticipant()->getSiren()
+            ) {
+                $context->buildViolation('Agency.Participation.participant.duplicate')
+                    ->setParameter('participant', $participation->getParticipant()->getDisplayName())
+                    ->setParameter('pool', $participation->getPool()->isSecondary() ? 'secondary' : 'primary')
+                    ->atPath('participant')
+                    ->addViolation()
+                ;
+            }
+        }
     }
 }
