@@ -58,11 +58,16 @@ class AbstractProjectMemberNormalizer implements ContextAwareDenormalizerInterfa
         /** @var AbstractProjectMember $projectMember */
         $projectMember = $this->denormalizer->denormalize($data, $type, $format, $context);
 
-        if ($archived && $projectMember && (false === $projectMember->isArchived())) {
-            $user = $this->security->getUser();
+        $user = $this->security->getUser();
 
-            $user = $user ? $this->userRepository->findOneBy(['email' => $user->getUsername()]) : null;
+        $user = $user ? $this->userRepository->findOneBy(['email' => $user->getUsername()]) : null;
 
+        if (
+            $archived
+            && $projectMember
+            && (false === $projectMember->isArchived())
+            && $user !== $projectMember->getUser()
+        ) {
             $projectMember->archive($user);
         }
 

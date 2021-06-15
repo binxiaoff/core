@@ -19,7 +19,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Agency\Controller\Project\GetTerm;
+use Unilend\Agency\Controller\Project\GetCovenants;
+use Unilend\Agency\Controller\Project\GetTerms;
 use Unilend\Agency\Entity\Versioned\VersionedProject;
 use Unilend\Agency\Filter\ApiPlatform\ProjectFilter;
 use Unilend\Core\Controller\Dataroom\Delete;
@@ -89,7 +90,19 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "path": "/agency/projects/{publicId}/terms",
  *             "method": "GET",
  *             "security": "is_granted('view', object)",
- *             "controller": GetTerm::class
+ *             "normalization_context": {
+ *                 "groups": {"agency:term:read"},
+ *             },
+ *             "controller": GetTerms::class
+ *         },
+ *         "covenants": {
+ *             "path": "/agency/projects/{publicId}/covenants",
+ *             "method": "GET",
+ *             "security": "is_granted('view', object)",
+ *             "normalization_context": {
+ *                 "groups": {"agency:covenant:read"},
+ *             },
+ *             "controller": GetCovenants::class
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
@@ -429,9 +442,6 @@ class Project
      * @Assert\All({
      *     @Assert\Expression("value.getProject() === this")
      * })
-     *
-     * TODO Create custom endpoint to handle security
-     * @ApiSubresource
      */
     private Collection $covenants;
 
@@ -804,9 +814,9 @@ class Project
     }
 
     /**
-     * @return iterable|Covenant[]
+     * @return Collection|Covenant[]
      */
-    public function getCovenants(): iterable
+    public function getCovenants(): Collection
     {
         return $this->covenants;
     }
