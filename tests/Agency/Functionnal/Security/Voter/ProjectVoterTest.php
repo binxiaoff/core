@@ -42,104 +42,104 @@ class ProjectVoterTest extends AbstractProjectVoterTest
     {
         $tests = [
             'VIEW: project creator can view draft project' => [
-                'staff_company:foo_user:b',
+                'staff_company:foo_user-b',
                 'draft',
                 VoterInterface::ACCESS_GRANTED,
             ],
             'VIEW: project creator manager can view draft project' => [
-                'staff_company:foo_user:a',
+                'staff_company:foo_user-a',
                 'draft',
                 VoterInterface::ACCESS_GRANTED,
             ],
             'VIEW: agent participation member can not view draft project' => [
-                'staff_company:foo_user:c',
+                'staff_company:foo_user-c',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'VIEW: agent participation member manager can not view draft project' => [
-                'staff_company:foo_user:e',
+                'staff_company:foo_user-e',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'VIEW: project creator can view published project' => [
-                'staff_company:foo_user:b',
+                'staff_company:foo_user-b',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
             'VIEW: project creator manager agent can view published project' => [
-                'staff_company:foo_user:a',
+                'staff_company:foo_user-a',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
             'VIEW: agent project member can view published project' => [
-                'staff_company:foo_user:c',
+                'staff_company:foo_user-c',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
             'VIEW: agent project member manager can view published project' => [
-                'staff_company:foo_user:e',
+                'staff_company:foo_user-e',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
             'VIEW: participant cannot view draft project' => [
-                'staff_company:bar_user:b',
+                'staff_company:bar_user-b',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'VIEW: participant can view published project' => [
-                'staff_company:bar_user:b',
+                'staff_company:bar_user-b',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
             'VIEW: manager participant cannot view draft project' => [
-                'staff_company:bar_user:a',
+                'staff_company:bar_user-a',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'VIEW: manager participant can view published project' => [
-                'staff_company:bar_user:a',
+                'staff_company:bar_user-a',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
             'VIEW: borrower cannot view draft project' => [
-                'user:+',
+                'user-+',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'VIEW: borrower can view published project' => [
-                'user:+',
+                'user-+',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
 
             'VIEW: connected user with unknown company in project cannot can view draft project' => [
-                'staff_company:baz_user:b',
+                'staff_company:baz_user-b',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'VIEW: connected user with unknown company cannot can view published project' => [
-                'staff_company:baz_user:b',
+                'staff_company:baz_user-b',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
 
             'VIEW: connected manager with unknown company in project cannot can view draft project' => [
-                'staff_company:baz_user:a',
+                'staff_company:baz_user-a',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'VIEW: connected manager with unknown company cannot can view published project' => [
-                'staff_company:baz_user:a',
+                'staff_company:baz_user-a',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
             'VIEW: unknown user in project cannot can view draft project' => [
-                'user:£',
+                'user-£',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'VIEW: unknown user in project cannot can view published project' => [
-                'user:£',
+                'user-£',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
@@ -152,117 +152,117 @@ class ProjectVoterTest extends AbstractProjectVoterTest
     {
         $tests = [
             'EDIT: project creator can edit draft project' => [
-                'staff_company:foo_user:b',
+                'staff_company:foo_user-b',
                 'draft',
                 VoterInterface::ACCESS_GRANTED,
             ],
             'EDIT: project creator manager can edit draft project' => [
-                'staff_company:foo_user:a',
+                'staff_company:foo_user-a',
                 'draft',
                 VoterInterface::ACCESS_GRANTED,
             ],
             'EDIT: agent company participation member can not edit draft project' => [
-                'staff_company:foo_user:c',
+                'staff_company:foo_user-c',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'EDIT: agent company participation manager can not edit draft project' => [
-                'staff_company:foo_user:e',
+                'staff_company:foo_user-e',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'EDIT: project creator can edit published project' => [
-                'staff_company:foo_user:b',
+                'staff_company:foo_user-b',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
             'EDIT: project creator manager can edit published project' => [
-                'staff_company:foo_user:a',
+                'staff_company:foo_user-a',
                 'published',
                 VoterInterface::ACCESS_GRANTED,
             ],
             'EDIT: agent company participation member can not edit published project' => [
-                'staff_company:foo_user:c',
+                'staff_company:foo_user-c',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
             'EDIT: agent company participation member manager can not edit published project' => [
-                'staff_company:foo_user:e',
+                'staff_company:foo_user-e',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
 
             'EDIT: participant cannot edit draft project' => [
-                'staff_company:bar_user:b',
+                'staff_company:bar_user-b',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'EDIT: participant can edit published project' => [
-                'staff_company:bar_user:b',
+                'staff_company:bar_user-b',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
             'EDIT: manager participant cannot edit draft project' => [
-                'staff_company:bar_user:a',
+                'staff_company:bar_user-a',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'EDIT: manager participant can edit published project' => [
-                'staff_company:bar_user:a',
+                'staff_company:bar_user-a',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
             'EDIT: borrower cannot edit draft project' => [
-                'user:+',
+                'user-+',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'EDIT: borrower can edit published project' => [
-                'user:+',
+                'user-+',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
 
             'EDIT: connected user with unknown company in project cannot can edit draft project' => [
-                'staff_company:baz_user:b',
+                'staff_company:baz_user-b',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'EDIT: connected user with unknown company cannot can edit published project' => [
-                'staff_company:baz_user:b',
+                'staff_company:baz_user-b',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
 
             'EDIT: connected manager with unknown company in project cannot can edit draft project' => [
-                'staff_company:baz_user:a',
+                'staff_company:baz_user-a',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'EDIT: connected manager with unknown company cannot can edit published project' => [
-                'staff_company:baz_user:a',
+                'staff_company:baz_user-a',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
 
             'EDIT: connected user with archived company cannot can edit published project' => [
-                'staff_company:qux_user:b',
+                'staff_company:qux_user-b',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
 
             'EDIT: connected manager with archived company cannot can edit published project' => [
-                'staff_company:qux_user:a',
+                'staff_company:qux_user-a',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ],
             'EDIT: unknown user in project cannot can edit draft project' => [
-                'user:£',
+                'user-£',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'EDIT: unknown user in project cannot can edit published project' => [
-                'user:£',
+                'user-£',
                 'published',
                 VoterInterface::ACCESS_DENIED,
             ], ];
@@ -274,22 +274,22 @@ class ProjectVoterTest extends AbstractProjectVoterTest
     {
         $tests = [
             'CREATE: Connected user without staff cannot create project' => [
-                'user:+',
+                'user-+',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'CREATE: Connected user with company cannot create a project with another company' => [
-                'staff_company:baz_user:a',
+                'staff_company:baz_user-a',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'CREATE: Connected user with company cannot create a project without correct permission' => [
-                'staff_company:foo_user:c',
+                'staff_company:foo_user-c',
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
             'CREATE: Connected user with company can create a project with connected company and correct permission' => [
-                'staff_company:foo_user:b',
+                'staff_company:foo_user-b',
                 'draft',
                 VoterInterface::ACCESS_GRANTED,
             ],

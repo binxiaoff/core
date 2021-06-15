@@ -26,12 +26,9 @@ class UserFixtures extends AbstractFixtures
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @throws ReflectionException
      * @throws Exception
      */
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $manager->getConnection()->getConfiguration()->setSQLLogger(null);
 
@@ -56,11 +53,10 @@ class UserFixtures extends AbstractFixtures
     {
         $user = new User('user_' . $identification . '@test.com');
 
-        $reference = 'user:' . $identification;
-
-        $this->addReference($reference, $user);
+        $reference = 'user-' . $identification;
 
         $this->setPublicId($user, $reference);
+        $this->addReference($reference, $user);
 
         return $user;
     }
@@ -81,7 +77,7 @@ class UserFixtures extends AbstractFixtures
     /**
      * @throws Exception
      */
-    private function initialize(User $user)
+    private function initialize(User $user): void
     {
         $user->setFirstName(Person::firstNameMale());
         $user->setLastName(Person::firstNameFemale());

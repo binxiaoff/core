@@ -11,8 +11,16 @@ use Unilend\Agency\Entity\Project;
 use Unilend\Test\Core\DataFixtures\Companies\LoxCompanyFixtures;
 use Unilend\Test\Core\DataFixtures\Companies\QuxCompanyFixtures;
 
-class PublishedProject extends DraftProject
+class PublishedProjectFixtures extends DraftProjectFixtures
 {
+    public function getDependencies(): array
+    {
+        return array_merge(parent::getDependencies(), [
+            QuxCompanyFixtures::class,
+            LoxCompanyFixtures::class,
+        ]);
+    }
+
     public function load(ObjectManager $manager): void
     {
         parent::load($manager);
@@ -25,17 +33,17 @@ class PublishedProject extends DraftProject
         $manager->persist($project);
 
         $quxParticipation    = $this->createTestPrimaryParticipation($project, $this->getReference('company:qux'));
-        $participationMember = new ParticipationMember($quxParticipation, $this->getReference('user:b'));
+        $participationMember = new ParticipationMember($quxParticipation, $this->getReference('user-b'));
         $quxParticipation->addMember($participationMember);
         $quxParticipation->archive();
 
         $loxParticipation    = $this->createTestSecondaryParticipation($project, $this->getReference('company:lox'));
-        $participationMember = new ParticipationMember($loxParticipation, $this->getReference('user:b'));
+        $participationMember = new ParticipationMember($loxParticipation, $this->getReference('user-b'));
         $loxParticipation->addMember($participationMember);
         $loxParticipation->archive();
 
         $borrower       = $this->createTestBorrower($project, $project->getAddedBy());
-        $borrowerMember = new BorrowerMember($borrower, $this->getReference('user:@'));
+        $borrowerMember = new BorrowerMember($borrower, $this->getReference('user-@'));
 
         array_map(
             [$manager, 'persist'],
@@ -50,14 +58,6 @@ class PublishedProject extends DraftProject
         );
 
         $manager->flush();
-    }
-
-    public function getDependencies(): array
-    {
-        return array_merge(parent::getDependencies(), [
-            QuxCompanyFixtures::class,
-            LoxCompanyFixtures::class,
-        ]);
     }
 
     protected static function getName(): string

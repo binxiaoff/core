@@ -14,16 +14,23 @@ use Unilend\Test\Core\DataFixtures\Companies\BarCompanyFixtures;
 use Unilend\Test\Core\DataFixtures\Companies\FooCompanyFixtures;
 use Unilend\Test\Core\DataFixtures\Companies\QuxCompanyFixtures;
 
-class DraftProject extends AbstractProjectFixtures
+class DraftProjectFixtures extends AbstractProjectFixtures
 {
+    public function getDependencies(): array
+    {
+        return [
+            FooCompanyFixtures::class,
+            BarCompanyFixtures::class,
+            QuxCompanyFixtures::class,
+        ];
+    }
+
     /**
-     * {@inheritDoc}
-     *
      * @throws Exception
      */
     public function load(ObjectManager $manager): void
     {
-        $staff = $this->getReference('staff_company:foo_user:b');
+        $staff = $this->getReference('staff_company:foo_user-b');
 
         $this->loginStaff($staff);
 
@@ -39,10 +46,10 @@ class DraftProject extends AbstractProjectFixtures
         $this->setPublicId($project, static::getName());
 
         $barParticipation = $this->createTestPrimaryParticipation($project, $this->getReference('company:bar'));
-        $barParticipation->addMember(new ParticipationMember($barParticipation, $this->getReference('user:b')));
+        $barParticipation->addMember(new ParticipationMember($barParticipation, $this->getReference('user-b')));
 
         $tuxParticipation = $this->createTestSecondaryParticipation($project, $this->getReference('company:tux'));
-        $tuxParticipation->addMember(new ParticipationMember($tuxParticipation, $this->getReference('user:b')));
+        $tuxParticipation->addMember(new ParticipationMember($tuxParticipation, $this->getReference('user-b')));
 
         $borrower = $this->createTestBorrower($project);
 
@@ -53,27 +60,15 @@ class DraftProject extends AbstractProjectFixtures
                 $barParticipation,
                 $tuxParticipation,
                 $borrower,
-                new BorrowerMember($borrower, $this->getReference('user:+')),
-                new BorrowerMember($borrower, $this->getReference('user:d')),
-                new ParticipationMember($project->getAgentParticipation(), $this->getReference('user:c')),
+                new BorrowerMember($borrower, $this->getReference('user-+')),
+                new BorrowerMember($borrower, $this->getReference('user-d')),
+                new ParticipationMember($project->getAgentParticipation(), $this->getReference('user-c')),
             ]
         );
 
         $this->setReference(static::getReferenceName(), $project);
 
         $manager->flush();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getDependencies(): array
-    {
-        return [
-            FooCompanyFixtures::class,
-            BarCompanyFixtures::class,
-            QuxCompanyFixtures::class,
-        ];
     }
 
     protected static function getName(): string

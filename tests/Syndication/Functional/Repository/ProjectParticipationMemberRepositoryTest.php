@@ -14,17 +14,15 @@ use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 use Unilend\Syndication\Repository\ProjectParticipationRepository;
 
 /**
- * @coversDefaultClass ProjectParticipationMemberRepository
+ * @coversDefaultClass \Unilend\Syndication\Repository\ProjectParticipationMemberRepository
+ *
+ * @internal
  */
 class ProjectParticipationMemberRepositoryTest extends KernelTestCase
 {
-    /** @var array $projectParticipationMembers */
     private array $projectParticipationMembers;
 
-    /**
-     * @return void
-     */
-    public function setUp(): void
+    protected function setUp(): void
     {
         static::bootKernel();
 
@@ -47,22 +45,22 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
     {
         return [
             'It should return managed staff who part of any project' => [
-                'publicId' => 'staff_company:example_user:15',
+                'publicId' => 'staff_company:example_user-15',
                 [
-                    'example_arranger_example_user:20',
-                    'example_arranger_example_user:9',
-                    'example_arranger_example_user:10',
-                    'basic_arranger_example_user:9',
+                    'example_arranger_example_user-20',
+                    'example_arranger_example_user-9',
+                    'example_arranger_example_user-10',
+                    'basic_arranger_example_user-9',
                 ],
             ],
             'It should yield no result for non manager staff' => [
-                'staff_company:basic_user:7',
+                'staff_company:basic_user-7',
                 [],
             ],
             'It should return at least the queried manager staff' => [
-                'staff_company:basic_user:11',
+                'staff_company:basic_user-11',
                 [
-                    'basic_arranger_basic_user:11',
+                    'basic_arranger_basic_user-11',
                 ],
             ],
         ];
@@ -73,8 +71,7 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
      *
      * @dataProvider providerFindByManager
      *
-     * @param string $managerPublicId
-     * @param $expected
+     * @param mixed $expected
      */
     public function testFindActiveByManager(string $managerPublicId, $expected): void
     {
@@ -97,17 +94,12 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
         static::assertContainsOnlyInstancesOf(ProjectParticipationMember::class, $result);
 
         foreach ($result as $item) {
-            self::assertContains($item->getPublicId(), $expected);
+            static::assertContains($item->getPublicId(), $expected);
         }
     }
 
     /**
      * @dataProvider providerFindByProjectParticipationAndManagerAndPermissionEnabled
-     *
-     * @param array $projectParticipationCriteria
-     * @param array $managerCriteria
-     * @param int   $permission
-     * @param array $expected
      *
      * @throws NoResultException
      * @throws NonUniqueResultException
@@ -129,7 +121,8 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
             ->andWhere('project.publicId = :project')
             ->setParameters($projectParticipationCriteria)
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleResult()
+        ;
 
         /** @var StaffRepository $staffRepository */
         $staffRepository = static::$container->get(StaffRepository::class);
@@ -164,59 +157,54 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
         return [
             'It should return no result for non manager staff' => [
                 ['participant' => 'company:basic', 'project' => 'project/basic_arranger'],
-                ['publicId' => 'staff_company:basic_user:7'],
+                ['publicId' => 'staff_company:basic_user-7'],
                 0,
                 [],
             ],
             'It should return no result for manager staff on incorrect participation' => [
                 ['participant' => 'company:example', 'project' => 'project/basic_arranger'],
-                ['publicId' => 'staff_company:basic_user:1'],
+                ['publicId' => 'staff_company:basic_user-1'],
                 0,
                 [],
             ],
             'It should return participation members managed by given staff' => [
                 ['participant' => 'company:basic', 'project' => 'project/example_arranger'],
-                ['publicId' => 'staff_company:basic_user:1'],
+                ['publicId' => 'staff_company:basic_user-1'],
                 0,
                 [
-                    'example_arranger_basic_user:4',
-                    'example_arranger_basic_user:10',
-                    'example_arranger_basic_user:3',
-                    'example_arranger_basic_user:8',
+                    'example_arranger_basic_user-4',
+                    'example_arranger_basic_user-10',
+                    'example_arranger_basic_user-3',
+                    'example_arranger_basic_user-8',
                 ],
             ],
             'It should return participation members managed by given staff 2' => [
                 ['participant' => 'company:basic', 'project' => 'project/example_arranger'],
-                ['publicId' => 'staff_company:basic_user:4'],
+                ['publicId' => 'staff_company:basic_user-4'],
                 0,
                 [
-                    'example_arranger_basic_user:4',
-                    'example_arranger_basic_user:10',
+                    'example_arranger_basic_user-4',
+                    'example_arranger_basic_user-10',
                 ],
             ],
             'It should return participation members with specified permission managed by given staff ' => [
                 ['participant' => 'company:basic', 'project' => 'project/example_arranger'],
-                ['publicId' => 'staff_company:basic_user:1'],
+                ['publicId' => 'staff_company:basic_user-1'],
                 1,
                 [
-                    'example_arranger_basic_user:3',
-                    'example_arranger_basic_user:8',
+                    'example_arranger_basic_user-3',
+                    'example_arranger_basic_user-8',
                 ],
             ],
         ];
     }
 
-    /**
-     * @param ProjectParticipationMember $projectParticipationMember
-     *
-     * @return string
-     */
     private function getKey(ProjectParticipationMember $projectParticipationMember): string
     {
         $projectParticipation = $projectParticipationMember->getProjectParticipation();
-        $project = $projectParticipation->getProject();
-        $company = $projectParticipation->getParticipant();
-        $user = $projectParticipationMember->getStaff()->getUser();
+        $project              = $projectParticipation->getProject();
+        $company              = $projectParticipation->getParticipant();
+        $user                 = $projectParticipationMember->getStaff()->getUser();
 
         return $project->getTitle() . '_' . $company->getDisplayName() . '_' . $user->getPublicId();
     }

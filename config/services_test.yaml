@@ -14,3 +14,6 @@ services:
 
   Unilend\Test\Agency\DataFixtures\:
     resource: '%kernel.project_dir%/tests/Agency/DataFixtures'
+
+  Unilend\Test\CreditGuaranty\DataFixtures\:
+    resource: '%kernel.project_dir%/tests/CreditGuaranty/DataFixtures'
