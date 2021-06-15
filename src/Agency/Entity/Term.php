@@ -147,7 +147,7 @@ class Term
      *
      * @Assert\Type("bool")
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private ?bool $validation;
 
@@ -167,7 +167,7 @@ class Term
     /**
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private ?string $agentComment;
 
@@ -179,7 +179,7 @@ class Term
      *     message="Agency.Term.breach.invalidTermRequired"
      * )
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private bool $breach;
 
@@ -191,7 +191,7 @@ class Term
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private ?string $irregularityComment;
 
@@ -211,7 +211,7 @@ class Term
      *
      * @ORM\Column(type="boolean", nullable=true)
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private ?bool $waiver;
 
@@ -223,7 +223,7 @@ class Term
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private ?string $waiverComment;
 
@@ -236,7 +236,7 @@ class Term
      *
      * @ORM\Column(type="integer", nullable=true)
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private ?int $grantedDelay;
 
