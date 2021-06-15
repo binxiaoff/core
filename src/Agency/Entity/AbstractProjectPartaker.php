@@ -112,7 +112,7 @@ abstract class AbstractProjectPartaker
     public function __construct(string $matriculationNumber, ?NullableMoney $capital = null)
     {
         $this->matriculationNumber = $matriculationNumber;
-        $this->capital             = $capital ?: new NullableMoney();
+        $this->capital             = $capital ?? new NullableMoney();
         $this->rcs                 = null;
         $this->added               = new DateTimeImmutable();
         $this->setPublicId();
