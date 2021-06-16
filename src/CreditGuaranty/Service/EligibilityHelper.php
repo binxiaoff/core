@@ -7,8 +7,6 @@ namespace Unilend\CreditGuaranty\Service;
 use LogicException;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\CreditGuaranty\Entity\Field;
 use Unilend\CreditGuaranty\Entity\Program;
 use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
@@ -46,10 +44,7 @@ class EligibilityHelper
 
         $value = $this->propertyAccessor->getValue($entity, implode('.', $pathParts));
 
-        if ($value instanceof NullableMoney || $value instanceof Money) {
-            $value = $value->getAmount();
-        }
-
+        // @todo to remove all this part below once all list type values are instance of ProgramChoiceOption
         if (Field::TYPE_LIST !== $field->getType() || $value instanceof ProgramChoiceOption) {
             return $value;
         }

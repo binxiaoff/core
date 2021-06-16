@@ -7,6 +7,7 @@ namespace Unilend\CreditGuaranty\DataFixtures;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
 use Faker\Provider\Miscellaneous;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\AbstractFixtures;
@@ -48,7 +49,7 @@ class ProgramEligibilityConditionFixture extends AbstractFixtures implements Dep
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function load(ObjectManager $manager): void
     {

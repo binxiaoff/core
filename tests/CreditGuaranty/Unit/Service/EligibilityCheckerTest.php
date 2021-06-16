@@ -66,7 +66,7 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
     {
         $reservation                      = $this->createReservation();
         $program                          = $reservation->getProgram();
-        $field1                           = new Field('alias_1', $this->category, 'other', 'project::fundingMoney', false, null, null);
+        $field1                           = new Field('alias_1', $this->category, 'other', 'project::fundingMoney::amount', false, 'money', null);
         $field2                           = new Field('alias_2', $this->category, 'bool', 'borrower::creationInProgress', false, null, null);
         $field3                           = new Field('alias_3', $this->category, 'other', '', false, null, null);
         $field4                           = new Field('alias_4', $this->category, 'list', 'borrower::legalForm', false, null, null);
@@ -84,7 +84,7 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         // configuration 1 - other
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
         $this->eligibilityHelper->getEntity($reservation, $field1)->shouldBeCalledOnce()->willReturn($reservation->getProject());
-        $this->eligibilityHelper->getValue($program, $reservation->getProject(), $field1)->shouldBeCalledOnce()->willReturn($reservation->getProject()->getFundingMoney());
+        $this->eligibilityHelper->getValue($program, $reservation->getProject(), $field1)->shouldBeCalledOnce()->willReturn('42');
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);

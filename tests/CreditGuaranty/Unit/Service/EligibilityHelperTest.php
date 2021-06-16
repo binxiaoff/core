@@ -85,15 +85,15 @@ class EligibilityHelperTest extends AbstractEligibilityTest
     {
         $reservation = $this->createReservation();
         $entity      = $reservation->getBorrowerBusinessActivity();
-        $field       = new Field('last_year_turnover', 'activity', 'other', 'borrowerBusinessActivity::lastYearTurnover', true, null, null);
+        $field       = new Field('last_year_turnover', 'activity', 'other', 'borrowerBusinessActivity::lastYearTurnover::amount', true, 'money', null);
 
-        $this->propertyAccessor->getValue($entity, 'lastYearTurnover')->shouldBeCalledOnce()->willReturn($entity->getLastYearTurnover());
+        $this->propertyAccessor->getValue($entity, 'lastYearTurnover.amount')->shouldBeCalledOnce()->willReturn('128');
         $this->programChoiceOptionRepository->findOneBy(Argument::any())->shouldNotBeCalled();
 
         $eligibilityHelper = $this->createTestObject();
         $result            = $eligibilityHelper->getValue($reservation->getProgram(), $reservation->getBorrowerBusinessActivity(), $field);
 
-        static::assertSame($entity->getLastYearTurnover()->getAmount(), $result);
+        static::assertSame('128', $result);
     }
 
     public function testGetListValue(): void

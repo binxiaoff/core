@@ -35,22 +35,8 @@ class EligibilityConditionChecker
             return true;
         }
 
-        /** @var ProgramEligibilityCondition $eligibilityCondition */
         foreach ($programEligibilityConditions as $eligibilityCondition) {
-            $leftOperandField = $eligibilityCondition->getLeftOperandField();
-            $leftEntity       = $this->eligibilityHelper->getEntity($reservation, $leftOperandField);
-
-            if ($leftEntity instanceof Collection) {
-                foreach ($leftEntity as $leftEntityItem) {
-                    if (false === $this->checkByConditionAndEntity($reservation, $eligibilityCondition, $leftEntityItem)) {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
-            if (false === $this->checkByConditionAndEntity($reservation, $eligibilityCondition, $leftEntity)) {
+            if (false === $this->checkCondition($reservation, $eligibilityCondition)) {
                 return false;
             }
         }
@@ -58,67 +44,68 @@ class EligibilityConditionChecker
         return true;
     }
 
-    private function checkByConditionAndEntity(Reservation $reservation, ProgramEligibilityCondition $eligibilityCondition, $leftEntity): bool
+    private function checkCondition(Reservation $reservation, ProgramEligibilityCondition $eligibilityCondition): bool
     {
-        $leftValue = $this->eligibilityHelper->getValue($reservation->getProgram(), $leftEntity, $eligibilityCondition->getLeftOperandField());
-
-        if (
-            ProgramEligibilityCondition::VALUE_TYPE_VALUE === $eligibilityCondition->getValueType()
-            && false === $this->checkOperation($eligibilityCondition->getOperation(), $leftValue, $eligibilityCondition->getValue())
-        ) {
-            return false;
-        }
+        $rightValue = $eligibilityCondition->getValue();
 
         if (ProgramEligibilityCondition::VALUE_TYPE_RATE === $eligibilityCondition->getValueType()) {
             $rightOperandField = $eligibilityCondition->getRightOperandField();
 
             if (null === $rightOperandField) {
-                throw new LogicException(sprintf('The ProgramEligibilityCondition #%s of rate type should have an rightOperandField.', $eligibilityCondition->getId()));
+                throw new LogicException(sprintf('The ProgramEligibilityCondition #%d of rate type should have an rightOperandField.', $eligibilityCondition->getId()));
             }
 
             $rightEntity = $this->eligibilityHelper->getEntity($reservation, $rightOperandField);
 
             if ($rightEntity instanceof Collection) {
-                foreach ($rightEntity->toArray() as $rightItem) {
-                    $rightValue     = $this->eligibilityHelper->getValue($reservation->getProgram(), $rightItem, $rightOperandField);
-                    $valueToCompare = $rightValue * $eligibilityCondition->getValue();
-
-                    if (false === $this->checkOperation($eligibilityCondition->getOperation(), $rightValue, $valueToCompare)) {
-                        return false;
-                    }
-                }
-
-                return true;
+                throw new LogicException(sprintf('The rightOperandField of ProgramEligibilityCondition #%d cannot be a collection.', $eligibilityCondition->getId()));
             }
 
-            $rightValue     = $this->eligibilityHelper->getValue($reservation->getProgram(), $rightEntity, $rightOperandField);
-            $valueToCompare = $rightValue * $eligibilityCondition->getValue();
-
-            if (false === $this->checkOperation($eligibilityCondition->getOperation(), $rightValue, $valueToCompare)) {
-                return false;
-            }
+            $rightValue = bcmul(
+                (string) $this->eligibilityHelper->getValue($reservation->getProgram(), $rightEntity, $eligibilityCondition->getRightOperandField()),
+                $eligibilityCondition->getValue(),
+                4
+            );
         }
 
-        return true;
+        $leftEntity = $this->eligibilityHelper->getEntity($reservation, $eligibilityCondition->getLeftOperandField());
+
+        if ($leftEntity instanceof Collection) {
+            foreach ($leftEntity as $leftEntityItem) {
+                $leftValue = $this->eligibilityHelper->getValue($reservation->getProgram(), $leftEntityItem, $eligibilityCondition->getLeftOperandField());
+
+                if (false === $this->check($eligibilityCondition->getOperation(), $leftValue, $rightValue)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        $leftValue = $this->eligibilityHelper->getValue($reservation->getProgram(), $leftEntity, $eligibilityCondition->getLeftOperandField());
+
+        return $this->check($eligibilityCondition->getOperation(), $leftValue, $rightValue);
     }
 
-    private function checkOperation(string $operator, $leftValue, $valueToCompare): bool
+    private function check(string $operator, $leftValue, $valueToCompare): bool
     {
+        $comparison = bccomp((string) $leftValue, (string) $valueToCompare, 4);
+
         switch ($operator) {
             case MathOperator::INFERIOR:
-                return $leftValue < $valueToCompare;
+                return -1 === $comparison;
 
             case MathOperator::INFERIOR_OR_EQUAL:
-                return $leftValue <= $valueToCompare;
+                return -1 === $comparison || 0 === $comparison;
 
             case MathOperator::SUPERIOR:
-                return $leftValue > $valueToCompare;
+                return 1 === $comparison;
 
             case MathOperator::SUPERIOR_OR_EQUAL:
-                return $leftValue >= $valueToCompare;
+                return 1 === $comparison || 0 === $comparison;
 
             case MathOperator::EQUAL:
-                return $leftValue == $valueToCompare;
+                return 0 === $comparison;
 
             default:
                 throw new LogicException(sprintf('Operator %s unexpected in ProgramEligibilityConditions.', $operator));
