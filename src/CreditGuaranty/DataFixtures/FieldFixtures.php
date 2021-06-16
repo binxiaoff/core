@@ -32,20 +32,20 @@ class FieldFixtures extends AbstractSQLFixtures
         ('932afe50-582a-462c-b5cc-16cdd3f09c07', 'activity_country', 'activity', 'list', 'borrowerBusinessActivity::address::country', 0, NULL, '["FR"]'),
         ('d61a4e71-4438-46f1-b1a5-376f98566c06', 'activity_start_date', 'activity', 'other', '', 0, NULL, NULL),
         ('6c067265-5ff5-49f4-84f0-e511a4a7d42e', 'employees_number', 'activity', 'other', 'borrowerBusinessActivity::employeesNumber', 1, 'person', NULL),
-        ('9865fb18-ba90-42ce-9455-e7c508acddd9', 'last_year_turnover', 'activity', 'other', 'borrowerBusinessActivity::lastYearTurnover', 1, 'money', NULL),
-        ('a2e2cbad-75d3-42a4-83d9-aef63da4360e', '5_years_average_turnover', 'activity', 'other', 'borrowerBusinessActivity::fiveYearsAverageTurnover', 1, 'money', NULL),
+        ('9865fb18-ba90-42ce-9455-e7c508acddd9', 'last_year_turnover', 'activity', 'other', 'borrowerBusinessActivity::lastYearTurnover::amount', 1, 'money', NULL),
+        ('a2e2cbad-75d3-42a4-83d9-aef63da4360e', '5_years_average_turnover', 'activity', 'other', 'borrowerBusinessActivity::fiveYearsAverageTurnover::amount', 1, 'money', NULL),
         ('7cccbd98-6b99-4425-8f29-83a04027740c', 'company_naf_code', 'activity', 'list', 'borrowerBusinessActivity::companyNafCode', 0, NULL, NULL),
-        ('938c689e-bddb-42b9-b84a-a00b18523e4f', 'total_assets', 'activity', 'other', 'borrowerBusinessActivity::totalAssets', 1, 'money', NULL),
-        ('5e6b31a1-1007-4e8d-a1ce-9a38e62280b9', 'grant_amount', 'activity', 'other', 'borrowerBusinessActivity::grant', 1, 'money', NULL),
+        ('938c689e-bddb-42b9-b84a-a00b18523e4f', 'total_assets', 'activity', 'other', 'borrowerBusinessActivity::totalAssets::amount', 1, 'money', NULL),
+        ('5e6b31a1-1007-4e8d-a1ce-9a38e62280b9', 'grant_amount', 'activity', 'other', 'borrowerBusinessActivity::grant::amount', 1, 'money', NULL),
         ('d5cbbd4c-0101-4d6b-b816-146a1943ee2e', 'low_density_medical_area_exercise', 'activity', 'other', '', 1, 'money', NULL),
         ('23892bef-00b0-4df5-981e-32913e708a2b', 'investment_thematic', 'project', 'list', 'project::investmentThematic', 0, NULL, NULL),
-        ('3dbe7d2c-2b78-4f72-ab52-ca3703e39f5b', 'project_total_amount', 'project', 'other', 'project::fundingMoney', 1, 'money', NULL),
+        ('3dbe7d2c-2b78-4f72-ab52-ca3703e39f5b', 'project_total_amount', 'project', 'other', 'project::fundingMoney::amount', 1, 'money', NULL),
         ('a2f8bca2-0662-4569-a334-57bd00972dcc', 'project_naf_code', 'project', 'list', 'project::projectNafCode', 0, NULL, NULL),
         ('8cb4b512-fa4c-4638-9a28-11d16b450459', 'financing_object', 'project', 'list', 'financingObjects::financingObject', 0, NULL, NULL),
         ('675056b4-49bb-40a7-bafe-9bcc86ad7b99', 'loan_type', 'loan', 'list', 'financingObjects::loanType', 0, NULL, '["term_loan","short_term","revolving_credit","stand_by","signature_commitment"]'),
         ('e9861e5b-0513-4c7b-9799-2f5a7dc267a4', 'loan_duration', 'loan', 'other', 'financingObjects::loanDuration', 0, NULL, null),
         ('f6f933e3-8164-430d-a670-390d0fc48311', 'loan_deferral', 'loan', 'other', '', 1, 'month', NULL),
         ('604ac6ee-86e2-49ab-aac0-bab8b1d20b30', 'loan_released_on_invoice', 'loan', 'bool', 'financingObjects::releasedOnInvoice', 0, NULL, NULL),
-        ('61d56903-32f7-4ea7-beb9-142122202120', 'loan_amount', 'loan', 'other', 'financingObjects::loanMoney', 1, 'money', NULL);
+        ('61d56903-32f7-4ea7-beb9-142122202120', 'loan_amount', 'loan', 'other', 'financingObjects::loanMoney::amount', 1, 'money', NULL);
         INSERT_FIELDS;
 }
