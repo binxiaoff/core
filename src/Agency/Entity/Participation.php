@@ -31,8 +31,8 @@ use Unilend\Core\Model\Bitmask;
  *     normalizationContext={
  *         "groups": {
  *             "agency:participation:read",
- *             "nullableMoney:read",
- *             "money:read"
+ *             "money:read",
+ *             "nullableMoney:read"
  *         }
  *     },
  *     collectionOperations={
@@ -120,6 +120,18 @@ use Unilend\Core\Model\Bitmask;
  *
  * @UniqueEntity(fields={"pool", "participant"})
  *
+ * @ApiFilter(
+ *     filterClass=GroupFilter::class,
+ *     arguments={
+ *         "whitelist": {
+ *             "company:read",
+ *             "agency:participation:read",
+ *             "agency:participationTrancheAllocation:read",
+ *             "agency:tranche:read"
+ *         }
+ *     }
+ * )
+ *
  * TODO The .publicId might be dropped in favor of using iri for filter when https://github.com/api-platform/core/issues/3575 is solved
  * @ApiFilter(
  *     filterClass=SearchFilter::class,
@@ -163,7 +175,7 @@ class Participation extends AbstractProjectPartaker
      *
      * @Assert\NotBlank
      *
-     * @Groups({"agency:participation:read"})
+     * @Groups({"agency:participation:read", "agency:participation:create"})
      *
      * @ApiProperty(readableLink=false)
      */
@@ -302,14 +314,14 @@ class Participation extends AbstractProjectPartaker
     private ?DateTimeImmutable $archivingDate;
 
     public function __construct(
-        ParticipationPool $project,
+        ParticipationPool $pool,
         Company $participant,
         Money $finalAllocation,
-        Money $capital
+        Money $capital = null
     ) {
-        parent::__construct($participant->getSiren() ?? '', $capital);
+        parent::__construct($participant->getSiren() ?? '', $capital ?? new Money('EUR', '0'));
         $this->responsibilities         = new Bitmask(0);
-        $this->pool                     = $project;
+        $this->pool                     = $pool;
         $this->finalAllocation          = $finalAllocation;
         $this->participant              = $participant;
         $this->prorata                  = false;

@@ -12,6 +12,7 @@ class AgentMemberVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
     public const ATTRIBUTE_EDIT   = 'edit';
+    public const ATTRIBUTE_DELETE = 'delete';
 
     protected function canCreate(AgentMember $agentMember, User $user): bool
     {
@@ -29,5 +30,15 @@ class AgentMemberVoter extends AbstractEntityVoter
         return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
             && $project->isEditable()
             && false === $agentMember->isArchived();
+    }
+
+    protected function canDelete(AgentMember $agentMember, User $user): bool
+    {
+        $project = $agentMember->getProject();
+
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
+            && $project->isDraft()
+            && $project->getAgent()->getMembers()->count() > 1
+            && false === $agentMember->getUser()->isEqualTo($user);
     }
 }
