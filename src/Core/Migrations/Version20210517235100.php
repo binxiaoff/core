@@ -37,7 +37,9 @@ final class Version20210517235100 extends AbstractMigration
         $this->addSql('ALTER TABLE agency_participation DROP FOREIGN KEY FK_E0ED689EAE4140F9');
         $this->addSql('DROP INDEX UNIQ_E0ED689EAE4140F9 ON agency_participation');
         $this->addSql('ALTER TABLE agency_participation ADD corporate_name VARCHAR(255) DEFAULT NULL, ADD legal_form VARCHAR(255) DEFAULT NULL, ADD head_office VARCHAR(255) DEFAULT NULL, ADD bank_institution VARCHAR(255) DEFAULT NULL, ADD bic VARCHAR(11) DEFAULT NULL, ADD iban VARCHAR(34) DEFAULT NULL, ADD added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', DROP id_referent');
+        $this->addSql('ALTER TABLE agency_participation_member DROP FOREIGN KEY FK_D4BCDFFB6B3CA4B');
         $this->addSql('ALTER TABLE agency_participation_member ADD referent TINYINT(1) NOT NULL, ADD signatory TINYINT(1) NOT NULL, DROP type, CHANGE id_user id_user INT NOT NULL');
+        $this->addSql('ALTER TABLE agency_participation_member ADD CONSTRAINT FK_D4BCDFFB6B3CA4B FOREIGN KEY (id_user) REFERENCES core_user (id)');
     }
 
     public function down(Schema $schema): void
