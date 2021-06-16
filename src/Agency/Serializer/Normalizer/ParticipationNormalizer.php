@@ -45,7 +45,9 @@ class ParticipationNormalizer implements ContextAwareDenormalizerInterface, Deno
     {
         $context[static::ALREADY_CALLED] = true;
 
-        if (isset($data['project'])) {
+        if (isset($data['project']) && empty($data['pool'])) {
+            unset($data['project']);
+
             try {
                 $project = $this->iriConverter->getItemFromIri($data['project']);
             } catch (\Exception $exception) {
