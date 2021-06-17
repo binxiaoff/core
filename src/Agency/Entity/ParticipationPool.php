@@ -128,6 +128,7 @@ class ParticipationPool
      * @Assert\All({
      *     @Assert\Expression("value.getPool() === this")
      * })
+     * @Assert\Valid
      *
      * @Groups({"agency:participationPool:read"})
      */
