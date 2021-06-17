@@ -42,7 +42,7 @@ class EligibilityChecker
 
         foreach ($fields as $field) {
             // ignore those not having path since they are not created yet in entities
-            if (empty($field->getTargetPropertyAccessPath())) {
+            if (empty($field->getReservationPropertyName()) || empty($field->getPropertyPath())) {
                 continue;
             }
 
@@ -75,7 +75,7 @@ class EligibilityChecker
 
         if ($entity instanceof Collection) {
             foreach ($entity as $entityItem) {
-                $value = $this->eligibilityHelper->getValue($reservation->getProgram(), $entityItem, $field);
+                $value = $this->eligibilityHelper->getValue($entityItem, $field);
 
                 if (false === $this->check($reservation, $programEligibility, $value)) {
                     return false;
@@ -85,7 +85,7 @@ class EligibilityChecker
             return true;
         }
 
-        $value = $this->eligibilityHelper->getValue($reservation->getProgram(), $entity, $field);
+        $value = $this->eligibilityHelper->getValue($entity, $field);
 
         return $this->check($reservation, $programEligibility, $value);
     }

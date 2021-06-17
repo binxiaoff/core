@@ -55,7 +55,7 @@ class ProgramEligibilityConditionFixture extends AbstractFixtures implements Dep
     {
         /** @var Collection|Field[] $comparableFields */
         $comparableFields = $this->fieldRepository->findBy(['comparable' => true]);
-        $comparableFields = array_filter($comparableFields, static fn (Field $field) => false === empty($field->getTargetPropertyAccessPath()));
+        $comparableFields = array_filter($comparableFields, static fn (Field $field) => false === empty($field->getReservationPropertyName()));
 
         $operations = ProgramEligibilityCondition::getAvailableOperations();
         $valueTypes = ProgramEligibilityCondition::getAvailableValueType();

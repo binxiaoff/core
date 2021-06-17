@@ -62,7 +62,7 @@ class EligibilityConditionChecker
             }
 
             $rightValue = bcmul(
-                (string) $this->eligibilityHelper->getValue($reservation->getProgram(), $rightEntity, $eligibilityCondition->getRightOperandField()),
+                (string) $this->eligibilityHelper->getValue($rightEntity, $eligibilityCondition->getRightOperandField()),
                 $eligibilityCondition->getValue(),
                 4
             );
@@ -72,7 +72,7 @@ class EligibilityConditionChecker
 
         if ($leftEntity instanceof Collection) {
             foreach ($leftEntity as $leftEntityItem) {
-                $leftValue = $this->eligibilityHelper->getValue($reservation->getProgram(), $leftEntityItem, $eligibilityCondition->getLeftOperandField());
+                $leftValue = $this->eligibilityHelper->getValue($leftEntityItem, $eligibilityCondition->getLeftOperandField());
 
                 if (false === $this->check($eligibilityCondition->getOperation(), $leftValue, $rightValue)) {
                     return false;
@@ -82,7 +82,7 @@ class EligibilityConditionChecker
             return true;
         }
 
-        $leftValue = $this->eligibilityHelper->getValue($reservation->getProgram(), $leftEntity, $eligibilityCondition->getLeftOperandField());
+        $leftValue = $this->eligibilityHelper->getValue($leftEntity, $eligibilityCondition->getLeftOperandField());
 
         return $this->check($eligibilityCondition->getOperation(), $leftValue, $rightValue);
     }

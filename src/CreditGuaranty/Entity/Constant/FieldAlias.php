@@ -33,7 +33,10 @@ class FieldAlias extends AbstractEnum
     public const YOUNG_FARMER             = 'young_farmer';
 
     // Other
-    public const BENEFICIARY_ADDRESS = 'beneficiary_address';
+    public const ACTIVITY_STREET     = 'activity_street';
+    public const ACTIVITY_POST_CODE  = 'activity_post_code';
+    public const ACTIVITY_CITY       = 'activity_city';
+    public const ACTIVITY_DEPARTMENT = 'activity_department';
     public const BENEFICIARY_NAME    = 'beneficiary_name';
     public const COMPANY_NAME        = 'company_name';
     public const SIRET               = 'siret';

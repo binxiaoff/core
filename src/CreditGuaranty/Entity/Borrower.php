@@ -16,9 +16,9 @@ use Unilend\Core\Entity\Constant\CARatingType;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\CreditGuaranty\Entity\Embeddable\Address;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
+use Unilend\CreditGuaranty\Entity\Traits\AddressTrait;
 
 /**
  * @ApiResource(
@@ -52,6 +52,7 @@ use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface
 class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterface
 {
     use PublicizeIdentityTrait;
+    use AddressTrait;
     use TimestampableTrait;
 
     /**
@@ -105,15 +106,6 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
     private string $companyName;
-
-    /**
-     * @ORM\Embedded(class=Address::class)
-     *
-     * @Assert\Valid
-     *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
-     */
-    private Address $address;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
@@ -212,7 +204,6 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     public function __construct(string $companyName, string $grade)
     {
         $this->companyName = $companyName;
-        $this->address     = new Address();
         $this->turnover    = new NullableMoney();
         $this->totalAssets = new NullableMoney();
         $this->grade       = $grade;
@@ -306,18 +297,6 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     public function getCompanyName(): string
     {
         return $this->companyName;
-    }
-
-    public function getAddress(): Address
-    {
-        return $this->address;
-    }
-
-    public function setAddress(Address $address): Borrower
-    {
-        $this->address = $address;
-
-        return $this;
     }
 
     public function getActivityStartDate(): ?DateTimeImmutable
