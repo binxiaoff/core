@@ -30,12 +30,3 @@ Each entry in a data provider should if possible have a key describing the test 
 You may add helper methods should they contribute to  better code comprehension. They should be private.
 
 Do not hesitate to add them !
-
-Usage
------
-To launch them, simply call ``bin/phpunit`` from the root application folder in the VM machine.
-
-Do not hesitate to launch them !
-
-.. _Prophecy: https://github.com/phpspec/prophecy
-.. _PHPUnit: https://phpunit.de/
