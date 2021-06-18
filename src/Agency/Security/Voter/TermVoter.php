@@ -23,7 +23,12 @@ class TermVoter extends AbstractEntityVoter
     protected function canView(Term $term, User $user): bool
     {
         return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_VIEW, $term->getCovenant())
-            && $term->getStartDate() >= $this->getToday();
+            && $term->getStartDate() <= $this->getToday()
+            && (
+                $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT)
+                || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER)
+                || $term->isShared()
+            );
     }
 
     /**

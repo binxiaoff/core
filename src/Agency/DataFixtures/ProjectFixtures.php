@@ -239,7 +239,17 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     private function createPublishableProject(Staff $staff, ObjectManager $manager): Project
     {
-        $project = $this->createProject($staff);
+        $project            = $this->createProject($staff);
+        $agentParticipation = $project->getAgentParticipation();
+        $agentParticipation->setLegalForm(LegalForm::SARL);
+        $agentParticipation->setHeadOffice($this->faker->address);
+        $agentParticipation->setBankAddress($this->faker->address)
+            ->setIban('DE66641502668879073767')
+            ->setBankInstitution($this->faker->company)
+            ->setBic('AGRIFRPP907')
+        ;
+        $agentParticipation->setCorporateName($this->faker->name);
+
         $this->withPublishableAgentData($project)
             ->withPublishableBorrowers($project, $manager)
             ->withPublishableTranches($project)
@@ -468,12 +478,24 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     private function createParticipation(Project $project, Company $participant, bool $secondary = false): Participation
     {
-        return new Participation(
+        $participation = new Participation(
             $project->getParticipationPools()[$secondary],
             $participant,
             new Money('EUR', (string) $this->faker->numberBetween(100000)),
             new Money('EUR', (string) $this->faker->numberBetween(40000000)),
         );
+
+        $participation->setLegalForm(LegalForm::SARL);
+        $participation->setHeadOffice($this->faker->address);
+        $participation->setBankAddress($this->faker->address)
+            ->setIban('DE66641502668879073767')
+            ->setBankInstitution($this->faker->company)
+            ->setBic('AGRIFRPP907')
+        ;
+
+        $participation->setCorporateName($this->faker->name);
+
+        return $participation;
     }
 
     /**
