@@ -55,7 +55,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     use TimestampableTrait;
 
     /**
-     * @ORM\OneToOne(targetEntity=Reservation::class, mappedBy="borrower")
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", mappedBy="borrower")
      */
     private Reservation $reservation;
 
@@ -69,7 +69,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private ?string $beneficiaryName = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity=ProgramChoiceOption::class)
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_borrower_type")
      *
      * @Assert\Expression("value.getProgram() === this.getProgram()")
@@ -141,7 +141,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private ?string $taxNumber = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity=ProgramChoiceOption::class)
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_legal_form")
      *
      * @Assert\Expression("value.getProgram() === this.getProgram()")
@@ -151,7 +151,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private ?ProgramChoiceOption $legalForm = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity=ProgramChoiceOption::class)
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_company_naf_code")
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
@@ -170,12 +170,12 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private ?int $employeesNumber = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity=ProgramChoiceOption::class)
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_exploitation_size")
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:write"})
      */
     private ?ProgramChoiceOption $exploitationSize = null;
 
@@ -430,6 +430,20 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
         $this->exploitationSize = $exploitationSize;
 
         return $this;
+    }
+
+    /**
+     * @SerializedName("exploitationSize")
+     *
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getExploitationSizeDescription(): ?string
+    {
+        if ($this->exploitationSize) {
+            return $this->exploitationSize->getDescription();
+        }
+
+        return null;
     }
 
     public function getTurnover(): NullableMoney

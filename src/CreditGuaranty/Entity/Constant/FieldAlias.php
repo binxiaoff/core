@@ -59,5 +59,6 @@ class FieldAlias extends AbstractEnum
         self::LOAN_TYPE,
         self::PROJECT_NAF_CODE,
         self::COMPANY_NAF_CODE,
+        self::EXPLOITATION_SIZE,
     ];
 }
