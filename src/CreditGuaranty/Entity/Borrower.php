@@ -299,6 +299,52 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
         return $this->companyName;
     }
 
+    /**
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getAddressStreet(): ?string
+    {
+        return $this->addressStreet;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getAddressPostCode(): ?string
+    {
+        return $this->addressPostCode;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getAddressCity(): ?string
+    {
+        return $this->addressCity;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getAddressDepartment(): ?string
+    {
+        return $this->addressDepartment;
+    }
+
+    /**
+     * @SerializedName("addressCountry")
+     *
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getActivityCountry(): ?string
+    {
+        if ($this->addressCountry instanceof ProgramChoiceOption) {
+            return $this->addressCountry->getDescription();
+        }
+
+        return null;
+    }
+
     public function getActivityStartDate(): ?DateTimeImmutable
     {
         return $this->activityStartDate;

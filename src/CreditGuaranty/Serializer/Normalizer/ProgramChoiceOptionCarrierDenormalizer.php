@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
 use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
+use Unilend\CreditGuaranty\Entity\Field;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
 use Unilend\CreditGuaranty\Entity\Program;
@@ -68,10 +69,28 @@ class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizer
         $context[self::ALREADY_CALLED] = true;
         $object                        = $this->extractObjectToPopulate($type, $context);
 
-        foreach ($data as $propertyName => $description) {
+        foreach ($data as $propertyName => $propertyValue) {
             $fieldAlias = s($propertyName)->snake()->toString();
+
             if (in_array($fieldAlias, FieldAlias::PROGRAM_CHOICE_OPTION_FIELDS, true)) {
-                $programChoiceOption = $this->denormalizeChoiceOption($fieldAlias, $description, $object->getProgram());
+                $field               = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
+                $programChoiceOption = $this->denormalizeChoiceOption($field, $propertyValue, $object->getProgram());
+                $this->propertyAccessor->setValue($object, $propertyName, $programChoiceOption);
+                unset($data[$propertyName]);
+
+                continue;
+            }
+
+            $field = $this->fieldRepository->findOneBy([
+                'propertyPath' => $propertyName,
+                'objectClass'  => get_class($object),
+            ]);
+
+            if (
+                $field instanceof Field
+                && in_array($field->getFieldAlias(), FieldAlias::PROGRAM_CHOICE_OPTION_SPECIAL_FIELDS, true)
+            ) {
+                $programChoiceOption = $this->denormalizeChoiceOption($field, $propertyValue, $object->getProgram());
                 $this->propertyAccessor->setValue($object, $propertyName, $programChoiceOption);
                 unset($data[$propertyName]);
             }
@@ -83,10 +102,8 @@ class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizer
     /**
      * @throws ORMException
      */
-    private function denormalizeChoiceOption(string $fieldAlias, string $description, Program $program)
+    private function denormalizeChoiceOption(Field $field, string $description, Program $program): ProgramChoiceOption
     {
-        $field = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
-
         $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([
             'program'     => $program,
             'field'       => $field,
@@ -94,6 +111,14 @@ class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizer
         ]);
 
         if (false === $programChoiceOption instanceof ProgramChoiceOption) {
+            if (is_array($field->getPredefinedItems()) && false === in_array($description, $field->getPredefinedItems(), true)) {
+                throw new LogicException(sprintf(
+                    'You cannot create a ProgramChoiceOption for %s field alias because the description (%s) is not in the pre-defined list.',
+                    $field->getFieldAlias(),
+                    $description
+                ));
+            }
+
             $programChoiceOption = new ProgramChoiceOption($program, $description, $field);
 
             if (false === $this->security->isGranted(ProgramChoiceOptionVoter::ATTRIBUTE_CREATE, $programChoiceOption)) {

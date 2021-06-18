@@ -64,4 +64,8 @@ class FieldAlias extends AbstractEnum
         self::COMPANY_NAF_CODE,
         self::EXPLOITATION_SIZE,
     ];
+
+    public const PROGRAM_CHOICE_OPTION_SPECIAL_FIELDS = [
+        self::ACTIVITY_COUNTRY,
+    ];
 }
