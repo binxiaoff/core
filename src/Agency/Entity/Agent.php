@@ -147,6 +147,8 @@ class Agent extends AbstractProjectPartaker
 
     /**
      * @Groups({"agency:agent:read"})
+     *
+     * @Assert\NotBlank(groups={"published"})
      */
     public function getBankInstitution(): ?string
     {
@@ -165,6 +167,8 @@ class Agent extends AbstractProjectPartaker
 
     /**
      * @Groups({"agency:agent:read"})
+     *
+     * @Assert\NotBlank(groups={"published"})
      */
     public function getBankAddress(): ?string
     {
@@ -183,6 +187,8 @@ class Agent extends AbstractProjectPartaker
 
     /**
      * @Groups({"agency:agent:read"})
+     *
+     * @Assert\NotBlank(groups={"published"})
      */
     public function getBic(): ?string
     {
@@ -201,6 +207,8 @@ class Agent extends AbstractProjectPartaker
 
     /**
      * @Groups({"agency:agent:read"})
+     *
+     * @Assert\NotBlank(groups={"published"})
      */
     public function getIban(): ?string
     {
@@ -273,6 +281,8 @@ class Agent extends AbstractProjectPartaker
 
     /**
      * @Groups({"agency:agent:read"})
+     *
+     * @Assert\NotBlank(groups={"published"})
      */
     public function getCorporateName(): ?string
     {
@@ -291,6 +301,8 @@ class Agent extends AbstractProjectPartaker
 
     /**
      * @Groups({"agency:agent:read"})
+     *
+     * @Assert\NotBlank(groups={"published"})
      */
     public function getHeadOffice(): ?string
     {
@@ -309,6 +321,8 @@ class Agent extends AbstractProjectPartaker
 
     /**
      * @Groups({"agency:agent:read"})
+     *
+     * @Assert\NotBlank(groups={"published"})
      */
     public function getLegalForm(): ?string
     {
