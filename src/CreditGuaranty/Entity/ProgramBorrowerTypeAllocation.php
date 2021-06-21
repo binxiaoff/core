@@ -11,13 +11,14 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\Traits\CloneableTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"creditGuaranty:programBorrowerTypeAllocation:read", "creditGuaranty:programChoiceOption:read", "timestampable:read"}},
+ *     normalizationContext={"groups": {"creditGuaranty:programBorrowerTypeAllocation:read", "timestampable:read"}},
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -26,12 +27,13 @@ use Unilend\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
  *         },
  *         "patch": {
  *             "input": ProgramBorrowerTypeAllocationInput::class,
- *             "security_post_denormalize": "is_granted('edit', previous_object)"
+ *             "security": "is_granted('edit', object)"
  *         },
  *         "delete": {"security": "is_granted('delete', object)"}
  *     },
  *     collectionOperations={
  *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
  *             "input": ProgramBorrowerTypeAllocationInput::class,
  *             "validation_groups": {"creditGuaranty:programBorrowerTypeAllocation:createValidation"}
  *         }
@@ -53,6 +55,7 @@ class ProgramBorrowerTypeAllocation
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+    use CloneableTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programBorrowerTypeAllocations")
@@ -67,8 +70,6 @@ class ProgramBorrowerTypeAllocation
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_program_choice_option", nullable=false, onDelete="CASCADE")
-     *
-     * @Groups({"creditGuaranty:programBorrowerTypeAllocation:read"})
      */
     private ProgramChoiceOption $programChoiceOption;
 
@@ -94,6 +95,13 @@ class ProgramBorrowerTypeAllocation
     public function getProgram(): Program
     {
         return $this->program;
+    }
+
+    public function setProgram(Program $program): ProgramBorrowerTypeAllocation
+    {
+        $this->program = $program;
+
+        return $this;
     }
 
     public function getProgramChoiceOption(): ProgramChoiceOption

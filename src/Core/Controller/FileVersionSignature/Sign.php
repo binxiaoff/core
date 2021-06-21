@@ -4,36 +4,29 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Controller\FileVersionSignature;
 
-use League\Flysystem\FileNotFoundException;
-use Symfony\Contracts\HttpClient\Exception\{ClientExceptionInterface, RedirectionExceptionInterface, ServerExceptionInterface, TransportExceptionInterface};
+use League\Flysystem\FilesystemException;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Unilend\Core\Entity\FileVersionSignature;
 use Unilend\Core\Service\ElectronicSignature\RequestSender;
 
 class Sign
 {
-    /**
-     * @var RequestSender
-     */
-    private $requestSender;
+    private RequestSender $requestSender;
 
-    /**
-     * @param RequestSender $requestSender
-     */
     public function __construct(RequestSender $requestSender)
     {
         $this->requestSender = $requestSender;
     }
 
     /**
-     * @param FileVersionSignature $data
-     *
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
-     * @throws FileNotFoundException
      * @throws ClientExceptionInterface
-     *
-     * @return FileVersionSignature
+     * @throws FilesystemException
      */
     public function __invoke(FileVersionSignature $data): FileVersionSignature
     {

@@ -1,4 +1,7 @@
 sensio_framework_extra:
+    request:
+        converters: true
+        auto_convert: false #Disable auto convert for dataroom correct parameter injection
     router:
         # Enabling the “sensio_framework_extra.router.annotations” configuration is deprecated
         # It was enabled by default. And there’s a pull request to make it disabled by default.

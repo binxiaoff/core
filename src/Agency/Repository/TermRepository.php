@@ -35,34 +35,4 @@ class TermRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
-
-    /**
-     * @return iterable|Term[]
-     */
-    public function findActiveByProject(Project $project): iterable
-    {
-        return $this->createQueryBuilder('t')
-            ->innerJoin('t.covenant', 'c')
-            ->where('c.project = :project')
-            ->andWhere('t.archivingDate IS NULL')
-            ->setParameter('project', $project)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-
-    /**
-     * @return iterable|Term[]
-     */
-    public function findArchivedByProject(Project $project): iterable
-    {
-        return $this->createQueryBuilder('t')
-            ->innerJoin('t.covenant', 'c')
-            ->where('c.project = :project')
-            ->andWhere('t.archivingDate IS NOT NULL')
-            ->setParameter('project', $project)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
 }

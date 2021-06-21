@@ -14,25 +14,47 @@ class ProjectVoter extends AbstractEntityVoter
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_DELETE = 'delete';
 
     /**
      * @throws Exception
      */
     protected function canView(Project $project, User $user): bool
     {
-        return true;
-    }
+        // It might be interesting to copy this code in place of $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $project);.
+        foreach (ProjectRoleVoter::getAvailableRoles() as $role) {
+            if ($this->authorizationChecker->isGranted($role, $project)) {
+                return true;
+            }
+        }
 
-    protected function canCreate(Project $project, User $user): bool
-    {
-        return true;
+        return false;
     }
 
     /**
-     * @throws Exception
+     * Do not use can{Role} because object is not yet in database.
      */
+    protected function canCreate(Project $project, User $user): bool
+    {
+        $staff = $user->getCurrentStaff();
+
+        if (null === $staff) {
+            return false;
+        }
+
+        // Should we verify permission inheritance for agency project creation .
+        return $staff->getCompany() === $project->getAgentCompany() && $staff->hasAgencyProjectCreationPermission();
+    }
+
     protected function canEdit(Project $project, User $user): bool
     {
-        return true;
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
+            && $project->isEditable();
+    }
+
+    protected function canDelete(Project $project, User $user): bool
+    {
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
+            && $project->isEditable();
     }
 }

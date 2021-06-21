@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Unilend\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -15,35 +17,32 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Agency\Controller\Project\GetTerm;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Agency\Controller\Project\GetCovenants;
+use Unilend\Agency\Controller\Project\GetTerms;
 use Unilend\Agency\Entity\Versioned\VersionedProject;
 use Unilend\Agency\Filter\ApiPlatform\ProjectFilter;
+use Unilend\Core\Controller\Dataroom\Delete;
+use Unilend\Core\Controller\Dataroom\Get;
+use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\FundingSpecificity;
-use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
-use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
-use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Model\Bitmask;
-use Unilend\Core\Validator\Constraints\Siren;
+use Unilend\Core\Traits\ConstantsAwareTrait;
 use Unilend\Syndication\Entity\Project as ArrangementProject;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "validation_groups": {Project::class, "getCurrentValidationGroups"}
- *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:project:read",
@@ -57,6 +56,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *     collectionOperations={
  *         "get",
  *         "post": {
+ *             "validation_groups": {Project::class, "getCurrentValidationGroups"},
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
  *                 "groups": {
@@ -90,14 +90,25 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "path": "/agency/projects/{publicId}/terms",
  *             "method": "GET",
  *             "security": "is_granted('view', object)",
- *             "controller": GetTerm::class
+ *             "normalization_context": {
+ *                 "groups": {"agency:term:read"},
+ *             },
+ *             "controller": GetTerms::class
+ *         },
+ *         "covenants": {
+ *             "path": "/agency/projects/{publicId}/covenants",
+ *             "method": "GET",
+ *             "security": "is_granted('view', object)",
+ *             "normalization_context": {
+ *                 "groups": {"agency:covenant:read"},
+ *             },
+ *             "controller": GetCovenants::class
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:project:write",
- *                     "agency:projectStatus:create",
  *                     "money:write",
  *                     "nullablePerson:write",
  *                     "nullableMoney:write",
@@ -106,6 +117,102 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             },
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
  *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)",
+ *         },
+ *         "get_borrower_dataroom_shared": {
+ *             "method": "GET",
+ *             "path": "/agency/projects/{publicId}/borrowers/dataroom/shared/{path?}",
+ *             "security": "is_granted('agent', object) || is_granted('borrower', object)",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "drive": "shared"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "post_borrower_dataroom_shared": {
+ *             "method": "POST",
+ *             "path": "/agency/projects/{publicId}/borrowers/dataroom/shared/{path?}",
+ *             "security": "is_granted('agent', object) || is_granted('borrower', object)",
+ *             "deserialize": false,
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "drive": "shared"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "delete_borrower_dataroom_shared": {
+ *             "method": "DELETE",
+ *             "path": "/agency/projects/{publicId}/borrowers/dataroom/shared/{path?}",
+ *             "security": "is_granted('agent', object) || is_granted('borrower', object)",
+ *             "controller": Delete::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "drive": "shared"
+ *             }
+ *         },
+ *         "get_borrower_dataroom_confidential": {
+ *             "method": "GET",
+ *             "path": "/agency/projects/{publicId}/borrowers/dataroom/confidential/{path?}",
+ *             "security": "is_granted('borrower', object)",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "drive": "confidential"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "post_borrower_dataroom_confidential": {
+ *             "method": "POST",
+ *             "path": "/agency/projects/{publicId}/borrowers/dataroom/confidential/{path?}",
+ *             "security": "is_granted('borrower', object)",
+ *             "deserialize": false,
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "drive": "confidential"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "delete_borrower_dataroom_confidential": {
+ *             "method": "DELETE",
+ *             "path": "/agency/projects/{publicId}/borrowers/dataroom/confidential/{path?}",
+ *             "security": "is_granted('borrower', object)",
+ *             "deserialize": false,
+ *             "controller": Delete::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "drive": "confidential"
+ *             }
+ *         }
  *     }
  * )
  *
@@ -118,20 +225,27 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *     filterClass=GroupFilter::class,
  *     arguments={
  *         "whitelist": {
- *             "agency:contact:read",
- *             "agency:borrower:read",
- *             "agency:tranche:read",
- *             "agency:borrowerTrancheShare:read",
- *             "agency:participation:read",
- *             "agency:participationTrancheAllocation:read",
  *             "company:read",
  *             "companyGroupTag:read",
+ *             "agency:agent:read",
+ *             "agency:agentMember:read",
+ *             "agency:borrower:read",
+ *             "agency:borrowerMember:read",
+ *             "agency:borrowerTrancheShare:read",
+ *             "agency:participationPool:read",
+ *             "agency:participation:read",
+ *             "agency:participationPool:read",
+ *             "agency:participationMember:read",
+ *             "agency:participationTrancheAllocation:read",
+ *             "agency:tranche:read",
  *             "agency:covenant:read",
- *             "agency:term:read"
+ *             "agency:term:read",
+ *             "user:read",
  *         }
  *     }
  * )
  *
+ * @ApiFilter(filterClass=NumericFilter::class, properties={"currentStatus"})
  * @ApiFilter(filterClass=ProjectFilter::class, arguments={})
  */
 class Project
@@ -139,101 +253,21 @@ class Project
     use PublicizeIdentityTrait;
     use TimestampableTrait;
     use BlamableAddedTrait;
+    use ConstantsAwareTrait;
+
+    public const STATUS_DRAFT     = 10;
+    public const STATUS_PUBLISHED = 20;
+    public const STATUS_ARCHIVED  = -10;
+    public const STATUS_FINISHED  = -20;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_agent", referencedColumnName="id", nullable=false)
-     * })
+     * @ORM\OneToOne(targetEntity="Unilend\Agency\Entity\Agent", mappedBy="project", cascade={"persist", "remove"})
+     *
+     * @Assert\Valid
      *
      * @Groups({"agency:project:read"})
-     *
-     * @Assert\NotBlank
      */
-    private Company $agent;
-
-    /**
-     * @ORM\Column(type="string", length=300, nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $agentDisplayName;
-
-    /**
-     * @ORM\Column(type="string", length=9, nullable=true)
-     *
-     * @Siren
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $agentSiren;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $agentLegalForm;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $headOffice;
-
-    /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?NullableMoney $agentCapital;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $agentRCS;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $bankInstitution;
-
-    /**
-     * @ORM\Column(type="string", length=11, nullable=true)
-     *
-     * @Assert\Bic
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $bic;
-
-    /**
-     * @ORM\Column(type="string", length=34, nullable=true)
-     *
-     * @Assert\Iban
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ?string $iban;
+    private Agent $agent;
 
     /**
      * @var string|null
@@ -283,100 +317,32 @@ class Project
     private Money $globalFundingMoney;
 
     /**
-     * @ORM\Column(type="boolean")
+     * This collection will be indexed by secondary.
+     * This is either true or false. False means primary and true means secondary.
      *
-     * @Groups({"agency:project:write", "agency:project:read"})
+     * @var Collection|ParticipationPool[]
+     *
+     * @ORM\OneToMany(targetEntity=ParticipationPool::class, mappedBy="project", indexBy="secondary", cascade={"persist", "remove"})
+     *
+     * @Assert\All({
+     *     @Assert\Expression("value.getProject() === this")
+     * })
+     * @Assert\Valid
+     * @Assert\Count(min=2, max=2)
      */
-    private bool $silentSyndication;
-
-    /**
-     * @ORM\Column(type="string", length=30, nullable=true)
-     *
-     * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:write", "agency:project:read"})
-     */
-    private ?string $principalSyndicationType;
-
-    /**
-     * @ORM\Column(type="string", length=30, nullable=true)
-     *
-     * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
-     * @Assert\NotBlank(groups={"published"})
-     *
-     * @Groups({"agency:project:write", "agency:project:read"})
-     */
-    private ?string $principalParticipationType;
-
-    /**
-     * @ORM\Column(type="string", nullable=true, length=30)
-     *
-     * @Assert\Choice(callback={RiskType::class, "getConstList"})
-     * @Assert\Expression(
-     *     expression="(false === this.isPrincipalSubParticipation() and null === value) or (this.isPrincipalSubParticipation() and value)",
-     *     groups={"published"}
-     * )
-     *
-     * @Groups({"agency:project:write", "agency:project:read"})
-     */
-    private ?string $principalRiskType;
-
-    /**
-     * @ORM\Column(type="string", length=30, nullable=true)
-     *
-     * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
-     * @Assert\Expression(
-     *     expression="(this.hasSilentSyndication() and value) or (false === this.hasSilentSyndication() and null === value)",
-     *     groups={"published"}
-     * )
-     *
-     * @Groups({"agency:project:write", "agency:project:read"})
-     */
-    private ?string $secondarySyndicationType;
-
-    /**
-     * @ORM\Column(type="string", length=30, nullable=true)
-     *
-     * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
-     * @Assert\Expression(
-     *     expression="(this.hasSilentSyndication() and value) or (false === this.hasSilentSyndication() and null === value)",
-     *     groups={"published"}
-     * )
-     *
-     * @Groups({"agency:project:write", "agency:project:read"})
-     */
-    private ?string $secondaryParticipationType;
-
-    /**
-     * @ORM\Column(type="string", nullable=true, length=30)
-     *
-     * @Assert\Choice(callback={RiskType::class, "getConstList"})
-     * @Assert\Expression(
-     *     expression="(false === this.isSecondarySubParticipation() and null === value) or (this.isSecondarySubParticipation() and value)",
-     *     groups={"published"}
-     * ),
-     * @Assert\Expression(
-     * expression="(this.hasSilentSyndication()) or (false === this.hasSilentSyndication() and null === value)"),
-     *     groups={"published"}
-     * )
-     *
-     * @Groups({"agency:project:write", "agency:project:read"})
-     */
-    private ?string $secondaryRiskType;
+    private Collection $participationPools;
 
     /**
      * @var Collection|Tranche[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Tranche", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
-     * @Groups({"agency:project:read"})
-     *
      * @Assert\Valid
      * @Assert\All({
      *     @Assert\Expression("value.getProject() === this")
      * })
      *
+     * TODO Create custom endpoint to handle security
      * @ApiSubresource
      */
     private Collection $tranches;
@@ -384,17 +350,15 @@ class Project
     /**
      * @var Borrower[]|iterable
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true)
-     *
-     * @Groups({"agency:project:read"})
-     *
-     * @MaxDepth(1)
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
      * @Assert\Valid
      * @Assert\Count(min="1", groups={"published"})
      * @Assert\All({
      *     @Assert\Expression("value.getProject() === this")
      * })
+     *
+     * @ApiSubresource
      */
     private iterable $borrowers;
 
@@ -409,9 +373,7 @@ class Project
 
     /**
      * @ORM\ManyToOne(targetEntity=CompanyGroupTag::class)
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_company_group_tag", referencedColumnName="id", nullable=false)
-     * })
+     * @ORM\JoinColumn(name="id_company_group_tag", referencedColumnName="id")
      *
      * Remove assertion for external banks (they may have no companyGroupTag)
      * @Assert\NotBlank
@@ -423,6 +385,8 @@ class Project
     private ?CompanyGroupTag $companyGroupTag;
 
     /**
+     * Date de signature.
+     *
      * @ORM\Column(type="date_immutable")
      *
      * @Groups({"agency:project:write", "agency:project:read"})
@@ -446,46 +410,24 @@ class Project
     private ?string $description = null;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullablePerson", columnPrefix="agency_contact_")
+     * @ORM\Column(type="smallint", nullable=false)
      *
-     * @Assert\Valid
+     * @Assert\NotBlank
+     * @Assert\Choice(callback={Project::class, "getAvailableStatuses"})
      *
      * @Groups({"agency:project:read", "agency:project:write"})
      */
-    private NullablePerson $agencyContact;
+    private int $currentStatus;
 
     /**
-     * @var Participation[]|iterable
+     * @var iterable|ProjectStatusHistory[]
      *
-     * @ORM\OneToMany(targetEntity=Participation::class, mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="ProjectStatusHistory", orphanRemoval=true, mappedBy="project", cascade={"persist", "remove"})
      *
-     * @Groups({"agency:project:read"})
-     *
-     * @Assert\Valid
      * @Assert\All({
      *     @Assert\Expression("value.getProject() === this")
      * })
-     */
-    private iterable $participations;
-
-    /**
-     * @ORM\OneToOne(targetEntity="Unilend\Agency\Entity\ProjectStatus", cascade={"persist"})
-     * @ORM\JoinColumn(name="id_current_status")
-     *
-     * @Assert\NotBlank
      * @Assert\Valid
-     * @Assert\Expression("this === value.getProject()")
-     *
-     * @Groups({"agency:project:read", "agency:project:write"})
-     */
-    private ProjectStatus $currentStatus;
-
-    /**
-     * @var iterable|ProjectStatus[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\ProjectStatus", orphanRemoval=true, cascade={"persist"}, mappedBy="project", fetch="EAGER")
-     *
-     * @Assert\Count(min="1")
      */
     private iterable $statuses;
 
@@ -496,32 +438,24 @@ class Project
      *
      * @Groups({"agency:project:read", "agency:project:write"})
      *
-     * @Assert\Valid
+     * @Assert\Valid(groups={"Default", "Project"})
      * @Assert\All({
      *     @Assert\Expression("value.getProject() === this")
      * })
-     *
-     * @ApiSubresource
      */
     private Collection $covenants;
 
     /**
      * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_agent_borrower_drive", nullable=false, unique=true)
+     * @ORM\JoinColumn(name="id_borrower_shared_drive", nullable=false, unique=true)
      */
-    private Drive $agentBorrowerDrive;
+    private Drive $borrowerSharedDrive;
 
     /**
      * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_agent_principal_borrower_drive", nullable=false, unique=true)
+     * @ORM\JoinColumn(name="id_borrower_confidential_drive", nullable=false, unique=true)
      */
-    private Drive $agentPrincipalParticipantDrive;
-
-    /**
-     * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_agent_secondary_borrower_drive", nullable=false, unique=true)
-     */
-    private Drive $agentSecondaryParticipantDrive;
+    private Drive $borrowerConfidentialDrive;
 
     /**
      * @ORM\ManyToOne(targetEntity=ArrangementProject::class, cascade={"persist"})
@@ -530,6 +464,20 @@ class Project
      * @Assert\Expression("value === null || value.isFinished()")
      */
     private ?ArrangementProject $source;
+
+    /**
+     * Date de cloture anticipée.
+     *
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Expression("this.isFinished()"),
+     *     @Assert\IsNull
+     * })
+     *
+     * @Groups({"agency:project:write"})
+     */
+    private ?DateTimeImmutable $anticipatedFinishDate;
 
     /**
      * @throws Exception
@@ -543,17 +491,10 @@ class Project
         DateTimeImmutable $contractEndDate,
         ?ArrangementProject $source = null
     ) {
+        $currentUser = $addedBy->getUser();
+
         $this->added   = new DateTimeImmutable();
         $this->addedBy = $addedBy;
-        $this->agent   = $addedBy->getCompany();
-
-        $currentUser         = $addedBy->getUser();
-        $this->agencyContact = (new NullablePerson())
-            ->setFirstName($currentUser->getFirstName())
-            ->setLastName($currentUser->getLastName())
-            ->setEmail($currentUser->getEmail())
-            ->setPhone($currentUser->getPhone())
-        ;
 
         $this->riskGroupName      = $riskGroupName;
         $this->globalFundingMoney = $globalFundingMoney;
@@ -561,34 +502,39 @@ class Project
         $this->contractEndDate    = $contractEndDate;
         $this->title              = $title;
 
-        $this->borrowers = new ArrayCollection();
-        $this->tranches  = new ArrayCollection();
-        $participation   = new Participation($this, $this->agent, new Money($this->globalFundingMoney->getCurrency()));
+        $this->borrowers          = new ArrayCollection();
+        $this->tranches           = new ArrayCollection();
+        $this->participationPools = new ArrayCollection([false => new ParticipationPool($this, false), true => new ParticipationPool($this, true)]);
+
+        $this->agent = new Agent($this, $addedBy->getCompany());
+        $this->agent->addMember(new AgentMember($this->agent, $addedBy->getUser()));
+        $this->agent->setContact(
+            (new NullablePerson())
+                ->setFirstName($currentUser->getFirstName())
+                ->setLastName($currentUser->getLastName())
+                ->setEmail($currentUser->getEmail())
+                ->setPhone($currentUser->getPhone())
+        );
+
+        $participation = new Participation(
+            $this->getPrimaryParticipationPool(),
+            $this->agent->getCompany(),
+            new Money($this->getCurrency()),
+            new Money($this->getCurrency())
+        );
         $participation->setResponsibilities(new Bitmask(Participation::RESPONSIBILITY_AGENT));
         $participation->setAgentCommission('0');
-        $participation->setMembers(new ArrayCollection([new ParticipationMember($participation, $addedBy->getUser())]));
-        $this->participations = new ArrayCollection([$participation]);
 
-        $this->silentSyndication = false;
+        $this->participationPools[false]->addParticipation($participation);
 
-        $this->principalSyndicationType   = null;
-        $this->principalParticipationType = null;
-        $this->principalRiskType          = null;
+        $this->statuses      = new ArrayCollection();
+        $this->currentStatus = static::STATUS_DRAFT;
 
-        $this->secondarySyndicationType   = null;
-        $this->secondaryParticipationType = null;
-        $this->secondaryRiskType          = null;
+        $this->borrowerConfidentialDrive = new Drive();
+        $this->borrowerSharedDrive       = new Drive();
 
-        $this->currentStatus = new ProjectStatus($this, $addedBy, ProjectStatus::DRAFT);
-        $this->statuses      = new ArrayCollection([$this->currentStatus]);
-
-        // This part is weird but compliant to figma models: those fields are editable
-        $this->agentDisplayName = $this->agent->getDisplayName();
-        $this->agentSiren       = $this->agent->getSiren();
-
-        $this->agentBorrowerDrive             = new Drive();
-        $this->agentPrincipalParticipantDrive = new Drive();
-        $this->agentSecondaryParticipantDrive = new Drive();
+        $this->anticipatedFinishDate = null;
+        $this->covenants             = new ArrayCollection();
 
         $this->source = $source;
         if ($source) {
@@ -596,129 +542,14 @@ class Project
         }
     }
 
-    public function getAgent(): Company
+    public function getAgent(): Agent
     {
         return $this->agent;
     }
 
-    public function getAgentDisplayName(): ?string
+    public function getAgentCompany(): Company
     {
-        return $this->agentDisplayName;
-    }
-
-    public function setAgentDisplayName(?string $agentDisplayName): Project
-    {
-        $this->agentDisplayName = $agentDisplayName;
-
-        return $this;
-    }
-
-    public function getAgentSiren(): ?string
-    {
-        return $this->agentSiren;
-    }
-
-    public function setAgentSiren(?string $agentSiren): Project
-    {
-        $this->agentSiren = $agentSiren;
-
-        return $this;
-    }
-
-    public function getAgentLegalForm(): ?string
-    {
-        return $this->agentLegalForm;
-    }
-
-    public function setAgentLegalForm(?string $agentLegalForm): Project
-    {
-        $this->agentLegalForm = $agentLegalForm;
-
-        return $this;
-    }
-
-    public function getHeadOffice(): ?string
-    {
-        return $this->headOffice;
-    }
-
-    public function setHeadOffice(?string $headOffice): Project
-    {
-        $this->headOffice = $headOffice;
-
-        return $this;
-    }
-
-    public function getAgentCapital(): ?NullableMoney
-    {
-        return $this->agentCapital;
-    }
-
-    public function setAgentCapital(?NullableMoney $agentCapital): Project
-    {
-        $this->agentCapital = $agentCapital;
-
-        return $this;
-    }
-
-    public function getAgentRCS(): ?string
-    {
-        return $this->agentRCS;
-    }
-
-    public function setAgentRCS(?string $agentRCS): Project
-    {
-        $this->agentRCS = $agentRCS;
-
-        return $this;
-    }
-
-    public function getAgencyContact(): NullablePerson
-    {
-        return $this->agencyContact;
-    }
-
-    public function setAgencyContact(NullablePerson $agencyContact): Project
-    {
-        $this->agencyContact = $agencyContact;
-
-        return $this;
-    }
-
-    public function getBankInstitution(): ?string
-    {
-        return $this->bankInstitution;
-    }
-
-    public function setBankInstitution(?string $bankInstitution): Project
-    {
-        $this->bankInstitution = $bankInstitution;
-
-        return $this;
-    }
-
-    public function getBic(): ?string
-    {
-        return $this->bic;
-    }
-
-    public function setBic(?string $bic): Project
-    {
-        $this->bic = $bic;
-
-        return $this;
-    }
-
-    public function getIban(): ?string
-    {
-        return $this->iban;
-    }
-
-    public function setIban(?string $iban): Project
-    {
-        $this->iban = $iban;
-
-        return $this;
+        return $this->agent->getCompany();
     }
 
     public function setRiskGroupName(string $riskGroupName): Project
@@ -728,9 +559,6 @@ class Project
         return $this;
     }
 
-    /**
-     * @return Company
-     */
     public function getRiskGroupName(): string
     {
         return $this->riskGroupName;
@@ -748,104 +576,15 @@ class Project
         return $this;
     }
 
+    /**
+     * @Groups({"agency:project:read"})
+     */
     public function hasSilentSyndication(): bool
     {
-        return $this->silentSyndication;
-    }
-
-    public function setSilentSyndication(bool $silentSyndication): Project
-    {
-        $this->silentSyndication = $silentSyndication;
-
-        return $this;
-    }
-
-    public function getPrincipalSyndicationType(): ?string
-    {
-        return $this->principalSyndicationType;
-    }
-
-    public function setPrincipalSyndicationType(?string $principalSyndicationType): Project
-    {
-        $this->principalSyndicationType = $principalSyndicationType;
-
-        return $this;
-    }
-
-    public function getPrincipalParticipationType(): ?string
-    {
-        return $this->principalParticipationType;
-    }
-
-    public function setPrincipalParticipationType(?string $principalParticipationType): Project
-    {
-        $this->principalParticipationType = $principalParticipationType;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isPrincipalSubParticipation()
-    {
-        return ParticipationType::SUB_PARTICIPATION === $this->principalParticipationType;
-    }
-
-    public function getPrincipalRiskType(): ?string
-    {
-        return $this->principalRiskType;
-    }
-
-    public function setPrincipalRiskType(?string $principalRiskType): Project
-    {
-        $this->principalRiskType = $principalRiskType;
-
-        return $this;
-    }
-
-    public function getSecondarySyndicationType(): ?string
-    {
-        return $this->secondarySyndicationType;
-    }
-
-    public function setSecondarySyndicationType(?string $secondarySyndicationType): Project
-    {
-        $this->secondarySyndicationType = $secondarySyndicationType;
-
-        return $this;
-    }
-
-    public function getSecondaryParticipationType(): ?string
-    {
-        return $this->secondaryParticipationType;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isSecondarySubParticipation()
-    {
-        return ParticipationType::SUB_PARTICIPATION === $this->secondaryParticipationType;
-    }
-
-    public function setSecondaryParticipationType(?string $secondaryParticipationType): Project
-    {
-        $this->secondaryParticipationType = $secondaryParticipationType;
-
-        return $this;
-    }
-
-    public function getSecondaryRiskType(): ?string
-    {
-        return $this->secondaryRiskType;
-    }
-
-    public function setSecondaryRiskType(?string $secondaryRiskType): Project
-    {
-        $this->secondaryRiskType = $secondaryRiskType;
-
-        return $this;
+        return 0 < count(
+            $this->getSecondaryParticipationPool()
+                ->getParticipations()
+        );
     }
 
     /**
@@ -911,10 +650,8 @@ class Project
 
     /**
      * @param iterable|Tranche[] $tranches
-     *
-     * @return Project
      */
-    public function setTranches($tranches)
+    public function setTranches($tranches): Project
     {
         $this->tranches = $tranches;
 
@@ -1007,34 +744,61 @@ class Project
 
     /**
      * @return iterable|Participation[]
+     *
+     * @ApiProperty(security="is_granted('agent', object)")
      */
-    public function getParticipations()
+    public function getParticipations(): iterable
     {
-        return $this->participations;
+        foreach ($this->participationPools as $pool) {
+            yield from $pool->getParticipations();
+        }
     }
 
     public function addParticipation(Participation $participation): Project
     {
-        if (false === $this->participations->exists(fn ($key, Participation $item) => $item->getParticipant() === $participation->getParticipant())) {
-            $this->participations->add($participation);
+        if ($this->findParticipationByParticipant($participation->getParticipant())) {
+            return $this;
         }
 
+        $this->participationPools[$participation->getPool()->isSecondary()]->addParticipation($participation);
+
         return $this;
     }
 
-    public function removeParticipation(Participation $participation): Project
+    /**
+     * @return ArrayCollection|Collection|ParticipationPool[]
+     */
+    public function getParticipationPools(): Collection
     {
-        $this->participations->removeElement($participation);
-
-        return $this;
+        return $this->participationPools;
     }
 
-    public function getCurrentStatus(): ProjectStatus
+    /**
+     * @ApiProperty(security="is_granted('agent', object) || is_granted('borrower', object) || is_granted('primary_participant', object)")
+     *
+     * @Groups({"agency:project:read"})
+     */
+    public function getPrimaryParticipationPool(): ParticipationPool
+    {
+        return $this->participationPools[false];
+    }
+
+    /**
+     * @ApiProperty(security="is_granted('agent', object) || is_granted('secondary_participant', object)")
+     *
+     * @Groups({"agency:project:read"})
+     */
+    public function getSecondaryParticipationPool(): ParticipationPool
+    {
+        return $this->participationPools[true];
+    }
+
+    public function getCurrentStatus(): int
     {
         return $this->currentStatus;
     }
 
-    public function setCurrentStatus(ProjectStatus $currentStatus): Project
+    public function setCurrentStatus(int $currentStatus): Project
     {
         $this->currentStatus = $currentStatus;
 
@@ -1042,7 +806,7 @@ class Project
     }
 
     /**
-     * @return iterable|ProjectStatus[]
+     * @return iterable|ProjectStatusHistory[]
      */
     public function getStatuses(): iterable
     {
@@ -1050,9 +814,9 @@ class Project
     }
 
     /**
-     * @return iterable|Covenant[]
+     * @return Collection|Covenant[]
      */
-    public function getCovenants(): iterable
+    public function getCovenants(): Collection
     {
         return $this->covenants;
     }
@@ -1071,9 +835,56 @@ class Project
         return $this;
     }
 
+    public function isEditable(): bool
+    {
+        return false === $this->isArchived() && false === $this->isFinished();
+    }
+
     public function isPublished(): bool
     {
-        return ProjectStatus::DRAFT > $this->getCurrentStatus()->getStatus();
+        return static::STATUS_PUBLISHED === $this->currentStatus;
+    }
+
+    public function isArchived(): bool
+    {
+        return static::STATUS_ARCHIVED === $this->currentStatus;
+    }
+
+    public function isFinished(): bool
+    {
+        return static::STATUS_FINISHED === $this->currentStatus;
+    }
+
+    public function isDraft(): bool
+    {
+        return static::STATUS_DRAFT === $this->currentStatus;
+    }
+
+    public function publish(): Project
+    {
+        if ($this->isDraft()) {
+            $this->currentStatus = static::STATUS_PUBLISHED;
+        }
+
+        return $this;
+    }
+
+    public function archive(): Project
+    {
+        if (false === $this->isDraft()) {
+            $this->currentStatus = static::STATUS_ARCHIVED;
+        }
+
+        return $this;
+    }
+
+    public function finish(): Project
+    {
+        if (false === $this->isDraft()) {
+            $this->currentStatus = static::STATUS_FINISHED;
+        }
+
+        return $this;
     }
 
     /**
@@ -1094,33 +905,102 @@ class Project
         return $validationGroups;
     }
 
-    public function getAgentBorrowerDrive(): Drive
+    public function getBorrowerSharedDrive(): Drive
     {
-        return $this->agentBorrowerDrive;
+        return $this->borrowerSharedDrive;
     }
 
-    public function getAgentPrincipalParticipantDrive(): Drive
+    public function getBorrowerConfidentialDrive(): Drive
     {
-        return $this->agentPrincipalParticipantDrive;
-    }
-
-    public function getAgentSecondaryParticipantDrive(): Drive
-    {
-        return $this->agentSecondaryParticipantDrive;
+        return $this->borrowerConfidentialDrive;
     }
 
     public function getAgentParticipation(): Participation
     {
-        return $this->findParticipationByParticipant($this->getAgent());
+        return $this->findParticipationByParticipant($this->getAgentCompany());
     }
 
     public function findParticipationByParticipant(Company $participant): ?Participation
     {
-        return $this->participations->filter(fn (Participation $participation) => $participation->getParticipant() === $participant)->first() ?: null;
+        foreach ($this->getParticipations() as $participation) {
+            if ($participation->getParticipant() === $participant) {
+                return $participation;
+            }
+        }
+
+        return null;
     }
 
     public function getSource(): ?ArrangementProject
     {
         return $this->source;
+    }
+
+    public function getCurrency(): string
+    {
+        return $this->getGlobalFundingMoney()->getCurrency();
+    }
+
+    /**
+     * @return array|int[]
+     */
+    public static function getAvailableStatuses(): array
+    {
+        return static::getConstants('STATUS_');
+    }
+
+    public function getAnticipatedFinishDate(): ?DateTimeImmutable
+    {
+        return $this->anticipatedFinishDate;
+    }
+
+    public function setAnticipatedFinishDate(?DateTimeImmutable $anticipatedFinishDate): Project
+    {
+        $this->anticipatedFinishDate = $anticipatedFinishDate;
+
+        return $this;
+    }
+
+    /**
+     * @param $payload
+     *
+     * @Assert\Callback
+     */
+    public function validateStatusTransition(ExecutionContextInterface $context, $payload)
+    {
+        $statuses = [];
+
+        switch ($this->currentStatus) {
+            case static::STATUS_DRAFT:
+                $statuses = [];
+
+                break;
+
+            case static::STATUS_ARCHIVED:
+            case static::STATUS_FINISHED:
+                $statuses = [static::STATUS_PUBLISHED];
+
+                break;
+
+            case static::STATUS_PUBLISHED:
+                $statuses = [static::STATUS_DRAFT];
+
+                break;
+        }
+
+        sort($statuses);
+
+        reset($statuses);
+
+        while (($status = current($statuses))) {
+            if (false === $this->statuses->exists(fn ($_, ProjectStatusHistory $history) => $history->getStatus() === $status)) {
+                $context->buildViolation('Agency.Project.missingStatus', [
+                    '{{ missingStatus }}' => $status,
+                    '{{ nextStatus }}'    => $this->currentStatus,
+                ])->addViolation();
+            }
+
+            next($statuses);
+        }
     }
 }

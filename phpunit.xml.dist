@@ -30,11 +30,13 @@
         <testsuite name="unit">
             <directory>tests/Core/Unit</directory>
             <directory>tests/Syndication/Unit</directory>
+            <directory>tests/CreditGuaranty/Unit</directory>
         </testsuite>
 
         <testsuite name="functional">
             <directory>tests/Core/Functional</directory>
             <directory>tests/Syndication/Functional</directory>
+            <directory>tests/CreditGuaranty/Functional</directory>
         </testsuite>
 
         <testsuite name="core">

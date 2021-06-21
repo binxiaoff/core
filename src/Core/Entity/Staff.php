@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Generator;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -64,6 +65,8 @@ class Staff implements TraceableStatusAwareInterface
     use PublicizeIdentityTrait;
 
     public const SERIALIZER_GROUP_OWNER_READ = 'staff:owner:read';
+
+    public const ID_ADMIN = 1;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User", inversedBy="staff", cascade={"persist", "refresh"})
@@ -341,14 +344,18 @@ class Staff implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return iterable|Staff[]
+     * @return Generator|Staff[]
      */
-    public function getManagedStaff(): iterable
+    public function getManagedStaff(): Generator
     {
+        // Non-manager only get self in collection
         if (false === $this->manager) {
+            yield $this;
+
             return;
         }
 
+        // Manager get self in collection (he is present in his team) and other people (manager or not) in his team and its descendents
         /** @var Team $team */
         foreach ([$this->team, ...$this->team->getDescendents()] as $team) {
             yield from $team->getStaff();
@@ -356,9 +363,9 @@ class Staff implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return iterable|User[]
+     * @return Generator|User[]
      */
-    public function getManagedUsers(): iterable
+    public function getManagedUsers(): Generator
     {
         foreach ($this->getManagedStaff() as $staff) {
             yield $staff->getUser();

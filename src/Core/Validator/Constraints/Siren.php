@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Luhn;
 use Symfony\Component\Validator\Constraints\Sequentially;
 use Symfony\Component\Validator\Constraints\SequentiallyValidator;
+use Symfony\Component\Validator\Constraints\Type;
 
 /**
  * @Annotation
@@ -24,6 +25,7 @@ class Siren extends Sequentially
         parent::__construct([
             'constraints' => [
                 new Length(['max' => 9, 'min' => 9, 'exactMessage' => $options['message'] ?? $this->message]),
+                new Type(['type' => 'digit', 'message' => $options['message'] ?? $this->message]),
                 new Luhn(['message' => $options['message'] ?? $this->message]),
             ],
         ]);

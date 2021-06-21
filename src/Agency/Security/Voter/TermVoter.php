@@ -15,6 +15,7 @@ class TermVoter extends AbstractEntityVoter
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_EDIT   = 'edit';
     public const ATTRIBUTE_DELETE = 'delete';
+    public const ATTRIBUTE_AGENT  = 'agent';
 
     /**
      * @throws Exception
@@ -42,9 +43,10 @@ class TermVoter extends AbstractEntityVoter
             return false;
         }
 
-        // TODO Update for borrowers
-
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $term->getCovenant()->getProject());
+        return ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $term->getProject())
+            || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $term->getProject()))
+            && $term->getProject()->isEditable()
+            && $term->getStartDate() <= $this->getToday();
     }
 
     /**
@@ -52,10 +54,16 @@ class TermVoter extends AbstractEntityVoter
      */
     protected function canDelete(Term $term, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_EDIT, $term->getCovenant())
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $term->getProject())
             && false === $term->isArchived()
             && $term->isShared()
-            && $term->getStartDate() >= $this->getToday();
+            && $term->getStartDate() <= $this->getToday()
+            && $term->getProject()->isEditable();
+    }
+
+    protected function canAgent(Term $term, User $user): bool
+    {
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $term->getProject());
     }
 
     /**

@@ -35,7 +35,7 @@ class MarginRule
 
     /**
      * @ORM\ManyToOne(targetEntity=Covenant::class, inversedBy="marginRules")
-     * @ORM\JoinColumn(name="id_covenant")
+     * @ORM\JoinColumn(name="id_covenant", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
      * @Assert\Expression(expression="this.getCovenant().isFinancial()", message="Agency.MarginRule.inconsistentCovenant")

@@ -16,6 +16,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\Traits\CloneableTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
@@ -23,25 +24,25 @@ use Unilend\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
 /**
  * @ApiResource(
  *     attributes={"pagination_enabled": false},
- *     normalizationContext={"groups": {"creditGuaranty:programEligibilityConfiguration:read", "creditGuaranty:programChoiceOption:read", "timestampable:read"}},
+ *     normalizationContext={"groups": {"creditGuaranty:programEligibilityConfiguration:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:programEligibilityConfiguration:write"}},
  *     itemOperations={
  *         "get": {
  *             "normalization_context": {
  *                 "groups": {
  *                     "creditGuaranty:programEligibilityConfiguration:read",
- *                     "creditGuaranty:programChoiceOption:read",
  *                     "creditGuaranty:programEligibilityCondition:read",
  *                     "timestampable:read"
  *                 }
  *             }
  *         },
- *         "patch",
- *         "delete"
+ *         "patch": {"security": "is_granted('edit', object)"},
+ *         "delete": {"security": "is_granted('delete', object)"}
  *     },
  *     collectionOperations={
  *         "post": {
- *             "input": ProgramEligibilityConfigurationInput::class
+ *             "input": ProgramEligibilityConfigurationInput::class,
+ *             "security_post_denormalize": "is_granted('create', object)"
  *         }
  *     }
  * )
@@ -65,6 +66,7 @@ class ProgramEligibilityConfiguration
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+    use CloneableTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibility", inversedBy="programEligibilityConfigurations")
@@ -82,8 +84,6 @@ class ProgramEligibilityConfiguration
      *
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_program_choice_option", onDelete="CASCADE")
-     *
-     * @Groups({"creditGuaranty:programEligibilityConfiguration:read"})
      */
     private ?ProgramChoiceOption $programChoiceOption;
 
@@ -109,7 +109,10 @@ class ProgramEligibilityConfiguration
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition", mappedBy="programEligibilityConfiguration", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(
+     *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition",
+     *     mappedBy="programEligibilityConfiguration", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     * )
      */
     private Collection $programEligibilityConditions;
 
@@ -126,6 +129,13 @@ class ProgramEligibilityConfiguration
     public function getProgramEligibility(): ProgramEligibility
     {
         return $this->programEligibility;
+    }
+
+    public function setProgramEligibility(ProgramEligibility $programEligibility): ProgramEligibilityConfiguration
+    {
+        $this->programEligibility = $programEligibility;
+
+        return $this;
     }
 
     public function setEligible(bool $eligible): ProgramEligibilityConfiguration
@@ -145,6 +155,13 @@ class ProgramEligibilityConfiguration
         return $this->programChoiceOption;
     }
 
+    public function setProgramChoiceOption(?ProgramChoiceOption $programChoiceOption): ProgramEligibilityConfiguration
+    {
+        $this->programChoiceOption = $programChoiceOption;
+
+        return $this;
+    }
+
     public function getValue(): ?string
     {
         return $this->value;
@@ -156,6 +173,14 @@ class ProgramEligibilityConfiguration
     public function getProgramEligibilityConditionsCount(): int
     {
         return $this->programEligibilityConditions->count();
+    }
+
+    /**
+     * @Groups({"creditGuaranty:programEligibilityConfiguration:read"})
+     */
+    public function getDescription(): ?string
+    {
+        return $this->getProgramChoiceOption() ? $this->getProgramChoiceOption()->getDescription() : null;
     }
 
     /**
@@ -224,5 +249,17 @@ class ProgramEligibilityConfiguration
                 ;
             }
         }
+    }
+
+    protected function onClone(): void
+    {
+        $clonedProgramEligibilityConditions = new ArrayCollection();
+        foreach ($this->programEligibilityConditions as $item) {
+            $clonedItem = clone $item;
+            $clonedItem->setProgramEligibilityConfiguration($this);
+            $clonedProgramEligibilityConditions->add($clonedItem);
+        }
+
+        $this->programEligibilityConditions = $clonedProgramEligibilityConditions;
     }
 }

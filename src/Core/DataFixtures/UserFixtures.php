@@ -16,31 +16,16 @@ class UserFixtures extends AbstractFixtures
 {
     use ConstantsAwareTrait;
 
-    /**
-     * @var UserPasswordEncoderInterface
-     */
-    private UserPasswordEncoderInterface $passwordEncoder;
-
-    /**
-     * @param TokenStorageInterface        $tokenStorage
-     * @param UserPasswordEncoderInterface $passwordEncoder
-     */
-    public function __construct(TokenStorageInterface $tokenStorage, UserPasswordEncoderInterface $passwordEncoder)
-    {
-        parent::__construct($tokenStorage);
-        $this->passwordEncoder = $passwordEncoder;
-    }
-
-    public const ADMIN = 'admin';
-    public const PARTICIPANT = 'participant';
-    public const AUDITOR = 'auditor';
-    public const ACCOUNTANT = 'accountant';
-    public const OPERATOR = 'operator';
-    public const MANAGER = 'manager';
-    public const UNITIALIZED = 'unitialized';
-    public const NO_STAFF = 'no_staff';
-    public const INACTIVE = 'inactive';
-    public const EXTBANK_INVITED = 'extbank_invited';
+    public const ADMIN               = 'admin';
+    public const PARTICIPANT         = 'participant';
+    public const AUDITOR             = 'auditor';
+    public const ACCOUNTANT          = 'accountant';
+    public const OPERATOR            = 'operator';
+    public const MANAGER             = 'manager';
+    public const UNITIALIZED         = 'unitialized';
+    public const NO_STAFF            = 'no_staff';
+    public const INACTIVE            = 'inactive';
+    public const EXTBANK_INVITED     = 'extbank_invited';
     public const EXTBANK_INITIALIZED = 'extbank_initialized';
 
     private const INITIALIZED_USERS = [
@@ -55,9 +40,15 @@ class UserFixtures extends AbstractFixtures
         self::INACTIVE,
     ];
 
+    private UserPasswordEncoderInterface $passwordEncoder;
+
+    public function __construct(TokenStorageInterface $tokenStorage, UserPasswordEncoderInterface $passwordEncoder)
+    {
+        parent::__construct($tokenStorage);
+        $this->passwordEncoder = $passwordEncoder;
+    }
+
     /**
-     * @param ObjectManager $manager
-     *
      * @throws ReflectionException
      * @throws Exception
      */
@@ -86,27 +77,20 @@ class UserFixtures extends AbstractFixtures
     }
 
     /**
-     * @param User $user
-     *
      * @throws Exception
      */
     public function initialize(User $user): void
     {
-         $user->setLastName($this->faker->lastName);
-         $user->setFirstName($this->faker->firstName);
-         $user->setPhone('+33600000000');
-         $user->setJobFunction('Job function');
-         $user->setPlainPassword('0000');
-         $user->setPassword($this->passwordEncoder->encodePassword($user, $user->getPlainPassword()));
+        $user->setLastName($this->faker->lastName);
+        $user->setFirstName($this->faker->firstName);
+        $user->setPhone('+33600000000');
+        $user->setJobFunction('Job function');
+        $user->setPlainPassword('0000');
+        $user->setPassword($this->passwordEncoder->encodePassword($user, $user->getPlainPassword()));
     }
 
-    /**
-     * @param string $username
-     *
-     * @return string
-     */
     private function getEmailDomain(string $username): string
     {
-        return false !== strpos($username, 'extbank') ? 'extbank.com' : 'ca-lendingservices.com';
+        return false !== mb_strpos($username, 'extbank') ? 'extbank.com' : 'kls-platform.com';
     }
 }

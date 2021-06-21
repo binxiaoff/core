@@ -11,25 +11,43 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Unilend\Core\Entity\User;
+use Unilend\Core\EventSubscriber\Jwt\VersionSubscriber;
 use Unilend\Core\Repository\UserRepository;
+use Unilend\Core\Service\Jwt\StaffPayloadManager;
+use Unilend\Test\Core\DataFixtures\UserFixtures;
 
+/**
+ * @coversNothing
+ *
+ * @internal
+ */
 class AuthenticationTest extends WebTestCase
 {
-    /** @var string  */
+    /** @var string */
     private const LOGIN_ENDPOINT = '/core/authentication_token';
 
+    public function providerSuccessfulLoginForStaffAccount(): array
+    {
+        return [
+            'User with staff'                                     => ['user-9'],
+            'User without staff (typically a borrower in agency)' => ['user-21'],
+        ];
+    }
+
     /**
-     * Test POST /authentication_tokens
+     * Test POST /authentication_tokens.
      *
      * @throws JsonException
+     *
+     * @dataProvider providerSuccessfulLoginForStaffAccount
      */
-    public function testSuccessfulLoginForStaffAccount(): void
+    public function testSuccessfulLoginForStaffAccount(string $userPublicId): void
     {
         static::ensureKernelShutdown();
         $client = static::createClient();
 
         /** @var User $user */
-        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => 'user:9']);
+        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => $userPublicId]);
 
         $client->request(
             Request::METHOD_POST,
@@ -39,7 +57,7 @@ class AuthenticationTest extends WebTestCase
             [
                 'CONTENT_TYPE' => 'application/json',
             ],
-            json_encode(['username' => $user->getUsername(), 'password' => '0000', 'captchaValue' => 'ignored in test'], JSON_THROW_ON_ERROR)
+            json_encode(['username' => $user->getUsername(), 'password' => UserFixtures::DEFAULT_PASSWORD, 'captchaValue' => 'ignored in test'], JSON_THROW_ON_ERROR)
         );
 
         static::assertResponseIsSuccessful();
@@ -48,10 +66,9 @@ class AuthenticationTest extends WebTestCase
         $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
 
         static::assertArrayHasKey('refresh_token', $response);
-        static::assertArrayHasKey('staffTokens', $response);
-        static::assertArrayHasKey('userToken', $response);
+        static::assertArrayHasKey('tokens', $response);
         static::assertArrayNotHasKey('token', $response);
-        static::assertCount(count($user->getStaff()), $response['staffTokens']);
+        static::assertNotEmpty($response['tokens']);
 
         $decoder = static::$container->get(JWTEncoderInterface::class);
 
@@ -59,59 +76,50 @@ class AuthenticationTest extends WebTestCase
 
         $userIri = $iriConverter->getIriFromItem($user);
 
+        $decodedTokens = array_map([$decoder, 'decode'], $response['tokens']);
+
+        foreach ($decodedTokens as $decoded) {
+            static::assertSame(VersionSubscriber::JWT_VERSION, $decoded['version']);
+            static::assertSame($userIri, $decoded['user'] ?? null);
+        }
+
+        $userTokens = array_filter($decodedTokens, static fn ($decoded) => false === isset($decoded['@scope']));
+        static::assertCount(1, $userTokens);
+
+        // TODO This part might be better off in another function
+        $staffTokens = array_filter($decodedTokens, static fn ($decoded) => StaffPayloadManager::getScope() === ($decoded['@scope'] ?? null));
+
         $staffIris = [];
 
-        $decodedUserToken = $decoder->decode($response['userToken']);
-
-        static::assertSame($userIri, $decodedUserToken['user'] ?? null);
-
         foreach ($user->getStaff() as $staff) {
-            $staffIris[] = $iriConverter->getIriFromItem($staff);
+            if ($staff->isGrantedLogin()) {
+                $staffIris[] = $iriConverter->getIriFromItem($staff);
+            }
         }
 
-        foreach ($response['staffTokens'] as $token) {
-            $decoded = $decoder->decode($token);
-
-            static::assertNotNull($decoded['version'] ?? null);
-            static::assertSame($userIri, $decoded['user'] ?? null);
-            static::assertNotNull($decoded['staff'] ?? null);
-            static::assertContains($decoded['staff'], $staffIris);
-        }
+        static::assertEqualsCanonicalizing($staffIris, array_column($staffTokens, 'staff'));
     }
 
-    /**
-     * @throws JsonException
-     */
-    public function testFailedLoginUnknownUser()
+    public function providerFailedLoginWrongPassword(): array
     {
-        static::ensureKernelShutdown();
-        $client = static::createClient();
-
-        $client->request(
-            Request::METHOD_POST,
-            static::LOGIN_ENDPOINT,
-            [],
-            [],
-            [
-                'CONTENT_TYPE' => 'application/json',
-            ],
-            json_encode(['username' => 'notknownuser@test.com', 'password' => '0000', 'captchaValue' => 'ignored in test'], JSON_THROW_ON_ERROR)
-        );
-
-        static::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+        return [
+            'User with staff'                                     => ['user-9'],
+            'User without staff (typically a borrower in agency)' => ['user-21'],
+        ];
     }
-
 
     /**
      * @throws JsonException
+     *
+     * @dataProvider providerFailedLoginWrongPassword
      */
-    public function testFailedLoginWrongPassword()
+    public function testFailedLoginWrongPassword(string $publicId)
     {
         static::ensureKernelShutdown();
         $client = static::createClient();
 
         /** @var User $user */
-        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => 'user:9']);
+        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => $publicId]);
 
         $client->request(
             Request::METHOD_POST,
@@ -127,7 +135,6 @@ class AuthenticationTest extends WebTestCase
         static::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
-
     /**
      * @throws JsonException
      */
@@ -137,7 +144,7 @@ class AuthenticationTest extends WebTestCase
         $client = static::createClient();
 
         /** @var User $user */
-        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => 'user:9']);
+        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => 'user-9']);
 
         $client->request(
             Request::METHOD_POST,
@@ -147,9 +154,34 @@ class AuthenticationTest extends WebTestCase
             [
                 'CONTENT_TYPE' => 'application/json',
             ],
-            json_encode(['username' => $user->getUsername(), 'password' => '0000'], JSON_THROW_ON_ERROR)
+            json_encode(['username' => $user->getUsername(), 'password' => UserFixtures::DEFAULT_PASSWORD], JSON_THROW_ON_ERROR)
         );
 
         static::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    /**
+     * @throws JsonException
+     */
+    public function testFailedLoginUninitializedUser()
+    {
+        static::ensureKernelShutdown();
+        $client = static::createClient();
+
+        /** @var User $user */
+        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => 'user-uninitialized']);
+
+        $client->request(
+            Request::METHOD_POST,
+            static::LOGIN_ENDPOINT,
+            [],
+            [],
+            [
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            json_encode(['username' => $user->getUsername(), 'password' => UserFixtures::DEFAULT_PASSWORD, 'captchaValue' => 'ignored in test'], JSON_THROW_ON_ERROR)
+        );
+
+        static::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 }

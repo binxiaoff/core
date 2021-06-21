@@ -96,9 +96,9 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
             $arrangementProject
         );
 
-        $agencyProject->setPrincipalParticipationType($arrangementProject->getParticipationType());
-        $agencyProject->setPrincipalSyndicationType($arrangementProject->getSyndicationType());
-        $agencyProject->setPrincipalRiskType($arrangementProject->getRiskType());
+        $agencyProject->getPrimaryParticipationPool()->setParticipationType($arrangementProject->getParticipationType());
+        $agencyProject->getPrimaryParticipationPool()->setSyndicationType($arrangementProject->getSyndicationType());
+        $agencyProject->getPrimaryParticipationPool()->setRiskType($arrangementProject->getRiskType());
 
         $agencyProject->setCompanyGroupTag($arrangementProject->getCompanyGroupTag());
 
@@ -140,9 +140,10 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
 
             if (null === $agencyParticipation) {
                 $agencyParticipation = new Participation(
-                    $agencyProject,
+                    $agencyProject->getPrimaryParticipationPool(),
                     $arrangementParticipation->getParticipant(),
                     $finalAllocation,
+                    new Money($agencyProject->getGlobalFundingMoney()->getCurrency())
                 );
 
                 $agencyProject->addParticipation($agencyParticipation);

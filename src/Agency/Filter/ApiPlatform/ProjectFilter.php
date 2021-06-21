@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
 use Unilend\Agency\Entity\Project;
-use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Staff;
 
 class ProjectFilter extends AbstractContextAwareFilter
 {
@@ -123,7 +123,7 @@ class ProjectFilter extends AbstractContextAwareFilter
         $borrowerAlias       = self::prefix('borrower');
         $borrowerMemberAlias = static::prefix('borrowerMember');
 
-        $userParameterName = static::prefix('user');
+        $userParameterName = static::prefix('user') . '_borrower';
 
         $queryBuilder
             ->leftJoin("{$rootAlias}.borrowers", $borrowerAlias)
@@ -136,39 +136,54 @@ class ProjectFilter extends AbstractContextAwareFilter
 
     private function includeParticipant(QueryBuilder $queryBuilder): ?string
     {
-        $company = $this->getCompany();
+        $staff = $this->getStaff();
 
-        if (null === $company) {
+        if (null === $staff) {
             return null;
         }
 
-        $rootAlias          = $queryBuilder->getRootAliases()[0];
-        $participationAlias = static::prefix('participation');
+        $rootAlias                = $queryBuilder->getRootAliases()[0];
+        $participationAlias       = static::prefix('participation');
+        $participationPoolAlias   = static::prefix('participationPool');
+        $participationMemberAlias = static::prefix('participationMember');
 
         $companyParameterName = static::prefix('company') . '_participant';
+        $usersParameterName   = static::prefix('users') . '_participant';
 
-        $queryBuilder->leftJoin($rootAlias . '.participations', $participationAlias)
-            ->setParameter($companyParameterName, $company)
+        $queryBuilder
+            ->leftJoin("{$rootAlias}.participationPools", $participationPoolAlias)
+            ->leftJoin($participationPoolAlias . '.participations', $participationAlias)
+            ->leftJoin($participationAlias . '.members', $participationMemberAlias)
+            ->setParameter($companyParameterName, $staff->getCompany())
+            ->setParameter($usersParameterName, iterator_to_array($staff->getManagedUsers()))
         ;
 
-        return "{$participationAlias}.participant = :{$companyParameterName} and {$participationAlias}.participant !=  {$rootAlias}.agent";
+        return "{$participationAlias}.participant = :{$companyParameterName} and {$participationMemberAlias}.user IN (:{$usersParameterName})";
     }
 
     private function includeAgent(QueryBuilder $queryBuilder): ?string
     {
-        $company = $this->getCompany();
+        $staff = $this->getStaff();
 
-        if (null === $company) {
+        if (null === $staff) {
             return null;
         }
 
-        $rootAlias = $queryBuilder->getRootAliases()[0];
+        $rootAlias        = $queryBuilder->getRootAliases()[0];
+        $agentAlias       = static::prefix('agent');
+        $agentMemberAlias = static::prefix('agentMember');
 
         $companyParameterName = static::prefix('company') . '_agent';
+        $usersParameterName   = static::prefix('users') . '_agent';
 
-        $queryBuilder->setParameter($companyParameterName, $company);
+        $queryBuilder
+            ->leftJoin("{$rootAlias}.agent", $agentAlias)
+            ->leftJoin("{$agentAlias}.members", $agentMemberAlias)
+            ->setParameter($companyParameterName, $staff->getCompany())
+            ->setParameter($usersParameterName, iterator_to_array($staff->getManagedUsers()))
+        ;
 
-        return "{$rootAlias}.agent = :{$companyParameterName}";
+        return "{$agentAlias}.company = :{$companyParameterName} and {$agentMemberAlias}.user IN (:{$usersParameterName})";
     }
 
     private static function prefix(string $name)
@@ -176,14 +191,14 @@ class ProjectFilter extends AbstractContextAwareFilter
         return static::PREFIX . '_' . $name;
     }
 
-    private function getCompany(): ?Company
+    private function getStaff(): ?Staff
     {
         $token = $this->security->getToken();
 
-        if (null === $token || false === $token->hasAttribute('company')) {
+        if (null === $token || false === $token->hasAttribute('staff')) {
             return null;
         }
 
-        return $token->getAttribute('company');
+        return $token->getAttribute('staff');
     }
 }

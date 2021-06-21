@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use DateTimeImmutable;
@@ -14,16 +15,20 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\Constant\CARatingType;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Interfaces\StatusInterface;
 use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\BlamableUserAddedTrait;
+use Unilend\Core\Entity\Traits\CloneableTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Core\Validator\Constraints\PreviousValue;
 
 /**
@@ -31,12 +36,28 @@ use Unilend\Core\Validator\Constraints\PreviousValue;
  *     normalizationContext={"groups": {"creditGuaranty:program:read", "creditGuaranty:programStatus:read", "timestampable:read", "money:read", "nullableMoney:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:program:write", "money:write", "nullableMoney:write"}},
  *     itemOperations={
- *         "get",
+ *         "get": {"security": "is_granted('view', object)"},
  *         "patch": {"security": "is_granted('edit', object)"},
  *         "delete": {"security": "is_granted('delete', object)"}
  *     },
  *     collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)"},
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *             "openapi_context": {
+ *                 "parameters": {
+ *                     {
+ *                         "in": "query",
+ *                         "name": "import",
+ *                         "schema": {
+ *                             "type": "string",
+ *                             "minimum": 0,
+ *                             "maximum": 1
+ *                         },
+ *                         "description": "Public id of the existing program from which you want to copy"
+ *                     }
+ *                 }
+ *             }
+ *         },
  *         "get"
  *     }
  * )
@@ -51,7 +72,8 @@ class Program implements TraceableStatusAwareInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
-    use BlamableAddedTrait;
+    use BlamableUserAddedTrait;
+    use CloneableTrait;
 
     public const COMPANY_GROUP_TAG_CORPORATE   = 'corporate';
     public const COMPANY_GROUP_TAG_AGRICULTURE = 'agriculture';
@@ -59,7 +81,7 @@ class Program implements TraceableStatusAwareInterface
     /**
      * @ORM\Column(length=100, unique=true)
      *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:list", "creditGuaranty:program:write"})
      */
     private string $name;
 
@@ -120,7 +142,7 @@ class Program implements TraceableStatusAwareInterface
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:list", "creditGuaranty:program:write"})
      */
     private ?DateTimeImmutable $distributionDeadline;
 
@@ -189,6 +211,10 @@ class Program implements TraceableStatusAwareInterface
      * @Assert\Valid
      *
      * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramStatus", mappedBy="program", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     *
+     * @ORM\OrderBy({"added": "ASC"})
+     *
+     * @Groups({"creditGuaranty:program:read"})
      */
     private Collection $statuses;
 
@@ -211,6 +237,16 @@ class Program implements TraceableStatusAwareInterface
      */
     private ?int $reservationDuration;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\JoinColumn(name="id_managing_company", nullable=false)
+     *
+     * @ApiProperty(readableLink=false)
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:create"})
+     */
+    private Company $managingCompany;
+
     // Subresource
 
     /**
@@ -218,7 +254,10 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramGradeAllocation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(
+     *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramGradeAllocation",
+     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}, indexBy="grade"
+     * )
      */
     private Collection $programGradeAllocations;
 
@@ -229,7 +268,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ORM\OneToMany(
      *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation",
-     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}, indexBy="id_program_choice_option"
      * )
      */
     private Collection $programBorrowerTypeAllocations;
@@ -239,7 +278,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
      */
     private Collection $programChoiceOptions;
 
@@ -248,7 +287,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramContact", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramContact", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
      */
     private Collection $programContacts;
 
@@ -266,26 +305,53 @@ class Program implements TraceableStatusAwareInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\Participation", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(
+     *     targetEntity="Unilend\CreditGuaranty\Entity\Participation",
+     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}, indexBy="id_company"
+     * )
      */
     private Collection $participations;
 
+    /**
+     * @var Collection|Reservation[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(
+     *     targetEntity="Unilend\CreditGuaranty\Entity\Reservation",
+     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     * )
+     */
+    private Collection $reservations;
+
     public function __construct(string $name, CompanyGroupTag $companyGroupTag, Money $funds, Staff $addedBy)
     {
-        $this->name                    = $name;
-        $this->companyGroupTag         = $companyGroupTag;
-        $this->funds                   = $funds;
-        $this->addedBy                 = $addedBy;
-        $this->statuses                = new ArrayCollection();
-        $this->guarantyCost            = new NullableMoney();
-        $this->added                   = new DateTimeImmutable();
-        $this->programGradeAllocations = new ArrayCollection();
+        $this->name                           = $name;
+        $this->companyGroupTag                = $companyGroupTag;
+        $this->funds                          = $funds;
+        $this->addedBy                        = $addedBy->getUser();
+        $this->managingCompany                = $addedBy->getCompany();
+        $this->guarantyCost                   = new NullableMoney();
+        $this->statuses                       = new ArrayCollection();
+        $this->programGradeAllocations        = new ArrayCollection();
+        $this->programBorrowerTypeAllocations = new ArrayCollection();
+        $this->programChoiceOptions           = new ArrayCollection();
+        $this->participations                 = new ArrayCollection();
+        $this->reservations                   = new ArrayCollection();
+        $this->added                          = new DateTimeImmutable();
         $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_DRAFT, $addedBy));
     }
 
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function setName(string $name): Program
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     public function getDescription(): ?string
@@ -404,8 +470,6 @@ class Program implements TraceableStatusAwareInterface
 
     /**
      * @param StatusInterface|ProgramStatus $status
-     *
-     * @return $this
      */
     public function setCurrentStatus(StatusInterface $status): Program
     {
@@ -445,6 +509,18 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
+    public function getManagingCompany(): Company
+    {
+        return $this->managingCompany;
+    }
+
+    public function archive(Staff $archivedBy): Program
+    {
+        $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_ARCHIVED, $archivedBy));
+
+        return $this;
+    }
+
     /**
      * Used in an expression constraints.
      */
@@ -468,9 +544,19 @@ class Program implements TraceableStatusAwareInterface
         return ProgramStatus::STATUS_DISTRIBUTED === $this->getCurrentStatus()->getStatus();
     }
 
-    public function isCancelled(): bool
+    public function isArchived(): bool
     {
-        return ProgramStatus::STATUS_CANCELLED === $this->getCurrentStatus()->getStatus();
+        return ProgramStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * @param Collection|ProgramContact[] $programContacts
+     */
+    public function setProgramContacts(Collection $programContacts): Program
+    {
+        $this->programContacts = $programContacts;
+
+        return $this;
     }
 
     /**
@@ -479,6 +565,16 @@ class Program implements TraceableStatusAwareInterface
     public function getProgramEligibilities(): Collection
     {
         return $this->programEligibilities;
+    }
+
+    /**
+     * @param Collection|ProgramEligibility[] $programEligibilities
+     */
+    public function setProgramEligibilities(Collection $programEligibilities): Program
+    {
+        $this->programEligibilities = $programEligibilities;
+
+        return $this;
     }
 
     public function addProgramEligibility(ProgramEligibility $programEligibility): Program
@@ -494,12 +590,63 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
+    public function hasParticipant(Company $company): bool
+    {
+        return $this->getParticipants()->contains($company);
+    }
+
+    /**
+     * @param Collection|Participation[] $participations
+     */
+    public function setParticipations(Collection $participations): Program
+    {
+        $this->participations = $participations;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Participation[]
+     */
+    public function getParticipations(): Collection
+    {
+        return $this->participations;
+    }
+
+    /**
+     * @param Collection|ProgramGradeAllocation[] $programGradeAllocations
+     */
+    public function setProgramGradeAllocations(Collection $programGradeAllocations): Program
+    {
+        $this->programGradeAllocations = $programGradeAllocations;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ProgramGradeAllocation[]
+     */
+    public function getProgramGradeAllocations(): Collection
+    {
+        return $this->programGradeAllocations;
+    }
+
     /**
      * @return Collection|ProgramBorrowerTypeAllocation[]
      */
-    public function getProgramBorrowerTypeAllocations()
+    public function getProgramBorrowerTypeAllocations(): Collection
     {
         return $this->programBorrowerTypeAllocations;
+    }
+
+    /**
+     * @param Collection|ProgramBorrowerTypeAllocation[] $programBorrowerTypeAllocations
+     */
+    public function setProgramBorrowerTypeAllocations($programBorrowerTypeAllocations): Program
+    {
+        $this->programBorrowerTypeAllocations = $programBorrowerTypeAllocations;
+
+        return $this;
     }
 
     public function removeProgramBorrowerTypeAllocation(ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation): Program
@@ -530,5 +677,192 @@ class Program implements TraceableStatusAwareInterface
     public function getProgramChoiceOptions(): Collection
     {
         return $this->programChoiceOptions;
+    }
+
+    /**
+     * @param Collection|ProgramChoiceOption[] $programChoiceOptions
+     */
+    public function setProgramChoiceOptions($programChoiceOptions): Program
+    {
+        $this->programChoiceOptions = $programChoiceOptions;
+
+        return $this;
+    }
+
+    public function addProgramChoiceOption(ProgramChoiceOption $programChoiceOption): Program
+    {
+        $callback = function (int $key, ProgramChoiceOption $existingProgramChoiceOption) use ($programChoiceOption): bool {
+            return $existingProgramChoiceOption->getField()       === $programChoiceOption->getField()
+                && $existingProgramChoiceOption->getDescription() === $programChoiceOption->getDescription();
+        };
+        if (
+            $programChoiceOption->getProgram() === $this
+            && false === $this->programChoiceOptions->exists($callback)
+        ) {
+            $this->programChoiceOptions->add($programChoiceOption);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param array $filter Possible criteria for the filter are
+     *                      - grade: borrower's grade
+     *                      - borrowerType: borrower type (ProgramChoiceOption) id
+     *                      - exclude: an array of project ids to exclude
+     */
+    public function getTotalProjectFunds(array $filter = []): Money
+    {
+        $totalProjectFunds = new Money($this->funds->getCurrency());
+        foreach ($this->reservations as $reservation) {
+            if ($reservation->isSent()) {
+                if (false === $this->applyTotalProjectFundsFilters($reservation, $filter)) {
+                    continue;
+                }
+
+                if (false === $reservation->getProject() instanceof Project) {
+                    throw new \RuntimeException(sprintf('Cannot find the project for reservation %d. Please check the data.', $reservation->getId()));
+                }
+                $totalProjectFunds = MoneyCalculator::add($reservation->getProject()->getFundingMoney(), $totalProjectFunds);
+            }
+        }
+
+        return $totalProjectFunds;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:program:list"})
+     */
+    public function getAmountAvailable(): MoneyInterface
+    {
+        return MoneyCalculator::subtract($this->getFunds(), $this->getTotalProjectFunds());
+    }
+
+    public function duplicate(Staff $duplicatedBy): Program
+    {
+        $duplicatedProgram          = clone $this;
+        $duplicatedProgram->addedBy = $duplicatedBy->getUser();
+        $duplicatedProgram->setCurrentStatus(new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $duplicatedBy));
+
+        return $duplicatedProgram;
+    }
+
+    /**
+     * @return Collection|Reservation[]
+     */
+    public function getReservations()
+    {
+        return $this->reservations;
+    }
+
+    protected function onClone(): Program
+    {
+        $this
+            ->setProgramContacts($this->cloneCollection($this->programContacts))
+            ->setProgramChoiceOptions($this->cloneCollection($this->programChoiceOptions))
+            ->setProgramEligibilities($this->cloneCollection($this->programEligibilities))
+            ->setProgramGradeAllocations($this->cloneCollection($this->programGradeAllocations))
+            ->setProgramBorrowerTypeAllocations($this->cloneCollection($this->programBorrowerTypeAllocations))
+            ->setParticipations($this->cloneCollection($this->participations))
+        ;
+
+        // Replace the ProgramChoiceOption (if not null) in the ProgramEligibilityConfiguration and ProgramBorrowerTypeAllocation (which are not remplace in the previous process)
+        // by the newly created one. The new one was created with setProgramChoiceOptions() in the duplicated program.
+        foreach ($this->getProgramEligibilities() as $programEligibility) {
+            foreach ($programEligibility->getProgramEligibilityConfigurations() as $programEligibilityConfiguration) {
+                $originalProgramChoiceOption = $programEligibilityConfiguration->getProgramChoiceOption();
+                if ($originalProgramChoiceOption) {
+                    $duplicatedProgramChoiceOption = $this->findProgramChoiceOption($originalProgramChoiceOption);
+                    $programEligibilityConfiguration->setProgramChoiceOption($duplicatedProgramChoiceOption);
+                }
+            }
+        }
+        foreach ($this->getProgramBorrowerTypeAllocations() as $programBorrowerTypeAllocation) {
+            $originalProgramChoiceOption = $programBorrowerTypeAllocation->getProgramChoiceOption();
+            if ($originalProgramChoiceOption) {
+                $duplicatedProgramChoiceOption = $this->findProgramChoiceOption($originalProgramChoiceOption);
+                $programBorrowerTypeAllocation->setProgramChoiceOption($duplicatedProgramChoiceOption);
+            }
+        }
+
+        return $this;
+    }
+
+    private function applyTotalProjectFundsFilters(Reservation $reservation, array $filter): bool
+    {
+        if (false === $reservation->getBorrower()->getBorrowerType() instanceof ProgramChoiceOption) {
+            throw new \RuntimeException(sprintf('Cannot find the borrower type for reservation %d. Please check the data.', $reservation->getId()));
+        }
+
+        if (isset($filter['grade']) && $reservation->getBorrower()->getGrade() !== $filter['grade']) {
+            return false;
+        }
+
+        if (isset($filter['borrowerType']) && $reservation->getBorrower()->getBorrowerType()->getId() !== $filter['borrowerType']) {
+            return false;
+        }
+
+        if (isset($filter['exclude'])) {
+            if (is_int($filter['exclude'])) {
+                $filter['exclude'] = [$filter['exclude']];
+            }
+            if (in_array($reservation->getProgram()->getId(), $filter['exclude'], true)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * clone the OneToMany relation.
+     */
+    private function cloneCollection(Collection $collectionToDuplicate): ArrayCollection
+    {
+        $clonedArrayCollection = new ArrayCollection();
+        foreach ($collectionToDuplicate as $item) {
+            $clonedItem = clone $item;
+            if (false === method_exists($clonedItem, 'setProgram')) {
+                throw new \LogicException(sprintf('Cannot find the method setProgram of the class %s. Make sure it exists or it is accessible.', get_class($clonedItem)));
+            }
+            $clonedItem->setProgram($this);
+            $clonedArrayCollection->add($clonedItem);
+        }
+
+        return $clonedArrayCollection;
+    }
+
+    /**
+     * Find the choice option in the duplicated program which has the same attribut as the original one.
+     */
+    private function findProgramChoiceOption(ProgramChoiceOption $originalProgramChoiceOption): ProgramChoiceOption
+    {
+        $clonedProgramChoiceOption = $this->getProgramChoiceOptions()
+            ->filter(
+                fn (ProgramChoiceOption $item) => $item->getField() === $originalProgramChoiceOption->getField()
+                    && $item->getDescription() === $originalProgramChoiceOption->getDescription()
+            )
+            ->first()
+        ;
+        if (false === $clonedProgramChoiceOption instanceof ProgramChoiceOption) {
+            throw new \LogicException(sprintf(
+                'The new program choice option cannot be found on program %s with field %s and description %s',
+                $this->getName(),
+                $originalProgramChoiceOption->getField()->getId(),
+                $originalProgramChoiceOption->getDescription()
+            ));
+        }
+
+        return $clonedProgramChoiceOption;
+    }
+
+    /**
+     * @return Collection|Company[]
+     */
+    private function getParticipants(): Collection
+    {
+        return $this->participations->map(function (Participation $participation) {
+            return $participation->getParticipant();
+        });
     }
 }

@@ -8,6 +8,8 @@ use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
 use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
@@ -15,21 +17,26 @@ use Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation;
 use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
 use Unilend\CreditGuaranty\Repository\FieldRepository;
 use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
+use Unilend\CreditGuaranty\Security\Voter\ProgramBorrowerTypeAllocationVoter;
+use Unilend\CreditGuaranty\Security\Voter\ProgramChoiceOptionVoter;
 
 class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransformerInterface
 {
-    private ValidatorInterface $validator;
+    private ValidatorInterface            $validator;
     private ProgramChoiceOptionRepository $programChoiceOptionRepository;
     private FieldRepository               $fieldRepository;
+    private Security                      $security;
 
     public function __construct(
         ValidatorInterface $validator,
         ProgramChoiceOptionRepository $programChoiceOptionRepository,
-        FieldRepository $fieldRepository
+        FieldRepository $fieldRepository,
+        Security $security
     ) {
         $this->validator                     = $validator;
         $this->programChoiceOptionRepository = $programChoiceOptionRepository;
         $this->fieldRepository               = $fieldRepository;
+        $this->security                      = $security;
     }
 
     /**
@@ -41,8 +48,6 @@ class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransform
     }
 
     /**
-     * @todo: check user's permission when the habilitation is available
-     *
      * @param ProgramBorrowerTypeAllocationInput $object
      *
      * @throws ORMException
@@ -62,16 +67,28 @@ class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransform
             ]);
             if (null === $programChoiceOption) {
                 $programChoiceOption = new ProgramChoiceOption($object->program, $object->borrowerType, $field);
+                if (false === $this->security->isGranted(ProgramChoiceOptionVoter::ATTRIBUTE_CREATE, $programChoiceOption)) {
+                    throw new AccessDeniedException();
+                }
                 $this->programChoiceOptionRepository->save($programChoiceOption);
             }
 
-            return new ProgramBorrowerTypeAllocation($object->program, $programChoiceOption, $object->maxAllocationRate);
+            $programBorrowerTypeAllocation = new ProgramBorrowerTypeAllocation($object->program, $programChoiceOption, $object->maxAllocationRate);
+            if (false === $this->security->isGranted(ProgramBorrowerTypeAllocationVoter::ATTRIBUTE_CREATE, $programBorrowerTypeAllocation)) {
+                throw new AccessDeniedException();
+            }
+
+            return $programBorrowerTypeAllocation;
         }
 
         if (isset($context['item_operation_name']) && 'patch' === $context['item_operation_name']) {
             $programBorrowerTypeAllocation = $context[AbstractNormalizer::OBJECT_TO_POPULATE] ?? null;
             if (false === $programBorrowerTypeAllocation instanceof ProgramBorrowerTypeAllocation) {
                 throw new \RuntimeException(sprintf('Can not populate the object of %s from the context.', ProgramBorrowerTypeAllocation::class));
+            }
+
+            if (false === $this->security->isGranted(ProgramBorrowerTypeAllocationVoter::ATTRIBUTE_EDIT, $programBorrowerTypeAllocation)) {
+                throw new AccessDeniedException();
             }
 
             foreach ($object as $name => $value) {

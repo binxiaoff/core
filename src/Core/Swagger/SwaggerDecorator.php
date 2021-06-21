@@ -103,11 +103,18 @@ class SwaggerDecorator implements NormalizerInterface
             '/project_participation_tranches/{id}',
             '/staff_statuses/{id}',
         ];
+
         foreach ($removedGetRoutes as $route) {
             if (isset($docs['paths'][$route]['get'])) {
                 unset($docs['paths'][$route]['get']);
             }
         }
+
+        $docs['definitions']['Folder'] = [
+            'properties' => [
+                'name' => ['type' => 'string'],
+            ],
+        ];
 
         return $docs;
     }

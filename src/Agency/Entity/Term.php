@@ -147,7 +147,7 @@ class Term
      *
      * @Assert\Type("bool")
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private ?bool $validation;
 
@@ -167,7 +167,7 @@ class Term
     /**
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private ?string $agentComment;
 
@@ -179,7 +179,7 @@ class Term
      *     message="Agency.Term.breach.invalidTermRequired"
      * )
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private bool $breach;
 
@@ -191,7 +191,7 @@ class Term
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private ?string $irregularityComment;
 
@@ -211,7 +211,7 @@ class Term
      *
      * @ORM\Column(type="boolean", nullable=true)
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private ?bool $waiver;
 
@@ -223,7 +223,7 @@ class Term
      *
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private ?string $waiverComment;
 
@@ -236,7 +236,7 @@ class Term
      *
      * @ORM\Column(type="integer", nullable=true)
      *
-     * @Groups({"agency:term:read", "agency:term:update"})
+     * @Groups({"agency:term:read", "agency:term:update:agent"})
      */
     private ?int $grantedDelay;
 
@@ -335,6 +335,9 @@ class Term
         throw new LogicException(sprintf('The given type (%s) is incorrect for a term', $this->getNature()));
     }
 
+    /**
+     * @Groups({"agency:term:read"})
+     */
     public function getNature(): string
     {
         return $this->getCovenant()->getNature();
@@ -394,6 +397,9 @@ class Term
         return $this->getCovenant()->isFinancial();
     }
 
+    /**
+     * @Groups({"agency:term:read"})
+     */
     public function getValidation(): ?bool
     {
         return $this->validation;
@@ -639,6 +645,14 @@ class Term
     public static function getValidationGroups(Term $term): array
     {
         return ['Default', 'Term', $term->isFinancial() ? 'Financial' : 'Other'];
+    }
+
+    /**
+     * @Groups({"agency:term:read"})
+     */
+    public function getProject(): Project
+    {
+        return $this->covenant->getProject();
     }
 
     /**

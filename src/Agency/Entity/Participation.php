@@ -7,54 +7,124 @@ namespace Unilend\Agency\Entity;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Controller\Dataroom\Delete;
+use Unilend\Core\Controller\Dataroom\Get;
+use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Model\Bitmask;
 
 /**
+ * "money:read" is needed for allocation.
+ *
  * @ApiResource(
- *     attributes={
- *         "validation_groups": {Participation::class, "getCurrentValidationGroups"}
- *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:participation:read",
+ *             "nullableMoney:read",
  *             "money:read"
  *         }
  *     },
  *     collectionOperations={
+ *         "get",
  *         "post": {
  *             "denormalization_context": {
- *                 "groups": {"agency:participation:create", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}
+ *                 "groups": {
+ *                     "agency:participation:create",
+ *                     "agency:participation:write",
+ *                     "money:write",
+ *                     "agency:participationTrancheAllocation:write"
+ *                 }
  *             },
  *             "security_post_denormalize": "is_granted('create', object)",
+ *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
  *         }
  *     },
  *     itemOperations={
- *         "get",
+ *         "get": {
+ *             "security": "is_granted('view', object)"
+ *         },
  *         "patch": {
  *             "denormalization_context": {
- *                 "groups": {"agency:participation:update", "agency:participation:write", "money:write", "agency:participationTrancheAllocation:write"}
+ *                 "groups": {
+ *                     "agency:participation:write",
+ *                     "money:write",
+ *                     "agency:participationTrancheAllocation:write"
+ *                 }
  *             },
  *             "security_post_denormalize": "is_granted('edit', object)",
- *         }
+ *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)"
+ *         },
+ *         "get_dataroom": {
+ *             "method": "GET",
+ *             "security": "is_granted('view', object)",
+ *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *             },
+ *         },
+ *         "post_dataroom": {
+ *             "method": "POST",
+ *             "deserialize": false,
+ *             "security": "is_granted('view', object)",
+ *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *             },
+ *         },
+ *         "delete_dataroom": {
+ *             "method": "DELETE",
+ *             "security": "is_granted('view', object)",
+ *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
+ *             "controller": Delete::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *             },
+ *         },
  *     }
  * )
  * @ORM\Entity
  * @ORM\Table(name="agency_participation", uniqueConstraints={
- *     @ORM\UniqueConstraint(columns={"id_project", "id_participant"})
+ *     @ORM\UniqueConstraint(columns={"id_participation_pool", "id_participant"})
  * })
  *
- * @UniqueEntity(fields={"project", "participant"})
+ * @UniqueEntity(fields={"pool", "participant"})
+ *
+ * TODO The .publicId might be dropped in favor of using iri for filter when https://github.com/api-platform/core/issues/3575 is solved
+ * @ApiFilter(
+ *     filterClass=SearchFilter::class,
+ *     properties={"participant.publicId": "exact", "pool.project.publicId": "exact"}
+ * )
  *
  * @ApiFilter(
  *     filterClass=GroupFilter::class,
@@ -62,31 +132,42 @@ use Unilend\Core\Model\Bitmask;
  *         "whitelist": {
  *             "agency:participationTrancheAllocation:read",
  *             "agency:participationMember:read",
- *             "company:read",
  *             "user:read"
  *         }
  *     }
  * )
  */
-class Participation
+class Participation extends AbstractProjectPartaker
 {
-    use PublicizeIdentityTrait;
-
     public const RESPONSIBILITY_AGENT           = 1 << 0;
     public const RESPONSIBILITY_ARRANGER        = 1 << 1;
     public const RESPONSIBILITY_DEPUTY_ARRANGER = 1 << 2;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Project::class, inversedBy="participations")
-     * @ORM\JoinColumn(name="id_project", nullable=false)
+     * @var Collection|ParticipationMember[]
      *
-     * @Groups({"agency:participation:read", "agency:participation:create"})
+     * @ORM\OneToMany(targetEntity=ParticipationMember::class, mappedBy="participation", cascade={"persist", "remove"}, orphanRemoval=true)
+     *
+     * @Assert\Valid
+     * @Assert\All({
+     *     @Assert\Expression("value.getParticipation() === this")
+     * })
+     *
+     * @Groups({"agency:participation:read"})
+     */
+    protected Collection $members;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=ParticipationPool::class, inversedBy="participations")
+     * @ORM\JoinColumn(name="id_participation_pool", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
      *
+     * @Groups({"agency:participation:read"})
+     *
      * @ApiProperty(readableLink=false)
      */
-    private Project $project;
+    private ParticipationPool $pool;
 
     /**
      * @ORM\ManyToOne(targetEntity=Company::class)
@@ -115,7 +196,7 @@ class Participation
      * @Assert\Expression(expression="false === (0 === value && this.isSecondary())", message="Agency.Participation.responsabilities.secondary")
      * @Assert\Expression(expression="false === (this.isArranger() && this.isDeputyArranger())", message="Agency.Participation.responsabilities.arranger")
      * @Assert\Expression(
-     *     expression="(this.isAgent() && (this.getParticipant() === this.getProject().getAgent())) || (false === this.isAgent())",
+     *     expression="(this.isAgent() && (this.getParticipant() === this.getProject().getAgentCompany())) || (false === this.isAgent())",
      *     message="Agency.Participation.responsabilities.agent"
      * )
      *
@@ -129,7 +210,13 @@ class Participation
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
-     * @Assert\Expression(expression="(null === value && false === this.isAgent()) || (null !== value && this.isAgent())", message="Agency.Participation.commission.agent")
+     * @Assert\AtLeastOneOf(
+     *     constraints={
+     *         @Assert\IsNull,
+     *         @Assert\Expression("this.isAgent()")
+     *     },
+     *     message="Agency.Participation.commission.agent"
+     * )
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
@@ -142,8 +229,13 @@ class Participation
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      *
-     * @Assert\Expression(expression="null === value || false === this.isArranger()", message="Agency.Participant.commission.arranger")
-     *
+     * @Assert\AtLeastOneOf(
+     *     constraints={
+     *         @Assert\IsNull,
+     *         @Assert\Expression("this.isArranger()")
+     *     },
+     *     message="Agency.Participation.commission.arranger"
+     * )
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
     private ?string $arrangerCommission;
@@ -155,7 +247,13 @@ class Participation
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
      *
-     * @Assert\Expression(expression="null === value || false === this.isCoArranger()", message="Agency.Participant.commission.deputyArranger")
+     * @Assert\AtLeastOneOf(
+     *     constraints={
+     *         @Assert\IsNull,
+     *         @Assert\Expression("this.isDeputyArranger()")
+     *     },
+     *     message="Agency.Participation.commission.deputyArranger"
+     * )
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
@@ -193,56 +291,36 @@ class Participation
     private Collection $allocations;
 
     /**
-     * @ORM\Column(type="boolean")
-     *
-     * @Groups({"agency:participation:read", "agency:participation:write"})
+     * @ORM\OneToOne(targetEntity=Drive::class, cascade={"persist", "remove"})
+     * @ORM\JoinColumn(name="id_confidential_drive", nullable=false, unique=true)
      */
-    private bool $secondary;
+    private Drive $confidentialDrive;
 
     /**
-     * @ORM\OneToOne(targetEntity=ParticipationMember::class)
-     * @ORM\JoinColumn(name="id_referent", onDelete="SET NULL")
-     *
-     * @Assert\NotBlank(groups="published")
-     * @Assert\Choice(callback="getMembers")
-     * @Assert\Valid
-     *
-     * @Groups({"agency:participation:read", "agency:participation:write"})
+     * @ORM\Column(type="datetime_immutable", nullable=true)
      */
-    private ?ParticipationMember $referent;
-
-    /**
-     * @var Collection|ParticipationMember[]
-     *
-     * @ORM\OneToMany(targetEntity=ParticipationMember::class, mappedBy="participation", cascade={"persist", "remove"}, orphanRemoval=true)
-     *
-     * @Assert\Valid
-     * @Assert\All({
-     *     @Assert\Expression("value.getParticipation() === this")
-     * })
-     *
-     * @Groups({"agency:participation:read"})
-     */
-    private Collection $members;
+    private ?DateTimeImmutable $archivingDate;
 
     public function __construct(
-        Project $project,
+        ParticipationPool $project,
         Company $participant,
         Money $finalAllocation,
-        bool $secondary = false
+        Money $capital
     ) {
+        parent::__construct($participant->getSiren() ?? '', $capital);
         $this->responsibilities         = new Bitmask(0);
-        $this->project                  = $project;
+        $this->pool                     = $project;
         $this->finalAllocation          = $finalAllocation;
         $this->participant              = $participant;
-        $this->secondary                = $secondary;
         $this->prorata                  = false;
         $this->participantCommission    = '0';
         $this->arrangerCommission       = null;
         $this->agentCommission          = null;
         $this->deputyArrangerCommission = null;
         $this->allocations              = new ArrayCollection();
+        $this->archivingDate            = null;
         $this->members                  = new ArrayCollection();
+        $this->confidentialDrive        = new Drive();
     }
 
     public function getParticipant(): Company
@@ -250,9 +328,14 @@ class Participation
         return $this->participant;
     }
 
+    public function getPool(): ParticipationPool
+    {
+        return $this->pool;
+    }
+
     public function getProject(): Project
     {
-        return $this->project;
+        return $this->pool->getProject();
     }
 
     public function getResponsibilities(): Bitmask
@@ -260,15 +343,16 @@ class Participation
         return $this->responsibilities;
     }
 
-    public function setResponsibilities(Bitmask $responsibilities): Participation
+    public function setResponsibilities($responsibilities): Participation
     {
-        $this->responsibilities = $responsibilities;
+        $this->responsibilities = new Bitmask($responsibilities);
 
         return $this;
     }
 
     public function isAgent(): bool
     {
+        // TODO deduce from data instead if possible
         return $this->responsibilities->has(static::RESPONSIBILITY_AGENT);
     }
 
@@ -340,7 +424,12 @@ class Participation
 
     public function isSecondary(): bool
     {
-        return $this->secondary;
+        return $this->getPool()->isSecondary();
+    }
+
+    public function isPrimary(): bool
+    {
+        return $this->getPool()->isPrimary();
     }
 
     public function getParticipantCommission(): ?string
@@ -379,99 +468,189 @@ class Participation
         return $this;
     }
 
-    /**
-     * @return array|ParticipationMember[]
-     */
-    public function getMembers(): array
+    public function getConfidentialDrive(): Drive
     {
-        return $this->members->toArray();
+        return $this->confidentialDrive;
     }
 
     /**
-     * @param iterable|ParticipationMember[] $members
-     *
-     * @return Participation
-     */
-    public function setMembers(iterable $members)
-    {
-        $this->members = $members;
-
-        return $this;
-    }
-
-    public function addMember(ParticipationMember $member): Participation
-    {
-        if (null === $this->findMemberByUser($member->getUser())) {
-            $this->members[] = $member;
-        }
-
-        return $this;
-    }
-
-    public function removeMember(ParticipationMember $member): Participation
-    {
-        if ($this->members->removeElement($member)) {
-            // Do not merge into parent if construct because we need the removal to take place
-            if ($this->referent === $member) {
-                $this->referent = null;
-            }
-        }
-
-        return $this;
-    }
-
-    public function findMemberByUser(User $user): ?ParticipationMember
-    {
-        foreach ($this->members as $member) {
-            if ($member->getUser() === $user) {
-                return $member;
-            }
-        }
-
-        return null;
-    }
-
-    public function getReferent(): ?ParticipationMember
-    {
-        return $this->referent;
-    }
-
-    public function setReferent(ParticipationMember $referent): Participation
-    {
-        $this->referent = $this->findMemberByUser($referent->getUser()) ?? $referent;
-        $this->addMember($this->referent);
-
-        return $this;
-    }
-
-    /**
-     * @return iterable|ParticipationMember[]
-     *
      * @Groups({"agency:participation:read"})
      */
-    public function getBackOfficeMembers(): iterable
+    public function getBankInstitution(): ?string
     {
-        return $this->getMemberByType(ParticipationMember::TYPE_BACK_OFFICE);
+        return $this->bankInstitution;
     }
 
     /**
-     * @return iterable|ParticipationMember[]
-     *
-     * @Groups({"agency:participation:read"})
+     * @Groups({"agency:participation:write"})
      */
-    public function getLegalMembers(): iterable
+    public function setBankInstitution(?string $bankInstitution): AbstractProjectPartaker
     {
-        return $this->getMemberByType(ParticipationMember::TYPE_LEGAL);
+        $this->bankInstitution = $bankInstitution;
+
+        return $this;
     }
 
     /**
-     * @return iterable|ParticipationMember[]
-     *
      * @Groups({"agency:participation:read"})
      */
-    public function getWaiverMembers(): iterable
+    public function getBankAddress(): ?string
     {
-        return $this->getMemberByType(ParticipationMember::TYPE_WAIVER);
+        return $this->bankAddress;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setBankAddress(?string $bankAddress): AbstractProjectPartaker
+    {
+        $this->bankAddress = $bankAddress;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getBic(): ?string
+    {
+        return $this->bic;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setBic(?string $bic): AbstractProjectPartaker
+    {
+        $this->bic = $bic;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getIban(): ?string
+    {
+        return $this->iban;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setIban(?string $iban): AbstractProjectPartaker
+    {
+        $this->iban = $iban;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getMatriculationNumber(): string
+    {
+        return $this->matriculationNumber;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setMatriculationNumber(string $matriculationNumber): AbstractProjectPartaker
+    {
+        $this->matriculationNumber = $matriculationNumber;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getCapital(): Money
+    {
+        return $this->capital;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setCapital(Money $capital): AbstractProjectPartaker
+    {
+        $this->capital = $capital;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getRcs(): ?string
+    {
+        return $this->rcs;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setRcs(?string $rcs): AbstractProjectPartaker
+    {
+        $this->rcs = $rcs;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getCorporateName(): ?string
+    {
+        return $this->corporateName;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setCorporateName(?string $corporateName): AbstractProjectPartaker
+    {
+        $this->corporateName = $corporateName;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getHeadOffice(): ?string
+    {
+        return $this->headOffice;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setHeadOffice(?string $headOffice): AbstractProjectPartaker
+    {
+        $this->headOffice = $headOffice;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getLegalForm(): ?string
+    {
+        return $this->legalForm;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setLegalForm(?string $legalForm): AbstractProjectPartaker
+    {
+        $this->legalForm = $legalForm;
+
+        return $this;
     }
 
     /**
@@ -513,11 +692,17 @@ class Participation
         return $this;
     }
 
-    /**
-     * @return iterable|ParticipationMember[]
-     */
-    private function getMemberByType(string $type): iterable
+    public function archive(): Participation
     {
-        return $this->members->filter(fn (ParticipationMember $member) => $type === $member->getType())->toArray();
+        if (false === $this->isArchived()) {
+            $this->archivingDate = new DateTimeImmutable();
+        }
+
+        return $this;
+    }
+
+    public function isArchived(): bool
+    {
+        return null !== $this->archivingDate;
     }
 }

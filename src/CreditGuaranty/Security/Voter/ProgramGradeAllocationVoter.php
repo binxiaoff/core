@@ -15,13 +15,10 @@ class ProgramGradeAllocationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_DELETE = 'delete';
 
     /**
-     * @param ProgramGradeAllocation $programGradeAllocation
-     * @param User                   $user
-     *
-     * @return bool
+     * @param ProgramGradeAllocation $subject
      */
-    protected function isGrantedAll($programGradeAllocation, User $user): bool
+    protected function isGrantedAll($subject, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProgramVoter::ATTRIBUTE_EDIT, $programGradeAllocation->getProgram());
+        return $this->authorizationChecker->isGranted(ProgramVoter::ATTRIBUTE_EDIT, $subject->getProgram());
     }
 }

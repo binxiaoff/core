@@ -6,6 +6,7 @@ namespace Unilend\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\DataFixtures\CompanyGroupFixture;
@@ -20,16 +21,17 @@ use Unilend\CreditGuaranty\Entity\ProgramStatus;
 
 class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    public const REFERENCE_DRAFT          = 'draft_program';
-    public const REFERENCE_CANCELLED      = 'cancelled_program';
-    public const REFERENCE_COMMERCIALIZED = 'commercialized_program';
-    public const REFERENCE_PAUSED         = 'paused_program';
-    public const ALL_PROGRAMS             = [
+    public const ALL_PROGRAMS = [
         self::REFERENCE_CANCELLED,
         self::REFERENCE_COMMERCIALIZED,
         self::REFERENCE_DRAFT,
         self::REFERENCE_PAUSED,
     ];
+
+    private const REFERENCE_DRAFT          = 'draft_program';
+    private const REFERENCE_CANCELLED      = 'cancelled_program';
+    private const REFERENCE_COMMERCIALIZED = 'commercialized_program';
+    private const REFERENCE_PAUSED         = 'paused_program';
 
     private CompanyGroupTagRepository $companyGroupTagRepository;
 
@@ -40,7 +42,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function load(ObjectManager $manager): void
     {
@@ -52,7 +54,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'addedBy'              => StaffFixtures::CASA,
                 'currentStatus'        => ProgramStatus::STATUS_DRAFT,
                 'cappedAt'             => random_int(10, 40) / 100,
-                'description'          => 'La description pour la pogramme en brouillon',
+                'description'          => 'La description pour le programme en brouillon',
                 'distributionDeadline' => new \DateTimeImmutable(),
             ],
             self::REFERENCE_CANCELLED => [
@@ -60,7 +62,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'companyGroupTag' => Program::COMPANY_GROUP_TAG_AGRICULTURE,
                 'funds'           => ['currency' => 'EUR', 'amount' => '200000000'],
                 'addedBy'         => StaffFixtures::CASA,
-                'currentStatus'   => ProgramStatus::STATUS_CANCELLED,
+                'currentStatus'   => ProgramStatus::STATUS_ARCHIVED,
                 'cappedAt'        => random_int(10, 40) / 100,
             ],
             self::REFERENCE_COMMERCIALIZED => [
@@ -70,7 +72,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'addedBy'              => StaffFixtures::CASA,
                 'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,
                 'cappedAt'             => random_int(10, 40) / 100,
-                'description'          => 'La description pour la pogramme en brouillon',
+                'description'          => 'La description pour le programme en distribution',
                 'distributionDeadline' => new \DateTimeImmutable(),
                 'distributionProcess'  => [
                     'Création d’un dossier emprunteur',
@@ -80,9 +82,10 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                     'Signature du client et contractualisation',
                     'Renseignement du N° de prêt et montant des réalisations',
                 ],
-                'guarantyDuration' => 240,
-                'guarantyCoverage' => '0.07',
-                'guarantyCost'     => ['currency' => 'EUR', 'amount' => '1000'],
+                'guarantyDuration'    => 240,
+                'guarantyCoverage'    => '0.07',
+                'guarantyCost'        => ['currency' => 'EUR', 'amount' => '1000'],
+                'reservationDuration' => 2,
             ],
             self::REFERENCE_PAUSED => [
                 'name'            => 'Programme en pause',
@@ -147,6 +150,10 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         if (false === empty($programDatum['guarantyCost'])) {
             $program->setGuarantyCost(new NullableMoney($programDatum['guarantyCost']['currency'], $programDatum['guarantyCost']['amount']));
+        }
+
+        if (false === empty($programDatum['reservationDuration'])) {
+            $program->setReservationDuration($programDatum['reservationDuration']);
         }
 
         $cARatingType = CARatingType::getConstList();

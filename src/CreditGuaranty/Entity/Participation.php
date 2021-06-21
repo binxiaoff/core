@@ -4,37 +4,56 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\{Company, Constant\CARegionalBank, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Constant\CARegionalBank;
+use Unilend\Core\Entity\Traits\CloneableTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups":{"creditGuaranty:participation:read", "creditGuaranty:participation:read", "timestampable:read"}},
+ *     normalizationContext={"groups": {"creditGuaranty:participation:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:participation:write"}},
- *      itemOperations={
- *          "get": {
+ *     itemOperations={
+ *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
- *          },
- *          "patch",
- *          "delete"
- *      },
- *      collectionOperations={
- *         "post"
+ *         },
+ *         "patch": {"security": "is_granted('edit', object)"},
+ *         "delete": {"security": "is_granted('delete', object)"}
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "post": {"security_post_denormalize": "is_granted('create', object)"},
+ *             "denormalization_context": {"groups": {
+ *                 "creditGuaranty:participation:write",
+ *                 "creditGuaranty:participation:create"
+ *             }}
+ *         },
+ *         "get": {
+ *             "normalization_context": {"groups": {
+ *                 "creditGuaranty:participation:list",
+ *                 "creditGuaranty:program:list",
+ *                 "money:read"
+ *             }}
+ *         }
  *     }
  * )
  *
  * @ORM\Entity
  * @ORM\Table(
- *      name="credit_guaranty_program_participation",
- *      uniqueConstraints={
- *          @ORM\UniqueConstraint(columns={"id_company", "id_program"})
- *      }
+ *     name="credit_guaranty_program_participation",
+ *     uniqueConstraints={
+ *         @ORM\UniqueConstraint(columns={"id_company", "id_program"})
+ *     }
  * )
  * @ORM\HasLifecycleCallbacks
  *
@@ -44,14 +63,15 @@ class Participation
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+    use CloneableTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="participations")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
-     * @ApiProperty(readableLink=false, writableLink=false)
+     * @ApiProperty(writableLink=false)
      *
-     * @Groups({"creditGuaranty:participation:read", "creditGuaranty:participation:write"})
+     * @Groups({"creditGuaranty:participation:list", "creditGuaranty:participation:create"})
      */
     private Program $program;
 
@@ -78,11 +98,6 @@ class Participation
      */
     private string $quota;
 
-    /**
-     * @param Program $program
-     * @param Company $participant
-     * @param string  $quota
-     */
     public function __construct(Program $program, Company $participant, string $quota)
     {
         $this->program     = $program;
@@ -91,35 +106,28 @@ class Participation
         $this->added       = new \DateTimeImmutable();
     }
 
-    /**
-     * @return Program
-     */
     public function getProgram(): Program
     {
         return $this->program;
     }
 
-    /**
-     * @return Company
-     */
+    public function setProgram(Program $program): Participation
+    {
+        $this->program = $program;
+
+        return $this;
+    }
+
     public function getParticipant(): Company
     {
         return $this->participant;
     }
 
-    /**
-     * @return string
-     */
     public function getQuota(): string
     {
         return $this->quota;
     }
 
-    /**
-     * @param string $quota
-     *
-     * @return Participation
-     */
     public function setQuota(string $quota): Participation
     {
         $this->quota = $quota;
@@ -128,10 +136,75 @@ class Participation
     }
 
     /**
-     * @return bool
+     * @Groups({"creditGuaranty:participation:read"})
+     */
+    public function getAdded(): DateTimeImmutable
+    {
+        return $this->added;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:participation:read"})
+     */
+    public function getUpdated(): ?DateTimeImmutable
+    {
+        return $this->updated;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:participation:read", "creditGuaranty:participation:list"})
+     */
+    public function getReservationCount(): int
+    {
+        return $this->countParticipantReservationByStatus(ReservationStatus::STATUS_SENT);
+    }
+
+    /**
+     * @Groups({"creditGuaranty:participation:list"})
+     */
+    public function getAcceptedReservationCount(): int
+    {
+        return $this->countParticipantReservationByStatus(ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY);
+    }
+
+    /**
+     * @Groups({"creditGuaranty:participation:list"})
+     */
+    public function getFormalizedReservationCount(): int
+    {
+        return $this->countParticipantReservationByStatus(ReservationStatus::STATUS_CONTRACT_FORMALIZED);
+    }
+
+    /**
+     * Used in an expression assert.
      */
     public function isParticipantValid(): bool
     {
         return in_array($this->getParticipant()->getShortCode(), CARegionalBank::REGIONAL_BANKS, true);
+    }
+
+    private function countParticipantReservationByStatus(int $status): int
+    {
+        $count = 0;
+
+        foreach ($this->getProgram()->getReservations() as $reservation) {
+            if ($reservation->getManagingCompany() !== $this->getParticipant()) {
+                continue;
+            }
+
+            if (ReservationStatus::STATUS_SENT === $status && $reservation->isSent()) {
+                ++$count;
+            }
+
+            if (ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY === $status && $reservation->isAcceptedByManagingCompany()) {
+                ++$count;
+            }
+
+            if (ReservationStatus::STATUS_CONTRACT_FORMALIZED === $status && $reservation->isFormalized()) {
+                ++$count;
+            }
+        }
+
+        return $count;
     }
 }

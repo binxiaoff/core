@@ -35,7 +35,7 @@ class MarginImpact
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\MarginRule", inversedBy="impacts")
-     * @ORM\JoinColumn(name="id_margin_rule")
+     * @ORM\JoinColumn(name="id_margin_rule", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
      * @Assert\Valid

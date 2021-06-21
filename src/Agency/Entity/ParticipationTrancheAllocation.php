@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -49,6 +50,8 @@ class ParticipationTrancheAllocation
      *
      * @Assert\NotBlank
      *
+     * @ApiProperty(readableLink=false)
+     *
      * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:write"})
      */
     private Participation $participation;
@@ -58,7 +61,7 @@ class ParticipationTrancheAllocation
      * @ORM\JoinColumn(name="id_tranche", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
-     * @Assert\Expression("value.isSyndicated()")
+     * @Assert\Expression("value.isSyndicated()", message="Agency.ParticipantTrancheAllocation.tranche")
      *
      * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:write"})
      */

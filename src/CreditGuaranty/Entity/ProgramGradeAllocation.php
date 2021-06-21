@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\CAInternalRetailRating;
 use Unilend\Core\Entity\Constant\CARatingType;
+use Unilend\Core\Entity\Traits\CloneableTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 
@@ -22,12 +23,19 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *     normalizationContext={"groups": {"creditGuaranty:programGradeAllocation:read", "creditGuaranty:program:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:programGradeAllocation:write"}},
  *     itemOperations={
- *         "get",
- *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"},
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *         "patch": {"security": "is_granted('edit', object)"},
  *         "delete": {"security": "is_granted('delete', object)"}
  *     },
  *     collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)"}
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *             "denormalization_context": {"groups": {"creditGuaranty:programGradeAllocation:write", "creditGuaranty:programGradeAllocation:create"}}
+ *         }
  *     }
  * )
  *
@@ -46,6 +54,7 @@ class ProgramGradeAllocation
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+    use CloneableTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programGradeAllocations")
@@ -53,7 +62,7 @@ class ProgramGradeAllocation
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:programGradeAllocation:read", "creditGuaranty:programGradeAllocation:write"})
+     * @Groups({"creditGuaranty:programGradeAllocation:read", "creditGuaranty:programGradeAllocation:create"})
      */
     private Program $program;
 
@@ -93,6 +102,13 @@ class ProgramGradeAllocation
         return $this->program;
     }
 
+    public function setProgram(Program $program): ProgramGradeAllocation
+    {
+        $this->program = $program;
+
+        return $this;
+    }
+
     public function getGrade(): string
     {
         return $this->grade;
@@ -121,10 +137,10 @@ class ProgramGradeAllocation
     {
         switch ($this->program->getRatingType()) {
             case CARatingType::CA_INTERNAL_RETAIL_RATING:
-                return \in_array($this->grade, CAInternalRetailRating::getConstList());
+                return \in_array($this->grade, CAInternalRetailRating::getConstList(), true);
 
             case CARatingType::CA_INTERNAL_RATING:
-                return \in_array($this->grade, CAInternalRating::getConstList());
+                return \in_array($this->grade, CAInternalRating::getConstList(), true);
 
             default:
                 return false;

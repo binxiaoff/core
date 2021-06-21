@@ -1,4 +1,17 @@
 Agency:
+    AbstractProjectMember:
+        archived:
+            referent: Un membre referent ne peut pas être archivé
+            signatory: Un membre signataire ne peut pas être archivé
+            draft: Vous ne pouvez pas archiver un membre en draft
+
+    AgentMember:
+        user:
+            missingStaff: L'utilisateur {{ email }} ne peut pas être membre de l'équipe de l'agent sans avoir été habilité pour {{ company }}
+
+    Project:
+        missingStatus: Vous ne pouvez pas aller de l'état {{ nextStatus }} sans passer par l'état {{ missingStatus }}
+
     Contact:
         type:
             unique: Il ne peut y avoir qu'un seul contact agency par projet
@@ -18,8 +31,13 @@ Agency:
             arrangeur: Vous devez être arrangeur pour remplir cette commission
             deputyArrangeur: Vous devez être co-arrangeur pour remplir cette commission
 
+    ParticipationMember:
+        user:
+            missingStaff: L'utilisateur {{ email }} ne peut pas être membre de la participation sans avoir été habilité pour {{ company }}
+
     ParticipantTrancheAllocation:
         project: La tranche et la participation n'ont pas le même projet
+        tranche: La tranche doit être syndiquée
 
     Covenant:
         covenantRules:
@@ -190,8 +208,8 @@ CreditGuaranty:
             notChangeable: Vous ne pouvez pas modifier le CAP sur un programme en cours.
             greater: Vous ne pouvez pas réduire le montant du CAP sur un programme en cours.
             draft: Vous ne pouvez que modifier le CAP ou réduire son montant sur un programme en brouillon.
-
-
+    ProgramChoiceOption:
+        invalid: La description du nouveau programChoiceOption doit exister dans les éléments prédéfinis.
     ProgramEligibilityConfiguration:
         programChoiceOption:
             invalid: La value n'est pas valable.
@@ -220,3 +238,16 @@ CreditGuaranty:
             selfComparaison: Vous ne pouvez pas comparer un champ à lui-même.
             empty: rightOperandField est requis pour une comparaison de type "rate".
             notEmpty: rightOperandField doit être vide pour une comparaison de type "value".
+    Borrower:
+        grade:
+            invalid: Le grade choisi n'est pas valable.
+    Reservation:
+        borrower:
+            missing: La réservation ne peut être envoyée, les informations de l'emprunteur n'ont pas été remplies.
+        borrowerBusinessActivity:
+            missing: La réservation ne peut être envoyée, les informations de l'activité de l'entreprise n'ont pas été remplies.
+        project:
+            missing: La réservation ne peut être envoyée, les informations du projet n'ont pas été remplies.
+        financingObject:
+            missing: La réservation ne peut être envoyée, au moins un objet de financement doit être défini.
+        ineligibleCategory: La catégorie {{ category }} de la réservation est inéligible.

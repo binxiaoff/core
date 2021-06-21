@@ -9,13 +9,24 @@ use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectManager;
 use ReflectionClass;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 
 abstract class AbstractFixtures extends Fixture implements FixtureGroupInterface
 {
     private array $publicIdReflexionProperties = [];
 
+    private TokenStorageInterface $tokenStorage;
+
+    public function __construct(TokenStorageInterface $tokenStorage)
+    {
+        $this->tokenStorage = $tokenStorage;
+    }
+
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public static function getGroups(): array
     {
@@ -24,7 +35,6 @@ abstract class AbstractFixtures extends Fixture implements FixtureGroupInterface
 
     /**
      * @param $object
-     * @param string $publicId
      *
      * @throws \ReflectionException
      */
@@ -34,7 +44,7 @@ abstract class AbstractFixtures extends Fixture implements FixtureGroupInterface
         $class = \get_class($object);
 
         if (false === isset($this->publicIdReflexionProperties[$class])) {
-            $reflectionClass =  new ReflectionClass($class);
+            $reflectionClass = new ReflectionClass($class);
 
             if ($reflectionClass->hasProperty('publicId')) {
                 $property = $reflectionClass->getProperty('publicId');
@@ -48,10 +58,28 @@ abstract class AbstractFixtures extends Fixture implements FixtureGroupInterface
         }
     }
 
+    protected function loginUser(User $user)
+    {
+        $token = new UsernamePasswordToken($user, $user->getPassword(), 'main');
+
+        $this->tokenStorage->setToken($token);
+
+        return $token;
+    }
+
+    protected function loginStaff(Staff $staff)
+    {
+        $token = $this->loginUser($staff->getUser());
+
+        $staff->getUser()->setCurrentStaff($staff);
+        $token->setAttribute('staff', $staff);
+        $token->setAttribute('company', $staff->getCompany());
+
+        return $token;
+    }
+
     /**
-     * @param ObjectManager         $manager
      * @param array|string[]|string $events
-     * @param string                $class
      */
     protected function removeEventListenerByClass(ObjectManager $manager, $events, string $class)
     {

@@ -10,11 +10,10 @@ use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Agency\Entity\Project;
 use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 
 class ProjectExtension implements QueryCollectionExtensionInterface
 {
-    private const PREFIX = 'ProjectExtension';
-
     private Security $security;
 
     public function __construct(Security $security)
@@ -27,51 +26,90 @@ class ProjectExtension implements QueryCollectionExtensionInterface
         QueryNameGeneratorInterface $queryNameGenerator,
         string $resourceClass,
         string $operationName = null
-    ) {
-        if (false === (Project::class === $resourceClass)) {
+    ): void {
+        if (false === (Project::class === $resourceClass) || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
 
         $user = $this->security->getUser();
 
-        $token = $this->security->getToken();
+        if (false === ($user instanceof User)) {
+            $queryBuilder->andWhere('1 = 0');
 
-        /** @var Staff $staff */
-        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+            return;
+        }
 
+        $userParameterName            = $queryNameGenerator->generateParameterName('user');
+        $publishedStatusParameterName = $queryNameGenerator->generateParameterName('publishedStatus');
+
+        // Borrower condition
         $rootAlias           = $queryBuilder->getRootAliases()[0];
-        $borrowerAlias       = static::prefix('borrower');
-        $borrowerMemberAlias = static::prefix('borrowerMember');
-
-        $userParameterName = static::prefix('user');
+        $borrowerAlias       = $queryNameGenerator->generateJoinAlias('borrower');
+        $borrowerMemberAlias = $queryNameGenerator->generateJoinAlias('borrowerMember');
 
         $queryBuilder
             ->distinct()
             ->leftJoin("{$rootAlias}.borrowers", $borrowerAlias)
             ->leftJoin("{$borrowerAlias}.members", $borrowerMemberAlias)
-            ->andWhere("{$borrowerMemberAlias}.user = :{$userParameterName}")
+            ->orWhere($queryBuilder->expr()->andX(
+                "{$borrowerMemberAlias}.user = :{$userParameterName}",
+                "{$borrowerMemberAlias}.archivingDate IS NULL",
+                "{$rootAlias}.currentStatus IN (:{$publishedStatusParameterName})"
+            ))
             ->setParameter($userParameterName, $user)
+            ->setParameter($publishedStatusParameterName, [Project::STATUS_PUBLISHED, Project::STATUS_ARCHIVED, Project::STATUS_FINISHED])
         ;
 
-        if ($staff) {
-            $participationAlias       = static::prefix('participation');
-            $participationMemberAlias = static::prefix('participationMember');
+        $token = $this->security->getToken();
 
-            $managedUserParameterName = static::prefix('managedUsers');
-            $companyParameterName     = static::prefix('company');
+        /** @var Staff|null $staff */
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
 
-            $queryBuilder
-                ->leftJoin("{$rootAlias}.participations", $participationAlias)
-                ->leftJoin("{$participationAlias}.members", $participationMemberAlias)
-                ->orWhere("{$participationMemberAlias}.user IN (:{$managedUserParameterName}) and {$participationAlias}.participant = :{$companyParameterName}")
-                ->setParameter($managedUserParameterName, iterator_to_array($staff->getManagedUsers(), false))
-                ->setParameter($companyParameterName, $staff->getCompany())
-            ;
+        if (false === ($staff instanceof Staff)) {
+            return;
         }
-    }
 
-    private static function prefix(string $name)
-    {
-        return static::PREFIX . '_' . $name;
+        $managedUserParameterName = $queryNameGenerator->generateParameterName('managedUsers');
+        $companyParameterName     = $queryNameGenerator->generateParameterName('company');
+
+        // Participant condition
+        $participationAlias       = $queryNameGenerator->generateJoinAlias('participation');
+        $participationPoolAlias   = $queryNameGenerator->generateJoinAlias('participationPool');
+        $participationMemberAlias = $queryNameGenerator->generateJoinAlias('participationMember');
+
+        $queryBuilder
+            ->leftJoin("{$rootAlias}.participationPools", $participationPoolAlias)
+            ->leftJoin("{$participationPoolAlias}.participations", $participationAlias)
+            ->leftJoin("{$participationAlias}.members", $participationMemberAlias)
+            ->orWhere(
+                $queryBuilder->expr()->andX(
+                    "{$participationMemberAlias}.user IN (:{$managedUserParameterName})",
+                    "{$participationMemberAlias}.archivingDate IS NULL",
+                    "{$participationAlias}.participant = :{$companyParameterName}",
+                    "{$rootAlias}.currentStatus IN (:{$publishedStatusParameterName})"
+                )
+            )
+        ;
+
+        // Agent condition
+        $agentAlias       = $queryNameGenerator->generateJoinAlias('agent');
+        $agentMemberAlias = $queryNameGenerator->generateJoinAlias('agentMember');
+
+        $queryBuilder
+            ->leftJoin("{$rootAlias}.agent", $agentAlias)
+            ->leftJoin("{$agentAlias}.members", $agentMemberAlias)
+            ->orWhere(
+                $queryBuilder->expr()->andX(
+                    "{$agentMemberAlias}.user IN (:{$managedUserParameterName})",
+                    "{$agentMemberAlias}.archivingDate IS NULL",
+                    "{$agentAlias}.company = :{$companyParameterName}",
+                )
+            )
+        ;
+
+        $queryBuilder
+            ->setParameter($managedUserParameterName, iterator_to_array($staff->getManagedUsers(), false))
+            ->setParameter($companyParameterName, $staff->getCompany())
+        ;
     }
 }

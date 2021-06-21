@@ -10,26 +10,31 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Constant\MathOperator;
-use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Entity\Traits\CloneableTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
- *      attributes={"pagination_enabled": false},
- *      normalizationContext={"groups": {"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:field:read", "timestampable:read"}},
- *      denormalizationContext={"groups": {"creditGuaranty:programEligibilityCondition:write"}},
- *      itemOperations={
- *          "get": {
- *              "controller": "ApiPlatform\Core\Action\NotFoundAction",
- *              "read": false,
- *              "output": false,
- *          },
- *          "patch",
- *          "delete"
- *      },
- *      collectionOperations={
- *          "post"
- *      }
+ *     attributes={"pagination_enabled": false},
+ *     normalizationContext={"groups": {"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:field:read", "timestampable:read"}},
+ *     denormalizationContext={"groups": {"creditGuaranty:programEligibilityCondition:write"}},
+ *     itemOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *         },
+ *         "patch": {"security": "is_granted('edit', object)"},
+ *         "delete": {"security": "is_granted('delete', object)"}
+ *     },
+ *     collectionOperations={
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *             "denormalization_context": {"groups": {"creditGuaranty:programEligibilityCondition:write", "creditGuaranty:programEligibilityCondition:create"}}
+ *         }
+ *     }
  * )
  *
  * @ORM\Entity
@@ -41,6 +46,7 @@ class ProgramEligibilityCondition
     use PublicizeIdentityTrait;
     use TimestampableTrait;
     use ConstantsAwareTrait;
+    use CloneableTrait;
 
     public const VALUE_TYPE_RATE  = 'rate';
     public const VALUE_TYPE_VALUE = 'value';
@@ -49,7 +55,7 @@ class ProgramEligibilityCondition
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration", inversedBy="programEligibilityConditions")
      * @ORM\JoinColumn(name="id_program_eligibility_configuration", nullable=false)
      *
-     * @Groups({"creditGuaranty:programEligibilityCondition:write"})
+     * @Groups({"creditGuaranty:programEligibilityCondition:create"})
      */
     private ProgramEligibilityConfiguration $programEligibilityConfiguration;
 
@@ -101,14 +107,6 @@ class ProgramEligibilityCondition
      */
     private string $value;
 
-    /**
-     * @param ProgramEligibilityConfiguration $programEligibilityConfiguration
-     * @param Field                           $leftOperandField
-     * @param ?Field                          $rightOperandField
-     * @param string                          $operation
-     * @param string                          $valueType
-     * @param string                          $value
-     */
     public function __construct(
         ProgramEligibilityConfiguration $programEligibilityConfiguration,
         Field $leftOperandField,
@@ -126,27 +124,23 @@ class ProgramEligibilityCondition
         $this->added                           = new \DateTimeImmutable();
     }
 
-    /**
-     * @return ProgramEligibilityConfiguration
-     */
     public function getProgramEligibilityConfiguration(): ProgramEligibilityConfiguration
     {
         return $this->programEligibilityConfiguration;
     }
 
-    /**
-     * @return Field
-     */
+    public function setProgramEligibilityConfiguration(ProgramEligibilityConfiguration $programEligibilityConfiguration): ProgramEligibilityCondition
+    {
+        $this->programEligibilityConfiguration = $programEligibilityConfiguration;
+
+        return $this;
+    }
+
     public function getLeftOperandField(): Field
     {
         return $this->leftOperandField;
     }
 
-    /**
-     * @param Field $leftOperandField
-     *
-     * @return ProgramEligibilityCondition
-     */
     public function setLeftOperandField(Field $leftOperandField): ProgramEligibilityCondition
     {
         $this->leftOperandField = $leftOperandField;
@@ -154,19 +148,11 @@ class ProgramEligibilityCondition
         return $this;
     }
 
-    /**
-     * @return Field|null
-     */
     public function getRightOperandField(): ?Field
     {
         return $this->rightOperandField;
     }
 
-    /**
-     * @param Field|null $rightOperandField
-     *
-     * @return ProgramEligibilityCondition
-     */
     public function setRightOperandField(?Field $rightOperandField): ProgramEligibilityCondition
     {
         $this->rightOperandField = $rightOperandField;
@@ -174,19 +160,11 @@ class ProgramEligibilityCondition
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getOperation(): string
     {
         return $this->operation;
     }
 
-    /**
-     * @param string $operation
-     *
-     * @return ProgramEligibilityCondition
-     */
     public function setOperation(string $operation): ProgramEligibilityCondition
     {
         $this->operation = $operation;
@@ -194,19 +172,11 @@ class ProgramEligibilityCondition
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getValueType(): string
     {
         return $this->valueType;
     }
 
-    /**
-     * @param string $valueType
-     *
-     * @return ProgramEligibilityCondition
-     */
     public function setValueType(string $valueType): ProgramEligibilityCondition
     {
         $this->valueType = $valueType;
@@ -214,19 +184,11 @@ class ProgramEligibilityCondition
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getValue(): string
     {
         return $this->value;
     }
 
-    /**
-     * @param string $value
-     *
-     * @return ProgramEligibilityCondition
-     */
     public function setValue(string $value): ProgramEligibilityCondition
     {
         $this->value = $value;
@@ -234,9 +196,6 @@ class ProgramEligibilityCondition
         return $this;
     }
 
-    /**
-     * @return array
-     */
     public static function getAvailableOperations(): array
     {
         $operations = MathOperator::getConstList();
@@ -247,9 +206,6 @@ class ProgramEligibilityCondition
         return $operations;
     }
 
-    /**
-     * @return array
-     */
     public static function getAvailableValueType(): array
     {
         return static::getConstants('VALUE_TYPE_');
@@ -257,8 +213,6 @@ class ProgramEligibilityCondition
 
     /**
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
      */
     public function validateTargetEntity(ExecutionContextInterface $context): void
     {

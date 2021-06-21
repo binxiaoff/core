@@ -9,45 +9,46 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\{MessageStatus, MessageThread, User};
-use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
+use Unilend\Core\Entity\MessageStatus;
+use Unilend\Core\Entity\MessageThread;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectStatus;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {
-    /**
-     * @var Security
-     */
     private Security $security;
 
-    /**
-     * @param Security $security
-     */
     public function __construct(Security $security)
     {
         $this->security = $security;
     }
 
-    /**
-     * @param QueryBuilder                $queryBuilder
-     * @param QueryNameGeneratorInterface $queryNameGenerator
-     * @param string                      $resourceClass
-     * @param string|null                 $operationName
-     */
-    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
-    {
-        $user = $this->security->getUser();
-
-        if (!$user instanceof User) {
-            return;
-        }
-
+    public function applyToCollection(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        string $resourceClass,
+        string $operationName = null
+    ): void {
         if (MessageStatus::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
 
-        $staff = $user->getCurrentStaff();
+        $token = $this->security->getToken();
+
+        /** @var Staff|null $staff */
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+
+        if (false === ($staff instanceof Staff)) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
+
         $queryBuilder
             ->innerJoin($rootAlias . '.message', 'msg')
             ->innerJoin(MessageThread::class, 'msgtd', Join::WITH, 'msg.messageThread = msgtd.id')
@@ -56,10 +57,9 @@ class ListExtension implements QueryCollectionExtensionInterface
             ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'p.currentStatus = pst.id')
             ->andWhere($rootAlias . '.recipient = :staff')
             ->andWhere('pst.status > :project_current_status')
-            ->setParameters([
-                'staff' => $staff,
-                'project_current_status' => ProjectStatus::STATUS_DRAFT,
-            ])
-            ->orderBy('msg.messageThread', 'ASC');
+            ->setParameter('staff', $staff)
+            ->setParameter('project_current_status', ProjectStatus::STATUS_DRAFT)
+            ->orderBy('msg.messageThread', 'ASC')
+        ;
     }
 }
