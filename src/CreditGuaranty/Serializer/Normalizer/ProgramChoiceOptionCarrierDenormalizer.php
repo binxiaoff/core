@@ -23,7 +23,6 @@ use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
 use Unilend\CreditGuaranty\Repository\FieldRepository;
 use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
 use Unilend\CreditGuaranty\Security\Voter\ProgramChoiceOptionVoter;
-use function Symfony\Component\String\s;
 
 class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -70,17 +69,6 @@ class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizer
         $object                        = $this->extractObjectToPopulate($type, $context);
 
         foreach ($data as $propertyName => $propertyValue) {
-            $fieldAlias = s($propertyName)->snake()->toString();
-
-            if (in_array($fieldAlias, FieldAlias::PROGRAM_CHOICE_OPTION_FIELDS, true)) {
-                $field               = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
-                $programChoiceOption = $this->denormalizeChoiceOption($field, $propertyValue, $object->getProgram());
-                $this->propertyAccessor->setValue($object, $propertyName, $programChoiceOption);
-                unset($data[$propertyName]);
-
-                continue;
-            }
-
             $field = $this->fieldRepository->findOneBy([
                 'propertyPath' => $propertyName,
                 'objectClass'  => get_class($object),
@@ -88,7 +76,7 @@ class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizer
 
             if (
                 $field instanceof Field
-                && in_array($field->getFieldAlias(), FieldAlias::PROGRAM_CHOICE_OPTION_SPECIAL_FIELDS, true)
+                && in_array($field->getFieldAlias(), FieldAlias::PROGRAM_CHOICE_OPTION_FIELDS, true)
             ) {
                 $programChoiceOption = $this->denormalizeChoiceOption($field, $propertyValue, $object->getProgram());
                 $this->propertyAccessor->setValue($object, $propertyName, $programChoiceOption);

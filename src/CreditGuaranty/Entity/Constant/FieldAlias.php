@@ -55,17 +55,14 @@ class FieldAlias extends AbstractEnum
     public const ACTIVITY_START_DATE = 'activity_start_date';
 
     public const PROGRAM_CHOICE_OPTION_FIELDS = [
+        self::ACTIVITY_COUNTRY,
         self::BORROWER_TYPE,
+        self::COMPANY_NAF_CODE,
+        self::EXPLOITATION_SIZE,
         self::FINANCING_OBJECT,
         self::INVESTMENT_THEMATIC,
         self::LEGAL_FORM,
         self::LOAN_TYPE,
         self::PROJECT_NAF_CODE,
-        self::COMPANY_NAF_CODE,
-        self::EXPLOITATION_SIZE,
-    ];
-
-    public const PROGRAM_CHOICE_OPTION_SPECIAL_FIELDS = [
-        self::ACTIVITY_COUNTRY,
     ];
 }
