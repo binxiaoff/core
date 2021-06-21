@@ -992,8 +992,22 @@ class Project
     }
 
     /**
-     * @param $payload
-     *
+     * @Assert\Callback
+     */
+    public function validateStatusEntry(ExecutionContextInterface $context)
+    {
+        if (
+            ($this->currentStatus > 0)
+            && $this->statuses->exists(fn ($key, ProjectStatusHistory $statusHistory) => $statusHistory->getStatus() > $this->currentStatus)
+        ) {
+            $context->buildViolation('Agency.Project.passedStatus')
+                ->setParameter('status', (string) $this->currentStatus)
+                ->addViolation()
+            ;
+        }
+    }
+
+    /**
      * @Assert\Callback
      */
     public function validateStatusTransition(ExecutionContextInterface $context)

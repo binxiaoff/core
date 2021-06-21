@@ -11,7 +11,7 @@ Agency:
 
     Project:
         missingStatus: Vous ne pouvez pas aller de l'état {{ nextStatus }} sans passer par l'état {{ missingStatus }}
-
+        passedStatus: Ce projet est déja passé par l'état {{ status }}
     Contact:
         type:
             unique: Il ne peut y avoir qu'un seul contact agency par projet
