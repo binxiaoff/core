@@ -58,11 +58,11 @@ use Unilend\Core\Repository\UserRepository;
 class ImportProjectCommand extends Command
 {
     private const SHEETS = [
-        'general information',
-        'borrowers',
-        'participants',
-        'tranches',
-        'covenants',
+        'Infos',
+        'Emprunteurs',
+        'Participants',
+        'Tranches',
+        'Engagements',
     ];
 
     private const MAPPING_COMPANY_GROUP_TAG = [
@@ -234,26 +234,38 @@ class ImportProjectCommand extends Command
 
         $sheets = iterator_to_array($sheetIterator, false);
 
+        // Trim is necessary because "Engagements" in the sheets name have an unneeded space.
+        $sheets = array_combine(array_map(fn (Sheet $sheet) => trim($sheet->getName()), $sheets), $sheets);
+
         if (count($sheets) < count(static::SHEETS)) {
             throw new Exception(sprintf('5 sheets are expected, %d found', count($sheets)));
+        }
+
+        if (($missingSheets = array_diff(static::SHEETS, array_keys($sheets)))) {
+            throw new Exception(
+                sprintf(
+                    'The sheets %s are missing',
+                    json_encode(array_values($missingSheets), JSON_THROW_ON_ERROR)
+                )
+            );
         }
 
         $indexes = array_flip(static::SHEETS);
 
         $this->info($io, 'Importing general information...');
-        $project = $this->importGeneralInformation($sheets[$indexes['general information']], $company);
+        $project = $this->importGeneralInformation($sheets['Infos'], $company);
 
         $this->info($io, 'Importing borrowers...');
-        $project = $this->importBorrowers($sheets[$indexes['borrowers']], $project);
+        $project = $this->importBorrowers($sheets['Emprunteurs'], $project);
 
         $this->info($io, 'Importing tranches...');
-        $project = $this->importTranches($sheets[$indexes['tranches']], $project);
+        $project = $this->importTranches($sheets['Tranches'], $project);
 
         $this->info($io, 'Importing participants...');
-        $project = $this->importParticipants($sheets[$indexes['participants']], $project);
+        $project = $this->importParticipants($sheets['Participants'], $project);
 
         $this->info($io, 'Importing covenants...');
-        $project = $this->importCovenants($sheets[$indexes['covenants']], $project);
+        $project = $this->importCovenants($sheets['Engagements'], $project);
 
         $reader->close();
 
