@@ -74,6 +74,9 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $publishedProject = $this->createPublishableProject($staff, $manager);
         $this->forcePublicId($publishedProject, 'published');
 
+        // Fix email for one borrower to easy connect as him
+        $publishedProject->getBorrowers()[0]->getMembers()[0]->getUser()->setEmail('user42@borrower.com');
+
         $finishedProject = $this->createPublishableProject($staff, $manager);
         $this->forcePublicId($finishedProject, 'finished');
 
@@ -90,7 +93,89 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         $publishedProject->publish();
 
-        $invalidCovenant = $this->createCovenant($publishedProject, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_3M, new DateTimeImmutable('-10 years'));
+        // TODO Rework this part of the fixtures (a builder or a factory would be more appropriate)
+        foreach ([Covenant::NATURE_FINANCIAL_ELEMENT, Covenant::NATURE_FINANCIAL_RATIO, Covenant::NATURE_DOCUMENT, Covenant::NATURE_CONTROL] as $nature) {
+            $unpublishedCovenant = $this->createCovenant($publishedProject, $nature, Covenant::RECURRENCE_12M, new DateTimeImmutable('-2 years'));
+            $unpublishedCovenant->setName($nature . '-unpublished');
+            $publishedProject->addCovenant($unpublishedCovenant);
+
+            if ($unpublishedCovenant->isFinancial()) {
+                foreach (range($unpublishedCovenant->getStartYear(), $unpublishedCovenant->getEndYear()) as $year) {
+                    $unpublishedCovenant->addCovenantRule($this->createCovenantRule($unpublishedCovenant, $year));
+                }
+            }
+
+            $publishedCovenant = $this->createCovenant($publishedProject, $nature, Covenant::RECURRENCE_12M, new DateTimeImmutable('-2 years'));
+            $publishedCovenant->setName($nature . '-published');
+            $publishedCovenant->publish();
+            $publishedProject->addCovenant($publishedCovenant);
+
+            if ($publishedCovenant->isFinancial()) {
+                foreach (range($publishedCovenant->getStartYear(), $publishedCovenant->getEndYear()) as $year) {
+                    $publishedCovenant->addCovenantRule($this->createCovenantRule($publishedCovenant, $year));
+                }
+            }
+
+            foreach ([true, false] as $validation) {
+                $invalidRaisons = false === $validation ? ['grantedDelay', 'breach', 'waiver', null] : [null];
+                foreach ($invalidRaisons as $raison) {
+                    foreach ([true, false] as $shared) {
+                        $archivedOptions = $shared ? [true, false] : [false];
+                        foreach ($archivedOptions as $archived) {
+                            $covenant = $this->createCovenant($publishedProject, $nature, Covenant::RECURRENCE_12M, new DateTimeImmutable('-4 years'));
+
+                            $name = $nature . ($validation ? '-yes' : '-no')
+                                . ($raison ? '-' . $raison : '')
+                                . ($shared ? '-shared' : '')
+                                . ($archived ? '-archived' : '');
+                            $covenant->setName($name);
+                            $covenant->publish();
+
+                            if ($covenant->isFinancial()) {
+                                foreach (range($covenant->getStartYear(), $covenant->getEndYear()) as $year) {
+                                    $covenant->addCovenantRule($this->createCovenantRule($covenant, $year));
+                                }
+                            }
+
+                            foreach ($covenant->getTerms() as $term) {
+                                if ($term->getStartDate() >= new DateTimeImmutable()) {
+                                    continue;
+                                }
+                                $term->setValidation($validation);
+
+                                switch ($raison) {
+                                    case 'grantedDelay':
+                                        $term->setGrantedDelay(90);
+
+                                        break;
+
+                                    case 'breach':
+                                        $term->setBreach(true);
+
+                                        break;
+
+                                    case 'waiver':
+                                        $term->setBreach(true);
+                                        $term->setWaiver(true);
+
+                                        break;
+                                }
+
+                                if ($shared) {
+                                    $term->share();
+
+                                    if ($archived) {
+                                        $term->archive();
+                                    }
+                                }
+                            }
+                            $publishedProject->addCovenant($covenant);
+                        }
+                    }
+                }
+            }
+        }
+        $invalidCovenant = $this->createCovenant($publishedProject, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_3M, new DateTimeImmutable('-4 years'));
         $invalidCovenant->publish();
         $invalidCovenant->getTerms()[0]->setValidation(false);
         $invalidCovenant->getTerms()[1]->setValidation(true)->share();
@@ -99,7 +184,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $invalidCovenant->getTerms()[3]->setValidation(true)->share()->archive();
         $publishedProject->addCovenant($invalidCovenant);
 
-        $breachCovenant = $this->createCovenant($publishedProject, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_3M, new DateTimeImmutable('-10 years'));
+        $breachCovenant = $this->createCovenant($publishedProject, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_12M, new DateTimeImmutable('-4 years'));
         $breachCovenant->publish();
         $breachCovenant->getTerms()[0]->setValidation(false);
         $breachCovenant->getTerms()[0]->setBreach(true);
@@ -113,7 +198,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $breachCovenant->getTerms()[2]->share()->archive();
         $publishedProject->addCovenant($breachCovenant);
 
-        $waiverCovenant = $this->createCovenant($publishedProject, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_3M, new DateTimeImmutable('-10 years'));
+        $waiverCovenant = $this->createCovenant($publishedProject, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_12M, new DateTimeImmutable('-4 years'));
         $waiverCovenant->publish();
         $waiverCovenant->getTerms()[0]->setValidation(false);
         $waiverCovenant->getTerms()[0]->setBreach(true);
@@ -315,10 +400,10 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         }
 
         $covenants = [
-            $this->createCovenant($project, Covenant::NATURE_DOCUMENT, Covenant::RECURRENCE_3M),
-            $this->createCovenant($project, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_3M),
-            $this->createCovenant($project, Covenant::NATURE_DOCUMENT, Covenant::RECURRENCE_3M, new DateTimeImmutable('-3 years')),
-            $this->createCovenant($project, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_3M, new DateTimeImmutable('-3 years')),
+            $this->createCovenant($project, Covenant::NATURE_DOCUMENT, Covenant::RECURRENCE_12M),
+            $this->createCovenant($project, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_12M),
+            $this->createCovenant($project, Covenant::NATURE_DOCUMENT, Covenant::RECURRENCE_12M, new DateTimeImmutable('-1 years')),
+            $this->createCovenant($project, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_12M, new DateTimeImmutable('-1 years')),
             $financialCovenant,
         ];
 
@@ -511,7 +596,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $nature,
             $startDate ?? new DateTimeImmutable('now'),
             90,
-            DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+2 years', '+6 years')),
+            new DateTimeImmutable('+ 1 years')
         );
 
         $covenant->setRecurrence($recurrence);
