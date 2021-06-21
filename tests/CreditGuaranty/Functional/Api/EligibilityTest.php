@@ -48,45 +48,51 @@ class EligibilityTest extends AbstractApiTest
 
     public function authorizedStaffProvider(): iterable
     {
-        yield 'staff_company:basic_user-1 - reservation draft - general - ineligible' => [
+        yield 'staff_company:basic_user-1 - reservation draft 1 - profile - eligible' => [
             'staff_company:basic_user-1',
-            ReservationFixtures::RESERVATION_DRAFT,
-            'general',
+            ReservationFixtures::RESERVATION_DRAFT_1,
+            'profile',
+            true,
+        ];
+        yield 'staff_company:basic_user-1 - reservation draft 2 - profile - ineligible' => [
+            'staff_company:basic_user-1',
+            ReservationFixtures::RESERVATION_DRAFT_2,
+            'profile',
             false,
         ];
-        yield 'staff_company:basic_user-2 - reservation draft - profile - eligible' => [
+        yield 'staff_company:basic_user-2 - reservation sent 1 - profile - eligible' => [
             'staff_company:basic_user-2',
-            ReservationFixtures::RESERVATION_DRAFT,
+            ReservationFixtures::RESERVATION_SENT_1,
             'profile',
             true,
         ];
-        yield 'staff_company:basic_user-3 - reservation sent - general - eligible' => [
+        yield 'staff_company:basic_user-3 - reservation sent 2 - profile - ineligible' => [
             'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_SENT,
-            'general',
-            true,
-        ];
-        yield 'staff_company:basic_user-4 - reservation sent - profile - eligible' => [
-            'staff_company:basic_user-4',
-            ReservationFixtures::RESERVATION_SENT,
+            ReservationFixtures::RESERVATION_SENT_2,
             'profile',
-            true,
+            false,
         ];
-        yield 'staff_company:basic_user-4 - reservation sent - activity - eligible' => [
+        yield 'staff_company:basic_user-4 - reservation sent 1 - project - eligible' => [
             'staff_company:basic_user-4',
-            ReservationFixtures::RESERVATION_SENT,
-            'activity',
-            true,
-        ];
-        yield 'staff_company:basic_user-5 - reservation sent - project - eligible' => [
-            'staff_company:basic_user-5',
-            ReservationFixtures::RESERVATION_SENT,
+            ReservationFixtures::RESERVATION_SENT_1,
             'project',
             true,
         ];
-        yield 'staff_company:basic_user-11 - reservation sent - loan - ineligible' => [
+        yield 'staff_company:basic_user-4 - reservation sent 2 - project - eligible' => [
+            'staff_company:basic_user-4',
+            ReservationFixtures::RESERVATION_SENT_2,
+            'project',
+            true,
+        ];
+        yield 'staff_company:basic_user-5 - reservation sent 1 - loan - eligible' => [
+            'staff_company:basic_user-5',
+            ReservationFixtures::RESERVATION_SENT_1,
+            'loan',
+            true,
+        ];
+        yield 'staff_company:basic_user-11 - reservation sent 2 - loan - ineligible' => [
             'staff_company:basic_user-11',
-            ReservationFixtures::RESERVATION_SENT,
+            ReservationFixtures::RESERVATION_SENT_2,
             'loan',
             false,
         ];
@@ -146,7 +152,7 @@ class EligibilityTest extends AbstractApiTest
         /** @var Staff $staff */
         $staff = static::$container->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
         /** @var Reservation $reservation */
-        $reservation    = static::$container->get(ReservationRepository::class)->findOneBy(['publicId' => ReservationFixtures::RESERVATION_DRAFT]);
+        $reservation    = static::$container->get(ReservationRepository::class)->findOneBy(['publicId' => ReservationFixtures::RESERVATION_DRAFT_1]);
         $reservationIri = $iriConverter->getIriFromItem($reservation);
 
         $response = $this->createAuthClient($staff)

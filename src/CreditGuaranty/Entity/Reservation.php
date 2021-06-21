@@ -26,16 +26,13 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *         "creditGuaranty:reservation:read",
  *         "creditGuaranty:reservationStatus:read",
  *         "creditGuaranty:borrower:read",
- *         "creditGuaranty:borrowerBusinessActivity:read",
  *         "creditGuaranty:project:read",
  *         "money:read",
  *         "nullableMoney:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "creditGuaranty:reservation:write",
- *         "creditGuaranty:reservation:write",
  *         "creditGuaranty:borrower:write",
- *         "creditGuaranty:borrowerBusinessActivity:write",
  *         "creditGuaranty:project:write",
  *         "money:write",
  *         "nullableMoney:write"
@@ -97,22 +94,21 @@ class Reservation implements TraceableStatusAwareInterface
     /**
      * @ApiSubresource
      *
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\BorrowerBusinessActivity", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
-     * @ORM\JoinColumn(name="id_borrower_business_activity")
-     *
-     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
-     */
-    private ?BorrowerBusinessActivity $borrowerBusinessActivity = null;
-
-    /**
-     * @ApiSubresource
-     *
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Project", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
      * @ORM\JoinColumn(name="id_project")
      *
      * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
      */
     private ?Project $project = null;
+
+    /**
+     * @var Collection|FinancingObject[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\FinancingObject", mappedBy="reservation", orphanRemoval=true, fetch="EXTRA_LAZY")
+     */
+    private Collection $financingObjects;
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\ReservationStatus", cascade={"persist"})
@@ -139,15 +135,6 @@ class Reservation implements TraceableStatusAwareInterface
      * @Groups({"creditGuaranty:reservation:read"})
      */
     private Collection $statuses;
-
-    /**
-     * @var Collection|FinancingObject[]
-     *
-     * @ApiSubresource
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\FinancingObject", mappedBy="reservation", orphanRemoval=true, fetch="EXTRA_LAZY")
-     */
-    private Collection $financingObjects;
 
     public function __construct(Program $program, Borrower $borrower, Staff $addedBy)
     {
@@ -178,18 +165,6 @@ class Reservation implements TraceableStatusAwareInterface
     public function setBorrower(Borrower $borrower): Reservation
     {
         $this->borrower = $borrower;
-
-        return $this;
-    }
-
-    public function getBorrowerBusinessActivity(): ?BorrowerBusinessActivity
-    {
-        return $this->borrowerBusinessActivity;
-    }
-
-    public function setBorrowerBusinessActivity(?BorrowerBusinessActivity $borrowerBusinessActivity): Reservation
-    {
-        $this->borrowerBusinessActivity = $borrowerBusinessActivity;
 
         return $this;
     }

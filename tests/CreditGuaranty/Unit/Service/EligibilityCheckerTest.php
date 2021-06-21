@@ -12,6 +12,7 @@ use Unilend\CreditGuaranty\Entity\Field;
 use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
 use Unilend\CreditGuaranty\Entity\ProgramEligibility;
 use Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
+use Unilend\CreditGuaranty\Entity\Reservation;
 use Unilend\CreditGuaranty\Repository\FieldRepository;
 use Unilend\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
 use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
@@ -41,6 +42,9 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
     /** @var EligibilityConditionChecker|ObjectProphecy */
     private $eligibilityConditionChecker;
 
+    /** @var Reservation */
+    private $reservation;
+
     /** @var string */
     private $category = 'test';
 
@@ -51,6 +55,7 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $this->programEligibilityConfigurationRepository = $this->prophesize(ProgramEligibilityConfigurationRepository::class);
         $this->eligibilityHelper                         = $this->prophesize(EligibilityHelper::class);
         $this->eligibilityConditionChecker               = $this->prophesize(EligibilityConditionChecker::class);
+        $this->reservation                               = $this->createReservation();
     }
 
     protected function tearDown(): void
@@ -60,12 +65,12 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $this->programEligibilityConfigurationRepository = null;
         $this->eligibilityHelper                         = null;
         $this->eligibilityConditionChecker               = null;
+        $this->reservation                               = null;
     }
 
     public function testCheckByCategoryEligible(): void
     {
-        $reservation                      = $this->createReservation();
-        $program                          = $reservation->getProgram();
+        $program                          = $this->reservation->getProgram();
         $field1                           = new Field('alias_1', $this->category, 'other', 'project::fundingMoney::amount', false, 'money', null);
         $field2                           = new Field('alias_2', $this->category, 'bool', 'borrower::creationInProgress', false, null, null);
         $field3                           = new Field('alias_3', $this->category, 'other', '', false, null, null);
@@ -83,45 +88,44 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
 
         // configuration 1 - other
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($reservation, $field1)->shouldBeCalledOnce()->willReturn($reservation->getProject());
-        $this->eligibilityHelper->getValue($program, $reservation->getProject(), $field1)->shouldBeCalledOnce()->willReturn('42');
+        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($this->reservation->getProject());
+        $this->eligibilityHelper->getValue($program, $this->reservation->getProject(), $field1)->shouldBeCalledOnce()->willReturn('42');
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);
-        $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration1)->shouldBeCalledOnce()->willReturn(true);
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration1)->shouldBeCalledOnce()->willReturn(true);
 
         // configuration 2 - bool
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field2])->shouldBeCalledOnce()->willReturn($programEligibility2);
-        $this->eligibilityHelper->getEntity($reservation, $field2)->shouldBeCalledOnce()->willReturn($reservation->getBorrower());
-        $this->eligibilityHelper->getValue($program, $reservation->getBorrower(), $field2)->shouldBeCalledOnce()->willReturn(false);
+        $this->eligibilityHelper->getEntity($this->reservation, $field2)->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
+        $this->eligibilityHelper->getValue($program, $this->reservation->getBorrower(), $field2)->shouldBeCalledOnce()->willReturn(false);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility2,
             'value'              => 0,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration2);
-        $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration2)->shouldBeCalledOnce()->willReturn(true);
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration2)->shouldBeCalledOnce()->willReturn(true);
 
         // configuration 3 - bypassed because targetPropertyAccessPath is empty
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field3])->shouldNotBeCalled();
-        $this->eligibilityHelper->getEntity($reservation, $field3)->shouldNotBeCalled();
+        $this->eligibilityHelper->getEntity($this->reservation, $field3)->shouldNotBeCalled();
         $this->eligibilityHelper->getValue($program, Argument::any(), $field3)->shouldNotBeCalled();
 
         // configuration 4 - list
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field4])->shouldBeCalledOnce()->willReturn($programEligibility4);
-        $this->eligibilityHelper->getEntity($reservation, $field4)->shouldBeCalledOnce()->willReturn($reservation->getBorrower());
-        $this->eligibilityHelper->getValue($program, $reservation->getBorrower(), $field4)->shouldBeCalledOnce()->willReturn($legalFormOption);
+        $this->eligibilityHelper->getEntity($this->reservation, $field4)->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
+        $this->eligibilityHelper->getValue($program, $this->reservation->getBorrower(), $field4)->shouldBeCalledOnce()->willReturn($legalFormOption);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility'  => $programEligibility4,
             'programChoiceOption' => $legalFormOption,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration4);
-        $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration4)->shouldBeCalledOnce()->willReturn(true);
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration4)->shouldBeCalledOnce()->willReturn(true);
 
         $eligibilityChecker = $this->createTestObject();
-        static::assertTrue($eligibilityChecker->checkByCategory($reservation, $this->category));
+        static::assertTrue($eligibilityChecker->checkByCategory($this->reservation, $this->category));
     }
 
     public function testCheckByCategoryWithoutFields(): void
     {
-        $reservation = $this->createReservation();
 
         $this->fieldRepository->findBy(['category' => $this->category])->shouldBeCalledOnce()->willReturn([]);
         $this->programEligibilityRepository->findOneBy(Argument::any())->shouldNotBeCalled();
@@ -131,13 +135,12 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $this->eligibilityConditionChecker->checkByConfiguration(Argument::cetera())->shouldNotBeCalled();
 
         $eligibilityChecker = $this->createTestObject();
-        static::assertTrue($eligibilityChecker->checkByCategory($reservation, $this->category));
+        static::assertTrue($eligibilityChecker->checkByCategory($this->reservation, $this->category));
     }
 
     public function testCheckByCategoryWithoutProgramEligibility(): void
     {
-        $reservation = $this->createReservation();
-        $program     = $reservation->getProgram();
+        $program     = $this->reservation->getProgram();
         $field1      = new Field('alias_1', $this->category, 'bool', 'borrower::creationInProgress', false, null, null);
         $fields      = [$field1];
 
@@ -151,42 +154,40 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         static::expectException(LogicException::class);
 
         $eligibilityChecker = $this->createTestObject();
-        $eligibilityChecker->checkByCategory($reservation, $this->category);
+        $eligibilityChecker->checkByCategory($this->reservation, $this->category);
     }
 
     public function testCheckByCategoryAndOtherTypeWithoutValue(): void
     {
-        $reservation         = $this->createReservation();
-        $program             = $reservation->getProgram();
+        $program             = $this->reservation->getProgram();
         $field1              = new Field('alias_1', $this->category, 'other', 'borrower::taxNumber', false, null, null);
         $fields              = [$field1];
         $programEligibility1 = new ProgramEligibility($program, $field1);
 
         $this->fieldRepository->findBy(['category' => $this->category])->shouldBeCalledOnce()->willReturn($fields);
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($reservation, $field1)->shouldBeCalledOnce()->willReturn($reservation->getBorrower());
-        $this->eligibilityHelper->getValue($program, $reservation->getBorrower(), $field1)->shouldBeCalledOnce()->willReturn(null);
+        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
+        $this->eligibilityHelper->getValue($program, $this->reservation->getBorrower(), $field1)->shouldBeCalledOnce()->willReturn(null);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
         ])->shouldNotBeCalled();
         $this->eligibilityConditionChecker->checkByConfiguration(Argument::cetera())->shouldNotBeCalled();
 
         $eligibilityChecker = $this->createTestObject();
-        static::assertFalse($eligibilityChecker->checkByCategory($reservation, $this->category));
+        static::assertFalse($eligibilityChecker->checkByCategory($this->reservation, $this->category));
     }
 
     public function testCheckByCategoryAndOtherTypeWithoutConfiguration(): void
     {
-        $reservation         = $this->createReservation();
-        $program             = $reservation->getProgram();
+        $program             = $this->reservation->getProgram();
         $field1              = new Field('alias_1', $this->category, 'other', 'borrower::companyName', false, null, null);
         $fields              = [$field1];
         $programEligibility1 = new ProgramEligibility($program, $field1);
 
         $this->fieldRepository->findBy(['category' => $this->category])->shouldBeCalledOnce()->willReturn($fields);
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($reservation, $field1)->shouldBeCalledOnce()->willReturn($reservation->getBorrower());
-        $this->eligibilityHelper->getValue($program, $reservation->getBorrower(), $field1)->shouldBeCalledOnce()->willReturn('Borrower Company');
+        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
+        $this->eligibilityHelper->getValue($program, $this->reservation->getBorrower(), $field1)->shouldBeCalledOnce()->willReturn('Borrower Company');
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
         ])->shouldBeCalledOnce()->willReturn(null);
@@ -195,14 +196,13 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         static::expectException(LogicException::class);
 
         $eligibilityChecker = $this->createTestObject();
-        $eligibilityChecker->checkByCategory($reservation, $this->category);
+        $eligibilityChecker->checkByCategory($this->reservation, $this->category);
     }
 
     public function testCheckByCategoryAndOtherTypeWithConfigurationIneligible(): void
     {
-        $reservation                      = $this->createReservation();
-        $financingObject                  = $this->createFinancingObject($reservation);
-        $program                          = $reservation->getProgram();
+        $financingObject                  = $this->createFinancingObject($this->reservation);
+        $program                          = $this->reservation->getProgram();
         $field1                           = new Field('alias_1', $this->category, 'other', 'financingObjects::loanDuration', false, null, null);
         $fields                           = [$field1];
         $programEligibility1              = new ProgramEligibility($program, $field1);
@@ -210,22 +210,21 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
 
         $this->fieldRepository->findBy(['category' => $this->category])->shouldBeCalledOnce()->willReturn($fields);
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($reservation, $field1)->shouldBeCalledOnce()->willReturn(new ArrayCollection([$financingObject]));
+        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn(new ArrayCollection([$financingObject]));
         $this->eligibilityHelper->getValue($program, $financingObject, $field1)->shouldBeCalledOnce()->willReturn(4);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);
-        $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration1)->shouldNotBeCalled();
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration1)->shouldNotBeCalled();
 
         $eligibilityChecker = $this->createTestObject();
-        static::assertFalse($eligibilityChecker->checkByCategory($reservation, $this->category));
+        static::assertFalse($eligibilityChecker->checkByCategory($this->reservation, $this->category));
     }
 
     public function testCheckByCategoryAndOtherTypeWithConditionsIneligible(): void
     {
-        $reservation                      = $this->createReservation();
-        $financingObject                  = $this->createFinancingObject($reservation);
-        $program                          = $reservation->getProgram();
+        $financingObject                  = $this->createFinancingObject($this->reservation);
+        $program                          = $this->reservation->getProgram();
         $field1                           = new Field('alias_1', $this->category, 'other', 'financingObjects::loanDuration', false, null, null);
         $fields                           = [$field1];
         $programEligibility1              = new ProgramEligibility($program, $field1);
@@ -233,29 +232,28 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
 
         $this->fieldRepository->findBy(['category' => $this->category])->shouldBeCalledOnce()->willReturn($fields);
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($reservation, $field1)->shouldBeCalledOnce()->willReturn(new ArrayCollection([$financingObject]));
+        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn(new ArrayCollection([$financingObject]));
         $this->eligibilityHelper->getValue($program, $financingObject, $field1)->shouldBeCalledOnce()->willReturn(4);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);
-        $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration1)->shouldBeCalledOnce()->willReturn(false);
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration1)->shouldBeCalledOnce()->willReturn(false);
 
         $eligibilityChecker = $this->createTestObject();
-        static::assertFalse($eligibilityChecker->checkByCategory($reservation, $this->category));
+        static::assertFalse($eligibilityChecker->checkByCategory($this->reservation, $this->category));
     }
 
     public function testCheckByCategoryAndBoolTypeWithoutConfiguration(): void
     {
-        $reservation         = $this->createReservation();
-        $program             = $reservation->getProgram();
-        $field1              = new Field('alias_1', $this->category, 'bool', 'borrowerBusinessActivity::subsidiary', false, null, null);
+        $program             = $this->reservation->getProgram();
+        $field1              = new Field('alias_1', $this->category, 'bool', 'borrower::subsidiary', false, null, null);
         $fields              = [$field1];
         $programEligibility1 = new ProgramEligibility($program, $field1);
 
         $this->fieldRepository->findBy(['category' => $this->category])->shouldBeCalledOnce()->willReturn($fields);
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($reservation, $field1)->shouldBeCalledOnce()->willReturn($reservation->getBorrowerBusinessActivity());
-        $this->eligibilityHelper->getValue($program, $reservation->getBorrowerBusinessActivity(), $field1)->shouldBeCalledOnce()->willReturn(true);
+        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
+        $this->eligibilityHelper->getValue($program, $this->reservation->getBorrower(), $field1)->shouldBeCalledOnce()->willReturn(true);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
             'value'              => 1,
@@ -265,68 +263,65 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         static::expectException(LogicException::class);
 
         $eligibilityChecker = $this->createTestObject();
-        $eligibilityChecker->checkByCategory($reservation, $this->category);
+        $eligibilityChecker->checkByCategory($this->reservation, $this->category);
     }
 
     public function testCheckByCategoryAndBoolTypeWithConfigurationIneligible(): void
     {
-        $reservation                      = $this->createReservation();
-        $program                          = $reservation->getProgram();
-        $field1                           = new Field('alias_1', $this->category, 'bool', 'borrowerBusinessActivity::receivingGrant', false, null, null);
+        $program                          = $this->reservation->getProgram();
+        $field1                           = new Field('alias_1', $this->category, 'bool', 'borrower::youngFarmer', false, null, null);
         $fields                           = [$field1];
         $programEligibility1              = new ProgramEligibility($program, $field1);
         $programEligibilityConfiguration1 = new ProgramEligibilityConfiguration($programEligibility1, null, '1', false);
 
         $this->fieldRepository->findBy(['category' => $this->category])->shouldBeCalledOnce()->willReturn($fields);
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($reservation, $field1)->shouldBeCalledOnce()->willReturn($reservation->getBorrowerBusinessActivity());
-        $this->eligibilityHelper->getValue($program, $reservation->getBorrowerBusinessActivity(), $field1)->shouldBeCalledOnce()->willReturn(true);
+        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
+        $this->eligibilityHelper->getValue($program, $this->reservation->getBorrower(), $field1)->shouldBeCalledOnce()->willReturn(true);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
             'value'              => 1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);
-        $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration1)->shouldNotBeCalled();
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration1)->shouldNotBeCalled();
 
         $eligibilityChecker = $this->createTestObject();
-        static::assertFalse($eligibilityChecker->checkByCategory($reservation, $this->category));
+        static::assertFalse($eligibilityChecker->checkByCategory($this->reservation, $this->category));
     }
 
     public function testCheckByCategoryAndBoolTypeWithConditionsIneligible(): void
     {
-        $reservation                      = $this->createReservation();
-        $program                          = $reservation->getProgram();
-        $field1                           = new Field('alias_1', $this->category, 'bool', 'borrowerBusinessActivity::receivingGrant', false, null, null);
+        $program                          = $this->reservation->getProgram();
+        $field1                           = new Field('alias_1', $this->category, 'bool', 'borrower::youngFarmer', false, null, null);
         $fields                           = [$field1];
         $programEligibility1              = new ProgramEligibility($program, $field1);
         $programEligibilityConfiguration1 = new ProgramEligibilityConfiguration($programEligibility1, null, '1', true);
 
         $this->fieldRepository->findBy(['category' => $this->category])->shouldBeCalledOnce()->willReturn($fields);
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($reservation, $field1)->shouldBeCalledOnce()->willReturn($reservation->getBorrowerBusinessActivity());
-        $this->eligibilityHelper->getValue($program, $reservation->getBorrowerBusinessActivity(), $field1)->shouldBeCalledOnce()->willReturn(true);
+        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
+        $this->eligibilityHelper->getValue($program, $this->reservation->getBorrower(), $field1)->shouldBeCalledOnce()->willReturn(true);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
             'value'              => 1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);
-        $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration1)->shouldBeCalledOnce()->willReturn(false);
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration1)->shouldBeCalledOnce()->willReturn(false);
 
         $eligibilityChecker = $this->createTestObject();
-        static::assertFalse($eligibilityChecker->checkByCategory($reservation, $this->category));
+        static::assertFalse($eligibilityChecker->checkByCategory($this->reservation, $this->category));
     }
 
     public function testCheckByCategoryAndListTypeWithoutConfiguration(): void
     {
-        $reservation          = $this->createReservation();
-        $program              = $reservation->getProgram();
-        $field1               = new Field('alias_1', $this->category, 'list', 'borrowerBusinessActivity::address::country', false, null, null);
+        $program              = $this->reservation->getProgram();
+        $field1               = new Field('alias_1', $this->category, 'list', 'borrower::address::country', false, null, null);
         $fields               = [$field1];
         $programChoiceOption1 = new ProgramChoiceOption($program, 'USA', $field1);
         $programEligibility1  = new ProgramEligibility($program, $field1);
 
         $this->fieldRepository->findBy(['category' => $this->category])->shouldBeCalledOnce()->willReturn($fields);
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($reservation, $field1)->shouldBeCalledOnce()->willReturn($reservation->getBorrowerBusinessActivity());
-        $this->eligibilityHelper->getValue($program, $reservation->getBorrowerBusinessActivity(), $field1)->shouldBeCalledOnce()->willReturn($programChoiceOption1);
+        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
+        $this->eligibilityHelper->getValue($program, $this->reservation->getBorrower(), $field1)->shouldBeCalledOnce()->willReturn($programChoiceOption1);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility'  => $programEligibility1,
             'programChoiceOption' => $programChoiceOption1,
@@ -336,13 +331,13 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         static::expectException(LogicException::class);
 
         $eligibilityChecker = $this->createTestObject();
-        $eligibilityChecker->checkByCategory($reservation, $this->category);
+        $eligibilityChecker->checkByCategory($this->reservation, $this->category);
     }
 
     public function testCheckByCategoryAndListTypeWithConfigurationIneligible(): void
     {
-        $reservation                      = $this->createReservation();
-        $program                          = $reservation->getProgram();
+        $program                          = $this->reservation->getProgram();
+        $project                          = $this->reservation->getProject();
         $field1                           = new Field('alias_1', $this->category, 'list', 'project::investmentThematic', false, null, null);
         $fields                           = [$field1];
         $programChoiceOption1             = new ProgramChoiceOption($program, 'investment thematic', $field1);
@@ -351,22 +346,22 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
 
         $this->fieldRepository->findBy(['category' => $this->category])->shouldBeCalledOnce()->willReturn($fields);
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($reservation, $field1)->shouldBeCalledOnce()->willReturn($reservation->getProject());
-        $this->eligibilityHelper->getValue($program, $reservation->getProject(), $field1)->shouldBeCalledOnce()->willReturn($programChoiceOption1);
+        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($project);
+        $this->eligibilityHelper->getValue($program, $project, $field1)->shouldBeCalledOnce()->willReturn($programChoiceOption1);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility'  => $programEligibility1,
             'programChoiceOption' => $programChoiceOption1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);
-        $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration1)->shouldNotBeCalled();
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration1)->shouldNotBeCalled();
 
         $eligibilityChecker = $this->createTestObject();
-        static::assertFalse($eligibilityChecker->checkByCategory($reservation, $this->category));
+        static::assertFalse($eligibilityChecker->checkByCategory($this->reservation, $this->category));
     }
 
     public function testCheckByCategoryAndListTypeWithConditionsIneligible(): void
     {
-        $reservation                      = $this->createReservation();
-        $program                          = $reservation->getProgram();
+        $program                          = $this->reservation->getProgram();
+        $project                          = $this->reservation->getProject();
         $field1                           = new Field('alias_1', $this->category, 'list', 'project::investmentThematic', false, null, null);
         $fields                           = [$field1];
         $programChoiceOption1             = new ProgramChoiceOption($program, 'investment thematic', $field1);
@@ -375,16 +370,16 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
 
         $this->fieldRepository->findBy(['category' => $this->category])->shouldBeCalledOnce()->willReturn($fields);
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($reservation, $field1)->shouldBeCalledOnce()->willReturn($reservation->getProject());
-        $this->eligibilityHelper->getValue($program, $reservation->getProject(), $field1)->shouldBeCalledOnce()->willReturn($programChoiceOption1);
+        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($project);
+        $this->eligibilityHelper->getValue($program, $project, $field1)->shouldBeCalledOnce()->willReturn($programChoiceOption1);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility'  => $programEligibility1,
             'programChoiceOption' => $programChoiceOption1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);
-        $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration1)->shouldBeCalledOnce()->willReturn(false);
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration1)->shouldBeCalledOnce()->willReturn(false);
 
         $eligibilityChecker = $this->createTestObject();
-        static::assertFalse($eligibilityChecker->checkByCategory($reservation, $this->category));
+        static::assertFalse($eligibilityChecker->checkByCategory($this->reservation, $this->category));
     }
 
     private function createTestObject(): EligibilityChecker
