@@ -485,15 +485,14 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             new Money('EUR', (string) $this->faker->numberBetween(100000)),
         );
 
-        $participation->setLegalForm(LegalForm::SARL);
-        $participation->setHeadOffice($this->faker->address);
-        $participation->setBankAddress($this->faker->address)
+        $participation->setLegalForm(LegalForm::SARL)
+            ->setCorporateName($this->faker->name)
+            ->setHeadOffice($this->faker->address)
+            ->setBankAddress($this->faker->address)
             ->setIban('DE66641502668879073767')
             ->setBankInstitution($this->faker->company)
             ->setBic('AGRIFRPP907')
         ;
-
-        $participation->setCorporateName($this->faker->name);
 
         return $participation;
     }

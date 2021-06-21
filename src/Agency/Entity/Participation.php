@@ -227,8 +227,14 @@ class Participation extends AbstractProjectPartaker
      * @Assert\Valid
      * @Assert\AtLeastOneOf(
      *     constraints={
-     *         @Assert\IsNull,
-     *         @Assert\Expression("this.isAgent()")
+     *         @Assert\Expression(
+     *             expression="this.getAgentCommission().getAmount() === '0' || this.getAgentCommission().getAmount() === null",
+     *             message="Agency.Participation.commission.agent.zero"
+     *         ),
+     *         @Assert\Expression(
+     *             expression="this.isAgent()",
+     *             message="Agency.Participation.commission.agent.role"
+     *         )
      *     },
      *     message="Agency.Participation.commission.agent"
      * )
@@ -243,10 +249,15 @@ class Participation extends AbstractProjectPartaker
      * @Assert\Valid
      * @Assert\AtLeastOneOf(
      *     constraints={
-     *         @Assert\IsNull,
-     *         @Assert\Expression("this.isArranger()")
-     *     },
-     *     message="Agency.Participation.commission.arranger"
+     *         @Assert\Expression(
+     *             expression="this.getArrangerCommission().getAmount() === '0' || this.getArrangerCommission().getAmount() === null",
+     *             message="Agency.Participation.commission.arranger.zero"
+     *         ),
+     *         @Assert\Expression(
+     *             expression="this.isArranger()",
+     *             message="Agency.Participation.commission.arranger.role"
+     *         )
+     *     }
      * )
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
@@ -258,8 +269,14 @@ class Participation extends AbstractProjectPartaker
      * @Assert\Valid
      * @Assert\AtLeastOneOf(
      *     constraints={
-     *         @Assert\IsNull,
-     *         @Assert\Expression("this.isDeputyArranger()")
+     *         @Assert\Expression(
+     *             expression="this.getDeputyArrangerCommission().getAmount() === '0' || this.getDeputyArrangerCommission().getAmount() === null",
+     *             message="Agency.Participation.commission.deputyArranger.zero"
+     *         ),
+     *         @Assert\Expression(
+     *             expression="this.isDeputyArranger()",
+     *             message="Agency.Participation.commission.deputyArranger.role"
+     *         )
      *     },
      *     message="Agency.Participation.commission.deputyArranger"
      * )
@@ -316,7 +333,7 @@ class Participation extends AbstractProjectPartaker
         Money $finalAllocation,
         ?NullableMoney $capital = null
     ) {
-        parent::__construct($participant->getSiren() ?? '', $capital ?? new Money('EUR', '0'));
+        parent::__construct($participant->getSiren() ?? '', $capital ?? new NullableMoney($pool->getProject()->getCurrency(), '0'));
         $this->responsibilities         = new Bitmask(0);
         $this->pool                     = $pool;
         $this->finalAllocation          = $finalAllocation;

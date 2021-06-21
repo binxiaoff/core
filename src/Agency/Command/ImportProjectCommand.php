@@ -528,9 +528,9 @@ class ImportProjectCommand extends Command
             $isAgent               = 'Oui' === trim((string) $cells[3]->getValue());
             $participantCommission = (string) $cells[4]->getValue();
 
-            $arrangerCommission       = new NullableMoney('EUR', (string) $cells[5]->getValue() ?: '0');
-            $deputyArrangerCommission = new NullableMoney('EUR', (string) $cells[6]->getValue() ?: '0');
-            $agentCommission          = new NullableMoney('EUR', (string) $cells[7]->getValue() ?: '0');
+            $arrangerCommission       = new NullableMoney($project->getCurrency(), (string) $cells[5]->getValue() ?: '0');
+            $deputyArrangerCommission = new NullableMoney($project->getCurrency(), (string) $cells[6]->getValue() ?: '0');
+            $agentCommission          = new NullableMoney($project->getCurrency(), (string) $cells[7]->getValue() ?: '0');
 
             $finalAllocation = new Money('EUR', (string) $cells[8]->getValue());
 
