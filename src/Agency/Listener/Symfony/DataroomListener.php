@@ -7,6 +7,7 @@ namespace Unilend\Agency\Listener\Symfony;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerArgumentsEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Unilend\Agency\Entity\Agent;
 use Unilend\Agency\Entity\Participation;
 use Unilend\Agency\Entity\ParticipationPool;
 use Unilend\Agency\Entity\Project;
@@ -42,7 +43,7 @@ class DataroomListener implements EventSubscriberInterface
         $index     = null;
 
         for ($argument = reset($arguments); null === $index && $argument = current($arguments); next($arguments)) {
-            if (\in_array(\get_class($argument), [Project::class, Participation::class, ParticipationPool::class])) {
+            if (\in_array(\get_class($argument), [Project::class, Participation::class, ParticipationPool::class, Agent::class])) {
                 $index = key($arguments);
             }
         }
@@ -73,6 +74,11 @@ class DataroomListener implements EventSubscriberInterface
 
             case ParticipationPool::class:
                 $arguments[$index] = $argument->getSharedDrive();
+
+                break;
+
+            case Agent::class:
+                $arguments[$index] = $argument->getConfidentialDrive();
 
                 break;
         }
