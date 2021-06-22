@@ -600,10 +600,8 @@ class Project
 
     /**
      * @param Borrower[]|Collection $borrowers
-     *
-     * @return Project
      */
-    public function setBorrowers(Collection $borrowers)
+    public function setBorrowers(Collection $borrowers): Project
     {
         $this->borrowers = $borrowers;
 
