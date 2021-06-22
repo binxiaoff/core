@@ -23,9 +23,6 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
         'field-company_naf_code' => [
             '0001A',
         ],
-        'field-project_naf_code' => [
-            '0001A',
-        ],
         'field-exploitation_size' => [
             '42',
         ],

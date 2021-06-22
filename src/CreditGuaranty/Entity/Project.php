@@ -11,22 +11,26 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Service\MoneyCalculator;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
+use Unilend\CreditGuaranty\Entity\Traits\AddressTrait;
 
 /**
  * @ApiResource(
  *     normalizationContext={"groups": {
  *         "creditGuaranty:project:read",
- *         "money:read"
+ *         "money:read",
+ *         "nullableMoney:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "creditGuaranty:project:write",
- *         "money:write"
+ *         "money:write",
+ *         "nullableMoney:write"
  *     }},
  *     itemOperations={
  *         "get": {
@@ -53,19 +57,13 @@ use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface
 class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterface
 {
     use PublicizeIdentityTrait;
+    use AddressTrait;
     use TimestampableTrait;
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", mappedBy="project")
      */
     private Reservation $reservation;
-
-    /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
-     *
-     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
-     */
-    private Money $fundingMoney;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
@@ -79,20 +77,137 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
-     * @ORM\JoinColumn(name="id_naf_code", nullable=false)
+     * @ORM\JoinColumn(name="id_investment_type", nullable=false)
      *
      * @Assert\Expression("value.getProgram() === this.getProgram()")
      *
      * @Groups({"creditGuaranty:project:write"})
      */
-    private ProgramChoiceOption $projectNafCode;
+    private ProgramChoiceOption $investmentType;
 
-    public function __construct(Money $fundingMoney, ProgramChoiceOption $investmentThematic, ProgramChoiceOption $projectNafCode)
-    {
-        $this->fundingMoney       = $fundingMoney;
-        $this->investmentThematic = $investmentThematic;
-        $this->projectNafCode     = $projectNafCode;
-        $this->added              = new DateTimeImmutable();
+    /**
+     * @ORM\Column(length=1200, nullable=true)
+     *
+     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
+     */
+    private ?string $detail;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\JoinColumn(name="id_aid_intensity", nullable=false)
+     *
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    private ProgramChoiceOption $aidIntensity;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\JoinColumn(name="id_additional_guaranty", nullable=false)
+     *
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    private ProgramChoiceOption $additionalGuaranty;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\JoinColumn(name="id_agricultural_branch", nullable=false)
+     *
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    private ProgramChoiceOption $agriculturalBranch;
+
+    /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     *
+     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
+     */
+    private Money $fundingMoney;
+
+    /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
+     */
+    private NullableMoney $contribution;
+
+    /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
+     */
+    private NullableMoney $eligibleFeiCredit;
+
+    /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
+     */
+    private NullableMoney $totalFeiCredit;
+
+    /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
+     */
+    private NullableMoney $physicalFeiCredit;
+
+    /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
+     */
+    private NullableMoney $intangibleFeiCredit;
+
+    /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
+     */
+    private NullableMoney $creditExcludingFei;
+
+    /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
+     */
+    private NullableMoney $grant;
+
+    /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
+     */
+    private NullableMoney $landValue;
+
+    public function __construct(
+        ProgramChoiceOption $investmentThematic,
+        ProgramChoiceOption $investmentType,
+        ProgramChoiceOption $aidIntensity,
+        ProgramChoiceOption $additionalGuaranty,
+        ProgramChoiceOption $agriculturalBranch,
+        Money $fundingMoney
+    ) {
+        $this->investmentThematic  = $investmentThematic;
+        $this->investmentType      = $investmentType;
+        $this->aidIntensity        = $aidIntensity;
+        $this->additionalGuaranty  = $additionalGuaranty;
+        $this->agriculturalBranch  = $agriculturalBranch;
+        $this->fundingMoney        = $fundingMoney;
+        $this->contribution        = new NullableMoney();
+        $this->eligibleFeiCredit   = new NullableMoney();
+        $this->totalFeiCredit      = new NullableMoney();
+        $this->physicalFeiCredit   = new NullableMoney();
+        $this->intangibleFeiCredit = new NullableMoney();
+        $this->creditExcludingFei  = new NullableMoney();
+        $this->grant               = new NullableMoney();
+        $this->landValue           = new NullableMoney();
+        $this->added               = new DateTimeImmutable();
     }
 
     public function getReservation(): Reservation
@@ -103,18 +218,6 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     public function getProgram(): Program
     {
         return $this->getReservation()->getProgram();
-    }
-
-    public function getFundingMoney(): Money
-    {
-        return $this->fundingMoney;
-    }
-
-    public function setFundingMoney(Money $fundingMoney): Project
-    {
-        $this->fundingMoney = $fundingMoney;
-
-        return $this;
     }
 
     public function getInvestmentThematic(): ProgramChoiceOption
@@ -139,26 +242,217 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return $this->investmentThematic->getDescription();
     }
 
-    public function getProjectNafCode(): ProgramChoiceOption
+    public function getInvestmentType(): ProgramChoiceOption
     {
-        return $this->projectNafCode;
+        return $this->investmentType;
     }
 
-    public function setProjectNafCode(ProgramChoiceOption $projectNafCode): Project
+    public function setInvestmentType(ProgramChoiceOption $investmentType): Project
     {
-        $this->projectNafCode = $projectNafCode;
+        $this->investmentType = $investmentType;
 
         return $this;
     }
 
     /**
-     * @SerializedName("projectNafCode")
+     * @SerializedName("investmentType")
      *
      * @Groups({"creditGuaranty:project:read"})
      */
-    public function getProjectNafCodeDescription(): ?string
+    public function getInvestmentTypeDescription(): ?string
     {
-        return $this->projectNafCode->getDescription();
+        return $this->investmentType->getDescription();
+    }
+
+    public function getDetail(): ?string
+    {
+        return $this->detail;
+    }
+
+    public function setDetail(?string $detail): Project
+    {
+        $this->detail = $detail;
+
+        return $this;
+    }
+
+    public function getAidIntensity(): ProgramChoiceOption
+    {
+        return $this->aidIntensity;
+    }
+
+    public function setAidIntensity(ProgramChoiceOption $aidIntensity): Project
+    {
+        $this->aidIntensity = $aidIntensity;
+
+        return $this;
+    }
+
+    /**
+     * @SerializedName("aidIntensity")
+     *
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAidIntensityDescription(): ?string
+    {
+        return $this->aidIntensity->getDescription();
+    }
+
+    public function getAdditionalGuaranty(): ProgramChoiceOption
+    {
+        return $this->additionalGuaranty;
+    }
+
+    public function setAdditionalGuaranty(ProgramChoiceOption $additionalGuaranty): Project
+    {
+        $this->additionalGuaranty = $additionalGuaranty;
+
+        return $this;
+    }
+
+    /**
+     * @SerializedName("additionalGuaranty")
+     *
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAdditionalGuarantyDescription(): ?string
+    {
+        return $this->additionalGuaranty->getDescription();
+    }
+
+    public function getAgriculturalBranch(): ProgramChoiceOption
+    {
+        return $this->agriculturalBranch;
+    }
+
+    public function setAgriculturalBranch(ProgramChoiceOption $agriculturalBranch): Project
+    {
+        $this->agriculturalBranch = $agriculturalBranch;
+
+        return $this;
+    }
+
+    /**
+     * @SerializedName("agriculturalBranch")
+     *
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAgriculturalBranchDescription(): ?string
+    {
+        return $this->agriculturalBranch->getDescription();
+    }
+
+    public function getFundingMoney(): Money
+    {
+        return $this->fundingMoney;
+    }
+
+    public function setFundingMoney(Money $fundingMoney): Project
+    {
+        $this->fundingMoney = $fundingMoney;
+
+        return $this;
+    }
+
+    public function getContribution(): NullableMoney
+    {
+        return $this->contribution;
+    }
+
+    public function setContribution(NullableMoney $contribution): Project
+    {
+        $this->contribution = $contribution;
+
+        return $this;
+    }
+
+    public function getEligibleFeiCredit(): NullableMoney
+    {
+        return $this->eligibleFeiCredit;
+    }
+
+    public function setEligibleFeiCredit(NullableMoney $eligibleFeiCredit): Project
+    {
+        $this->eligibleFeiCredit = $eligibleFeiCredit;
+
+        return $this;
+    }
+
+    public function getTotalFeiCredit(): NullableMoney
+    {
+        return $this->totalFeiCredit;
+    }
+
+    public function setTotalFeiCredit(NullableMoney $totalFeiCredit): Project
+    {
+        $this->totalFeiCredit = $totalFeiCredit;
+
+        return $this;
+    }
+
+    public function getPhysicalFeiCredit(): NullableMoney
+    {
+        return $this->physicalFeiCredit;
+    }
+
+    public function setPhysicalFeiCredit(NullableMoney $physicalFeiCredit): Project
+    {
+        $this->physicalFeiCredit = $physicalFeiCredit;
+
+        return $this;
+    }
+
+    public function getIntangibleFeiCredit(): NullableMoney
+    {
+        return $this->intangibleFeiCredit;
+    }
+
+    public function setIntangibleFeiCredit(NullableMoney $intangibleFeiCredit): Project
+    {
+        $this->intangibleFeiCredit = $intangibleFeiCredit;
+
+        return $this;
+    }
+
+    public function getCreditExcludingFei(): NullableMoney
+    {
+        return $this->creditExcludingFei;
+    }
+
+    public function setCreditExcludingFei(NullableMoney $creditExcludingFei): Project
+    {
+        $this->creditExcludingFei = $creditExcludingFei;
+
+        return $this;
+    }
+
+    public function getGrant(): NullableMoney
+    {
+        return $this->grant;
+    }
+
+    public function setGrant(NullableMoney $grant): Project
+    {
+        $this->grant = $grant;
+
+        return $this;
+    }
+
+    public function isReceivingGrant(): bool
+    {
+        return null !== $this->grant->getAmount() || '0' !== $this->grant->getAmount();
+    }
+
+    public function getLandValue(): NullableMoney
+    {
+        return $this->landValue;
+    }
+
+    public function setLandValue(NullableMoney $landValue): Project
+    {
+        $this->landValue = $landValue;
+
+        return $this;
     }
 
     /**

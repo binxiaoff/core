@@ -89,12 +89,18 @@ abstract class AbstractEligibilityTest extends TestCase
     private function creatProject(Program $program): Project
     {
         $investmentThematicField = new Field('investment_thematic', 'test', 'list', 'project', 'investmentThematic', Project::class, false, null, null);
-        $projectNafCodeField     = new Field('project_naf_code', 'test', 'list', 'project', 'projectNafCode', Project::class, false, null, null);
+        $investmentTypeField     = new Field('investment_type', 'test', 'list', 'project', 'investmentType', Project::class, false, null, null);
+        $aidIntensityField       = new Field('aid_intensity', 'test', 'list', 'project', 'aidIntensity', Project::class, false, null, null);
+        $additionalGuaranty      = new Field('additional_guaranty', 'test', 'list', 'project', 'additionalGuaranty', Project::class, false, null, null);
+        $agriculturalBranch      = new Field('agricultural_branch', 'test', 'list', 'project', 'agriculturalBranch', Project::class, false, null, null);
 
         return new Project(
-            new Money('eur', '42'),
             new ProgramChoiceOption($program, 'investment thematic', $investmentThematicField),
-            new ProgramChoiceOption($program, 'N42', $projectNafCodeField),
+            new ProgramChoiceOption($program, 'investment type', $investmentTypeField),
+            new ProgramChoiceOption($program, '42%', $aidIntensityField),
+            new ProgramChoiceOption($program, 'additional guaranty', $additionalGuaranty),
+            new ProgramChoiceOption($program, 'agricultural branch', $agriculturalBranch),
+            new Money('eur', '42')
         );
     }
 }

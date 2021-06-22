@@ -242,21 +242,14 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
     private function createProject(Program $program): Project
     {
+        $investmentThematic = $this->createProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, 'Project : ' . $this->faker->sentence);
+        $investmentType     = $this->createProgramChoiceOption($program, FieldAlias::INVESTMENT_TYPE, 'Type : ' . $this->faker->sentence);
+        $aidIntensity       = $this->createProgramChoiceOption($program, FieldAlias::AID_INTENSITY, $this->faker->numberBetween(0, 100) . '%');
+        $additionalGuaranty = $this->createProgramChoiceOption($program, FieldAlias::ADDITIONAL_GUARANTY, $this->faker->sentence(3));
+        $agriculturalBranch = $this->createProgramChoiceOption($program, FieldAlias::AGRICULTURAL_BRANCH, 'Branch N: ' . $this->faker->sentence);
         $fundingMoney       = new Money('EUR', (string) $this->faker->randomNumber());
-        $investmentThematic = $this->createProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, 'Project ' . $this->faker->sentence);
 
-        /** @var Field $projectNafCodeField */
-        $projectNafCodeField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::PROJECT_NAF_CODE]);
-        /** @var NafNace $nafNace */
-        $nafNace = $this->nafNaceRepository->find($this->faker->numberBetween(1, 700));
-
-        $nafCode = $this->programChoiceOptionRepository->findOneBy([
-            'program'     => $program,
-            'field'       => $projectNafCodeField,
-            'description' => $nafNace->getNafCode(),
-        ]) ?? $this->createProgramChoiceOption($program, FieldAlias::PROJECT_NAF_CODE, $nafNace->getNafCode());
-
-        return new Project($fundingMoney, $investmentThematic, $nafCode);
+        return new Project($investmentThematic, $investmentType, $aidIntensity, $additionalGuaranty, $agriculturalBranch, $fundingMoney);
     }
 
     private function createFinancingObject(Reservation $reservation): FinancingObject
@@ -335,15 +328,23 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         /** @var Field $field */
         $field = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
 
-        $programChoiceOption = new ProgramChoiceOption($program, $description, $field);
-        $this->entityManager->persist($programChoiceOption);
+        $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([
+            'program'     => $program,
+            'field'       => $field,
+            'description' => $description,
+        ]);
+
+        if (false === ($programChoiceOption instanceof ProgramChoiceOption)) {
+            $programChoiceOption = new ProgramChoiceOption($program, $description, $field);
+            $this->entityManager->persist($programChoiceOption);
+        }
 
         $programEligibility = $this->programEligibilityRepository->findOneBy([
             'program' => $program,
             'field'   => $field,
         ]);
 
-        if (null === $programEligibility) {
+        if (false === ($programEligibility instanceof ProgramEligibility)) {
             $programEligibility = new ProgramEligibility($program, $field);
             $this->entityManager->persist($programEligibility);
         }

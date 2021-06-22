@@ -135,7 +135,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $reservation = new Reservation($reservationData['program'], $reservationData['borrower'], $reservationData['addedBy']);
         $totalAmount = 0;
 
-        if (array_key_exists('financingObjectsNb', $reservationData)) {
+        if (false === empty($reservationData['financingObjectsNb'])) {
             for ($i = 0; $i < $reservationData['financingObjectsNb']; ++$i) {
                 $releasedOnInvoice = $reservationData['releasedOnInvoice'] ?? false;
 
@@ -228,19 +228,38 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
     private function createProject(Program $program): Project
     {
-        /** @var Field $projectNafCodeField */
-        $projectNafCodeField = $this->getReference('field-project_naf_code');
+        $investmentThematic = $this->createProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, 'Project : ' . $this->faker->sentence);
+        $investmentType     = $this->createProgramChoiceOption($program, FieldAlias::INVESTMENT_TYPE, 'Type : ' . $this->faker->sentence);
+        $aidIntensity       = $this->createProgramChoiceOption($program, FieldAlias::AID_INTENSITY, $this->faker->numberBetween(0, 100) . '%');
+        $additionalGuaranty = $this->createProgramChoiceOption($program, FieldAlias::ADDITIONAL_GUARANTY, $this->faker->sentence(3));
+        $agriculturalBranch = $this->createProgramChoiceOption($program, FieldAlias::AGRICULTURAL_BRANCH, 'Branch N: ' . $this->faker->sentence);
+        $fundingMoney       = new Money('EUR', (string) $this->faker->randomNumber());
 
-        $projectNafCode = $this->programChoiceOptionRepository->findOneBy([
+        /** @var Field $investmentCountryField */
+        $investmentCountryField = $this->getReference('field-investment_country');
+        $activityCountry        = $this->programChoiceOptionRepository->findOneBy([
             'program'     => $program,
-            'field'       => $projectNafCodeField,
-            'description' => '0001A',
+            'field'       => $investmentCountryField,
+            'description' => 'FR',
         ]);
 
-        $fundingMoney       = new Money('EUR', (string) $this->faker->randomNumber());
-        $investmentThematic = $this->createProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, 'Project ' . $this->faker->sentence);
+        $project = new Project($investmentThematic, $investmentType, $aidIntensity, $additionalGuaranty, $agriculturalBranch, $fundingMoney);
 
-        return new Project($fundingMoney, $investmentThematic, $projectNafCode);
+        return $project
+            ->setAddressStreet($this->faker->streetAddress)
+            ->setAddressCity($this->faker->city)
+            ->setAddressPostCode($this->faker->postcode)
+            ->setAddressDepartment('department')
+            ->setAddressCountry($activityCountry)
+            ->setContribution(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setEligibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setTotalFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setPhysicalFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setIntangibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setCreditExcludingFei(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setGrant(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setLandValue(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+        ;
     }
 
     private function createFinancingObject(Reservation $reservation, bool $releasedOnInvoice = false): FinancingObject
