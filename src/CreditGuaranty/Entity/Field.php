@@ -57,7 +57,17 @@ class Field
     /**
      * @ORM\Column(length=255)
      */
-    private string $targetPropertyAccessPath;
+    private string $reservationPropertyName;
+
+    /**
+     * @ORM\Column(length=255)
+     */
+    private string $propertyPath;
+
+    /**
+     * @ORM\Column(length=255)
+     */
+    private string $objectClass;
 
     /**
      * @ORM\Column(type="boolean")
@@ -67,7 +77,7 @@ class Field
     private bool $comparable;
 
     /**
-     * If the filed is a predefined list, we put its items here
+     * If the field is a pre-defined list (and not an user-defined's), we store its items here.
      *
      * @ORM\Column(type="json", nullable=true)
      *
@@ -76,7 +86,8 @@ class Field
     private ?array $predefinedItems;
 
     /**
-     * If comparable, what is its unit is. We can only compare the value of the same unit. It can also be used to build the translation of a unit.
+     * If comparable, we need to specify its unit to compare the value of the same unit.
+     * It can also be used to build the translation of a unit.
      *
      * @ORM\Column(length=20, nullable=true)
      *
@@ -84,77 +95,68 @@ class Field
      */
     private ?string $unit;
 
-    /**
-     * @param string      $fieldAlias
-     * @param string      $category
-     * @param string      $type
-     * @param string      $targetPropertyAccessPath
-     * @param bool        $comparable
-     * @param string|null $unit
-     * @param array|null  $predefinedItems
-     */
-    public function __construct(string $fieldAlias, string $category, string $type, string $targetPropertyAccessPath, bool $comparable, ?string $unit, ?array $predefinedItems)
-    {
-        $this->fieldAlias               = $fieldAlias;
-        $this->category                 = $category;
-        $this->type                     = $type;
-        $this->targetPropertyAccessPath = $targetPropertyAccessPath;
-        $this->comparable               = $comparable;
-        $this->unit                     = $unit;
-        $this->predefinedItems          = $predefinedItems;
+    public function __construct(
+        string $fieldAlias,
+        string $category,
+        string $type,
+        string $reservationPropertyName,
+        string $propertyPath,
+        string $objectClass,
+        bool $comparable,
+        ?string $unit,
+        ?array $predefinedItems
+    ) {
+        $this->fieldAlias              = $fieldAlias;
+        $this->category                = $category;
+        $this->type                    = $type;
+        $this->reservationPropertyName = $reservationPropertyName;
+        $this->propertyPath            = $propertyPath;
+        $this->objectClass             = $objectClass;
+        $this->comparable              = $comparable;
+        $this->unit                    = $unit;
+        $this->predefinedItems         = $predefinedItems;
     }
 
-    /**
-     * @return string
-     */
     public function getFieldAlias(): string
     {
         return $this->fieldAlias;
     }
 
-    /**
-     * @return string
-     */
     public function getCategory(): string
     {
         return $this->category;
     }
 
-    /**
-     * @return string
-     */
     public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * @return string
-     */
-    public function getTargetPropertyAccessPath(): string
+    public function getReservationPropertyName(): string
     {
-        return $this->targetPropertyAccessPath;
+        return $this->reservationPropertyName;
     }
 
-    /**
-     * @return bool
-     */
+    public function getPropertyPath(): string
+    {
+        return $this->propertyPath;
+    }
+
+    public function getObjectClass(): string
+    {
+        return $this->objectClass;
+    }
+
     public function isComparable(): bool
     {
         return $this->comparable;
     }
 
-    /**
-     * @return string|null
-     */
     public function getUnit(): ?string
     {
         return $this->unit;
     }
 
-    /**
-     * @return array|null
-     */
     public function getPredefinedItems(): ?array
     {
         return $this->predefinedItems;

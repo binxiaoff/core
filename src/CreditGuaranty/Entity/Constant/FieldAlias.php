@@ -33,7 +33,10 @@ class FieldAlias extends AbstractEnum
     public const YOUNG_FARMER             = 'young_farmer';
 
     // Other
-    public const BENEFICIARY_ADDRESS = 'beneficiary_address';
+    public const ACTIVITY_STREET     = 'activity_street';
+    public const ACTIVITY_POST_CODE  = 'activity_post_code';
+    public const ACTIVITY_CITY       = 'activity_city';
+    public const ACTIVITY_DEPARTMENT = 'activity_department';
     public const BENEFICIARY_NAME    = 'beneficiary_name';
     public const COMPANY_NAME        = 'company_name';
     public const SIRET               = 'siret';
@@ -52,13 +55,14 @@ class FieldAlias extends AbstractEnum
     public const ACTIVITY_START_DATE = 'activity_start_date';
 
     public const PROGRAM_CHOICE_OPTION_FIELDS = [
+        self::ACTIVITY_COUNTRY,
         self::BORROWER_TYPE,
+        self::COMPANY_NAF_CODE,
+        self::EXPLOITATION_SIZE,
         self::FINANCING_OBJECT,
         self::INVESTMENT_THEMATIC,
         self::LEGAL_FORM,
         self::LOAN_TYPE,
         self::PROJECT_NAF_CODE,
-        self::COMPANY_NAF_CODE,
-        self::EXPLOITATION_SIZE,
     ];
 }

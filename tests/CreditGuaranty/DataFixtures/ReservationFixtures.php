@@ -15,7 +15,6 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Staff;
 use Unilend\CreditGuaranty\Entity\Borrower;
 use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
-use Unilend\CreditGuaranty\Entity\Embeddable\Address;
 use Unilend\CreditGuaranty\Entity\Field;
 use Unilend\CreditGuaranty\Entity\FinancingObject;
 use Unilend\CreditGuaranty\Entity\Participation;
@@ -102,19 +101,19 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
         yield self::RESERVATION_DRAFT_1 => [
             'program'       => $program,
-            'borrower'      => $this->createBorrower($program, $this->createAddress(), true, true, true),
+            'borrower'      => $this->createBorrower($program, true, true, true),
             'addedBy'       => $addedBy,
             'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_DRAFT_2 => [
             'program'       => $program,
-            'borrower'      => $this->createBorrower($program, $this->createAddress(), false, true),
+            'borrower'      => $this->createBorrower($program, false, true),
             'addedBy'       => $addedBy,
             'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_SENT_1 => [
             'program'            => $program,
-            'borrower'           => $this->createBorrower($program, $this->createAddress(), true, true, true),
+            'borrower'           => $this->createBorrower($program, true, true, true),
             'financingObjectsNb' => 2,
             'releasedOnInvoice'  => true,
             'project'            => $this->createProject($program),
@@ -123,7 +122,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         ];
         yield self::RESERVATION_SENT_2 => [
             'program'            => $program,
-            'borrower'           => $this->createBorrower($program, $this->createAddress(), false, false, true),
+            'borrower'           => $this->createBorrower($program, false, false, true),
             'financingObjectsNb' => 2,
             'project'            => $this->createProject($program),
             'addedBy'            => $addedBy,
@@ -161,21 +160,8 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         return $reservation;
     }
 
-    private function createAddress(): Address
-    {
-        return (new Address())
-            ->setRoadNumber((string) $this->faker->randomDigit)
-            ->setRoadName($this->faker->streetAddress)
-            ->setCity($this->faker->city)
-            ->setCity($this->faker->city)
-            ->setPostCode($this->faker->countryCode)
-            ->setCountry('FR') // => from predefinedItems of activity_country fieldAlias
-        ;
-    }
-
     private function createBorrower(
         Program $program,
-        Address $address,
         bool $youngFarmer = false,
         bool $creationInProgress = false,
         bool $subsidiary = false
@@ -188,6 +174,8 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $companyNafCodeField = $this->getReference('field-company_naf_code');
         /** @var Field $exploitationSizeField */
         $exploitationSizeField = $this->getReference('field-exploitation_size');
+        /** @var Field $activityCountryField */
+        $activityCountryField = $this->getReference('field-activity_country');
 
         $borrowerType = $this->programChoiceOptionRepository->findOneBy([
             'program'     => $program,
@@ -209,6 +197,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'field'       => $exploitationSizeField,
             'description' => '42',
         ]);
+        $activityCountry = $this->programChoiceOptionRepository->findOneBy([
+            'program'     => $program,
+            'field'       => $activityCountryField,
+            'description' => 'FR',
+        ]);
 
         return (new Borrower('Borrower Company', 'B'))
             ->setBeneficiaryName('Borrower Name')
@@ -216,7 +209,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setYoungFarmer($youngFarmer)
             ->setCreationInProgress($creationInProgress)
             ->setSubsidiary($subsidiary)
-            ->setAddress($address)
+            ->setAddressStreet($this->faker->streetAddress)
+            ->setAddressCity($this->faker->city)
+            ->setAddressPostCode($this->faker->postcode)
+            ->setAddressDepartment('department')
+            ->setAddressCountry($activityCountry)
             ->setActivityStartDate(new DateTimeImmutable())
             ->setSiret('11111111111111')
             ->setTaxNumber('12 23 45 678 987')
