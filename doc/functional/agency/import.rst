@@ -3,10 +3,10 @@ Project import
 ===============
 
 
-The Symfony command ``kls:import:project`` import project into the database.
+The Symfony command ``kls:import:project`` imports project into the database.
 It expects two arguments :
 1. the shortCode or id of the agent company
-2. a path (preferably absolute) to the a XLSX file. This file must respect a template available `here <template.xlsx>`_:
+2. a path (preferably absolute) to the XLSX file. This file must respect a template available `here <template.xlsx>`_:
 
 Mass import
 -----------
@@ -61,6 +61,6 @@ It expects the following folder structure:
     └── script.sh
 
 It will create a ``processed` folder with the same structure as a sibling of folder containing the files to import.
-The script with move the files which have been successfully imported into the ``processed`` folder under their agent company folder.
+The script will move the files which have been successfully imported into the ``processed`` folder under their agent company folder.
 The files which failed import will be kept in place and not moved.
 Therefore, the user launching the command should be able to move files and create folders.
