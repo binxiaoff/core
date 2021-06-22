@@ -24,36 +24,26 @@ abstract class AbstractProjectPartaker
 
     /**
      * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $corporateName;
 
     /**
      * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $legalForm;
 
     /**
      * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $headOffice;
 
     /**
      * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $bankInstitution;
 
     /**
      * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $bankAddress;
 
@@ -61,7 +51,6 @@ abstract class AbstractProjectPartaker
      * @ORM\Column(type="string", length=11, nullable=true)
      *
      * @Assert\Bic
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $bic;
 
@@ -69,7 +58,6 @@ abstract class AbstractProjectPartaker
      * @ORM\Column(type="string", length=34, nullable=true)
      *
      * @Assert\Iban
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $iban;
 
