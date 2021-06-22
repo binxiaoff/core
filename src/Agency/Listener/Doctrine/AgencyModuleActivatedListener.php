@@ -19,6 +19,7 @@ class AgencyModuleActivatedListener
             if (
                 $companyModule instanceof CompanyModule
                 && array_key_exists(CompanyModule::PROPERTY_ACTIVATED, $uow->getEntityChangeSet($companyModule))
+                && CompanyModule::MODULE_AGENCY === $companyModule->getCode()
                 && $companyModule->isActivated()
             ) {
                 // put it in foreach, because it will pass here only once in the most case and it's hard to meet the conditions of the above if.
