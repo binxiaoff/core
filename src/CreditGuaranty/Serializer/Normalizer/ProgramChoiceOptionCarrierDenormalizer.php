@@ -69,10 +69,13 @@ class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizer
         $object                        = $this->extractObjectToPopulate($type, $context);
 
         foreach ($data as $propertyName => $propertyValue) {
-            $field = $this->fieldRepository->findOneBy([
-                'propertyPath' => $propertyName,
-                'objectClass'  => get_class($object),
-            ]);
+            $field = null;
+            if ($object) {
+                $field = $this->fieldRepository->findOneBy([
+                    'propertyPath' => $propertyName,
+                    'objectClass'  => get_class($object),
+                ]);
+            }
 
             if (
                 $field instanceof Field
