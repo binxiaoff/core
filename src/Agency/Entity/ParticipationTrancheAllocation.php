@@ -45,7 +45,7 @@ class ParticipationTrancheAllocation
     use PublicizeIdentityTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Participation::class, inversedBy="allocations")
+     * @ORM\ManyToOne(targetEntity=Participation::class, inversedBy="allocations", cascade={"persist"})
      * @ORM\JoinColumn(name="id_participation", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -61,7 +61,6 @@ class ParticipationTrancheAllocation
      * @ORM\JoinColumn(name="id_tranche", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
-     * @Assert\Expression("value.isSyndicated()", message="Agency.ParticipantTrancheAllocation.tranche")
      *
      * @Groups({"agency:participationTrancheAllocation:read", "agency:participationTrancheAllocation:write"})
      */

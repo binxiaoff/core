@@ -43,7 +43,7 @@ class BorrowerTrancheShare
     use PublicizeIdentityTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Borrower", inversedBy="trancheShares")
+     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Borrower", cascade={"persist"}, inversedBy="trancheShares")
      * @ORM\JoinColumn(name="id_borrower", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"agency:borrowerTrancheShare:read", "agency:borrowerTrancheShare:write"})

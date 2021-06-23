@@ -114,10 +114,10 @@ class Tranche
     private Project $project;
 
     /**
-     * @ORM\Column(length=30)
+     * @ORM\Column(type="string", length=200)
      *
      * @Assert\NotBlank
-     * @Assert\Length(max=30)
+     * @Assert\Length(max=200)
      *
      * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
@@ -256,8 +256,6 @@ class Tranche
 
     /**
      * @ORM\Column(type="date_immutable", nullable=true)
-     *
-     * @Assert\GreaterThanOrEqual(value="today")
      *
      * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
@@ -562,15 +560,6 @@ class Tranche
      */
     public function validateCommission(ExecutionContextInterface $context)
     {
-        if (
-            ($this->getCommissionRate() || '0' === $this->getCommissionRate() || $this->getCommissionType())
-            && false === \in_array($this->getLoanType(), LoanType::getChargeableLoanTypes(), true)
-        ) {
-            $context->buildViolation('Agency.Tranche.commission.invalidLoanType')
-                ->addViolation()
-            ;
-        }
-
         if (($this->getCommissionRate() || '0' === $this->getCommissionRate()) xor $this->getCommissionType()) {
             $context->buildViolation('Agency.Tranche.commission.incomplete')
                 ->atPath($this->getCommissionType() ? 'commissionRate' : 'commissionType')

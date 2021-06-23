@@ -17,6 +17,8 @@ use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Staff;
 use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 
 abstract class AbstractProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -27,7 +29,7 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
             $project,
             'Michelin',
             LegalForm::SARL,
-            new Money('eur', '40000000'),
+            new NullableMoney('eur', '40000000'),
             '50, rue de la Boetie 75008 Paris',
             '514919844'
         );
@@ -68,7 +70,6 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
         return new Participation(
             $project->getPrimaryParticipationPool(),
             $participant,
-            new Money('eur', '4000000'),
             new Money('eur', '4000000')
         );
     }
@@ -78,7 +79,6 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
         return new Participation(
             $project->getSecondaryParticipationPool(),
             $participant,
-            new Money('eur', '4000000'),
             new Money('eur', '4000000')
         );
     }

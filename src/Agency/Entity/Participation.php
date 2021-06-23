@@ -23,6 +23,7 @@ use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Model\Bitmask;
 
 /**
@@ -43,6 +44,7 @@ use Unilend\Core\Model\Bitmask;
  *                 "groups": {
  *                     "agency:participation:create",
  *                     "agency:participation:write",
+ *                     "nullableMoney:write",
  *                     "money:write",
  *                     "agency:participationTrancheAllocation:write"
  *                 }
@@ -59,6 +61,8 @@ use Unilend\Core\Model\Bitmask;
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:participation:write",
+ *                     "agency:projectPartaker:write",
+ *                     "nullableMoney:write",
  *                     "money:write",
  *                     "agency:participationTrancheAllocation:write"
  *                 }
@@ -218,62 +222,71 @@ class Participation extends AbstractProjectPartaker
     private Bitmask $responsibilities;
 
     /**
-     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
+     * @ORM\Embedded(class=NullableMoney::class)
      *
-     * @Assert\NotBlank(allowNull=true)
-     * @Assert\Type("numeric")
-     * @Assert\PositiveOrZero
+     * @Assert\Valid
      * @Assert\AtLeastOneOf(
      *     constraints={
-     *         @Assert\IsNull,
-     *         @Assert\Expression("this.isAgent()")
+     *         @Assert\Expression(
+     *             expression="this.getAgentCommission().getAmount() === '0' || this.getAgentCommission().getAmount() === null",
+     *             message="Agency.Participation.commission.agent.zero"
+     *         ),
+     *         @Assert\Expression(
+     *             expression="this.isAgent()",
+     *             message="Agency.Participation.commission.agent.role"
+     *         )
      *     },
      *     message="Agency.Participation.commission.agent"
      * )
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
-    private ?string $agentCommission;
+    private NullableMoney $agentCommission;
 
     /**
-     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
+     * @ORM\Embedded(class=NullableMoney::class)
      *
-     * @Assert\NotBlank(allowNull=true)
-     * @Assert\Type("numeric")
-     * @Assert\PositiveOrZero
-     *
+     * @Assert\Valid
      * @Assert\AtLeastOneOf(
      *     constraints={
-     *         @Assert\IsNull,
-     *         @Assert\Expression("this.isArranger()")
-     *     },
-     *     message="Agency.Participation.commission.arranger"
+     *         @Assert\Expression(
+     *             expression="this.getArrangerCommission().getAmount() === '0' || this.getArrangerCommission().getAmount() === null",
+     *             message="Agency.Participation.commission.arranger.zero"
+     *         ),
+     *         @Assert\Expression(
+     *             expression="this.isArranger()",
+     *             message="Agency.Participation.commission.arranger.role"
+     *         )
+     *     }
      * )
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
-    private ?string $arrangerCommission;
+    private NullableMoney $arrangerCommission;
 
     /**
-     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
+     * @ORM\Embedded(class=NullableMoney::class)
      *
-     * @Assert\NotBlank(allowNull=true)
-     * @Assert\Type("numeric")
-     * @Assert\PositiveOrZero
-     *
+     * @Assert\Valid
      * @Assert\AtLeastOneOf(
      *     constraints={
-     *         @Assert\IsNull,
-     *         @Assert\Expression("this.isDeputyArranger()")
+     *         @Assert\Expression(
+     *             expression="this.getDeputyArrangerCommission().getAmount() === '0' || this.getDeputyArrangerCommission().getAmount() === null",
+     *             message="Agency.Participation.commission.deputyArranger.zero"
+     *         ),
+     *         @Assert\Expression(
+     *             expression="this.isDeputyArranger()",
+     *             message="Agency.Participation.commission.deputyArranger.role"
+     *         )
      *     },
      *     message="Agency.Participation.commission.deputyArranger"
      * )
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
-    private ?string $deputyArrangerCommission;
+    private NullableMoney $deputyArrangerCommission;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     * @ORM\Embedded(class=Money::class)
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      *
@@ -318,18 +331,18 @@ class Participation extends AbstractProjectPartaker
         ParticipationPool $pool,
         Company $participant,
         Money $finalAllocation,
-        Money $capital = null
+        ?NullableMoney $capital = null
     ) {
-        parent::__construct($participant->getSiren() ?? '', $capital ?? new Money('EUR', '0'));
+        parent::__construct($participant->getSiren() ?? '', $capital ?? new NullableMoney($pool->getProject()->getCurrency(), '0'));
         $this->responsibilities         = new Bitmask(0);
         $this->pool                     = $pool;
         $this->finalAllocation          = $finalAllocation;
         $this->participant              = $participant;
         $this->prorata                  = false;
         $this->participantCommission    = '0';
-        $this->arrangerCommission       = null;
-        $this->agentCommission          = null;
-        $this->deputyArrangerCommission = null;
+        $this->arrangerCommission       = new NullableMoney();
+        $this->agentCommission          = new NullableMoney();
+        $this->deputyArrangerCommission = new NullableMoney();
         $this->allocations              = new ArrayCollection();
         $this->archivingDate            = null;
         $this->members                  = new ArrayCollection();
@@ -369,12 +382,12 @@ class Participation extends AbstractProjectPartaker
         return $this->responsibilities->has(static::RESPONSIBILITY_AGENT);
     }
 
-    public function getAgentCommission(): ?string
+    public function getAgentCommission(): NullableMoney
     {
         return $this->agentCommission;
     }
 
-    public function setAgentCommission(?string $agentCommission): Participation
+    public function setAgentCommission(NullableMoney $agentCommission): Participation
     {
         $this->agentCommission = $agentCommission;
 
@@ -386,12 +399,12 @@ class Participation extends AbstractProjectPartaker
         return $this->responsibilities->has(static::RESPONSIBILITY_ARRANGER);
     }
 
-    public function getArrangerCommission(): ?string
+    public function getArrangerCommission(): NullableMoney
     {
         return $this->arrangerCommission;
     }
 
-    public function setArrangerCommission(?string $arrangerCommission): Participation
+    public function setArrangerCommission(NullableMoney $arrangerCommission): Participation
     {
         $this->arrangerCommission = $arrangerCommission;
 
@@ -403,12 +416,12 @@ class Participation extends AbstractProjectPartaker
         return $this->responsibilities->has(static::RESPONSIBILITY_DEPUTY_ARRANGER);
     }
 
-    public function getDeputyArrangerCommission(): ?string
+    public function getDeputyArrangerCommission(): NullableMoney
     {
         return $this->deputyArrangerCommission;
     }
 
-    public function setDeputyArrangerCommission(?string $deputyArrangerCommission): Participation
+    public function setDeputyArrangerCommission(NullableMoney $deputyArrangerCommission): Participation
     {
         $this->deputyArrangerCommission = $deputyArrangerCommission;
 
@@ -579,19 +592,17 @@ class Participation extends AbstractProjectPartaker
     /**
      * @Groups({"agency:participation:read"})
      */
-    public function getCapital(): Money
+    public function getCapital(): NullableMoney
     {
-        return $this->capital;
+        return parent::getCapital();
     }
 
     /**
      * @Groups({"agency:participation:write"})
      */
-    public function setCapital(Money $capital): AbstractProjectPartaker
+    public function setCapital(NullableMoney $capital): AbstractProjectPartaker
     {
-        $this->capital = $capital;
-
-        return $this;
+        return parent::setCapital($capital);
     }
 
     /**

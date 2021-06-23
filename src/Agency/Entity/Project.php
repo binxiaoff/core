@@ -33,6 +33,7 @@ use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\FundingSpecificity;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
@@ -350,7 +351,7 @@ class Project
     private Collection $tranches;
 
     /**
-     * @var Borrower[]|iterable
+     * @var Borrower[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
@@ -362,7 +363,7 @@ class Project
      *
      * @ApiSubresource
      */
-    private iterable $borrowers;
+    private Collection $borrowers;
 
     /**
      * @Groups({"agency:project:read", "agency:project:write"})
@@ -506,6 +507,7 @@ class Project
 
         $this->borrowers          = new ArrayCollection();
         $this->tranches           = new ArrayCollection();
+        $this->covenants          = new ArrayCollection();
         $this->participationPools = new ArrayCollection([false => new ParticipationPool($this, false), true => new ParticipationPool($this, true)]);
 
         $this->agent = new Agent($this, $addedBy->getCompany());
@@ -521,11 +523,10 @@ class Project
         $participation = new Participation(
             $this->getPrimaryParticipationPool(),
             $this->agent->getCompany(),
-            new Money($this->getCurrency()),
             new Money($this->getCurrency())
         );
         $participation->setResponsibilities(new Bitmask(Participation::RESPONSIBILITY_AGENT));
-        $participation->setAgentCommission('0');
+        $participation->setAgentCommission(new NullableMoney($this->getCurrency(), null));
 
         $this->participationPools[false]->addParticipation($participation);
 
@@ -590,27 +591,39 @@ class Project
     }
 
     /**
-     * @return Borrower[]|iterable
+     * @return Borrower[]|Collection
      */
-    public function getBorrowers(): iterable
+    public function getBorrowers(): Collection
     {
         return $this->borrowers;
     }
 
     /**
-     * @param Borrower[]|iterable $borrowers
-     *
-     * @return Project
+     * @param Borrower[]|Collection $borrowers
      */
-    public function setBorrowers(iterable $borrowers)
+    public function setBorrowers(Collection $borrowers): Project
     {
         $this->borrowers = $borrowers;
 
         return $this;
     }
 
+    public function addBorrower(Borrower $borrower): Project
+    {
+        $this->borrowers[] = $borrower;
+
+        return $this;
+    }
+
+    public function removeBorrower(Borrower $borrower): Project
+    {
+        $this->borrowers->removeElement($borrower);
+
+        return $this;
+    }
+
     /**
-     * @return iterable|Tranche[]
+     * @return Collection|Tranche[]
      */
     public function getTranches()
     {
@@ -1046,5 +1059,10 @@ class Project
 
             next($statuses);
         }
+    }
+
+    public function findBorrowerBySiren(string $siren): ?Borrower
+    {
+        return $this->borrowers->filter(fn (Borrower $borrower) => $borrower->getMatriculationNumber() === $siren)->first() ?: null;
     }
 }

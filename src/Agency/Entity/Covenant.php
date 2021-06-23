@@ -87,6 +87,7 @@ class Covenant
     public const NATURE_FINANCIAL_ELEMENT = 'financial_element';
     public const NATURE_FINANCIAL_RATIO   = 'financial_ratio';
 
+    public const RECURRENCE_1M  = 'P1M';
     public const RECURRENCE_3M  = 'P3M';
     public const RECURRENCE_6M  = 'P6M';
     public const RECURRENCE_12M = 'P12M';
@@ -102,9 +103,9 @@ class Covenant
     private Project $project;
 
     /**
-     * @ORM\Column(type="string", length=50)
+     * @ORM\Column(type="string", length=150)
      *
-     * @Assert\Length(max="50")
+     * @Assert\Length(max="150")
      * @Assert\NotBlank
      *
      * @Groups({"agency:covenant:read", "agency:covenant:write"})
@@ -121,9 +122,9 @@ class Covenant
     private ?string $contractArticle = null;
 
     /**
-     * @ORM\Column(type="string", nullable=true, length=500)
+     * @ORM\Column(type="string", nullable=true, length=5000)
      *
-     * @Assert\Length(max="500")
+     * @Assert\Length(max="5000")
      *
      * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
@@ -166,7 +167,7 @@ class Covenant
     /**
      * @ORM\Column(name="endDate", type="date_immutable")
      *
-     * @Assert\GreaterThan(propertyPath="startDate")
+     * @Assert\GreaterThanOrEqual(propertyPath="startDate")
      *
      * @Groups({"agency:covenant:read", "agency:covenant:create"})
      */

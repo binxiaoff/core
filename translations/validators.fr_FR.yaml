@@ -19,7 +19,6 @@ Agency:
     Tranche:
         commission:
             incomplete: Ce champ est manquant pour valider la commission de la tranche
-            invalidLoanType: Le type de prêt ne permet d'avoir une commission
 
     Participation:
         responsabilities:
@@ -27,9 +26,15 @@ Agency:
             secondary: Etant dans la syndication silencieuse, vous ne pouvez pas avoir de responsabilité
             arranger: Vous ne pouvez pas être arranger et co-arrangeur
         commission:
-            agent: Vous devez être agent pour remplir cette commission
-            arrangeur: Vous devez être arrangeur pour remplir cette commission
-            deputyArrangeur: Vous devez être co-arrangeur pour remplir cette commission
+            agent:
+                zero: La commission de l'agent doit être à zéro
+                role: La participation doit être marquée comme agent
+            arranger:
+                zero: La commission de l'arrangeur doit être à zéro
+                role: La participation doit être marquée comme arrangeur
+            deputyArranger:
+                zero: La commission de co-arrangement doit être à zéro
+                role: La participation doit être marquée comme co-arrangeur
 
     ParticipationMember:
         user:

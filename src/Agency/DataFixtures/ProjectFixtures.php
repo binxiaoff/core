@@ -36,6 +36,7 @@ use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\UserStatus;
@@ -427,7 +428,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setBic('AGRIFRPP907')
             ->setHeadOffice($this->faker->address)
             ->setRcs(implode(' ', ['RCS', mb_strtoupper($this->faker->city), $this->faker->randomDigit % 2 ? 'A' : 'B', $project->getAgent()->getMatriculationNumber()]))
-            ->setCapital(new Money('EUR', '0'))
+            ->setCapital(new NullableMoney('EUR', '0'))
             ->setBankInstitution('bank institution')
             ->setBankAddress($this->faker->address)
             ->setCorporateName($this->faker->company)
@@ -497,7 +498,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $project,
             $this->faker->company,
             'SARL',
-            new Money(
+            new NullableMoney(
                 $project->getCurrency(),
                 (string) $this->faker->randomFloat(0, 100000)
             ),
@@ -567,18 +568,16 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $project->getParticipationPools()[$secondary],
             $participant,
             new Money('EUR', (string) $this->faker->numberBetween(100000)),
-            new Money('EUR', (string) $this->faker->numberBetween(40000000)),
         );
 
-        $participation->setLegalForm(LegalForm::SARL);
-        $participation->setHeadOffice($this->faker->address);
-        $participation->setBankAddress($this->faker->address)
+        $participation->setLegalForm(LegalForm::SARL)
+            ->setCorporateName($this->faker->name)
+            ->setHeadOffice($this->faker->address)
+            ->setBankAddress($this->faker->address)
             ->setIban('DE66641502668879073767')
             ->setBankInstitution($this->faker->company)
             ->setBic('AGRIFRPP907')
         ;
-
-        $participation->setCorporateName($this->faker->name);
 
         return $participation;
     }

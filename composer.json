@@ -31,6 +31,7 @@
     "api-platform/core": "^2.6",
     "azuyalabs/yasumi": "^2.0",
     "beberlei/doctrineextensions": "^1.0",
+    "box/spout": "^3.3",
     "cravler/maxmind-geoip-bundle": "^1.5",
     "defuse/php-encryption": "^2.2",
     "doctrine/orm": "^2.7",

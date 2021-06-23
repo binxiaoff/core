@@ -8,6 +8,6 @@ use Unilend\Core\Entity\Constant\AbstractEnum;
 
 final class CommissionType extends AbstractEnum
 {
-    protected const NON_UTILISATION = 'non_utilisation';
-    protected const COMMITMENT      = 'commitment';
+    public const NON_UTILISATION = 'non_utilisation';
+    public const COMMITMENT      = 'commitment';
 }
