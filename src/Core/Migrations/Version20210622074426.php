@@ -11,7 +11,7 @@ final class Version20210622074426 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '[CreditGuaranty] CALS-3884 CALS-3885 update fields';
+        return '[CreditGuaranty] CALS-3884 CALS-3885 update project fields';
     }
 
     public function up(Schema $schema): void

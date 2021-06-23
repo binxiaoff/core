@@ -32,8 +32,6 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *     }},
  *     denormalizationContext={"groups": {
  *         "creditGuaranty:reservation:write",
- *         "creditGuaranty:borrower:write",
- *         "creditGuaranty:project:write",
  *         "money:write",
  *         "nullableMoney:write"
  *     }},
@@ -84,20 +82,18 @@ class Reservation implements TraceableStatusAwareInterface
     /**
      * @ApiSubresource
      *
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Borrower", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
-     * @ORM\JoinColumn(name="id_borrower", nullable=false)
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Borrower", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
      *
-     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
+     * @Groups({"creditGuaranty:reservation:read"})
      */
-    private Borrower $borrower;
+    private ?Borrower $borrower = null;
 
     /**
      * @ApiSubresource
      *
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Project", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
-     * @ORM\JoinColumn(name="id_project")
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Project", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
      *
-     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
+     * @Groups({"creditGuaranty:reservation:read"})
      */
     private ?Project $project = null;
 
@@ -136,11 +132,10 @@ class Reservation implements TraceableStatusAwareInterface
      */
     private Collection $statuses;
 
-    public function __construct(Program $program, Borrower $borrower, Staff $addedBy)
+    public function __construct(Program $program, Staff $addedBy)
     {
         $this->program          = $program;
         $this->managingCompany  = $addedBy->getCompany();
-        $this->borrower         = $borrower;
         $this->financingObjects = new ArrayCollection();
         $this->added            = new DateTimeImmutable();
         $this->statuses         = new ArrayCollection();
@@ -157,7 +152,7 @@ class Reservation implements TraceableStatusAwareInterface
         return $this->managingCompany;
     }
 
-    public function getBorrower(): Borrower
+    public function getBorrower(): ?Borrower
     {
         return $this->borrower;
     }

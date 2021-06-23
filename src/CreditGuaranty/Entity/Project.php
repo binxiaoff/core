@@ -61,29 +61,32 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     use TimestampableTrait;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", mappedBy="project")
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", inversedBy="project")
+     * @ORM\JoinColumn(name="id_reservation", nullable=false)
+     *
+     * @Groups({"creditGuaranty:project:write"})
      */
     private Reservation $reservation;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
-     * @ORM\JoinColumn(name="id_investment_thematic", nullable=false)
+     * @ORM\JoinColumn(name="id_investment_thematic", nullable=true)
      *
-     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
      * @Groups({"creditGuaranty:project:write"})
      */
-    private ProgramChoiceOption $investmentThematic;
+    private ?ProgramChoiceOption $investmentThematic = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
-     * @ORM\JoinColumn(name="id_investment_type", nullable=false)
+     * @ORM\JoinColumn(name="id_investment_type", nullable=true)
      *
-     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
      * @Groups({"creditGuaranty:project:write"})
      */
-    private ProgramChoiceOption $investmentType;
+    private ?ProgramChoiceOption $investmentType = null;
 
     /**
      * @ORM\Column(length=1200, nullable=true)
@@ -94,33 +97,33 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
-     * @ORM\JoinColumn(name="id_aid_intensity", nullable=false)
+     * @ORM\JoinColumn(name="id_aid_intensity", nullable=true)
      *
-     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
      * @Groups({"creditGuaranty:project:write"})
      */
-    private ProgramChoiceOption $aidIntensity;
+    private ?ProgramChoiceOption $aidIntensity = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
-     * @ORM\JoinColumn(name="id_additional_guaranty", nullable=false)
+     * @ORM\JoinColumn(name="id_additional_guaranty", nullable=true)
      *
-     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
      * @Groups({"creditGuaranty:project:write"})
      */
-    private ProgramChoiceOption $additionalGuaranty;
+    private ?ProgramChoiceOption $additionalGuaranty = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
-     * @ORM\JoinColumn(name="id_agricultural_branch", nullable=false)
+     * @ORM\JoinColumn(name="id_agricultural_branch", nullable=true)
      *
-     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
      * @Groups({"creditGuaranty:project:write"})
      */
-    private ProgramChoiceOption $agriculturalBranch;
+    private ?ProgramChoiceOption $agriculturalBranch = null;
 
     /**
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
@@ -185,19 +188,9 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      */
     private NullableMoney $landValue;
 
-    public function __construct(
-        ProgramChoiceOption $investmentThematic,
-        ProgramChoiceOption $investmentType,
-        ProgramChoiceOption $aidIntensity,
-        ProgramChoiceOption $additionalGuaranty,
-        ProgramChoiceOption $agriculturalBranch,
-        Money $fundingMoney
-    ) {
-        $this->investmentThematic  = $investmentThematic;
-        $this->investmentType      = $investmentType;
-        $this->aidIntensity        = $aidIntensity;
-        $this->additionalGuaranty  = $additionalGuaranty;
-        $this->agriculturalBranch  = $agriculturalBranch;
+    public function __construct(Reservation $reservation, Money $fundingMoney)
+    {
+        $this->reservation         = $reservation;
         $this->fundingMoney        = $fundingMoney;
         $this->contribution        = new NullableMoney();
         $this->eligibleFeiCredit   = new NullableMoney();
@@ -220,12 +213,12 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return $this->getReservation()->getProgram();
     }
 
-    public function getInvestmentThematic(): ProgramChoiceOption
+    public function getInvestmentThematic(): ?ProgramChoiceOption
     {
         return $this->investmentThematic;
     }
 
-    public function setInvestmentThematic(ProgramChoiceOption $investmentThematic): Project
+    public function setInvestmentThematic(?ProgramChoiceOption $investmentThematic): Project
     {
         $this->investmentThematic = $investmentThematic;
 
@@ -239,15 +232,19 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      */
     public function getInvestmentThematicDescription(): ?string
     {
-        return $this->investmentThematic->getDescription();
+        if ($this->investmentThematic) {
+            return $this->investmentThematic->getDescription();
+        }
+
+        return null;
     }
 
-    public function getInvestmentType(): ProgramChoiceOption
+    public function getInvestmentType(): ?ProgramChoiceOption
     {
         return $this->investmentType;
     }
 
-    public function setInvestmentType(ProgramChoiceOption $investmentType): Project
+    public function setInvestmentType(?ProgramChoiceOption $investmentType): Project
     {
         $this->investmentType = $investmentType;
 
@@ -261,7 +258,11 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      */
     public function getInvestmentTypeDescription(): ?string
     {
-        return $this->investmentType->getDescription();
+        if ($this->investmentType) {
+            return $this->investmentType->getDescription();
+        }
+
+        return null;
     }
 
     public function getDetail(): ?string
@@ -276,12 +277,12 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return $this;
     }
 
-    public function getAidIntensity(): ProgramChoiceOption
+    public function getAidIntensity(): ?ProgramChoiceOption
     {
         return $this->aidIntensity;
     }
 
-    public function setAidIntensity(ProgramChoiceOption $aidIntensity): Project
+    public function setAidIntensity(?ProgramChoiceOption $aidIntensity): Project
     {
         $this->aidIntensity = $aidIntensity;
 
@@ -295,15 +296,19 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      */
     public function getAidIntensityDescription(): ?string
     {
-        return $this->aidIntensity->getDescription();
+        if ($this->aidIntensity) {
+            return $this->aidIntensity->getDescription();
+        }
+
+        return null;
     }
 
-    public function getAdditionalGuaranty(): ProgramChoiceOption
+    public function getAdditionalGuaranty(): ?ProgramChoiceOption
     {
         return $this->additionalGuaranty;
     }
 
-    public function setAdditionalGuaranty(ProgramChoiceOption $additionalGuaranty): Project
+    public function setAdditionalGuaranty(?ProgramChoiceOption $additionalGuaranty): Project
     {
         $this->additionalGuaranty = $additionalGuaranty;
 
@@ -317,15 +322,19 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      */
     public function getAdditionalGuarantyDescription(): ?string
     {
-        return $this->additionalGuaranty->getDescription();
+        if ($this->additionalGuaranty) {
+            return $this->additionalGuaranty->getDescription();
+        }
+
+        return null;
     }
 
-    public function getAgriculturalBranch(): ProgramChoiceOption
+    public function getAgriculturalBranch(): ?ProgramChoiceOption
     {
         return $this->agriculturalBranch;
     }
 
-    public function setAgriculturalBranch(ProgramChoiceOption $agriculturalBranch): Project
+    public function setAgriculturalBranch(?ProgramChoiceOption $agriculturalBranch): Project
     {
         $this->agriculturalBranch = $agriculturalBranch;
 
@@ -339,7 +348,11 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      */
     public function getAgriculturalBranchDescription(): ?string
     {
-        return $this->agriculturalBranch->getDescription();
+        if ($this->agriculturalBranch) {
+            return $this->agriculturalBranch->getDescription();
+        }
+
+        return null;
     }
 
     public function getFundingMoney(): Money

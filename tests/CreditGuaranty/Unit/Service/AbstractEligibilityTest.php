@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Test\CreditGuaranty\Unit\Service;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyGroup;
@@ -23,6 +24,9 @@ use Unilend\CreditGuaranty\Entity\Reservation;
 
 abstract class AbstractEligibilityTest extends TestCase
 {
+    /**
+     * @throws Exception
+     */
     protected function createReservation(): Reservation
     {
         $teamRoot = Team::createRootTeam(new Company('Company', 'Company', ''));
@@ -35,13 +39,13 @@ abstract class AbstractEligibilityTest extends TestCase
             new Staff(new User('user@mail.com'), $team)
         );
 
-        return (new Reservation(
-            $program,
-            $this->createBorrower($program),
-            new Staff(new User('user@mail.com'), $team)
-        ))
-            ->setProject($this->creatProject($program))
+        $reservation = new Reservation($program, new Staff(new User('user@mail.com'), $team));
+        $reservation
+            ->setBorrower($this->createBorrower($reservation))
+            ->setProject($this->creatProject($reservation))
         ;
+
+        return $reservation;
     }
 
     protected function createFinancingObject(Reservation $reservation): FinancingObject
@@ -61,13 +65,14 @@ abstract class AbstractEligibilityTest extends TestCase
         );
     }
 
-    private function createBorrower(Program $program): Borrower
+    private function createBorrower(Reservation $reservation): Borrower
     {
+        $program              = $reservation->getProgram();
         $borrowerTypeField    = new Field('borrower_type', 'test', 'list', 'borrower', 'borrowerType', Borrower::class, false, null, null);
         $legalFormField       = new Field('legal_form', 'test', 'list', 'borrower', 'legalForm', Borrower::class, false, null, null);
         $activityCountryField = new Field('activity_country', 'test', 'list', 'borrower', 'addressCountry', Borrower::class, false, null, ['FR']);
 
-        return (new Borrower('Borrower Company', 'D'))
+        return (new Borrower($reservation, 'Borrower Company', 'D'))
             ->setBeneficiaryName('Borrower Name')
             ->setBorrowerType(new ProgramChoiceOption($program, 'borrower type', $borrowerTypeField))
             ->setYoungFarmer(true)
@@ -86,21 +91,21 @@ abstract class AbstractEligibilityTest extends TestCase
         ;
     }
 
-    private function creatProject(Program $program): Project
+    private function creatProject(Reservation $reservation): Project
     {
+        $program                 = $reservation->getProgram();
         $investmentThematicField = new Field('investment_thematic', 'test', 'list', 'project', 'investmentThematic', Project::class, false, null, null);
         $investmentTypeField     = new Field('investment_type', 'test', 'list', 'project', 'investmentType', Project::class, false, null, null);
         $aidIntensityField       = new Field('aid_intensity', 'test', 'list', 'project', 'aidIntensity', Project::class, false, null, null);
         $additionalGuaranty      = new Field('additional_guaranty', 'test', 'list', 'project', 'additionalGuaranty', Project::class, false, null, null);
         $agriculturalBranch      = new Field('agricultural_branch', 'test', 'list', 'project', 'agriculturalBranch', Project::class, false, null, null);
 
-        return new Project(
-            new ProgramChoiceOption($program, 'investment thematic', $investmentThematicField),
-            new ProgramChoiceOption($program, 'investment type', $investmentTypeField),
-            new ProgramChoiceOption($program, '42%', $aidIntensityField),
-            new ProgramChoiceOption($program, 'additional guaranty', $additionalGuaranty),
-            new ProgramChoiceOption($program, 'agricultural branch', $agriculturalBranch),
-            new Money('eur', '42')
-        );
+        return (new Project($reservation, new Money('eur', '42')))
+            ->setInvestmentThematic(new ProgramChoiceOption($program, 'investment thematic', $investmentThematicField))
+            ->setInvestmentType(new ProgramChoiceOption($program, 'investment type', $investmentTypeField))
+            ->setAidIntensity(new ProgramChoiceOption($program, '42%', $aidIntensityField))
+            ->setAdditionalGuaranty(new ProgramChoiceOption($program, 'additional guaranty', $additionalGuaranty))
+            ->setAgriculturalBranch(new ProgramChoiceOption($program, 'agricultural branch', $agriculturalBranch))
+        ;
     }
 }

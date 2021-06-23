@@ -101,30 +101,32 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
         yield self::RESERVATION_DRAFT_1 => [
             'program'       => $program,
-            'borrower'      => $this->createBorrower($program, true, true, true),
+            'borrower'      => ['youngFarmer' => true, 'creationInProgress' => true, 'subsidiary' => true],
+            'hasProject'    => false,
             'addedBy'       => $addedBy,
             'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_DRAFT_2 => [
             'program'       => $program,
-            'borrower'      => $this->createBorrower($program, false, true),
+            'borrower'      => ['youngFarmer' => false, 'creationInProgress' => true, 'subsidiary' => false],
             'addedBy'       => $addedBy,
+            'hasProject'    => false,
             'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_SENT_1 => [
             'program'            => $program,
-            'borrower'           => $this->createBorrower($program, true, true, true),
+            'borrower'           => ['youngFarmer' => true, 'creationInProgress' => true, 'subsidiary' => true],
             'financingObjectsNb' => 2,
             'releasedOnInvoice'  => true,
-            'project'            => $this->createProject($program),
+            'hasProject'         => true,
             'addedBy'            => $addedBy,
             'currentStatus'      => ReservationStatus::STATUS_SENT,
         ];
         yield self::RESERVATION_SENT_2 => [
             'program'            => $program,
-            'borrower'           => $this->createBorrower($program, false, false, true),
+            'borrower'           => ['youngFarmer' => false, 'creationInProgress' => false, 'subsidiary' => true],
             'financingObjectsNb' => 2,
-            'project'            => $this->createProject($program),
+            'hasProject'         => true,
             'addedBy'            => $addedBy,
             'currentStatus'      => ReservationStatus::STATUS_SENT,
         ];
@@ -132,7 +134,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
     private function buildReservation(array $reservationData): Reservation
     {
-        $reservation = new Reservation($reservationData['program'], $reservationData['borrower'], $reservationData['addedBy']);
+        $reservation = new Reservation($reservationData['program'], $reservationData['addedBy']);
         $totalAmount = 0;
 
         if (false === empty($reservationData['financingObjectsNb'])) {
@@ -145,13 +147,19 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             }
         }
 
-        if (false === empty($reservationData['project'])) {
-            /** @var Project $project */
-            $project = $reservationData['project'];
+        if ($reservationData['hasProject']) {
+            $project = $this->createProject($reservation);
             $project->setFundingMoney(new Money('EUR', (string) $totalAmount));
-            $this->entityManager->persist($reservationData['project']);
-            $reservation->setProject($reservationData['project']);
+            $reservation->setProject($project);
         }
+
+        $borrower = $this->createBorrower(
+            $reservation,
+            $reservationData['borrower']['youngFarmer'],
+            $reservationData['borrower']['creationInProgress'],
+            $reservationData['borrower']['subsidiary']
+        );
+        $reservation->setBorrower($borrower);
 
         $currentReservationStatus = new ReservationStatus($reservation, $reservationData['currentStatus'], $reservationData['addedBy']);
         $this->createReservationStatuses($currentReservationStatus);
@@ -160,12 +168,8 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         return $reservation;
     }
 
-    private function createBorrower(
-        Program $program,
-        bool $youngFarmer = false,
-        bool $creationInProgress = false,
-        bool $subsidiary = false
-    ): Borrower {
+    private function createBorrower(Reservation $reservation, bool $youngFarmer, bool $creationInProgress, bool $subsidiary): Borrower
+    {
         /** @var Field $borrowerTypeField */
         $borrowerTypeField = $this->getReference('field-borrower_type');
         /** @var Field $legalFormField */
@@ -177,6 +181,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         /** @var Field $activityCountryField */
         $activityCountryField = $this->getReference('field-activity_country');
 
+        $program      = $reservation->getProgram();
         $borrowerType = $this->programChoiceOptionRepository->findOneBy([
             'program'     => $program,
             'field'       => $borrowerTypeField,
@@ -203,7 +208,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'description' => 'FR',
         ]);
 
-        return (new Borrower('Borrower Company', 'B'))
+        return (new Borrower($reservation, 'Borrower Company', 'B'))
             ->setBeneficiaryName('Borrower Name')
             ->setBorrowerType($borrowerType)
             ->setYoungFarmer($youngFarmer)
@@ -226,11 +231,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         ;
     }
 
-    private function createProject(Program $program): Project
+    private function createProject(Reservation $reservation): Project
     {
+        $program            = $reservation->getProgram();
         $investmentThematic = $this->createProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, 'Project : ' . $this->faker->sentence);
         $investmentType     = $this->createProgramChoiceOption($program, FieldAlias::INVESTMENT_TYPE, 'Type : ' . $this->faker->sentence);
-        $aidIntensity       = $this->createProgramChoiceOption($program, FieldAlias::AID_INTENSITY, $this->faker->numberBetween(0, 100) . '%');
+        $aidIntensity       = $this->createProgramChoiceOption($program, FieldAlias::AID_INTENSITY, $this->faker->unique()->numberBetween(0, 100) . '%');
         $additionalGuaranty = $this->createProgramChoiceOption($program, FieldAlias::ADDITIONAL_GUARANTY, $this->faker->sentence(3));
         $agriculturalBranch = $this->createProgramChoiceOption($program, FieldAlias::AGRICULTURAL_BRANCH, 'Branch N: ' . $this->faker->sentence);
         $fundingMoney       = new Money('EUR', (string) $this->faker->randomNumber());
@@ -243,9 +249,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'description' => 'FR',
         ]);
 
-        $project = new Project($investmentThematic, $investmentType, $aidIntensity, $additionalGuaranty, $agriculturalBranch, $fundingMoney);
-
-        return $project
+        return (new Project($reservation, $fundingMoney))
+            ->setInvestmentThematic($investmentThematic)
+            ->setInvestmentType($investmentType)
+            ->setAidIntensity($aidIntensity)
+            ->setAdditionalGuaranty($additionalGuaranty)
+            ->setAgriculturalBranch($agriculturalBranch)
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
