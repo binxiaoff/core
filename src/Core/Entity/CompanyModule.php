@@ -13,7 +13,9 @@ use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Traits\{BlamableUpdatedTrait, PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Entity\Traits\BlamableUpdatedTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
@@ -22,7 +24,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *     name="core_company_module",
  *     uniqueConstraints={
  *         @ORM\UniqueConstraint(columns={"id_company", "code"})
- *      }
+ *     }
  * )
  * @ORM\HasLifecycleCallbacks
  *
@@ -49,14 +51,14 @@ class CompanyModule
     use BlamableUpdatedTrait;
     use ConstantsAwareTrait;
 
-    public const MODULE_ARRANGEMENT    = 'arrangement';
-    public const MODULE_PARTICIPATION  = 'participation';
-    public const MODULE_AGENCY         = 'agency';
+    public const MODULE_ARRANGEMENT               = 'arrangement';
+    public const MODULE_PARTICIPATION             = 'participation';
+    public const MODULE_AGENCY                    = 'agency';
     public const MODULE_ARRANGEMENT_EXTERNAL_BANK = 'arrangement_external_bank';
 
+    public const PROPERTY_ACTIVATED = 'activated';
+
     /**
-     * @var string
-     *
      * @ORM\Column(type="string", nullable=false)
      *
      * @Assert\Choice(callback="getAvailableModuleCodes")
@@ -66,8 +68,6 @@ class CompanyModule
     private string $code;
 
     /**
-     * @var Company
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company", inversedBy="modules")
      * @ORM\JoinColumn(nullable=false, name="id_company")
      *
@@ -76,8 +76,6 @@ class CompanyModule
     private Company $company;
 
     /**
-     * @var bool
-     *
      * @ORM\Column(type="boolean")
      *
      * @Groups({"companyModule:read", "companyModule:write"})
@@ -85,17 +83,13 @@ class CompanyModule
     private bool $activated;
 
     /**
-     * @var Collection
-     *
      * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\CompanyModuleLog", mappedBy="companyModule")
      * @ORM\OrderBy({"added": "ASC"})
      */
     private Collection $logs;
 
     /**
-     * TODO This is temporary. Remove when facturation is handled by the platform
-     *
-     * @var NullableMoney|null
+     * TODO This is temporary. Remove when facturation is handled by the platform.
      *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
@@ -104,51 +98,33 @@ class CompanyModule
     private ?NullableMoney $arrangementAnnualLicenseMoney;
 
     /**
-     * @param string  $code
-     * @param Company $company
-     * @param bool    $activated
-     *
      * @throws Exception
      */
     public function __construct(string $code, Company $company, bool $activated = false)
     {
-        $this->code      = $code;
-        $this->company   = $company;
-        $this->activated = $activated;
-        $this->added     = new DateTimeImmutable();
-        $this->logs      = new ArrayCollection();
+        $this->code                          = $code;
+        $this->company                       = $company;
+        $this->activated                     = $activated;
+        $this->added                         = new DateTimeImmutable();
+        $this->logs                          = new ArrayCollection();
         $this->arrangementAnnualLicenseMoney = new NullableMoney();
     }
 
-    /**
-     * @return string
-     */
     public function getCode(): string
     {
         return $this->code;
     }
 
-    /**
-     * @return Company
-     */
     public function getCompany(): Company
     {
         return $this->company;
     }
 
-    /**
-     * @return bool
-     */
     public function isActivated(): bool
     {
         return $this->activated;
     }
 
-    /**
-     * @param bool $activated
-     *
-     * @return CompanyModule
-     */
     public function setActivated(bool $activated): CompanyModule
     {
         $this->activated = $activated;
@@ -156,17 +132,12 @@ class CompanyModule
         return $this;
     }
 
-    /**
-     * @return Collection
-     */
     public function getLogs(): Collection
     {
         return $this->logs;
     }
 
     /**
-     * @return DateTimeImmutable|null
-     *
      * @Groups({"companyModule:read"})
      */
     public function getLastActivationDate(): ?DateTimeImmutable
@@ -183,19 +154,11 @@ class CompanyModule
         return static::getConstants('MODULE_');
     }
 
-    /**
-     * @return NullableMoney|null
-     */
     public function getArrangementAnnualLicenseMoney(): ?NullableMoney
     {
         return $this->arrangementAnnualLicenseMoney->isValid() ? $this->arrangementAnnualLicenseMoney : null;
     }
 
-    /**
-     * @param NullableMoney|null $arrangementAnnualLicenseMoney
-     *
-     * @return CompanyModule
-     */
     public function setArrangementAnnualLicenseMoney(?NullableMoney $arrangementAnnualLicenseMoney): CompanyModule
     {
         $this->arrangementAnnualLicenseMoney = $arrangementAnnualLicenseMoney;

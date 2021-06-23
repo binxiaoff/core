@@ -137,3 +137,7 @@ services:
     Unilend\CreditGuaranty\Listener\Doctrine\ReservationDeleteListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
+
+    Unilend\Agency\Listener\Doctrine\AgencyModuleActivatedListener:
+        tags:
+           - { name: doctrine.event_listener, event: onFlush }
