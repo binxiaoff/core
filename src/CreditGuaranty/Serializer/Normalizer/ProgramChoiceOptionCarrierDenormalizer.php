@@ -36,25 +36,28 @@ class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizer
     private const ALREADY_CALLED = 'PROGRAM_CHOICE_OPTION_DENORMALIZER_ALREADY_CALLED';
 
     private Security                      $security;
+    private IriConverterInterface         $iriConverter;
     private ProgramChoiceOptionRepository $programChoiceOptionRepository;
     private FieldRepository               $fieldRepository;
-    private IriConverterInterface         $iriConverter;
 
     public function __construct(
         Security $security,
+        IriConverterInterface $iriConverter,
         ProgramChoiceOptionRepository $programChoiceOptionRepository,
-        FieldRepository $fieldRepository,
-        IriConverterInterface $iriConverter
+        FieldRepository $fieldRepository
     ) {
         $this->security                      = $security;
+        $this->iriConverter                  = $iriConverter;
         $this->programChoiceOptionRepository = $programChoiceOptionRepository;
         $this->fieldRepository               = $fieldRepository;
-        $this->iriConverter                  = $iriConverter;
     }
 
     public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
     {
-        return !isset($context[self::ALREADY_CALLED]) && is_a($type, ProgramAwareInterface::class, true) && is_a($type, ProgramChoiceOptionCarrierInterface::class, true);
+        return !isset($context[self::ALREADY_CALLED])
+            && is_a($type, ProgramAwareInterface::class, true)
+            && is_a($type, ProgramChoiceOptionCarrierInterface::class, true)
+        ;
     }
 
     /**
@@ -74,7 +77,6 @@ class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizer
                 'propertyPath' => $propertyName,
                 'objectClass'  => $type,
             ]);
-            $programChoiceOption = null;
 
             if (
                 $field instanceof Field

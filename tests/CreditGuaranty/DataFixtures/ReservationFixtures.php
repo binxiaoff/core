@@ -263,7 +263,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setContribution(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setEligibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setTotalFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
-            ->setPhysicalFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setTangibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setIntangibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setCreditExcludingFei(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setGrant(new NullableMoney('EUR', (string) $this->faker->randomNumber()))

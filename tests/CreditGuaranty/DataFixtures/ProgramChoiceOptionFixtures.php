@@ -26,6 +26,12 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
         'field-exploitation_size' => [
             '42',
         ],
+        'field-activity_country' => [
+            'FR',
+        ],
+        'field-investment_country' => [
+            'FR',
+        ],
     ];
 
     /**

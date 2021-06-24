@@ -158,7 +158,7 @@ class FieldFixtures extends AbstractFixtures
             'objectClass'             => Borrower::class,
             'comparable'              => false,
             'unit'                    => null,
-            'predefinedItems'         => ['FR'],
+            'predefinedItems'         => null,
         ];
         yield 'field-activity_start_date' => [
             'fieldAlias'              => 'activity_start_date',
@@ -323,7 +323,7 @@ class FieldFixtures extends AbstractFixtures
             'objectClass'             => Project::class,
             'comparable'              => false,
             'unit'                    => null,
-            'predefinedItems'         => ['FR'],
+            'predefinedItems'         => null,
         ];
         yield 'field-investment_thematic' => [
             'fieldAlias'              => 'investment_thematic',
@@ -424,12 +424,12 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-physical_fei_credit' => [
-            'fieldAlias'              => 'physical_fei_credit',
+        yield 'field-tangible_fei_credit' => [
+            'fieldAlias'              => 'tangible_fei_credit',
             'category'                => 'project',
             'type'                    => 'other',
             'reservationPropertyName' => 'project',
-            'propertyPath'            => 'physicalFeiCredit::amount',
+            'propertyPath'            => 'tangibleFeiCredit::amount',
             'objectClass'             => Project::class,
             'comparable'              => true,
             'unit'                    => 'money',

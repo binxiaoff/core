@@ -158,7 +158,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
-    private NullableMoney $physicalFeiCredit;
+    private NullableMoney $tangibleFeiCredit;
 
     /**
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
@@ -195,7 +195,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $this->contribution        = new NullableMoney();
         $this->eligibleFeiCredit   = new NullableMoney();
         $this->totalFeiCredit      = new NullableMoney();
-        $this->physicalFeiCredit   = new NullableMoney();
+        $this->tangibleFeiCredit   = new NullableMoney();
         $this->intangibleFeiCredit = new NullableMoney();
         $this->creditExcludingFei  = new NullableMoney();
         $this->grant               = new NullableMoney();
@@ -403,14 +403,14 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return $this;
     }
 
-    public function getPhysicalFeiCredit(): NullableMoney
+    public function getTangibleFeiCredit(): NullableMoney
     {
-        return $this->physicalFeiCredit;
+        return $this->tangibleFeiCredit;
     }
 
-    public function setPhysicalFeiCredit(NullableMoney $physicalFeiCredit): Project
+    public function setTangibleFeiCredit(NullableMoney $tangibleFeiCredit): Project
     {
-        $this->physicalFeiCredit = $physicalFeiCredit;
+        $this->tangibleFeiCredit = $tangibleFeiCredit;
 
         return $this;
     }

@@ -13,6 +13,7 @@ use Unilend\Core\Entity\Constant\AbstractEnum;
 class FieldAlias extends AbstractEnum
 {
     // User-defined list
+    public const ACTIVITY_COUNTRY    = 'activity_country';
     public const ADDITIONAL_GUARANTY = 'additional_guaranty';
     public const AGRICULTURAL_BRANCH = 'agricultural_branch';
     public const AID_INTENSITY       = 'aid_intensity';
@@ -20,14 +21,13 @@ class FieldAlias extends AbstractEnum
     public const COMPANY_NAF_CODE    = 'company_naf_code';
     public const EXPLOITATION_SIZE   = 'exploitation_size';
     public const FINANCING_OBJECT    = 'financing_object';
+    public const INVESTMENT_COUNTRY  = 'investment_country';
     public const INVESTMENT_THEMATIC = 'investment_thematic';
     public const INVESTMENT_TYPE     = 'investment_type';
 
     // Pre-defined list
-    public const ACTIVITY_COUNTRY   = 'activity_country';
-    public const INVESTMENT_COUNTRY = 'investment_country';
-    public const LEGAL_FORM         = 'legal_form';
-    public const LOAN_TYPE          = 'loan_type';
+    public const LEGAL_FORM = 'legal_form';
+    public const LOAN_TYPE  = 'loan_type';
 
     // Boolean
     public const CREATION_IN_PROGRESS     = 'creation_in_progress';
@@ -61,7 +61,7 @@ class FieldAlias extends AbstractEnum
     public const PROJECT_TOTAL_AMOUNT  = 'project_total_amount';
     public const ELIGIBLE_FEI_CREDIT   = 'eligible_fei_credit';
     public const CREDIT_EXCLUDING_FEI  = 'credit_excluding_fei';
-    public const PHYSICAL_FEI_CREDIT   = 'physical_fei_credit';
+    public const TANGIBLE_FEI_CREDIT   = 'tangible_fei_credit';
     public const INTANGIBLE_FEI_CREDIT = 'intangible_fei_credit';
     public const TOTAL_ASSETS          = 'total_assets';
     public const TOTAL_FEI_CREDIT      = 'total_fei_credit';
