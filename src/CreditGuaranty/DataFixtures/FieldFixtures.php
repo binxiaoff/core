@@ -8,10 +8,6 @@ use Unilend\Core\DataFixtures\AbstractSQLFixtures;
 
 class FieldFixtures extends AbstractSQLFixtures
 {
-    /**
-     * @todo when it will be requested
-     * to create in FinancingObject : loan_deferral (int/other)
-     */
     protected static string $sql = <<<'INSERT_FIELDS'
         INSERT INTO credit_guaranty_field (public_id, category, type, field_alias, reservation_property_name, property_path, object_class, comparable, unit, predefined_items) VALUES
         ('4bd9fc81-aaaa-4753-913e-86c6b193fd85', 'profile', 'other', 'beneficiary_name', 'borrower', 'beneficiaryName', 'Unilend\\CreditGuaranty\\Entity\\Borrower', 0, NULL, NULL),
@@ -55,12 +51,15 @@ class FieldFixtures extends AbstractSQLFixtures
         ('d00e3272-d334-45d2-a93a-1078e6356537', 'project', 'other', 'credit_excluding_fei', 'project', 'creditExcludingFei::amount', 'Unilend\\CreditGuaranty\\Entity\\Project', 1, 'money', NULL),
         ('ff0d7855-bdfb-448f-b1b5-ef32e4b87c60', 'project', 'other', 'project_grant', 'project', 'grant::amount', 'Unilend\\CreditGuaranty\\Entity\\Project', 1, 'money', NULL),
         ('fa5dbf8e-ad12-46f4-b2dd-bb12cfbb77ae', 'project', 'other', 'land_value', 'project', 'landValue::amount', 'Unilend\\CreditGuaranty\\Entity\\Project', 1, 'money', NULL),
-        ('8cb4b512-fa4c-4638-9a28-11d16b450459', 'project', 'list', 'financing_object', 'financingObjects', 'financingObject', 'Unilend\\CreditGuaranty\\Entity\\Project', 0, NULL, NULL),
 
-        ('604ac6ee-86e2-49ab-aac0-bab8b1d20b30', 'loan', 'bool', 'loan_released_on_invoice', 'financingObjects', 'releasedOnInvoice', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, NULL),
+        ('b7da24f1-4d1c-426e-9e25-ef2773113d2a', 'loan', 'bool', 'supporting_generations_renewal', 'financingObjects', 'supportingGenerationsRenewal', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, NULL),
+        ('8cb4b512-fa4c-4638-9a28-11d16b450459', 'loan', 'list', 'financing_object_type', 'financingObjects', 'financingObjectType', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, NULL),
+        ('58acfc84-3d39-4a9d-98bd-acd884a0e74b', 'loan', 'list', 'loan_naf_code', 'financingObjects', 'loanNafCode', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, NULL),
+        ('55a1b77f-1b2d-40a8-8f77-a4fa2ae5f292', 'loan', 'list', 'bfr_value', 'financingObjects', 'bfrValue::amount', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 1, 'money', NULL),
         ('675056b4-49bb-40a7-bafe-9bcc86ad7b99', 'loan', 'list', 'loan_type', 'financingObjects', 'loanType', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, '["term_loan","short_term","revolving_credit","stand_by","signature_commitment"]'),
-        ('61d56903-32f7-4ea7-beb9-142122202120', 'loan', 'other', 'loan_amount', 'financingObjects', 'loanMoney::amount', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 1, 'money', NULL),
-        ('e9861e5b-0513-4c7b-9799-2f5a7dc267a4', 'loan', 'other', 'loan_duration', 'financingObjects', 'loanDuration', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, null),
-        ('f6f933e3-8164-430d-a670-390d0fc48311', 'loan', 'other', 'loan_deferral', '', '', '', 1, 'month', NULL);
+        ('e9861e5b-0513-4c7b-9799-2f5a7dc267a4', 'loan', 'other', 'loan_duration', 'financingObjects', 'loanDuration', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 1, 'month', null),
+        ('f6f933e3-8164-430d-a670-390d0fc48311', 'loan', 'other', 'loan_deferral', 'financingObjects', 'loanDeferral', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 1, 'month', NULL),
+        ('93319782-8cfd-474f-bfe8-ab5aae88456b', 'loan', 'list', 'loan_periodicity', 'financingObjects', 'loanPeriodicity', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, '["monthly","quarterly","semi-annually","annually"]'),
+        ('61ad5da2-1ae1-4c0b-b3bd-ce42fc0bea3b', 'loan', 'list', 'investment_location', 'financingObjects', 'investmentLocation', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, NULL);
         INSERT_FIELDS;
 }

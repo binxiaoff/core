@@ -35,7 +35,7 @@ abstract class AbstractEligibilityTest extends TestCase
         $program = new Program(
             'Program',
             new CompanyGroupTag(new CompanyGroup('Company Group'), 'code'),
-            new Money('eur', '42'),
+            new Money('EUR', '42'),
             new Staff(new User('user@mail.com'), $team)
         );
 
@@ -52,17 +52,15 @@ abstract class AbstractEligibilityTest extends TestCase
     {
         $program = $reservation->getProgram();
 
-        $financingObjectField = new Field('financing_object', 'test', 'list', 'financingObjects', 'financingObject', FinancingObject::class, false, null, null);
-        $loanTypeField        = new Field('loan_type', 'test', 'list', 'financingObjects', 'loanType', FinancingObject::class, false, null, ['loan type 1', 'loan type 2']);
+        $financingObjectTypeField = new Field('financing_object_type', 'test', 'list', 'financingObjects', 'financingObjectType', FinancingObject::class, false, null, null);
+        $loanTypeField            = new Field('loan_type', 'test', 'list', 'financingObjects', 'loanType', FinancingObject::class, false, null, ['loan type 1', 'loan type 2']);
 
-        return new FinancingObject(
-            $reservation,
-            new ProgramChoiceOption($program, 'financing object test', $financingObjectField),
-            new ProgramChoiceOption($program, 'loan type 2', $loanTypeField),
-            4,
-            new Money('EUR', '42'),
-            false
-        );
+        return (new FinancingObject($reservation, new Money('EUR', '42'), false))
+            ->setSupportingGenerationsRenewal(true)
+            ->setFinancingObjectType(new ProgramChoiceOption($program, 'financing object test', $financingObjectTypeField))
+            ->setLoanType(new ProgramChoiceOption($program, 'loan type 2', $loanTypeField))
+            ->setLoanDuration(4)
+        ;
     }
 
     private function createBorrower(Reservation $reservation): Borrower
@@ -100,7 +98,7 @@ abstract class AbstractEligibilityTest extends TestCase
         $additionalGuaranty      = new Field('additional_guaranty', 'test', 'list', 'project', 'additionalGuaranty', Project::class, false, null, null);
         $agriculturalBranch      = new Field('agricultural_branch', 'test', 'list', 'project', 'agriculturalBranch', Project::class, false, null, null);
 
-        return (new Project($reservation, new Money('eur', '42')))
+        return (new Project($reservation, new Money('EUR', '42')))
             ->setInvestmentThematic(new ProgramChoiceOption($program, 'investment thematic', $investmentThematicField))
             ->setInvestmentType(new ProgramChoiceOption($program, 'investment type', $investmentTypeField))
             ->setAidIntensity(new ProgramChoiceOption($program, '42%', $aidIntensityField))

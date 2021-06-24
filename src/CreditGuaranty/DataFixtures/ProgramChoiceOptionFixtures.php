@@ -17,6 +17,7 @@ use Unilend\CreditGuaranty\Repository\FieldRepository;
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
+    // user-defined list type fields
     private const FIELDS = [
         FieldAlias::BORROWER_TYPE => [
             'Installé depuis moins de 7 ans', 'Installé depuis plus de 7 ans',

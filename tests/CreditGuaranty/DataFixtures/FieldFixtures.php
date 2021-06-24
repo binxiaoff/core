@@ -479,26 +479,48 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-financing_object' => [
-            'fieldAlias'              => 'financing_object',
-            'category'                => 'project',
-            'type'                    => 'list',
+        yield 'field-supporting_generations_renewal' => [
+            'fieldAlias'              => 'supporting_generations_renewal',
+            'category'                => 'loan',
+            'type'                    => 'bool',
             'reservationPropertyName' => 'financingObjects',
-            'propertyPath'            => 'financingObject',
-            'objectClass'             => Project::class,
+            'propertyPath'            => 'supportingGenerationsRenewal',
+            'objectClass'             => FinancingObject::class,
             'comparable'              => false,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_released_on_invoice' => [
-            'fieldAlias'              => 'loan_released_on_invoice',
-            'category'                => 'loan',
-            'type'                    => 'bool',
+        yield 'field-financing_object_type' => [
+            'fieldAlias'              => 'financing_object_type',
+            'category'                => 'project',
+            'type'                    => 'list',
             'reservationPropertyName' => 'financingObjects',
-            'propertyPath'            => 'releasedOnInvoice',
+            'propertyPath'            => 'financingObjectType',
             'objectClass'             => FinancingObject::class,
             'comparable'              => false,
             'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-loan_naf_code' => [
+            'fieldAlias'              => 'loan_naf_code',
+            'category'                => 'project',
+            'type'                    => 'list',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'loanNafCode',
+            'objectClass'             => FinancingObject::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-bfr_value' => [
+            'fieldAlias'              => 'bfr_value',
+            'category'                => 'loan',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'bfrValue::amount',
+            'objectClass'             => FinancingObject::class,
+            'comparable'              => true,
+            'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
         yield 'field-loan_type' => [
@@ -512,17 +534,6 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => ['term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment'],
         ];
-        yield 'field-loan_amount' => [
-            'fieldAlias'              => 'loan_amount',
-            'category'                => 'loan',
-            'type'                    => 'other',
-            'reservationPropertyName' => 'financingObjects',
-            'propertyPath'            => 'loanMoney::amount',
-            'objectClass'             => FinancingObject::class,
-            'comparable'              => true,
-            'unit'                    => 'money',
-            'predefinedItems'         => null,
-        ];
         yield 'field-loan_duration' => [
             'fieldAlias'              => 'loan_duration',
             'category'                => 'loan',
@@ -530,19 +541,41 @@ class FieldFixtures extends AbstractFixtures
             'reservationPropertyName' => 'financingObjects',
             'propertyPath'            => 'loanDuration',
             'objectClass'             => FinancingObject::class,
-            'comparable'              => false,
-            'unit'                    => null,
+            'comparable'              => true,
+            'unit'                    => 'month',
             'predefinedItems'         => null,
         ];
         yield 'field-loan_deferral' => [
             'fieldAlias'              => 'loan_deferral',
             'category'                => 'loan',
             'type'                    => 'other',
-            'reservationPropertyName' => '',
-            'propertyPath'            => '',
-            'objectClass'             => '',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'loanDeferral',
+            'objectClass'             => FinancingObject::class,
             'comparable'              => true,
             'unit'                    => 'month',
+            'predefinedItems'         => null,
+        ];
+        yield 'field-loan_periodicity' => [
+            'fieldAlias'              => 'loan_periodicity',
+            'category'                => 'loan',
+            'type'                    => 'list',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'loanPeriodicity',
+            'objectClass'             => FinancingObject::class,
+            'comparable'              => true,
+            'unit'                    => 'month',
+            'predefinedItems'         => ['monthly', 'quarterly', 'semi-annually', 'annually'],
+        ];
+        yield 'field-investment_location' => [
+            'fieldAlias'              => 'investment_location',
+            'category'                => 'loan',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'investmentLocation',
+            'objectClass'             => FinancingObject::class,
+            'comparable'              => false,
+            'unit'                    => null,
             'predefinedItems'         => null,
         ];
     }

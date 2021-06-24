@@ -94,7 +94,7 @@ class EligibilityTest extends AbstractApiTest
             'staff_company:basic_user-11',
             ReservationFixtures::RESERVATION_SENT_2,
             'loan',
-            false,
+            true,
         ];
     }
 
