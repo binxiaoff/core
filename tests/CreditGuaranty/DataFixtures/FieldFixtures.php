@@ -158,7 +158,7 @@ class FieldFixtures extends AbstractFixtures
             'objectClass'             => Borrower::class,
             'comparable'              => false,
             'unit'                    => null,
-            'predefinedItems'         => ['FR'],
+            'predefinedItems'         => null,
         ];
         yield 'field-activity_start_date' => [
             'fieldAlias'              => 'activity_start_date',
@@ -259,12 +259,122 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
+        yield 'field-receiving_grant' => [
+            'fieldAlias'              => 'receiving_grant',
+            'category'                => 'project',
+            'type'                    => 'bool',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'receivingGrant',
+            'objectClass'             => Project::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-investment_street' => [
+            'fieldAlias'              => 'investment_street',
+            'category'                => 'project',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'addressStreet',
+            'objectClass'             => Project::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-investment_post_code' => [
+            'fieldAlias'              => 'investment_post_code',
+            'category'                => 'project',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'addressPostCode',
+            'objectClass'             => Project::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-investment_city' => [
+            'fieldAlias'              => 'investment_city',
+            'category'                => 'project',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'addressCity',
+            'objectClass'             => Project::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-investment_department' => [
+            'fieldAlias'              => 'investment_department',
+            'category'                => 'project',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'addressDepartment',
+            'objectClass'             => Project::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-investment_country' => [
+            'fieldAlias'              => 'investment_country',
+            'category'                => 'project',
+            'type'                    => 'list',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'addressCountry',
+            'objectClass'             => Project::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
         yield 'field-investment_thematic' => [
             'fieldAlias'              => 'investment_thematic',
             'category'                => 'project',
             'type'                    => 'list',
             'reservationPropertyName' => 'project',
             'propertyPath'            => 'investmentThematic',
+            'objectClass'             => Project::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-investment_type' => [
+            'fieldAlias'              => 'investment_type',
+            'category'                => 'project',
+            'type'                    => 'list',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'investmentType',
+            'objectClass'             => Project::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-aid_intensity' => [
+            'fieldAlias'              => 'aid_intensity',
+            'category'                => 'project',
+            'type'                    => 'list',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'aidIntensity',
+            'objectClass'             => Project::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-additional_guaranty' => [
+            'fieldAlias'              => 'additional_guaranty',
+            'category'                => 'project',
+            'type'                    => 'list',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'additionalGuaranty',
+            'objectClass'             => Project::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-agricultural_branch' => [
+            'fieldAlias'              => 'agricultural_branch',
+            'category'                => 'project',
+            'type'                    => 'list',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'agriculturalBranch',
             'objectClass'             => Project::class,
             'comparable'              => false,
             'unit'                    => null,
@@ -281,37 +391,136 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-project_naf_code' => [
-            'fieldAlias'              => 'project_naf_code',
+        yield 'field-project_contribution' => [
+            'fieldAlias'              => 'project_contribution',
             'category'                => 'project',
-            'type'                    => 'list',
+            'type'                    => 'other',
             'reservationPropertyName' => 'project',
-            'propertyPath'            => 'projectNafCode',
+            'propertyPath'            => 'contribution::amount',
             'objectClass'             => Project::class,
-            'comparable'              => false,
-            'unit'                    => null,
+            'comparable'              => true,
+            'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-financing_object' => [
-            'fieldAlias'              => 'financing_object',
+        yield 'field-eligible_fei_credit' => [
+            'fieldAlias'              => 'eligible_fei_credit',
             'category'                => 'project',
-            'type'                    => 'list',
-            'reservationPropertyName' => 'financingObjects',
-            'propertyPath'            => 'financingObject',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'eligibleFeiCredit::amount',
             'objectClass'             => Project::class,
-            'comparable'              => false,
-            'unit'                    => null,
+            'comparable'              => true,
+            'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_released_on_invoice' => [
-            'fieldAlias'              => 'loan_released_on_invoice',
+        yield 'field-total_fei_credit' => [
+            'fieldAlias'              => 'total_fei_credit',
+            'category'                => 'project',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'totalFeiCredit::amount',
+            'objectClass'             => Project::class,
+            'comparable'              => true,
+            'unit'                    => 'money',
+            'predefinedItems'         => null,
+        ];
+        yield 'field-tangible_fei_credit' => [
+            'fieldAlias'              => 'tangible_fei_credit',
+            'category'                => 'project',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'tangibleFeiCredit::amount',
+            'objectClass'             => Project::class,
+            'comparable'              => true,
+            'unit'                    => 'money',
+            'predefinedItems'         => null,
+        ];
+        yield 'field-intangible_fei_credit' => [
+            'fieldAlias'              => 'intangible_fei_credit',
+            'category'                => 'project',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'intangibleFeiCredit::amount',
+            'objectClass'             => Project::class,
+            'comparable'              => true,
+            'unit'                    => 'money',
+            'predefinedItems'         => null,
+        ];
+        yield 'field-credit_excluding_fei' => [
+            'fieldAlias'              => 'credit_excluding_fei',
+            'category'                => 'project',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'creditExcludingFei::amount',
+            'objectClass'             => Project::class,
+            'comparable'              => true,
+            'unit'                    => 'money',
+            'predefinedItems'         => null,
+        ];
+        yield 'field-project_grant' => [
+            'fieldAlias'              => 'project_grant',
+            'category'                => 'project',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'grant::amount',
+            'objectClass'             => Project::class,
+            'comparable'              => true,
+            'unit'                    => 'money',
+            'predefinedItems'         => null,
+        ];
+        yield 'field-land_value' => [
+            'fieldAlias'              => 'land_value',
+            'category'                => 'project',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'project',
+            'propertyPath'            => 'landValue::amount',
+            'objectClass'             => Project::class,
+            'comparable'              => true,
+            'unit'                    => 'money',
+            'predefinedItems'         => null,
+        ];
+        yield 'field-supporting_generations_renewal' => [
+            'fieldAlias'              => 'supporting_generations_renewal',
             'category'                => 'loan',
             'type'                    => 'bool',
             'reservationPropertyName' => 'financingObjects',
-            'propertyPath'            => 'releasedOnInvoice',
+            'propertyPath'            => 'supportingGenerationsRenewal',
             'objectClass'             => FinancingObject::class,
             'comparable'              => false,
             'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-financing_object_type' => [
+            'fieldAlias'              => 'financing_object_type',
+            'category'                => 'project',
+            'type'                    => 'list',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'financingObjectType',
+            'objectClass'             => FinancingObject::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-loan_naf_code' => [
+            'fieldAlias'              => 'loan_naf_code',
+            'category'                => 'project',
+            'type'                    => 'list',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'loanNafCode',
+            'objectClass'             => FinancingObject::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield 'field-bfr_value' => [
+            'fieldAlias'              => 'bfr_value',
+            'category'                => 'loan',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'bfrValue::amount',
+            'objectClass'             => FinancingObject::class,
+            'comparable'              => true,
+            'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
         yield 'field-loan_type' => [
@@ -325,17 +534,6 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => ['term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment'],
         ];
-        yield 'field-loan_amount' => [
-            'fieldAlias'              => 'loan_amount',
-            'category'                => 'loan',
-            'type'                    => 'other',
-            'reservationPropertyName' => 'financingObjects',
-            'propertyPath'            => 'loanMoney::amount',
-            'objectClass'             => FinancingObject::class,
-            'comparable'              => true,
-            'unit'                    => 'money',
-            'predefinedItems'         => null,
-        ];
         yield 'field-loan_duration' => [
             'fieldAlias'              => 'loan_duration',
             'category'                => 'loan',
@@ -343,19 +541,41 @@ class FieldFixtures extends AbstractFixtures
             'reservationPropertyName' => 'financingObjects',
             'propertyPath'            => 'loanDuration',
             'objectClass'             => FinancingObject::class,
-            'comparable'              => false,
-            'unit'                    => null,
+            'comparable'              => true,
+            'unit'                    => 'month',
             'predefinedItems'         => null,
         ];
         yield 'field-loan_deferral' => [
             'fieldAlias'              => 'loan_deferral',
             'category'                => 'loan',
             'type'                    => 'other',
-            'reservationPropertyName' => '',
-            'propertyPath'            => '',
-            'objectClass'             => '',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'loanDeferral',
+            'objectClass'             => FinancingObject::class,
             'comparable'              => true,
             'unit'                    => 'month',
+            'predefinedItems'         => null,
+        ];
+        yield 'field-loan_periodicity' => [
+            'fieldAlias'              => 'loan_periodicity',
+            'category'                => 'loan',
+            'type'                    => 'list',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'loanPeriodicity',
+            'objectClass'             => FinancingObject::class,
+            'comparable'              => true,
+            'unit'                    => 'month',
+            'predefinedItems'         => ['monthly', 'quarterly', 'semi-annually', 'annually'],
+        ];
+        yield 'field-investment_location' => [
+            'fieldAlias'              => 'investment_location',
+            'category'                => 'loan',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'investmentLocation',
+            'objectClass'             => FinancingObject::class,
+            'comparable'              => false,
+            'unit'                    => null,
             'predefinedItems'         => null,
         ];
     }

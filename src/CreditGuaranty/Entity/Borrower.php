@@ -42,7 +42,11 @@ use Unilend\CreditGuaranty\Entity\Traits\AddressTrait;
  *             "security": "is_granted('delete', object)"
  *         }
  *     },
- *     collectionOperations={}
+ *     collectionOperations={
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)"
+ *         }
+ *     }
  * )
  *
  * @ORM\Entity
@@ -56,7 +60,10 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     use TimestampableTrait;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", mappedBy="borrower")
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", inversedBy="borrower")
+     * @ORM\JoinColumn(name="id_reservation", nullable=false)
+     *
+     * @Groups({"creditGuaranty:borrower:write"})
      */
     private Reservation $reservation;
 
@@ -73,7 +80,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_borrower_type")
      *
-     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
      * @Groups({"creditGuaranty:borrower:write"})
      */
@@ -136,7 +143,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_legal_form")
      *
-     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
      * @Groups({"creditGuaranty:borrower:write"})
      */
@@ -150,7 +157,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Groups({"creditGuaranty:borrower:write"})
      */
-    private ProgramChoiceOption $companyNafCode;
+    private ?ProgramChoiceOption $companyNafCode = null;
 
     /**
      * @ORM\Column(type="smallint", nullable=true)
@@ -201,8 +208,9 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      */
     private string $grade;
 
-    public function __construct(string $companyName, string $grade)
+    public function __construct(Reservation $reservation, string $companyName, string $grade)
     {
+        $this->reservation = $reservation;
         $this->companyName = $companyName;
         $this->turnover    = new NullableMoney();
         $this->totalAssets = new NullableMoney();
@@ -407,7 +415,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
         return null;
     }
 
-    public function getCompanyNafCode(): ProgramChoiceOption
+    public function getCompanyNafCode(): ?ProgramChoiceOption
     {
         return $this->companyNafCode;
     }
