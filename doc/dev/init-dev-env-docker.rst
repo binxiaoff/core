@@ -4,7 +4,7 @@ Initialise a development environment with Docker (DEV Local)
 
 Step 1: Install the pre-require tools
 -------------------------------------
-- Docker_ (if you are using MacOS you can download Edge_ for better performances)
+- Docker_
 
 Step 2: Clone the repositories
 ------------------------------
@@ -33,5 +33,4 @@ After the code has been deployed to your ``local`` environment, you need to acti
 That's it. Now you have your development environment.
 
 .. _Docker: https://www.docker.com/get-started
-.. _Edge: https://docs.docker.com/docker-for-mac/edge-release-notes/
 .. _Repository: https://gitlab.com/ca-lending-services/docker

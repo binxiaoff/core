@@ -100,28 +100,6 @@ We add also our own rules as follow :
  - For constant values that never change, hard coded in SQL is tolerated
  - The ``SELECT`` must be on the line following the PHP variable definition, indented by 4 spaces from the beginning of the variable name
 
-Twig
- - Respect official `Twig codding standards <https://twig.symfony.com/doc/1.x/coding_standards.html>`_
-
-HTML
- - HTML5 element attributes are written in lower case
-  
- .. code-block:: html
-
-  <a href="#" onclick="return false;">Some link</a>
-
- - Do not use ``<i>`` for icons. ``<i>`` means italic. Use ``<span class="icon">`` instead.
- - Use ``<a role="button">`` instead of ``<a href="javascript;;">`` or ``<a href="#" onclick="return false;">``
- - A form needs only 2 attributres - ``<form action="/controller.php" method="post">``, and not ``name``. ``enctype="multipart/form-data"`` is only used when there are attachments in the form.
- - In HTML 5, there is no need to add the ``/`` at the end of ``<input>``, ``<br>`` or ``<hr>``
- 
- .. code-block:: html
- 
-  <input name="id-client" value=""> <!--OK-->
-  
-  <input name="id-client" value="" /> <!--KO-->
- 
-
 .. _PSR-1: https://www.php-fig.org/psr/psr-1/
 .. _PSR-12: https://www.php-fig.org/psr/psr-12/
 .. _PSR-4: https://www.php-fig.org/psr/psr-4/
