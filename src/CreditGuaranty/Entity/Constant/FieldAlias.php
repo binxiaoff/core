@@ -13,28 +13,31 @@ use Unilend\Core\Entity\Constant\AbstractEnum;
 class FieldAlias extends AbstractEnum
 {
     // User-defined list
-    public const ACTIVITY_COUNTRY    = 'activity_country';
-    public const ADDITIONAL_GUARANTY = 'additional_guaranty';
-    public const AGRICULTURAL_BRANCH = 'agricultural_branch';
-    public const AID_INTENSITY       = 'aid_intensity';
-    public const BORROWER_TYPE       = 'borrower_type';
-    public const COMPANY_NAF_CODE    = 'company_naf_code';
-    public const EXPLOITATION_SIZE   = 'exploitation_size';
-    public const FINANCING_OBJECT    = 'financing_object';
-    public const INVESTMENT_COUNTRY  = 'investment_country';
-    public const INVESTMENT_THEMATIC = 'investment_thematic';
-    public const INVESTMENT_TYPE     = 'investment_type';
+    public const ACTIVITY_COUNTRY      = 'activity_country';
+    public const ADDITIONAL_GUARANTY   = 'additional_guaranty';
+    public const AGRICULTURAL_BRANCH   = 'agricultural_branch';
+    public const AID_INTENSITY         = 'aid_intensity';
+    public const BORROWER_TYPE         = 'borrower_type';
+    public const COMPANY_NAF_CODE      = 'company_naf_code';
+    public const EXPLOITATION_SIZE     = 'exploitation_size';
+    public const FINANCING_OBJECT_TYPE = 'financing_object_type';
+    public const INVESTMENT_COUNTRY    = 'investment_country';
+    public const INVESTMENT_LOCATION   = 'investment_location';
+    public const INVESTMENT_THEMATIC   = 'investment_thematic';
+    public const INVESTMENT_TYPE       = 'investment_type';
+    public const LOAN_NAF_CODE         = 'loan_naf_code';
 
     // Pre-defined list
-    public const LEGAL_FORM = 'legal_form';
-    public const LOAN_TYPE  = 'loan_type';
+    public const LEGAL_FORM       = 'legal_form';
+    public const LOAN_PERIODICITY = 'loan_periodicity';
+    public const LOAN_TYPE        = 'loan_type';
 
     // Boolean
-    public const CREATION_IN_PROGRESS     = 'creation_in_progress';
-    public const LOAN_RELEASED_ON_INVOICE = 'loan_released_on_invoice';
-    public const RECEIVING_GRANT          = 'receiving_grant';
-    public const SUBSIDIARY               = 'subsidiary';
-    public const YOUNG_FARMER             = 'young_farmer';
+    public const CREATION_IN_PROGRESS           = 'creation_in_progress';
+    public const RECEIVING_GRANT                = 'receiving_grant';
+    public const SUBSIDIARY                     = 'subsidiary';
+    public const SUPPORTING_GENERATIONS_RENEWAL = 'supporting_generations_renewal';
+    public const YOUNG_FARMER                   = 'young_farmer';
 
     // Other
     public const ACTIVITY_STREET       = 'activity_street';
@@ -51,9 +54,9 @@ class FieldAlias extends AbstractEnum
     public const TAX_NUMBER            = 'tax_number';
 
     // number
+    public const BFR_VALUE             = 'bfr_value';
     public const EMPLOYEES_NUMBER      = 'employees_number';
     public const LAND_VALUE            = 'land_value';
-    public const LOAN_AMOUNT           = 'loan_amount';
     public const LOAN_DEFERRAL         = 'loan_deferral';
     public const LOAN_DURATION         = 'loan_duration';
     public const PROJECT_CONTRIBUTION  = 'project_contribution';
@@ -78,11 +81,14 @@ class FieldAlias extends AbstractEnum
         self::BORROWER_TYPE,
         self::COMPANY_NAF_CODE,
         self::EXPLOITATION_SIZE,
-        self::FINANCING_OBJECT,
+        self::FINANCING_OBJECT_TYPE,
         self::INVESTMENT_COUNTRY,
+        self::INVESTMENT_LOCATION,
         self::INVESTMENT_THEMATIC,
         self::INVESTMENT_TYPE,
         self::LEGAL_FORM,
+        self::LOAN_NAF_CODE,
+        self::LOAN_PERIODICITY,
         self::LOAN_TYPE,
     ];
 }

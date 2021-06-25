@@ -14,13 +14,18 @@ use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
+    // user-defined list type fields
     private const FIELDS = [
         'field-borrower_type' => [
             'Installé',
             'En reconversion',
             'Agriculture',
+            'Apiculteur',
         ],
         'field-company_naf_code' => [
+            '0001A',
+        ],
+        'field-loan_naf_code' => [
             '0001A',
         ],
         'field-exploitation_size' => [

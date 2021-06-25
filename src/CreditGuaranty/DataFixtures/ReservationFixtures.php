@@ -169,11 +169,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             $reservation->setProject($project);
         }
 
-        $borrower = $this->createBorrower($reservation);
-        $reservation->setBorrower($borrower);
-
+        $borrower                 = $this->createBorrower($reservation);
         $currentReservationStatus = new ReservationStatus($reservation, $reservationData['currentStatus'], $reservationData['addedBy']);
         $this->createReservationStatuses($currentReservationStatus);
+
+        $reservation->setBorrower($borrower);
         $reservation->setCurrentStatus($currentReservationStatus);
 
         return $reservation;
@@ -182,53 +182,26 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     private function createBorrower(Reservation $reservation): Borrower
     {
         $program = $reservation->getProgram();
-        /** @var Field $borrowerTypeField */
-        $borrowerTypeField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
-        /** @var Field $legalFormField */
-        $legalFormField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LEGAL_FORM]);
-        /** @var Field $activityCountryField */
-        $activityCountryField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::ACTIVITY_COUNTRY]);
-        /** @var Field $companyNafCodeField */
-        $companyNafCodeField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::COMPANY_NAF_CODE]);
+        $grades  = CARatingType::CA_INTERNAL_RETAIL_RATING === $program->getRatingType() ? CAInternalRetailRating::getConstList() : CAInternalRating::getConstList();
+
         /** @var NafNace $nafNace */
         $nafNace = $this->nafNaceRepository->find($this->faker->numberBetween(1, 700));
 
-        $nafCode = $this->programChoiceOptionRepository->findOneBy([
-            'program'     => $program,
-            'field'       => $companyNafCodeField,
-            'description' => $nafNace->getNafCode(),
-        ]) ?? $this->createProgramChoiceOption($program, FieldAlias::COMPANY_NAF_CODE, $nafNace->getNafCode());
-
-        $borrowerTypes = $this->programChoiceOptionRepository->findBy([
-            'program' => $program,
-            'field'   => $borrowerTypeField,
-        ]);
-        $legalForms = $this->programChoiceOptionRepository->findBy([
-            'program' => $program,
-            'field'   => $legalFormField,
-        ]);
-        $activityCountries = $this->programChoiceOptionRepository->findBy([
-            'program' => $program,
-            'field'   => $activityCountryField,
-        ]);
-
-        $grades = CARatingType::CA_INTERNAL_RETAIL_RATING === $program->getRatingType() ? CAInternalRetailRating::getConstList() : CAInternalRating::getConstList();
-
         return (new Borrower($reservation, $this->faker->company, $grades[array_rand($grades)]))
             ->setBeneficiaryName($this->faker->name)
-            ->setBorrowerType($borrowerTypes[array_rand($borrowerTypes)])
+            ->setBorrowerType($this->createOrGetProgramChoiceOption($program, FieldAlias::BORROWER_TYPE))
             ->setYoungFarmer(false)
             ->setCreationInProgress(false)
             ->setSubsidiary(false)
             ->setSiret((string) $this->faker->numberBetween(10000, 99999))
             ->setTaxNumber('12 23 45 678 987')
-            ->setLegalForm($legalForms[array_rand($legalForms)])
-            ->setCompanyNafCode($nafCode)
+            ->setLegalForm($this->createOrGetProgramChoiceOption($program, FieldAlias::LEGAL_FORM))
+            ->setCompanyNafCode($this->createOrGetProgramChoiceOption($program, FieldAlias::COMPANY_NAF_CODE, $nafNace->getNafCode()))
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
             ->setAddressDepartment('department')
-            ->setAddressCountry($activityCountries[array_rand($activityCountries)])
+            ->setAddressCountry($this->createOrGetProgramChoiceOption($program, FieldAlias::ACTIVITY_COUNTRY))
             ->setEmployeesNumber($this->faker->randomDigit)
             ->setTurnover(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setTotalAssets(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
@@ -237,76 +210,40 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
     private function createProject(Reservation $reservation): Project
     {
-        $program            = $reservation->getProgram();
-        $investmentThematic = $this->createProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, 'Project : ' . $this->faker->sentence);
-        $investmentType     = $this->createProgramChoiceOption($program, FieldAlias::INVESTMENT_TYPE, 'Type : ' . $this->faker->sentence);
-        $aidIntensity       = $this->createProgramChoiceOption($program, FieldAlias::AID_INTENSITY, $this->faker->unique()->numberBetween(0, 100) . '%');
-        $additionalGuaranty = $this->createProgramChoiceOption($program, FieldAlias::ADDITIONAL_GUARANTY, $this->faker->sentence(3));
-        $agriculturalBranch = $this->createProgramChoiceOption($program, FieldAlias::AGRICULTURAL_BRANCH, 'Branch N: ' . $this->faker->sentence);
-        $fundingMoney       = new Money('EUR', (string) $this->faker->randomNumber());
-
-        /** @var Field $investmentCountryField */
-        $investmentCountryField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::INVESTMENT_COUNTRY]);
-        $activityCountry        = $this->programChoiceOptionRepository->findOneBy([
-            'program'     => $program,
-            'field'       => $investmentCountryField,
-            'description' => 'FR',
-        ]);
+        $program      = $reservation->getProgram();
+        $fundingMoney = new Money('EUR', (string) $this->faker->randomNumber());
 
         return (new Project($reservation, $fundingMoney))
-            ->setInvestmentThematic($investmentThematic)
-            ->setInvestmentType($investmentType)
-            ->setAidIntensity($aidIntensity)
-            ->setAdditionalGuaranty($additionalGuaranty)
-            ->setAgriculturalBranch($agriculturalBranch)
+            ->setInvestmentThematic($this->createOrGetProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, 'Project : ' . $this->faker->sentence))
+            ->setInvestmentType($this->createOrGetProgramChoiceOption($program, FieldAlias::INVESTMENT_TYPE, 'Type : ' . $this->faker->sentence))
+            ->setAidIntensity($this->createOrGetProgramChoiceOption($program, FieldAlias::AID_INTENSITY, $this->faker->unique()->numberBetween(0, 100) . '%'))
+            ->setAdditionalGuaranty($this->createOrGetProgramChoiceOption($program, FieldAlias::ADDITIONAL_GUARANTY, $this->faker->sentence(3)))
+            ->setAgriculturalBranch($this->createOrGetProgramChoiceOption($program, FieldAlias::AGRICULTURAL_BRANCH, 'Branch N: ' . $this->faker->sentence))
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
             ->setAddressDepartment('department')
-            ->setAddressCountry($activityCountry)
+            ->setAddressCountry($this->createOrGetProgramChoiceOption($program, FieldAlias::INVESTMENT_COUNTRY))
         ;
     }
 
     private function createFinancingObject(Reservation $reservation): FinancingObject
     {
-        $program = $reservation->getProgram();
-
-        /** @var Field $financingObjectField */
-        $financingObjectField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::FINANCING_OBJECT]);
-        /** @var Field $loanTypeField */
-        $loanTypeField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LOAN_TYPE]);
-
-        $financingObjects = $this->programChoiceOptionRepository->findBy([
-            'program' => $program,
-            'field'   => $financingObjectField,
-        ]);
-        $loanTypes = $this->programChoiceOptionRepository->findBy([
-            'program' => $program,
-            'field'   => $loanTypeField,
-        ]);
-
-        if (empty($financingObjects)) {
-            $financingObject = $this->createProgramChoiceOption($program, FieldAlias::FINANCING_OBJECT, $this->faker->text(255));
-        } else {
-            $financingObject = $financingObjects[array_rand($financingObjects)];
-        }
-
-        if (empty($loanTypes)) {
-            $loanType = $this->createProgramChoiceOption($program, FieldAlias::LOAN_TYPE, $this->faker->text(255));
-        } else {
-            $loanType = $loanTypes[array_rand($loanTypes)];
-        }
-
+        $program   = $reservation->getProgram();
         $loanMoney = new Money('EUR', (string) $this->faker->randomNumber());
 
-        return new FinancingObject(
-            $reservation,
-            $financingObject,
-            $loanType,
-            $this->faker->randomNumber(2),
-            $loanMoney,
-            $this->faker->boolean
-        );
+        /** @var NafNace $nafNace */
+        $nafNace = $this->nafNaceRepository->find($this->faker->numberBetween(1, 700));
+
+        return (new FinancingObject($reservation, $loanMoney, $this->faker->boolean))
+            ->setSupportingGenerationsRenewal($this->faker->boolean)
+            ->setFinancingObjectType($this->createOrGetProgramChoiceOption($program, FieldAlias::FINANCING_OBJECT_TYPE, $this->faker->sentence))
+            ->setLoanNafCode($this->createOrGetProgramChoiceOption($program, FieldAlias::LOAN_NAF_CODE, $nafNace->getNafCode()))
+            ->setLoanType($this->createOrGetProgramChoiceOption($program, FieldAlias::LOAN_TYPE))
+            ->setLoanDuration($this->faker->numberBetween(0, 12))
+            ->setLoanDeferral($this->faker->numberBetween(0, 12))
+            ->setLoanPeriodicity($this->createOrGetProgramChoiceOption($program, FieldAlias::LOAN_PERIODICITY))
+        ;
     }
 
     private function createReservationStatuses(ReservationStatus $currentReservationStatus): void
@@ -338,10 +275,19 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $this->entityManager->persist($currentReservationStatus);
     }
 
-    private function createProgramChoiceOption(Program $program, string $fieldAlias, string $description): ProgramChoiceOption
+    private function createOrGetProgramChoiceOption(Program $program, string $fieldAlias, ?string $description = null): ProgramChoiceOption
     {
         /** @var Field $field */
         $field = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
+
+        if (empty($description)) {
+            $programChoiceOptions = $this->programChoiceOptionRepository->findBy([
+                'program' => $program,
+                'field'   => $field,
+            ]);
+
+            return $programChoiceOptions[array_rand($programChoiceOptions)];
+        }
 
         $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([
             'program'     => $program,
