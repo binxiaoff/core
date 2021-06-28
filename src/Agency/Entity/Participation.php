@@ -24,7 +24,6 @@ use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Model\Bitmask;
 
 /**
  * "money:read" is needed for allocation.
@@ -156,10 +155,6 @@ use Unilend\Core\Model\Bitmask;
  */
 class Participation extends AbstractProjectPartaker
 {
-    public const RESPONSIBILITY_AGENT           = 1 << 0;
-    public const RESPONSIBILITY_ARRANGER        = 1 << 1;
-    public const RESPONSIBILITY_DEPUTY_ARRANGER = 1 << 2;
-
     /**
      * @var Collection|ParticipationMember[]
      *
@@ -208,36 +203,9 @@ class Participation extends AbstractProjectPartaker
     private ?string $participantCommission;
 
     /**
-     * @ORM\Column(type="bitmask", nullable=false)
-     *
-     * @Assert\Expression(expression="false === (0 === value && this.isSecondary())", message="Agency.Participation.responsabilities.secondary")
-     * @Assert\Expression(expression="false === (this.isArranger() && this.isDeputyArranger())", message="Agency.Participation.responsabilities.arranger")
-     * @Assert\Expression(
-     *     expression="(this.isAgent() && (this.getParticipant() === this.getProject().getAgentCompany())) || (false === this.isAgent())",
-     *     message="Agency.Participation.responsabilities.agent"
-     * )
-     *
-     * @Groups({"agency:participation:read", "agency:participation:write"})
-     */
-    private Bitmask $responsibilities;
-
-    /**
      * @ORM\Embedded(class=NullableMoney::class)
      *
      * @Assert\Valid
-     * @Assert\AtLeastOneOf(
-     *     constraints={
-     *         @Assert\Expression(
-     *             expression="this.getAgentCommission().getAmount() === '0' || this.getAgentCommission().getAmount() === null",
-     *             message="Agency.Participation.commission.agent.zero"
-     *         ),
-     *         @Assert\Expression(
-     *             expression="this.isAgent()",
-     *             message="Agency.Participation.commission.agent.role"
-     *         )
-     *     },
-     *     message="Agency.Participation.commission.agent"
-     * )
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
@@ -247,18 +215,7 @@ class Participation extends AbstractProjectPartaker
      * @ORM\Embedded(class=NullableMoney::class)
      *
      * @Assert\Valid
-     * @Assert\AtLeastOneOf(
-     *     constraints={
-     *         @Assert\Expression(
-     *             expression="this.getArrangerCommission().getAmount() === '0' || this.getArrangerCommission().getAmount() === null",
-     *             message="Agency.Participation.commission.arranger.zero"
-     *         ),
-     *         @Assert\Expression(
-     *             expression="this.isArranger()",
-     *             message="Agency.Participation.commission.arranger.role"
-     *         )
-     *     }
-     * )
+     *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
     private NullableMoney $arrangerCommission;
@@ -267,19 +224,6 @@ class Participation extends AbstractProjectPartaker
      * @ORM\Embedded(class=NullableMoney::class)
      *
      * @Assert\Valid
-     * @Assert\AtLeastOneOf(
-     *     constraints={
-     *         @Assert\Expression(
-     *             expression="this.getDeputyArrangerCommission().getAmount() === '0' || this.getDeputyArrangerCommission().getAmount() === null",
-     *             message="Agency.Participation.commission.deputyArranger.zero"
-     *         ),
-     *         @Assert\Expression(
-     *             expression="this.isDeputyArranger()",
-     *             message="Agency.Participation.commission.deputyArranger.role"
-     *         )
-     *     },
-     *     message="Agency.Participation.commission.deputyArranger"
-     * )
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
      */
@@ -334,7 +278,6 @@ class Participation extends AbstractProjectPartaker
         ?NullableMoney $capital = null
     ) {
         parent::__construct($participant->getSiren() ?? '', $capital ?? new NullableMoney($pool->getProject()->getCurrency(), '0'));
-        $this->responsibilities         = new Bitmask(0);
         $this->pool                     = $pool;
         $this->finalAllocation          = $finalAllocation;
         $this->participant              = $participant;
@@ -364,22 +307,9 @@ class Participation extends AbstractProjectPartaker
         return $this->pool->getProject();
     }
 
-    public function getResponsibilities(): Bitmask
-    {
-        return $this->responsibilities;
-    }
-
-    public function setResponsibilities($responsibilities): Participation
-    {
-        $this->responsibilities = new Bitmask($responsibilities);
-
-        return $this;
-    }
-
     public function isAgent(): bool
     {
-        // TODO deduce from data instead if possible
-        return $this->responsibilities->has(static::RESPONSIBILITY_AGENT);
+        return $this->getProject()->getAgent()->getCompany() === $this->getParticipant();
     }
 
     public function getAgentCommission(): NullableMoney
@@ -396,7 +326,7 @@ class Participation extends AbstractProjectPartaker
 
     public function isArranger(): bool
     {
-        return $this->responsibilities->has(static::RESPONSIBILITY_ARRANGER);
+        return false === $this->getArrangerCommission()->isNull();
     }
 
     public function getArrangerCommission(): NullableMoney
@@ -413,7 +343,7 @@ class Participation extends AbstractProjectPartaker
 
     public function isDeputyArranger(): bool
     {
-        return $this->responsibilities->has(static::RESPONSIBILITY_DEPUTY_ARRANGER);
+        return false === $this->getDeputyArrangerCommission()->isNull();
     }
 
     public function getDeputyArrangerCommission(): NullableMoney
@@ -747,6 +677,21 @@ class Participation extends AbstractProjectPartaker
                     ->addViolation()
                 ;
             }
+        }
+    }
+
+    public function validateAgentCommission(ExecutionContextInterface $context)
+    {
+        if ($this->isAgent() && $this->getAgentCommission()->isNull()) {
+            $context->buildViolation('Agency.Participation.agentCommission.missingCommission')
+                ->addViolation()
+            ;
+        }
+
+        if (false === $this->isAgent() && false === $this->getAgentCommission()->isNull()) {
+            $context->buildViolation('Agency.Participation.agentCommission.notAgent')
+                ->addViolation()
+            ;
         }
     }
 }
