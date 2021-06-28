@@ -103,6 +103,7 @@ deploy:integration:
   environment:
     name: integration
     url: https://api.integration.kls-platform.com
+  when: on_success
   only:
     refs:
       - develop
