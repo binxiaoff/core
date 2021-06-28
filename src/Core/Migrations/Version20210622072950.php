@@ -58,6 +58,8 @@ final class Version20210622072950 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_A452D0251E84C52C ON credit_guaranty_project (id_additional_guaranty)');
         $this->addSql('CREATE INDEX IDX_A452D025921DD360 ON credit_guaranty_project (id_agricultural_branch)');
         $this->addSql('CREATE INDEX IDX_A452D025E1C8FD76 ON credit_guaranty_project (id_address_country)');
+
+        $this->addSql('DELETE FROM credit_guaranty_program_choice_option WHERE id_field = (SELECT id FROM credit_guaranty_field WHERE field_alias = "project_naf_code")');
     }
 
     public function down(Schema $schema): void
