@@ -12,13 +12,14 @@ use Faker\Provider\Miscellaneous;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\CreditGuaranty\Entity\Field;
+use Unilend\CreditGuaranty\Entity\FinancingObject;
 use Unilend\CreditGuaranty\Entity\Program;
 use Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition;
 use Unilend\CreditGuaranty\Repository\FieldRepository;
 use Unilend\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
 use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
 
-class ProgramEligibilityConditionFixture extends AbstractFixtures implements DependentFixtureInterface
+class ProgramEligibilityConditionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     private const CHANCE_OF_HAVING_CONDITION = 30;
 
@@ -72,7 +73,7 @@ class ProgramEligibilityConditionFixture extends AbstractFixtures implements Dep
 
                 for ($i = 0; $i <= random_int(1, count($comparableFields) - 1); ++$i) {
                     $leftOperand = $comparableFields[$i];
-                    $rightFields = $comparableFields;
+                    $rightFields = array_filter($comparableFields, static fn (Field $field) => FinancingObject::class !== $field->getObjectClass());
                     shuffle($rightFields);
                     $valueType = $valueTypes[array_rand($valueTypes)];
 

@@ -253,4 +253,4 @@ CreditGuaranty:
             missing: La réservation ne peut être envoyée, les informations du projet n'ont pas été remplies.
         financingObject:
             missing: La réservation ne peut être envoyée, au moins un objet de financement doit être défini.
-        ineligibleCategory: La catégorie {{ category }} de la réservation est inéligible.
+        ineligibles: Les champs d'alias {{ fieldAliases }} de la catégorie {{ category }} de la réservation sont inéligibles.

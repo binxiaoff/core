@@ -63,12 +63,17 @@ class ReservationEligibleValidator extends ConstraintValidator
         }
 
         foreach ($this->programEligibilityRepository->findFieldCategoriesByProgram($reservation->getProgram()) as $category) {
-            if (false === $this->eligibilityChecker->checkByCategory($reservation, $category)) {
-                $this->context->buildViolation('CreditGuaranty.Reservation.ineligibleCategory')
-                    ->setParameter('{{ category }}', $category)
-                    ->atPath('reservation')
-                    ->addViolation()
-                ;
+            $ineligibles = $this->eligibilityChecker->check($reservation, true, $category);
+
+            if (false === empty($ineligibles)) {
+                foreach ($ineligibles as $category => $fieldAliases) {
+                    $this->context->buildViolation('CreditGuaranty.Reservation.ineligibles')
+                        ->setParameter('{{ fieldAliases }}', implode(', ', $fieldAliases))
+                        ->setParameter('{{ category }}', $category)
+                        ->atPath('reservation')
+                        ->addViolation()
+                    ;
+                }
             }
         }
     }

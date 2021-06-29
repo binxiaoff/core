@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Test\CreditGuaranty\Unit\Service;
 
+use DateTimeImmutable;
 use Exception;
 use PHPUnit\Framework\TestCase;
 use Unilend\Core\Entity\Company;
@@ -39,31 +40,10 @@ abstract class AbstractEligibilityTest extends TestCase
             new Staff(new User('user@mail.com'), $team)
         );
 
-        $reservation = new Reservation($program, new Staff(new User('user@mail.com'), $team));
-        $reservation
-            ->setBorrower($this->createBorrower($reservation))
-            ->setProject($this->creatProject($reservation))
-        ;
-
-        return $reservation;
+        return new Reservation($program, new Staff(new User('user@mail.com'), $team));
     }
 
-    protected function createFinancingObject(Reservation $reservation): FinancingObject
-    {
-        $program = $reservation->getProgram();
-
-        $financingObjectTypeField = new Field('financing_object_type', 'test', 'list', 'financingObjects', 'financingObjectType', FinancingObject::class, false, null, null);
-        $loanTypeField            = new Field('loan_type', 'test', 'list', 'financingObjects', 'loanType', FinancingObject::class, false, null, ['loan type 1', 'loan type 2']);
-
-        return (new FinancingObject($reservation, new Money('EUR', '42'), false))
-            ->setSupportingGenerationsRenewal(true)
-            ->setFinancingObjectType(new ProgramChoiceOption($program, 'financing object test', $financingObjectTypeField))
-            ->setLoanType(new ProgramChoiceOption($program, 'loan type 2', $loanTypeField))
-            ->setLoanDuration(4)
-        ;
-    }
-
-    private function createBorrower(Reservation $reservation): Borrower
+    protected function createBorrower(Reservation $reservation): Borrower
     {
         $program              = $reservation->getProgram();
         $borrowerTypeField    = new Field('borrower_type', 'test', 'list', 'borrower', 'borrowerType', Borrower::class, false, null, null);
@@ -76,6 +56,7 @@ abstract class AbstractEligibilityTest extends TestCase
             ->setYoungFarmer(true)
             ->setCreationInProgress(false)
             ->setSubsidiary(true)
+            ->setActivityStartDate(new DateTimeImmutable())
             ->setAddressStreet('42 rue de de la paix')
             ->setAddressCity('Paris')
             ->setAddressPostCode('75042')
@@ -89,7 +70,7 @@ abstract class AbstractEligibilityTest extends TestCase
         ;
     }
 
-    private function creatProject(Reservation $reservation): Project
+    protected function createProject(Reservation $reservation): Project
     {
         $program                 = $reservation->getProgram();
         $investmentThematicField = new Field('investment_thematic', 'test', 'list', 'project', 'investmentThematic', Project::class, false, null, null);
@@ -104,6 +85,22 @@ abstract class AbstractEligibilityTest extends TestCase
             ->setAidIntensity(new ProgramChoiceOption($program, '42%', $aidIntensityField))
             ->setAdditionalGuaranty(new ProgramChoiceOption($program, 'additional guaranty', $additionalGuaranty))
             ->setAgriculturalBranch(new ProgramChoiceOption($program, 'agricultural branch', $agriculturalBranch))
+        ;
+    }
+
+    protected function createFinancingObject(Reservation $reservation, bool $supportingGenerationsRenewal): FinancingObject
+    {
+        $program = $reservation->getProgram();
+
+        $financingObjectTypeField = new Field('financing_object_type', 'test', 'list', 'financingObjects', 'financingObjectType', FinancingObject::class, false, null, null);
+        $loanTypeField            = new Field('loan_type', 'test', 'list', 'financingObjects', 'loanType', FinancingObject::class, false, null, ['loan type 1', 'loan type 2']);
+
+        return (new FinancingObject($reservation, new Money('EUR', '42'), false))
+            ->setSupportingGenerationsRenewal($supportingGenerationsRenewal)
+            ->setFinancingObjectType(new ProgramChoiceOption($program, 'financing object test', $financingObjectTypeField))
+            ->setLoanType(new ProgramChoiceOption($program, 'loan type 2', $loanTypeField))
+            ->setLoanDuration(4)
+            ->setLoanDeferral(1)
         ;
     }
 }

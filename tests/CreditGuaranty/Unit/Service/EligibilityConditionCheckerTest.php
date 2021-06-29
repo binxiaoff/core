@@ -63,7 +63,9 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
         $this->eligibilityHelper->getValue(Argument::any(), Argument::any())->shouldNotBeCalled();
 
         $eligibilityConditionChecker = $this->createTestObject();
-        static::assertTrue($eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration));
+        $result                      = $eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration);
+
+        static::assertSame([], $result);
     }
 
     public function testCheckByEligibilityConfigurationWithConditionsEligible(): void
@@ -94,7 +96,9 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
         $this->eligibilityHelper->getValue($entity, $leftField2)->shouldBeCalledOnce()->willReturn('128');
 
         $eligibilityConditionChecker = $this->createTestObject();
-        static::assertTrue($eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration));
+        $result                      = $eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration);
+
+        static::assertSame([], $result);
     }
 
     public function testCheckByEligibilityConfigurationWithValueTypeConditionIneligible(): void
@@ -115,13 +119,15 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
         $this->eligibilityHelper->getValue($entity, $leftField1)->shouldBeCalledOnce()->willReturn('2048');
 
         $eligibilityConditionChecker = $this->createTestObject();
-        static::assertFalse($eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration));
+        $result                      = $eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration);
+
+        static::assertSame(['test' => ['left_alias_1']], $result);
     }
 
     public function testCheckByEligibilityConfigurationWithRateTypeConditionIneligible(): void
     {
         $entity                          = $this->reservation->getProject();
-        $financingObject                 = $this->createFinancingObject($this->reservation);
+        $financingObject                 = $this->createFinancingObject($this->reservation, true);
         $field                           = new Field('alias_1', 'test', 'other', 'financingObjects', 'loanMoney::amount', FinancingObject::class, true, 'money', null);
         $rightField1                     = new Field('right_alias_1', 'test', 'other', 'project', 'fundingMoney::amount', Project::class, true, 'money', null);
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
@@ -139,7 +145,9 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
         $this->eligibilityHelper->getValue($financingObject, $field)->shouldBeCalledOnce()->willReturn('42');
 
         $eligibilityConditionChecker = $this->createTestObject();
-        static::assertFalse($eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration));
+        $result                      = $eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration);
+
+        static::assertSame(['test' => ['alias_1', 'right_alias_1']], $result);
     }
 
     public function testCheckByEligibilityConfigurationWithoutRightOperandFieldInRateTypeCondition(): void
@@ -165,7 +173,7 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
 
     public function testCheckByEligibilityConfigurationWithCollectionRightOperandFieldInRateTypeCondition(): void
     {
-        $financingObject                 = $this->createFinancingObject($this->reservation);
+        $financingObject                 = $this->createFinancingObject($this->reservation, true);
         $field                           = new Field('alias_1', 'test', 'other', 'project', 'fundingMoney::amount', Project::class, true, 'money', null);
         $rightField1                     = new Field('right_alias_1', 'test', 'other', 'financingObjects', 'loanMoney::amount', FinancingObject::class, true, 'money', null);
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);

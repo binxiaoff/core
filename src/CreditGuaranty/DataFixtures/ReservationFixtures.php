@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\DataFixtures;
 
+use DateTimeImmutable;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -193,6 +194,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setYoungFarmer(false)
             ->setCreationInProgress(false)
             ->setSubsidiary(false)
+            ->setActivityStartDate(new DateTimeImmutable())
             ->setSiret((string) $this->faker->numberBetween(10000, 99999))
             ->setTaxNumber('12 23 45 678 987')
             ->setLegalForm($this->createOrGetProgramChoiceOption($program, FieldAlias::LEGAL_FORM))
@@ -203,6 +205,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setAddressDepartment('department')
             ->setAddressCountry($this->createOrGetProgramChoiceOption($program, FieldAlias::ACTIVITY_COUNTRY))
             ->setEmployeesNumber($this->faker->randomDigit)
+            ->setExploitationSize($this->createOrGetProgramChoiceOption($program, FieldAlias::EXPLOITATION_SIZE, (string) $this->faker->randomNumber(3)))
             ->setTurnover(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setTotalAssets(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
         ;
@@ -216,6 +219,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         return (new Project($reservation, $fundingMoney))
             ->setInvestmentThematic($this->createOrGetProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, 'Project : ' . $this->faker->sentence))
             ->setInvestmentType($this->createOrGetProgramChoiceOption($program, FieldAlias::INVESTMENT_TYPE, 'Type : ' . $this->faker->sentence))
+            ->setDetail($this->faker->sentence)
             ->setAidIntensity($this->createOrGetProgramChoiceOption($program, FieldAlias::AID_INTENSITY, $this->faker->unique()->numberBetween(0, 100) . '%'))
             ->setAdditionalGuaranty($this->createOrGetProgramChoiceOption($program, FieldAlias::ADDITIONAL_GUARANTY, $this->faker->sentence(3)))
             ->setAgriculturalBranch($this->createOrGetProgramChoiceOption($program, FieldAlias::AGRICULTURAL_BRANCH, 'Branch N: ' . $this->faker->sentence))
@@ -224,6 +228,14 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setAddressPostCode($this->faker->postcode)
             ->setAddressDepartment('department')
             ->setAddressCountry($this->createOrGetProgramChoiceOption($program, FieldAlias::INVESTMENT_COUNTRY))
+            ->setContribution(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setEligibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setTotalFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setTangibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setIntangibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setCreditExcludingFei(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setGrant(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setLandValue(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
         ;
     }
 
@@ -239,10 +251,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setSupportingGenerationsRenewal($this->faker->boolean)
             ->setFinancingObjectType($this->createOrGetProgramChoiceOption($program, FieldAlias::FINANCING_OBJECT_TYPE, $this->faker->sentence))
             ->setLoanNafCode($this->createOrGetProgramChoiceOption($program, FieldAlias::LOAN_NAF_CODE, $nafNace->getNafCode()))
+            ->setBfrValue(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setLoanType($this->createOrGetProgramChoiceOption($program, FieldAlias::LOAN_TYPE))
             ->setLoanDuration($this->faker->numberBetween(0, 12))
             ->setLoanDeferral($this->faker->numberBetween(0, 12))
             ->setLoanPeriodicity($this->createOrGetProgramChoiceOption($program, FieldAlias::LOAN_PERIODICITY))
+            ->setInvestmentLocation($this->createOrGetProgramChoiceOption($program, FieldAlias::INVESTMENT_LOCATION, $this->faker->country))
         ;
     }
 

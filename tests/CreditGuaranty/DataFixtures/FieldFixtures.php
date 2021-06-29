@@ -492,7 +492,7 @@ class FieldFixtures extends AbstractFixtures
         ];
         yield 'field-financing_object_type' => [
             'fieldAlias'              => 'financing_object_type',
-            'category'                => 'project',
+            'category'                => 'loan',
             'type'                    => 'list',
             'reservationPropertyName' => 'financingObjects',
             'propertyPath'            => 'financingObjectType',
@@ -503,7 +503,7 @@ class FieldFixtures extends AbstractFixtures
         ];
         yield 'field-loan_naf_code' => [
             'fieldAlias'              => 'loan_naf_code',
-            'category'                => 'project',
+            'category'                => 'loan',
             'type'                    => 'list',
             'reservationPropertyName' => 'financingObjects',
             'propertyPath'            => 'loanNafCode',
