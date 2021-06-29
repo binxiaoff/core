@@ -12,7 +12,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Controller\Dataroom\Delete;
+use Unilend\Core\Controller\Dataroom\Get;
+use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 
@@ -38,6 +42,53 @@ use Unilend\Core\Entity\Embeddable\NullablePerson;
  *             "denormalization_context": {
  *                 "groups": {"agency:agent:write", "nullablePerson:write", "nullableMoney:write", "money:write"}
  *             }
+ *         },
+ *         "get_agent_dataroom": {
+ *             "method": "GET",
+ *             "path": "/agency/agent/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('agent', object)",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "drive": "confidential"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "post_agent_dataroom": {
+ *             "method": "POST",
+ *             "path": "/agency/agent/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('agent', object)",
+ *             "deserialize": false,
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "drive": "confidential"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "delete_agent_dataroom": {
+ *             "method": "DELETE",
+ *             "path": "/agency/agent/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('agent', object)",
+ *             "deserialize": false,
+ *             "controller": Delete::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/",
+ *                 "drive": "confidential"
+ *             }
  *         }
  *     }
  * )
@@ -54,7 +105,7 @@ class Agent extends AbstractProjectPartaker
      * @Assert\Count(min=1)
      * @Assert\Valid
      * @Assert\All({
-     *     @Assert\Expression("value.getAgent() == this")
+     *     @Assert\Expression("value.getAgent() === this")
      * })
      *
      * @Groups({"agency:agent:read"})
@@ -101,14 +152,21 @@ class Agent extends AbstractProjectPartaker
      */
     private NullablePerson $contact;
 
+    /**
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Drive", cascade={"persist", "remove"})
+     * @ORM\JoinColumn(name="id_confidential_drive", nullable=false, unique=true, onDelete="CASCADE")
+     */
+    private Drive $confidentialDrive;
+
     public function __construct(Project $project, Company $company)
     {
         parent::__construct($company->getSiren() ?? '');
-        $this->project       = $project;
-        $this->company       = $company;
-        $this->members       = new ArrayCollection();
-        $this->displayName   = $company->getDisplayName();
-        $this->corporateName = $company->getDisplayName();
+        $this->project           = $project;
+        $this->company           = $company;
+        $this->members           = new ArrayCollection();
+        $this->displayName       = $company->getDisplayName();
+        $this->corporateName     = $company->getDisplayName();
+        $this->confidentialDrive = new Drive();
     }
 
     public function getProject(): Project
@@ -333,5 +391,10 @@ class Agent extends AbstractProjectPartaker
     public function setLegalForm(?string $legalForm): Agent
     {
         return parent::setLegalForm($legalForm);
+    }
+
+    public function getConfidentialDrive(): Drive
+    {
+        return $this->confidentialDrive;
     }
 }
