@@ -36,8 +36,8 @@ final class Version20210622143452 extends AbstractMigration
         }
 
         $this->addSql('CREATE UNIQUE INDEX UNIQ_284713B37754ACA8 ON agency_agent (id_confidential_drive)');
-        $this->addSql('ALTER TABLE agency_agent ADD CONSTRAINT FK_284713B37754ACA8 FOREIGN KEY (id_confidential_drive) REFERENCES core_drive (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE agency_agent MODIFY id_confidential_drive INT NOT NULL');
+        $this->addSql('ALTER TABLE agency_agent ADD CONSTRAINT FK_284713B37754ACA8 FOREIGN KEY (id_confidential_drive) REFERENCES core_drive (id) ON DELETE CASCADE');
     }
 
     public function down(Schema $schema): void
