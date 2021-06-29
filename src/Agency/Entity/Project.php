@@ -39,7 +39,6 @@ use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Model\Bitmask;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 use Unilend\Syndication\Entity\Project as ArrangementProject;
 
@@ -525,8 +524,7 @@ class Project
             $this->agent->getCompany(),
             new Money($this->getCurrency())
         );
-        $participation->setResponsibilities(new Bitmask(Participation::RESPONSIBILITY_AGENT));
-        $participation->setAgentCommission(new NullableMoney($this->getCurrency(), null));
+        $participation->setAgentCommission(new NullableMoney($this->getCurrency(), '0'));
 
         $this->participationPools[false]->addParticipation($participation);
 

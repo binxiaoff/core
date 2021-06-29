@@ -49,7 +49,6 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
-use Unilend\Core\Model\Bitmask;
 use Unilend\Core\Repository\CompanyGroupTagRepository;
 use Unilend\Core\Repository\CompanyRepository;
 use Unilend\Core\Repository\StaffRepository;
@@ -559,20 +558,6 @@ class ImportProjectCommand extends Command
                 throw new Exception(sprintf('Cannot find company "%s" (%s) as a participant.', $name, $cells[0]->getValue()));
             }
 
-            $participantResponsibilities = new Bitmask(0);
-
-            if ($isArranger) {
-                $participantResponsibilities->add(Participation::RESPONSIBILITY_ARRANGER);
-            }
-
-            if ($isDeputyArranger) {
-                $participantResponsibilities->add(Participation::RESPONSIBILITY_DEPUTY_ARRANGER);
-            }
-
-            if ($isAgent) {
-                $participantResponsibilities->add(Participation::RESPONSIBILITY_AGENT);
-            }
-
             $participant = $project->findParticipationByParticipant($participantCompany);
 
             if (null === $participant) {
@@ -582,10 +567,9 @@ class ImportProjectCommand extends Command
 
             // @todo Data consistency checks may be needed
             $participant
-                ->setResponsibilities($participantResponsibilities)
-                ->setArrangerCommission($isArranger ? $arrangerCommission : new NullableMoney()) // @todo Should be amounts, not percentage (CALS-3527)
-                ->setDeputyArrangerCommission($isDeputyArranger ? $deputyArrangerCommission : new NullableMoney()) // @todo Should be amounts, not percentage (CALS-3527)
-                ->setAgentCommission($isAgent ? $agentCommission : new NullableMoney()) // @todo Should be amounts, not percentage (CALS-3527)
+                ->setArrangerCommission($isArranger ? $arrangerCommission : new NullableMoney())
+                ->setDeputyArrangerCommission($isDeputyArranger ? $deputyArrangerCommission : new NullableMoney())
+                ->setAgentCommission($isAgent ? $agentCommission : new NullableMoney())
                 ->setParticipantCommission($participantCommission)
                 ->setFinalAllocation($finalAllocation) // Agent participation was created before final allocation was set so we need to overwrite it
                 //->setProrata(); // @todo Mandatory?
