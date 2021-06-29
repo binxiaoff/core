@@ -25,8 +25,8 @@ class TermVoter extends AbstractEntityVoter
         return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_VIEW, $term->getCovenant())
             && $term->getStartDate() <= $this->getToday()
             && (
-                $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT)
-                || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER)
+                $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $term->getProject())
+                || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $term->getProject())
                 || $term->isShared()
             );
     }

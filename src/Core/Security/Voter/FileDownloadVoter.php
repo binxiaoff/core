@@ -7,6 +7,9 @@ namespace Unilend\Core\Security\Voter;
 use InvalidArgumentException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Unilend\Agency\Entity\Term;
+use Unilend\Agency\Repository\TermRepository;
+use Unilend\Agency\Security\Voter\TermVoter;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\FileDownload;
@@ -39,6 +42,8 @@ class FileDownloadVoter extends AbstractEntityVoter
 
     private MessageFileRepository $messageFileRepository;
 
+    private TermRepository $termRepository;
+
     /**
      * FileDownloadVoter constructor.
      */
@@ -48,7 +53,8 @@ class FileDownloadVoter extends AbstractEntityVoter
         ProjectFileRepository $projectFileRepository,
         ProjectRepository $projectRepository,
         ProjectParticipationRepository $projectParticipationRepository,
-        MessageFileRepository $messageFileRepository
+        MessageFileRepository $messageFileRepository,
+        TermRepository $termRepository
     ) {
         parent::__construct($authorizationChecker);
         $this->fileVersionSignatureRepository = $fileVersionSignatureRepository;
@@ -56,6 +62,7 @@ class FileDownloadVoter extends AbstractEntityVoter
         $this->projectRepository              = $projectRepository;
         $this->projectParticipationRepository = $projectParticipationRepository;
         $this->messageFileRepository          = $messageFileRepository;
+        $this->termRepository                 = $termRepository;
     }
 
     /**
@@ -72,6 +79,14 @@ class FileDownloadVoter extends AbstractEntityVoter
         $type    = $fileDownload->getType();
         $project = null;
         $staff   = $user->getCurrentStaff();
+
+        // TODO Move specific product code into its folder
+        // Before staff verification because borrower can download file
+        if (Term::FILE_TYPE_BORROWER_DOCUMENT === $type) {
+            $term = $this->termRepository->findOneBy(['borrowerDocument' => $file]);
+
+            return $term && $this->authorizationChecker->isGranted(TermVoter::ATTRIBUTE_VIEW, $term);
+        }
 
         if (null === $staff) {
             return false;
