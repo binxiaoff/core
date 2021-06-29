@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -43,6 +45,16 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *         }
  *     },
  *     collectionOperations={}
+ * )
+ *
+ * @ApiFilter(
+ *     filterClass=GroupFilter::class,
+ *     arguments={
+ *         "whitelist": {
+ *             "file:read",
+ *             "fileVersion:read"
+ *         }
+ *     }
  * )
  */
 class Term
@@ -453,7 +465,7 @@ class Term
     public function setBorrowerInput(?string $borrowerInput): Term
     {
         $this->borrowerInput     = $borrowerInput;
-        $this->borrowerInputDate = null !== $borrowerInput ? new DateTimeImmutable() : null;
+        $this->borrowerInputDate = null !== $this->borrowerInput ? new DateTimeImmutable() : null;
 
         $this->awaitValidation();
 
