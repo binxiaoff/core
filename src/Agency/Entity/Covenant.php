@@ -72,6 +72,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *             "agency:marginRule:read",
  *             "agency:marginImpact:read",
  *             "agency:term:read",
+ *             "file:read",
+ *             "fileVersion:read",
  *         }
  *     }
  * )
