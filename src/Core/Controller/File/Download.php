@@ -20,18 +20,12 @@ use Unilend\Core\Service\File\FileDownloadManager;
 
 class Download
 {
-    /** @var Security */
     private Security $security;
-    /** @var FileDownloadRepository */
+
     private FileDownloadRepository $fileDownloadRepository;
-    /** @var FileDownloadManager */
+
     private FileDownloadManager $fileDownloadManager;
 
-    /**
-     * @param FileDownloadManager    $fileDownloadManager
-     * @param FileDownloadRepository $fileDownloadRepository
-     * @param Security               $security
-     */
     public function __construct(FileDownloadManager $fileDownloadManager, FileDownloadRepository $fileDownloadRepository, Security $security)
     {
         $this->fileDownloadManager    = $fileDownloadManager;
@@ -40,15 +34,9 @@ class Download
     }
 
     /**
-     * @param FileVersion $data
-     * @param Request     $request
-     * @param string      $type
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws Exception
-     *
-     * @return StreamedResponse
      */
     public function __invoke(FileVersion $data, Request $request, string $type): StreamedResponse
     {
@@ -65,11 +53,7 @@ class Download
 
         $token = $this->security->getToken();
 
-        $company = null;
-
-        if ($token) {
-            $company = $token->getAttribute('company');
-        }
+        $company = $token && $token->hasAttribute('company') ? $token->getAttribute('company') : null;
 
         $fileDownload = new FileDownload($data, $user, $type, $company);
 
