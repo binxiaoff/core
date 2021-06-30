@@ -11,6 +11,8 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use LogicException;
+use RuntimeException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -193,6 +195,15 @@ class Program implements TraceableStatusAwareInterface
     private NullableMoney $guarantyCost;
 
     /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     */
+    private NullableMoney $maxFeiCredit;
+
+    /**
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
@@ -332,6 +343,7 @@ class Program implements TraceableStatusAwareInterface
         $this->addedBy                        = $addedBy->getUser();
         $this->managingCompany                = $addedBy->getCompany();
         $this->guarantyCost                   = new NullableMoney();
+        $this->maxFeiCredit                   = new NullableMoney();
         $this->statuses                       = new ArrayCollection();
         $this->programGradeAllocations        = new ArrayCollection();
         $this->programBorrowerTypeAllocations = new ArrayCollection();
@@ -451,6 +463,18 @@ class Program implements TraceableStatusAwareInterface
     public function setGuarantyCost(NullableMoney $guarantyCost): Program
     {
         $this->guarantyCost = $guarantyCost;
+
+        return $this;
+    }
+
+    public function getMaxFeiCredit(): NullableMoney
+    {
+        return $this->maxFeiCredit;
+    }
+
+    public function setMaxFeiCredit(NullableMoney $maxFeiCredit): Program
+    {
+        $this->maxFeiCredit = $maxFeiCredit;
 
         return $this;
     }
@@ -721,7 +745,7 @@ class Program implements TraceableStatusAwareInterface
                 }
 
                 if (false === $reservation->getProject() instanceof Project) {
-                    throw new \RuntimeException(sprintf('Cannot find the project for reservation %d. Please check the data.', $reservation->getId()));
+                    throw new RuntimeException(\sprintf('Cannot find the project for reservation %d. Please check the data.', $reservation->getId()));
                 }
                 $totalProjectFunds = MoneyCalculator::add($reservation->getProject()->getFundingMoney(), $totalProjectFunds);
             }
@@ -791,7 +815,7 @@ class Program implements TraceableStatusAwareInterface
     private function applyTotalProjectFundsFilters(Reservation $reservation, array $filter): bool
     {
         if (false === $reservation->getBorrower()->getBorrowerType() instanceof ProgramChoiceOption) {
-            throw new \RuntimeException(sprintf('Cannot find the borrower type for reservation %d. Please check the data.', $reservation->getId()));
+            throw new RuntimeException(\sprintf('Cannot find the borrower type for reservation %d. Please check the data.', $reservation->getId()));
         }
 
         if (isset($filter['grade']) && $reservation->getBorrower()->getGrade() !== $filter['grade']) {
@@ -803,10 +827,10 @@ class Program implements TraceableStatusAwareInterface
         }
 
         if (isset($filter['exclude'])) {
-            if (is_int($filter['exclude'])) {
+            if (\is_int($filter['exclude'])) {
                 $filter['exclude'] = [$filter['exclude']];
             }
-            if (in_array($reservation->getProgram()->getId(), $filter['exclude'], true)) {
+            if (\in_array($reservation->getProgram()->getId(), $filter['exclude'], true)) {
                 return false;
             }
         }
@@ -822,8 +846,8 @@ class Program implements TraceableStatusAwareInterface
         $clonedArrayCollection = new ArrayCollection();
         foreach ($collectionToDuplicate as $item) {
             $clonedItem = clone $item;
-            if (false === method_exists($clonedItem, 'setProgram')) {
-                throw new \LogicException(sprintf('Cannot find the method setProgram of the class %s. Make sure it exists or it is accessible.', get_class($clonedItem)));
+            if (false === \method_exists($clonedItem, 'setProgram')) {
+                throw new LogicException(\sprintf('Cannot find the method setProgram of the class %s. Make sure it exists or it is accessible.', \get_class($clonedItem)));
             }
             $clonedItem->setProgram($this);
             $clonedArrayCollection->add($clonedItem);
@@ -845,7 +869,7 @@ class Program implements TraceableStatusAwareInterface
             ->first()
         ;
         if (false === $clonedProgramChoiceOption instanceof ProgramChoiceOption) {
-            throw new \LogicException(sprintf(
+            throw new LogicException(\sprintf(
                 'The new program choice option cannot be found on program %s with field %s and description %s',
                 $this->getName(),
                 $originalProgramChoiceOption->getField()->getId(),

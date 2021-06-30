@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Core\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Core\Entity\{CompanyGroup, CompanyGroupTag};
+use Unilend\Core\Entity\CompanyGroup;
+use Unilend\Core\Entity\CompanyGroupTag;
 
 class CompanyGroupFixture extends AbstractFixtures
 {
@@ -18,16 +19,11 @@ class CompanyGroupFixture extends AbstractFixtures
     public const PRO                     = 'company_group_tag_pro';
     public const PATRIMONIAL             = 'company_group_tag_patrimonial';
 
-    /**
-     * @inheritDoc
-     */
     public function load(ObjectManager $manager)
     {
         $companyGroup = new CompanyGroup('Crédit Agricole');
-
-        $this->addReference('companyGroup/CA', $companyGroup);
-
         $manager->persist($companyGroup);
+        $this->addReference('companyGroup/CA', $companyGroup);
 
         $codes = [
             self::CORPORATE               => 'corporate',
