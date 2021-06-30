@@ -85,18 +85,22 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                     'Signature du client et contractualisation',
                     'Renseignement du N° de prêt et montant des réalisations',
                 ],
-                'guarantyDuration'    => 240,
-                'guarantyCoverage'    => '0.07',
-                'guarantyCost'        => ['currency' => 'EUR', 'amount' => '1000'],
-                'maxFeiCredit'        => ['currency' => 'EUR', 'amount' => '20000'],
-                'reservationDuration' => 2,
+                'guarantyDuration'        => 240,
+                'guarantyCoverage'        => '0.07',
+                'guarantyCost'            => ['currency' => 'EUR', 'amount' => '1000'],
+                'maxFeiCredit'            => ['currency' => 'EUR', 'amount' => '20000'],
+                'reservationDuration'     => 2,
+                'esbCalculationActivated' => $this->faker->boolean,
+                'loanReleasedOnInvoice'   => $this->faker->boolean,
             ],
             self::REFERENCE_PAUSED => [
-                'name'            => 'Programme en pause',
-                'companyGroupTag' => CompanyGroupFixture::CORPORATE,
-                'funds'           => ['currency' => 'EUR', 'amount' => '400000000'],
-                'addedBy'         => StaffFixtures::CASA,
-                'currentStatus'   => ProgramStatus::STATUS_PAUSED,
+                'name'                    => 'Programme en pause',
+                'companyGroupTag'         => CompanyGroupFixture::CORPORATE,
+                'funds'                   => ['currency' => 'EUR', 'amount' => '400000000'],
+                'addedBy'                 => StaffFixtures::CASA,
+                'currentStatus'           => ProgramStatus::STATUS_PAUSED,
+                'esbCalculationActivated' => $this->faker->boolean,
+                'loanReleasedOnInvoice'   => $this->faker->boolean,
             ],
         ];
 
@@ -166,6 +170,14 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         if (false === empty($programDatum['reservationDuration'])) {
             $program->setReservationDuration($programDatum['reservationDuration']);
+        }
+
+        if (false === empty($programDatum['esbCalculationActivated'])) {
+            $program->setEsbCalculationActivated($programDatum['esbCalculationActivated']);
+        }
+
+        if (false === empty($programDatum['loanReleasedOnInvoice'])) {
+            $program->setLoanReleasedOnInvoice($programDatum['loanReleasedOnInvoice']);
         }
 
         $cARatingType = CARatingType::getConstList();

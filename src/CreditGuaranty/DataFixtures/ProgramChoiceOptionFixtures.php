@@ -20,7 +20,7 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
     // user-defined list type fields
     private const FIELDS = [
         FieldAlias::AID_INTENSITY => [
-            '20', '40', '60', '80',
+            '0.20', '0.40', '0.60', '0.80',
         ],
         FieldAlias::BORROWER_TYPE => [
             'Installé depuis moins de 7 ans', 'Installé depuis plus de 7 ans',

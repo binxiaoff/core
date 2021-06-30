@@ -95,36 +95,77 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $this->loginStaff($addedBy);
 
         yield self::RESERVATION_DRAFT_1 => [
-            'program'       => $program,
-            'borrower'      => ['youngFarmer' => true, 'creationInProgress' => true, 'subsidiary' => true, 'turnoverAmount' => 0, 'totalAssetsAmount' => 0],
+            'program'  => $program,
+            'borrower' => [
+                'youngFarmer'        => true,
+                'creationInProgress' => true,
+                'subsidiary'         => true,
+                'turnoverAmount'     => 0,
+                'totalAssetsAmount'  => 0,
+            ],
             'hasProject'    => false,
             'addedBy'       => $addedBy,
             'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_DRAFT_2 => [
-            'program'       => $program,
-            'borrower'      => ['youngFarmer' => false, 'creationInProgress' => true, 'subsidiary' => false, 'turnoverAmount' => 0, 'totalAssetsAmount' => 0],
+            'program'  => $program,
+            'borrower' => [
+                'youngFarmer'        => false,
+                'creationInProgress' => true,
+                'subsidiary'         => false,
+                'turnoverAmount'     => 0,
+                'totalAssetsAmount'  => 0,
+            ],
             'addedBy'       => $addedBy,
             'hasProject'    => false,
             'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_SENT_1 => [
-            'program'          => $program,
-            'borrower'         => ['youngFarmer' => true, 'creationInProgress' => true, 'subsidiary' => true, 'turnoverAmount' => 100, 'totalAssetsAmount' => 2048],
-            'hasProject'       => true,
-            'project'          => ['receivingGrant' => true, 'totalFeiCreditAmount' => 1000, 'creditExcludingFeiAmount' => 3000],
-            'financingObjects' => [['mainLoan' => true, 'loanDuration' => 6], ['mainLoan' => false, 'loanDuration' => 6]],
-            'addedBy'          => $addedBy,
-            'currentStatus'    => ReservationStatus::STATUS_SENT,
+            'program'  => $program,
+            'borrower' => [
+                'youngFarmer'        => true,
+                'creationInProgress' => true,
+                'subsidiary'         => true,
+                'turnoverAmount'     => 100,
+                'totalAssetsAmount'  => 2048,
+            ],
+            'hasProject' => true,
+            'project'    => [
+                'receivingGrant'           => true,
+                'activatingEsbCalculation' => true,
+                'loansReleasedOnInvoice'   => true,
+                'totalFeiCreditAmount'     => 1000,
+                'creditExcludingFeiAmount' => 3000,
+            ],
+            'financingObjects' => [
+                ['mainLoan' => true, 'loanDuration' => 6],
+                ['mainLoan' => false, 'loanDuration' => 6],
+            ],
+            'addedBy'       => $addedBy,
+            'currentStatus' => ReservationStatus::STATUS_SENT,
         ];
         yield self::RESERVATION_SENT_2 => [
-            'program'          => $program,
-            'borrower'         => ['youngFarmer' => false, 'creationInProgress' => false, 'subsidiary' => true, 'turnoverAmount' => 2048, 'totalAssetsAmount' => 42],
-            'hasProject'       => true,
-            'project'          => ['receivingGrant' => false, 'totalFeiCreditAmount' => 100, 'creditExcludingFeiAmount' => 42],
-            'financingObjects' => [['mainLoan' => true, 'loanDuration' => 2]],
-            'addedBy'          => $addedBy,
-            'currentStatus'    => ReservationStatus::STATUS_SENT,
+            'program'  => $program,
+            'borrower' => [
+                'youngFarmer'        => false,
+                'creationInProgress' => false,
+                'subsidiary'         => true,
+                'turnoverAmount'     => 2048,
+                'totalAssetsAmount'  => 42,
+            ],
+            'hasProject' => true,
+            'project'    => [
+                'receivingGrant'           => false,
+                'activatingEsbCalculation' => false,
+                'loansReleasedOnInvoice'   => true,
+                'totalFeiCreditAmount'     => 100,
+                'creditExcludingFeiAmount' => 42,
+            ],
+            'financingObjects' => [
+                ['mainLoan' => true, 'loanDuration' => 2],
+            ],
+            'addedBy'       => $addedBy,
+            'currentStatus' => ReservationStatus::STATUS_SENT,
         ];
     }
 
@@ -205,8 +246,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         ;
     }
 
-    private function createProject(Reservation $reservation, bool $receivingGrant, int $totalFeiCreditAmount, int $creditExcludingFeiAmount): Project
-    {
+    private function createProject(
+        Reservation $reservation,
+        bool $receivingGrant,
+        int $totalFeiCreditAmount,
+        int $creditExcludingFeiAmount
+    ): Project {
         $program      = $reservation->getProgram();
         $fundingMoney = new Money('EUR', (string) $this->faker->randomNumber());
 
@@ -214,7 +259,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setInvestmentThematic($this->findProgramChoiceOption($program, 'field-investment_thematic', 'Project : ' . $this->faker->sentence))
             ->setInvestmentType($this->findProgramChoiceOption($program, 'field-investment_type', 'Type : ' . $this->faker->sentence))
             ->setDetail($this->faker->sentence)
-            ->setAidIntensity($this->findProgramChoiceOption($program, 'field-aid_intensity', '40'))
+            ->setAidIntensity($this->findProgramChoiceOption($program, 'field-aid_intensity', '0.40'))
             ->setAdditionalGuaranty($this->findProgramChoiceOption($program, 'field-additional_guaranty', $this->faker->sentence(3)))
             ->setAgriculturalBranch($this->findProgramChoiceOption($program, 'field-agricultural_branch', 'Branch N: ' . $this->faker->sentence))
             ->setAddressStreet($this->faker->streetAddress)

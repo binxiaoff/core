@@ -59,7 +59,7 @@ class FieldFixtures extends AbstractSQLFixtures
         ('675056b4-49bb-40a7-bafe-9bcc86ad7b99', 'loan', 'list', 'loan_type', 'financingObjects', 'loanType', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, '["term_loan","short_term","revolving_credit","stand_by","signature_commitment"]'),
         ('e9861e5b-0513-4c7b-9799-2f5a7dc267a4', 'loan', 'other', 'loan_duration', 'financingObjects', 'loanDuration', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 1, 'month', null),
         ('f6f933e3-8164-430d-a670-390d0fc48311', 'loan', 'other', 'loan_deferral', 'financingObjects', 'loanDeferral', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 1, 'month', NULL),
-        ('93319782-8cfd-474f-bfe8-ab5aae88456b', 'loan', 'list', 'loan_periodicity', 'financingObjects', 'loanPeriodicity', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, '["monthly","quarterly","semi-annually","annually"]'),
+        ('93319782-8cfd-474f-bfe8-ab5aae88456b', 'loan', 'list', 'loan_periodicity', 'financingObjects', 'loanPeriodicity', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, '["monthly","quarterly","semi_annually","annually"]'),
         ('61ad5da2-1ae1-4c0b-b3bd-ce42fc0bea3b', 'loan', 'list', 'investment_location', 'financingObjects', 'investmentLocation', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, NULL);
         INSERT_FIELDS;
 }

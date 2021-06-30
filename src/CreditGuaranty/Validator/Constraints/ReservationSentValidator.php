@@ -36,30 +36,35 @@ class ReservationSentValidator extends ConstraintValidator
         $reservation = $value->getReservation();
 
         if (false === ($reservation->getBorrower() instanceof Borrower)) {
-            $this->context->buildViolation('CreditGuaranty.Reservation.borrower.missing')
+            $this->context->buildViolation('CreditGuaranty.Reservation.borrower.required')
                 ->atPath('reservation.borrower')
                 ->addViolation()
             ;
-
-            return;
         }
 
-        if (false === ($reservation->getProject() instanceof Project)) {
-            $this->context->buildViolation('CreditGuaranty.Reservation.project.missing')
+        $project = $reservation->getProject();
+
+        if (false === ($project instanceof Project)) {
+            $this->context->buildViolation('CreditGuaranty.Reservation.project.required')
                 ->atPath('reservation.project')
                 ->addViolation()
             ;
-
-            return;
         }
 
         if (0 === $reservation->getFinancingObjects()->count()) {
-            $this->context->buildViolation('CreditGuaranty.Reservation.financingObject.missing')
+            $this->context->buildViolation('CreditGuaranty.Reservation.financingObject.required')
                 ->atPath('reservation.financingObjects')
                 ->addViolation()
             ;
+        }
 
-            return;
+        if ($project->isActivateEsbCalculation()) {
+            if (false === $reservation->isGrossSubsidyEquivalentEligible()) {
+                $this->context->buildViolation('CreditGuaranty.Reservation.esb.ineligible')
+                    ->atPath('reservation')
+                    ->addViolation()
+                ;
+            }
         }
 
         foreach ($this->programEligibilityRepository->findFieldCategoriesByProgram($reservation->getProgram()) as $category) {
@@ -67,7 +72,7 @@ class ReservationSentValidator extends ConstraintValidator
 
             if (false === empty($ineligibles)) {
                 foreach ($ineligibles as $category => $fieldAliases) {
-                    $this->context->buildViolation('CreditGuaranty.Reservation.ineligibles')
+                    $this->context->buildViolation('CreditGuaranty.Reservation.category.ineligibles')
                         ->setParameter('{{ fieldAliases }}', \implode(', ', $fieldAliases))
                         ->setParameter('{{ category }}', $category)
                         ->atPath('reservation')

@@ -11,12 +11,6 @@ use Unilend\Core\Exception\Money\DifferentCurrencyException;
 
 class MoneyCalculator
 {
-    /**
-     * @param MoneyInterface $leftAddend
-     * @param MoneyInterface $rightAddend
-     *
-     * @return MoneyInterface
-     */
     public static function add(MoneyInterface $leftAddend, MoneyInterface $rightAddend): MoneyInterface
     {
         if (static::isDifferentCurrency($leftAddend, $rightAddend)) {
@@ -29,22 +23,15 @@ class MoneyCalculator
 
         return new Money(
             $leftAddend->getCurrency() ?? $rightAddend->getCurrency(),
-            bcadd((string) $leftAddend->getAmount(), (string) $rightAddend->getAmount(), 2)
+            \bcadd((string) $leftAddend->getAmount(), (string) $rightAddend->getAmount(), 2)
         );
     }
 
-    /**
-     * @param MoneyInterface $minuend
-     * @param MoneyInterface $subtrahend
-     *
-     * @return MoneyInterface
-     */
     public static function subtract(MoneyInterface $minuend, MoneyInterface $subtrahend): MoneyInterface
     {
         if (static::isDifferentCurrency($minuend, $subtrahend)) {
             throw new DifferentCurrencyException($minuend, $subtrahend);
         }
-
 
         if (static::isBothNullMoney($minuend, $subtrahend)) {
             return new NullableMoney();
@@ -52,16 +39,34 @@ class MoneyCalculator
 
         return new Money(
             $minuend->getCurrency() ?? $subtrahend->getCurrency(),
-            bcsub((string) $minuend->getAmount(), (string) $subtrahend->getAmount(), 2)
+            \bcsub((string) $minuend->getAmount(), (string) $subtrahend->getAmount(), 2)
         );
     }
 
-    /**
-     * @param MoneyInterface $fraction
-     * @param MoneyInterface $denominator
-     *
-     * @return float
-     */
+    public static function multiply(MoneyInterface $multiplicand, float $multiplier): MoneyInterface
+    {
+        if (null === $multiplicand->getAmount()) {
+            return new NullableMoney();
+        }
+
+        return new Money(
+            $multiplicand->getCurrency(),
+            static::round(\bcmul($multiplicand->getAmount(), (string) $multiplier, 4))
+        );
+    }
+
+    public static function divide(MoneyInterface $dividend, float $divisor): MoneyInterface
+    {
+        if (null === $dividend->getAmount()) {
+            return new NullableMoney();
+        }
+
+        return new Money(
+            $dividend->getCurrency(),
+            static::round(\bcdiv($dividend->getAmount(), (string) $divisor, 4))
+        );
+    }
+
     public static function ratio(MoneyInterface $fraction, MoneyInterface $denominator): float
     {
         if (static::isDifferentCurrency($fraction, $denominator)) {
@@ -72,49 +77,10 @@ class MoneyCalculator
             return 0;
         }
 
-        return (float) bcdiv((string) $fraction->getAmount(), (string) $denominator->getAmount(), 4);
+        return (float) \bcdiv((string) $fraction->getAmount(), (string) $denominator->getAmount(), 4);
     }
 
     /**
-     * @param MoneyInterface $dividend
-     * @param float          $divisor
-     *
-     * @return Money
-     */
-    public static function divide(MoneyInterface $dividend, float $divisor): MoneyInterface
-    {
-        if (null === $dividend->getAmount()) {
-            return new NullableMoney();
-        }
-
-        return new Money(
-            $dividend->getCurrency(),
-            static::round(bcdiv($dividend->getAmount(), (string) $divisor, 4))
-        );
-    }
-
-    /**
-     * @param MoneyInterface $multiplicand
-     * @param float          $multiplier
-     *
-     * @return MoneyInterface
-     */
-    public static function multiply(MoneyInterface $multiplicand, float $multiplier): MoneyInterface
-    {
-        if (null === $multiplicand->getAmount()) {
-            return new NullableMoney();
-        }
-
-        return new Money(
-            $multiplicand->getCurrency(),
-            static::round(bcmul($multiplicand->getCurrency(), (string) $multiplier, 4))
-        );
-    }
-
-    /**
-     * @param MoneyInterface $a
-     * @param MoneyInterface $b
-     *
      * @return int 1 if a > b | 0 if a === b | -1 if a < b
      */
     public static function compare(MoneyInterface $a, MoneyInterface $b): int
@@ -123,36 +89,29 @@ class MoneyCalculator
             throw new DifferentCurrencyException($a, $b);
         }
         // cast them to string, since amount can be null.
-        return bccomp((string) $a->getAmount(), (string) $b->getAmount(), 2);
+        return \bccomp((string) $a->getAmount(), (string) $b->getAmount(), 2);
     }
 
-    /**
-     * @param MoneyInterface $leftOperand
-     * @param MoneyInterface $rightOperand
-     *
-     * @return bool
-     */
+    public static function max(MoneyInterface $a, MoneyInterface $b): MoneyInterface
+    {
+        $comparison = self::compare($a, $b);
+
+        return (-1 === $comparison) ? $b : $a;
+    }
+
     public static function isDifferentCurrency(MoneyInterface $leftOperand, MoneyInterface $rightOperand): bool
     {
-        return null !== $leftOperand->getCurrency() && null !== $rightOperand->getCurrency() && $leftOperand->getCurrency() !== $rightOperand->getCurrency();
+        $leftCurrency  = \mb_strtoupper($leftOperand->getCurrency());
+        $rightCurrency = \mb_strtoupper($rightOperand->getCurrency());
+
+        return false === empty($leftCurrency) && false === empty($rightCurrency) && $leftCurrency !== $rightCurrency;
     }
 
-    /**
-     * @param string $number
-     *
-     * @return string
-     */
     private static function round(string $number): string
     {
-        return (string) round((float) $number, 2);
+        return (string) \round((float) $number, 2);
     }
 
-    /**
-     * @param MoneyInterface $leftOperand
-     * @param MoneyInterface $rightOperand
-     *
-     * @return bool
-     */
     private static function isBothNullMoney(MoneyInterface $leftOperand, MoneyInterface $rightOperand): bool
     {
         return null === $leftOperand->getAmount() && null === $rightOperand->getAmount();

@@ -238,7 +238,7 @@ CreditGuaranty:
         value:
             outOfRange: Merci de mettre un chiffre entre 0 et 1 pour une comparaison de type "rate".
         operandField:
-            nonComparable: Le champs choisi n'est pas comparable.
+            nonComparable: Le champ choisi n'est pas comparable.
         rightOperandField:
             selfComparaison: Vous ne pouvez pas comparer un champ à lui-même.
             empty: rightOperandField est requis pour une comparaison de type "rate".
@@ -247,10 +247,25 @@ CreditGuaranty:
         grade:
             invalid: Le grade choisi n'est pas valable.
     Reservation:
+        category:
+            ineligibles: Les champs {{ fieldAliases }} de la catégorie {{ category }} de la réservation sont inéligibles.
+        esb:
+            ineligible: La réservation ne peut être envoyée, le montant de l'équivalent subvention brut doit être inférieur ou égal au montant maximum du prêt FEI.
         borrower:
-            missing: La réservation ne peut être envoyée, les informations de l'emprunteur n'ont pas été remplies.
+            required: La réservation ne peut être envoyée, les informations du bénéficiaire n'ont pas été remplies.
         project:
-            missing: La réservation ne peut être envoyée, les informations du projet n'ont pas été remplies.
+            required: La réservation ne peut être envoyée, les informations du projet n'ont pas été remplies.
+            aidIntensity:
+                requiredForEsb: L'intensité d'aide du projet doit être renseigné pour calculer l'équivalent subvention brute.
+            grant:
+                requiredForEsb: Les subventions liés au projet du projet doivent être renseignées pour calculer l'équivalent subvention brute.
+            totalFeiCredit:
+                requiredForEsb: Le montant total du crédit FEI du projet doit être renseigné pour calculer l'équivalent subvention brute.
         financingObject:
-            missing: La réservation ne peut être envoyée, au moins un objet de financement doit être défini.
-        ineligibles: Les champs d'alias {{ fieldAliases }} de la catégorie {{ category }} de la réservation sont inéligibles.
+            required: La réservation ne peut être envoyée, au moins un objet de financement doit être défini.
+            invoiceMoney:
+                requiredForLoanReleasedOnInvoice: Le montant des factures de l'objet de financement doit être renseigné car les prêts sont débloqués sur facture dans ce programme.
+            achievementMoney:
+                requiredForLoanReleasedOnInvoice: Le montant de la réalisation de l'objet de financement doit être renseigné car les prêts sont débloqués sur facture dans ce programme.
+            loanDuration:
+                requiredForEsb: La durée du prêt de l'objet de financement doit être renseignée pour calculer l'équivalent subvention brute.
