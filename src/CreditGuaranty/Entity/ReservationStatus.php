@@ -17,7 +17,7 @@ use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
-use Unilend\CreditGuaranty\Validator\Constraints\ReservationEligible;
+use Unilend\CreditGuaranty\Validator\Constraints\ReservationSent;
 
 /**
  * @ApiResource(
@@ -41,7 +41,7 @@ use Unilend\CreditGuaranty\Validator\Constraints\ReservationEligible;
  *     callback={"Unilend\Core\Validator\Constraints\TraceableStatusValidator", "validate"},
  *     payload={ "path": "status", "allowedStatus": self::ALLOWED_STATUS }
  * )
- * @ReservationEligible
+ * @ReservationSent
  */
 class ReservationStatus implements StatusInterface
 {

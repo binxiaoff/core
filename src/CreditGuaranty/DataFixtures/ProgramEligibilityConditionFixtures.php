@@ -56,7 +56,7 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
     {
         /** @var Collection|Field[] $comparableFields */
         $comparableFields = $this->fieldRepository->findBy(['comparable' => true]);
-        $comparableFields = array_filter($comparableFields, static fn (Field $field) => false === empty($field->getReservationPropertyName()));
+        $comparableFields = \array_filter($comparableFields, static fn (Field $field) => false === empty($field->getReservationPropertyName()));
 
         $operations = ProgramEligibilityCondition::getAvailableOperations();
         $valueTypes = ProgramEligibilityCondition::getAvailableValueType();
@@ -71,11 +71,11 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
                     continue;
                 }
 
-                for ($i = 0; $i <= random_int(1, count($comparableFields) - 1); ++$i) {
+                for ($i = 0; $i <= \random_int(1, \count($comparableFields) - 1); ++$i) {
                     $leftOperand = $comparableFields[$i];
-                    $rightFields = array_filter($comparableFields, static fn (Field $field) => FinancingObject::class !== $field->getObjectClass());
-                    shuffle($rightFields);
-                    $valueType = $valueTypes[array_rand($valueTypes)];
+                    $rightFields = \array_filter($comparableFields, static fn (Field $field) => FinancingObject::class !== $field->getObjectClass());
+                    \shuffle($rightFields);
+                    $valueType = $valueTypes[\array_rand($valueTypes)];
 
                     if (ProgramEligibilityCondition::VALUE_TYPE_RATE === $valueType) {
                         foreach ($rightFields as $rightOperand) {
@@ -87,9 +87,9 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
                                 $programEligibilityConfiguration,
                                 $leftOperand,
                                 $rightOperand,
-                                $operations[array_rand($operations)],
+                                $operations[\array_rand($operations)],
                                 $valueType,
-                                (string) (mt_rand() / mt_getrandmax())
+                                (string) (\mt_rand() / \mt_getrandmax())
                             );
 
                             $manager->persist($programEligibilityCondition);
@@ -105,9 +105,9 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
                         $programEligibilityConfiguration,
                         $leftOperand,
                         null,
-                        $operations[array_rand($operations)],
+                        $operations[\array_rand($operations)],
                         $valueType,
-                        (string) random_int(1, 9999)
+                        (string) \random_int(1, 9999)
                     );
 
                     $manager->persist($programEligibilityCondition);

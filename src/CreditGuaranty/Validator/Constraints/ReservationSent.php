@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraint;
 /**
  * @Annotation
  */
-class ReservationEligible extends Constraint
+class ReservationSent extends Constraint
 {
     public string $message = 'The reservation is ineligible.';
 

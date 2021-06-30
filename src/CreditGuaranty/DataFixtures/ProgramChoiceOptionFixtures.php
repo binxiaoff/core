@@ -19,6 +19,9 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
 {
     // user-defined list type fields
     private const FIELDS = [
+        FieldAlias::AID_INTENSITY => [
+            '20', '40', '60', '80',
+        ],
         FieldAlias::BORROWER_TYPE => [
             'Installé depuis moins de 7 ans', 'Installé depuis plus de 7 ans',
             'Installé depuis moins de 10 ans', 'Installé depuis plus de 10 ans',
@@ -32,6 +35,18 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
         ],
         FieldAlias::INVESTMENT_COUNTRY => [
             'FR',
+        ],
+        FieldAlias::INVESTMENT_LOCATION => [
+            'Paris', 'Nantes', 'Lyon', 'Marseille', 'Nice',
+        ],
+        FieldAlias::COMPANY_NAF_CODE => [
+            '0111Z', '0121Z', '0141Z', '0142Z',
+        ],
+        FieldAlias::LOAN_NAF_CODE => [
+            '0111Z', '0121Z', '0141Z', '0142Z',
+        ],
+        FieldAlias::EXPLOITATION_SIZE => [
+            '64', '512', '1024', '2048',
         ],
     ];
 

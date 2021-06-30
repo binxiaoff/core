@@ -96,7 +96,6 @@ class EligibilityTest extends AbstractApiTest
             [
                 'project' => [
                     'total_fei_credit',
-                    'credit_excluding_fei',
                 ],
             ],
         ];
@@ -195,10 +194,8 @@ class EligibilityTest extends AbstractApiTest
                     'young_farmer',
                     'creation_in_progress',
                     'turnover',
-                    'total_assets',
                 ],
                 'project' => [
-                    'total_fei_credit',
                     'project_grant',
                 ],
                 'loan' => [

@@ -12,7 +12,7 @@ use Unilend\CreditGuaranty\Entity\ReservationStatus;
 use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
 use Unilend\CreditGuaranty\Service\EligibilityChecker;
 
-class ReservationEligibleValidator extends ConstraintValidator
+class ReservationSentValidator extends ConstraintValidator
 {
     private ProgramEligibilityRepository $programEligibilityRepository;
     private EligibilityChecker $eligibilityChecker;
@@ -24,8 +24,8 @@ class ReservationEligibleValidator extends ConstraintValidator
     }
 
     /**
-     * @param ReservationStatus   $value
-     * @param ReservationEligible $constraint
+     * @param ReservationStatus $value
+     * @param ReservationSent   $constraint
      */
     public function validate($value, Constraint $constraint): void
     {
@@ -68,7 +68,7 @@ class ReservationEligibleValidator extends ConstraintValidator
             if (false === empty($ineligibles)) {
                 foreach ($ineligibles as $category => $fieldAliases) {
                     $this->context->buildViolation('CreditGuaranty.Reservation.ineligibles')
-                        ->setParameter('{{ fieldAliases }}', implode(', ', $fieldAliases))
+                        ->setParameter('{{ fieldAliases }}', \implode(', ', $fieldAliases))
                         ->setParameter('{{ category }}', $category)
                         ->atPath('reservation')
                         ->addViolation()

@@ -156,7 +156,7 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);
-        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration1)->shouldBeCalledOnce()->willReturn(['loan' => ['loan_duration']]);
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration1)->shouldBeCalledOnce()->willReturn(false);
 
         // configuration 2 - bool
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field2])->shouldBeCalledOnce()->willReturn($programEligibility2);
@@ -166,7 +166,7 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
             'programEligibility' => $programEligibility2,
             'value'              => 1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration2);
-        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration2)->shouldBeCalledOnce()->willReturn([]);
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration2)->shouldBeCalledOnce()->willReturn(true);
 
         $eligibilityChecker = $this->createTestObject();
         $result             = $eligibilityChecker->check($this->reservation, $withConditions, $category);
@@ -266,7 +266,7 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);
-        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration1)->shouldBeCalledOnce()->willReturn(['loan' => ['loan_deferral']]);
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration1)->shouldBeCalledOnce()->willReturn(true);
 
         // configuration 2 - list
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field2])->shouldBeCalledOnce()->willReturn($programEligibility2);
@@ -276,7 +276,7 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
             'programEligibility'  => $programEligibility2,
             'programChoiceOption' => $borrowerTypeOption,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration2);
-        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration2)->shouldBeCalledOnce()->willReturn([]);
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration2)->shouldBeCalledOnce()->willReturn(false);
 
         // configuration 3 - bool
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field3])->shouldBeCalledOnce()->willReturn($programEligibility3);
@@ -291,7 +291,7 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $eligibilityChecker = $this->createTestObject();
         $result             = $eligibilityChecker->check($this->reservation, $withConditions, $category);
 
-        static::assertSame(['loan' => ['loan_deferral'], 'project' => ['receiving_grant']], $result);
+        static::assertSame(['profile' => ['borrower_type'], 'project' => ['receiving_grant']], $result);
     }
 
     public function exceptionsProvider(): iterable
@@ -323,9 +323,6 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $eligibilityChecker->check($this->reservation, $withConditions, $category);
     }
 
-    /**
-     * in case of eligibility field is removed from CASA side, no need to throw exception, right ?
-     */
     public function testCheckExceptionWithoutProgramEligibility(): void
     {
         $this->reservation->setBorrower($this->createBorrower($this->reservation));

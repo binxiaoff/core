@@ -26,7 +26,7 @@ final class Version20210623140555 extends AbstractMigration
             INSERT INTO credit_guaranty_field (public_id, category, type, field_alias, reservation_property_name, property_path, object_class, comparable, unit, predefined_items) VALUES
             ('b7da24f1-4d1c-426e-9e25-ef2773113d2a', 'loan', 'bool', 'supporting_generations_renewal', 'financingObjects', 'supportingGenerationsRenewal', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, NULL),
             ('58acfc84-3d39-4a9d-98bd-acd884a0e74b', 'loan', 'list', 'loan_naf_code', 'financingObjects', 'loanNafCode', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, NULL),
-            ('55a1b77f-1b2d-40a8-8f77-a4fa2ae5f292', 'loan', 'other', 'bfr_value', 'financingObjects', 'bfrValue::amount', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 1, 'money', NULL),
+            ('55a1b77f-1b2d-40a8-8f77-a4fa2ae5f292', 'loan', 'list', 'bfr_value', 'financingObjects', 'bfrValue::amount', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 1, 'money', NULL),
             ('93319782-8cfd-474f-bfe8-ab5aae88456b', 'loan', 'list', 'loan_periodicity', 'financingObjects', 'loanPeriodicity', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, '["monthly","quarterly","semi-annually","annually"]'),
             ('61ad5da2-1ae1-4c0b-b3bd-ce42fc0bea3b', 'loan', 'list', 'investment_location', 'financingObjects', 'investmentLocation', 'Unilend\\CreditGuaranty\\Entity\\FinancingObject', 0, NULL, NULL);
             INSERT_FIELDS;

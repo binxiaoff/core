@@ -65,7 +65,7 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
         $eligibilityConditionChecker = $this->createTestObject();
         $result                      = $eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration);
 
-        static::assertSame([], $result);
+        static::assertTrue($result);
     }
 
     public function testCheckByEligibilityConfigurationWithConditionsEligible(): void
@@ -98,7 +98,7 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
         $eligibilityConditionChecker = $this->createTestObject();
         $result                      = $eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration);
 
-        static::assertSame([], $result);
+        static::assertTrue($result);
     }
 
     public function testCheckByEligibilityConfigurationWithValueTypeConditionIneligible(): void
@@ -121,7 +121,7 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
         $eligibilityConditionChecker = $this->createTestObject();
         $result                      = $eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration);
 
-        static::assertSame(['test' => ['left_alias_1']], $result);
+        static::assertFalse($result);
     }
 
     public function testCheckByEligibilityConfigurationWithRateTypeConditionIneligible(): void
@@ -147,7 +147,7 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
         $eligibilityConditionChecker = $this->createTestObject();
         $result                      = $eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration);
 
-        static::assertSame(['test' => ['alias_1', 'right_alias_1']], $result);
+        static::assertFalse($result);
     }
 
     public function testCheckByEligibilityConfigurationWithoutRightOperandFieldInRateTypeCondition(): void

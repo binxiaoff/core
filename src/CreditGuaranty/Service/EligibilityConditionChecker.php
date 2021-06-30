@@ -7,7 +7,6 @@ namespace Unilend\CreditGuaranty\Service;
 use Doctrine\Common\Collections\Collection;
 use LogicException;
 use Unilend\Core\Entity\Constant\MathOperator;
-use Unilend\CreditGuaranty\Entity\Field;
 use Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition;
 use Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
 use Unilend\CreditGuaranty\Entity\Reservation;
@@ -17,7 +16,6 @@ class EligibilityConditionChecker
 {
     private ProgramEligibilityConditionRepository $programEligibilityConditionRepository;
     private EligibilityHelper $eligibilityHelper;
-    private array $ineligibles = [];
 
     public function __construct(
         ProgramEligibilityConditionRepository $programEligibilityConditionRepository,
@@ -27,24 +25,26 @@ class EligibilityConditionChecker
         $this->eligibilityHelper                     = $eligibilityHelper;
     }
 
-    public function checkByConfiguration(Reservation $reservation, ProgramEligibilityConfiguration $programEligibilityConfiguration): array
+    public function checkByConfiguration(Reservation $reservation, ProgramEligibilityConfiguration $programEligibilityConfiguration): bool
     {
         $programEligibilityConditions = $this->programEligibilityConditionRepository->findBy([
             'programEligibilityConfiguration' => $programEligibilityConfiguration,
         ]);
 
-        if (0 === count($programEligibilityConditions)) {
-            return [];
+        if (0 === \count($programEligibilityConditions)) {
+            return true;
         }
 
         foreach ($programEligibilityConditions as $eligibilityCondition) {
-            $this->checkCondition($reservation, $eligibilityCondition);
+            if (false === $this->checkCondition($reservation, $eligibilityCondition)) {
+                return false;
+            }
         }
 
-        return $this->ineligibles;
+        return true;
     }
 
-    private function checkCondition(Reservation $reservation, ProgramEligibilityCondition $eligibilityCondition): void
+    private function checkCondition(Reservation $reservation, ProgramEligibilityCondition $eligibilityCondition): bool
     {
         $operator          = $eligibilityCondition->getOperation();
         $rightOperandField = $eligibilityCondition->getRightOperandField();
@@ -58,10 +58,10 @@ class EligibilityConditionChecker
             $rightEntity = $this->eligibilityHelper->getEntity($reservation, $rightOperandField);
 
             if ($rightEntity instanceof Collection) {
-                throw new LogicException(sprintf('The rightOperandField of ProgramEligibilityCondition #%d cannot be a collection.', $eligibilityCondition->getId()));
+                throw new LogicException(\sprintf('The rightOperandField of ProgramEligibilityCondition #%d cannot be a collection.', $eligibilityCondition->getId()));
             }
 
-            $rightValue = bcmul(
+            $rightValue = \bcmul(
                 (string) $this->eligibilityHelper->getValue($rightEntity, $rightOperandField),
                 $eligibilityCondition->getValue(),
                 4
@@ -76,31 +76,21 @@ class EligibilityConditionChecker
                 $leftValue = $this->eligibilityHelper->getValue($leftEntityItem, $leftOperandField);
 
                 if (false === $this->check($operator, $leftValue, $rightValue)) {
-                    $this->ineligibles[$leftOperandField->getCategory()][] = $leftOperandField->getFieldAlias();
-
-                    if ($rightOperandField instanceof Field) {
-                        $this->ineligibles[$rightOperandField->getCategory()][] = $rightOperandField->getFieldAlias();
-                    }
+                    return false;
                 }
             }
 
-            return;
+            return true;
         }
 
         $leftValue = $this->eligibilityHelper->getValue($leftEntity, $leftOperandField);
 
-        if (false === $this->check($operator, $leftValue, $rightValue)) {
-            $this->ineligibles[$leftOperandField->getCategory()][] = $leftOperandField->getFieldAlias();
-
-            if ($rightOperandField instanceof Field) {
-                $this->ineligibles[$rightOperandField->getCategory()][] = $rightOperandField->getFieldAlias();
-            }
-        }
+        return $this->check($operator, $leftValue, $rightValue);
     }
 
     private function check(string $operator, $leftValue, $valueToCompare): bool
     {
-        $comparison = bccomp((string) $leftValue, (string) $valueToCompare, 4);
+        $comparison = \bccomp((string) $leftValue, (string) $valueToCompare, 4);
 
         switch ($operator) {
             case MathOperator::INFERIOR:
@@ -119,7 +109,7 @@ class EligibilityConditionChecker
                 return 0 === $comparison;
 
             default:
-                throw new LogicException(sprintf('Operator %s unexpected in ProgramEligibilityConditions.', $operator));
+                throw new LogicException(\sprintf('Operator %s unexpected in ProgramEligibilityConditions.', $operator));
         }
     }
 }
