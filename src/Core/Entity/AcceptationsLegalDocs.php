@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Clients;
-use Unilend\Core\Entity\LegalDocument;
-use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Filter\CountFilter;
 
 /**
@@ -21,7 +22,7 @@ use Unilend\Core\Filter\CountFilter;
  *     denormalizationContext={"groups": {"acceptationsLegalDocs:write"}},
  *     collectionOperations={
  *         "post": {
- *            "security_post_denormalize": "is_granted('create', object)"
+ *             "security_post_denormalize": "is_granted('create', object)"
  *         }
  *     },
  *     itemOperations={
@@ -37,7 +38,7 @@ use Unilend\Core\Filter\CountFilter;
  *
  * @ORM\Table(
  *     uniqueConstraints={
- *      @ORM\UniqueConstraint(columns={"id_legal_doc", "accepted_by"})
+ *         @ORM\UniqueConstraint(columns={"id_legal_doc", "accepted_by"})
  *     },
  *     name="core_acceptations_legal_docs"
  * )
@@ -52,13 +53,12 @@ class AcceptationsLegalDocs
     use PublicizeIdentityTrait;
 
     /**
-     * @var LegalDocument
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\LegalDocument")
      * @ORM\JoinColumn(name="id_legal_doc", nullable=false)
      *
+     * TODO CALS-4049 This validation should be moved elsewhere. Once another legal document has been created the previous acceptation legal doc are not invalid.
      * @Assert\Expression(
-     *     "this.getLegalDoc().getId() === constant('Unilend\\Core\\Entity\\LegalDocument::CURRENT_SERVICE_TERMS')",
+     *     "this.getLegalDoc().getId() === constant('Unilend\\Core\\Entity\\LegalDocument::CURRENT_SERVICE_TERMS_ID')",
      *     message="Core.AcceptationsLegalDocs.legalDoc.notCurrent"
      * )
      *
@@ -67,19 +67,13 @@ class AcceptationsLegalDocs
     private LegalDocument $legalDoc;
 
     /**
-     * @var User
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
      * @ORM\JoinColumn(name="accepted_by", nullable=false)
-     *
      */
     private User $acceptedBy;
 
     /**
-     * @param User          $acceptedBy
-     * @param LegalDocument $legalDoc
-     *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(User $acceptedBy, LegalDocument $legalDoc)
     {
@@ -88,17 +82,11 @@ class AcceptationsLegalDocs
         $this->added      = new DateTimeImmutable();
     }
 
-    /**
-     * @return LegalDocument
-     */
     public function getLegalDoc(): LegalDocument
     {
         return $this->legalDoc;
     }
 
-    /**
-     * @return User
-     */
     public function getAcceptedBy(): User
     {
         return $this->acceptedBy;
