@@ -44,9 +44,6 @@ class FileDownloadVoter extends AbstractEntityVoter
 
     private TermRepository $termRepository;
 
-    /**
-     * FileDownloadVoter constructor.
-     */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         FileVersionSignatureRepository $fileVersionSignatureRepository,

@@ -243,7 +243,7 @@ class Term
      *
      * @Assert\Positive
      *
-     * @Assert\Expression("this.isInvalid() || this.isValid() || value === null", message="Agency.Term.grantedDelay.invalidTermRequired")
+     * @Assert\Expression("false === this.isPendingAgentValidation() || (value === null)", message="Agency.Term.grantedDelay.invalidTermRequired")
      *
      * @ORM\Column(type="integer", nullable=true)
      *
@@ -694,6 +694,7 @@ class Term
         $this->validationDate = null;
         $this->agentComment   = null;
 
+        $this->grantedDelay        = null;
         $this->breach              = false;
         $this->irregularityComment = null;
         $this->waiver              = null;
