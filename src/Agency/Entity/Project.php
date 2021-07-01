@@ -101,7 +101,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "method": "GET",
  *             "security": "is_granted('view', object)",
  *             "normalization_context": {
- *                 "groups": {"agency:covenant:read"},
+ *                 "groups": {"agency:covenant:read", "agency:inequality:read"},
  *             },
  *             "controller": GetCovenants::class
  *         },
