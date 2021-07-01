@@ -28,7 +28,7 @@ Step 2: Clone the repositories
 
 Step3: Enable GrumPHP
 ---------------------
-After the code has been deployed to your ``local`` environment, you need to active GrumPHP (you'll have to run the commands from the container using ``docker-compose exec php <your command>``): `How to enable or disable GrumPHP <tools/grumphp.rst>`_
+After the code has been deployed to your ``local`` environment, you need to active GrumPHP (you'll have to run the commands from the container using ``docker-compose exec php <your command>``): `How to enable or disable GrumPHP <grumphp.rst>`_
 
 That's it. Now you have your development environment.
 

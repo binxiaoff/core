@@ -1,4 +1,4 @@
-`Return to index <index.rst>`_
+`Return to index <../index.rst>`_
 
 ==============
 Backend coding standard
@@ -21,7 +21,7 @@ Instead of reviewing the code manually, we use followning PHP Static analysis to
  - PHPStan_
  - PHPMD_ (not activated)
 
-Besides these tools, make sure your `PhpStorm settings are synchronized <doc/phpstorm-settings.rst>`_ with the team, which helps a lot.
+Besides these tools, make sure your `PhpStorm settings are synchronized <phpstorm-settings.rst>`_ with the team, which helps a lot.
 
 KLS Standards and Best Practices
 ================================

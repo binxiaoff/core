@@ -35,7 +35,7 @@ All PHP command have to be done on the container only.
 
 Retrieve Docker PHP API container name. For MacOS users, this can be done with Docker Desktop dashboard.
 
- .. image:: images/grumphp_docker-desktop.png
+ .. image:: ../assets/images/grumphp_docker-desktop.png
     :align: center
     :alt: PHP Docker container
 
