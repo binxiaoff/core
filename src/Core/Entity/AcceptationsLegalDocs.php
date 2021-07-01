@@ -67,7 +67,7 @@ class AcceptationsLegalDocs
     private LegalDocument $legalDoc;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User", inversedBy="legalDocumentAcceptations")
      * @ORM\JoinColumn(name="accepted_by", nullable=false)
      */
     private User $acceptedBy;
