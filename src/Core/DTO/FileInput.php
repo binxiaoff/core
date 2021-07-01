@@ -20,6 +20,7 @@ class FileInput
         'application/pdf',
         'application/vnd.ms-excel',
         'application/vnd.ms-excel.sheet.macroenabled.12', // .xlsm
+        'application/encrypted', // Allow password protected file
         'application/vnd.ms-powerpoint',
         'application/msword',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
