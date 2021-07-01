@@ -17,11 +17,16 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Controller\Dataroom\Delete;
+use Unilend\Core\Controller\Dataroom\Get;
+use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\Constant\CARatingType;
+use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Interfaces\DriveCarrierInterface;
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Interfaces\StatusInterface;
 use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
@@ -40,7 +45,50 @@ use Unilend\Core\Validator\Constraints\PreviousValue;
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
  *         "patch": {"security": "is_granted('edit', object)"},
- *         "delete": {"security": "is_granted('delete', object)"}
+ *         "delete": {"security": "is_granted('delete', object)"},
+ *         "get_program_dataroom": {
+ *             "method": "GET",
+ *             "path": "/credit_guaranty/program/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('view', object)",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "post_program_dataroom": {
+ *             "method": "POST",
+ *             "path": "/credit_guaranty/program/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('edit', object)",
+ *             "deserialize": false,
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "delete_program_dataroom": {
+ *             "method": "DELETE",
+ *             "path": "/credit_guaranty/program/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('edit', object)",
+ *             "controller": Delete::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             }
+ *         }
  *     },
  *     collectionOperations={
  *         "post": {
@@ -70,7 +118,7 @@ use Unilend\Core\Validator\Constraints\PreviousValue;
  *
  * @UniqueEntity({"name"}, message="CreditGuaranty.Program.name.unique")
  */
-class Program implements TraceableStatusAwareInterface
+class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -335,6 +383,12 @@ class Program implements TraceableStatusAwareInterface
      */
     private Collection $reservations;
 
+    /**
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Drive", cascade={"persist", "remove"})
+     * @ORM\JoinColumn(name="id_drive", nullable=false, unique=true)
+     */
+    private Drive $drive;
+
     public function __construct(string $name, CompanyGroupTag $companyGroupTag, Money $funds, Staff $addedBy)
     {
         $this->name                           = $name;
@@ -351,6 +405,7 @@ class Program implements TraceableStatusAwareInterface
         $this->participations                 = new ArrayCollection();
         $this->reservations                   = new ArrayCollection();
         $this->added                          = new DateTimeImmutable();
+        $this->drive                          = new Drive();
         $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_DRAFT, $addedBy));
     }
 
@@ -777,6 +832,11 @@ class Program implements TraceableStatusAwareInterface
     public function getReservations()
     {
         return $this->reservations;
+    }
+
+    public function getDrive(): Drive
+    {
+        return $this->drive;
     }
 
     protected function onClone(): Program
