@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -146,6 +147,13 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     private ?UserStatus $currentStatus = null;
 
     /**
+     * @var Collection|AcceptationsLegalDocs[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\AcceptationsLegalDocs", mappedBy="acceptedBy")
+     */
+    private Collection $legalDocumentAcceptations;
+
+    /**
      * Property initialised only in UserNormalizer.
      *
      * @Groups({"user:item:read"})
@@ -173,10 +181,11 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         $this->statuses = new ArrayCollection();
         $this->setCurrentStatus(new UserStatus($this, UserStatus::STATUS_INVITED));
 
-        $this->added   = new DateTimeImmutable();
-        $this->roles[] = self::ROLE_USER;
-        $this->staff   = new ArrayCollection();
-        $this->email   = $email;
+        $this->added                     = new DateTimeImmutable();
+        $this->roles[]                   = self::ROLE_USER;
+        $this->staff                     = new ArrayCollection();
+        $this->email                     = $email;
+        $this->legalDocumentAcceptations = new ArrayCollection();
     }
 
     /**
@@ -428,6 +437,17 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         $this->recaptchaResult = $recaptchaResult;
 
         return $this;
+    }
+
+    /**
+     * @ApiProperty
+     *
+     * @Groups({"user:read"})
+     */
+    public function hasPreviousCGUAcceptations(): bool
+    {
+        // Works because there is only one type of legalDocument
+        return 0 < count($this->legalDocumentAcceptations);
     }
 
     private function normalizeName(?string $name): ?string
