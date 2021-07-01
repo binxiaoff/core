@@ -33,7 +33,8 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
  *         "groups": {
  *             "agency:participation:read",
  *             "money:read",
- *             "nullableMoney:read"
+ *             "nullableMoney:read",
+ *             "lendingRate:read"
  *         }
  *     },
  *     collectionOperations={
