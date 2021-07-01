@@ -620,7 +620,7 @@ class Participation extends AbstractProjectPartaker
         $validationGroups = ['Default', 'Project'];
 
         if ($participation->getProject()->isPublished()) {
-            $validationGroups[] = ['published'];
+            $validationGroups[] = 'published';
         }
 
         return $validationGroups;
