@@ -18,8 +18,6 @@ parameters:
     psn.base_uri: '%env(PSN_BASE_URI)%'
     mailer.error_reporting_email: tech@kls-platform.com
     mailer.sender_address: support@kls-platform.com
-    dataroom.carriers :
-        - Unilend\CreditGuaranty\Entity\Program
 
 services:
     _defaults:
@@ -198,10 +196,6 @@ services:
     Unilend\Core\EventSubscriber\Jwt\PayloadManagerSubscriber:
         calls:
             - addPayloadManager: ['@Unilend\Core\Service\Jwt\StaffPayloadManager']
-
-    Unilend\Core\Listener\Symfony\DataroomListener:
-        $dataroomCarriers: "%dataroom.carriers%"
-
 ### Agency
     Unilend\Agency\Swagger\ProjectDecorator:
         decorates: 'api_platform.swagger.normalizer.api_gateway'

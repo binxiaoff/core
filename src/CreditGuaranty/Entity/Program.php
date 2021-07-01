@@ -24,7 +24,7 @@ use Unilend\Core\Entity\Constant\CARatingType;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Interfaces\DriveAwareInterface;
+use Unilend\Core\Entity\Interfaces\DriveCarrierInterface;
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Interfaces\StatusInterface;
 use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
@@ -116,7 +116,7 @@ use Unilend\Core\Validator\Constraints\PreviousValue;
  *
  * @UniqueEntity({"name"}, message="CreditGuaranty.Program.name.unique")
  */
-class Program implements TraceableStatusAwareInterface, DriveAwareInterface
+class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
