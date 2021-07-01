@@ -30,6 +30,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "agency:participationPool:read",
  *             "money:read",
  *             "nullableMoney:read",
+ *             "lendingRate:read"
  *         }
  *     },
  *     collectionOperations={},
