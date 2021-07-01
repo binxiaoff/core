@@ -10,11 +10,12 @@ use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
-use Unilend\CreditGuaranty\Entity\Program;
+use Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition;
+use Unilend\CreditGuaranty\Entity\StaffPermission;
 use Unilend\CreditGuaranty\Extension\Traits\ProgramPermissionTrait;
 use Unilend\CreditGuaranty\Service\StaffPermissionManager;
 
-class ProgramExtension implements QueryCollectionExtensionInterface
+class ProgramEligibilityConditionExtension implements QueryCollectionExtensionInterface
 {
     use ProgramPermissionTrait;
 
@@ -28,13 +29,29 @@ class ProgramExtension implements QueryCollectionExtensionInterface
 
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
     {
-        if (Program::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
+        if (ProgramEligibilityCondition::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
+
         $token = $this->security->getToken();
         /** @var Staff|null $staff */
         $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
 
-        $this->applyProgramManagerFilter($staff, $queryBuilder, $queryBuilder->getRootAliases()[0]);
+        if (null === $staff || false === $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_RESERVATION)) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
+
+        $rootAlias    = $queryBuilder->getRootAliases()[0];
+        $programAlias = 'p';
+
+        $queryBuilder
+            ->innerJoin("{$rootAlias}.programEligibilityConfiguration", 'pec')
+            ->innerJoin('pec.programEligibility', 'pe')
+            ->innerJoin('pe.program', $programAlias)
+        ;
+
+        $this->applyProgramManagerFilter($staff, $queryBuilder, $programAlias);
     }
 }

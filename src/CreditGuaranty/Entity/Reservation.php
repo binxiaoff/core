@@ -80,8 +80,6 @@ class Reservation implements TraceableStatusAwareInterface
     private Company $managingCompany;
 
     /**
-     * @ApiSubresource
-     *
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Borrower", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
      *
      * @Groups({"creditGuaranty:reservation:read"})
@@ -89,8 +87,6 @@ class Reservation implements TraceableStatusAwareInterface
     private ?Borrower $borrower = null;
 
     /**
-     * @ApiSubresource
-     *
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Project", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
      *
      * @Groups({"creditGuaranty:reservation:read"})
