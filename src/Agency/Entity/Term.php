@@ -135,10 +135,21 @@ class Term
      *
      * @Assert\GreaterThanOrEqual(propertyPath="startDate")
      * @Assert\IsNull(groups={"Other"}, message="Agency.Term.borrowerInputDate.otherCovenant")
-     * @Assert\Expression(
+     * @Assert\AtLeastOneOf(
      *     groups={"Financial"},
-     *     expression="(null === value && null === this.getBorrowerInput()) || (null !== value && null !== this.getBorrowerInput())",
-     *     message="Agency.Term.borrowerInputDate.borrowerInput"
+     *     constraints={
+     *         @Assert\Expression("(null === this.getBorrowerInputDate()) && (null === this.getBorrowerInput())"),
+     *         @Assert\Expression("(null !== this.getBorrowerInputDate()) && (null !== this.getBorrowerInput())")
+     *     },
+     *     message="Agency.Term.borrowerInputDate.financial"
+     * )
+     * @Assert\AtLeastOneOf(
+     *     groups={"Document"},
+     *     constraints={
+     *         @Assert\Expression("null === this.getBorrowerInputDate() && null === this.getBorrowerDocument()"),
+     *         @Assert\Expression("null !== this.getBorrowerInputDate() && null !== this.getBorrowerDocument()")
+     *     },
+     *     message="Agency.Term.borrowerInputDate.document"
      * )
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
@@ -367,7 +378,7 @@ class Term
     public function setBorrowerDocument(?File $borrowerDocument): Term
     {
         $this->borrowerDocument  = $borrowerDocument;
-        $this->borrowerInputDate = $this->borrowerDocument && Covenant::NATURE_DOCUMENT === $this->getNature() ? new DateTimeImmutable() : null;
+        $this->borrowerInputDate = $this->borrowerDocument && Covenant::NATURE_DOCUMENT === $this->getNature() ? new DateTimeImmutable() : $this->borrowerInputDate;
         $this->awaitValidation();
 
         return $this;
