@@ -8,28 +8,23 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\UserRepository;
 
 class ArchivedByListener
 {
-    /** @var Security */
-    private $security;
+    private Security $security;
 
-    /** @var UserRepository $userRepository */
-    private $userRepository;
+    private UserRepository $userRepository;
 
-    /**
-     * @param Security $security
-     */
-    public function __construct(Security $security)
+    public function __construct(Security $security, UserRepository $userRepository)
     {
-        $this->security = $security;
+        $this->security       = $security;
+        $this->userRepository = $userRepository;
     }
 
     /**
-     * @param LifecycleEventArgs $args
-     *
      * @throws ORMException
      */
     public function preRemove(LifecycleEventArgs $args)
@@ -42,6 +37,11 @@ class ArchivedByListener
 
         if ($user instanceof UserInterface && false === $user instanceof User) {
             $user = $this->userRepository->findOneBy(['email' => $user->getUsername()]);
+        }
+
+        // Must bypass empty staff for borrower and file
+        if ($entity instanceof File && null === $user->getCurrentStaff()) {
+            return;
         }
 
         if (method_exists($entity, 'setArchivedBy')) {
