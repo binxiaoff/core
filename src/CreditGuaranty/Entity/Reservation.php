@@ -13,7 +13,12 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Controller\Dataroom\Delete;
+use Unilend\Core\Controller\Dataroom\Get;
+use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Drive;
+use Unilend\Core\Entity\Interfaces\DriveCarrierInterface;
 use Unilend\Core\Entity\Interfaces\StatusInterface;
 use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Core\Entity\Staff;
@@ -44,6 +49,49 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)"
+ *         },
+ *         "get_reservation_dataroom": {
+ *             "method": "GET",
+ *             "path": "/credit_guaranty/reservation/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('view', object)",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "post_reservation_dataroom": {
+ *             "method": "POST",
+ *             "path": "/credit_guaranty/reservation/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('edit', object)",
+ *             "deserialize": false,
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "delete_reservation_dataroom": {
+ *             "method": "DELETE",
+ *             "path": "/credit_guaranty/reservation/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('edit', object)",
+ *             "controller": Delete::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             }
  *         }
  *     },
  *     collectionOperations={
@@ -58,7 +106,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  * @ORM\Table(name="credit_guaranty_reservation")
  * @ORM\HasLifecycleCallbacks
  */
-class Reservation implements TraceableStatusAwareInterface
+class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -103,6 +151,12 @@ class Reservation implements TraceableStatusAwareInterface
     private Collection $financingObjects;
 
     /**
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Drive", cascade={"persist", "remove"})
+     * @ORM\JoinColumn(name="id_drive", nullable=false, unique=true)
+     */
+    private Drive $drive;
+
+    /**
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\ReservationStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
@@ -133,6 +187,7 @@ class Reservation implements TraceableStatusAwareInterface
         $this->program          = $program;
         $this->managingCompany  = $addedBy->getCompany();
         $this->financingObjects = new ArrayCollection();
+        $this->drive            = new Drive();
         $this->added            = new DateTimeImmutable();
         $this->statuses         = new ArrayCollection();
         $this->setCurrentStatus(new ReservationStatus($this, ReservationStatus::STATUS_DRAFT, $addedBy));
@@ -184,6 +239,11 @@ class Reservation implements TraceableStatusAwareInterface
         }
 
         return $this;
+    }
+
+    public function getDrive(): Drive
+    {
+        return $this->drive;
     }
 
     /**
