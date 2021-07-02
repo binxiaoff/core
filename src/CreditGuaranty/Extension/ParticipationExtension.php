@@ -11,13 +11,14 @@ use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\CreditGuaranty\Entity\Participation;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
+use Unilend\CreditGuaranty\Extension\Traits\ProgramPermissionTrait;
 use Unilend\CreditGuaranty\Service\StaffPermissionManager;
 
 class ParticipationExtension implements QueryCollectionExtensionInterface
 {
-    private Security               $security;
-    private StaffPermissionManager $staffPermissionManager;
+    use ProgramPermissionTrait;
+
+    private Security $security;
 
     public function __construct(Security $security, StaffPermissionManager $staffPermissionManager)
     {
@@ -25,33 +26,19 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
         $this->staffPermissionManager = $staffPermissionManager;
     }
 
-    public function applyToCollection(
-        QueryBuilder $queryBuilder,
-        QueryNameGeneratorInterface $queryNameGenerator,
-        string $resourceClass,
-        string $operationName = null
-    ): void {
+    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
+    {
         if (Participation::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
 
         $token = $this->security->getToken();
         /** @var Staff|null $staff */
-        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+        $staff        = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+        $programAlias = 'p';
+        $rootAlias    = $queryBuilder->getRootAliases()[0];
+        $queryBuilder->innerJoin("{$rootAlias}.program", $programAlias);
 
-        if (null === $staff || false === $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_PROGRAM)) {
-            $queryBuilder->andWhere('1 = 0');
-
-            return;
-        }
-
-        $rootAlias = $queryBuilder->getRootAliases()[0];
-
-        $queryBuilder
-            ->distinct()
-            ->innerJoin("{$rootAlias}.program", 'p')
-            ->andWhere("{$rootAlias}.participant = :company OR p.managingCompany = :company")
-            ->setParameter('company', $staff->getCompany())
-        ;
+        $this->applyProgramManagerOrParticipantFilter($staff, $queryBuilder, $programAlias, $rootAlias);
     }
 }

@@ -10,11 +10,11 @@ use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
-use Unilend\CreditGuaranty\Entity\Program;
+use Unilend\CreditGuaranty\Entity\ProgramEligibility;
 use Unilend\CreditGuaranty\Extension\Traits\ProgramPermissionTrait;
 use Unilend\CreditGuaranty\Service\StaffPermissionManager;
 
-class ProgramExtension implements QueryCollectionExtensionInterface
+class ProgramEligibilityExtension implements QueryCollectionExtensionInterface
 {
     use ProgramPermissionTrait;
 
@@ -28,13 +28,15 @@ class ProgramExtension implements QueryCollectionExtensionInterface
 
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
     {
-        if (Program::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
+        if (ProgramEligibility::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
+
         $token = $this->security->getToken();
         /** @var Staff|null $staff */
-        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
-
-        $this->applyProgramManagerFilter($staff, $queryBuilder, $queryBuilder->getRootAliases()[0]);
+        $staff        = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+        $programAlias = 'p';
+        $queryBuilder->innerJoin("{$queryBuilder->getRootAliases()[0]}.program", $programAlias);
+        $this->applyProgramManagerFilter($staff, $queryBuilder, $programAlias);
     }
 }

@@ -20,8 +20,9 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
+ * Pagination need to be enabled (which is the default configuration) on the resource, otherwise it will be out of memory.
+ *
  * @ApiResource(
- *     attributes={"pagination_enabled": false},
  *     normalizationContext={"groups": {"creditGuaranty:programChoiceOption:read", "creditGuaranty:field:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:programChoiceOption:write"}},
  *     itemOperations={
@@ -41,7 +42,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *     }
  * )
  *
- * @ApiFilter(SearchFilter::class, properties={"field.publicId"})
+ * @ApiFilter(SearchFilter::class, properties={"field.publicId", "field.fieldAlias"})
  *
  * @ORM\Entity
  * @ORM\Table(
