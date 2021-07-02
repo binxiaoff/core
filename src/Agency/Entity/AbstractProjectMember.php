@@ -164,4 +164,6 @@ abstract class AbstractProjectMember
             ;
         }
     }
+
+    abstract public static function getProjectPublicationNotificationMailjetTemplateId(): int;
 }

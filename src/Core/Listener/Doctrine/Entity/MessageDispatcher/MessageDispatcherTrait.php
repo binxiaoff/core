@@ -8,12 +8,8 @@ use Symfony\Component\Messenger\MessageBusInterface;
 
 trait MessageDispatcherTrait
 {
-    /** @var MessageBusInterface */
-    private $messageBus;
+    private MessageBusInterface $messageBus;
 
-    /**
-     * @param MessageBusInterface $messageBus
-     */
     public function __construct(MessageBusInterface $messageBus)
     {
         $this->messageBus = $messageBus;

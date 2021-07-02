@@ -14,6 +14,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\User;
+use Unilend\Core\SwiftMailer\MailjetMessage;
 
 /**
  * @ApiResource(
@@ -177,5 +178,10 @@ class BorrowerMember extends AbstractProjectMember
     public function isArchived(): bool
     {
         return parent::isArchived();
+    }
+
+    public static function getProjectPublicationNotificationMailjetTemplateId(): int
+    {
+        return MailjetMessage::TEMPLATE_AGENCY_BORROWER_MEMBER_PROJECT_PUBLISHED;
     }
 }

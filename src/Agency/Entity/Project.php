@@ -1063,4 +1063,20 @@ class Project
     {
         return $this->borrowers->filter(fn (Borrower $borrower) => $borrower->getMatriculationNumber() === $siren)->first() ?: null;
     }
+
+    /**
+     * @return iterable|AbstractProjectMember[]
+     */
+    public function getMembers(): iterable
+    {
+        yield from $this->getAgent()->getMembers();
+
+        foreach ($this->getBorrowers() as $borrower) {
+            yield from $borrower->getMembers();
+        }
+
+        foreach ($this->getParticipations() as $participation) {
+            yield from $participation->getMembers();
+        }
+    }
 }
