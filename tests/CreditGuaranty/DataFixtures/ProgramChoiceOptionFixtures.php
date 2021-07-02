@@ -16,11 +16,23 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
 {
     // user-defined list type fields
     private const FIELDS = [
+        'field-aid_intensity' => [
+            '20', '40', '60', '80',
+        ],
         'field-borrower_type' => [
             'Installé',
             'En reconversion',
             'Agriculture',
             'Apiculteur',
+        ],
+        'field-activity_country' => [
+            'FR',
+        ],
+        'field-investment_country' => [
+            'FR',
+        ],
+        'field-investment_location' => [
+            'Paris',
         ],
         'field-company_naf_code' => [
             '0001A',
@@ -30,12 +42,6 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
         ],
         'field-exploitation_size' => [
             '42',
-        ],
-        'field-activity_country' => [
-            'FR',
-        ],
-        'field-investment_country' => [
-            'FR',
         ],
     ];
 

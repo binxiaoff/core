@@ -40,7 +40,9 @@ class EligibilityHelperTest extends AbstractEligibilityTest
 
     public function testGetEntity(): void
     {
-        $field = new Field('field_alias', 'category', 'type', 'borrower', 'companyName', Borrower::class, false, null, null);
+        $this->reservation->setBorrower($this->createBorrower($this->reservation));
+
+        $field = new Field('company_name', 'category', 'type', 'borrower', 'companyName', Borrower::class, false, null, null);
 
         $this->propertyAccessor->getValue($this->reservation, 'borrower')->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
 
@@ -52,7 +54,7 @@ class EligibilityHelperTest extends AbstractEligibilityTest
 
     public function testGetEntityExceptionWithUnexistedPath(): void
     {
-        $field = new Field('field_alias', 'category', 'type', 'borrow', 'companyName', 'Name\\Class\\Borrow', false, null, null);
+        $field = new Field('company_name', 'category', 'type', 'borrow', 'companyName', 'Name\\Class\\Borrow', false, null, null);
 
         $this->propertyAccessor->getValue($this->reservation, 'borrow')->shouldBeCalledOnce()->willThrow(AccessException::class);
 
@@ -64,6 +66,8 @@ class EligibilityHelperTest extends AbstractEligibilityTest
 
     public function testGetValue(): void
     {
+        $this->reservation->setBorrower($this->createBorrower($this->reservation));
+
         $entity = $this->reservation->getBorrower();
         $field  = new Field('beneficiary_name', 'profile', 'other', 'borrower', 'beneficiaryName', Borrower::class, false, null, null);
 
@@ -77,6 +81,8 @@ class EligibilityHelperTest extends AbstractEligibilityTest
 
     public function testGetMoneyValue(): void
     {
+        $this->reservation->setBorrower($this->createBorrower($this->reservation));
+
         $entity = $this->reservation->getBorrower();
         $field  = new Field('turnover', 'profile', 'other', 'borrower', 'turnover::amount', Borrower::class, true, 'money', null);
 
@@ -90,21 +96,8 @@ class EligibilityHelperTest extends AbstractEligibilityTest
 
     public function testGetListValue(): void
     {
-        $entity              = $this->reservation->getBorrower();
-        $field               = new Field('activity_country', 'activity', 'list', 'borrower', 'addressCountry', Borrower::class, false, null, null);
-        $programChoiceOption = new ProgramChoiceOption($this->reservation->getProgram(), 'FR', $field);
+        $this->reservation->setBorrower($this->createBorrower($this->reservation));
 
-        $this->propertyAccessor->getValue($entity, 'addressCountry')->shouldBeCalledOnce()->willReturn($programChoiceOption);
-
-        $eligibilityHelper = $this->createTestObject();
-        $result            = $eligibilityHelper->getValue($entity, $field);
-
-        static::assertInstanceOf(ProgramChoiceOption::class, $result);
-        static::assertSame($programChoiceOption, $result);
-    }
-
-    public function testGetListValueChoiceOption(): void
-    {
         $entity              = $this->reservation->getBorrower();
         $field               = new Field('borrower_type', 'profile', 'list', 'borrower', 'borrowerType', Borrower::class, false, null, null);
         $programChoiceOption = new ProgramChoiceOption($this->reservation->getProgram(), 'borrower type', $field);

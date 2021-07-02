@@ -177,6 +177,15 @@ class Reservation implements TraceableStatusAwareInterface
         return $this->financingObjects;
     }
 
+    public function addFinancingObject(FinancingObject $financingObject): Reservation
+    {
+        if (false === $this->financingObjects->contains($financingObject)) {
+            $this->financingObjects->add($financingObject);
+        }
+
+        return $this;
+    }
+
     /**
      * @Groups({"creditGuaranty:reservation:read"})
      */

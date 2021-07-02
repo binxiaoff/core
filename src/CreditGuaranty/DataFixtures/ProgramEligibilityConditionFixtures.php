@@ -12,13 +12,14 @@ use Faker\Provider\Miscellaneous;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\CreditGuaranty\Entity\Field;
+use Unilend\CreditGuaranty\Entity\FinancingObject;
 use Unilend\CreditGuaranty\Entity\Program;
 use Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition;
 use Unilend\CreditGuaranty\Repository\FieldRepository;
 use Unilend\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
 use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
 
-class ProgramEligibilityConditionFixture extends AbstractFixtures implements DependentFixtureInterface
+class ProgramEligibilityConditionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     private const CHANCE_OF_HAVING_CONDITION = 30;
 
@@ -55,7 +56,7 @@ class ProgramEligibilityConditionFixture extends AbstractFixtures implements Dep
     {
         /** @var Collection|Field[] $comparableFields */
         $comparableFields = $this->fieldRepository->findBy(['comparable' => true]);
-        $comparableFields = array_filter($comparableFields, static fn (Field $field) => false === empty($field->getReservationPropertyName()));
+        $comparableFields = \array_filter($comparableFields, static fn (Field $field) => false === empty($field->getReservationPropertyName()));
 
         $operations = ProgramEligibilityCondition::getAvailableOperations();
         $valueTypes = ProgramEligibilityCondition::getAvailableValueType();
@@ -70,11 +71,11 @@ class ProgramEligibilityConditionFixture extends AbstractFixtures implements Dep
                     continue;
                 }
 
-                for ($i = 0; $i <= random_int(1, count($comparableFields) - 1); ++$i) {
+                for ($i = 0; $i <= \random_int(1, \count($comparableFields) - 1); ++$i) {
                     $leftOperand = $comparableFields[$i];
-                    $rightFields = $comparableFields;
-                    shuffle($rightFields);
-                    $valueType = $valueTypes[array_rand($valueTypes)];
+                    $rightFields = \array_filter($comparableFields, static fn (Field $field) => FinancingObject::class !== $field->getObjectClass());
+                    \shuffle($rightFields);
+                    $valueType = $valueTypes[\array_rand($valueTypes)];
 
                     if (ProgramEligibilityCondition::VALUE_TYPE_RATE === $valueType) {
                         foreach ($rightFields as $rightOperand) {
@@ -86,9 +87,9 @@ class ProgramEligibilityConditionFixture extends AbstractFixtures implements Dep
                                 $programEligibilityConfiguration,
                                 $leftOperand,
                                 $rightOperand,
-                                $operations[array_rand($operations)],
+                                $operations[\array_rand($operations)],
                                 $valueType,
-                                (string) (mt_rand() / mt_getrandmax())
+                                (string) (\mt_rand() / \mt_getrandmax())
                             );
 
                             $manager->persist($programEligibilityCondition);
@@ -104,9 +105,9 @@ class ProgramEligibilityConditionFixture extends AbstractFixtures implements Dep
                         $programEligibilityConfiguration,
                         $leftOperand,
                         null,
-                        $operations[array_rand($operations)],
+                        $operations[\array_rand($operations)],
                         $valueType,
-                        (string) random_int(1, 9999)
+                        (string) \random_int(1, 9999)
                     );
 
                     $manager->persist($programEligibilityCondition);

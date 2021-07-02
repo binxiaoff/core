@@ -96,141 +96,163 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
         yield self::RESERVATION_DRAFT_1 => [
             'program'       => $program,
-            'borrower'      => ['youngFarmer' => true, 'creationInProgress' => true, 'subsidiary' => true],
+            'borrower'      => ['youngFarmer' => true, 'creationInProgress' => true, 'subsidiary' => true, 'turnoverAmount' => 0, 'totalAssetsAmount' => 0],
             'hasProject'    => false,
             'addedBy'       => $addedBy,
             'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_DRAFT_2 => [
             'program'       => $program,
-            'borrower'      => ['youngFarmer' => false, 'creationInProgress' => true, 'subsidiary' => false],
+            'borrower'      => ['youngFarmer' => false, 'creationInProgress' => true, 'subsidiary' => false, 'turnoverAmount' => 0, 'totalAssetsAmount' => 0],
             'addedBy'       => $addedBy,
             'hasProject'    => false,
             'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_SENT_1 => [
-            'program'            => $program,
-            'borrower'           => ['youngFarmer' => true, 'creationInProgress' => true, 'subsidiary' => true],
-            'financingObjectsNb' => 2,
-            'financingObjects'   => [['mainLoan' => true], ['mainLoan' => false]],
-            'hasProject'         => true,
-            'addedBy'            => $addedBy,
-            'currentStatus'      => ReservationStatus::STATUS_SENT,
+            'program'          => $program,
+            'borrower'         => ['youngFarmer' => true, 'creationInProgress' => true, 'subsidiary' => true, 'turnoverAmount' => 100, 'totalAssetsAmount' => 2048],
+            'hasProject'       => true,
+            'project'          => ['receivingGrant' => true, 'totalFeiCreditAmount' => 1000, 'creditExcludingFeiAmount' => 3000],
+            'financingObjects' => [['mainLoan' => true, 'loanDuration' => 6], ['mainLoan' => false, 'loanDuration' => 6]],
+            'addedBy'          => $addedBy,
+            'currentStatus'    => ReservationStatus::STATUS_SENT,
         ];
         yield self::RESERVATION_SENT_2 => [
-            'program'            => $program,
-            'borrower'           => ['youngFarmer' => false, 'creationInProgress' => false, 'subsidiary' => true],
-            'financingObjectsNb' => 2,
-            'financingObjects'   => [['mainLoan' => false], ['mainLoan' => true]],
-            'hasProject'         => true,
-            'addedBy'            => $addedBy,
-            'currentStatus'      => ReservationStatus::STATUS_SENT,
+            'program'          => $program,
+            'borrower'         => ['youngFarmer' => false, 'creationInProgress' => false, 'subsidiary' => true, 'turnoverAmount' => 2048, 'totalAssetsAmount' => 42],
+            'hasProject'       => true,
+            'project'          => ['receivingGrant' => false, 'totalFeiCreditAmount' => 100, 'creditExcludingFeiAmount' => 42],
+            'financingObjects' => [['mainLoan' => true, 'loanDuration' => 2]],
+            'addedBy'          => $addedBy,
+            'currentStatus'    => ReservationStatus::STATUS_SENT,
         ];
     }
 
     private function buildReservation(array $reservationData): Reservation
     {
         $reservation = new Reservation($reservationData['program'], $reservationData['addedBy']);
-        $totalAmount = 0;
-
-        if (false === empty($reservationData['financingObjectsNb'])) {
-            foreach ($reservationData['financingObjects'] as $financingObjectData) {
-                $financingObject = $this->createFinancingObject($reservation, $financingObjectData['mainLoan']);
-                $this->entityManager->persist($financingObject);
-                $totalAmount += (float) $financingObject->getLoanMoney()->getAmount();
-            }
-        }
-
-        if ($reservationData['hasProject']) {
-            $project = $this->createProject($reservation);
-            $project->setFundingMoney(new Money('EUR', (string) $totalAmount));
-            $reservation->setProject($project);
-        }
 
         $borrower = $this->createBorrower(
             $reservation,
             $reservationData['borrower']['youngFarmer'],
             $reservationData['borrower']['creationInProgress'],
-            $reservationData['borrower']['subsidiary']
+            $reservationData['borrower']['subsidiary'],
+            $reservationData['borrower']['turnoverAmount'],
+            $reservationData['borrower']['totalAssetsAmount']
         );
+        $reservation->setBorrower($borrower);
+
+        if ($reservationData['hasProject']) {
+            $project = $this->createProject(
+                $reservation,
+                $reservationData['project']['receivingGrant'],
+                $reservationData['project']['totalFeiCreditAmount'],
+                $reservationData['project']['creditExcludingFeiAmount']
+            );
+            $totalAmount = 0;
+
+            foreach ($reservationData['financingObjects'] as $financingObjectData) {
+                $financingObject = $this->createFinancingObject(
+                    $reservation,
+                    $financingObjectData['mainLoan'],
+                    $financingObjectData['loanDuration']
+                );
+                $this->entityManager->persist($financingObject);
+                $totalAmount += (float) $financingObject->getLoanMoney()->getAmount();
+            }
+
+            $project->setFundingMoney(new Money('EUR', (string) $totalAmount));
+            $reservation->setProject($project);
+        }
+
         $currentReservationStatus = new ReservationStatus($reservation, $reservationData['currentStatus'], $reservationData['addedBy']);
         $this->createReservationStatuses($currentReservationStatus);
-
-        $reservation->setBorrower($borrower);
         $reservation->setCurrentStatus($currentReservationStatus);
 
         return $reservation;
     }
 
-    private function createBorrower(Reservation $reservation, bool $youngFarmer, bool $creationInProgress, bool $subsidiary): Borrower
-    {
+    private function createBorrower(
+        Reservation $reservation,
+        bool $youngFarmer,
+        bool $creationInProgress,
+        bool $subsidiary,
+        int $turnoverAmount,
+        int $totalAssetsAmount
+    ): Borrower {
         $program = $reservation->getProgram();
 
         return (new Borrower($reservation, 'Borrower Company', 'B'))
             ->setBeneficiaryName('Borrower Name')
-            ->setBorrowerType($this->createOrGetProgramChoiceOption($program, 'field-borrower_type', 'Installé'))
+            ->setBorrowerType($this->findProgramChoiceOption($program, 'field-borrower_type', 'Installé'))
             ->setYoungFarmer($youngFarmer)
             ->setCreationInProgress($creationInProgress)
             ->setSubsidiary($subsidiary)
+            ->setActivityStartDate(new DateTimeImmutable())
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
             ->setAddressDepartment('department')
-            ->setAddressCountry($this->createOrGetProgramChoiceOption($program, 'field-activity_country', 'FR'))
-            ->setActivityStartDate(new DateTimeImmutable())
+            ->setAddressCountry($this->findProgramChoiceOption($program, 'field-activity_country', 'FR'))
             ->setSiret('11111111111111')
             ->setTaxNumber('12 23 45 678 987')
-            ->setLegalForm($this->createOrGetProgramChoiceOption($program, 'field-legal_form', 'SAS'))
-            ->setCompanyNafCode($this->createOrGetProgramChoiceOption($program, 'field-company_naf_code', '0001A'))
+            ->setLegalForm($this->findProgramChoiceOption($program, 'field-legal_form', 'SAS'))
+            ->setCompanyNafCode($this->findProgramChoiceOption($program, 'field-company_naf_code', '0001A'))
             ->setEmployeesNumber(42)
-            ->setExploitationSize($this->createOrGetProgramChoiceOption($program, 'field-exploitation_size', '42'))
-            ->setTurnover(new NullableMoney('EUR', '100'))
-            ->setTotalAssets(new NullableMoney('EUR', '2048'))
+            ->setExploitationSize($this->findProgramChoiceOption($program, 'field-exploitation_size', '42'))
+            ->setTurnover(new NullableMoney('EUR', (string) $turnoverAmount))
+            ->setTotalAssets(new NullableMoney('EUR', (string) $totalAssetsAmount))
         ;
     }
 
-    private function createProject(Reservation $reservation): Project
+    private function createProject(Reservation $reservation, bool $receivingGrant, int $totalFeiCreditAmount, int $creditExcludingFeiAmount): Project
     {
         $program      = $reservation->getProgram();
         $fundingMoney = new Money('EUR', (string) $this->faker->randomNumber());
 
-        return (new Project($reservation, $fundingMoney))
-            ->setInvestmentThematic($this->createOrGetProgramChoiceOption($program, 'field-investment_thematic', 'Project : ' . $this->faker->sentence))
-            ->setInvestmentType($this->createOrGetProgramChoiceOption($program, 'field-investment_type', 'Type : ' . $this->faker->sentence))
-            ->setAidIntensity($this->createOrGetProgramChoiceOption($program, 'field-aid_intensity', $this->faker->unique()->numberBetween(0, 100) . '%'))
-            ->setAdditionalGuaranty($this->createOrGetProgramChoiceOption($program, 'field-additional_guaranty', $this->faker->sentence(3)))
-            ->setAgriculturalBranch($this->createOrGetProgramChoiceOption($program, 'field-agricultural_branch', 'Branch N: ' . $this->faker->sentence))
+        $project = (new Project($reservation, $fundingMoney))
+            ->setInvestmentThematic($this->findProgramChoiceOption($program, 'field-investment_thematic', 'Project : ' . $this->faker->sentence))
+            ->setInvestmentType($this->findProgramChoiceOption($program, 'field-investment_type', 'Type : ' . $this->faker->sentence))
+            ->setDetail($this->faker->sentence)
+            ->setAidIntensity($this->findProgramChoiceOption($program, 'field-aid_intensity', '40'))
+            ->setAdditionalGuaranty($this->findProgramChoiceOption($program, 'field-additional_guaranty', $this->faker->sentence(3)))
+            ->setAgriculturalBranch($this->findProgramChoiceOption($program, 'field-agricultural_branch', 'Branch N: ' . $this->faker->sentence))
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
             ->setAddressDepartment('department')
-            ->setAddressCountry($this->createOrGetProgramChoiceOption($program, 'field-investment_country', 'FR'))
+            ->setAddressCountry($this->findProgramChoiceOption($program, 'field-investment_country', 'FR'))
             ->setContribution(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setEligibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
-            ->setTotalFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setTotalFeiCredit(new NullableMoney('EUR', (string) $totalFeiCreditAmount))
             ->setTangibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setIntangibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
-            ->setCreditExcludingFei(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
-            ->setGrant(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setCreditExcludingFei(new NullableMoney('EUR', (string) $creditExcludingFeiAmount))
             ->setLandValue(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
         ;
+
+        if ($receivingGrant) {
+            $project->setGrant(new NullableMoney('EUR', (string) $this->faker->randomNumber()));
+        }
+
+        return $project;
     }
 
-    private function createFinancingObject(Reservation $reservation, bool $mainLoan): FinancingObject
+    private function createFinancingObject(Reservation $reservation, bool $mainLoan, int $loanDuration): FinancingObject
     {
         $program   = $reservation->getProgram();
         $loanMoney = new Money('EUR', '200');
 
         return (new FinancingObject($reservation, $loanMoney, $mainLoan))
             ->setSupportingGenerationsRenewal(true)
-            ->setFinancingObjectType($this->createOrGetProgramChoiceOption($program, 'field-financing_object_type', $this->faker->text(255)))
-            ->setLoanNafCode($this->createOrGetProgramChoiceOption($program, 'field-loan_naf_code', '0001A'))
+            ->setFinancingObjectType($this->findProgramChoiceOption($program, 'field-financing_object_type', $this->faker->text(255)))
+            ->setLoanNafCode($this->findProgramChoiceOption($program, 'field-loan_naf_code', '0001A'))
             ->setBfrValue(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
-            ->setLoanType($this->createOrGetProgramChoiceOption($program, 'field-loan_type', 'short_term'))
-            ->setLoanDuration($this->faker->numberBetween(0, 12))
+            ->setLoanType($this->findProgramChoiceOption($program, 'field-loan_type', 'short_term'))
+            ->setLoanDuration($loanDuration)
             ->setLoanDeferral($this->faker->numberBetween(0, 12))
-            ->setLoanPeriodicity($this->createOrGetProgramChoiceOption($program, 'field-loan_periodicity', 'monthly'))
-            ->setInvestmentLocation($this->createOrGetProgramChoiceOption($program, 'field-loan_type', $this->faker->countryCode))
+            ->setLoanPeriodicity($this->findProgramChoiceOption($program, 'field-loan_periodicity', 'monthly'))
+            ->setInvestmentLocation($this->findProgramChoiceOption($program, 'field-investment_location', 'Paris'))
         ;
     }
 
@@ -251,7 +273,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
             $this->entityManager->persist($previousReservationStatus);
 
-            if (in_array($currentReservationStatus->getStatus(), $allowedStatuses, true)) {
+            if (\in_array($currentReservationStatus->getStatus(), $allowedStatuses, true)) {
                 break;
             }
         }
@@ -263,7 +285,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $this->entityManager->persist($currentReservationStatus);
     }
 
-    private function createOrGetProgramChoiceOption(Program $program, string $fieldReference, ?string $description = null): ProgramChoiceOption
+    private function findProgramChoiceOption(Program $program, string $fieldReference, ?string $description = null): ProgramChoiceOption
     {
         /** @var Field $field */
         $field = $this->getReference($fieldReference);
@@ -274,7 +296,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'field'   => $field,
             ]);
 
-            return $programChoiceOptions[array_rand($programChoiceOptions)];
+            return $programChoiceOptions[\array_rand($programChoiceOptions)];
         }
 
         $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([

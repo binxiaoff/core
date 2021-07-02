@@ -32,9 +32,11 @@ class Eligibility
 {
     public Reservation $reservation;
 
-    public string $category;
+    public ?string $category = null;
 
-    public bool $eligible = false;
+    public bool $withConditions = false;
+
+    public array $ineligibles = [];
 
     /**
      * API Platform need an identifier to show the result of POST. We add here a fake id.

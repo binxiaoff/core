@@ -6,9 +6,12 @@ namespace Unilend\CreditGuaranty\Service;
 
 use Doctrine\Common\Collections\Collection;
 use LogicException;
+use Unilend\CreditGuaranty\Entity\Borrower;
 use Unilend\CreditGuaranty\Entity\Field;
 use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
 use Unilend\CreditGuaranty\Entity\ProgramEligibility;
+use Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
+use Unilend\CreditGuaranty\Entity\Project;
 use Unilend\CreditGuaranty\Entity\Reservation;
 use Unilend\CreditGuaranty\Repository\FieldRepository;
 use Unilend\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
@@ -36,25 +39,65 @@ class EligibilityChecker
         $this->eligibilityConditionChecker               = $eligibilityConditionChecker;
     }
 
-    public function checkByCategory(Reservation $reservation, string $category): bool
+    public function check(Reservation $reservation, bool $withConditions, ?string $category): array
     {
-        $fields = $this->fieldRepository->findBy(['category' => $category]);
+        $this->supports($reservation, $withConditions, $category);
+
+        $fields = (false === empty($category))
+            ? $this->fieldRepository->findBy(['category' => $category])
+            : $this->fieldRepository->findAll();
+
+        $ineligibles = [];
 
         foreach ($fields as $field) {
-            // ignore those not having path since they are not created yet in entities
-            if (empty($field->getReservationPropertyName()) || empty($field->getPropertyPath())) {
-                continue;
-            }
-
-            if (false === $this->checkByField($reservation, $field)) {
-                return false;
+            if (false === $this->checkByField($reservation, $field, $withConditions)) {
+                $ineligibles[$field->getCategory()][] = $field->getFieldAlias();
             }
         }
 
-        return true;
+        return $ineligibles;
     }
 
-    private function checkByField(Reservation $reservation, Field $field): bool
+    private function supports(Reservation $reservation, bool $withConditions, ?string $category): void
+    {
+        if (
+            ($withConditions || empty($category) || 'profile' === $category)
+            && false === ($reservation->getBorrower() instanceof Borrower)
+        ) {
+            throw new LogicException(
+                \sprintf(
+                    'Cannot check conditions without Borrower in reservation #%s',
+                    $reservation->getId()
+                )
+            );
+        }
+
+        if (
+            ($withConditions || empty($category) || 'project' === $category)
+            && false === ($reservation->getProject() instanceof Project)
+        ) {
+            throw new LogicException(
+                \sprintf(
+                    'Cannot check conditions without Project in reservation #%s',
+                    $reservation->getId()
+                )
+            );
+        }
+
+        if (
+            ($withConditions || empty($category) || 'loan' === $category)
+            && 0 === $reservation->getFinancingObjects()->count()
+        ) {
+            throw new LogicException(
+                \sprintf(
+                    'Cannot check conditions without FinancingObject(s) in reservation #%s',
+                    $reservation->getId()
+                )
+            );
+        }
+    }
+
+    private function checkByField(Reservation $reservation, Field $field, bool $withConditions): bool
     {
         $programEligibility = $this->programEligibilityRepository->findOneBy([
             'program' => $reservation->getProgram(),
@@ -63,7 +106,7 @@ class EligibilityChecker
 
         if (null === $programEligibility) {
             throw new LogicException(
-                sprintf(
+                \sprintf(
                     'Cannot found programEligibility for program #%s and field #%s',
                     $reservation->getProgram()->getId(),
                     $field->getId()
@@ -77,7 +120,7 @@ class EligibilityChecker
             foreach ($entity as $entityItem) {
                 $value = $this->eligibilityHelper->getValue($entityItem, $field);
 
-                if (false === $this->check($reservation, $programEligibility, $value)) {
+                if (false === $this->isEligible($reservation, $programEligibility, $withConditions, $value)) {
                     return false;
                 }
             }
@@ -87,100 +130,69 @@ class EligibilityChecker
 
         $value = $this->eligibilityHelper->getValue($entity, $field);
 
-        return $this->check($reservation, $programEligibility, $value);
+        return $this->isEligible($reservation, $programEligibility, $withConditions, $value);
     }
 
-    private function check(Reservation $reservation, ProgramEligibility $programEligibility, $value): bool
-    {
-        $field = $programEligibility->getField();
-
-        switch ($field->getType()) {
-            case Field::TYPE_OTHER:
-                return $this->checkOther($reservation, $programEligibility, $value);
-
-            case Field::TYPE_BOOL:
-                return $this->checkBool($reservation, $programEligibility, (bool) $value);
-
-            case Field::TYPE_LIST:
-                return $this->checkList($reservation, $programEligibility, $value);
-
-            default:
-                // the check is done in ProgramEligibility::initialiseConfigurations
-                throw new LogicException('This code should not be reached');
-        }
-    }
-
-    private function checkOther(Reservation $reservation, ProgramEligibility $programEligibility, $value): bool
+    private function isEligible(Reservation $reservation, ProgramEligibility $programEligibility, bool $withConditions, $value): bool
     {
         if (null === $value) {
             return false;
         }
 
-        $programEligibilityConfiguration = $this->programEligibilityConfigurationRepository->findOneBy([
-            'programEligibility' => $programEligibility,
-        ]);
-
-        if (null === $programEligibilityConfiguration) {
-            throw new LogicException(
-                sprintf(
-                    'Cannot found programEligibilityConfiguration for programEligibility #%s',
-                    $programEligibility->getId()
-                )
-            );
-        }
+        $programEligibilityConfiguration = $this->getConfigurationByFieldType($programEligibility, $value);
 
         if (false === $programEligibilityConfiguration->isEligible()) {
             return false;
         }
 
-        return $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration);
+        if ($withConditions && false === $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration)) {
+            return false;
+        }
+
+        return true;
     }
 
-    private function checkBool(Reservation $reservation, ProgramEligibility $programEligibility, bool $value): bool
+    private function getConfigurationByFieldType(ProgramEligibility $programEligibility, $value): ProgramEligibilityConfiguration
     {
-        $programEligibilityConfiguration = $this->programEligibilityConfigurationRepository->findOneBy([
-            'programEligibility' => $programEligibility,
-            'value'              => (int) $value,
-        ]);
+        switch ($programEligibility->getField()->getType()) {
+            case Field::TYPE_OTHER:
+                $programEligibilityConfiguration = $this->programEligibilityConfigurationRepository->findOneBy([
+                    'programEligibility' => $programEligibility,
+                ]);
 
-        if (null === $programEligibilityConfiguration) {
+                break;
+
+            case Field::TYPE_BOOL:
+                $programEligibilityConfiguration = $this->programEligibilityConfigurationRepository->findOneBy([
+                    'programEligibility' => $programEligibility,
+                    'value'              => (int) $value,
+                ]);
+
+                break;
+
+            case Field::TYPE_LIST:
+                $programEligibilityConfiguration = $this->programEligibilityConfigurationRepository->findOneBy([
+                    'programEligibility'  => $programEligibility,
+                    'programChoiceOption' => $value,
+                ]);
+
+                break;
+
+            default:
+                // the check is done in ProgramEligibility::initialiseConfigurations
+                throw new LogicException('This code should not be reached');
+        }
+
+        if (false === ($programEligibilityConfiguration instanceof ProgramEligibilityConfiguration)) {
             throw new LogicException(
-                sprintf(
-                    'Cannot found programEligibilityConfiguration for programEligibility #%s and value %s',
+                \sprintf(
+                    'Cannot found programEligibilityConfiguration for programEligibility #%s with value %s',
                     $programEligibility->getId(),
-                    (int) $value
+                    ($value instanceof ProgramChoiceOption) ? $value->getDescription() : $value
                 )
             );
         }
 
-        if (false === $programEligibilityConfiguration->isEligible()) {
-            return false;
-        }
-
-        return $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration);
-    }
-
-    private function checkList(Reservation $reservation, ProgramEligibility $programEligibility, ProgramChoiceOption $value): bool
-    {
-        $programEligibilityConfiguration = $this->programEligibilityConfigurationRepository->findOneBy([
-            'programEligibility'  => $programEligibility,
-            'programChoiceOption' => $value,
-        ]);
-
-        if (null === $programEligibilityConfiguration) {
-            throw new LogicException(
-                sprintf(
-                    'Cannot found programEligibilityConfiguration for programEligibility #%s and programChoiceOption #%s',
-                    $programEligibility->getId(),
-                    $value->getId()
-                )
-            );
-        }
-
-        if (false === $programEligibilityConfiguration->isEligible()) {
-            return false;
-        }
-
-        return $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration);
+        return $programEligibilityConfiguration;
     }
 }

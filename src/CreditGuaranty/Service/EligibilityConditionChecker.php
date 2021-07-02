@@ -31,7 +31,7 @@ class EligibilityConditionChecker
             'programEligibilityConfiguration' => $programEligibilityConfiguration,
         ]);
 
-        if (0 === count($programEligibilityConditions)) {
+        if (0 === \count($programEligibilityConditions)) {
             return true;
         }
 
@@ -46,11 +46,11 @@ class EligibilityConditionChecker
 
     private function checkCondition(Reservation $reservation, ProgramEligibilityCondition $eligibilityCondition): bool
     {
-        $rightValue = $eligibilityCondition->getValue();
+        $operator          = $eligibilityCondition->getOperation();
+        $rightOperandField = $eligibilityCondition->getRightOperandField();
+        $rightValue        = $eligibilityCondition->getValue();
 
         if (ProgramEligibilityCondition::VALUE_TYPE_RATE === $eligibilityCondition->getValueType()) {
-            $rightOperandField = $eligibilityCondition->getRightOperandField();
-
             if (null === $rightOperandField) {
                 throw new LogicException(sprintf('The ProgramEligibilityCondition #%d of rate type should have an rightOperandField.', $eligibilityCondition->getId()));
             }
@@ -58,23 +58,24 @@ class EligibilityConditionChecker
             $rightEntity = $this->eligibilityHelper->getEntity($reservation, $rightOperandField);
 
             if ($rightEntity instanceof Collection) {
-                throw new LogicException(sprintf('The rightOperandField of ProgramEligibilityCondition #%d cannot be a collection.', $eligibilityCondition->getId()));
+                throw new LogicException(\sprintf('The rightOperandField of ProgramEligibilityCondition #%d cannot be a collection.', $eligibilityCondition->getId()));
             }
 
-            $rightValue = bcmul(
-                (string) $this->eligibilityHelper->getValue($rightEntity, $eligibilityCondition->getRightOperandField()),
+            $rightValue = \bcmul(
+                (string) $this->eligibilityHelper->getValue($rightEntity, $rightOperandField),
                 $eligibilityCondition->getValue(),
                 4
             );
         }
 
-        $leftEntity = $this->eligibilityHelper->getEntity($reservation, $eligibilityCondition->getLeftOperandField());
+        $leftOperandField = $eligibilityCondition->getLeftOperandField();
+        $leftEntity       = $this->eligibilityHelper->getEntity($reservation, $leftOperandField);
 
         if ($leftEntity instanceof Collection) {
             foreach ($leftEntity as $leftEntityItem) {
-                $leftValue = $this->eligibilityHelper->getValue($leftEntityItem, $eligibilityCondition->getLeftOperandField());
+                $leftValue = $this->eligibilityHelper->getValue($leftEntityItem, $leftOperandField);
 
-                if (false === $this->check($eligibilityCondition->getOperation(), $leftValue, $rightValue)) {
+                if (false === $this->check($operator, $leftValue, $rightValue)) {
                     return false;
                 }
             }
@@ -82,14 +83,14 @@ class EligibilityConditionChecker
             return true;
         }
 
-        $leftValue = $this->eligibilityHelper->getValue($leftEntity, $eligibilityCondition->getLeftOperandField());
+        $leftValue = $this->eligibilityHelper->getValue($leftEntity, $leftOperandField);
 
-        return $this->check($eligibilityCondition->getOperation(), $leftValue, $rightValue);
+        return $this->check($operator, $leftValue, $rightValue);
     }
 
     private function check(string $operator, $leftValue, $valueToCompare): bool
     {
-        $comparison = bccomp((string) $leftValue, (string) $valueToCompare, 4);
+        $comparison = \bccomp((string) $leftValue, (string) $valueToCompare, 4);
 
         switch ($operator) {
             case MathOperator::INFERIOR:
@@ -108,7 +109,7 @@ class EligibilityConditionChecker
                 return 0 === $comparison;
 
             default:
-                throw new LogicException(sprintf('Operator %s unexpected in ProgramEligibilityConditions.', $operator));
+                throw new LogicException(\sprintf('Operator %s unexpected in ProgramEligibilityConditions.', $operator));
         }
     }
 }

@@ -46,66 +46,174 @@ class EligibilityTest extends AbstractApiTest
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
-    public function authorizedStaffProvider(): iterable
+    public function successfullProvider(): iterable
     {
-        yield 'staff_company:basic_user-1 - reservation draft 1 - profile - eligible' => [
+        yield 'user-1 - reservation draft 1 - checking profile without conditions : eligible' => [
             'staff_company:basic_user-1',
             ReservationFixtures::RESERVATION_DRAFT_1,
             'profile',
-            true,
+            false,
+            [],
         ];
-        yield 'staff_company:basic_user-1 - reservation draft 2 - profile - ineligible' => [
+        yield 'user-1 - reservation draft 2 - checking profile without conditions : ineligible' => [
             'staff_company:basic_user-1',
             ReservationFixtures::RESERVATION_DRAFT_2,
             'profile',
             false,
+            [
+                'profile' => [
+                    'young_farmer',
+                    'subsidiary',
+                ],
+            ],
         ];
-        yield 'staff_company:basic_user-2 - reservation sent 1 - profile - eligible' => [
+        yield 'user-2 - reservation sent 1 - checking profile without conditions : eligible' => [
+            'staff_company:basic_user-2',
+            ReservationFixtures::RESERVATION_SENT_1,
+            'profile',
+            false,
+            [],
+        ];
+        yield 'user-2 - reservation sent 1 - checking profile with conditions : eligible' => [
             'staff_company:basic_user-2',
             ReservationFixtures::RESERVATION_SENT_1,
             'profile',
             true,
+            [],
         ];
-        yield 'staff_company:basic_user-3 - reservation sent 2 - profile - ineligible' => [
+        yield 'user-3 - reservation sent 1 - checking project without conditions : eligible' => [
             'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_SENT_2,
-            'profile',
+            ReservationFixtures::RESERVATION_SENT_1,
+            'project',
             false,
+            [],
         ];
-        yield 'staff_company:basic_user-4 - reservation sent 1 - project - eligible' => [
-            'staff_company:basic_user-4',
+        yield 'user-3 - reservation sent 1 - checking project with conditions : ineligible' => [
+            'staff_company:basic_user-3',
             ReservationFixtures::RESERVATION_SENT_1,
             'project',
             true,
+            [
+                'project' => [
+                    'total_fei_credit',
+                ],
+            ],
         ];
-        yield 'staff_company:basic_user-4 - reservation sent 2 - project - eligible' => [
-            'staff_company:basic_user-4',
-            ReservationFixtures::RESERVATION_SENT_2,
-            'project',
-            true,
+        yield 'user-5 - reservation sent 1 - checking loan without conditions : eligible' => [
+            'staff_company:basic_user-5',
+            ReservationFixtures::RESERVATION_SENT_1,
+            'loan',
+            false,
+            [],
         ];
-        yield 'staff_company:basic_user-5 - reservation sent 1 - loan - eligible' => [
+        yield 'user-5 - reservation sent 1 - checking loan with conditions : eligible' => [
             'staff_company:basic_user-5',
             ReservationFixtures::RESERVATION_SENT_1,
             'loan',
             true,
+            [],
         ];
-        yield 'staff_company:basic_user-11 - reservation sent 2 - loan - ineligible' => [
+        yield 'user-11 - reservation sent 1 - checking conditions : eligible' => [
             'staff_company:basic_user-11',
+            ReservationFixtures::RESERVATION_SENT_1,
+            null,
+            true,
+            [],
+        ];
+        yield 'user-3 - reservation sent 2 - checking profile without conditions : ineligible' => [
+            'staff_company:basic_user-3',
+            ReservationFixtures::RESERVATION_SENT_2,
+            'profile',
+            false,
+            [
+                'profile' => [
+                    'young_farmer',
+                    'creation_in_progress',
+                ],
+            ],
+        ];
+        yield 'user-3 - reservation sent 2 - checking profile with conditions : ineligible' => [
+            'staff_company:basic_user-3',
+            ReservationFixtures::RESERVATION_SENT_2,
+            'profile',
+            true,
+            [
+                'profile' => [
+                    'young_farmer',
+                    'creation_in_progress',
+                ],
+            ],
+        ];
+        yield 'user-4 - reservation sent 2 - checking project without conditions : ineligible' => [
+            'staff_company:basic_user-4',
+            ReservationFixtures::RESERVATION_SENT_2,
+            'project',
+            false,
+            [
+                'project' => [
+                    'project_grant',
+                ],
+            ],
+        ];
+        yield 'user-4 - reservation sent 2 - checking project with conditions : ineligible' => [
+            'staff_company:basic_user-4',
+            ReservationFixtures::RESERVATION_SENT_2,
+            'project',
+            true,
+            [
+                'project' => [
+                    'project_grant',
+                ],
+            ],
+        ];
+        yield 'user-5 - reservation sent 2 - checking loan without conditions : eligible' => [
+            'staff_company:basic_user-5',
+            ReservationFixtures::RESERVATION_SENT_2,
+            'loan',
+            false,
+            [],
+        ];
+        yield 'user-5 - reservation sent 2 - checking loan with conditions : ineligible' => [
+            'staff_company:basic_user-5',
             ReservationFixtures::RESERVATION_SENT_2,
             'loan',
             true,
+            [
+                'loan' => [
+                    'loan_duration',
+                ],
+            ],
+        ];
+        yield 'user-11 - reservation sent 2 - checking conditions : ineligible' => [
+            'staff_company:basic_user-11',
+            ReservationFixtures::RESERVATION_SENT_2,
+            null,
+            true,
+            [
+                'profile' => [
+                    'young_farmer',
+                    'creation_in_progress',
+                    'turnover',
+                ],
+                'project' => [
+                    'project_grant',
+                ],
+                'loan' => [
+                    'loan_duration',
+                ],
+            ],
         ];
     }
 
     /**
-     * @dataProvider authorizedStaffProvider
+     * @dataProvider successfullProvider
      */
     public function testPostEligibilitiesChecking(
         string $staffPublicId,
         string $reservationPublicId,
-        string $category,
-        bool $eligible
+        ?string $category = null,
+        bool $withConditions,
+        array $ineligibles
     ): void {
         /** @var IriConverterInterface $iriConverter */
         $iriConverter = static::$container->get(IriConverterInterface::class);
@@ -119,8 +227,9 @@ class EligibilityTest extends AbstractApiTest
         $response = $this->createAuthClient($staff)
             ->request(Request::METHOD_POST, self::ENDPOINT_ELIGIBILITY_CHECKING, [
                 'json' => [
-                    'reservation' => $reservationIri,
-                    'category'    => $category,
+                    'reservation'    => $reservationIri,
+                    'category'       => $category,
+                    'withConditions' => $withConditions,
                 ],
             ])
         ;
@@ -129,20 +238,134 @@ class EligibilityTest extends AbstractApiTest
 
         $this->assertJsonContains(['@type' => 'credit_guaranty_eligibility']);
         $this->assertJsonContains(['id' => 'not_an_id']);
-        $this->assertJsonContains(['eligible' => $eligible]);
+        $this->assertJsonContains(['ineligibles' => $ineligibles]);
     }
 
-    public function unauthorizedStaffProvider(): iterable
+    public function exceptionProvider(): iterable
     {
-        yield 'staff_company:basic_user-6' => ['staff_company:basic_user-6'];
-        yield 'staff_company:basic_user-7' => ['staff_company:basic_user-7'];
-        yield 'staff_company:basic_user-8' => ['staff_company:basic_user-8'];
-        yield 'staff_company:basic_user-9' => ['staff_company:basic_user-9'];
-        yield 'staff_company:basic_user-10' => ['staff_company:basic_user-10'];
+        yield 'user-1 - reservation draft 1 - checking profile with conditions' => [
+            'staff_company:basic_user-1',
+            ReservationFixtures::RESERVATION_DRAFT_1,
+            'profile',
+            true,
+            'Cannot check conditions without Project in reservation #1',
+        ];
+        yield 'user-2 - reservation draft 1 - checking project without conditions' => [
+            'staff_company:basic_user-2',
+            ReservationFixtures::RESERVATION_DRAFT_1,
+            'project',
+            false,
+            'Cannot check conditions without Project in reservation #1',
+        ];
+        yield 'user-2 - reservation draft 1 - checking project with conditions' => [
+            'staff_company:basic_user-2',
+            ReservationFixtures::RESERVATION_DRAFT_1,
+            'project',
+            true,
+            'Cannot check conditions without Project in reservation #1',
+        ];
+        yield 'user-3 - reservation draft 1 - checking loan without conditions' => [
+            'staff_company:basic_user-3',
+            ReservationFixtures::RESERVATION_DRAFT_1,
+            'loan',
+            false,
+            'Cannot check conditions without FinancingObject(s) in reservation #1',
+        ];
+        yield 'user-3 - reservation draft 1 - checking loan with conditions' => [
+            'staff_company:basic_user-3',
+            ReservationFixtures::RESERVATION_DRAFT_1,
+            'loan',
+            true,
+            'Cannot check conditions without Project in reservation #1',
+        ];
+        yield 'user-11 - reservation draft 1 - checking conditions' => [
+            'staff_company:basic_user-11',
+            ReservationFixtures::RESERVATION_DRAFT_1,
+            null,
+            true,
+            'Cannot check conditions without Project in reservation #1',
+        ];
+        yield 'user-4 - reservation draft 2 - checking project without conditions' => [
+            'staff_company:basic_user-4',
+            ReservationFixtures::RESERVATION_DRAFT_2,
+            'project',
+            false,
+            'Cannot check conditions without Project in reservation #2',
+        ];
+        yield 'user-4 - reservation draft 2 - checking project with conditions' => [
+            'staff_company:basic_user-4',
+            ReservationFixtures::RESERVATION_DRAFT_2,
+            'project',
+            true,
+            'Cannot check conditions without Project in reservation #2',
+        ];
+        yield 'user-5 - reservation draft 2 - checking loan without conditions' => [
+            'staff_company:basic_user-5',
+            ReservationFixtures::RESERVATION_DRAFT_2,
+            'loan',
+            false,
+            'Cannot check conditions without FinancingObject(s) in reservation #2',
+        ];
+        yield 'user-5 - reservation draft 2 - checking loan with conditions' => [
+            'staff_company:basic_user-5',
+            ReservationFixtures::RESERVATION_DRAFT_2,
+            'loan',
+            true,
+            'Cannot check conditions without Project in reservation #2',
+        ];
+        yield 'user-11 - reservation draft 2 - checking conditions' => [
+            'staff_company:basic_user-11',
+            ReservationFixtures::RESERVATION_DRAFT_2,
+            null,
+            true,
+            'Cannot check conditions without Project in reservation #2',
+        ];
     }
 
     /**
-     * @dataProvider unauthorizedStaffProvider
+     * @dataProvider exceptionProvider
+     */
+    public function testPostEligibilitiesCheckingException(
+        string $staffPublicId,
+        string $reservationPublicId,
+        ?string $category = null,
+        bool $withConditions,
+        string $errorMessage
+    ): void {
+        /** @var IriConverterInterface $iriConverter */
+        $iriConverter = static::$container->get(IriConverterInterface::class);
+
+        /** @var Staff $staff */
+        $staff = static::$container->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
+        /** @var Reservation $reservation */
+        $reservation    = static::$container->get(ReservationRepository::class)->findOneBy(['publicId' => $reservationPublicId]);
+        $reservationIri = $iriConverter->getIriFromItem($reservation);
+
+        $response = $this->createAuthClient($staff)
+            ->request(Request::METHOD_POST, self::ENDPOINT_ELIGIBILITY_CHECKING, [
+                'json' => [
+                    'reservation'    => $reservationIri,
+                    'category'       => $category,
+                    'withConditions' => $withConditions,
+                ],
+            ])
+        ;
+
+        $this->assertJsonContains(['@type' => 'hydra:Error']);
+        $this->assertJsonContains(['hydra:description' => $errorMessage]);
+    }
+
+    public function forbiddenProvider(): iterable
+    {
+        yield 'user-6' => ['staff_company:basic_user-6'];
+        yield 'user-7' => ['staff_company:basic_user-7'];
+        yield 'user-8' => ['staff_company:basic_user-8'];
+        yield 'user-9' => ['staff_company:basic_user-9'];
+        yield 'user-10' => ['staff_company:basic_user-10'];
+    }
+
+    /**
+     * @dataProvider forbiddenProvider
      */
     public function testPostEligibilitiesCheckingForbidden(string $staffPublicId): void
     {
