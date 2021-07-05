@@ -5,7 +5,7 @@ Eligibility
 Introduction
 ============
 
-While creating a program, CASA configures the information that distributors must fill in when they make reservation requests.
+While creating a program, CASA configures the conditions on some selected fields that distributors must fill in when they make the reservation requests.
 That is called the eligibility.
 For each criteria, we can add eligibility configurations, conditions, and define which one is eligible.
 
@@ -24,18 +24,22 @@ Defined beforehand and globally, they are saved in ``Field`` entity.
 For each program, CASA configures eligibility with a fields list.
 
 Possible categories:
- - profile : saved in ``Borrower`` entity
- - project : saved in ``Project`` entity
- - loan : saved in ``FinancingObject`` entity
+ - profile
+ - project
+ - loan
+
+The categories are used to indicate the context of a field and to group the field when we display them in the front-end.
 
 Possible field types:
  - other : value type
  - bool
  - list
 
+List typed values are saved in ProgramChoiceOption.
+
 There are 2 levels for list type fields:
- - an user-defined list (borrower type for example) : each option is saved in ``ProgramChoiceOption`` entity
- - an pre-defined list (legal form for example) : saved in ``Field::predefinedItems`` and in ``ProgramChoiceOption`` entity
+ - user-defined list (borrower type for example) : Each option is created / defined by the user when configuring the eligibility.
+ - pre-defined list (legal form for example) : pre-defined items are saved in ``Field::predefinedItems``. Each items are created (in ProgramChoiceOption) when the project is created.
 
 Illustration:
 
@@ -45,9 +49,8 @@ Illustration:
 
 Configurations
 -------------
-For each eligibility field of bool type and list type, we can add configurations and define which "option" is eligible.
-An eligibility field of value type has a configuration by default that is eligible.
-They saved in ``ProgramEligibilityConfiguration`` entity.
+For each eligibility field of bool type and list type, we can define for each "option" whether it's eligible by adding a ``ProgramEligibilityConfiguration``.
+An eligibility field of value type has always a configuration of which the eligible is always true. It means that the field is required (any value is eligible).
 
 Illustration for eligibility field of bool type :
 
