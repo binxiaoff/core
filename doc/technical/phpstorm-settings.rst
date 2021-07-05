@@ -1,4 +1,4 @@
-`Return to index <index.rst>`_
+`Return to index <../index.rst>`_
 
 .. _phpstorm-settings:
 ======================

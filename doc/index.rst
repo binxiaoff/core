@@ -15,20 +15,20 @@ __________
 
 `Tests <functional/tests.rst>`_
 
-Dev
-___
-`Application configuration <dev/application-configuration.rst>`_
+Technical
+__________
+`Application configuration <technical/application-configuration.rst>`_
 
-`Coding Standard <dev/coding-standard.rst>`_
+`Coding Standard <technical/coding-standard.rst>`_
 
-`PhpStorm setting <dev/phpstorm-settings.rst>`_
+`PhpStorm setting <technical/phpstorm-settings.rst>`_
 
-`Doctrine migration roll up <dev/doctrine-migration-rollup.rst>`_
+`Doctrine migration roll up <technical/doctrine-migration-rollup.rst>`_
 
-`Initiatialize dev environnement <dev/init-dev-env-docker.rst>`_
+`Initiatialize dev environnement <technical/init-dev-env-docker.rst>`_
 
-`Create database table <dev/create-update-database-table.rst>`_
+`Create database table <technical/create-update-database-table.rst>`_
 
-`Grumphp <dev/grumphp.rst>`_
+`Grumphp <technical/grumphp.rst>`_
 
-`Tests <dev/tests.rst>`_
+`Tests <technical/tests.rst>`_
