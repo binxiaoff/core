@@ -182,6 +182,13 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      */
     private Collection $statuses;
 
+    /**
+     * @ORM\Column(type="date_immutable", nullable=true)
+     *
+     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
+     */
+    private ?DateTimeImmutable $signingDate = null;
+
     public function __construct(Program $program, Staff $addedBy)
     {
         $this->program          = $program;
@@ -281,6 +288,18 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     public function setCurrentStatus(StatusInterface $status): Reservation
     {
         $this->currentStatus = $status;
+
+        return $this;
+    }
+
+    public function getSigningDate(): ?DateTimeImmutable
+    {
+        return $this->signingDate;
+    }
+
+    public function setSigningDate(?DateTimeImmutable $signingDate): Reservation
+    {
+        $this->signingDate = $signingDate;
 
         return $this;
     }
