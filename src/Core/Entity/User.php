@@ -313,7 +313,7 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
 
     public function getInitials(): string
     {
-        return mb_substr($this->getFirstName() ?? '', 0, 1) . mb_substr($this->getLastName() ?? '', 0, 1);
+        return \mb_substr($this->getFirstName() ?? '', 0, 1) . \mb_substr($this->getLastName() ?? '', 0, 1);
     }
 
     public function isGrantedLogin(): bool
@@ -447,7 +447,7 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     public function hasPreviousCGUAcceptations(): bool
     {
         // Works because there is only one type of legalDocument
-        return 0 < count($this->legalDocumentAcceptations);
+        return 0 < \count($this->legalDocumentAcceptations);
     }
 
     private function normalizeName(?string $name): ?string
@@ -456,18 +456,18 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
             return null;
         }
 
-        $name = mb_strtolower($name);
-        $pos  = mb_strrpos($name, '-');
+        $name = \mb_strtolower($name);
+        $pos  = \mb_strrpos($name, '-');
 
         if (false === $pos) {
-            return ucwords($name);
+            return \ucwords($name);
         }
 
-        $tabName = explode('-', $name);
+        $tabName = \explode('-', $name);
         $newName = '';
         $i       = 0;
         foreach ($tabName as $token) {
-            $newName .= (0 === $i ? '' : '-') . ucwords($token);
+            $newName .= (0 === $i ? '' : '-') . \ucwords($token);
             ++$i;
         }
 
