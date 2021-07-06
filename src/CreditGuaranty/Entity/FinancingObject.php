@@ -63,7 +63,7 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
     private Reservation $reservation;
 

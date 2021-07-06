@@ -71,7 +71,7 @@ class Participation
      *
      * @ApiProperty(writableLink=false)
      *
-     * @Groups({"creditGuaranty:participation:list", "creditGuaranty:participation:create"})
+     * @Groups({"creditGuaranty:participation:list", "creditGuaranty:participation:read", "creditGuaranty:participation:create"})
      */
     private Program $program;
 
@@ -180,7 +180,7 @@ class Participation
      */
     public function isParticipantValid(): bool
     {
-        return in_array($this->getParticipant()->getShortCode(), CARegionalBank::REGIONAL_BANKS, true);
+        return \in_array($this->getParticipant()->getShortCode(), CARegionalBank::REGIONAL_BANKS, true);
     }
 
     private function countParticipantReservationByStatus(int $status): int

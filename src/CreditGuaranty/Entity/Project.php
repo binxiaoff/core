@@ -64,7 +64,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", inversedBy="project")
      * @ORM\JoinColumn(name="id_reservation", nullable=false)
      *
-     * @Groups({"creditGuaranty:project:write"})
+     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
     private Reservation $reservation;
 
@@ -498,7 +498,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $participation = $program->getParticipations()->get($this->reservation->getManagingCompany()->getId());
 
         if (false === $participation instanceof Participation) {
-            throw new \RuntimeException(sprintf(
+            throw new \RuntimeException(\sprintf(
                 'Cannot find the participation company %d for reservation %d. Please check the data.',
                 $this->reservation->getManagingCompany()->getId(),
                 $this->getId()
@@ -507,7 +507,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
 
         $ratio = MoneyCalculator::ratio($this->getFundingMoney(), $program->getFunds());
 
-        return bccomp((string) $ratio, $participation->getQuota(), 4) <= 0;
+        return \bccomp((string) $ratio, $participation->getQuota(), 4) <= 0;
     }
 
     public function checkGradeAllocation(): bool
@@ -519,7 +519,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         /** @var ProgramGradeAllocation $programGradeAllocation */
         $programGradeAllocation = $program->getProgramGradeAllocations()->get($grade);
 
-        return bccomp((string) $ratio, $programGradeAllocation->getMaxAllocationRate(), 4) <= 0;
+        return \bccomp((string) $ratio, $programGradeAllocation->getMaxAllocationRate(), 4) <= 0;
     }
 
     public function checkBorrowerTypeAllocation(): bool
@@ -527,7 +527,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $program      = $this->reservation->getProgram();
         $borrowerType = $this->reservation->getBorrower()->getBorrowerType();
         if (false === $borrowerType instanceof ProgramChoiceOption) {
-            throw new \RuntimeException(sprintf(
+            throw new \RuntimeException(\sprintf(
                 'Cannot find the borrower type %d for reservation %d. Please check the data.',
                 $borrowerType->getId(),
                 $this->reservation->getId()
@@ -538,14 +538,14 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         /** @var ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation */
         $programBorrowerTypeAllocation = $program->getProgramBorrowerTypeAllocations()->get($borrowerType->getId());
 
-        return bccomp((string) $ratio, $programBorrowerTypeAllocation->getMaxAllocationRate(), 4) <= 0;
+        return \bccomp((string) $ratio, $programBorrowerTypeAllocation->getMaxAllocationRate(), 4) <= 0;
     }
 
     private function getTotalFunds(Program $program, array $filters = []): MoneyInterface
     {
         // Since the current project can be in the "total" or not according to its status,
         // we exclude it from the "total", then add it back manually to the "total", so that we get always the same "total" all the time.
-        $filters = array_merge(['exclude' => $this->getId()], $filters);
+        $filters = \array_merge(['exclude' => $this->getId()], $filters);
 
         return MoneyCalculator::add($program->getTotalProjectFunds($filters), $this->getFundingMoney());
     }

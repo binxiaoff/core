@@ -63,7 +63,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", inversedBy="borrower")
      * @ORM\JoinColumn(name="id_reservation", nullable=false)
      *
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
     private Reservation $reservation;
 
