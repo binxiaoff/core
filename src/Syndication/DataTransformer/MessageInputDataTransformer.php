@@ -7,42 +7,35 @@ namespace Unilend\Syndication\DataTransformer;
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Unilend\Core\DTO\MessageInput;
-use Unilend\Core\Entity\{Message, MessageThread, User};
+use Unilend\Core\Entity\Message;
+use Unilend\Core\Entity\MessageThread;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\MessageThreadRepository;
-use Unilend\Syndication\Entity\{Project, ProjectParticipation};
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectParticipation;
 use Unilend\Syndication\Security\Voter\ProjectParticipationVoter;
 use Unilend\Syndication\Service\Project\ProjectManager;
 
 class MessageInputDataTransformer implements DataTransformerInterface
 {
-    /** @var ValidatorInterface */
     private ValidatorInterface $validator;
 
-    /** @var Security */
     private Security $security;
 
-    /** @var MessageThreadRepository */
     private MessageThreadRepository $messageThreadRepository;
 
-    /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
 
-    /** @var ProjectManager */
     private ProjectManager $projectManager;
 
     /**
      * MessageInputDataTransformer constructor.
-     *
-     * @param ValidatorInterface      $validator
-     * @param Security                $security
-     * @param MessageThreadRepository $messageThreadRepository
-     * @param IriConverterInterface   $iriConverter
-     * @param ProjectManager          $projectManager
      */
     public function __construct(
         ValidatorInterface $validator,
@@ -51,19 +44,15 @@ class MessageInputDataTransformer implements DataTransformerInterface
         IriConverterInterface $iriConverter,
         ProjectManager $projectManager
     ) {
-        $this->validator                = $validator;
-        $this->security                 = $security;
-        $this->messageThreadRepository  = $messageThreadRepository;
-        $this->iriConverter             = $iriConverter;
-        $this->projectManager           = $projectManager;
+        $this->validator               = $validator;
+        $this->security                = $security;
+        $this->messageThreadRepository = $messageThreadRepository;
+        $this->iriConverter            = $iriConverter;
+        $this->projectManager          = $projectManager;
     }
 
     /**
      * @param array|object $data
-     * @param string       $to
-     * @param array        $context
-     *
-     * @return bool
      */
     public function supportsTransformation($data, string $to, array $context = []): bool
     {
@@ -72,20 +61,18 @@ class MessageInputDataTransformer implements DataTransformerInterface
 
     /**
      * @param object $object
-     * @param string $to
-     * @param array  $context
-     *
-     * @return Message
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     *
+     * @return Message
      */
     public function transform($object, string $to, array $context = [])
     {
         $this->validator->validate($object);
 
         $entity = $this->iriConverter->getItemFromIri($object->entity, [AbstractNormalizer::GROUPS => []]);
-        $user = $this->security->getUser();
+        $user   = $this->security->getUser();
 
         if (false === $user instanceof User) {
             throw new AccessDeniedException();
@@ -95,7 +82,14 @@ class MessageInputDataTransformer implements DataTransformerInterface
             throw new AccessDeniedException();
         }
 
-        if (($entity instanceof Project) && $entity->getArranger() === $user->getCompany()) {
+        if (
+            ($entity instanceof Project) // You wish to send a broadcast message
+            && (
+                $entity->getArranger() !== $user->getCompany() // You are not connected as arranger
+                || null === $user->getCurrentStaff() // You have no staff
+                || $this->projectManager->isActiveParticipationMember($entity, $user->getCurrentStaff()) // You have no active member in project
+            )
+        ) {
             throw new AccessDeniedException();
         }
 
@@ -111,13 +105,9 @@ class MessageInputDataTransformer implements DataTransformerInterface
         return (new Message($user->getCurrentStaff(), $messageThread, $object->body))->setBroadcast();
     }
 
-    /***
-     * @param Project $project
-     *
+    /**
      * @throws ORMException
      * @throws OptimisticLockException
-     *
-     * @return MessageThread|null
      */
     private function getActiveProjectParticipationMessageThreadFromProject(Project $project): ?MessageThread
     {
@@ -132,10 +122,6 @@ class MessageInputDataTransformer implements DataTransformerInterface
     }
 
     /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return MessageThread
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
