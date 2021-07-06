@@ -7,7 +7,6 @@ namespace Unilend\Core\SwiftMailer;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
-use Psr\Log\LoggerInterface;
 use Swift_ConfigurableSpool;
 use Swift_Mime_SimpleMessage;
 use Swift_Transport;
@@ -16,50 +15,36 @@ use Unilend\Core\Repository\MailQueueRepository;
 
 class DatabaseSpool extends Swift_ConfigurableSpool
 {
-    /**
-     * @var MailQueueRepository
-     */
     private MailQueueRepository $mailQueueRepository;
 
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
-    /**
-     * @param MailQueueRepository $mailQueueRepository
-     * @param LoggerInterface     $logger
-     */
-    public function __construct(MailQueueRepository $mailQueueRepository, LoggerInterface $logger)
+    public function __construct(MailQueueRepository $mailQueueRepository)
     {
         $this->mailQueueRepository = $mailQueueRepository;
-        $this->logger = $logger;
     }
 
-
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function start()
     {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function stop()
     {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function isStarted()
     {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -78,16 +63,12 @@ class DatabaseSpool extends Swift_ConfigurableSpool
      * @param Swift_Transport $transport        A transport instance
      * @param string[]|null   $failedRecipients An array of failures by-reference
      *
-     * @return int The number of sent emails
-     *
      * @throws Exception
+     *
+     * @return int The number of sent emails
      */
     public function flushQueue(Swift_Transport $transport, &$failedRecipients = null): int
     {
-        if (!$transport->isStarted()) {
-            $transport->start();
-        }
-
         $limit        = $this->getMessageLimit();
         $limit        = $limit > 0 ? $limit : null;
         $pendingMails = $this->mailQueueRepository->getPendingMails($limit);
@@ -96,7 +77,11 @@ class DatabaseSpool extends Swift_ConfigurableSpool
             return 0;
         }
 
-        $em = $this->mailQueueRepository->getEntityManager();
+        if (!$transport->isStarted()) {
+            $transport->start();
+        }
+
+        $em               = $this->mailQueueRepository->getEntityManager();
         $failedRecipients = (array) $failedRecipients;
         $count            = 0;
 
