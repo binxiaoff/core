@@ -62,7 +62,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *             "companyGroupTag:read"
  *         }
  *     },
- *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "tag:write", "nullablePerson:write"}},
+ *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "nullablePerson:write"}},
  *     collectionOperations={
  *         "get": {
  *             "normalization_context": {
@@ -89,7 +89,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                     "company:write",
  *                     "money:write",
  *                     "nullableMoney:write",
- *                     "tag:write",
  *                     "nullablePerson:write",
  *                     "companyGroupTag:read"
  *                 }
@@ -121,7 +120,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                 "traceableStatus:read",
  *                 "lendingRate:read",
  *                 "fee:read",
- *                 "tag:read",
  *                 "nullablePerson:read",
  *                 "nullableMoney:read",
  *                 "rangedOfferWithFee:read",
@@ -140,7 +138,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
- *                 "groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "nullableMoney:write", "tag:write", "nullablePerson:write"}
+ *                 "groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "nullableMoney:write", "nullablePerson:write"}
  *             },
  *             "normalization_context": {
  *                 "groups": {
@@ -165,7 +163,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                     "traceableStatus:read",
  *                     "lendingRate:read",
  *                     "fee:read",
- *                     "tag:read",
  *                     "nullablePerson:read",
  *                     "nullableMoney:read",
  *                     "rangedOfferWithFee:read",
