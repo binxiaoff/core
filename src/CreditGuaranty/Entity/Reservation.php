@@ -122,6 +122,13 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     private Program $program;
 
     /**
+     * @ORM\Column(type="string", nullable=true)
+     *
+     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
+     */
+    private ?string $name;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
      * @ORM\JoinColumn(name="id_managing_company", nullable=false)
      *
@@ -205,6 +212,18 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     public function getProgram(): Program
     {
         return $this->program;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): Reservation
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     public function getManagingCompany(): Company

@@ -6,7 +6,9 @@ namespace Unilend\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
@@ -71,6 +73,13 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     private Reservation $reservation;
 
     /**
+     * @ORM\Column(type="boolean")
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private bool $mainLoan;
+
+    /**
      * @ORM\Column(type="boolean", nullable=true)
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
@@ -95,6 +104,27 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     private ?ProgramChoiceOption $financingObjectType = null;
 
     /**
+     * Numéro GREEN = numéro du prêt CA.
+     * GREEN = outil CA de gestion des prêts.
+     *
+     * @ORM\Column(type="string", length=50, nullable=true)
+     *
+     * @Assert\NotBlank(allowNull=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?string $loanNumber = null;
+
+    /**
+     * @ORM\Column(type="string", length=50, nullable=true)
+     *
+     * @Assert\NotBlank(allowNull=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?string $operationNumber = null;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_loan_naf_code", nullable=true)
      *
@@ -103,22 +133,6 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      * @Groups({"creditGuaranty:financingObject:write"})
      */
     private ?ProgramChoiceOption $loanNafCode = null;
-
-    /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
-     *
-     * @Assert\Valid
-     *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
-     */
-    private Money $loanMoney;
-
-    /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
-     *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
-     */
-    private NullableMoney $bfrValue;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
@@ -168,6 +182,42 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     private ?ProgramChoiceOption $loanPeriodicity = null;
 
     /**
+     * Duration in month.
+     *
+     * @ORM\Column(type="smallint", nullable=true)
+     *
+     * @Assert\GreaterThanOrEqual(1)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?int $newMaturity = null;
+
+    /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private Money $loanMoney;
+
+    /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private NullableMoney $bfrValue;
+
+    /**
+     * Capital restant dû (CRD).
+     *
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private NullableMoney $remainingCapital;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_investment_location", nullable=true)
      *
@@ -178,50 +228,27 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     private ?ProgramChoiceOption $investmentLocation = null;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @var Collection|FinancingObjectUnblocking[]
      *
-     * @Assert\AtLeastOneOf({
-     *     @Assert\Expression("null === this.getProgram().isLoanReleasedOnInvoice()"),
-     *     @Assert\Expression("false === this.getProgram().isLoanReleasedOnInvoice()"),
-     *     @Assert\Expression("true === this.getProgram().isLoanReleasedOnInvoice() && false === value.isNull()")
-     * }, message="CreditGuaranty.Reservation.financingObject.invoiceMoney.requiredForLoanReleasedOnInvoice", includeInternalMessages=false)
+     * @ApiSubresource
      *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     * @ORM\OneToMany(
+     *     targetEntity="Unilend\CreditGuaranty\Entity\FinancingObjectUnblocking",
+     *     mappedBy="financingObject", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     * )
      */
-    private NullableMoney $invoiceMoney;
-
-    /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
-     *
-     * @Assert\AtLeastOneOf({
-     *     @Assert\Expression("null === this.getProgram().isLoanReleasedOnInvoice()"),
-     *     @Assert\Expression("false === this.getProgram().isLoanReleasedOnInvoice()"),
-     *     @Assert\Expression("true === this.getProgram().isLoanReleasedOnInvoice() && false === value.isNull()")
-     * }, message="CreditGuaranty.Reservation.financingObject.achievementMoney.requiredForLoanReleasedOnInvoice", includeInternalMessages=false)
-     *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
-     */
-    private NullableMoney $achievementMoney;
-
-    /**
-     * @ORM\Column(type="boolean")
-     *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
-     */
-    private bool $mainLoan;
+    private Collection $financingObjectUnblockings;
 
     public function __construct(
         Reservation $reservation,
         Money $loanMoney,
         bool $mainLoan
     ) {
-        $this->reservation      = $reservation;
-        $this->loanMoney        = $loanMoney;
-        $this->bfrValue         = new NullableMoney();
-        $this->invoiceMoney     = new NullableMoney();
-        $this->achievementMoney = new NullableMoney();
-        $this->mainLoan         = $mainLoan;
-        $this->added            = new DateTimeImmutable();
+        $this->reservation = $reservation;
+        $this->loanMoney   = $loanMoney;
+        $this->bfrValue    = new NullableMoney();
+        $this->mainLoan    = $mainLoan;
+        $this->added       = new DateTimeImmutable();
     }
 
     public function getReservation(): Reservation
@@ -232,6 +259,18 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     public function getProgram(): Program
     {
         return $this->getReservation()->getProgram();
+    }
+
+    public function isMainLoan(): bool
+    {
+        return $this->mainLoan;
+    }
+
+    public function setMainLoan(bool $mainLoan): FinancingObject
+    {
+        $this->mainLoan = $mainLoan;
+
+        return $this;
     }
 
     public function isSupportingGenerationsRenewal(): ?bool
@@ -284,6 +323,30 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         return null;
     }
 
+    public function getLoanNumber(): ?string
+    {
+        return $this->loanNumber;
+    }
+
+    public function setLoanNumber(?string $loanNumber): FinancingObject
+    {
+        $this->loanNumber = $loanNumber;
+
+        return $this;
+    }
+
+    public function getOperationNumber(): ?string
+    {
+        return $this->operationNumber;
+    }
+
+    public function setOperationNumber(?string $operationNumber): FinancingObject
+    {
+        $this->operationNumber = $operationNumber;
+
+        return $this;
+    }
+
     public function getLoanNafCode(): ?ProgramChoiceOption
     {
         return $this->loanNafCode;
@@ -308,30 +371,6 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         }
 
         return null;
-    }
-
-    public function getLoanMoney(): Money
-    {
-        return $this->loanMoney;
-    }
-
-    public function setLoanMoney(Money $loanMoney): FinancingObject
-    {
-        $this->loanMoney = $loanMoney;
-
-        return $this;
-    }
-
-    public function getBfrValue(): NullableMoney
-    {
-        return $this->bfrValue;
-    }
-
-    public function setBfrValue(NullableMoney $bfrValue): FinancingObject
-    {
-        $this->bfrValue = $bfrValue;
-
-        return $this;
     }
 
     public function getLoanType(): ?ProgramChoiceOption
@@ -410,6 +449,54 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         return null;
     }
 
+    public function getNewMaturity(): ?int
+    {
+        return $this->newMaturity;
+    }
+
+    public function setNewMaturity(?int $newMaturity): FinancingObject
+    {
+        $this->newMaturity = $newMaturity;
+
+        return $this;
+    }
+
+    public function getLoanMoney(): Money
+    {
+        return $this->loanMoney;
+    }
+
+    public function setLoanMoney(Money $loanMoney): FinancingObject
+    {
+        $this->loanMoney = $loanMoney;
+
+        return $this;
+    }
+
+    public function getBfrValue(): NullableMoney
+    {
+        return $this->bfrValue;
+    }
+
+    public function setBfrValue(NullableMoney $bfrValue): FinancingObject
+    {
+        $this->bfrValue = $bfrValue;
+
+        return $this;
+    }
+
+    public function getRemainingCapital(): NullableMoney
+    {
+        return $this->remainingCapital;
+    }
+
+    public function setRemainingCapital(NullableMoney $remainingCapital): FinancingObject
+    {
+        $this->remainingCapital = $remainingCapital;
+
+        return $this;
+    }
+
     public function getInvestmentLocation(): ?ProgramChoiceOption
     {
         return $this->investmentLocation;
@@ -436,40 +523,12 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         return null;
     }
 
-    public function getInvoiceMoney(): NullableMoney
+    /**
+     * @return Collection|FinancingObjectUnblocking[]
+     */
+    public function getFinancingObjectUnblockings(): Collection
     {
-        return $this->invoiceMoney;
-    }
-
-    public function setInvoiceMoney(NullableMoney $invoiceMoney): FinancingObject
-    {
-        $this->invoiceMoney = $invoiceMoney;
-
-        return $this;
-    }
-
-    public function getAchievementMoney(): NullableMoney
-    {
-        return $this->achievementMoney;
-    }
-
-    public function setAchievementMoney(NullableMoney $achievementMoney): FinancingObject
-    {
-        $this->achievementMoney = $achievementMoney;
-
-        return $this;
-    }
-
-    public function isMainLoan(): bool
-    {
-        return $this->mainLoan;
-    }
-
-    public function setMainLoan(bool $mainLoan): FinancingObject
-    {
-        $this->mainLoan = $mainLoan;
-
-        return $this;
+        return $this->financingObjectUnblockings;
     }
 
     /**
