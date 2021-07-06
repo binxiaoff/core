@@ -255,6 +255,9 @@
     "facile-it/doctrine-mysql-come-back": {
         "version": "v1.7"
     },
+    "fakerphp/faker": {
+        "version": "v1.14.1"
+    },
     "fig/link-util": {
         "version": "1.0.0"
     },
@@ -284,9 +287,6 @@
         "files": [
             "config/routes/fos_js_routing.yaml"
         ]
-    },
-    "fzaninotto/faker": {
-        "version": "v1.8.0"
     },
     "gedmo/doctrine-extensions": {
         "version": "v2.4.37"
