@@ -62,7 +62,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *             "companyGroupTag:read"
  *         }
  *     },
- *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "tag:write", "nullablePerson:write"}},
+ *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "nullablePerson:write"}},
  *     collectionOperations={
  *         "get": {
  *             "normalization_context": {
@@ -89,7 +89,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                     "company:write",
  *                     "money:write",
  *                     "nullableMoney:write",
- *                     "tag:write",
  *                     "nullablePerson:write",
  *                     "companyGroupTag:read"
  *                 }
@@ -121,7 +120,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                 "traceableStatus:read",
  *                 "lendingRate:read",
  *                 "fee:read",
- *                 "tag:read",
  *                 "nullablePerson:read",
  *                 "nullableMoney:read",
  *                 "rangedOfferWithFee:read",
@@ -140,7 +138,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
- *                 "groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "nullableMoney:write", "tag:write", "nullablePerson:write"}
+ *                 "groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "nullableMoney:write", "nullablePerson:write"}
  *             },
  *             "normalization_context": {
  *                 "groups": {
@@ -165,7 +163,6 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *                     "traceableStatus:read",
  *                     "lendingRate:read",
  *                     "fee:read",
- *                     "tag:read",
  *                     "nullablePerson:read",
  *                     "nullableMoney:read",
  *                     "rangedOfferWithFee:read",
@@ -459,16 +456,6 @@ class Project implements TraceableStatusAwareInterface
     private ?string $riskType = null;
 
     /**
-     * @var Collection|Tag[]
-     *
-     * @ORM\ManyToMany(targetEntity="Unilend\Syndication\Entity\Tag", cascade={"persist"})
-     * @ORM\JoinTable(name="syndication_project_tag")
-     *
-     * @Groups({"project:read", "project:write"})
-     */
-    private Collection $tags;
-
-    /**
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
      *
      * @Assert\NotBlank
@@ -552,7 +539,6 @@ class Project implements TraceableStatusAwareInterface
         $this->projectComments = new ArrayCollection();
         $this->statuses        = new ArrayCollection();
         $this->tranches        = new ArrayCollection();
-        $this->tags            = new ArrayCollection();
         $this->organizers      = new ArrayCollection([new ProjectOrganizer($addedBy->getCompany(), $this, $addedBy)]);
         $this->added           = new DateTimeImmutable();
         $this->agencyImported  = false;
@@ -808,11 +794,11 @@ class Project implements TraceableStatusAwareInterface
         });
 
         if (1 < $filtered->count()) {
-            throw new DomainException(sprintf('There are more than one participations for arranger (id: %d) on project (id: %s)', $this->getArranger()->getId(), $this->getId()));
+            throw new DomainException(\sprintf('There are more than one participations for arranger (id: %d) on project (id: %s)', $this->getArranger()->getId(), $this->getId()));
         }
 
         if (0 === $filtered->count()) {
-            throw new DomainException(sprintf('There is no participation for arranger (id: %d) on project (id: %s)', $this->getArranger()->getId(), $this->getId()));
+            throw new DomainException(\sprintf('There is no participation for arranger (id: %d) on project (id: %s)', $this->getArranger()->getId(), $this->getId()));
         }
 
         return $filtered->first();
@@ -948,30 +934,6 @@ class Project implements TraceableStatusAwareInterface
     public function setRiskType(?string $riskType): Project
     {
         $this->riskType = $riskType;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Tag[]
-     */
-    public function getTags()
-    {
-        return $this->tags;
-    }
-
-    public function addTag(Tag $tag): Project
-    {
-        if (false === $this->tags->contains($tag)) {
-            $this->tags[] = $tag;
-        }
-
-        return $this;
-    }
-
-    public function removeTag(Tag $tag): Project
-    {
-        $this->tags->removeElement($tag);
 
         return $this;
     }
@@ -1202,7 +1164,7 @@ class Project implements TraceableStatusAwareInterface
             && $this->allocationDeadline
             && $this->participantReplyDeadline
             // ensure interestExpressionDeadline is present only if interest expression is enabled
-            && is_bool($this->interestExpressionEnabled)
+            && \is_bool($this->interestExpressionEnabled)
             && false === $this->interestExpressionEnabled xor null !== $this->interestExpressionDeadline
             && $this->participationType
             ;
@@ -1281,7 +1243,7 @@ class Project implements TraceableStatusAwareInterface
     private function getUniqueOrganizer(string $role): ?ProjectOrganizer
     {
         if (false === ProjectOrganizer::isUniqueRole($role)) {
-            throw new RuntimeException(sprintf('Role "%s" is not unique. Cannot get project Participation corresponding to the role.', $role));
+            throw new RuntimeException(\sprintf('Role "%s" is not unique. Cannot get project Participation corresponding to the role.', $role));
         }
 
         return $this->getOrganizersByRole($role)->first() ?: null;
