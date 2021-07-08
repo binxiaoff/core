@@ -16,8 +16,11 @@ use Unilend\CreditGuaranty\Entity\StaffPermission;
 
 class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
+    private ObjectManager $manager;
+
     public function load(ObjectManager $manager): void
     {
+        $this->manager = $manager;
         // Managing company (CASA)
         /** @var Company $company */
         $company       = $this->getReference(CompanyFixtures::CASA);
@@ -43,28 +46,9 @@ class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtu
             $manager->persist($staffPermission);
         }
 
-        // participant (CR)
-        /** @var Company $company */
-        $company = $this->getReference(CompanyFixtures::COMPANY_MANY_STAFF);
-        foreach ($company->getStaff() as $staff) {
-            $staffPermission = new StaffPermission(
-                $staff,
-                new Bitmask(StaffPermission::PERMISSION_READ_RESERVATION
-                    | StaffPermission::PERMISSION_EDIT_RESERVATION
-                    | StaffPermission::PERMISSION_CREATE_RESERVATION
-                | StaffPermission::PERMISSION_READ_PROGRAM)
-            );
-            if ($staff->getUser() === $referenceUser) {
-                $staffPermission->setGrantPermissions(
-                    StaffPermission::PERMISSION_GRANT_READ_RESERVATION
-                    | StaffPermission::PERMISSION_GRANT_CREATE_RESERVATION
-                    | StaffPermission::PERMISSION_GRANT_EDIT_RESERVATION
-                    | StaffPermission::PERMISSION_GRANT_READ_PROGRAM
-                );
-            }
-
-            $manager->persist($staffPermission);
-        }
+        // participant (CR), we create the CG admin for the bank which participate the programs.
+        $this->createAdminParticipant($this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant());
+        $this->createAdminParticipant($this->getReference(ParticipationFixtures::PARTICIPANT_TOUL)->getParticipant());
 
         $manager->flush();
     }
@@ -74,6 +58,31 @@ class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtu
         return [
             CompanyFixtures::class,
             StaffFixtures::class,
+            ParticipationFixtures::class,
         ];
+    }
+
+    private function createAdminParticipant(Company $company): void
+    {
+        foreach ($company->getStaff() as $staff) {
+            $staffPermission = new StaffPermission(
+                $staff,
+                new Bitmask(
+                    StaffPermission::PERMISSION_READ_RESERVATION
+                    | StaffPermission::PERMISSION_EDIT_RESERVATION
+                    | StaffPermission::PERMISSION_CREATE_RESERVATION
+                    | StaffPermission::PERMISSION_READ_PROGRAM
+                )
+            );
+            // In the fixtures, there is only one staff per company, who is the admin
+            $staffPermission->setGrantPermissions(
+                StaffPermission::PERMISSION_GRANT_READ_RESERVATION
+                | StaffPermission::PERMISSION_GRANT_CREATE_RESERVATION
+                | StaffPermission::PERMISSION_GRANT_EDIT_RESERVATION
+                | StaffPermission::PERMISSION_GRANT_READ_PROGRAM
+            );
+
+            $this->manager->persist($staffPermission);
+        }
     }
 }
