@@ -125,18 +125,6 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
  *
  * @UniqueEntity(fields={"pool", "participant"})
  *
- * @ApiFilter(
- *     filterClass=GroupFilter::class,
- *     arguments={
- *         "whitelist": {
- *             "company:read",
- *             "agency:participation:read",
- *             "agency:participationTrancheAllocation:read",
- *             "agency:tranche:read"
- *         }
- *     }
- * )
- *
  * TODO The .publicId might be dropped in favor of using iri for filter when https://github.com/api-platform/core/issues/3575 is solved
  * @ApiFilter(
  *     filterClass=SearchFilter::class,
@@ -147,9 +135,11 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
  *     filterClass=GroupFilter::class,
  *     arguments={
  *         "whitelist": {
+ *             "company:read",
  *             "agency:participationTrancheAllocation:read",
  *             "agency:participationMember:read",
- *             "user:read"
+ *             "user:read",
+ *             "agency:tranche:read"
  *         }
  *     }
  * )
