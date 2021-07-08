@@ -69,7 +69,7 @@ class Participation
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="participations")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
-     * @ApiProperty(writableLink=false)
+     * @ApiProperty(readableLink=false, writableLink=false)
      *
      * @Groups({"creditGuaranty:participation:list", "creditGuaranty:participation:read", "creditGuaranty:participation:create"})
      */

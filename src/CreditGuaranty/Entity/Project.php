@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -63,6 +64,8 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     /**
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", inversedBy="project")
      * @ORM\JoinColumn(name="id_reservation", nullable=false)
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
