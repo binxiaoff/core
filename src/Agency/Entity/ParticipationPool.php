@@ -159,10 +159,6 @@ class ParticipationPool
      * @ORM\Column(type="string", nullable=true, length=30)
      *
      * @Assert\Choice(callback={RiskType::class, "getConstList"})
-     * @Assert\Expression(
-     *     expression="(false === this.isPrincipalSubParticipation() and null === value) or (this.isPrincipalSubParticipation() and value)",
-     *     groups={"ParticipationPool:published"}
-     * )
      *
      * @Groups({"agency:participationPool:read", "agency:participationPool:write"})
      */
@@ -264,6 +260,11 @@ class ParticipationPool
     public function isPrimary(): bool
     {
         return false === $this->isSecondary();
+    }
+
+    public function isSubParticipation(): bool
+    {
+        return ParticipationType::SUB_PARTICIPATION === $this->participationType;
     }
 
     public function getCurrentValidationGroups(self $pool): array
