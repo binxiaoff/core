@@ -69,9 +69,9 @@ class Participation
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="participations")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
-     * @ApiProperty(writableLink=false)
+     * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:participation:list", "creditGuaranty:participation:create"})
+     * @Groups({"creditGuaranty:participation:list", "creditGuaranty:participation:read", "creditGuaranty:participation:create"})
      */
     private Program $program;
 
@@ -180,7 +180,7 @@ class Participation
      */
     public function isParticipantValid(): bool
     {
-        return in_array($this->getParticipant()->getShortCode(), CARegionalBank::REGIONAL_BANKS, true);
+        return \in_array($this->getParticipant()->getShortCode(), CARegionalBank::REGIONAL_BANKS, true);
     }
 
     private function countParticipantReservationByStatus(int $status): int

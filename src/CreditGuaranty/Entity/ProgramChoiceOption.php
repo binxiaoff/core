@@ -68,7 +68,7 @@ class ProgramChoiceOption
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:programChoiceOption:create"})
+     * @Groups({"creditGuaranty:programChoiceOption:read", "creditGuaranty:programChoiceOption:create"})
      */
     private Program $program;
 
@@ -133,7 +133,7 @@ class ProgramChoiceOption
             return true;
         }
 
-        return in_array($this->description, $this->getField()->getPredefinedItems(), true);
+        return \in_array($this->description, $this->getField()->getPredefinedItems(), true);
     }
 
     /**
@@ -173,7 +173,7 @@ class ProgramChoiceOption
             return;
         }
 
-        if (count($this->field->getPredefinedItems()) && false === in_array($this->description, $this->field->getPredefinedItems(), true)) {
+        if (\count($this->field->getPredefinedItems()) && false === \in_array($this->description, $this->field->getPredefinedItems(), true)) {
             $context->buildViolation('CreditGuaranty.ProgramChoiceOption.invalid')->atPath('description')->addViolation();
         }
     }
