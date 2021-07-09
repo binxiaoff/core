@@ -82,30 +82,20 @@ class TemporaryToken
     private $user;
 
     /**
-     * TemporaryToken constructor.
-     *
-     * @param User   $users
-     * @param string $expirationDelay
-     *
      * @throws Exception
      */
     private function __construct(User $users, string $expirationDelay)
     {
         $this->token   = bin2hex(random_bytes(16));
-        $this->user  = $users;
+        $this->user    = $users;
         $this->added   = new DateTimeImmutable();
         $this->expires = (new DateTimeImmutable())->add(DateInterval::createFromDateString($expirationDelay));
     }
 
     /**
-     * @param User $user
-     *
-     * @return TemporaryToken
-
-     **@throws Exception
+     * @throws Exception
      *
      * @internal Use Unilend\Core\Service\TemporaryTokenGenerator::generateMediumToken
-     *
      */
     public static function generateMediumToken(User $user): TemporaryToken
     {
@@ -113,55 +103,35 @@ class TemporaryToken
     }
 
     /**
-     * @param User $user
-     *
-     * @return TemporaryToken
-
-     **@throws Exception
+     * @throws Exception
      *
      * @internal Use Unilend\Core\Service\TemporaryTokenGenerator::generateUltraLongToken
-     *
      */
     public static function generateUltraLongToken(User $user): TemporaryToken
     {
         return new TemporaryToken($user, static::LIFETIME_ULTRA_LONG);
     }
 
-    /**
-     * @return User
-     */
     public function getUser(): User
     {
         return $this->user;
     }
 
-    /**
-     * @return string
-     */
     public function getToken(): string
     {
         return $this->token;
     }
 
-    /**
-     * @return DateTimeImmutable
-     */
     public function getExpires(): DateTimeImmutable
     {
         return $this->expires;
     }
 
-    /**
-     * @return DateTimeImmutable|null
-     */
     public function getAccessed(): ?DateTimeImmutable
     {
         return $this->accessed;
     }
 
-    /**
-     * @return int
-     */
     public function getId(): int
     {
         return $this->id;
@@ -169,8 +139,6 @@ class TemporaryToken
 
     /**
      * @throws Exception
-     *
-     * @return TemporaryToken
      */
     public function setExpired(): TemporaryToken
     {
@@ -179,10 +147,18 @@ class TemporaryToken
         return $this;
     }
 
+    public function extendMedium(): TemporaryToken
+    {
+        return $this->extend(DateInterval::createFromDateString(static::LIFETIME_MEDIUM));
+    }
+
+    public function extendUltraLong(): TemporaryToken
+    {
+        return $this->extend(DateInterval::createFromDateString(static::LIFETIME_ULTRA_LONG));
+    }
+
     /**
      * @throws Exception
-     *
-     * @return TemporaryToken
      */
     public function setAccessed(): TemporaryToken
     {
@@ -193,11 +169,16 @@ class TemporaryToken
 
     /**
      * @throws Exception
-     *
-     * @return bool
      */
     public function isValid(): bool
     {
         return (new DateTimeImmutable()) < $this->expires;
+    }
+
+    private function extend(DateInterval $extension): TemporaryToken
+    {
+        $this->expires = (new DateTimeImmutable())->add($extension);
+
+        return $this;
     }
 }

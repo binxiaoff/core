@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\User;
+use Unilend\Core\SwiftMailer\MailjetMessage;
 
 /**
  * @ApiResource(
@@ -198,5 +199,10 @@ class ParticipationMember extends AbstractProjectMember
                 ->addViolation()
             ;
         }
+    }
+
+    public static function getProjectPublicationNotificationMailjetTemplateId(): int
+    {
+        return MailjetMessage::TEMPLATE_AGENCY_PARTICIPATION_MEMBER_PROJECT_PUBLISHED;
     }
 }
