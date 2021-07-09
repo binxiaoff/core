@@ -383,9 +383,6 @@
     "mtdowling/jmespath.php": {
         "version": "2.4.0"
     },
-    "mustangostang/spyc": {
-        "version": "0.6.2"
-    },
     "myclabs/deep-copy": {
         "version": "1.9.3"
     },
@@ -545,9 +542,6 @@
     },
     "phpstan/phpstan-symfony": {
         "version": "0.11.6"
-    },
-    "piwik/device-detector": {
-        "version": "3.11.7"
     },
     "psr/cache": {
         "version": "1.0.1"
