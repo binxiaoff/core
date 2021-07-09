@@ -143,6 +143,16 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private ?string $description;
 
     /**
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\JoinColumn(name="id_managing_company", nullable=false)
+     *
+     * @ApiProperty(readableLink=false)
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:create"})
+     */
+    private Company $managingCompany;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
      * @ORM\JoinColumn(name="id_company_group_tag", nullable=false)
      *
@@ -243,6 +253,26 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private NullableMoney $guarantyCost;
 
     /**
+     * @ORM\Column(type="smallint", nullable=true)
+     *
+     * The max of a signed "smallint" is 32767
+     * @Assert\Range(min="1", max="32767")
+     * @Assert\NotBlank(allowNull=true)
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     */
+    private ?int $reservationDuration;
+
+    /**
+     * @ORM\Column(length=60, nullable=true)
+     *
+     * @Assert\Choice(callback={CARatingType::class, "getConstList"})
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     */
+    private ?string $ratingType = null;
+
+    /**
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
      * @Assert\Valid
@@ -250,6 +280,20 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private NullableMoney $maxFeiCredit;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     */
+    private ?bool $esbCalculationActivated = null;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     */
+    private ?bool $loanReleasedOnInvoice = null;
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramStatus", cascade={"persist"})
@@ -278,35 +322,21 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private Collection $statuses;
 
     /**
-     * @ORM\Column(length=60, nullable=true)
-     *
-     * @Assert\Choice(callback={CARatingType::class, "getConstList"})
-     *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Drive", cascade={"persist", "remove"})
+     * @ORM\JoinColumn(name="id_drive", nullable=false, unique=true)
      */
-    private ?string $ratingType = null;
-
-    /**
-     * @ORM\Column(type="smallint", nullable=true)
-     * The max of a signed "smallint" is 32767
-     * @Assert\Range(min="1", max="32767")
-     * @Assert\NotBlank(allowNull=true)
-     *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
-     */
-    private ?int $reservationDuration;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
-     * @ORM\JoinColumn(name="id_managing_company", nullable=false)
-     *
-     * @ApiProperty(readableLink=false)
-     *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:create"})
-     */
-    private Company $managingCompany;
+    private Drive $drive;
 
     // Subresource
+
+    /**
+     * @var Collection|ProgramContact[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramContact", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
+     */
+    private Collection $programContacts;
 
     /**
      * @var Collection|ProgramGradeAllocation[]
@@ -342,15 +372,6 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private Collection $programChoiceOptions;
 
     /**
-     * @var Collection|ProgramContact[]
-     *
-     * @ApiSubresource
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramContact", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
-     */
-    private Collection $programContacts;
-
-    /**
      * @var Collection|ProgramEligibility[]
      *
      * @ApiSubresource
@@ -383,29 +404,23 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      */
     private Collection $reservations;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Drive", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="id_drive", nullable=false, unique=true)
-     */
-    private Drive $drive;
-
     public function __construct(string $name, CompanyGroupTag $companyGroupTag, Money $funds, Staff $addedBy)
     {
         $this->name                           = $name;
+        $this->managingCompany                = $addedBy->getCompany();
         $this->companyGroupTag                = $companyGroupTag;
         $this->funds                          = $funds;
-        $this->addedBy                        = $addedBy->getUser();
-        $this->managingCompany                = $addedBy->getCompany();
         $this->guarantyCost                   = new NullableMoney();
         $this->maxFeiCredit                   = new NullableMoney();
+        $this->drive                          = new Drive();
         $this->statuses                       = new ArrayCollection();
         $this->programGradeAllocations        = new ArrayCollection();
         $this->programBorrowerTypeAllocations = new ArrayCollection();
         $this->programChoiceOptions           = new ArrayCollection();
         $this->participations                 = new ArrayCollection();
         $this->reservations                   = new ArrayCollection();
+        $this->addedBy                        = $addedBy->getUser();
         $this->added                          = new DateTimeImmutable();
-        $this->drive                          = new Drive();
         $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_DRAFT, $addedBy));
     }
 
@@ -431,6 +446,11 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         $this->description = $description;
 
         return $this;
+    }
+
+    public function getManagingCompany(): Company
+    {
+        return $this->managingCompany;
     }
 
     public function getCompanyGroupTag(): CompanyGroupTag
@@ -522,6 +542,37 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         return $this;
     }
 
+    public function getReservationDuration(): ?int
+    {
+        return $this->reservationDuration;
+    }
+
+    public function setReservationDuration(?int $reservationDuration): Program
+    {
+        $this->reservationDuration = $reservationDuration;
+
+        return $this;
+    }
+
+    public function getRatingType(): ?string
+    {
+        return $this->ratingType;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setRatingType(?string $ratingType): Program
+    {
+        if ($ratingType !== $this->ratingType) {
+            $this->programGradeAllocations->clear();
+        }
+
+        $this->ratingType = $ratingType;
+
+        return $this;
+    }
+
     public function getMaxFeiCredit(): NullableMoney
     {
         return $this->maxFeiCredit;
@@ -530,6 +581,30 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     public function setMaxFeiCredit(NullableMoney $maxFeiCredit): Program
     {
         $this->maxFeiCredit = $maxFeiCredit;
+
+        return $this;
+    }
+
+    public function isEsbCalculationActivated(): ?bool
+    {
+        return $this->esbCalculationActivated;
+    }
+
+    public function setEsbCalculationActivated(?bool $esbCalculationActivated): Program
+    {
+        $this->esbCalculationActivated = $esbCalculationActivated;
+
+        return $this;
+    }
+
+    public function isLoanReleasedOnInvoice(): ?bool
+    {
+        return $this->loanReleasedOnInvoice;
+    }
+
+    public function setLoanReleasedOnInvoice(?bool $loanReleasedOnInvoice): Program
+    {
+        $this->loanReleasedOnInvoice = $loanReleasedOnInvoice;
 
         return $this;
     }
@@ -555,42 +630,6 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         $this->currentStatus = $status;
 
         return $this;
-    }
-
-    public function getRatingType(): ?string
-    {
-        return $this->ratingType;
-    }
-
-    /**
-     * @return $this
-     */
-    public function setRatingType(?string $ratingType): Program
-    {
-        if ($ratingType !== $this->ratingType) {
-            $this->programGradeAllocations->clear();
-        }
-
-        $this->ratingType = $ratingType;
-
-        return $this;
-    }
-
-    public function getReservationDuration(): ?int
-    {
-        return $this->reservationDuration;
-    }
-
-    public function setReservationDuration(?int $reservationDuration): Program
-    {
-        $this->reservationDuration = $reservationDuration;
-
-        return $this;
-    }
-
-    public function getManagingCompany(): Company
-    {
-        return $this->managingCompany;
     }
 
     public function archive(Staff $archivedBy): Program
@@ -628,6 +667,11 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         return ProgramStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
     }
 
+    public function getDrive(): Drive
+    {
+        return $this->drive;
+    }
+
     /**
      * @param Collection|ProgramContact[] $programContacts
      */
@@ -636,60 +680,6 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         $this->programContacts = $programContacts;
 
         return $this;
-    }
-
-    /**
-     * @return Collection|ProgramEligibility[]
-     */
-    public function getProgramEligibilities(): Collection
-    {
-        return $this->programEligibilities;
-    }
-
-    /**
-     * @param Collection|ProgramEligibility[] $programEligibilities
-     */
-    public function setProgramEligibilities(Collection $programEligibilities): Program
-    {
-        $this->programEligibilities = $programEligibilities;
-
-        return $this;
-    }
-
-    public function addProgramEligibility(ProgramEligibility $programEligibility): Program
-    {
-        $callback = fn (int $key, ProgramEligibility $existingProgramEligibility): bool => $existingProgramEligibility->getField() === $programEligibility->getField();
-        if (
-            $programEligibility->getProgram() === $this
-            && false === $this->programEligibilities->exists($callback)
-        ) {
-            $this->programEligibilities->add($programEligibility);
-        }
-
-        return $this;
-    }
-
-    public function hasParticipant(Company $company): bool
-    {
-        return $this->getParticipants()->contains($company);
-    }
-
-    /**
-     * @param Collection|Participation[] $participations
-     */
-    public function setParticipations(Collection $participations): Program
-    {
-        $this->participations = $participations;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Participation[]
-     */
-    public function getParticipations(): Collection
-    {
-        return $this->participations;
     }
 
     /**
@@ -785,6 +775,68 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     }
 
     /**
+     * @return Collection|ProgramEligibility[]
+     */
+    public function getProgramEligibilities(): Collection
+    {
+        return $this->programEligibilities;
+    }
+
+    /**
+     * @param Collection|ProgramEligibility[] $programEligibilities
+     */
+    public function setProgramEligibilities(Collection $programEligibilities): Program
+    {
+        $this->programEligibilities = $programEligibilities;
+
+        return $this;
+    }
+
+    public function addProgramEligibility(ProgramEligibility $programEligibility): Program
+    {
+        $callback = fn (int $key, ProgramEligibility $existingProgramEligibility): bool => $existingProgramEligibility->getField() === $programEligibility->getField();
+        if (
+            $programEligibility->getProgram() === $this
+            && false === $this->programEligibilities->exists($callback)
+        ) {
+            $this->programEligibilities->add($programEligibility);
+        }
+
+        return $this;
+    }
+
+    public function hasParticipant(Company $company): bool
+    {
+        return $this->getParticipants()->contains($company);
+    }
+
+    /**
+     * @param Collection|Participation[] $participations
+     */
+    public function setParticipations(Collection $participations): Program
+    {
+        $this->participations = $participations;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Participation[]
+     */
+    public function getParticipations(): Collection
+    {
+        return $this->participations;
+    }
+
+    /**
+     * @return Collection|Reservation[]
+     */
+    public function getReservations()
+    {
+        return $this->reservations;
+    }
+
+    /**
      * @param array $filter Possible criteria for the filter are
      *                      - grade: borrower's grade
      *                      - borrowerType: borrower type (ProgramChoiceOption) id
@@ -824,19 +876,6 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         $duplicatedProgram->setCurrentStatus(new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $duplicatedBy));
 
         return $duplicatedProgram;
-    }
-
-    /**
-     * @return Collection|Reservation[]
-     */
-    public function getReservations()
-    {
-        return $this->reservations;
-    }
-
-    public function getDrive(): Drive
-    {
-        return $this->drive;
     }
 
     protected function onClone(): Program

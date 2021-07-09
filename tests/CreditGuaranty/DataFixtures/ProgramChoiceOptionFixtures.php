@@ -17,7 +17,7 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
     // user-defined list type fields
     private const FIELDS = [
         'field-aid_intensity' => [
-            '20', '40', '60', '80',
+            '0.20', '0.40', '0.60', '0.80',
         ],
         'field-borrower_type' => [
             'Installé',

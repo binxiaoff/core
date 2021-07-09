@@ -13,8 +13,11 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\Core\Service\MoneyCalculator;
+use Unilend\CreditGuaranty\Entity\Constant\GrossSubsidyEquivalent;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
 
@@ -133,6 +136,11 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      * @ORM\Column(type="smallint", nullable=true)
      *
      * @Assert\GreaterThanOrEqual(1)
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
+     *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
+     *     @Assert\Expression("true === this.getProgram().isEsbCalculationActivated() && null !== value")
+     * }, message="CreditGuaranty.Reservation.financingObject.loanDuration.requiredForEsb", includeInternalMessages=false)
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
@@ -170,6 +178,32 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     private ?ProgramChoiceOption $investmentLocation = null;
 
     /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Expression("null === this.getProgram().isLoanReleasedOnInvoice()"),
+     *     @Assert\Expression("false === this.getProgram().isLoanReleasedOnInvoice()"),
+     *     @Assert\Expression("true === this.getProgram().isLoanReleasedOnInvoice() && false === value.isNull()")
+     * }, message="CreditGuaranty.Reservation.financingObject.invoiceMoney.requiredForLoanReleasedOnInvoice", includeInternalMessages=false)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private NullableMoney $invoiceMoney;
+
+    /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Expression("null === this.getProgram().isLoanReleasedOnInvoice()"),
+     *     @Assert\Expression("false === this.getProgram().isLoanReleasedOnInvoice()"),
+     *     @Assert\Expression("true === this.getProgram().isLoanReleasedOnInvoice() && false === value.isNull()")
+     * }, message="CreditGuaranty.Reservation.financingObject.achievementMoney.requiredForLoanReleasedOnInvoice", includeInternalMessages=false)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private NullableMoney $achievementMoney;
+
+    /**
      * @ORM\Column(type="boolean")
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
@@ -181,11 +215,13 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         Money $loanMoney,
         bool $mainLoan
     ) {
-        $this->reservation = $reservation;
-        $this->loanMoney   = $loanMoney;
-        $this->bfrValue    = new NullableMoney();
-        $this->mainLoan    = $mainLoan;
-        $this->added       = new DateTimeImmutable();
+        $this->reservation      = $reservation;
+        $this->loanMoney        = $loanMoney;
+        $this->bfrValue         = new NullableMoney();
+        $this->invoiceMoney     = new NullableMoney();
+        $this->achievementMoney = new NullableMoney();
+        $this->mainLoan         = $mainLoan;
+        $this->added            = new DateTimeImmutable();
     }
 
     public function getReservation(): Reservation
@@ -400,6 +436,30 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         return null;
     }
 
+    public function getInvoiceMoney(): NullableMoney
+    {
+        return $this->invoiceMoney;
+    }
+
+    public function setInvoiceMoney(NullableMoney $invoiceMoney): FinancingObject
+    {
+        $this->invoiceMoney = $invoiceMoney;
+
+        return $this;
+    }
+
+    public function getAchievementMoney(): NullableMoney
+    {
+        return $this->achievementMoney;
+    }
+
+    public function setAchievementMoney(NullableMoney $achievementMoney): FinancingObject
+    {
+        $this->achievementMoney = $achievementMoney;
+
+        return $this;
+    }
+
     public function isMainLoan(): bool
     {
         return $this->mainLoan;
@@ -426,5 +486,17 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     public function getUpdated(): ?DateTimeImmutable
     {
         return $this->updated;
+    }
+
+    /**
+     * Montant équivalent de subvention Brut (ESB).
+     *
+     * @Groups({"creditGuaranty:financingObject:read"})
+     */
+    public function getGrossSubsidyEquivalent(): MoneyInterface
+    {
+        $esb = MoneyCalculator::multiply($this->getLoanMoney(), (float) $this->getProgram()->getGuarantyCoverage());
+
+        return MoneyCalculator::multiply($esb, (float) \bcmul((string) $this->getLoanDuration(), (string) GrossSubsidyEquivalent::FACTOR, 4));
     }
 }

@@ -82,7 +82,7 @@ abstract class AbstractEligibilityTest extends TestCase
         return (new Project($reservation, new Money('EUR', '42')))
             ->setInvestmentThematic(new ProgramChoiceOption($program, 'investment thematic', $investmentThematicField))
             ->setInvestmentType(new ProgramChoiceOption($program, 'investment type', $investmentTypeField))
-            ->setAidIntensity(new ProgramChoiceOption($program, '42%', $aidIntensityField))
+            ->setAidIntensity(new ProgramChoiceOption($program, '0.42', $aidIntensityField))
             ->setAdditionalGuaranty(new ProgramChoiceOption($program, 'additional guaranty', $additionalGuaranty))
             ->setAgriculturalBranch(new ProgramChoiceOption($program, 'agricultural branch', $agriculturalBranch))
         ;

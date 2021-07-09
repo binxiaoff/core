@@ -565,7 +565,7 @@ class FieldFixtures extends AbstractFixtures
             'objectClass'             => FinancingObject::class,
             'comparable'              => true,
             'unit'                    => 'month',
-            'predefinedItems'         => ['monthly', 'quarterly', 'semi-annually', 'annually'],
+            'predefinedItems'         => ['monthly', 'quarterly', 'semi_annually', 'annually'],
         ];
         yield 'field-investment_location' => [
             'fieldAlias'              => 'investment_location',

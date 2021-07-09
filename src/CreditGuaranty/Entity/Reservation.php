@@ -18,12 +18,14 @@ use Unilend\Core\Controller\Dataroom\Get;
 use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Drive;
+use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Interfaces\DriveCarrierInterface;
 use Unilend\Core\Entity\Interfaces\StatusInterface;
 use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\Core\Service\MoneyCalculator;
 
 /**
  * @ApiResource(
@@ -329,5 +331,19 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     public function isArchived(): bool
     {
         return ReservationStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
+    }
+
+    public function isGrossSubsidyEquivalentEligible(): bool
+    {
+        $maxFeiCredit = $this->getProject()->getMaxFeiCredit();
+        $esbTotal     = new Money('EUR');
+
+        foreach ($this->getFinancingObjects() as $financingObject) {
+            $esbTotal = MoneyCalculator::add($esbTotal, $financingObject->getGrossSubsidyEquivalent());
+        }
+
+        $comparison = MoneyCalculator::compare($esbTotal, $maxFeiCredit);
+
+        return 0 >= $comparison;
     }
 }

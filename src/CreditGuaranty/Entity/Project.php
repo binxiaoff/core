@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use RuntimeException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -17,6 +18,7 @@ use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Service\MoneyCalculator;
+use Unilend\CreditGuaranty\Entity\Constant\GrossSubsidyEquivalent;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
 use Unilend\CreditGuaranty\Entity\Traits\AddressTrait;
@@ -102,7 +104,12 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_aid_intensity", nullable=true)
      *
-     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
+     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
+     *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
+     *     @Assert\Expression("true === this.getProgram().isEsbCalculationActivated() && null === value")
+     * }, message="CreditGuaranty.Reservation.project.aidIntensity.requiredForEsb", includeInternalMessages=false)
      *
      * @Groups({"creditGuaranty:project:write"})
      */
@@ -152,6 +159,12 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     /**
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
+     *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
+     *     @Assert\Expression("true === this.getProgram().isEsbCalculationActivated() && false === value.isNull()")
+     * }, message="CreditGuaranty.Reservation.project.totalFeiCredit.requiredForEsb", includeInternalMessages=false)
+     *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
     private NullableMoney $totalFeiCredit;
@@ -179,6 +192,12 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
 
     /**
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
+     *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
+     *     @Assert\Expression("true === this.getProgram().isEsbCalculationActivated() && false === value.isNull()")
+     * }, message="CreditGuaranty.Reservation.project.grant.requiredForEsb", includeInternalMessages=false)
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
@@ -487,6 +506,19 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return $this->updated;
     }
 
+    public function getMaxFeiCredit(): MoneyInterface
+    {
+        $programMaxFeiCredit = $this->getProgram()->getMaxFeiCredit();
+
+        $publicAidLimit      = MoneyCalculator::multiply($this->getTotalFeiCredit(), (float) $this->getAidIntensity()->getDescription());
+        $remainingGrantLimit = MoneyCalculator::subtract($publicAidLimit, $this->getGrant());
+        $maxFeiCredit        = MoneyCalculator::multiply($remainingGrantLimit, (float) $this->getProgram()->getGuarantyCoverage());
+        $duration            = \bcmul((string) $this->getProgram()->getGuarantyDuration(), (string) GrossSubsidyEquivalent::FACTOR, 4);
+        $maxFeiCredit        = MoneyCalculator::multiply($maxFeiCredit, (float) $duration);
+
+        return MoneyCalculator::max($programMaxFeiCredit, $maxFeiCredit);
+    }
+
     public function checkBalance(): bool
     {
         $program    = $this->reservation->getProgram();
@@ -501,7 +533,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $participation = $program->getParticipations()->get($this->reservation->getManagingCompany()->getId());
 
         if (false === $participation instanceof Participation) {
-            throw new \RuntimeException(\sprintf(
+            throw new RuntimeException(\sprintf(
                 'Cannot find the participation company %d for reservation %d. Please check the data.',
                 $this->reservation->getManagingCompany()->getId(),
                 $this->getId()
@@ -530,7 +562,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $program      = $this->reservation->getProgram();
         $borrowerType = $this->reservation->getBorrower()->getBorrowerType();
         if (false === $borrowerType instanceof ProgramChoiceOption) {
-            throw new \RuntimeException(\sprintf(
+            throw new RuntimeException(\sprintf(
                 'Cannot find the borrower type %d for reservation %d. Please check the data.',
                 $borrowerType->getId(),
                 $this->reservation->getId()
