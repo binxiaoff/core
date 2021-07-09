@@ -1,4 +1,6 @@
 api_platform:
+    defaults:
+        pagination_items_per_page: 60
     show_webby: false
     title: 'KLS'
     description: 'Backend API of KLS'
