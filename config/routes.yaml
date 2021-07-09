@@ -14,7 +14,6 @@ file-signature-result:
     path: /core/file_version_signatures/{fileSignatureId}/result
     controller: Unilend\Core\Controller\FileVersionSignature\Result
 
-# Route created to return a 404 for pulse check
-home:
-    path: /
-    defaults: { _controller: ApiPlatform\Core\Action\NotFoundAction }
+api_platform:
+    resource: .
+    type: api_platform
