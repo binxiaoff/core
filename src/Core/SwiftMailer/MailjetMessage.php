@@ -27,6 +27,8 @@ class MailjetMessage extends \Swift_Message
     public const TEMPLATE_AGENCY_BORROWER_MEMBER_PROJECT_PUBLISHED      = 3011629;
     public const TEMPLATE_AGENCY_AGENT_MEMBER_PROJECT_PUBLISHED         = 3024626;
     public const TEMPLATE_AGENCY_PARTICIPATION_MEMBER_PROJECT_PUBLISHED = 3024637;
+    public const TEMPLATE_AGENCY_REMIND_TERM_BORROWER                   = 3011644;
+    public const TEMPLATE_AGENCY_REMIND_TERM_AGENT                      = 3011644;
 
     public function __construct(?string $subject = null, ?string $body = null, ?string $contentType = null, ?string $charset = null)
     {
@@ -69,9 +71,19 @@ class MailjetMessage extends \Swift_Message
     {
         $vars = $this->filterVars($vars);
 
-        $this->getHeaders()->addTextHeader('X-MJ-Vars', json_encode($vars, JSON_THROW_ON_ERROR));
+        $this->getHeaders()->addTextHeader('X-MJ-Vars', \json_encode($vars, JSON_THROW_ON_ERROR));
 
         return $this;
+    }
+
+    /**
+     * @throws JsonException
+     */
+    public function getVars(): array
+    {
+        $vars = $this->getHeaders()->get('X-MJ-Vars');
+
+        return $vars ? \json_decode($vars->getFieldBody(), true, 512, JSON_THROW_ON_ERROR) : [];
     }
 
     public function setTemplateErrorEmail(?string $email): MailjetMessage
@@ -119,7 +131,7 @@ class MailjetMessage extends \Swift_Message
     private function filterVars(array $vars): array
     {
         // MailJet do not let var with null value, empty value has to be false instead
-        array_walk_recursive($vars, function (&$value) {
+        \array_walk_recursive($vars, function (&$value) {
             $value = $value ?? false;
         });
 
