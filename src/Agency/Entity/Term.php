@@ -337,7 +337,7 @@ class Term
 
             case Covenant::NATURE_FINANCIAL_ELEMENT:
             case Covenant::NATURE_FINANCIAL_RATIO:
-                if (null === $this->borrowerInput || false === is_numeric($this->borrowerInput)) {
+                if (null === $this->borrowerInput || false === \is_numeric($this->borrowerInput)) {
                     return false;
                 }
 
@@ -354,7 +354,7 @@ class Term
                 return $rule->getInequality()->isConform($this->borrowerInput);
         }
 
-        throw new LogicException(sprintf('The given type (%s) is incorrect for a term', $this->getNature()));
+        throw new LogicException(\sprintf('The given type (%s) is incorrect for a term', $this->getNature()));
     }
 
     /**
@@ -605,7 +605,7 @@ class Term
                 return (null === $this->borrowerInput || $this->isInvalid()) && (false === $this->isShared());
         }
 
-        throw new LogicException(sprintf('The given type (%s) is incorrect for a term', $this->getNature()));
+        throw new LogicException(\sprintf('The given type (%s) is incorrect for a term', $this->getNature()));
     }
 
     public function getSharingDate(): ?DateTimeImmutable
@@ -667,7 +667,7 @@ class Term
      */
     public static function getValidationGroups(Term $term): array
     {
-        return array_filter(
+        return \array_filter(
             [
                 'Default',
                 'Term',
