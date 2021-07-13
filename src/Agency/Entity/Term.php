@@ -85,7 +85,7 @@ class Term
     private DateTimeImmutable $startDate;
 
     /**
-     * @Assert\GreaterThan(propertyPath="startDate")
+     * @Assert\GreaterThanOrEqual(propertyPath="startDate")
      * @Assert\NotBlank
      *
      * @ORM\Column(type="date_immutable")
