@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -102,11 +103,16 @@ use Unilend\Core\Service\MoneyCalculator;
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)"
  *         },
- *         "get"
+ *         "get",
+ *         "api_credit_guaranty_programs_reservations_get_subresource": {
+ *             "method": "GET",
+ *             "pagination_client_items_per_page": true
+ *         }
  *     }
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
+ * @ApiFilter(OrderFilter::class, properties={"currentStatus.added"}, arguments={"orderParameterName": "order"})
  *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_reservation")
