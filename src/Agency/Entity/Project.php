@@ -398,7 +398,7 @@ class Project
     /**
      * @ORM\Column(type="date_immutable")
      *
-     * @Assert\GreaterThan(propertyPath="closingDate")
+     * @Assert\GreaterThanOrEqual(propertyPath="closingDate")
      *
      * @Groups({"agency:project:write", "agency:project:read"})
      */
@@ -582,7 +582,7 @@ class Project
      */
     public function hasSilentSyndication(): bool
     {
-        return 0 < count(
+        return 0 < \count(
             $this->getSecondaryParticipationPool()
                 ->getParticipations()
         );
@@ -986,13 +986,13 @@ class Project
      */
     public function validateParticipants(ExecutionContextInterface $context)
     {
-        $participants = iterator_to_array($this->getParticipants(), false);
+        $participants = \iterator_to_array($this->getParticipants(), false);
 
-        $sirens = array_map(static fn (Company $company) => $company->getSiren(), $participants);
+        $sirens = \array_map(static fn (Company $company) => $company->getSiren(), $participants);
 
-        $sirens = array_count_values($sirens);
+        $sirens = \array_count_values($sirens);
 
-        $duplicatedSirens = array_filter($sirens, static fn ($count) => $count > 1);
+        $duplicatedSirens = \array_filter($sirens, static fn ($count) => $count > 1);
 
         foreach ($duplicatedSirens as $siren => $count) {
             $context->buildViolation('Agency.Project.participations.duplicate')
@@ -1043,11 +1043,11 @@ class Project
                 break;
         }
 
-        sort($statuses);
+        \sort($statuses);
 
-        reset($statuses);
+        \reset($statuses);
 
-        while (($status = current($statuses))) {
+        while (($status = \current($statuses))) {
             if (false === $this->statuses->exists(fn ($_, ProjectStatusHistory $history) => $history->getStatus() === $status)) {
                 $context->buildViolation('Agency.Project.missingStatus', [
                     '{{ missingStatus }}' => $status,
@@ -1055,7 +1055,7 @@ class Project
                 ])->addViolation();
             }
 
-            next($statuses);
+            \next($statuses);
         }
     }
 
