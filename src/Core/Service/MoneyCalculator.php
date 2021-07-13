@@ -13,12 +13,12 @@ class MoneyCalculator
 {
     public static function add(MoneyInterface $leftAddend, MoneyInterface $rightAddend): MoneyInterface
     {
-        if (static::isDifferentCurrency($leftAddend, $rightAddend)) {
-            throw new DifferentCurrencyException($leftAddend, $rightAddend);
-        }
-
         if (static::isBothNullMoney($leftAddend, $rightAddend)) {
             return new NullableMoney();
+        }
+
+        if (static::isDifferentCurrency($leftAddend, $rightAddend)) {
+            throw new DifferentCurrencyException($leftAddend, $rightAddend);
         }
 
         return new Money(
@@ -101,8 +101,8 @@ class MoneyCalculator
 
     public static function isDifferentCurrency(MoneyInterface $leftOperand, MoneyInterface $rightOperand): bool
     {
-        $leftCurrency  = \mb_strtoupper($leftOperand->getCurrency());
-        $rightCurrency = \mb_strtoupper($rightOperand->getCurrency());
+        $leftCurrency  = null !== $leftOperand->getCurrency() ? \mb_strtoupper($leftOperand->getCurrency()) : false;
+        $rightCurrency = null !== $rightOperand->getCurrency() ? \mb_strtoupper($rightOperand->getCurrency()) : false;
 
         return false === empty($leftCurrency) && false === empty($rightCurrency) && $leftCurrency !== $rightCurrency;
     }
