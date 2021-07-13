@@ -43,9 +43,6 @@
     "aws/aws-sdk-php": {
         "version": "3.111.0"
     },
-    "azuyalabs/yasumi": {
-        "version": "2.1.0"
-    },
     "beberlei/doctrineextensions": {
         "version": "v1.2.1"
     },
