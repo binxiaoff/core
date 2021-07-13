@@ -6,6 +6,7 @@ namespace Unilend\Agency\Security\Voter;
 
 use Exception;
 use Unilend\Agency\Entity\Project;
+use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
@@ -43,7 +44,9 @@ class ProjectVoter extends AbstractEntityVoter
         }
 
         // Should we verify permission inheritance for agency project creation .
-        return $staff->getCompany() === $project->getAgentCompany() && $staff->hasAgencyProjectCreationPermission();
+        return $staff->getCompany() === $project->getAgentCompany()
+            && $staff->hasAgencyProjectCreationPermission()
+            && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_AGENCY);
     }
 
     protected function canEdit(Project $project, User $user): bool
