@@ -17,9 +17,8 @@ use Unilend\Core\SwiftMailer\MailjetMessage;
 class ProjectMemberNotifier
 {
     private RouterInterface $router;
-
+    private Swift_Mailer $mailer;
     private TemporaryTokenRepository $temporaryTokenRepository;
-    private Swift_Mailer            $mailer;
 
     public function __construct(
         RouterInterface $router,
@@ -27,8 +26,8 @@ class ProjectMemberNotifier
         TemporaryTokenRepository $temporaryTokenRepository
     ) {
         $this->router                   = $router;
-        $this->temporaryTokenRepository = $temporaryTokenRepository;
         $this->mailer                   = $mailer;
+        $this->temporaryTokenRepository = $temporaryTokenRepository;
     }
 
     /**
@@ -37,14 +36,13 @@ class ProjectMemberNotifier
      */
     public function notifyProjectPublication(AbstractProjectMember $projectMember)
     {
-        $user = $projectMember->getUser();
-
-        $message = (new MailjetMessage());
+        $user    = $projectMember->getUser();
+        $project = $projectMember->getProject();
 
         $vars = [
-            'projectRiskGroupName'     => $projectMember->getProject()->getRiskGroupName(),
-            'projectTitle'             => $projectMember->getProject()->getTitle(),
-            'agentDisplayName'         => $projectMember->getProject()->getAgent()->getDisplayName(),
+            'projectRiskGroupName'     => $project->getRiskGroupName(),
+            'projectTitle'             => $project->getTitle(),
+            'agentDisplayName'         => $project->getAgent()->getDisplayName(),
             'lastName'                 => $user->getLastName(),
             'firstName'                => $user->getFirstName(),
             'temporaryToken_token'     => '',
@@ -56,7 +54,6 @@ class ProjectMemberNotifier
             // Potentially, the same user might receive at the same time multiple email concerning multiple borrower
             // The temporaryToken should be the same
             $temporaryToken = $this->temporaryTokenRepository->findOneActiveByUser($user) ?? TemporaryToken::generateMediumToken($user);
-
             $temporaryToken->extendMedium();
 
             $this->temporaryTokenRepository->save($temporaryToken);
@@ -73,9 +70,11 @@ class ProjectMemberNotifier
             );
         }
 
-        $message->setTemplateId($projectMember::getProjectPublicationNotificationMailjetTemplateId());
-        $message->setVars($vars);
-        $message->setTo($user->getEmail());
+        $message = (new MailjetMessage())
+            ->setTemplateId($projectMember::getProjectPublicationNotificationMailjetTemplateId())
+            ->setTo($user->getEmail())
+            ->setVars($vars)
+        ;
 
         $this->mailer->send($message);
     }

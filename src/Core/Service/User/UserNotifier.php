@@ -13,28 +13,18 @@ use Unilend\Core\SwiftMailer\MailjetMessage;
 
 class UserNotifier
 {
-    /** @var Swift_Mailer */
-    private Swift_Mailer $mailer;
-    /** @var TemporaryTokenGenerator */
-    private TemporaryTokenGenerator $temporaryTokenGenerator;
-    /** @var RouterInterface */
     private RouterInterface $router;
+    private Swift_Mailer $mailer;
+    private TemporaryTokenGenerator $temporaryTokenGenerator;
 
-    /**
-     * @param Swift_Mailer            $mailer
-     * @param TemporaryTokenGenerator $temporaryTokenGenerator
-     * @param RouterInterface         $router
-     */
-    public function __construct(Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator, RouterInterface $router)
+    public function __construct(RouterInterface $router, Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator)
     {
+        $this->router                  = $router;
         $this->mailer                  = $mailer;
         $this->temporaryTokenGenerator = $temporaryTokenGenerator;
-        $this->router = $router;
     }
 
     /**
-     * @param User $user
-     *
      * @throws Exception
      */
     public function notifyPasswordRequest(User $user): void
@@ -46,19 +36,19 @@ class UserNotifier
         $temporaryToken = $this->temporaryTokenGenerator->generateMediumToken($user);
 
         $message = (new MailjetMessage())
+            ->setTo($user->getEmail())
             ->setTemplateId(MailjetMessage::TEMPLATE_USER_PASSWORD_REQUEST)
             ->setVars([
-                'firstName' => $user->getFirstName() ?? '',
+                'firstName'        => $user->getFirstName() ?? '',
                 'resetPasswordURL' => $this->router->generate(
                     'front_resetPassword',
                     [
-                    'temporaryTokenPublicId' => $temporaryToken->getToken(),
-                    'userPublicId' => $user->getPublicId(),
+                        'temporaryTokenPublicId' => $temporaryToken->getToken(),
+                        'userPublicId'           => $user->getPublicId(),
                     ],
                     RouterInterface::ABSOLUTE_URL
                 ),
             ])
-            ->setTo($user->getEmail())
         ;
 
         $this->mailer->send($message);

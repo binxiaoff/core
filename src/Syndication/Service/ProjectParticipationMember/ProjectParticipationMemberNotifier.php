@@ -7,38 +7,28 @@ namespace Unilend\Syndication\Service\ProjectParticipationMember;
 use Exception;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Core\Entity\{Staff, TemporaryToken};
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\TemporaryToken;
 use Unilend\Core\Service\TemporaryTokenGenerator;
 use Unilend\Core\SwiftMailer\MailjetMessage;
-use Unilend\Syndication\Entity\{Project, ProjectParticipationMember, ProjectStatus};
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectParticipationMember;
+use Unilend\Syndication\Entity\ProjectStatus;
 
 class ProjectParticipationMemberNotifier
 {
-    /** @var Swift_Mailer */
-    private Swift_Mailer $mailer;
-
-    /** @var TemporaryTokenGenerator */
-    private TemporaryTokenGenerator $temporaryTokenGenerator;
-    /**
-     * @var RouterInterface
-     */
     private RouterInterface $router;
+    private Swift_Mailer $mailer;
+    private TemporaryTokenGenerator $temporaryTokenGenerator;
 
-    /**
-     * @param Swift_Mailer            $mailer
-     * @param TemporaryTokenGenerator $temporaryTokenGenerator
-     * @param RouterInterface         $router
-     */
-    public function __construct(Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator, RouterInterface $router)
+    public function __construct(RouterInterface $router, Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator)
     {
+        $this->router                  = $router;
         $this->mailer                  = $mailer;
         $this->temporaryTokenGenerator = $temporaryTokenGenerator;
-        $this->router = $router;
     }
 
     /**
-     * @param ProjectParticipationMember $projectParticipationMember
-     *
      * @throws Exception
      */
     public function notifyMemberAdded(ProjectParticipationMember $projectParticipationMember): void
@@ -64,13 +54,17 @@ class ProjectParticipationMemberNotifier
         $user       = $projectParticipationMember->getStaff()->getUser();
         $templateId = $this->getTemplateId($project, $projectParticipationMember->getStaff());
 
+        if (null === $templateId) {
+            return;
+        }
+
         $temporaryToken = null;
         if ($user->isInitializationNeeded()) {
             $temporaryToken = $this->temporaryTokenGenerator->generateUltraLongToken($user);
         }
 
-        $context = [
-            'temporaryToken_token' => ($temporaryToken instanceof TemporaryToken) ? $temporaryToken->getToken() : false,
+        $vars = [
+            'temporaryToken_token'        => ($temporaryToken instanceof TemporaryToken) ? $temporaryToken->getToken() : false,
             'front_viewParticipation_URL' => $this->router->generate(
                 'front_viewParticipation',
                 [
@@ -82,41 +76,34 @@ class ProjectParticipationMemberNotifier
                 'front_initialAccount',
                 [
                     'temporaryTokenPublicId' => $temporaryToken->getToken(),
-                    'userPublicId' => $user->getPublicId(),
+                    'userPublicId'           => $user->getPublicId(),
                 ],
                 RouterInterface::ABSOLUTE_URL
             ) : false,
-            'front_home' => $this->router->generate('front_home'),
-            'front_home_URL' => $this->router->generate('front_home'),
-            'project_riskGroupName' => $project->getRiskGroupName(),
-            'project_title' => $project->getTitle(),
+            'front_home'                                   => $this->router->generate('front_home'),
+            'front_home_URL'                               => $this->router->generate('front_home'),
+            'project_riskGroupName'                        => $project->getRiskGroupName(),
+            'project_title'                                => $project->getTitle(),
             'projectParticipation_participant_displayName' => $projectParticipation->getParticipant()->getDisplayName(),
-            'arranger_displayName' => $project->getSubmitterCompany()->getDisplayName(),
-            'client_firstName' => $user->getFirstName() ?? '',
+            'arranger_displayName'                         => $project->getSubmitterCompany()->getDisplayName(),
+            'client_firstName'                             => $user->getFirstName() ?? '',
         ];
 
-        if ($templateId) {
-            $message = (new MailjetMessage())
-                ->setTo($user->getEmail())
-                ->setTemplateId($templateId)
-                ->setVars($context)
-            ;
+        $message = (new MailjetMessage())
+            ->setTo($user->getEmail())
+            ->setTemplateId($templateId)
+            ->setVars($vars)
+        ;
 
-            $this->mailer->send($message);
-        }
+        $this->mailer->send($message);
     }
 
     /**
      * @todo needs to be refactored
-
-     * @param Project $project
-     * @param Staff   $staff
-     *
-     * @return int|null
      */
     private function getTemplateId(Project $project, Staff $staff): ?int
     {
-        $templateId  = null;
+        $templateId = null;
         // In the actual habilitation context, the staff company is the same as the participant company
         $participant = $staff->getCompany();
         $user        = $staff->getUser();

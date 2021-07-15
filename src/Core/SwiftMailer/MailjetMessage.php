@@ -52,6 +52,9 @@ class MailjetMessage extends \Swift_Message
         return $header ? $header->getFieldBodyModel() : null;
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function setTemplateId(?int $templateId): MailjetMessage
     {
         if ($templateId && false === \in_array($templateId, static::getAvailableTemplates(), true)) {

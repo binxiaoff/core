@@ -8,8 +8,13 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Swift_Mailer;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\{Command\Command, Input\InputDefinition, Input\InputInterface, Input\InputOption, Output\ConsoleSectionOutput, Output\OutputInterface};
+use Symfony\Component\Console\Input\InputDefinition;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\ConsoleSectionOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Core\Repository\MessageStatusRepository;
 use Unilend\Core\SwiftMailer\MailjetMessage;
 
@@ -18,34 +23,19 @@ class UnreadMessageEmailNotificationCommand extends Command
     /** @var string */
     protected static $defaultName = 'kls:message:unread_email_notification';
 
-    /** @var MessageStatusRepository */
+    private LoggerInterface $logger;
+    private Swift_Mailer $mailer;
     private MessageStatusRepository $messageStatusRepository;
 
-    /** @var Swift_Mailer */
-    private Swift_Mailer $mailer;
-
-    /** @var LoggerInterface */
-    private LoggerInterface $logger;
-
-    /**
-     * UnreadMessageEmailNotificationCommand constructor.
-     *
-     * @param MessageStatusRepository $messageStatusRepository
-     * @param Swift_Mailer            $mailer
-     * @param LoggerInterface         $logger
-     */
-    public function __construct(MessageStatusRepository $messageStatusRepository, Swift_Mailer $mailer, LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger, Swift_Mailer $mailer, MessageStatusRepository $messageStatusRepository)
     {
-        $this->messageStatusRepository = $messageStatusRepository;
-        $this->mailer                  = $mailer;
-        $this->logger                  = $logger;
         parent::__construct();
+        $this->logger                  = $logger;
+        $this->mailer                  = $mailer;
+        $this->messageStatusRepository = $messageStatusRepository;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setDescription('Send email to notify user for unread message(s)')
@@ -54,15 +44,10 @@ class UnreadMessageEmailNotificationCommand extends Command
                     new InputOption('--dry-run', null, InputOption::VALUE_NONE, 'Launch command on dry run mode with console display only.'),
                     new InputOption('--limit', null, InputOption::VALUE_OPTIONAL, 'Set a limit of user to send messages.'),
                 ])
-            );
+            )
+        ;
     }
 
-    /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @return int|null
-     */
     protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
         /** @var ConsoleSectionOutput $section */
@@ -83,6 +68,7 @@ class UnreadMessageEmailNotificationCommand extends Command
                     'email'            => $item['email'],
                     'nbUnreadMessages' => $item['nb_messages_unread'],
                 ]);
+
                 continue;
             }
 
@@ -95,12 +81,7 @@ class UnreadMessageEmailNotificationCommand extends Command
         return Command::SUCCESS;
     }
 
-    /**
-     * @param OutputInterface $output
-     *
-     * @return Table
-     */
-    private function createTable(OutputInterface $output)
+    private function createTable(OutputInterface $output): Table
     {
         $table = new Table($output);
         $table->setHeaders(['User id', 'User email', 'nb unread messages']);
@@ -108,23 +89,18 @@ class UnreadMessageEmailNotificationCommand extends Command
         return $table;
     }
 
-    /**
-     * @param string $email
-     * @param string $firstName
-     * @param string $lastName
-     * @param int    $nbUnreadMessage
-     */
-    private function sendUnreadMessagesNotification(string $email, string $firstName, string $lastName, int $nbUnreadMessage)
+    private function sendUnreadMessagesNotification(string $email, string $firstName, string $lastName, int $nbUnreadMessage): void
     {
         $failedRecipient = [];
+
         try {
             $message = (new MailjetMessage())
                 ->setTemplateId(MailjetMessage::TEMPLATE_MESSAGE_UNREAD_USER_NOTIFICATION)
-                ->setVars(compact('firstName', 'lastName', 'nbUnreadMessage'))
+                ->setVars(\compact('firstName', 'lastName', 'nbUnreadMessage'))
                 ->setTo($email)
             ;
             if (0 === $this->mailer->send($message, $failedRecipient)) {
-                throw new RuntimeException(sprintf('Error on sending email to : "%s"', implode(', ', $failedRecipient)));
+                throw new RuntimeException(\sprintf('Error on sending email to : "%s"', \implode(', ', $failedRecipient)));
             }
         } catch (Exception $exception) {
             $this->logger->error('Unable to send unread message(s) email notification with error : ' . $exception->getMessage(), [

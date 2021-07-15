@@ -20,8 +20,7 @@ class ArchiveReservationCommand extends Command
 {
     private const BATCH_SIZE = 10;
 
-    protected static $defaultName               = 'kls:reservation:exceeding-duration:archive';
-    protected static string $defaultDescription = 'Archive reservations that exceed the validity duration';
+    protected static $defaultName = 'kls:reservation:exceeding-duration:archive';
 
     private StaffRepository $staffRepository;
     private ReservationRepository $reservationRepository;
@@ -36,7 +35,7 @@ class ArchiveReservationCommand extends Command
 
     protected function configure(): void
     {
-        $this->setDescription(self::$defaultDescription);
+        $this->setDescription('Archive reservations that exceed the validity duration');
     }
 
     /**

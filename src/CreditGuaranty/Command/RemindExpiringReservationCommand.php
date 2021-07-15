@@ -15,7 +15,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
 use Unilend\Core\SwiftMailer\MailjetMessage;
 use Unilend\CreditGuaranty\Entity\Reservation;
 use Unilend\CreditGuaranty\Entity\ReservationStatus;
@@ -58,21 +57,20 @@ class RemindExpiringReservationCommand extends Command
 
     protected static $defaultName = 'kls:reservation:expiring:remind';
 
-    private OutputInterface $output;
+    private Swift_Mailer $mailer;
     private ReservationRepository $reservationRepository;
     private StaffPermissionManager $staffPermissionManager;
-    private Swift_Mailer $mailer;
 
     public function __construct(
+        Swift_Mailer $mailer,
         ReservationRepository $reservationRepository,
-        StaffPermissionManager $staffPermissionManager,
-        Swift_Mailer $mailer
+        StaffPermissionManager $staffPermissionManager
     ) {
         parent::__construct();
 
+        $this->mailer                 = $mailer;
         $this->reservationRepository  = $reservationRepository;
         $this->staffPermissionManager = $staffPermissionManager;
-        $this->mailer                 = $mailer;
     }
 
     protected function configure(): void
@@ -85,11 +83,6 @@ class RemindExpiringReservationCommand extends Command
                 . 'kls:reservation:expiring:remind --to=cr'
             )
         ;
-    }
-
-    protected function initialize(InputInterface $input, OutputInterface $output): void
-    {
-        $this->output = $output;
     }
 
     /**
@@ -176,11 +169,11 @@ class RemindExpiringReservationCommand extends Command
             $remainingHours = (float) \bcadd(\bcadd(\bcadd($daysInHours, (string) $intervalDate->h, 2), $minutesInHours, 2), $secondsInHours, 2);
 
             if (self::OPTION_CASA === $toOption) {
-                $this->handleMailingToCasa($reservation, $remainingHours);
+                $this->handleMailingToCasa($reservation, $remainingHours, $output);
             }
 
             if (self::OPTION_CR === $toOption) {
-                $this->handleMailingToCr($reservation, $remainingHours);
+                $this->handleMailingToCr($reservation, $remainingHours, $output);
             }
         }
 
@@ -188,7 +181,8 @@ class RemindExpiringReservationCommand extends Command
             $this->sendMail(
                 self::CR_LIST_TEMPLATE_ID,
                 $staffList,
-                ['reservations' => $reservationsList]
+                ['reservations' => $reservationsList],
+                $output
             );
         }
 
@@ -198,7 +192,7 @@ class RemindExpiringReservationCommand extends Command
     /**
      * @throws JsonException
      */
-    private function handleMailingToCasa(Reservation $reservation, float $remainingHours): void
+    private function handleMailingToCasa(Reservation $reservation, float $remainingHours, OutputInterface $output): void
     {
         if ($remainingHours > self::CASA_LIMIT_48_HOURS) {
             return;
@@ -207,14 +201,15 @@ class RemindExpiringReservationCommand extends Command
         $this->sendMail(
             self::CASA_TEMPLATE_ID,
             $reservation->getProgram()->getManagingCompany()->getStaff(),
-            ['reservationName' => $reservation->getName()]
+            ['reservationName' => $reservation->getName()],
+            $output
         );
     }
 
     /**
      * @throws JsonException
      */
-    private function handleMailingToCr(Reservation $reservation, float $remainingHours): void
+    private function handleMailingToCr(Reservation $reservation, float $remainingHours, OutputInterface $output): void
     {
         // need to convert float to int to avoid sending mail every day
         $remainingHours = (int) $remainingHours;
@@ -226,7 +221,8 @@ class RemindExpiringReservationCommand extends Command
         $this->sendMail(
             self::CR_TEMPLATE_ID,
             $reservation->getManagingCompany()->getStaff(),
-            ['reservationName' => $reservation->getName()]
+            ['reservationName' => $reservation->getName()],
+            $output
         );
     }
 
@@ -235,7 +231,7 @@ class RemindExpiringReservationCommand extends Command
      *
      * @throws JsonException
      */
-    private function sendMail(int $templateId, array $staffList, array $vars): void
+    private function sendMail(int $templateId, array $staffList, array $vars, OutputInterface $output): void
     {
         foreach ($staffList as $staff) {
             if (false === $staff->isActive()) {
@@ -249,52 +245,34 @@ class RemindExpiringReservationCommand extends Command
             $user              = $staff->getUser();
             $vars['firstName'] = $user->getFirstName();
             $vars['lastName']  = $user->getLastName();
-            $mailjetMessage    = $this->createMessage($user, $templateId, $vars);
+            $mailjetMessage    = (new MailjetMessage())
+                ->setTo($user->getEmail())
+                ->setTemplateId($templateId)
+                ->setVars($vars)
+            ;
 
-            $this->send($mailjetMessage);
-        }
-    }
+            if ($output->isVerbose()) {
+                $recipients      = \array_keys($mailjetMessage->getTo());
+                $reservationName = $vars['reservationName'] ?? 'list';
 
-    /**
-     * @throws JsonException
-     */
-    private function createMessage(User $user, int $templateId, array $vars = []): MailjetMessage
-    {
-        $message = new MailjetMessage();
-        $message->setTemplateId($templateId);
-        $message->setTo($user->getEmail());
-        $message->setVars($vars);
-
-        return $message;
-    }
-
-    /**
-     * @throws JsonException
-     */
-    private function send(MailjetMessage $mailjetMessage): void
-    {
-        $vars       = $mailjetMessage->getVars();
-        $recipients = \array_keys($mailjetMessage->getTo());
-
-        if ($this->output->isVerbose()) {
-            $reservationName = $vars['reservationName'] ?? 'list';
-            $this->output->writeln(\sprintf('Sending an email to %s for reservation %s', \implode(' and ', $recipients), $reservationName));
-        }
-
-        if ($this->output->isVeryVerbose()) {
-            $this->output->writeln('Variables for message :');
-            foreach ($vars as $key => $value) {
-                if (\is_array($value)) {
-                    $value = \json_encode($value);
-                }
-                $this->output->writeln("\t{$key} : {$value}");
+                $output->writeln(\sprintf('Sending an email to %s for reservation %s', \implode(' and ', $recipients), $reservationName));
             }
-        }
 
-        $this->mailer->send($mailjetMessage);
+            if ($output->isVeryVerbose()) {
+                $output->writeln('Variables for message :');
+                foreach ($vars as $key => $value) {
+                    if (\is_array($value)) {
+                        $value = \json_encode($value);
+                    }
+                    $output->writeln("\t{$key} : {$value}");
+                }
+            }
 
-        if ($this->output->isVerbose()) {
-            $this->output->writeln('Email sent');
+            $this->mailer->send($mailjetMessage);
+
+            if ($output->isVerbose()) {
+                $output->writeln('Email sent');
+            }
         }
     }
 
