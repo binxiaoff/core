@@ -199,3 +199,6 @@ services:
 ### Agency
     Unilend\Agency\Swagger\ProjectDecorator:
         decorates: 'api_platform.swagger.normalizer.api_gateway'
+
+    Unilend\Agency\DataPersister\ParticipationMemberDataPersister:
+        decorates: 'api_platform.doctrine.orm.data_persister'
