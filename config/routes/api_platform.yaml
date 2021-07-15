@@ -8,7 +8,3 @@ authentication_token:
     path: /core/authentication_token
     methods: ['POST']
     controller: ApiPlatform\Core\Action\NotFoundAction
-
-api_doc:
-    path: "/docs.{_format}"
-    controller: ApiPlatform\Core\Action\NotFoundAction
