@@ -13,7 +13,3 @@ health_check:
 file-signature-result:
     path: /core/file_version_signatures/{fileSignatureId}/result
     controller: Unilend\Core\Controller\FileVersionSignature\Result
-
-api_platform:
-    resource: .
-    type: api_platform
