@@ -95,6 +95,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $this->loginStaff($addedBy);
 
         yield self::RESERVATION_DRAFT_1 => [
+            'name'     => 'Reservation draft_1',
             'program'  => $program,
             'borrower' => [
                 'youngFarmer'        => true,
@@ -108,6 +109,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_DRAFT_2 => [
+            'name'     => 'Reservation draft_2',
             'program'  => $program,
             'borrower' => [
                 'youngFarmer'        => false,
@@ -121,6 +123,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_SENT_1 => [
+            'name'     => 'Reservation sent_1',
             'program'  => $program,
             'borrower' => [
                 'youngFarmer'        => true,
@@ -145,6 +148,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'currentStatus' => ReservationStatus::STATUS_SENT,
         ];
         yield self::RESERVATION_SENT_2 => [
+            'name'     => 'Reservation sent_2',
             'program'  => $program,
             'borrower' => [
                 'youngFarmer'        => false,
@@ -172,6 +176,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     private function buildReservation(array $reservationData): Reservation
     {
         $reservation = new Reservation($reservationData['program'], $reservationData['addedBy']);
+        $reservation->setName($reservationData['name']);
 
         $borrower = $this->createBorrower(
             $reservation,

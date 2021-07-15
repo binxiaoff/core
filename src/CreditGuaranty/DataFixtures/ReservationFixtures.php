@@ -90,12 +90,14 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $program = $this->getReference('commercialized_program');
 
         yield self::RESERVATION_DRAFT => [
+            'name'          => 'Reservation draft',
             'program'       => $program,
             'hasProject'    => false,
             'addedBy'       => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
             'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
         yield self::RESERVATION_SENT => [
+            'name'               => 'Reservation sent',
             'program'            => $program,
             'hasProject'         => true,
             'addedBy'            => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
@@ -103,6 +105,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'currentStatus'      => ReservationStatus::STATUS_SENT,
         ];
         yield self::RESERVATION_WAITING_FOR_FEI => [
+            'name'               => 'Reservation waiting_for_fei',
             'program'            => $program,
             'hasProject'         => true,
             'addedBy'            => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
@@ -110,6 +113,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'currentStatus'      => ReservationStatus::STATUS_WAITING_FOR_FEI,
         ];
         yield self::RESERVATION_REQUEST_FOR_ADDITIONAL_INFORMATION => [
+            'name'               => 'Reservation request_for_additional_information',
             'program'            => $program,
             'hasProject'         => true,
             'addedBy'            => $this->getReference(ParticipationFixtures::PARTICIPANT_TOUL)->getParticipant()->getStaff()->current(),
@@ -117,6 +121,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'currentStatus'      => ReservationStatus::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION,
         ];
         yield self::RESERVATION_ACCEPTED_BY_MANAGING_COMPANY => [
+            'name'               => 'Reservation accepted_by_managing_company',
             'program'            => $program,
             'hasProject'         => true,
             'addedBy'            => $this->getReference(ParticipationFixtures::PARTICIPANT_TOUL)->getParticipant()->getStaff()->current(),
@@ -124,6 +129,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'currentStatus'      => ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
         ];
         yield self::RESERVATION_CONTRACT_FORMALIZED => [
+            'name'               => 'Reservation contract_formalized',
             'program'            => $program,
             'hasProject'         => true,
             'addedBy'            => $this->getReference(ParticipationFixtures::PARTICIPANT_TOUL)->getParticipant()->getStaff()->current(),
@@ -131,6 +137,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'currentStatus'      => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
         ];
         yield self::RESERVATION_ARCHIVED => [
+            'name'               => 'Reservation archived',
             'program'            => $program,
             'hasProject'         => true,
             'addedBy'            => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
@@ -138,6 +145,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'currentStatus'      => ReservationStatus::STATUS_ARCHIVED,
         ];
         yield self::RESERVATION_REFUSED_BY_MANAGING_COMPANY => [
+            'name'               => 'Reservation refused_by_managing_company',
             'program'            => $program,
             'hasProject'         => true,
             'addedBy'            => $this->getReference(ParticipationFixtures::PARTICIPANT_SAVO)->getParticipant()->getStaff()->current(),
@@ -149,6 +157,8 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     private function buildReservation(array $reservationData): Reservation
     {
         $reservation = new Reservation($reservationData['program'], $reservationData['addedBy']);
+        $reservation->setName($reservationData['name']);
+
         $totalAmount = 0;
 
         if (false === empty($reservationData['financingObjectsNb'])) {
