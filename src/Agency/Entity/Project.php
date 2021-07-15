@@ -582,10 +582,7 @@ class Project
      */
     public function hasSilentSyndication(): bool
     {
-        return 0 < \count(
-            $this->getSecondaryParticipationPool()
-                ->getParticipations()
-        );
+        return false === $this->getSecondaryParticipationPool()->isEmpty();
     }
 
     /**

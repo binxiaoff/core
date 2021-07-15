@@ -139,7 +139,7 @@ class ParticipationPool
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
-     * @Assert\NotBlank(groups={"ParticipationPool:published"})
+     * @Assert\NotBlank(groups={"ParticipationPool:published:active"})
      *
      * @Groups({"agency:participationPool:read", "agency:participationPool:write"})
      */
@@ -149,7 +149,7 @@ class ParticipationPool
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
-     * @Assert\NotBlank(groups={"ParticipationPool:published"})
+     * @Assert\NotBlank(groups={"ParticipationPool:published:active"})
      *
      * @Groups({"agency:participationPool:read", "agency:participationPool:write"})
      */
@@ -159,6 +159,10 @@ class ParticipationPool
      * @ORM\Column(type="string", nullable=true, length=30)
      *
      * @Assert\Choice(callback={RiskType::class, "getConstList"})
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Expression("this.isSubParticipation()"),
+     *     @Assert\Expression("false === this.isSubParticipation() && null === value")
+     * }, groups={"ParticipationPool:published:active"})
      *
      * @Groups({"agency:participationPool:read", "agency:participationPool:write"})
      */
@@ -237,6 +241,10 @@ class ParticipationPool
     {
         $this->participationType = $participationType;
 
+        if ($this->riskType && false === $this->isSubParticipation()) {
+            $this->riskType = null;
+        }
+
         return $this;
     }
 
@@ -267,12 +275,17 @@ class ParticipationPool
         return ParticipationType::SUB_PARTICIPATION === $this->participationType;
     }
 
+    public function isEmpty(): bool
+    {
+        return 0 === \count($this->getParticipations());
+    }
+
     public function getCurrentValidationGroups(self $pool): array
     {
         $validationGroups = ['Default', 'ParticipationPool'];
 
-        if ($pool->getProject()->isPublished()) {
-            $validationGroups[] = 'ParticipationPool:published';
+        if ($pool->getProject()->isPublished() && ($this->isPrimary() || ($this->isSecondary() && false === $this->isEmpty()))) {
+            $validationGroups[] = 'ParticipationPool:published:active';
         }
 
         return $validationGroups;
