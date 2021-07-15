@@ -13,6 +13,7 @@ use ReflectionException;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyAdmin;
 use Unilend\Core\Entity\CompanyGroup;
+use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Team;
 use Unilend\Core\Entity\User;
@@ -43,9 +44,12 @@ abstract class AbstractCompanyFixtures extends AbstractFixtures implements Depen
         $company->setShortCode($this->getShortCode());
         $company->setBankCode($this->getBankCode());
         $company->setCompanyGroup($this->getCompanyGroup());
+        $company->getModule(CompanyModule::MODULE_AGENCY)->setActivated(true);
+        $company->getModule(CompanyModule::MODULE_ARRANGEMENT)->setActivated(true);
+        $company->getModule(CompanyModule::MODULE_ARRANGEMENT_EXTERNAL_BANK)->setActivated(true);
         $companyReference = 'company:' . $this->getName();
 
-        $teams = [...array_values($this->getTeams($company->getRootTeam())), $company->getRootTeam()];
+        $teams = [...\array_values($this->getTeams($company->getRootTeam())), $company->getRootTeam()];
         foreach ($teams as $team) {
             $this->setPublicId($team, 'team:' . $team->getName() . '_' . $companyReference);
             $manager->persist($team);
