@@ -51,8 +51,6 @@ cache:
   script:
     - ansible-playbook -i "inventory/private/${CI_ENVIRONMENT_NAME}.yml" deploy-api.yml --extra-vars="gitBranch=${CI_COMMIT_REF_NAME}"
   when: manual
-  tags:
-    - docker
 
 ###
 # Job configuration
@@ -72,8 +70,6 @@ test:application:
     - composer install
   script:
     - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='unit'
-  tags:
-    - docker
 
 ###
 # Deployment
