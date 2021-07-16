@@ -113,6 +113,9 @@ class MoneyCalculator
         return false === empty($leftCurrency) && false === empty($rightCurrency) && $leftCurrency !== $rightCurrency;
     }
 
+    /**
+     * @param array|MoneyInterface[] $addedums
+     */
     public static function sum(array $addedums = []): MoneyInterface
     {
         $accumulator = new NullableMoney();
