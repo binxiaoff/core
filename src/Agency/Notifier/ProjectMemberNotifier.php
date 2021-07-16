@@ -48,6 +48,7 @@ class ProjectMemberNotifier
             'firstName'                => $user->getFirstName(),
             'temporaryToken_token'     => '',
             'front_initialAccount_URL' => '',
+            'front_agency_project_URL' => $projectMember->getProjectFrontUrl($this->router),
         ];
 
         if ($user->isInitializationNeeded()) {
