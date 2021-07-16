@@ -18,7 +18,6 @@ use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
 use Unilend\Core\Entity\Embeddable\LendingRate;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Staff;
 use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 
 abstract class AbstractProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -69,8 +68,7 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
     {
         return new Participation(
             $project->getPrimaryParticipationPool(),
-            $participant,
-            new Money('eur', '4000000')
+            $participant
         );
     }
 
@@ -78,8 +76,7 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
     {
         return new Participation(
             $project->getSecondaryParticipationPool(),
-            $participant,
-            new Money('eur', '4000000')
+            $participant
         );
     }
 

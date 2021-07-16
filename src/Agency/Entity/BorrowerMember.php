@@ -11,6 +11,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\User;
@@ -183,5 +184,13 @@ class BorrowerMember extends AbstractProjectMember
     public static function getProjectPublicationNotificationMailjetTemplateId(): int
     {
         return MailjetMessage::TEMPLATE_AGENCY_BORROWER_MEMBER_PROJECT_PUBLISHED;
+    }
+
+    public function getProjectFrontUrl(RouterInterface $router): string
+    {
+        return $router->generate(
+            'front_agencyBorrowerProjectView',
+            ['projectPublicId' => $this->getProject()->getPublicId(), 'borrowerPublicId' => $this->getPublicId()]
+        );
     }
 }

@@ -573,7 +573,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $participation = new Participation(
             $project->getParticipationPools()[$secondary],
             $participant,
-            new Money('EUR', (string) $this->faker->numberBetween(100000)),
         );
 
         $participation->setLegalForm(LegalForm::SARL)

@@ -11,6 +11,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -209,5 +210,13 @@ class ParticipationMember extends AbstractProjectMember
     public static function getProjectPublicationNotificationMailjetTemplateId(): int
     {
         return MailjetMessage::TEMPLATE_AGENCY_PARTICIPATION_MEMBER_PROJECT_PUBLISHED;
+    }
+
+    public function getProjectFrontUrl(RouterInterface $router): string
+    {
+        return $router->generate(
+            'front_agencyParticipationProjectView',
+            ['projectPublicId' => $this->getProject()->getPublicId(), 'participationPublicId' => $this->getPublicId()]
+        );
     }
 }

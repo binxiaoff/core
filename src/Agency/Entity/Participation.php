@@ -258,7 +258,6 @@ class Participation extends AbstractProjectPartaker
     public function __construct(
         ParticipationPool $pool,
         Company $participant,
-        Money $finalAllocation,
         ?NullableMoney $capital = null
     ) {
         parent::__construct($participant->getSiren() ?? '', $capital ?? new NullableMoney($pool->getProject()->getCurrency(), '0'));
@@ -391,7 +390,7 @@ class Participation extends AbstractProjectPartaker
         $result = MoneyCalculator::sum($this->allocations->map(fn (ParticipationTrancheAllocation $allocation) => $allocation->getAllocation())->toArray());
 
         if (null === $result->getCurrency()) {
-            $result = new NullableMoney($this->getProject()->getCurrency(), $result->getAmount());
+            $result = new NullableMoney($this->getProject()->getCurrency(), $result->getAmount() ?? '0');
         }
 
         return $result;
@@ -652,11 +651,11 @@ class Participation extends AbstractProjectPartaker
     {
         $allocationSum = $this->getPool()->getAllocationSum();
 
-        if ('0' === $allocationSum->getAmount()) {
+        if ((float) 0 === (float) ($allocationSum->getAmount())) {
             return 0;
         }
 
-        return MoneyCalculator::ratio($this->getFinalAllocation(), $this->getPool()->getAllocationSum());
+        return MoneyCalculator::ratio($this->getFinalAllocation(), $allocationSum);
     }
 
     /**

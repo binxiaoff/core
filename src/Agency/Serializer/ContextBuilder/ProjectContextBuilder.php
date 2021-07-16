@@ -141,14 +141,11 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
             if (null === $agencyParticipation) {
                 $agencyParticipation = new Participation(
                     $agencyProject->getPrimaryParticipationPool(),
-                    $arrangementParticipation->getParticipant(),
-                    $finalAllocation
+                    $arrangementParticipation->getParticipant()
                 );
 
                 $agencyProject->addParticipation($agencyParticipation);
             }
-
-            $agencyParticipation->setFinalAllocation($finalAllocation);
 
             foreach ($arrangementParticipation->getProjectParticipationMembers() as $arrangementMember) {
                 $agencyParticipation->addMember(new ParticipationMember($agencyParticipation, $arrangementMember->getStaff()->getUser()));
