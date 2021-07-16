@@ -131,7 +131,6 @@ class Tranche
      *
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Length(max="255")
-     * @Assert\Expression(expression="(!this.isSyndicated() && value) || !value", message="Agency.Tranche.thirdPartySyndicate.invalid")
      *
      * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
@@ -325,6 +324,14 @@ class Tranche
         $this->name = $name;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"agency:tranche:read"})
+     */
+    public function isSyndicated(): bool
+    {
+        return false === $this->isUnsyndicated();
     }
 
     /**
