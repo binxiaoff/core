@@ -120,7 +120,7 @@ class ParticipationMember extends AbstractProjectMember
     }
 
     /**
-     * @Groups({"agency:borrowerMember:read"})
+     * @Groups({"agency:participationMember:read"})
      */
     public function getProjectFunction(): ?string
     {
