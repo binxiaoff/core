@@ -148,8 +148,6 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
                 $agencyProject->addParticipation($agencyParticipation);
             }
 
-            $agencyParticipation->setFinalAllocation($finalAllocation);
-
             foreach ($arrangementParticipation->getProjectParticipationMembers() as $arrangementMember) {
                 $agencyParticipation->addMember(new ParticipationMember($agencyParticipation, $arrangementMember->getStaff()->getUser()));
             }
