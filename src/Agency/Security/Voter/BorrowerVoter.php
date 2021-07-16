@@ -29,8 +29,10 @@ class BorrowerVoter extends AbstractEntityVoter
 
     public function canDelete(Borrower $borrower, User $user): bool
     {
+        $project = $borrower->getProject();
+
         return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $borrower->getProject())
-            && $borrower->getProject()->isEditable();
+            && $project->isDraft();
     }
 
     public function canCreate(Borrower $borrower, User $user): bool
