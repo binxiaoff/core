@@ -16,6 +16,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Constant\Tranche\CommissionType;
 use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
@@ -124,13 +125,8 @@ class Tranche
     private string $name;
 
     /**
-     * @ORM\Column(type="boolean")
+     * Kept for historical reasons.
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:write"})
-     */
-    private bool $syndicated;
-
-    /**
      * @ORM\Column(length=255, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
@@ -291,7 +287,6 @@ class Tranche
     ) {
         $this->project             = $project;
         $this->name                = $name;
-        $this->syndicated          = $syndicated;
         $this->thirdPartySyndicate = null;
         $this->color               = $color;
         $this->loanType            = $loanType;
@@ -332,20 +327,51 @@ class Tranche
         return $this;
     }
 
-    public function isSyndicated(): bool
+    /**
+     * @Groups({"agency:tranche:read"})
+     */
+    public function isUnsyndicated(): bool
     {
-        return $this->syndicated;
+        return 2 > \count($this->allocations);
     }
 
-    public function setSyndicated(bool $syndicated): Tranche
+    /**
+     * @Groups({"agency:tranche:read"})
+     */
+    public function getSoleParticipant(): ?Company
     {
-        $this->syndicated = $syndicated;
+        if (1 === \count($this->allocations)) {
+            $allocations = $this->allocations->toArray();
+            /** @var ParticipationTrancheAllocation $allocation */
+            $allocation = \reset($allocations);
 
-        if (false === $syndicated) {
-            $this->allocations = new ArrayCollection();
+            return $allocation->getParticipation()->getParticipant();
         }
 
-        return $this;
+        return null;
+    }
+
+    /**
+     * @Groups({"agency:tranche:read"})
+     */
+    public function isArrangerFinanced(): bool
+    {
+        $arrangerParticipation = $this->getProject()->getArrangerParticipation();
+
+        return null !== $arrangerParticipation
+            && null !== $this->getSoleParticipant()
+            && $arrangerParticipation->getParticipant() === $this->getSoleParticipant();
+    }
+
+    /**
+     * @Groups({"agency:tranche:read"})
+     */
+    public function isAgentFinanced(): bool
+    {
+        $agentCompany = $this->getProject()->getAgent()->getCompany();
+
+        return null !== $this->getSoleParticipant()
+            && $agentCompany === $this->getSoleParticipant();
     }
 
     public function getThirdPartySyndicate(): ?string
@@ -358,14 +384,6 @@ class Tranche
         $this->thirdPartySyndicate = $thirdPartySyndicate;
 
         return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isArrangerFullyFinanced()
-    {
-        return false === $this->isSyndicated() && null === $this->thirdPartySyndicate;
     }
 
     public function getColor(): string
