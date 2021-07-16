@@ -211,6 +211,6 @@ class AgentMember extends AbstractProjectMember
 
     public function getProjectFrontUrl(RouterInterface $router): string
     {
-        return $router->generate('front_agency_agent_projectView', ['projectPublicId' => $this->getProject()->getPublicId()]);
+        return $router->generate('front_agencyAgentProjectView', ['projectPublicId' => $this->getProject()->getPublicId()]);
     }
 }

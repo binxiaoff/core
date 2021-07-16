@@ -189,7 +189,7 @@ class BorrowerMember extends AbstractProjectMember
     public function getProjectFrontUrl(RouterInterface $router): string
     {
         return $router->generate(
-            'front_agency_borrower_projectView',
+            'front_agencyBorrowerProjectView',
             ['projectPublicId' => $this->getProject()->getPublicId(), 'borrowerPublicId' => $this->getPublicId()]
         );
     }

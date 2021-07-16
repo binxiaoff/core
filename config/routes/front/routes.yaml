@@ -1,3 +1,9 @@
+agencyAgentProjectView:
+  path: /agency/dossier/{projectPublicId}
+agencyBorrowerProjectView:
+  path: /agency/dossier/{projectPublicId}/emprunteur/{borrowerPublicId}
+agencyParticipationProjectView:
+  path: /agency/dossier/{projectPublicId}/participation/{participationPublicId}
 home:
   path: /
 projectForm:
@@ -36,10 +42,3 @@ image:
   path: /images/{imageFileName}
   requirements:
     imageFileName: .+
-
-agency_agent_projectView:
-  path: /agency/dossier/{projectPublicId}
-agency_borrower_projectView:
-  path: /agency/dossier/{projectPublicId}/emprunteur/{borrowerPublicId}
-agency_participant_projectView:
-  path: /agency/dossier/{projectPublicId}/participation/{participationPublicId}

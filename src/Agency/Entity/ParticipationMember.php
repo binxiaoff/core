@@ -210,7 +210,7 @@ class ParticipationMember extends AbstractProjectMember
     public function getProjectFrontUrl(RouterInterface $router): string
     {
         return $router->generate(
-            'front_agency_participant_projectView',
+            'front_agencyParticipationProjectView',
             ['projectPublicId' => $this->getProject()->getPublicId(), 'participationPublicId' => $this->getPublicId()]
         );
     }
