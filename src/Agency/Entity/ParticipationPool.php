@@ -185,10 +185,13 @@ class ParticipationPool
 
     public function __construct(Project $project, bool $secondary)
     {
-        $this->project        = $project;
-        $this->participations = new ArrayCollection();
-        $this->secondary      = $secondary;
-        $this->sharedDrive    = new Drive();
+        $this->project           = $project;
+        $this->participations    = new ArrayCollection();
+        $this->secondary         = $secondary;
+        $this->sharedDrive       = new Drive();
+        $this->riskType          = null;
+        $this->syndicationType   = null;
+        $this->participationType = null;
     }
 
     public function getProject(): Project
