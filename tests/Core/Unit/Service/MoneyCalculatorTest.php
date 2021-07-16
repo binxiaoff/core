@@ -7,6 +7,7 @@ namespace Unilend\Test\Core\Unit\Service;
 use PHPUnit\Framework\TestCase;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Exception\Money\DifferentCurrencyException;
 use Unilend\Core\Service\MoneyCalculator;
 
@@ -17,6 +18,9 @@ use Unilend\Core\Service\MoneyCalculator;
  */
 class MoneyCalculatorTest extends TestCase
 {
+    /**
+     * @covers ::add
+     */
     public function testAdd(): void
     {
         $moneyA   = new Money('EUR', '26');
@@ -30,6 +34,9 @@ class MoneyCalculatorTest extends TestCase
         static::assertSame($expected->getCurrency(), $result->getCurrency());
     }
 
+    /**
+     * @covers ::add
+     */
     public function testAddWithBothNullMoney(): void
     {
         $moneyA = new NullableMoney('EUR');
@@ -41,6 +48,9 @@ class MoneyCalculatorTest extends TestCase
         static::assertInstanceOf(NullableMoney::class, $result);
     }
 
+    /**
+     * @covers ::add
+     */
     public function testAddExceptionWithDifferentCurrency(): void
     {
         $moneyA = new NullableMoney('US', '0');
@@ -52,6 +62,9 @@ class MoneyCalculatorTest extends TestCase
         $moneyCalculator::add($moneyA, $moneyB);
     }
 
+    /**
+     * @covers ::subtract
+     */
     public function testSubtract(): void
     {
         $moneyA   = new Money('EUR', '85');
@@ -65,6 +78,9 @@ class MoneyCalculatorTest extends TestCase
         static::assertSame($expected->getCurrency(), $result->getCurrency());
     }
 
+    /**
+     * @covers ::subtract
+     */
     public function testSubtractWithBothNullMoney(): void
     {
         $moneyA = new NullableMoney('EUR');
@@ -76,6 +92,9 @@ class MoneyCalculatorTest extends TestCase
         static::assertInstanceOf(NullableMoney::class, $result);
     }
 
+    /**
+     * @covers ::subtract
+     */
     public function testSubtractExceptionWithDifferentCurrency(): void
     {
         $moneyA = new NullableMoney('JYP', '0');
@@ -87,6 +106,9 @@ class MoneyCalculatorTest extends TestCase
         $moneyCalculator::subtract($moneyA, $moneyB);
     }
 
+    /**
+     * @covers ::multiply
+     */
     public function testMultiply(): void
     {
         $moneyA   = new Money('EUR', '7');
@@ -99,6 +121,9 @@ class MoneyCalculatorTest extends TestCase
         static::assertSame($expected->getCurrency(), $result->getCurrency());
     }
 
+    /**
+     * @covers ::multiply
+     */
     public function testMultiplyWithNullAmount(): void
     {
         $moneyA = new NullableMoney();
@@ -109,6 +134,9 @@ class MoneyCalculatorTest extends TestCase
         static::assertInstanceOf(NullableMoney::class, $result);
     }
 
+    /**
+     * @covers ::divide
+     */
     public function testDivide(): void
     {
         $moneyA   = new Money('EUR', '168');
@@ -121,6 +149,9 @@ class MoneyCalculatorTest extends TestCase
         static::assertSame($expected->getCurrency(), $result->getCurrency());
     }
 
+    /**
+     * @covers ::divide
+     */
     public function testDivideWithNullAmount(): void
     {
         $moneyA = new NullableMoney();
@@ -131,6 +162,9 @@ class MoneyCalculatorTest extends TestCase
         static::assertInstanceOf(NullableMoney::class, $result);
     }
 
+    /**
+     * @covers ::ratio
+     */
     public function testRatio(): void
     {
         $moneyA = new Money('US', '84');
@@ -142,6 +176,9 @@ class MoneyCalculatorTest extends TestCase
         static::assertSame(42.0, $result);
     }
 
+    /**
+     * @covers ::ratio
+     */
     public function testRatioWithBothNullMoney(): void
     {
         $moneyA = new NullableMoney('EUR');
@@ -153,6 +190,9 @@ class MoneyCalculatorTest extends TestCase
         static::assertSame(0.0, $result);
     }
 
+    /**
+     * @covers ::ratio
+     */
     public function testRatioExceptionWithDifferentCurrency(): void
     {
         $moneyA = new NullableMoney('EUR');
@@ -173,6 +213,8 @@ class MoneyCalculatorTest extends TestCase
 
     /**
      * @dataProvider comparisonProvider
+     *
+     * @covers ::compare
      */
     public function testCompare(string $amountA, string $amountB, int $expected): void
     {
@@ -185,6 +227,9 @@ class MoneyCalculatorTest extends TestCase
         static::assertSame($expected, $result);
     }
 
+    /**
+     * @covers ::compare
+     */
     public function testCompareExceptionWithDifferentCurrency(): void
     {
         $moneyA = new Money('EUR', '42');
@@ -196,6 +241,9 @@ class MoneyCalculatorTest extends TestCase
         $moneyCalculator::compare($moneyA, $moneyB);
     }
 
+    /**
+     * @covers ::max
+     */
     public function testMax(): void
     {
         $moneyA   = new Money('EUR', '94');
@@ -209,6 +257,9 @@ class MoneyCalculatorTest extends TestCase
         static::assertSame($expected->getCurrency(), $result->getCurrency());
     }
 
+    /**
+     * @covers ::max
+     */
     public function testMaxWithBothNullMoney(): void
     {
         $moneyA = new NullableMoney('EUR');
@@ -221,6 +272,9 @@ class MoneyCalculatorTest extends TestCase
         static::assertSame($moneyA->getCurrency(), $result->getCurrency());
     }
 
+    /**
+     * @covers ::max
+     */
     public function testMaxExceptionWithDifferentCurrency(): void
     {
         $moneyA = new Money('KR', '88');
@@ -242,6 +296,8 @@ class MoneyCalculatorTest extends TestCase
 
     /**
      * @dataProvider differentCurrencyProvider
+     *
+     * @covers ::isDifferentCurrency
      */
     public function testIsDifferentCurrency(string $currencyA, string $currencyB, bool $expected): void
     {
@@ -252,5 +308,32 @@ class MoneyCalculatorTest extends TestCase
         $result          = $moneyCalculator::isDifferentCurrency($moneyA, $moneyB);
 
         static::assertSame($expected, $result);
+    }
+
+    /**
+     * @covers ::sum
+     *
+     * @dataProvider sumProvider
+     */
+    public function testSum(array $addendums, MoneyInterface $expected)
+    {
+        $result = MoneyCalculator::sum($addendums);
+
+        static::assertEqualsCanonicalizing($expected, $result);
+    }
+
+    public function sumProvider(): iterable
+    {
+        return [
+            'It should the correct sum for an array of money' => [
+                [new Money('EUR', '34'), new Money('EUR', '56')], new Money('EUR', '90.00'),
+            ],
+            'It should return a nullable money when array is empty' => [
+                [], new NullableMoney(),
+            ],
+            'It should return the sole money when array has only one element' => [
+                [new Money('EUR', '50')], new Money('EUR', '50.00'),
+            ],
+        ];
     }
 }

@@ -24,6 +24,7 @@ use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Service\MoneyCalculator;
 
 /**
  * "money:read" is needed for allocation.
@@ -649,6 +650,20 @@ class Participation extends AbstractProjectPartaker
     public function isArchived(): bool
     {
         return null !== $this->archivingDate;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getPoolShare(): float
+    {
+        $allocationSum = $this->getPool()->getAllocationSum();
+
+        if ('0' === $allocationSum->getAmount()) {
+            return 0;
+        }
+
+        return MoneyCalculator::ratio($this->getFinalAllocation(), $this->getPool()->getAllocationSum());
     }
 
     /**

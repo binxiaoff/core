@@ -61,6 +61,10 @@ class MoneyCalculator
             return new NullableMoney();
         }
 
+        // TODO handle 0 case
+
+        // TODO handle negative case
+
         return new Money(
             $dividend->getCurrency(),
             static::round(\bcdiv($dividend->getAmount(), (string) $divisor, 4))
@@ -76,6 +80,8 @@ class MoneyCalculator
         if (static::isBothNullMoney($fraction, $denominator)) {
             return 0;
         }
+
+        // TODO handle 0 case
 
         return (float) \bcdiv((string) $fraction->getAmount(), (string) $denominator->getAmount(), 4);
     }
@@ -105,6 +111,16 @@ class MoneyCalculator
         $rightCurrency = null !== $rightOperand->getCurrency() ? \mb_strtoupper($rightOperand->getCurrency()) : false;
 
         return false === empty($leftCurrency) && false === empty($rightCurrency) && $leftCurrency !== $rightCurrency;
+    }
+
+    /**
+     * @param array|MoneyInterface[] $addedums
+     */
+    public static function sum(array $addedums = []): MoneyInterface
+    {
+        $accumulator = new NullableMoney();
+
+        return \array_reduce($addedums, static fn (MoneyInterface $carry, MoneyInterface $item) => static::add($carry, $item), $accumulator);
     }
 
     private static function round(string $number): string
