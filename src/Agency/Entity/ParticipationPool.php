@@ -21,7 +21,9 @@ use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use Unilend\Core\Entity\Drive;
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Service\MoneyCalculator;
 
 /**
  * @ApiResource(
@@ -281,5 +283,12 @@ class ParticipationPool
     public function getSharedDrive(): Drive
     {
         return $this->sharedDrive;
+    }
+
+    public function getAllocationSum(): MoneyInterface
+    {
+        return MoneyCalculator::sum(
+            $this->participations->map(fn (Participation $participation) => $participation->getFinalAllocation())->toArray()
+        );
     }
 }
