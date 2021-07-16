@@ -188,6 +188,11 @@ class ParticipationMember extends AbstractProjectMember
     {
         $company = $this->participation->getParticipant();
 
+        // Exception for external bank
+        if (false === $company->hasSigned()) {
+            return;
+        }
+
         $staff = $company->findStaffByUser($this->getUser());
 
         if (null === $staff || $staff->isArchived()) {
