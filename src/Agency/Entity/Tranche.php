@@ -560,10 +560,6 @@ class Tranche
      */
     public function validateCommission(ExecutionContextInterface $context)
     {
-        if (($this->getCommissionRate() || '0' === $this->getCommissionRate()) xor \in_array($this->getLoanType(), LoanType::getChargeableLoanTypes())) {
-            $context->addViolation('Agency.Tranche.commission.wrongLoanType');
-        }
-
         if (($this->getCommissionRate() || '0' === $this->getCommissionRate()) xor $this->getCommissionType()) {
             $context->buildViolation('Agency.Tranche.commission.incomplete')
                 ->atPath($this->getCommissionType() ? 'commissionRate' : 'commissionType')
