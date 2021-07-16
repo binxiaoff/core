@@ -374,9 +374,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         /** @var Participation $participation */
         foreach ($project->getParticipations() as $participation) {
             foreach ($project->getTranches() as $tranche) {
-                if ($tranche->isSyndicated()) {
-                    $participation->addAllocation(new ParticipationTrancheAllocation($participation, $tranche, new Money('EUR', '20000')));
-                }
+                $participation->addAllocation(new ParticipationTrancheAllocation($participation, $tranche, new Money('EUR', '20000')));
             }
         }
 
@@ -475,8 +473,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     private function withPublishableTranches(Project $project): ProjectFixtures
     {
         $tranches = \array_map(fn () => $this->createTranche($project), \range(0, 4));
-
-        $tranches[0]->setSyndicated(false);
 
         $project->setTranches(new ArrayCollection($tranches));
 

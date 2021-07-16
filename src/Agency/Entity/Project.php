@@ -344,6 +344,8 @@ class Project
      *     @Assert\Expression("value.getProject() === this")
      * })
      *
+     * @Assert\Count(min="1", groups={"published"})
+     *
      * TODO Create custom endpoint to handle security
      * @ApiSubresource
      */
@@ -646,16 +648,6 @@ class Project
         $this->tranches->removeElement($tranche);
 
         return $this;
-    }
-
-    /**
-     * @Assert\Count(min="1", groups={"published"})
-     *
-     * @return Tranche[]|iterable
-     */
-    public function getSyndicatedTranches(): iterable
-    {
-        return $this->tranches->filter(fn (Tranche $tranche) => $tranche->isSyndicated());
     }
 
     /**
@@ -1075,5 +1067,16 @@ class Project
         foreach ($this->getParticipations() as $participation) {
             yield from $participation->getMembers();
         }
+    }
+
+    public function getArrangerParticipation(): ?Participation
+    {
+        foreach ($this->getParticipations() as $participation) {
+            if ($participation->isArranger()) {
+                return $participation;
+            }
+        }
+
+        return null;
     }
 }
