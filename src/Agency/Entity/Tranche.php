@@ -129,7 +129,6 @@ class Tranche
      *
      * @ORM\Column(length=255, nullable=true)
      *
-     * @Assert\NotBlank(allowNull=true)
      * @Assert\Length(max="255")
      *
      * @Groups({"agency:tranche:read", "agency:tranche:write"})
@@ -276,7 +275,6 @@ class Tranche
     public function __construct(
         Project $project,
         string $name,
-        bool $syndicated,
         string $color,
         string $loanType,
         string $repaymentType,

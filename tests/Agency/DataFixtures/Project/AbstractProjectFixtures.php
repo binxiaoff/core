@@ -39,7 +39,6 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
         return new Tranche(
             $project,
             'tranche',
-            true,
             '#FFFFFF',
             LoanType::TERM_LOAN,
             RepaymentType::ATYPICAL,
