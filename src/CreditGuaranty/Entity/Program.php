@@ -875,14 +875,10 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      */
     public function getReservedAmountsSum(): MoneyInterface
     {
-        $sum          = new NullableMoney($this->funds->getCurrency());
-        $reservations = $this->getReservations()->filter(fn (Reservation $item) => $item->isSent() && false === $item->isFormalized());
+        $reservations  = $this->getReservations()->filter(static fn (Reservation $item) => $item->isSent() && false === $item->isFormalized());
+        $fundingMoneys = $reservations->map(static fn (Reservation $reservation) => $reservation->getProject()->getFundingMoney())->toArray();
 
-        foreach ($reservations as $reservation) {
-            $sum = MoneyCalculator::add($sum, $reservation->getProject()->getFundingMoney());
-        }
-
-        return $sum;
+        return MoneyCalculator::sum($fundingMoneys);
     }
 
     /**
@@ -890,14 +886,10 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      */
     public function getContractualizedAmountsSum(): MoneyInterface
     {
-        $sum          = new NullableMoney($this->funds->getCurrency());
-        $reservations = $this->getReservations()->filter(fn (Reservation $item) => $item->isFormalized());
+        $reservations  = $this->getReservations()->filter(static fn (Reservation $item) => $item->isFormalized());
+        $fundingMoneys = $reservations->map(static fn (Reservation $reservation) => $reservation->getProject()->getFundingMoney())->toArray();
 
-        foreach ($reservations as $reservation) {
-            $sum = MoneyCalculator::add($sum, $reservation->getProject()->getFundingMoney());
-        }
-
-        return $sum;
+        return MoneyCalculator::sum($fundingMoneys);
     }
 
     public function duplicate(Staff $duplicatedBy): Program
