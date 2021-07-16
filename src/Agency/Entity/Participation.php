@@ -24,6 +24,7 @@ use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Service\MoneyCalculator;
 
 /**
@@ -222,15 +223,6 @@ class Participation extends AbstractProjectPartaker
     private NullableMoney $deputyArrangerCommission;
 
     /**
-     * @ORM\Embedded(class=Money::class)
-     *
-     * @Groups({"agency:participation:read", "agency:participation:write"})
-     *
-     * @Assert\Valid
-     */
-    private Money $finalAllocation;
-
-    /**
      * @ORM\Column(type="boolean")
      *
      * @Groups({"agency:participation:read", "agency:participation:write"})
@@ -271,7 +263,6 @@ class Participation extends AbstractProjectPartaker
     ) {
         parent::__construct($participant->getSiren() ?? '', $capital ?? new NullableMoney($pool->getProject()->getCurrency(), '0'));
         $this->pool                     = $pool;
-        $this->finalAllocation          = $finalAllocation;
         $this->participant              = $participant;
         $this->prorata                  = false;
         $this->participantCommission    = '0';
@@ -392,16 +383,18 @@ class Participation extends AbstractProjectPartaker
         return $this;
     }
 
-    public function getFinalAllocation(): Money
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getFinalAllocation(): MoneyInterface
     {
-        return $this->finalAllocation;
-    }
+        $result = MoneyCalculator::sum($this->allocations->map(fn (ParticipationTrancheAllocation $allocation) => $allocation->getAllocation())->toArray());
 
-    public function setFinalAllocation(Money $finalAllocation): Participation
-    {
-        $this->finalAllocation = $finalAllocation;
+        if (null === $result->getCurrency()) {
+            $result = new NullableMoney($this->getProject()->getCurrency(), $result->getAmount());
+        }
 
-        return $this;
+        return $result;
     }
 
     public function isProrata(): bool
