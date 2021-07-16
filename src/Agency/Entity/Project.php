@@ -521,8 +521,7 @@ class Project
 
         $participation = new Participation(
             $this->getPrimaryParticipationPool(),
-            $this->agent->getCompany(),
-            new Money($this->getCurrency())
+            $this->agent->getCompany()
         );
         $participation->setAgentCommission(new NullableMoney($this->getCurrency(), '0'));
 

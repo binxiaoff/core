@@ -562,7 +562,7 @@ class ImportProjectCommand extends Command
             $participant = $project->findParticipationByParticipant($participantCompany);
 
             if (null === $participant) {
-                $participant = (new Participation($project->getPrimaryParticipationPool(), $participantCompany, $finalAllocation));
+                $participant = (new Participation($project->getPrimaryParticipationPool(), $participantCompany));
                 $project->addParticipation($participant);
             }
 

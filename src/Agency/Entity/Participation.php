@@ -258,7 +258,6 @@ class Participation extends AbstractProjectPartaker
     public function __construct(
         ParticipationPool $pool,
         Company $participant,
-        Money $finalAllocation,
         ?NullableMoney $capital = null
     ) {
         parent::__construct($participant->getSiren() ?? '', $capital ?? new NullableMoney($pool->getProject()->getCurrency(), '0'));
