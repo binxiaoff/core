@@ -111,7 +111,7 @@ class ParticipationMember extends AbstractProjectMember
     }
 
     /**
-     * @Groups({"agency:participationMember:create"})
+     * @Groups({"agency:participationMember:create", "agency:participationMember:write"})
      */
     public function setUser(User $user): AbstractProjectMember
     {
@@ -129,7 +129,7 @@ class ParticipationMember extends AbstractProjectMember
     }
 
     /**
-     * @Groups({"agency:borrowerMember:write"})
+     * @Groups({"agency:participationMember:write"})
      */
     public function setProjectFunction(?string $projectFunction): AbstractProjectMember
     {

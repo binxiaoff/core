@@ -78,11 +78,16 @@ class ParticipationMemberVoter extends AbstractEntityVoter
 
         $project = $participationMember->getProject();
 
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PARTICIPANT, $project)
-            && false === $participationMember->isArchived()
+        return false === $participationMember->isArchived()
             && false === $participationMember->getParticipation()->isArchived()
             && $project->isEditable()
-            && $staff->getCompany() === $participationMember->getParticipation()->getParticipant()
+            && (
+                (
+                    $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PARTICIPANT, $project)
+                    && $staff->getCompany() === $participationMember->getParticipation()->getParticipant()
+                )
+                || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
+            )
         ;
     }
 }
