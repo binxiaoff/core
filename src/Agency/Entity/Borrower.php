@@ -94,7 +94,7 @@ class Borrower extends AbstractProjectPartaker
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="borrowers")
-     * @ORM\JoinColumn(name="id_project", nullable=false)
+     * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
      *
