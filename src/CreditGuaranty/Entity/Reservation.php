@@ -352,6 +352,11 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
         return ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY === $this->getCurrentStatus()->getStatus();
     }
 
+    public function isRefusedByManagingCompany(): bool
+    {
+        return ReservationStatus::STATUS_REFUSED_BY_MANAGING_COMPANY === $this->getCurrentStatus()->getStatus();
+    }
+
     public function isFormalized(): bool
     {
         return ReservationStatus::STATUS_CONTRACT_FORMALIZED === $this->getCurrentStatus()->getStatus();
