@@ -21,6 +21,9 @@ use Unilend\CreditGuaranty\Repository\ReservationRepository;
 
 class RemindExpiringReservationCommand extends Command
 {
+    private const OPTION_CASA     = 'casa';
+    private const COMMAND_OPTIONS = [self::OPTION_CASA];
+
     private const CASA_LIMIT_48_HOURS = 48;
 
     protected static $defaultName = 'kls:reservation:expiring:remind';
@@ -46,8 +49,8 @@ class RemindExpiringReservationCommand extends Command
     {
         $this
             ->setDescription('Send about to expire reservation reminder mails')
-            ->addOption('casa', null, InputOption::VALUE_NONE, 'Send reminder mails to CASA users')
-            ->setHelp('kls:reservation:expiring:remind --casa')
+            ->addOption('to', null, InputOption::VALUE_REQUIRED, 'Send reminder mails to CASA or CR staff')
+            ->setHelp('kls:reservation:expiring:remind --to=casa')
         ;
     }
 
@@ -61,10 +64,14 @@ class RemindExpiringReservationCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $casaOption = $input->getOption('casa');
+        $toOption = $input->getOption('to');
 
-        if (false === $casaOption) {
-            throw new InvalidArgumentException('This command requires one option among them : --casa');
+        if (empty($toOption)) {
+            throw new InvalidArgumentException('This command option --to is missing and/or requires value among them : casa');
+        }
+
+        if (false === \in_array($toOption, self::COMMAND_OPTIONS)) {
+            throw new InvalidArgumentException('This command option value should be one among them : casa');
         }
 
         /** @var Reservation $reservation */
@@ -84,10 +91,10 @@ class RemindExpiringReservationCommand extends Command
             $daysInHours    = \bcmul((string) $intervalDate->d, '24', 2);
             $minutesInHours = \bcdiv((string) $intervalDate->i, '60', 2);
             $secondsInHours = \bcdiv((string) $intervalDate->s, '3600', 2);
-            $remainingHours = \bcadd(\bcadd(\bcadd($daysInHours, (string) $intervalDate->h, 2), $minutesInHours, 2), $secondsInHours, 2);
+            $remainingHours = (float) \bcadd(\bcadd(\bcadd($daysInHours, (string) $intervalDate->h, 2), $minutesInHours, 2), $secondsInHours, 2);
 
-            if ($casaOption) {
-                $this->handleCasaMailing($reservation, (float) $remainingHours);
+            if (self::OPTION_CASA === $toOption) {
+                $this->handleMailingToCasa($reservation, $remainingHours);
             }
         }
 
@@ -97,7 +104,7 @@ class RemindExpiringReservationCommand extends Command
     /**
      * @throws JsonException
      */
-    private function handleCasaMailing(Reservation $reservation, float $remainingHours): void
+    private function handleMailingToCasa(Reservation $reservation, float $remainingHours): void
     {
         if ($remainingHours > self::CASA_LIMIT_48_HOURS) {
             return;
