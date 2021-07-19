@@ -374,6 +374,9 @@ class Company implements TraceableStatusAwareInterface
         return $this;
     }
 
+    /**
+     * @Groups({"company:read"})
+     */
     public function hasSigned(): bool
     {
         /** @var CompanyStatus $currentStatus */
