@@ -69,7 +69,7 @@ use Unilend\Core\Service\MoneyCalculator;
  *                     "agency:participationTrancheAllocation:write"
  *                 }
  *             },
- *             "security_post_denormalize": "is_granted('edit', object)",
+ *             "security": "is_granted('edit', object)",
  *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
  *         },
  *         "delete": {
