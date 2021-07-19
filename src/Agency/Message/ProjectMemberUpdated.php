@@ -31,7 +31,7 @@ class ProjectMemberUpdated
         return $this->changeSet;
     }
 
-    public function getProjectMemberClass()
+    public function getProjectMemberClass(): string
     {
         return $this->projectMemberClass;
     }
