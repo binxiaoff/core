@@ -845,6 +845,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     public function getTotalProjectFunds(array $filter = []): Money
     {
         $totalProjectFunds = new Money($this->funds->getCurrency());
+
         foreach ($this->reservations as $reservation) {
             if ($reservation->isSent()) {
                 if (false === $this->applyTotalProjectFundsFilters($reservation, $filter)) {
@@ -862,11 +863,33 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     }
 
     /**
-     * @Groups({"creditGuaranty:program:list"})
+     * @Groups({"creditGuaranty:program:list", "creditGuaranty:program:read"})
      */
     public function getAmountAvailable(): MoneyInterface
     {
         return MoneyCalculator::subtract($this->getFunds(), $this->getTotalProjectFunds());
+    }
+
+    /**
+     * @Groups({"creditGuaranty:program:read"})
+     */
+    public function getReservedAmountsSum(): MoneyInterface
+    {
+        $reservations  = $this->getReservations()->filter(static fn (Reservation $item) => $item->isSent() && false === $item->isFormalized());
+        $fundingMoneys = $reservations->map(static fn (Reservation $reservation) => $reservation->getProject()->getFundingMoney())->toArray();
+
+        return MoneyCalculator::sum($fundingMoneys);
+    }
+
+    /**
+     * @Groups({"creditGuaranty:program:read"})
+     */
+    public function getContractualizedAmountsSum(): MoneyInterface
+    {
+        $reservations  = $this->getReservations()->filter(static fn (Reservation $item) => $item->isFormalized());
+        $fundingMoneys = $reservations->map(static fn (Reservation $reservation) => $reservation->getProject()->getFundingMoney())->toArray();
+
+        return MoneyCalculator::sum($fundingMoneys);
     }
 
     public function duplicate(Staff $duplicatedBy): Program
