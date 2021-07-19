@@ -39,7 +39,14 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         },
  *         "patch": {
  *             "denormalization_context": {
- *                 "groups": {"agency:covenant:update", "agency:covenant:write"}
+ *                 "groups": {
+ *                     "agency:covenant:update",
+ *                     "agency:covenant:write",
+ *                     "agency:covenantRule:create",
+ *                     "agency:marginRule:create",
+ *                     "agency:marginImpact:create",
+ *                     "agency:inequality:write"
+ *                 }
  *             },
  *             "security_denormalize": "is_granted('edit', object)"
  *         },
@@ -150,7 +157,7 @@ class Covenant
     /**
      * @ORM\Column(name="startDate", type="date_immutable")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private DateTimeImmutable $startDate;
 
@@ -160,7 +167,7 @@ class Covenant
      * @Assert\Type("integer")
      * @Assert\Positive
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private int $delay;
 
@@ -169,7 +176,7 @@ class Covenant
      *
      * @Assert\GreaterThanOrEqual(propertyPath="startDate")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private DateTimeImmutable $endDate;
 
@@ -178,14 +185,14 @@ class Covenant
      *
      * @Assert\Choice(callback="getRecurrences")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private ?string $recurrence;
 
     /**
      * @var CovenantRule[]|Collection
      *
-     * @ORM\OneToMany(targetEntity=CovenantRule::class, mappedBy="covenant", indexBy="year", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity=CovenantRule::class, mappedBy="covenant", indexBy="year", cascade={"persist", "remove"}, orphanRemoval=true, fetch="EAGER")
      * @ORM\OrderBy({"year": "ASC"})
      *
      * @Assert\Valid
@@ -193,7 +200,7 @@ class Covenant
      *     @Assert\Expression("value.getCovenant() === this")
      * })
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private Collection $covenantRules;
 
@@ -233,7 +240,7 @@ class Covenant
     /**
      * @var MarginRule[]|Collection
      *
-     * @ORM\OneToMany(targetEntity=MarginRule::class, mappedBy="covenant", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity=MarginRule::class, mappedBy="covenant", cascade={"persist", "remove"}, fetch="EAGER", orphanRemoval=true)
      *
      * @Assert\Valid
      * @Assert\AtLeastOneOf({
@@ -244,7 +251,7 @@ class Covenant
      *     @Assert\Expression("value.getCovenant() === this")
      * })
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private Collection $marginRules;
 
@@ -404,14 +411,13 @@ class Covenant
 
     public function addCovenantRule(CovenantRule $covenantRule): Covenant
     {
-        $this->covenantRules[$covenantRule->getYear()] = $covenantRule;
+        $this->covenantRules[$covenantRule->getYear()] = $this->covenantRules[$covenantRule->getYear()] ?? $covenantRule;
+
+        $this->covenantRules[$covenantRule->getYear()]->setInequality($covenantRule->getInequality());
 
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     public function removeCovenantRule(CovenantRule $covenantRule): Covenant
     {
         $this->covenantRules->removeElement($covenantRule);

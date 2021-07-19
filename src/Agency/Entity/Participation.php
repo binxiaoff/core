@@ -69,7 +69,7 @@ use Unilend\Core\Service\MoneyCalculator;
  *                     "agency:participationTrancheAllocation:write"
  *                 }
  *             },
- *             "security_post_denormalize": "is_granted('edit', object)",
+ *             "security": "is_granted('edit', object)",
  *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
  *         },
  *         "delete": {
@@ -252,6 +252,8 @@ class Participation extends AbstractProjectPartaker
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"agency:participation:read"})
      */
     private ?DateTimeImmutable $archivingDate;
 
@@ -284,6 +286,9 @@ class Participation extends AbstractProjectPartaker
         return $this->pool;
     }
 
+    /**
+     * @Groups({"agency:participation:read"})
+     */
     public function getProject(): Project
     {
         return $this->pool->getProject();
@@ -639,6 +644,9 @@ class Participation extends AbstractProjectPartaker
         return $this;
     }
 
+    /**
+     * @Groups({"agency:participation:read"})
+     */
     public function isArchived(): bool
     {
         return null !== $this->archivingDate;
