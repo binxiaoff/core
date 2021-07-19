@@ -474,7 +474,7 @@ class ImportProjectCommand extends Command
             $rateFloorValue = $rateFloorType ? (string) $cells[9]->getValue() : null;
             $trancheRate    = new LendingRate($rateType, $rateMargin, $rateFloorValue, $rateFloorType);
 
-            $tranche = (new Tranche($project, $name, $syndicated, $colors->current(), $loanType, $repaymentType, $duration, $money, $trancheRate))
+            $tranche = (new Tranche($project, $name, $colors->current(), $loanType, $repaymentType, $duration, $money, $trancheRate))
                 ->setValidityDate($validityDate)
                 ->setComment($comment)
             ;

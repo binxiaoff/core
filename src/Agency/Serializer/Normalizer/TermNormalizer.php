@@ -55,7 +55,7 @@ class TermNormalizer implements ContextAwareDenormalizerInterface, DenormalizerA
         $isAgent = $this->security->isGranted(TermVoter::ATTRIBUTE_AGENT, $objectToPopulate);
 
         if ($isAgent) {
-            $context['groups'] = array_merge($context['groups'] ?? [], ['agency:term:update:agent']);
+            $context['groups'] = \array_merge($context['groups'] ?? [], ['agency:term:update:agent']);
         }
 
         /** @var Term $term */
@@ -65,7 +65,12 @@ class TermNormalizer implements ContextAwareDenormalizerInterface, DenormalizerA
             return $term;
         }
 
-        if ($sharing && $isAgent && (false === $term->isShared())) {
+        if (
+            $sharing
+            && $isAgent
+            && (false === $term->isShared())
+            && ($term->hasBreach() || $term->getWaiver() || $term->isValid())
+        ) {
             $term->share();
         }
 

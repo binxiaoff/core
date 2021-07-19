@@ -108,7 +108,6 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
             $agencyTranche = new Tranche(
                 $agencyProject,
                 $tranche->getName(),
-                $tranche->isSyndicated(),
                 $tranche->getColor(),
                 $tranche->getLoanType(),
                 $tranche->getRepaymentType(),

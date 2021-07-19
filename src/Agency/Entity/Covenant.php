@@ -124,9 +124,7 @@ class Covenant
     private ?string $contractArticle = null;
 
     /**
-     * @ORM\Column(type="string", nullable=true, length=5000)
-     *
-     * @Assert\Length(max="5000")
+     * @ORM\Column(type="text", nullable=true)
      *
      * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
@@ -476,7 +474,7 @@ class Covenant
      */
     public function validateCovenantRules(ExecutionContextInterface $context)
     {
-        $covenantRulesCount = count($this->covenantRules);
+        $covenantRulesCount = \count($this->covenantRules);
 
         // non financial covenant must not have rules
         if (0 !== $covenantRulesCount && (false === $this->isFinancial())) {
@@ -488,7 +486,7 @@ class Covenant
 
         // financial covenant must have 1 rule per year (including starting year)
         if ($this->isFinancial()) {
-            foreach (range($this->getStartYear(), $this->getEndYear()) as $year) {
+            foreach (\range($this->getStartYear(), $this->getEndYear()) as $year) {
                 if (false === isset($this->covenantRules[$year])) {
                     $context->buildViolation('Agency.Covenant.covenantRules.missingYear')
                         ->atPath('covenantRules')
@@ -542,7 +540,7 @@ class Covenant
         $datePeriod = new DatePeriod($this->startDate, new DateInterval($this->recurrence), $this->endDate);
 
         foreach ($datePeriod as $termStart) {
-            $termEnd       = DateTimeImmutable::createFromFormat('U', (string) strtotime('+' . $this->delay . ' days', $termStart->getTimestamp()));
+            $termEnd       = DateTimeImmutable::createFromFormat('U', (string) \strtotime('+' . $this->delay . ' days', $termStart->getTimestamp()));
             $this->terms[] = new Term($this, $termStart, $termEnd);
         }
 

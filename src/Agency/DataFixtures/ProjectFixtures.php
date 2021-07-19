@@ -550,7 +550,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $tranche = new Tranche(
             $project,
             $this->faker->name,
-            true,
             $this->faker->hexColor,
             LoanType::TERM_LOAN,
             RepaymentType::ATYPICAL,
