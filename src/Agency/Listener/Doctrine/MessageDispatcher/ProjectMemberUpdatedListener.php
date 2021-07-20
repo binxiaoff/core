@@ -15,6 +15,6 @@ class ProjectMemberUpdatedListener
 
     public function preUpdate(AbstractProjectMember $projectMember, PreUpdateEventArgs $args)
     {
-        $this->messageBus->dispatch(new ProjectMemberUpdated($projectMember, $args->getEntityChangeSet()));
+        $this->messageBus->dispatch(new ProjectMemberUpdated($projectMember, \array_keys($args->getEntityChangeSet())));
     }
 }

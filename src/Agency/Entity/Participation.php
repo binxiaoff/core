@@ -232,7 +232,7 @@ class Participation extends AbstractProjectPartaker
     /**
      * @var ParticipationTrancheAllocation[]|Collection
      *
-     * @ORM\OneToMany(targetEntity=ParticipationTrancheAllocation::class, cascade={"persist", "remove"}, mappedBy="participation")
+     * @ORM\OneToMany(targetEntity=ParticipationTrancheAllocation::class, cascade={"persist", "remove"}, mappedBy="participation", orphanRemoval=true)
      *
      * @Assert\Count(min="1", groups={"published"})
      * @Assert\Valid
@@ -355,10 +355,8 @@ class Participation extends AbstractProjectPartaker
 
     /**
      * @param iterable|ParticipationTrancheAllocation[] $allocations
-     *
-     * @return Participation
      */
-    public function setAllocations(iterable $allocations)
+    public function setAllocations(iterable $allocations): Participation
     {
         $this->allocations = $allocations;
 

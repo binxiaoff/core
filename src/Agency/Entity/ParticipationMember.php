@@ -48,7 +48,9 @@ use Unilend\Core\SwiftMailer\MailjetMessage;
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
  *                 "groups": {
- *                     "agency:participationMember:write"
+ *                     "agency:participationMember:write",
+ *                     "user:create",
+ *                     "user:write"
  *                 }
  *             }
  *         }
@@ -111,7 +113,7 @@ class ParticipationMember extends AbstractProjectMember
     }
 
     /**
-     * @Groups({"agency:participationMember:create", "agency:participationMember:write"})
+     * @Groups({"agency:participationMember:write"})
      */
     public function setUser(User $user): AbstractProjectMember
     {
