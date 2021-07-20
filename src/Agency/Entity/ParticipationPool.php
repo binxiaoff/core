@@ -285,11 +285,11 @@ class ParticipationPool
         return 0 === \count($this->getParticipations());
     }
 
-    public function getCurrentValidationGroups(self $pool): array
+    public static function getCurrentValidationGroups(self $pool): array
     {
         $validationGroups = ['Default', 'ParticipationPool'];
 
-        if ($pool->getProject()->isPublished() && ($this->isPrimary() || ($this->isSecondary() && false === $this->isEmpty()))) {
+        if ($pool->getProject()->isPublished() && ($pool->isPrimary() || ($pool->isSecondary() && false === $pool->isEmpty()))) {
             $validationGroups[] = 'ParticipationPool:published:active';
         }
 
