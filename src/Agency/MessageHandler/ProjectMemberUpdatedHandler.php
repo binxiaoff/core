@@ -28,7 +28,7 @@ class ProjectMemberUpdatedHandler implements MessageHandlerInterface
      */
     public function __invoke(ProjectMemberUpdated $projectMemberUpdated)
     {
-        if (false === isset($projectMemberUpdated->getChangeSet()['user'])) {
+        if (false === \in_array('user', $projectMemberUpdated->getChangeSet(), true)) {
             return;
         }
 
