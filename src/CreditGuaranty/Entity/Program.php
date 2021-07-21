@@ -895,6 +895,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     public function duplicate(Staff $duplicatedBy): Program
     {
         $duplicatedProgram          = clone $this;
+        $duplicatedProgram->drive   = new Drive();
         $duplicatedProgram->addedBy = $duplicatedBy->getUser();
         $duplicatedProgram->setCurrentStatus(new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $duplicatedBy));
 
