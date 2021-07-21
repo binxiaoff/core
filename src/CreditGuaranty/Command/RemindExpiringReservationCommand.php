@@ -13,6 +13,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Core\SwiftMailer\MailjetMessage;
@@ -33,17 +34,26 @@ class RemindExpiringReservationCommand extends Command
     ];
 
     private const CASA_LIMIT_48_HOURS       = 48;
-    private const CR_LIMIT_2_WEEKS_IN_DAYS  = 15;
-    private const CR_LIMIT_2_WEEKS_IN_HOURS = self::CR_LIMIT_2_WEEKS_IN_DAYS * 24;
-    private const CR_LIMIT_1_WEEK_IN_HOURS  = 7                              * 24;
+    private const CR_LIMIT_15_DAYS          = 15;
+    private const CR_LIMIT_15_DAYS_IN_HOURS = self::CR_LIMIT_15_DAYS * 24;
+    private const CR_LIMIT_1_WEEK_IN_HOURS  = 7                      * 24;
     private const CR_LIMIT_72_HOURS         = 72;
     private const CR_LIMIT_48_HOURS         = 48;
 
     private const CR_LIMIT_HOURS = [
-        self::CR_LIMIT_2_WEEKS_IN_HOURS,
+        self::CR_LIMIT_15_DAYS_IN_HOURS,
         self::CR_LIMIT_1_WEEK_IN_HOURS,
         self::CR_LIMIT_72_HOURS,
         self::CR_LIMIT_48_HOURS,
+    ];
+
+    private const CASA_TEMPLATE_ID    = MailjetMessage::TEMPLATE_CREDIT_GUARANTY_REMIND_EXPIRING_RESERVATION_CASA;
+    private const CR_TEMPLATE_ID      = MailjetMessage::TEMPLATE_CREDIT_GUARANTY_REMIND_EXPIRING_RESERVATION_CR;
+    private const CR_LIST_TEMPLATE_ID = MailjetMessage::TEMPLATE_CREDIT_GUARANTY_REMIND_EXPIRING_RESERVATION_LIST_CR;
+
+    private const CR_TEMPLATE_IDS = [
+        self::CR_TEMPLATE_ID,
+        self::CR_LIST_TEMPLATE_ID,
     ];
 
     protected static $defaultName = 'kls:reservation:expiring:remind';
@@ -87,6 +97,8 @@ class RemindExpiringReservationCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
+
         $toOption = $input->getOption('to');
 
         if (empty($toOption)) {
@@ -106,10 +118,12 @@ class RemindExpiringReservationCommand extends Command
                 continue;
             }
 
-            $reservationDuration = $reservation->getProgram()->getReservationDuration();
+            $program             = $reservation->getProgram();
+            $reservationDuration = $program->getReservationDuration();
 
             if (null === $reservationDuration) {
-                // need exception here ?
+                $io->warning(\sprintf('Reservation #%s is ignored because reservation duration limit of program #%s is empty.', $reservation->getId(), $program->getId()));
+
                 continue;
             }
 
@@ -132,7 +146,7 @@ class RemindExpiringReservationCommand extends Command
 
             // if remaining interval is superior to 2 weeks
             // we need a reservations list for template_credit_guaranty_remind_expiring_reservation_list_cr
-            if (self::OPTION_CR === $toOption && (0 < $intervalDate->m || self::CR_LIMIT_2_WEEKS_IN_DAYS < $intervalDate->d)) {
+            if (self::OPTION_CR === $toOption && (0 < $intervalDate->m || self::CR_LIMIT_15_DAYS < $intervalDate->d)) {
                 foreach ($reservation->getManagingCompany()->getStaff() as $staff) {
                     $userId = $staff->getUser()->getId();
 
@@ -171,7 +185,11 @@ class RemindExpiringReservationCommand extends Command
         }
 
         if (false === empty($staffList) && false === empty($reservationsList)) {
-            $this->handleMailingListToCr($staffList, $reservationsList);
+            $this->sendMail(
+                self::CR_LIST_TEMPLATE_ID,
+                $staffList,
+                ['reservations' => $reservationsList]
+            );
         }
 
         return Command::SUCCESS;
@@ -186,24 +204,11 @@ class RemindExpiringReservationCommand extends Command
             return;
         }
 
-        $company    = $reservation->getProgram()->getManagingCompany();
-        $templateId = MailjetMessage::TEMPLATE_CREDIT_GUARANTY_REMIND_EXPIRING_RESERVATION_CASA;
-
-        foreach ($company->getStaff() as $staff) {
-            if (false === $staff->isActive()) {
-                continue;
-            }
-
-            $user = $staff->getUser();
-            $vars = [
-                'reservationName' => $reservation->getName(),
-                'firstName'       => $user->getFirstName(),
-                'lastName'        => $user->getLastName(),
-            ];
-            $mailjetMessage = $this->createMessage($user, $templateId, $vars);
-
-            $this->send($mailjetMessage);
-        }
+        $this->sendMail(
+            self::CASA_TEMPLATE_ID,
+            $reservation->getProgram()->getManagingCompany()->getStaff(),
+            ['reservationName' => $reservation->getName()]
+        );
     }
 
     /**
@@ -218,54 +223,36 @@ class RemindExpiringReservationCommand extends Command
             return;
         }
 
-        $templateId = MailjetMessage::TEMPLATE_CREDIT_GUARANTY_REMIND_EXPIRING_RESERVATION_CR;
-
-        foreach ($reservation->getManagingCompany()->getStaff() as $staff) {
-            if (false === $staff->isActive() || false === $this->hasReservationPermission($staff)) {
-                continue;
-            }
-
-            $user = $staff->getUser();
-            $vars = [
-                'reservationName' => $reservation->getName(),
-                'firstName'       => $user->getFirstName(),
-                'lastName'        => $user->getLastName(),
-            ];
-            $mailjetMessage = $this->createMessage($user, $templateId, $vars);
-
-            $this->send($mailjetMessage);
-        }
+        $this->sendMail(
+            self::CR_TEMPLATE_ID,
+            $reservation->getManagingCompany()->getStaff(),
+            ['reservationName' => $reservation->getName()]
+        );
     }
 
     /**
+     * @param array|Staff[] $staffList
+     *
      * @throws JsonException
      */
-    private function handleMailingListToCr(array $staffList, array $reservationsList): void
+    private function sendMail(int $templateId, array $staffList, array $vars): void
     {
-        $templateId = MailjetMessage::TEMPLATE_CREDIT_GUARANTY_REMIND_EXPIRING_RESERVATION_LIST_CR;
-
         foreach ($staffList as $staff) {
-            if (false === $staff->isActive() || false === $this->hasReservationPermission($staff)) {
+            if (false === $staff->isActive()) {
                 continue;
             }
 
-            $user = $staff->getUser();
-            $vars = [
-                'reservations' => $reservationsList,
-                'firstName'    => $user->getFirstName(),
-                'lastName'     => $user->getLastName(),
-            ];
-            $mailjetMessage = $this->createMessage($user, $templateId, $vars);
+            if (\in_array($templateId, self::CR_TEMPLATE_IDS, true) && false === $this->hasReservationPermission($staff)) {
+                continue;
+            }
+
+            $user              = $staff->getUser();
+            $vars['firstName'] = $user->getFirstName();
+            $vars['lastName']  = $user->getLastName();
+            $mailjetMessage    = $this->createMessage($user, $templateId, $vars);
 
             $this->send($mailjetMessage);
         }
-    }
-
-    private function hasReservationPermission(Staff $staff): bool
-    {
-        return $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_CREATE_RESERVATION)
-            || $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_EDIT_RESERVATION)
-        ;
     }
 
     /**
@@ -309,5 +296,12 @@ class RemindExpiringReservationCommand extends Command
         if ($this->output->isVerbose()) {
             $this->output->writeln('Email sent');
         }
+    }
+
+    private function hasReservationPermission(Staff $staff): bool
+    {
+        return $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_CREATE_RESERVATION)
+            || $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_EDIT_RESERVATION)
+        ;
     }
 }
