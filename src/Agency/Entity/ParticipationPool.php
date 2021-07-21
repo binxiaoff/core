@@ -307,4 +307,14 @@ class ParticipationPool
             $this->participations->map(fn (Participation $participation) => $participation->getFinalAllocation())->toArray()
         );
     }
+
+    public function getActiveParticipantAllocationSum(): MoneyInterface
+    {
+        return MoneyCalculator::sum(
+            $this->participations
+                ->filter(fn (Participation $participation) => false === $participation->isArchived())
+                ->map(fn (Participation $participation)    => $participation->getFinalAllocation())
+                ->toArray()
+        );
+    }
 }
