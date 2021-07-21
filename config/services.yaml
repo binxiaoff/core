@@ -39,6 +39,10 @@ services:
             $debug: '%kernel.debug%'
             $senderAddress: '%mailer.sender_address%'
 
+    _instanceof:
+        Unilend\Core\EventSubscriber\Jwt\PermissionProviderInterface:
+            tags: ['unilend.jwt.permission_provider']
+
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     Unilend\:
@@ -157,10 +161,6 @@ services:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Agency\Serializer\ContextBuilder\ProjectContextBuilder:
-        decorates: 'api_platform.serializer.context_builder'
-        autoconfigure: false
-
     Unilend\CreditGuaranty\Serializer\ContextBuilder\ProjectContextBuilder:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
@@ -196,9 +196,18 @@ services:
     Unilend\Core\EventSubscriber\Jwt\PayloadManagerSubscriber:
         calls:
             - addPayloadManager: ['@Unilend\Core\Service\Jwt\StaffPayloadManager']
-### Agency
+
+    Unilend\Core\EventSubscriber\Jwt\PermissionSubscriber:
+        arguments:
+            $permissionProviders: !tagged unilend.jwt.permission_provider
+
+    ### Agency
     Unilend\Agency\Swagger\ProjectDecorator:
         decorates: 'api_platform.swagger.normalizer.api_gateway'
 
     Unilend\Agency\DataPersister\ParticipationMemberDataPersister:
         decorates: 'api_platform.doctrine.orm.data_persister'
+
+    Unilend\Agency\Serializer\ContextBuilder\ProjectContextBuilder:
+        decorates: 'api_platform.serializer.context_builder'
+        autoconfigure: false
