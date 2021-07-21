@@ -665,6 +665,24 @@ class Participation extends AbstractProjectPartaker
     }
 
     /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getActivePoolShare(): float
+    {
+        if ($this->isArchived()) {
+            return 0.0;
+        }
+
+        $allocationSum = $this->getPool()->getActiveParticipantAllocationSum();
+
+        if ((float) 0 === (float) ($allocationSum->getAmount())) {
+            return 0.0;
+        }
+
+        return MoneyCalculator::ratio($this->getFinalAllocation(), $allocationSum);
+    }
+
+    /**
      * @Assert\Callback
      */
     public function validateParticipant(ExecutionContextInterface $context)
