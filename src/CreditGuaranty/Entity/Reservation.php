@@ -367,14 +367,22 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
         return ReservationStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
     }
 
+    public function getDateByStatus(int $status): ?DateTimeImmutable
+    {
+        foreach ($this->getStatuses() as $reservationStatus) {
+            if ($status === $reservationStatus->getStatus()) {
+                return $reservationStatus->getAdded();
+            }
+        }
+
+        return null;
+    }
+
     public function isGrossSubsidyEquivalentEligible(): bool
     {
-        $maxFeiCredit = $this->getProject()->getMaxFeiCredit();
-        $esbTotal     = new Money('EUR');
-
-        foreach ($this->getFinancingObjects() as $financingObject) {
-            $esbTotal = MoneyCalculator::add($esbTotal, $financingObject->getGrossSubsidyEquivalent());
-        }
+        $grossSubsidyEquivalents = $this->getFinancingObjects()->map(static fn (FinancingObject $financingObject) => $financingObject->getGrossSubsidyEquivalent())->toArray();
+        $esbTotal                = MoneyCalculator::sum($grossSubsidyEquivalents);
+        $maxFeiCredit            = $this->getProject()->getMaxFeiCredit();
 
         $comparison = MoneyCalculator::compare($esbTotal, $maxFeiCredit);
 
