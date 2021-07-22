@@ -63,7 +63,11 @@ class ProjectMemberNotifier
             $vars['temporaryToken_token']     = $temporaryToken->getToken();
             $vars['front_initialAccount_URL'] = $this->router->generate(
                 'front_initialAccount',
-                ['temporaryTokenPublicId' => $temporaryToken->getToken(), 'userPublicId' => $user->getPublicId()]
+                [
+                    'temporaryTokenPublicId' => $temporaryToken->getToken(),
+                    'userPublicId'           => $user->getPublicId(),
+                    'redirect'               => $this->router->generate('front_agencyDashboard'),
+                ]
             );
         }
 
