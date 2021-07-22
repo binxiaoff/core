@@ -11,6 +11,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -218,7 +219,8 @@ class ParticipationMember extends AbstractProjectMember
     {
         return $router->generate(
             'front_agencyParticipationProjectView',
-            ['projectPublicId' => $this->getProject()->getPublicId(), 'participationPublicId' => $this->getPublicId()]
+            ['projectPublicId' => $this->getProject()->getPublicId(), 'participationPublicId' => $this->getPublicId()],
+            UrlGeneratorInterface::ABSOLUTE_URL
         );
     }
 }

@@ -7,6 +7,7 @@ namespace Unilend\Agency\Notifier;
 use Exception;
 use JsonException;
 use Swift_Mailer;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Agency\Entity\AbstractProjectMember;
 use Unilend\Core\Entity\TemporaryToken;
@@ -67,7 +68,8 @@ class ProjectMemberNotifier
                     'temporaryTokenPublicId' => $temporaryToken->getToken(),
                     'userPublicId'           => $user->getPublicId(),
                     'redirect'               => $this->router->generate('front_agencyDashboard'),
-                ]
+                ],
+                UrlGeneratorInterface::ABSOLUTE_URL
             );
         }
 
