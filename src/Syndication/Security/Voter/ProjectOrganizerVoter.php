@@ -16,9 +16,6 @@ class ProjectOrganizerVoter extends AbstractEntityVoter
 
     /**
      * @param ProjectOrganizer $subject
-     * @param User             $user
-     *
-     * @return bool
      */
     protected function isGrantedAll($subject, User $user): bool
     {
