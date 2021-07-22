@@ -56,41 +56,44 @@ PHP
  - The annotation ``@var`` is not required if it's the same as the type hint. But it should be not ignore if the cases that the type hint cannot cover. For exemple, such as ``@var string[]``
 
 API platform
- - Serializer group naming convention: the group name is named in format ``entityName[:decorator]:action``. ``entityName`` and ``decorator`` is in lower camel case. The available actions are follow:
-   
-   - read: general normalize context
-   - write: general denormalize context
-   - create: denormalize context dedicated to the creation, POST action
-   - update: denormalize context dedicated to the update (not available for creation), PUT or PATCH action
-   The optional ``decorator`` is used
-      - if we need some dynamic group for some users or roles (ex: ``project:admin:read`` is used for the fields only available for the site admin the project's arranger)
-      - if we need some specific group for a dedicated consumer (ex: ``project:projectParticipation:read`` the field is only available for the nested ``project`` in ``ProjectParticipation``)
-   For each operation, the general context should always be presented. For example, if we want to define the groups for a PUT, we put ``entityName:write`` and  ``entityName:update`` at the same time.
- - Serializer group placement: the group must alway be put in the entity with which its name starts. For example, ``project:read`` must be put in ``Project``
+ - The group name must be in the following format : ``entityName[:decorator]:action``. ``entityName`` and ``decorator`` is in lower camel case.
+ - The group must always be put in the entity with which its name starts. For example, ``project:read`` must be put in ``Project``.
+ - Available actions:
+    - ``read``: general normalize context
+    - ``write``: general denormalize context
+    - ``create``: denormalize context dedicated to the creation, POST action
+    - ``update``: denormalize context dedicated to the update (not available for creation), PUT or PATCH action
+ - The optional ``decorator`` is used:
+    - if we need some dynamic group for some users or roles (ex: ``project:admin:read`` is used for the fields only available for the site admin the project's arranger)
+    - if we need some specific group for a dedicated consumer (ex: ``project:projectParticipation:read`` the field is only available for the nested ``project`` in ``ProjectParticipation``)
+ - For each resource operation:
+    - the general context should always be presented. For example, if we want to define the groups for a PUT, we put ``entityName:write`` and ``entityName:update`` at the same time.
+    - it should use its own custom security access control. For example, we should not do ``"security": "is_granted('view', object.subresource)"`` that call a voter of an other resource.
 
 Doctrine
  - Use annotations for meta-data
+ - Use ``trait`` for the repeated columns in different tables
+ - Name the FK column without the id. Ex: the name of ``id_client_submitter`` (which is a FK of Clients) in Project entity should named after ``submitterClient``.
+ - The use of the named bind is required
+ - About validation, favor the use of Doctrine asserts and constraint callback methods if no need to call external service
  - Use Query Builder
  - The queries should be put in xRepository classes
  - The usage of ``EntityManager::getRepository()`` should be avoided. Use ``ManagerRegistry::getManagerForClass()`` instead. Thus "repositoryClass" attribut of Entity may be ignored, if there is no usage.
- - Use ``trait`` for the repeted columns in different tables
- - Name the FK column without the id. Ex: the name of ``id_client_submitter`` (which is a FK of Clients) in Project entity should named after ``submitterClient``.
- - The use of the named bind is required
 
 Doctrine Migration
  - The ticket number must put in  "getDescription()".
  - Use ``INSERT IGNORE`` for the insertion of translations
  - One call to ``addSql()`` for one SQL statement.
- - Alwas provide ``down()``, if possible.
- - Always modify the entity classes. Don't modify the database directely. Then, use ``doctrine:migrations:diff`` to generate a migration.
+ - Always provide ``down()``, if possible.
+ - Always modify the entity classes. Don't modify the database directly. Then, use ``doctrine:migrations:diff`` to generate a migration.
  - One migration per ticket
  - Don't put sensitive data in the migration (personal data, password, etc...)
+ - Don't modify an existing migration, generate a new one.
 
 SQL
 We choose to stick to `SQL Style Guide <https://www.sqlstyle.guide/>`_
 
 We add also our own rules as follow :
-
  - The use of ``USING`` for SQL joins is strongly discouraged
  - The names of the tables are in the singular
  - The SQL keywords must be in capital letters
