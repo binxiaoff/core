@@ -73,12 +73,11 @@ API platform
 Doctrine
  - Use annotations for meta-data
  - Use ``trait`` for the repeated columns in different tables
- - Name the FK column without the id. Ex: the name of ``id_client_submitter`` (which is a FK of Clients) in Project entity should named after ``submitterClient``.
- - The use of the named bind is required
- - About validation, favor the use of Doctrine asserts and constraint callback methods if no need to call external service
+ - Name the FK column without the id. Ex: the name of ``id_user_submitter`` (which is a FK of User) in Project entity should named after ``submitterUser``.
  - Use Query Builder
  - The queries should be put in xRepository classes
- - The usage of ``EntityManager::getRepository()`` should be avoided. Use ``ManagerRegistry::getManagerForClass()`` instead. Thus "repositoryClass" attribut of Entity may be ignored, if there is no usage.
+ - The use of the named bind is required in queries (DQL / Query Builder)
+ - The usage of ``EntityManager::getRepository()`` should be avoided. Use ``ManagerRegistry::getManagerForClass()`` instead. Thus "repositoryClass" attribut of Entity should not be filled, if there is no usage.
 
 Doctrine Migration
  - The ticket number must put in  "getDescription()".
@@ -89,6 +88,9 @@ Doctrine Migration
  - One migration per ticket
  - Don't put sensitive data in the migration (personal data, password, etc...)
  - Don't modify an existing migration, generate a new one.
+
+Symfony
+ - About validation, favor the use of asserts and constraint callback methods if no need to call external service
 
 SQL
 We choose to stick to `SQL Style Guide <https://www.sqlstyle.guide/>`_

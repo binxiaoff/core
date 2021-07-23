@@ -24,3 +24,4 @@ See parts below of `Backend coding standard <coding-standard.rst>`_ for more det
  - API platform
  - Doctrine
  - Doctrine Migration
+ - Symfony
