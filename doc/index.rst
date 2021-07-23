@@ -25,10 +25,12 @@ __________
 
 `Doctrine migration roll up <technical/doctrine-migration-rollup.rst>`_
 
-`Initiatialize dev environnement <technical/init-dev-env-docker.rst>`_
+`Initialize dev environnement <technical/init-dev-env-docker.rst>`_
 
 `Create database table <technical/create-update-database-table.rst>`_
 
 `Grumphp <technical/grumphp.rst>`_
 
 `Tests <technical/tests.rst>`_
+
+`API Resource <technical/api-resource.rst>`_
