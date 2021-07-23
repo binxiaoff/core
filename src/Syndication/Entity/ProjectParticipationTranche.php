@@ -44,7 +44,6 @@ use Unilend\Syndication\Entity\Embeddable\Offer;
  *             "read": false,
  *             "output": false,
  *         },
- *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)"},
  *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"}
  *     }
  * )
