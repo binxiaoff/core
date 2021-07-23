@@ -77,7 +77,7 @@ use Unilend\Core\Service\MoneyCalculator;
  *         },
  *         "get_dataroom": {
  *             "method": "GET",
- *             "security": "is_granted('view', object)",
+ *             "security": "is_granted('dataroom', object)",
  *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
  *             "controller": Get::class,
  *             "requirements": {
@@ -93,7 +93,7 @@ use Unilend\Core\Service\MoneyCalculator;
  *         "post_dataroom": {
  *             "method": "POST",
  *             "deserialize": false,
- *             "security": "is_granted('view', object)",
+ *             "security": "is_granted('dataroom', object)",
  *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
  *             "controller": Post::class,
  *             "requirements": {
@@ -108,7 +108,7 @@ use Unilend\Core\Service\MoneyCalculator;
  *         },
  *         "delete_dataroom": {
  *             "method": "DELETE",
- *             "security": "is_granted('view', object)",
+ *             "security": "is_granted('dataroom', object)",
  *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
  *             "controller": Delete::class,
  *             "requirements": {

@@ -78,7 +78,7 @@ use Unilend\Core\Service\MoneyCalculator;
  *         "delete_dataroom": {
  *             "method": "DELETE",
  *             "path": "/agency/participation_pools/{publicId}/dataroom/{path?}",
- *             "security": "is_granted('view', object)",
+ *             "security": "is_granted('edit', object)",
  *             "controller": Delete::class,
  *             "requirements": {
  *                 "path": ".+"

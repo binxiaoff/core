@@ -157,7 +157,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *         "delete_borrower_dataroom_shared": {
  *             "method": "DELETE",
  *             "path": "/agency/projects/{publicId}/borrowers/dataroom/shared/{path?}",
- *             "security": "is_granted('agent', object) || is_granted('borrower', object)",
+ *             "security": "is_granted('agent', object)",
  *             "controller": Delete::class,
  *             "requirements": {
  *                 "path": ".+"
