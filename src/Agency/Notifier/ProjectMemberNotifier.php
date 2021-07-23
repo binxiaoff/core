@@ -67,7 +67,7 @@ class ProjectMemberNotifier
                 [
                     'temporaryTokenPublicId' => $temporaryToken->getToken(),
                     'userPublicId'           => $user->getPublicId(),
-                    'redirect'               => $this->router->generate('front_agencyDashboard'),
+                    'redirect'               => $this->router->generate('front_agencyDashboard', [], UrlGeneratorInterface::ABSOLUTE_URL),
                 ],
                 UrlGeneratorInterface::ABSOLUTE_URL
             );
