@@ -25,15 +25,15 @@ class ParticipationVoter extends AbstractEntityVoter
             return true;
         }
 
-        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER) && $participation->isPrimary()) {
+        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $participation->getProject()) && $participation->isPrimary()) {
             return true;
         }
 
-        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PRIMARY_PARTICIPANT) && $participation->isPrimary()) {
+        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PRIMARY_PARTICIPANT, $participation->getProject()) && $participation->isPrimary()) {
             return true;
         }
 
-        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_SECONDARY_PARTICIPANT) && $participation->isSecondary()) {
+        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_SECONDARY_PARTICIPANT, $participation->getProject()) && $participation->isSecondary()) {
             return true;
         }
 
