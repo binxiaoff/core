@@ -11,13 +11,8 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class SwaggerDecorator implements NormalizerInterface
 {
     private NormalizerInterface $decorated;
-
     private RouterInterface $router;
 
-    /**
-     * @param NormalizerInterface $decorated
-     * @param RouterInterface     $router
-     */
     public function __construct(NormalizerInterface $decorated, RouterInterface $router)
     {
         $this->decorated = $decorated;
@@ -25,13 +20,9 @@ class SwaggerDecorator implements NormalizerInterface
     }
 
     /**
-     * @param mixed       $object
-     * @param string|null $format
-     * @param array       $context
+     * @param mixed $object
      *
      * @throws ExceptionInterface
-     *
-     * @return array
      */
     public function normalize($object, ?string $format = null, array $context = []): array
     {
@@ -94,7 +85,6 @@ class SwaggerDecorator implements NormalizerInterface
             '/file_versions/{id}',
             '/legal_documents/{id}',
             '/project_files/{id}',
-            '/project_messages/{id}',
             '/project_organizers/{id}',
             '/project_statuses/{id}',
             '/project_participation_collections/{id}',
@@ -120,10 +110,7 @@ class SwaggerDecorator implements NormalizerInterface
     }
 
     /**
-     * @param mixed       $data
-     * @param string|null $format
-     *
-     * @return bool
+     * @param mixed $data
      */
     public function supportsNormalization($data, ?string $format = null): bool
     {
