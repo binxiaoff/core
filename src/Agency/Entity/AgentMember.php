@@ -11,6 +11,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -211,6 +212,6 @@ class AgentMember extends AbstractProjectMember
 
     public function getProjectFrontUrl(RouterInterface $router): string
     {
-        return $router->generate('front_agencyAgentProjectView', ['projectPublicId' => $this->getProject()->getPublicId()]);
+        return $router->generate('front_agencyAgentProjectView', ['projectPublicId' => $this->getProject()->getPublicId()], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 }
