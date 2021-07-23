@@ -77,7 +77,7 @@ use Unilend\Core\Service\MoneyCalculator;
  *         },
  *         "get_dataroom": {
  *             "method": "GET",
- *             "security": "is_granted('dataroom', object)",
+ *             "security": "is_granted('view', object)",
  *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
  *             "controller": Get::class,
  *             "requirements": {

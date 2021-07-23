@@ -63,7 +63,7 @@ use Unilend\Core\Service\MoneyCalculator;
  *             "method": "POST",
  *             "deserialize": false,
  *             "path": "/agency/participation_pools/{publicId}/dataroom/{path?}",
- *             "security": "is_granted('view', object)",
+ *             "security": "is_granted('edit', object)",
  *             "controller": Post::class,
  *             "normalization_context": {
  *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}

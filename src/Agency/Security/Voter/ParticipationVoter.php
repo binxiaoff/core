@@ -19,10 +19,6 @@ class ParticipationVoter extends AbstractEntityVoter
 
     protected function canDataroom(Participation $participation, User $user): bool
     {
-        if (false === $participation->getProject()->isEditable()) {
-            return false;
-        }
-
         $staff = $user->getCurrentStaff();
 
         if (null === $staff) {
