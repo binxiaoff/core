@@ -296,6 +296,15 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private ?bool $loanReleasedOnInvoice = null;
 
     /**
+     * @ORM\Column(length=1200, nullable=true)
+     *
+     * @Assert\Expression("this.isLoanReleasedOnInvoice() && null !== value")
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     */
+    private ?string $requestedDocumentsDescription;
+
+    /**
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
@@ -605,6 +614,18 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     public function setLoanReleasedOnInvoice(?bool $loanReleasedOnInvoice): Program
     {
         $this->loanReleasedOnInvoice = $loanReleasedOnInvoice;
+
+        return $this;
+    }
+
+    public function getRequestedDocumentsDescription(): ?string
+    {
+        return $this->requestedDocumentsDescription;
+    }
+
+    public function setRequestedDocumentsDescription(?string $requestedDocumentsDescription): Program
+    {
+        $this->requestedDocumentsDescription = $requestedDocumentsDescription;
 
         return $this;
     }
