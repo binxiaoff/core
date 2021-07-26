@@ -97,7 +97,7 @@ class FileDownloadVoter extends AbstractEntityVoter
         if (\in_array($type, Project::getProjectFileTypes(), true)) {
             switch ($type) {
                 case Project::PROJECT_FILE_TYPE_DESCRIPTION:
-                    $project = $this->projectRepository->findOneBy(['descriptionDocument' => $file]);
+                    $project = $this->projectRepository->findOneBy(['termSheet' => $file]);
 
                     break;
 

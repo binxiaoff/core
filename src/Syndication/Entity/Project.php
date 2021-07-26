@@ -265,11 +265,11 @@ class Project implements TraceableStatusAwareInterface
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File", orphanRemoval=true)
-     * @ORM\JoinColumn(name="id_description_document", unique=true)
+     * @ORM\JoinColumn(name="id_term_sheet", unique=true)
      *
      * @Groups({"project:write", "project:read"})
      */
-    private ?File $descriptionDocument = null;
+    private ?File $termSheet = null;
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File")
@@ -612,16 +612,16 @@ class Project implements TraceableStatusAwareInterface
         return $this->description;
     }
 
-    public function setDescriptionDocument(?File $file): Project
+    public function setTermSheet(?File $file): Project
     {
-        $this->descriptionDocument = $file;
+        $this->termSheet = $file;
 
         return $this;
     }
 
-    public function getDescriptionDocument(): ?File
+    public function getTermSheet(): ?File
     {
-        return $this->descriptionDocument;
+        return $this->termSheet;
     }
 
     public function setNda(?File $file): Project
@@ -1157,7 +1157,7 @@ class Project implements TraceableStatusAwareInterface
     public function isMandatoryInformationComplete(): bool
     {
         return $this->syndicationType
-            && ($this->description || $this->descriptionDocument)
+            && ($this->description || $this->termSheet)
             && $this->getTranches()->count() > 0
             && $this->getArrangerProjectParticipation()->getInvitationRequest()->isValid()
             && $this->getPrivilegedContactPerson()->isValid()

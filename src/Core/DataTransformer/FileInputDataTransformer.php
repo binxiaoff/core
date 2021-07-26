@@ -39,17 +39,11 @@ use Unilend\Syndication\Security\Voter\ProjectVoter;
 class FileInputDataTransformer
 {
     private ValidatorInterface $validator;
-
     private Security $security;
-
     private FileUploadManager $fileUploadManager;
-
     private ProjectFileRepository $projectFileRepository;
-
     private ProjectRepository $projectRepository;
-
     private MessageFileRepository $messageFileRepository;
-
     private MessageRepository $messageRepository;
 
     public function __construct(
@@ -220,12 +214,12 @@ class FileInputDataTransformer
 
         switch ($fileInput->type) {
             case Project::PROJECT_FILE_TYPE_DESCRIPTION:
-                $descriptionDocument = $project->getDescriptionDocument();
-                if ($isPublished && null !== $file && null !== $descriptionDocument && $file !== $descriptionDocument) {
-                    static::denyUploadExistingFile($fileInput, $descriptionDocument, $project);
+                $termSheet = $project->getTermSheet();
+                if ($isPublished && null !== $file && null !== $termSheet && $file !== $termSheet) {
+                    static::denyUploadExistingFile($fileInput, $termSheet, $project);
                 }
-                $file = $isPublished && $descriptionDocument ? $descriptionDocument : new File();
-                $project->setDescriptionDocument($file);
+                $file = $isPublished && $termSheet ? $termSheet : new File();
+                $project->setTermSheet($file);
                 // Orphan removal takes care to remove unused file
                 break;
 
