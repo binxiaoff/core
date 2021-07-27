@@ -16,36 +16,18 @@ class ProjectMessageVoter extends AbstractEntityVoter
     public const ATTRIBUTE_CREATE = 'create';
 
     /**
-     * @param ProjectMessage $subject
-     * @param User           $user
-     *
-     * @return bool
-
-     **@throws Exception
-     *
+     * @throws Exception
      */
     protected function canCreate(ProjectMessage $subject, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $subject->getParticipation()->getProject());
     }
 
-    /**
-     * @param ProjectMessage $subject
-     * @param User           $user
-     *
-     * @return bool
-     */
     protected function canEdit(ProjectMessage $subject, User $user): bool
     {
         return $user->getCurrentStaff() === $subject->getAddedBy();
     }
 
-    /**
-     * @param ProjectMessage $subject
-     * @param User           $user
-     *
-     * @return bool
-     */
     protected function canDelete(ProjectMessage $subject, User $user): bool
     {
         return $user->getCurrentStaff() === $subject->getAddedBy();

@@ -17,8 +17,7 @@ class ProjectParticipationStatusVoter extends AbstractEntityVoter
 
     protected function canCreate(ProjectParticipationStatus $projectParticipationStatus, User $user): bool
     {
-        $staff = $user->getCurrentStaff();
-
+        $staff   = $user->getCurrentStaff();
         $company = $staff ? $staff->getCompany() : null;
 
         if (null === $company) {

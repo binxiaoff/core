@@ -12,18 +12,12 @@ class NDASignatureVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_CREATE = 'create';
 
-    /**
-     * @param NDASignature $signature
-     * @param User         $user
-     *
-     * @return bool
-     */
     public function canCreate(NDASignature $signature, User $user): bool
     {
         $staff = $user->getCurrentStaff();
 
-        return $staff &&
-               $staff->getCompany() === $signature->getProjectParticipation()->getParticipant() &&
-               $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $signature->getProjectParticipation());
+        return $staff
+           && $staff->getCompany() === $signature->getProjectParticipation()->getParticipant()
+           && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $signature->getProjectParticipation());
     }
 }

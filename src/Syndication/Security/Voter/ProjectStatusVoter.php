@@ -13,13 +13,10 @@ class ProjectStatusVoter extends AbstractEntityVoter
     public const ATTRIBUTE_CREATE = 'create';
 
     /**
-     * @param ProjectStatus $projectStatus
-     * @param User          $user
-     *
-     * @return bool
+     * @param ProjectStatus $subject
      */
-    protected function isGrantedAll($projectStatus, User $user): bool
+    protected function isGrantedAll($subject, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $projectStatus->getProject());
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $subject->getProject());
     }
 }
