@@ -915,6 +915,11 @@ class Project
         return $this->borrowerConfidentialDrive;
     }
 
+    /**
+     * @Groups({"agency:project:read"})
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
+     */
     public function getAgentParticipation(): Participation
     {
         return $this->findParticipationByParticipant($this->getAgentCompany());
