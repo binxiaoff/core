@@ -687,6 +687,14 @@ class Term
     }
 
     /**
+     * @Groups({"agency:term:read"})
+     */
+    public function getName(): string
+    {
+        return $this->covenant->getName();
+    }
+
+    /**
      * @return bool
      */
     private function isDateValid(DateTimeInterface $dateTime)
