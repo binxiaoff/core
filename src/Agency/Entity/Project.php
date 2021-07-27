@@ -241,7 +241,6 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "agency:tranche:read",
  *             "agency:covenant:read",
  *             "agency:covenantRule:read",
- *             "agency:term:read",
  *             "user:read",
  *         }
  *     }
