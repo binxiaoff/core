@@ -15,6 +15,20 @@ class ParticipationVoter extends AbstractEntityVoter
     public const ATTRIBUTE_VIEW   = 'view';
     public const ATTRIBUTE_DELETE = 'delete';
 
+    public const ATTRIBUTE_DATAROOM = 'dataroom';
+
+    protected function canDataroom(Participation $participation, User $user): bool
+    {
+        $staff = $user->getCurrentStaff();
+
+        if (null === $staff) {
+            return false;
+        }
+
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PARTICIPANT, $participation->getProject())
+        && $staff->getCompany() === $participation->getParticipant();
+    }
+
     protected function canView(Participation $participation, User $user)
     {
         if (false === $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $participation->getProject())) {
