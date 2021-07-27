@@ -99,7 +99,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *         "covenants": {
  *             "path": "/agency/projects/{publicId}/covenants",
  *             "method": "GET",
- *             "security": "is_granted('agent', object)",
+ *             "security": "is_granted('view', object)",
  *             "normalization_context": {
  *                 "groups": {"agency:covenant:read", "agency:inequality:read"},
  *             },
@@ -241,7 +241,6 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "agency:tranche:read",
  *             "agency:covenant:read",
  *             "agency:covenantRule:read",
- *             "agency:term:read",
  *             "user:read",
  *         }
  *     }

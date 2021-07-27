@@ -21,7 +21,8 @@ class CovenantVoter extends AbstractEntityVoter
      */
     protected function canView(Covenant $covenant, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $covenant->getProject());
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $covenant->getProject())
+            && ($covenant->isPublished() || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $covenant->getProject()));
     }
 
     protected function canCreate(Covenant $covenant, User $user): bool
