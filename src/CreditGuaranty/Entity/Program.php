@@ -298,8 +298,6 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     /**
      * @ORM\Column(length=1200, nullable=true)
      *
-     * @Assert\Expression("this.isLoanReleasedOnInvoice() && null !== value")
-     *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private ?string $requestedDocumentsDescription;
