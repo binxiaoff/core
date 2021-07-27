@@ -10,9 +10,6 @@ use Unilend\Syndication\Entity\{ProjectParticipationMember};
 
 class ProjectParticipationMemberVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_EDIT   = 'edit';
-
     /**
      * @param ProjectParticipationMember $subject
      */

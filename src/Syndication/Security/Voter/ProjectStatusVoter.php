@@ -10,8 +10,6 @@ use Unilend\Syndication\Entity\ProjectStatus;
 
 class ProjectStatusVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-
     /**
      * @param ProjectStatus $subject
      */

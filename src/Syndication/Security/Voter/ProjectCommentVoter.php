@@ -10,8 +10,6 @@ use Unilend\Syndication\Entity\ProjectComment;
 
 class ProjectCommentVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_EDIT = 'edit';
-
     protected function canEdit(ProjectComment $projectComment, User $user): bool
     {
         return $projectComment->getUser() === $user;

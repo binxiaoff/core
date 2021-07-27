@@ -10,8 +10,6 @@ use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class ProjectParticipationCollectionVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-
     protected function canCreate(ProjectParticipationCollection $projectParticipationCollection): bool
     {
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $projectParticipationCollection->getProject());
