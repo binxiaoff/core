@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Agency\Command;
 
 use JsonException;
+use Swift_Mailer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -19,40 +20,41 @@ use Unilend\Core\SwiftMailer\MailjetMessage;
 class RemindTermCommand extends Command
 {
     protected static $defaultName = 'kls:agency:remind';
-    private \Swift_Mailer $mailer;
 
+    private Swift_Mailer $mailer;
     private TermRepository $termRepository;
 
-    public function __construct(\Swift_Mailer $mailer, TermRepository $termRepository, string $name = null)
+    public function __construct(Swift_Mailer $mailer, TermRepository $termRepository, string $name = null)
     {
         parent::__construct($name);
+
         $this->mailer         = $mailer;
         $this->termRepository = $termRepository;
+    }
 
+    protected function configure(): void
+    {
         $this->setDescription('Send reminders for terms (1 day before and 1 week before)');
     }
 
     /**
      * @throws JsonException
      */
-    public function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $borrowerUsersByProject = [];
         $agentUsersByProject    = [];
 
-        $terms = $this->termRepository->findBy(
-            [
-                'endDate' => [
-                    (new \DateTimeImmutable('+ 1 day'))->format('Y-m-d'),
-                    (new \DateTimeImmutable('+ 1 week'))->format('Y-m-d'),
-                ],
-                'sharingDate' => null,
-            ]
-        );
+        $terms = $this->termRepository->findBy([
+            'endDate' => [
+                (new \DateTimeImmutable('+ 1 day'))->format('Y-m-d'),
+                (new \DateTimeImmutable('+ 1 week'))->format('Y-m-d'),
+            ],
+            'sharingDate' => null,
+        ]);
 
         foreach ($terms as $term) {
-            $project = $term->getProject();
-
+            $project   = $term->getProject();
             $projectId = $project->getId();
 
             $borrowerUsersByProject[$projectId] = $borrowerUsersByProject[$projectId] ?? $this->getBorrowerUsers($project);
@@ -73,8 +75,7 @@ class RemindTermCommand extends Command
         $terms = $this->termRepository->findBy(['startDate' => new \DateTimeImmutable('today'), 'sharingDate' => null]);
 
         foreach ($terms as $term) {
-            $project = $term->getProject();
-
+            $project   = $term->getProject();
             $projectId = $project->getId();
 
             $borrowerUsersByProject[$projectId] = $borrowerUsersByProject[$projectId] ?? $this->getBorrowerUsers($project);
@@ -85,28 +86,6 @@ class RemindTermCommand extends Command
         }
 
         return Command::SUCCESS;
-    }
-
-    /**
-     * @throws JsonException
-     */
-    private function createMessage(Term $term, User $user, int $templateId): MailjetMessage
-    {
-        $message = new MailjetMessage();
-        $message->setTo($user->getEmail());
-        $message->setTemplateId($templateId);
-        $message->setVars([
-            'covenantName'         => $term->getCovenant()->getName(),
-            'covenantNature'       => $term->getCovenant()->getNature(),
-            'projectRiskGroupName' => $term->getProject()->getRiskGroupName(),
-            'projectTitle'         => $term->getProject()->getTitle(),
-            'termEndDate'          => $term->getEndDate()->format('d/m/Y'),
-            'termStartDate'        => $term->getStartDate()->format('d/m/Y'),
-            'firstName'            => $user->getFirstName(),
-            'lastName'             => $user->getLastName(),
-        ]);
-
-        return $message;
     }
 
     private function getBorrowerUsers(Project $project): iterable
@@ -123,6 +102,27 @@ class RemindTermCommand extends Command
     private function getAgentUsers(Project $project): iterable
     {
         return \array_unique($project->getAgent()->getMembers()->map(fn (AgentMember $member) => $member->getUser())->toArray());
+    }
+
+    /**
+     * @throws JsonException
+     */
+    private function createMessage(Term $term, User $user, int $templateId): MailjetMessage
+    {
+        return (new MailjetMessage())
+            ->setTo($user->getEmail())
+            ->setTemplateId($templateId)
+            ->setVars([
+                'covenantName'         => $term->getCovenant()->getName(),
+                'covenantNature'       => $term->getCovenant()->getNature(),
+                'projectRiskGroupName' => $term->getProject()->getRiskGroupName(),
+                'projectTitle'         => $term->getProject()->getTitle(),
+                'termEndDate'          => $term->getEndDate()->format('d/m/Y'),
+                'termStartDate'        => $term->getStartDate()->format('d/m/Y'),
+                'firstName'            => $user->getFirstName(),
+                'lastName'             => $user->getLastName(),
+            ])
+        ;
     }
 
     /**

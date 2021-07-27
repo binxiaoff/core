@@ -15,69 +15,59 @@ use Unilend\Core\SwiftMailer\MailjetMessage;
 
 class StaffNotifier
 {
-    /** @var Swift_Mailer */
-    private Swift_Mailer $mailer;
-    /** @var TemporaryTokenGenerator */
-    private TemporaryTokenGenerator $temporaryTokenGenerator;
-    /** @var RouterInterface */
     private RouterInterface $router;
-
-    /** @var TranslatorInterface  */
     private TranslatorInterface $translator;
+    private TemporaryTokenGenerator $temporaryTokenGenerator;
+    private Swift_Mailer $mailer;
 
-    /**
-     * @param Swift_Mailer            $mailer
-     * @param TemporaryTokenGenerator $temporaryTokenGenerator
-     * @param RouterInterface         $router
-     * @param TranslatorInterface     $translator
-     */
     public function __construct(
-        Swift_Mailer $mailer,
-        TemporaryTokenGenerator $temporaryTokenGenerator,
         RouterInterface $router,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        TemporaryTokenGenerator $temporaryTokenGenerator,
+        Swift_Mailer $mailer
     ) {
-        $this->mailer                  = $mailer;
+        $this->router                  = $router;
+        $this->translator              = $translator;
         $this->temporaryTokenGenerator = $temporaryTokenGenerator;
-        $this->router = $router;
-        $this->translator = $translator;
+        $this->mailer                  = $mailer;
     }
 
     /**
-     * @param Staff $staff
-     *
-     * @return int
-     *
      * @throws JsonException
      * @throws ORMException
      */
     public function notifyUserInitialisation(Staff $staff): int
     {
         $user = $staff->getUser();
-        if (!$staff->isActive() || false === $user->isInitializationNeeded() || false === $user->isGrantedLogin() || false === $staff->getCompany()->hasSigned()) {
+
+        if (
+            !$staff->isActive()
+            || false === $user->isInitializationNeeded()
+            || false === $user->isGrantedLogin()
+            || false === $staff->getCompany()->hasSigned()
+        ) {
             return 0;
         }
 
         $token = $this->temporaryTokenGenerator->generateUltraLongToken($user)->getToken();
 
-        $translatedCompanyGroupTags = array_map(fn (string $tag) => $this->translator->trans('market-segment.' . $tag), $staff->getCompanyGroupTags());
+        $translatedCompanyGroupTags = \array_map(fn (string $tag) => $this->translator->trans('market-segment.' . $tag), $staff->getCompanyGroupTags());
+
         $message = (new MailjetMessage())
             ->setTo($user->getEmail())
             ->setTemplateId(MailjetMessage::TEMPLATE_STAFF_USER_INITIALISATION)
             ->setVars([
-                    'inscriptionFinalisationUrl' =>
-                        $this->router->generate(
-                            'front_initialAccount',
-                            ['temporaryTokenPublicId' => $token, 'userPublicId' => $user->getPublicId()],
-                            RouterInterface::ABSOLUTE_URL
-                        ),
-                    'marketSegments' => implode(', ', $translatedCompanyGroupTags),
-                    'roles' => $staff->isManager() ? 'manager' : '',
-                    'company_displayName' => $staff->getCompany()->getDisplayName(),
-                    'client_firstName' =>  $user->getFirstName() ?? '',
+                'inscriptionFinalisationUrl' => $this->router->generate(
+                    'front_initialAccount',
+                    ['temporaryTokenPublicId' => $token, 'userPublicId' => $user->getPublicId()],
+                    RouterInterface::ABSOLUTE_URL
+                ),
+                'marketSegments'      => \implode(', ', $translatedCompanyGroupTags),
+                'roles'               => $staff->isManager() ? 'manager' : '',
+                'company_displayName' => $staff->getCompany()->getDisplayName(),
+                'client_firstName'    => $user->getFirstName() ?? '',
             ])
         ;
-
 
         return $this->mailer->send($message);
     }
