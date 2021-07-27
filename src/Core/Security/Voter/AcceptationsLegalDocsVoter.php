@@ -9,8 +9,6 @@ use Unilend\Core\Entity\User;
 
 class AcceptationsLegalDocsVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-
     public function canCreate(AcceptationsLegalDocs $acceptationsLegalDocs, User $submitter): bool
     {
         return $acceptationsLegalDocs->getAcceptedBy() === $submitter;
