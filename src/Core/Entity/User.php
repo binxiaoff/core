@@ -172,16 +172,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     private ?GoogleRecaptchaResult $recaptchaResult = null;
 
     /**
-     * @ORM\OneToOne(targetEntity="HubspotContact", mappedBy="user", orphanRemoval=true)
-     */
-    private ?HubspotContact $hubspotContact = null;
-
-    /**
-     * @ORM\OneToOne(targetEntity="HubspotCompany", mappedBy="user", orphanRemoval=true)
-     */
-    private ?HubspotCompany $hubspotCompany;
-
-    /**
      * Users constructor.
      *
      * @throws Exception
@@ -458,16 +448,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     {
         // Works because there is only one type of legalDocument
         return 0 < \count($this->legalDocumentAcceptations);
-    }
-
-    public function getHubspotContact(): ?HubspotContact
-    {
-        return $this->hubspotContact;
-    }
-
-    public function getHubspotCompany(): ?HubspotCompany
-    {
-        return $this->hubspotCompany;
     }
 
     private function normalizeName(?string $name): ?string

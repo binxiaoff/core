@@ -13,12 +13,12 @@ use Unilend\Core\Service\Hubspot\Client\HubspotClient;
 
 class HubspotManager
 {
-    private HubspotClient $hubspotClient;
+    private HubspotClient $hubspotIntegrationClient;
 
     public function __construct(
-        HubspotClient $hubspotClient
+        HubspotClient $hubspotIntegrationClient
     ) {
-        $this->hubspotClient = $hubspotClient;
+        $this->hubspotIntegrationClient = $hubspotIntegrationClient;
     }
 
     /**
@@ -29,7 +29,7 @@ class HubspotManager
      */
     public function getDailyApiUsage(): array
     {
-        $response = $this->hubspotClient->getDailyUsageApi();
+        $response = $this->hubspotIntegrationClient->getDailyUsageApi();
 
         if (Response::HTTP_OK !== $response->getStatusCode()) {
             return [];

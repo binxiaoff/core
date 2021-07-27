@@ -14,7 +14,7 @@ use Unilend\Core\Service\Hubspot\HubspotManager;
 /**
  * @internal
  *
- * @coversNothing
+ * @coversDefaultClass /Unilend/Core/Service/Hubspot/HubspotManager
  */
 class HubspotManagerTest extends TestCase
 {
@@ -24,6 +24,11 @@ class HubspotManagerTest extends TestCase
     protected function setUp(): void
     {
         $this->hubspotClient = $this->prophesize(HubspotClient::class);
+    }
+
+    protected function tearDown(): void
+    {
+        $this->hubspotClient = null;
     }
 
     public function testGetDailyApiUsage(): void

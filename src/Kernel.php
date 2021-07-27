@@ -22,6 +22,7 @@ class Kernel extends BaseKernel
         $container->import('../config/{packages}/' . $this->environment . '/*.yaml');
         $container->import('../config/{services}.yaml');
         $container->import('../config/{services}_' . $this->environment . '.yaml');
+        $container->import('../config/{services}/' . 'core.yaml');
     }
 
     /**

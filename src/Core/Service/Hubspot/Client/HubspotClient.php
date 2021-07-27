@@ -9,23 +9,18 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class HubspotClient
 {
-    public string $hubspotApiKey;
-    public HttpClientInterface $hubspotClient;
+    private const GET_DAILY_USAGE_URL = 'v1/limit/daily?';
+
+    public HttpClientInterface $hubspotIntegrationClient;
 
     public function __construct(
-        string $hubspotApiKey,
-        HttpClientInterface $hubspotClient
+        HttpClientInterface $hubspotIntegrationClient
     ) {
-        $this->hubspotClient = $hubspotClient;
-        $this->hubspotApiKey = $hubspotApiKey;
+        $this->hubspotIntegrationClient = $hubspotIntegrationClient;
     }
 
     public function getDailyUsageApi(): ResponseInterface
     {
-        return $this->hubspotClient->request('GET', 'https://api.hubapi.com/integrations/v1/limit/daily?', [
-            'query' => [
-                'hapikey' => $this->hubspotApiKey,
-            ],
-        ]);
+        return $this->hubspotIntegrationClient->request('GET', self::GET_DAILY_USAGE_URL, []);
     }
 }

@@ -16,7 +16,6 @@ class GetDailyUsageApiCommand extends Command
     protected static $defaultName = 'kls:hubspot:get-api-usage';
 
     private HubspotManager $hubspotManager;
-    private SymfonyStyle $io;
 
     public function __construct(HubspotManager $hubspotManager)
     {
@@ -25,17 +24,13 @@ class GetDailyUsageApiCommand extends Command
         $this->hubspotManager = $hubspotManager;
     }
 
-    protected function initialize(InputInterface $input, OutputInterface $output): void
-    {
-        $this->io = new SymfonyStyle($input, $output);
-    }
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io         = new SymfonyStyle($input, $output);
         $dailyUsage = $this->hubspotManager->getDailyApiUsage();
 
         if (!$dailyUsage) {
-            $this->io->error('There is an error to get data');
+            $io->error('There is an error to get data');
 
             return self::FAILURE;
         }
