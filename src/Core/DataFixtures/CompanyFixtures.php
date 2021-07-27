@@ -33,10 +33,8 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         self::COMPANY_EXTERNAL,
         self::COMPANY_NOT_SIGNED,
     ];
-    private const COMPANY_NOT_SIGNED            = 'COMPANY_NOT_SIGNED';
-    private const COMPANY_NOT_SIGNED_NO_MEMBERS = 'COMPANY_NOT_SIGNED_NO_MEMBERS';
 
-    private const CA_SHORTCODE = [
+    public const CA_SHORTCODE = [
         'CA Alpes Provence'                => 'CAPR',
         'CA Alsace Vosges'                 => 'ALVO',
         'CA Anjou et Maine'                => 'ANMA',
@@ -80,6 +78,9 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         'CA-CIB'                           => 'CIB',
         'Unifergie'                        => 'CALF',
     ];
+
+    private const COMPANY_NOT_SIGNED            = 'COMPANY_NOT_SIGNED';
+    private const COMPANY_NOT_SIGNED_NO_MEMBERS = 'COMPANY_NOT_SIGNED_NO_MEMBERS';
 
     private const OTHER_SHORTCODE = [
         'BNP Paribas'                                  => 'BNP',
@@ -186,7 +187,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         // Main company
         /** @var User $user */
         $user    = $this->getReference(UserFixtures::ADMIN);
-        $domain  = explode('@', $user->getEmail())[1];
+        $domain  = \explode('@', $user->getEmail())[1];
         $company = $this->createCompany('CA Lending Services', Company::SHORT_CODE_KLS)->setEmailDomain($domain)->setCompanyGroup($CAGroup);
         $this->addReference(self::KLS, $company);
 
@@ -238,11 +239,11 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         $company = (new Company($companyName, $companyName, $this->faker->siren(false)))
             ->setBankCode((string) $this->faker->randomNumber(8, true))
             ->setShortCode($shortcode ?: $this->faker->regexify('[A-Za-z0-9]{10}'))
-            ->setApplicableVat($vatTypes[array_rand($vatTypes)])
+            ->setApplicableVat($vatTypes[\array_rand($vatTypes)])
         ;
 
         $this->forcePublicId($company, Urlizer::urlize(
-            str_replace(['Banque Populaire', "Caisse d'Epargne", 'Crédit Mutuel', 'Banque Entreprises et Institutionnels'], ['BP', 'CE', 'CM', ''], $companyName)
+            \str_replace(['Banque Populaire', "Caisse d'Epargne", 'Crédit Mutuel', 'Banque Entreprises et Institutionnels'], ['BP', 'CE', 'CM', ''], $companyName)
         ));
         $companyStatus = new CompanyStatus($company, $status);
         $company->setCurrentStatus($companyStatus);

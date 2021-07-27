@@ -8,6 +8,7 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\DataFixtures\CompanyFixtures;
+use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Constant\CARegionalBank;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 use Unilend\CreditGuaranty\Entity\Participation;
@@ -20,25 +21,6 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
     public const PARTICIPANT_TOUL = 'CG_PARTICIPANT_TOUL';
     public const PARTICIPANT_SAVO = 'CG_PARTICIPANT_SAVO';
 
-    public function load(ObjectManager $manager): void
-    {
-        /** @var Program $program */
-        foreach ($this->getReferences(ProgramFixtures::ALL_PROGRAMS) as $program) {
-            $CARegionalBanks = CARegionalBank::REGIONAL_BANKS;
-            shuffle($CARegionalBanks);
-            foreach ($this->getParticipants() as $participant) {
-                $participation = new Participation(
-                    $program,
-                    $this->getReference(CompanyFixtures::REFERENCE_PREFIX . str_replace('CG_PARTICIPANT_', '', $participant)),
-                    (string) $this->faker->randomFloat(2, 0, 1)
-                );
-                $manager->persist($participation);
-                $this->setReference($participant, $participation);
-            }
-        }
-        $manager->flush();
-    }
-
     /**
      * @return string[]
      */
@@ -47,7 +29,30 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
         return [ProgramFixtures::class];
     }
 
-    private function getParticipants(): array
+    public function load(ObjectManager $manager): void
+    {
+        /** @var Program $program */
+        foreach ($this->getReferences(ProgramFixtures::ALL_PROGRAMS) as $program) {
+            $CARegionalBanks = CARegionalBank::REGIONAL_BANKS;
+            \shuffle($CARegionalBanks);
+
+            foreach ($this->getParticipantReferences() as $participantReference) {
+                /** @var Company $company */
+                $company       = $this->getReference(CompanyFixtures::REFERENCE_PREFIX . \str_replace('CG_PARTICIPANT_', '', $participantReference));
+                $participation = new Participation(
+                    $program,
+                    $company,
+                    (string) $this->faker->randomFloat(2, 0, 1)
+                );
+
+                $manager->persist($participation);
+                $this->setReference($participantReference, $participation);
+            }
+        }
+        $manager->flush();
+    }
+
+    private function getParticipantReferences(): array
     {
         return self::getConstants('PARTICIPANT_');
     }

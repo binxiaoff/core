@@ -94,7 +94,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
 
         $staffId         = $this->entityManager->getConnection()->lastInsertId();
         $staffActiveCode = StaffStatus::STATUS_ACTIVE;
-        $publicId        = uniqid();
+        $publicId        = \uniqid();
 
         $sql = <<<SQL
                 INSERT INTO core_staff_status
@@ -136,13 +136,14 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
             $this->entityManager->persist($staff);
         }
 
-        // Attach other companies to the other user
-        /** @var Company[] $companies */
-        $companies = $this->getReferences(CompanyFixtures::COMPANIES);
+        // Create staff for CA banks
         /** @var User $participant */
         $participant = $this->getReference(UserFixtures::PARTICIPANT);
 
-        foreach ($companies as $company) {
+        foreach (CompanyFixtures::CA_SHORTCODE as $companyShortCode) {
+            /** @var Company $company */
+            $company = $this->getReference('company:' . $companyShortCode);
+
             if ($company !== $adminCompany) {
                 $staff = $this->createStaffWithCompany($participant, $company);
                 $this->addStaffReference($staff);
@@ -171,7 +172,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $this->addAllCompanyGroupTag($manyStaffAdminStaff);
         $this->entityManager->persist($manyStaffAdminStaff);
 
-        foreach (range(0, 50) as $i) {
+        foreach (\range(0, 50) as $i) {
             $user = new User($this->faker->email);
             $this->entityManager->persist($user);
 
