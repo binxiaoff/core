@@ -1,0 +1,12 @@
+parameters:
+    hubspot.api.key: '%env(HUBSPOT_API_KEY)%'
+    hubspot.base_uri: '%env(HUBSPOT_BASE_URI)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        bind:
+            string $hubspotApiKey: '%hubspot.api.key%'
+
+    Unilend\Core\Service\Hubspot\Client\HubspotClient: ~

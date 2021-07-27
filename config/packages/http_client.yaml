@@ -5,4 +5,4 @@ framework:
             psn.client:
                 base_uri: '%psn.base_uri%'
             hubspot.client:
-                base_uri: 'https://api.hubapi.com/crm/v3/objects/'
+                base_uri: '%hubspot.base_uri%'
