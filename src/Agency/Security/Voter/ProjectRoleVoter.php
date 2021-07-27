@@ -28,11 +28,8 @@ class ProjectRoleVoter extends Voter
     public const ROLE_SECONDARY_PARTICIPANT = 'secondary_participant';
 
     private BorrowerMemberRepository $borrowerMemberRepository;
-
     private ParticipationMemberRepository $participationMemberRepository;
-
     private UserRepository $userRepository;
-
     private AgentMemberRepository $agentMemberRepository;
 
     public function __construct(
@@ -52,16 +49,13 @@ class ProjectRoleVoter extends Voter
         return static::getConstants('ROLE_');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function supports(string $attribute, $subject): bool
     {
         return $subject instanceof Project && \in_array($attribute, static::getAvailableRoles(), true);
     }
 
     /**
-     * {@inheritDoc}
+     * @param Project $subject
      *
      * @throws NonUniqueResultException
      */

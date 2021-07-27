@@ -12,26 +12,6 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class ProjectVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_DELETE = 'delete';
-
-    /**
-     * @throws Exception
-     */
-    protected function canView(Project $project, User $user): bool
-    {
-        // It might be interesting to copy this code in place of $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $project);.
-        foreach (ProjectRoleVoter::getAvailableRoles() as $role) {
-            if ($this->authorizationChecker->isGranted($role, $project)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     /**
      * Do not use can{Role} because object is not yet in database.
      */
@@ -47,6 +27,21 @@ class ProjectVoter extends AbstractEntityVoter
         return $staff->getCompany() === $project->getAgentCompany()
             && $staff->hasAgencyProjectCreationPermission()
             && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_AGENCY);
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function canView(Project $project, User $user): bool
+    {
+        // It might be interesting to copy this code in place of $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $project);.
+        foreach (ProjectRoleVoter::getAvailableRoles() as $role) {
+            if ($this->authorizationChecker->isGranted($role, $project)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function canEdit(Project $project, User $user): bool

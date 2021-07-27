@@ -10,16 +10,14 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class TrancheVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_DELETE = 'delete';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_CREATE = 'create';
-
     /**
-     * @param Tranche $tranche
+     * @param Tranche $subject
      */
-    protected function isGrantedAll($tranche, User $user): bool
+    protected function isGrantedAll($subject, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $tranche->getProject())
-            && $tranche->getProject()->isEditable();
+        $project = $subject->getProject();
+
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
+            && $project->isEditable();
     }
 }
