@@ -4,23 +4,35 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource, ApiSubresource};
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
-use Symfony\Component\Validator\{Constraints as Assert, Context\ExecutionContextInterface};
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\Interfaces\{MoneyInterface, StatusInterface, TraceableStatusAwareInterface};
-use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Core\Entity\{Company, File, Staff};
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
+use Unilend\Core\Entity\Interfaces\StatusInterface;
+use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Core\Traits\ConstantsAwareTrait;
-use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithFee};
+use Unilend\Syndication\Entity\Embeddable\Offer;
+use Unilend\Syndication\Entity\Embeddable\OfferWithFee;
+use Unilend\Syndication\Entity\Embeddable\RangedOfferWithFee;
 
 /**
  * @ApiResource(
@@ -127,8 +139,8 @@ use Unilend\Syndication\Entity\Embeddable\{Offer, OfferWithFee, RangedOfferWithF
  *         "delete": {"security": "is_granted('delete', object)"},
  *         "put": {"security": "is_granted('edit', object)"},
  *         "patch": {
- *            "security": "is_granted('edit', object)",
- *            "denormalization_context": {"groups": {
+ *             "security": "is_granted('edit', object)",
+ *             "denormalization_context": {"groups": {
  *                 "projectParticipationTranche:write",
  *                 "projectParticipationMember:write",
  *                 "projectParticipationStatus:create",
@@ -181,8 +193,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public const INVITATION_REPLY_MODE_CUSTOMIZED = 'customized';
 
     /**
-     * @var Project
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Project", inversedBy="projectParticipations")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
@@ -195,8 +205,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private Project $project;
 
     /**
-     * @var Company
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
      * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      *
@@ -207,8 +215,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private Company $participant;
 
     /**
-     * @var ProjectParticipationStatus|null
-     *
      * @ORM\OneToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipationStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
@@ -229,8 +235,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * Participant committee response deadline if the status = "pended".
      *
-     * @var DateTimeImmutable|null
-     *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Gedmo\Versioned
@@ -244,8 +248,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private ?DateTimeImmutable $committeeDeadline = null;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="text", nullable=true)
      *
      * @Gedmo\Versioned
@@ -260,8 +262,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
 
     /**
      * Marque d'interet sollicitation envoyé par l'arrangeur au participant.
-     *
-     * @var RangedOfferWithFee
      *
      * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\RangedOfferWithFee")
      *
@@ -279,8 +279,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
 
     /**
      * Réponse de la sollicitation de l'arrangeur envoyé au participant.
-     *
-     * @var Offer
      *
      * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\Offer")
      *
@@ -304,8 +302,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * Réponse ferme : Invitation envoyé par l'arrangeur au participant.
      *
-     * @var OfferWithFee
-     *
      * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\OfferWithFee")
      *
      * @Assert\Valid
@@ -317,8 +313,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private OfferWithFee $invitationRequest;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(length=10, nullable=true)
      *
      * @Assert\Choice(callback="getPossibleInvitationReplyMode")
@@ -330,8 +324,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private ?string $invitationReplyMode = null;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
@@ -344,8 +336,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private ?string $allocationFeeRate = null;
 
     /**
-     * @var DateTimeImmutable|null
-     *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
@@ -362,16 +352,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
      */
     private Collection $projectParticipationMembers;
-
-    /**
-     * @var Collection|ProjectMessage[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectMessage", mappedBy="participation")
-     * @ORM\OrderBy({"added": "ASC"})
-     *
-     * @ApiSubresource
-     */
-    private Collection $messages;
 
     /**
      * @var Collection|ProjectParticipationTranche[]
@@ -395,8 +375,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private Collection $statuses;
 
     /**
-     * @var File|null
-     *
      * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File")
      * @ORM\JoinColumn(name="id_nda")
      *
@@ -417,59 +395,45 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private iterable $ndaSignatures;
 
     /**
-     * @param Company $participant
-     * @param Project $project
-     * @param Staff   $addedBy
-     *
      * @throws Exception
      */
     public function __construct(Company $participant, Project $project, Staff $addedBy)
     {
         $this->project                      = $project;
-
         $this->added                        = new DateTimeImmutable();
         $this->addedBy                      = $addedBy;
         $this->participant                  = $participant;
-        $this->messages                     = new ArrayCollection();
         $this->statuses                     = new ArrayCollection();
         $this->projectParticipationTranches = new ArrayCollection();
         $this->interestRequest              = new RangedOfferWithFee();
         $this->interestReply                = new Offer();
         $this->invitationRequest            = new OfferWithFee();
-        $this->ndaSignatures                = new ArrayCollection([]);
-        $this->projectParticipationMembers  = new ArrayCollection([]);
-
+        $this->ndaSignatures                = new ArrayCollection();
+        $this->projectParticipationMembers  = new ArrayCollection();
 
         $this->setCurrentStatus(new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_CREATED, $addedBy));
     }
 
-    /**
-     * @return array
-     */
     public static function getFileTypes(): array
     {
         return [static::PROJECT_PARTICIPATION_FILE_TYPE_NDA];
     }
 
-    /**
-     * @return Project
-     */
+    public static function getPossibleInvitationReplyMode(): array
+    {
+        return static::getConstants('INVITATION_REPLY_MODE_');
+    }
+
     public function getProject(): Project
     {
         return $this->project;
     }
 
-    /**
-     * @return Company
-     */
     public function getParticipant(): Company
     {
         return $this->participant;
     }
 
-    /**
-     * @return ProjectParticipationStatus|null
-     */
     public function getCurrentStatus(): ?ProjectParticipationStatus
     {
         return $this->currentStatus;
@@ -477,8 +441,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
 
     /**
      * @param ProjectParticipationStatus|StatusInterface $currentStatus
-     *
-     * @return ProjectParticipation
      */
     public function setCurrentStatus(StatusInterface $currentStatus): ProjectParticipation
     {
@@ -488,8 +450,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return DateTimeImmutable|null
-     *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
      */
     public function getParticipantLastConsulted(): ?DateTimeImmutable
@@ -497,11 +457,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         return $this->participantLastConsulted;
     }
 
-    /**
-     * @param DateTimeImmutable|null $participantLastConsulted
-     *
-     * @return ProjectParticipation
-     */
     public function setParticipantLastConsulted(?DateTimeImmutable $participantLastConsulted): ProjectParticipation
     {
         $this->participantLastConsulted = $participantLastConsulted;
@@ -509,19 +464,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return DateTimeImmutable|null
-     */
     public function getCommitteeDeadline(): ?DateTimeImmutable
     {
         return $this->committeeDeadline;
     }
 
-    /**
-     * @param DateTimeImmutable|null $committeeDeadline
-     *
-     * @return ProjectParticipation
-     */
     public function setCommitteeDeadline(?DateTimeImmutable $committeeDeadline): ProjectParticipation
     {
         $this->committeeDeadline = $committeeDeadline;
@@ -529,19 +476,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getCommitteeComment(): ?string
     {
         return $this->committeeComment;
     }
 
-    /**
-     * @param string|null $committeeComment
-     *
-     * @return ProjectParticipation
-     */
     public function setCommitteeComment(?string $committeeComment): ProjectParticipation
     {
         $this->committeeComment = $committeeComment;
@@ -549,19 +488,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return RangedOfferWithFee
-     */
     public function getInterestRequest(): RangedOfferWithFee
     {
         return $this->interestRequest;
     }
 
-    /**
-     * @param RangedOfferWithFee $interestRequest
-     *
-     * @return ProjectParticipation
-     */
     public function setInterestRequest(RangedOfferWithFee $interestRequest): ProjectParticipation
     {
         $this->interestRequest = $interestRequest;
@@ -569,19 +500,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return Offer
-     */
     public function getInterestReply(): Offer
     {
         return $this->interestReply;
     }
 
-    /**
-     * @param Offer $interestReply
-     *
-     * @return ProjectParticipation
-     */
     public function setInterestReply(Offer $interestReply): ProjectParticipation
     {
         $this->interestReply = $interestReply;
@@ -589,19 +512,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return OfferWithFee
-     */
     public function getInvitationRequest(): OfferWithFee
     {
         return $this->invitationRequest;
     }
 
-    /**
-     * @param OfferWithFee $invitationRequest
-     *
-     * @return ProjectParticipation
-     */
     public function setInvitationRequest(OfferWithFee $invitationRequest): ProjectParticipation
     {
         $this->invitationRequest = $invitationRequest;
@@ -609,19 +524,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getInvitationReplyMode(): ?string
     {
         return $this->invitationReplyMode;
     }
 
-    /**
-     * @param string|null $invitationReplyMode
-     *
-     * @return ProjectParticipation
-     */
     public function setInvitationReplyMode(?string $invitationReplyMode): ProjectParticipation
     {
         $this->invitationReplyMode = $invitationReplyMode;
@@ -629,19 +536,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getAllocationFeeRate(): ?string
     {
         return $this->allocationFeeRate;
     }
 
-    /**
-     * @param string|null $allocationFeeRate
-     *
-     * @return ProjectParticipation
-     */
     public function setAllocationFeeRate(?string $allocationFeeRate): ProjectParticipation
     {
         $this->allocationFeeRate = $allocationFeeRate;
@@ -667,11 +566,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         });
     }
 
-    /**
-     * @param ProjectParticipationMember $projectParticipationMember
-     *
-     * @return ProjectParticipation
-     */
     public function addProjectParticipationMember(ProjectParticipationMember $projectParticipationMember): ProjectParticipation
     {
         if (false === $this->projectParticipationMembers->contains($projectParticipationMember)) {
@@ -682,14 +576,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @return Collection|ProjectMessage[]
-     */
-    public function getMessages(): Collection
-    {
-        return $this->messages;
-    }
-
-    /**
      * @return Collection|ProjectParticipationStatus[]
      */
     public function getStatuses(): Collection
@@ -697,9 +583,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         return $this->statuses;
     }
 
-    /**
-     * @return bool
-     */
     public function isActive(): bool
     {
         return $this->getCurrentStatus() && 0 < $this->getCurrentStatus()->getStatus();
@@ -715,8 +598,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
 
     /**
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
-     *
-     * @return MoneyInterface
      */
     public function getTotalInvitationReply(): MoneyInterface
     {
@@ -730,8 +611,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
 
     /**
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
-     *
-     * @return MoneyInterface
      */
     public function getTotalAllocation(): MoneyInterface
     {
@@ -743,27 +622,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         return $totalAllocation;
     }
 
-    /**
-     * @return array
-     */
-    public static function getPossibleInvitationReplyMode(): array
-    {
-        return static::getConstants('INVITATION_REPLY_MODE_');
-    }
-
-    /**
-     * @return File|null
-     */
     public function getNda(): ?File
     {
         return $this->nda;
     }
 
-    /**
-     * @param File|null $nda
-     *
-     * @return ProjectParticipation
-     */
     public function setNda(?File $nda): ProjectParticipation
     {
         $this->nda = $nda;
@@ -771,11 +634,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @param ProjectParticipationTranche $projectParticipationTranche
-     *
-     * @return ProjectParticipation
-     */
     public function addProjectParticipationTranche(ProjectParticipationTranche $projectParticipationTranche): ProjectParticipation
     {
         if (false === $this->hasProjectParticipationTranche($projectParticipationTranche)) {
@@ -791,19 +649,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @param ProjectParticipationTranche $projectParticipationTranche
-     *
-     * @return bool
-     */
     public function hasProjectParticipationTranche(ProjectParticipationTranche $projectParticipationTranche): bool
     {
-        return ($this->projectParticipationTranches->contains($projectParticipationTranche));
+        return $this->projectParticipationTranches->contains($projectParticipationTranche);
     }
 
-    /**
-     * @return bool
-     */
     public function isArrangerParticipation(): bool
     {
         return $this->getParticipant() === $this->getProject()->getArranger();
@@ -818,125 +668,6 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     }
 
     /**
-     * @Assert\Callback()
-     *
-     * @param ExecutionContextInterface $context
-     */
-    public function validateSendingInvitation(ExecutionContextInterface $context): void
-    {
-        if ($this->getProject()->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION)) {
-            if ((null === $this->getInvitationRequest() || false === $this->invitationRequest->isValid())) {
-                $context->buildViolation('Syndication.ProjectParticipation.invitationRequest.invalid')
-                    ->atPath('invitationRequest')
-                    ->addViolation();
-            }
-
-            if ($this->projectParticipationTranches->isEmpty() && $this->getCurrentStatus()->getStatus() > 0) {
-                $context->buildViolation('Syndication.ProjectParticipation.projectParticipationTranches.required')
-                    ->atPath('projectParticipationTranches')
-                    ->addViolation();
-            }
-        }
-    }
-
-    /**
-     * @Assert\Callback()
-     *
-     * @param ExecutionContextInterface $context
-     */
-    public function validateProjectParticipationTranches(ExecutionContextInterface $context): void
-    {
-        foreach ($this->projectParticipationTranches as $index => $participationTranche) {
-            if ($participationTranche->getProjectParticipation() !== $this) {
-                $context->buildViolation('Syndication.ProjectParticipation.projectParticipationTranches.incorrectParticipation')
-                    ->atPath("projectParticipationTranches[$index]")
-                    ->addViolation();
-            }
-        }
-    }
-
-    /**
-     * @Assert\Callback()
-     *
-     * @param ExecutionContextInterface $context
-     */
-    public function validateProjectParticipationMembers(ExecutionContextInterface $context): void
-    {
-        foreach ($this->projectParticipationMembers as $index => $participationMember) {
-            if ($participationMember->getProjectParticipation() !== $this) {
-                $context->buildViolation('Syndication.ProjectParticipation.projectParticipationMembers.incorrectParticipation')
-                    ->atPath("projectParticipationMembers[$index]")
-                    ->addViolation();
-            }
-        }
-    }
-
-    /**
-     * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
-     */
-    public function validateCommitteeDeadline(ExecutionContextInterface $context): void
-    {
-        if (null === $this->committeeDeadline && ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $this->currentStatus->getStatus()) {
-            $context->buildViolation('Syndication.ProjectParticipation.committeeDeadline.required')
-                ->atPath('committeeDeadline')
-                ->addViolation();
-        }
-    }
-
-    /**
-     * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
-     */
-    public function validateCurrencyConsistency(ExecutionContextInterface $context): void
-    {
-        $globalFundingMoney = $this->getProject()->getGlobalFundingMoney();
-
-        if (MoneyCalculator::isDifferentCurrency($this->interestRequest->getMoney(), $globalFundingMoney)) {
-            $context->buildViolation('Core.Money.currency.inconsistent')
-                ->atPath('interestRequest.money')
-                ->addViolation();
-        }
-
-        if (MoneyCalculator::isDifferentCurrency($this->interestRequest->getMaxMoney(), $globalFundingMoney)) {
-            $context->buildViolation('Core.Money.currency.inconsistent')
-                ->atPath('interestRequest.maxMoney')
-                ->addViolation();
-        }
-
-        if (MoneyCalculator::isDifferentCurrency($this->interestReply->getMoney(), $globalFundingMoney)) {
-            $context->buildViolation('Core.Money.currency.inconsistent')
-                ->atPath('interestReply')
-                ->addViolation();
-        }
-
-        if (MoneyCalculator::isDifferentCurrency($this->invitationRequest->getMoney(), $globalFundingMoney)) {
-            $context->buildViolation('Core.Money.currency.inconsistent')
-                ->atPath('invitationRequest')
-                ->addViolation();
-        }
-    }
-
-    /**
-     * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
-     */
-    public function validateMaxMoney(ExecutionContextInterface $context): void
-    {
-        $interestMaxAmount = $this->interestRequest->getMaxMoney();
-        if (null !== $interestMaxAmount->getAmount() && 1 !== MoneyCalculator::compare($interestMaxAmount, $this->interestRequest->getMoney())) {
-            $context->buildViolation('Core.Money.currency.maxMoney')
-                ->atPath('interestRequest.maxMoney')
-                ->addViolation();
-        }
-    }
-
-    /**
-     * @return FileVersion|null
-     *
      * @Groups({"projectParticipationMember:read"})
      */
     public function getAcceptableNdaVersion(): ?FileVersion
@@ -952,5 +683,120 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public function getNDASignatures(): iterable
     {
         return $this->ndaSignatures;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateSendingInvitation(ExecutionContextInterface $context): void
+    {
+        if ($this->getProject()->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION)) {
+            if ((null === $this->getInvitationRequest() || false === $this->invitationRequest->isValid())) {
+                $context->buildViolation('Syndication.ProjectParticipation.invitationRequest.invalid')
+                    ->atPath('invitationRequest')
+                    ->addViolation()
+                ;
+            }
+
+            if ($this->projectParticipationTranches->isEmpty() && $this->getCurrentStatus()->getStatus() > 0) {
+                $context->buildViolation('Syndication.ProjectParticipation.projectParticipationTranches.required')
+                    ->atPath('projectParticipationTranches')
+                    ->addViolation()
+                ;
+            }
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateProjectParticipationTranches(ExecutionContextInterface $context): void
+    {
+        foreach ($this->projectParticipationTranches as $index => $participationTranche) {
+            if ($participationTranche->getProjectParticipation() !== $this) {
+                $context->buildViolation('Syndication.ProjectParticipation.projectParticipationTranches.incorrectParticipation')
+                    ->atPath("projectParticipationTranches[{$index}]")
+                    ->addViolation()
+                ;
+            }
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateProjectParticipationMembers(ExecutionContextInterface $context): void
+    {
+        foreach ($this->projectParticipationMembers as $index => $participationMember) {
+            if ($participationMember->getProjectParticipation() !== $this) {
+                $context->buildViolation('Syndication.ProjectParticipation.projectParticipationMembers.incorrectParticipation')
+                    ->atPath("projectParticipationMembers[{$index}]")
+                    ->addViolation()
+                ;
+            }
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateCommitteeDeadline(ExecutionContextInterface $context): void
+    {
+        if (null === $this->committeeDeadline && ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $this->currentStatus->getStatus()) {
+            $context->buildViolation('Syndication.ProjectParticipation.committeeDeadline.required')
+                ->atPath('committeeDeadline')
+                ->addViolation()
+            ;
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateCurrencyConsistency(ExecutionContextInterface $context): void
+    {
+        $globalFundingMoney = $this->getProject()->getGlobalFundingMoney();
+
+        if (MoneyCalculator::isDifferentCurrency($this->interestRequest->getMoney(), $globalFundingMoney)) {
+            $context->buildViolation('Core.Money.currency.inconsistent')
+                ->atPath('interestRequest.money')
+                ->addViolation()
+            ;
+        }
+
+        if (MoneyCalculator::isDifferentCurrency($this->interestRequest->getMaxMoney(), $globalFundingMoney)) {
+            $context->buildViolation('Core.Money.currency.inconsistent')
+                ->atPath('interestRequest.maxMoney')
+                ->addViolation()
+            ;
+        }
+
+        if (MoneyCalculator::isDifferentCurrency($this->interestReply->getMoney(), $globalFundingMoney)) {
+            $context->buildViolation('Core.Money.currency.inconsistent')
+                ->atPath('interestReply')
+                ->addViolation()
+            ;
+        }
+
+        if (MoneyCalculator::isDifferentCurrency($this->invitationRequest->getMoney(), $globalFundingMoney)) {
+            $context->buildViolation('Core.Money.currency.inconsistent')
+                ->atPath('invitationRequest')
+                ->addViolation()
+            ;
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateMaxMoney(ExecutionContextInterface $context): void
+    {
+        $interestMaxAmount = $this->interestRequest->getMaxMoney();
+        if (null !== $interestMaxAmount->getAmount() && 1 !== MoneyCalculator::compare($interestMaxAmount, $this->interestRequest->getMoney())) {
+            $context->buildViolation('Core.Money.currency.maxMoney')
+                ->atPath('interestRequest.maxMoney')
+                ->addViolation()
+            ;
+        }
     }
 }
