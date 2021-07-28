@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Agency\Entity;
 
-use ApiPlatform\Core\Action\NotFoundAction;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -33,9 +32,7 @@ use Unilend\Core\Entity\Embeddable\NullablePerson;
  *     collectionOperations={},
  *     itemOperations={
  *         "get": {
- *             "controller": NotFoundAction::class,
- *             "read": false,
- *             "output": false,
+ *             "security": "is_granted('view', object)"
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
@@ -46,7 +43,7 @@ use Unilend\Core\Entity\Embeddable\NullablePerson;
  *         "get_agent_dataroom": {
  *             "method": "GET",
  *             "path": "/agency/agent/{publicId}/dataroom/{path?}",
- *             "security": "is_granted('agent', object)",
+ *             "security": "is_granted('edit', object)",
  *             "controller": Get::class,
  *             "requirements": {
  *                 "path": ".+"
@@ -62,7 +59,7 @@ use Unilend\Core\Entity\Embeddable\NullablePerson;
  *         "post_agent_dataroom": {
  *             "method": "POST",
  *             "path": "/agency/agent/{publicId}/dataroom/{path?}",
- *             "security": "is_granted('agent', object)",
+ *             "security": "is_granted('edit', object)",
  *             "deserialize": false,
  *             "controller": Post::class,
  *             "requirements": {
@@ -79,7 +76,7 @@ use Unilend\Core\Entity\Embeddable\NullablePerson;
  *         "delete_agent_dataroom": {
  *             "method": "DELETE",
  *             "path": "/agency/agent/{publicId}/dataroom/{path?}",
- *             "security": "is_granted('agent', object)",
+ *             "security": "is_granted('edit', object)",
  *             "deserialize": false,
  *             "controller": Delete::class,
  *             "requirements": {
