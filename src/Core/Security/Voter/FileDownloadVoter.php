@@ -30,18 +30,11 @@ use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class FileDownloadVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-
     private FileVersionSignatureRepository $fileVersionSignatureRepository;
-
     private ProjectFileRepository $projectFileRepository;
-
     private ProjectRepository $projectRepository;
-
     private ProjectParticipationRepository $projectParticipationRepository;
-
     private MessageFileRepository $messageFileRepository;
-
     private TermRepository $termRepository;
 
     public function __construct(
@@ -63,11 +56,11 @@ class FileDownloadVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param FileDownload $fileDownload
+     * @param FileDownload $subject
      */
-    protected function fulfillPreconditions($fileDownload, User $user): bool
+    protected function fulfillPreconditions($subject, User $user): bool
     {
-        return $fileDownload->getFileVersion()->getFile() && $fileDownload->getFileVersion() === $fileDownload->getFileVersion()->getFile()->getCurrentFileVersion();
+        return $subject->getFileVersion()->getFile() && $subject->getFileVersion() === $subject->getFileVersion()->getFile()->getCurrentFileVersion();
     }
 
     protected function canCreate(FileDownload $fileDownload, User $user): bool
@@ -119,7 +112,7 @@ class FileDownloadVoter extends AbstractEntityVoter
                     break;
 
                 default:
-                    throw new InvalidArgumentException(sprintf('The type %s is not supported.', $type));
+                    throw new InvalidArgumentException(\sprintf('The type %s is not supported.', $type));
             }
         }
 
@@ -182,7 +175,7 @@ class FileDownloadVoter extends AbstractEntityVoter
     private function isAddedBeforeOfferCollected(Project $project, FileVersion $fileVersion): bool
     {
         $statuses  = $project->getStatuses();
-        $lastIndex = count($statuses) - 1;
+        $lastIndex = \count($statuses) - 1;
         /** @var int $i */
         for ($i = $lastIndex; $i <= 0; --$i) {
             $status = $statuses[$i];

@@ -11,9 +11,6 @@ use Unilend\Core\Repository\CompanyAdminRepository;
 
 class CompanyModuleVoter extends AbstractEntityVoter
 {
-    /** @var string */
-    public const ATTRIBUTE_EDIT = 'edit';
-
     private CompanyAdminRepository $companyAdminRepository;
 
     public function __construct(AuthorizationCheckerInterface $authorizationChecker, CompanyAdminRepository $companyAdminRepository)
@@ -25,14 +22,13 @@ class CompanyModuleVoter extends AbstractEntityVoter
     /**
      * @param Staff $subject
      */
-    protected function isGrantedAll($subject, User $submitterUser): bool
+    protected function isGrantedAll($subject, User $user): bool
     {
         $company = $subject->getCompany();
-
-        $staff = $submitterUser->getCurrentStaff();
+        $staff   = $user->getCurrentStaff();
 
         return $staff instanceof Staff
             && $staff->getCompany() === $company
-            && null !== $this->companyAdminRepository->findOneBy(['company' => $company, 'user' => $submitterUser]);
+            && null !== $this->companyAdminRepository->findOneBy(['company' => $company, 'user' => $user]);
     }
 }
