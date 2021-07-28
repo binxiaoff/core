@@ -16,11 +16,6 @@ use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ProjectParticipationVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_DELETE = 'delete';
-
     public const ATTRIBUTE_SENSITIVE_VIEW = 'sensitive_view';
     public const ATTRIBUTE_ADMIN_VIEW     = 'admin_view';
 
@@ -40,6 +35,23 @@ class ProjectParticipationVoter extends AbstractEntityVoter
     protected function fulfillPreconditions($subject, User $user): bool
     {
         return null !== $user->getCurrentStaff();
+    }
+
+    protected function canCreate(ProjectParticipation $subject, User $user): bool
+    {
+        // $subject->getParticipant()->isCAGMember() should be changed when other group banks use platform
+        $staff = $user->getCurrentStaff();
+
+        if (false === $staff instanceof Staff) {
+            return false;
+        }
+
+        $project = $subject->getProject();
+
+        $arrangerParticipation = $project->getArrangerProjectParticipation();
+
+        return $this->hasPermissionEffective($arrangerParticipation, $staff, ProjectParticipationMember::PERMISSION_WRITE)
+            && ($subject->getParticipant()->isCAGMember() || $subject->getProject()->getArranger()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT_EXTERNAL_BANK));
     }
 
     protected function canView(ProjectParticipation $subject, User $user): bool
@@ -110,23 +122,6 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             && $project->isPublished()
             && $project->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION
             && $this->hasPermissionEffective($projectParticipation, $staff, ProjectParticipationMember::PERMISSION_WRITE);
-    }
-
-    protected function canCreate(ProjectParticipation $subject, User $user): bool
-    {
-        // $subject->getParticipant()->isCAGMember() should be changed when other group banks use platform
-        $staff = $user->getCurrentStaff();
-
-        if (false === $staff instanceof Staff) {
-            return false;
-        }
-
-        $project = $subject->getProject();
-
-        $arrangerParticipation = $project->getArrangerProjectParticipation();
-
-        return $this->hasPermissionEffective($arrangerParticipation, $staff, ProjectParticipationMember::PERMISSION_WRITE)
-            && ($subject->getParticipant()->isCAGMember() || $subject->getProject()->getArranger()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT_EXTERNAL_BANK));
     }
 
     protected function canDelete(ProjectParticipation $projectParticipation, User $user): bool

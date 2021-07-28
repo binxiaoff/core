@@ -10,8 +10,6 @@ use Unilend\Syndication\Entity\NDASignature;
 
 class NDASignatureVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-
     public function canCreate(NDASignature $signature, User $user): bool
     {
         $staff = $user->getCurrentStaff();

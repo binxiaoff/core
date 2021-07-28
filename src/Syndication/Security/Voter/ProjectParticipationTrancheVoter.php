@@ -11,14 +11,7 @@ use Unilend\Syndication\Entity\ProjectParticipationTranche;
 
 class ProjectParticipationTrancheVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE         = 'create';
-    public const ATTRIBUTE_EDIT           = 'edit';
     public const ATTRIBUTE_SENSITIVE_VIEW = 'sensitive_view';
-
-    protected function canSensitiveView(ProjectParticipationTranche $projectParticipationTranche, User $user): bool
-    {
-        return $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $projectParticipationTranche->getProjectParticipation());
-    }
 
     protected function canCreate(ProjectParticipationTranche $projectParticipationTranche, User $user): bool
     {
@@ -40,5 +33,10 @@ class ProjectParticipationTrancheVoter extends AbstractEntityVoter
         $projectParticipation = $projectParticipationTranche->getProjectParticipation();
 
         return $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $projectParticipation);
+    }
+
+    protected function canSensitiveView(ProjectParticipationTranche $projectParticipationTranche, User $user): bool
+    {
+        return $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $projectParticipationTranche->getProjectParticipation());
     }
 }

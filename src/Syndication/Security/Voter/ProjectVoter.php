@@ -16,17 +16,12 @@ use Unilend\Syndication\Service\Project\ProjectManager;
 
 class ProjectVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW       = 'view';
     public const ATTRIBUTE_VIEW_NDA   = 'view_nda';
     public const ATTRIBUTE_ADMIN_VIEW = 'admin_view';
-    public const ATTRIBUTE_EDIT       = 'edit';
     public const ATTRIBUTE_COMMENT    = 'comment';
-    public const ATTRIBUTE_CREATE     = 'create';
-    public const ATTRIBUTE_DELETE     = 'delete';
-
-    private ProjectManager $projectManager;
 
     private ProjectParticipationRepository $projectParticipationRepository;
+    private ProjectManager $projectManager;
 
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
@@ -36,6 +31,15 @@ class ProjectVoter extends AbstractEntityVoter
         parent::__construct($authorizationChecker);
         $this->projectParticipationRepository = $projectParticipationRepository;
         $this->projectManager                 = $projectManager;
+    }
+
+    protected function canCreate(Project $project, User $user): bool
+    {
+        $staff = $user->getCurrentStaff();
+
+        return $staff
+            && $staff->hasArrangementProjectCreationPermission()
+            && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT);
     }
 
     /**
@@ -75,15 +79,6 @@ class ProjectVoter extends AbstractEntityVoter
             && $project->getArranger() === $staff->getCompany();
     }
 
-    protected function canCreate(Project $project, User $user): bool
-    {
-        $staff = $user->getCurrentStaff();
-
-        return $staff
-            && $staff->hasArrangementProjectCreationPermission()
-            && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT);
-    }
-
     /**
      * @throws Exception
      */
@@ -118,14 +113,6 @@ class ProjectVoter extends AbstractEntityVoter
     /**
      * @throws Exception
      */
-    protected function canComment(Project $project, User $user): bool
-    {
-        return $this->canView($project, $user);
-    }
-
-    /**
-     * @throws Exception
-     */
     protected function canDelete(Project $project, User $user): bool
     {
         $staff = $user->getCurrentStaff();
@@ -137,5 +124,13 @@ class ProjectVoter extends AbstractEntityVoter
         return $staff
             && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $project->getArrangerProjectParticipation())
             && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function canComment(Project $project, User $user): bool
+    {
+        return $this->canView($project, $user);
     }
 }
