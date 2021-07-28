@@ -35,6 +35,9 @@ class ProgramRoleVoter extends Voter
         return $subject instanceof Program && \in_array($attribute, static::getAvailableRoles(), true);
     }
 
+    /**
+     * @param Program $subject
+     */
     protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
     {
         $staff = $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;

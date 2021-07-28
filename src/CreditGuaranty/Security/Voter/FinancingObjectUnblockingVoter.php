@@ -9,10 +9,6 @@ use Unilend\CreditGuaranty\Entity\FinancingObjectUnblocking;
 
 class FinancingObjectUnblockingVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_EDIT   = 'edit';
-
     protected function canCreate(FinancingObjectUnblocking $financingObjectUnblocking): bool
     {
         return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $financingObjectUnblocking->getReservation());

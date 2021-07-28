@@ -9,11 +9,6 @@ use Unilend\CreditGuaranty\Entity\Borrower;
 
 class BorrowerVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_DELETE = 'delete';
-
     protected function canCreate(Borrower $borrower): bool
     {
         return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $borrower->getReservation());

@@ -10,10 +10,6 @@ use Unilend\CreditGuaranty\Entity\ProgramContact;
 
 class ProgramContactVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_DELETE = 'delete';
-
     /**
      * @param ProgramContact $subject
      */
