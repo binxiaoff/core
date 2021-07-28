@@ -10,17 +10,15 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class BorrowerMemberVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_EDIT   = 'edit';
-
     protected function canCreate(BorrowerMember $borrowerMember, User $user): bool
     {
         $project = $borrowerMember->getProject();
 
-        return $project->isEditable() && (
-            $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $project)
-            || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project));
+        return $project->isEditable()
+            && (
+                $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $project)
+                || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
+            );
     }
 
     protected function canView(BorrowerMember $borrowerMember, User $user): bool

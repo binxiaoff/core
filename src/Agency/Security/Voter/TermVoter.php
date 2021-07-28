@@ -12,10 +12,7 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class TermVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_DELETE = 'delete';
-    public const ATTRIBUTE_AGENT  = 'agent';
+    public const ATTRIBUTE_AGENT = 'agent';
 
     /**
      * @throws Exception

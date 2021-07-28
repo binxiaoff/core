@@ -10,9 +10,6 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class AgentVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_EDIT = 'edit';
-    public const ATTRIBUTE_VIEW = 'view';
-
     public const ATTRIBUTE_AGENT = 'agent';
 
     protected function canView(Agent $agent, User $user): bool
