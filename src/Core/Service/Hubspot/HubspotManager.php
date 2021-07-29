@@ -128,4 +128,29 @@ class HubspotManager
 
         return \json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
     }
+
+    public function addHubspotContact(User $user, int $contactId): void
+    {
+        $hubspotContact = new HubspotContact($user, $contactId);
+        $this->entityManager->persist($hubspotContact);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function handlePagination(array $paging): void
+    {
+        $response = $this->fetchContacts(['after' => $paging['next']['after']]);
+
+        if ($response['results']) {
+            $this->handleContacts($response);
+        }
+
+        if (isset($response['paging'])) {
+            $this->handlePagination($response['paging']);
+        }
+    }
 }
