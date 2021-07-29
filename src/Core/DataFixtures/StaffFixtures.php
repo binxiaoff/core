@@ -146,6 +146,7 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
 
             if ($company !== $adminCompany) {
                 $staff = $this->createStaffWithCompany($participant, $company);
+                $this->addAllCompanyGroupTag($staff);
                 $this->addStaffReference($staff);
                 $this->entityManager->persist($staff);
             }
