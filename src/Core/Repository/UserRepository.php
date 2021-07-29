@@ -12,6 +12,7 @@ use Doctrine\ORM\Query\{Expr\Join};
 use Doctrine\Persistence\ManagerRegistry;
 use JsonException;
 use KLS\Core\Entity\Company;
+use KLS\Core\Entity\HubspotContact;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
 use KLS\Core\Entity\UserStatus;
@@ -26,6 +27,8 @@ use PDO;
  */
 class UserRepository extends ServiceEntityRepository
 {
+    private const MAX_USER_LOAD = 10;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
@@ -111,5 +114,27 @@ class UserRepository extends ServiceEntityRepository
         ;
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function findHubspotUsersToCreate(int $limit): ?array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->leftJoin(HubspotContact::class, 'hc', Join::WITH, 'u.id = hc.user')
+            ->where('hc.id IS NULL')
+        ;
+
+        return $qb->setMaxResults($limit)->getQuery()->getResult();
+    }
+
+    public function findHubspotUsersToUpdate(int $limit): ?array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->leftJoin(HubspotContact::class, 'hc', Join::WITH, 'u.id = hc.user')
+            ->where('hc.id IS NOT NULL')
+            ->andWhere('u.updated > hc.synchronized')
+            ->orderBy('hc.synchronized', 'DESC')
+        ;
+
+        return $qb->setMaxResults($limit)->getQuery()->getResult();
     }
 }

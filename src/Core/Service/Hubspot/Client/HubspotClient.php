@@ -10,9 +10,9 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class HubspotClient
 {
-    public const CONTACTS_LIMIT       = 100;
+    public const CONTACTS_LIMIT       = 100; // Maximum authorised
     private const GET_DAILY_USAGE_URL = 'v1/limit/daily?';
-    private const GET_CONTACTS_URL    = 'contact';
+    private const CONTACTS_URL        = 'contact';
 
     public HttpClientInterface $hubspotIntegrationClient;
     public HttpClientInterface $hubspotCrmClient;
@@ -36,7 +36,7 @@ class HubspotClient
     /**
      * @throws TransportExceptionInterface
      */
-    public function fetchAllContacts(?int $afterContactId = null): ResponseInterface
+    public function fetchAllContacts(int $afterContactId = 0): ResponseInterface
     {
         $queryParams = [
             'limit'    => self::CONTACTS_LIMIT,
@@ -44,8 +44,22 @@ class HubspotClient
             'after'    => $afterContactId,
         ];
 
-        return $this->hubspotCrmClient->request('GET', self::GET_CONTACTS_URL, [
+        return $this->hubspotCrmClient->request('GET', self::CONTACTS_URL, [
             'query' => $queryParams,
+        ]);
+    }
+
+    public function postNewContact(array $data): ResponseInterface
+    {
+        return $this->hubspotCrmClient->request('POST', self::CONTACTS_URL, [
+            'json' => $data,
+        ]);
+    }
+
+    public function updateContact(int $contactId, array $data): ResponseInterface
+    {
+        return $this->hubspotCrmClient->request('PATCH', self::CONTACTS_URL . '/' . $contactId, [
+            'json' => $data,
         ]);
     }
 }
