@@ -23,6 +23,8 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
+ * TODO CALS-4266 "agency:term:read" should not used (too much data returned without filter).
+ *
  * @ORM\Table(name="agency_covenant")
  * @ORM\Entity
  *
@@ -78,6 +80,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *             "agency:covenantRule:read",
  *             "agency:marginRule:read",
  *             "agency:marginImpact:read",
+ *             "agency:term:read",
  *             "file:read",
  *             "fileVersion:read",
  *         }

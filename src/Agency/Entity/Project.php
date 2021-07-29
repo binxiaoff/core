@@ -43,6 +43,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 use Unilend\Syndication\Entity\Project as ArrangementProject;
 
 /**
+ * TODO CALS-4266 "agency:term:read" should not used (too much data returned without filter).
+ *
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
@@ -241,6 +243,9 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "agency:tranche:read",
  *             "agency:covenant:read",
  *             "agency:covenantRule:read",
+ *             "agency:term:read",
+ *             "file:read",
+ *             "fileVersion:read",
  *             "user:read",
  *         }
  *     }
