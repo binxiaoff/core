@@ -18,6 +18,8 @@ use Unilend\Core\Service\Hubspot\Client\HubspotClient;
 
 class HubspotManager
 {
+    private const LIMIT_CONTACT_ADD = 100;
+
     private HubspotClient $hubspotIntegrationClient;
     private HubspotClient $hubspotClient;
     private UserRepository $userRepository;
@@ -97,15 +99,16 @@ class HubspotManager
                 continue;
             }
 
-            if ($contactAdded >= 2) { // If the limit of the number of user we want to insert is reached
+            if ($contactAdded >= self::LIMIT_CONTACT_ADD) { // If the limit of the number of user we want to insert is reached
                 continue;
             }
 
-            $this->addHubspotContact($user, (int) $contact['id']);
+            $hubspotContact = new HubspotContact($user, (int) $contact['id']);
+            $this->entityManager->persist($hubspotContact);
             ++$contactAdded;
         }
 
-        if ($contactAdded >= 2) {
+        if ($contactAdded >= self::LIMIT_CONTACT_ADD) {
             $this->entityManager->flush();
 
             return;
@@ -120,30 +123,5 @@ class HubspotManager
         }
 
         $this->entityManager->flush();
-    }
-
-    public function addHubspotContact(User $user, int $contactId): void
-    {
-        $hubspotContact = new HubspotContact($user, $contactId);
-        $this->entityManager->persist($hubspotContact);
-    }
-
-    /**
-     * @throws ClientExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
-     */
-    public function handlePagination(array $paging): void
-    {
-        $response = $this->fetchContacts(['after' => $paging['next']['after']]);
-
-        if ($response['results']) {
-            $this->handleContacts($response);
-        }
-
-        if (isset($response['paging'])) {
-            $this->handlePagination($response['paging']);
-        }
     }
 }
