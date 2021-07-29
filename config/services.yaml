@@ -131,7 +131,7 @@ services:
                   - 2
 
     Unilend\Core\Swagger\SwaggerDecorator:
-        decorates: 'api_platform.swagger.normalizer.api_gateway'
+        decorates: 'api_platform.openapi.normalizer.api_gateway'
 
     Unilend\Core\Serializer\ContextBuilder\Staff\CurrentStaff:
         decorates: 'api_platform.serializer.context_builder'
