@@ -107,11 +107,6 @@ class Term
     /**
      * @ORM\Column(type="text", nullable=true)
      *
-     * @Assert\Expression(
-     *     expression="(null === value) || this.getBorrowerInput() || this.getBorrowerDocument()",
-     *     message="Agency.Term.borrowerComment.neededBorrowerAction"
-     * )
-     *
      * @Groups({"agency:term:read", "agency:term:update"})
      */
     private ?string $borrowerComment;
@@ -476,7 +471,7 @@ class Term
     public function setBorrowerInput(?string $borrowerInput): Term
     {
         $this->borrowerInput     = $borrowerInput;
-        $this->borrowerInputDate = null !== $this->borrowerInput ? new DateTimeImmutable() : null;
+        $this->borrowerInputDate = null !== $this->borrowerInput && $this->isFinancial() ? new DateTimeImmutable() : $this->borrowerInputDate;
 
         $this->awaitValidation();
 
