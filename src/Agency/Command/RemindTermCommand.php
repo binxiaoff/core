@@ -11,6 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Agency\Entity\AgentMember;
 use Unilend\Agency\Entity\BorrowerMember;
+use Unilend\Agency\Entity\Covenant;
 use Unilend\Agency\Entity\Project;
 use Unilend\Agency\Entity\Term;
 use Unilend\Agency\Repository\TermRepository;
@@ -59,6 +60,7 @@ class RemindTermCommand extends Command
 
             $borrowerUsersByProject[$projectId] = $borrowerUsersByProject[$projectId] ?? $this->getBorrowerUsers($project);
 
+            // This also disable reminder email for borrower as there is no pendingBorrowerInput for control nature terms
             if ($term->isPendingBorrowerInput()) {
                 foreach ($borrowerUsersByProject[$project->getId()] as $user) {
                     $this->send($this->createMessage($term, $user, MailjetMessage::TEMPLATE_AGENCY_REMIND_TERM_BORROWER), $output);
@@ -80,8 +82,10 @@ class RemindTermCommand extends Command
 
             $borrowerUsersByProject[$projectId] = $borrowerUsersByProject[$projectId] ?? $this->getBorrowerUsers($project);
 
-            foreach ($borrowerUsersByProject[$projectId] as $user) {
-                $this->send($this->createMessage($term, $user, MailjetMessage::TEMPLATE_AGENCY_REMIND_TERM_BORROWER), $output);
+            if (Covenant::NATURE_CONTROL !== $term->getNature()) {
+                foreach ($borrowerUsersByProject[$projectId] as $user) {
+                    $this->send($this->createMessage($term, $user, MailjetMessage::TEMPLATE_AGENCY_REMIND_TERM_BORROWER), $output);
+                }
             }
         }
 
