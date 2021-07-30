@@ -25,23 +25,23 @@ class HubspotCompany
     private int $id;
 
     /**
-     * @ORM\OneToOne(targetEntity=User::class)
+     * @ORM\OneToOne(targetEntity=Company::class)
      *
      * @Assert\NotBlank
      */
-    private User $user;
+    private Company $company;
 
     /**
-     * @ORM\Column(type="integer", nullable=false)
+     * @ORM\Column(type="integer", nullable=false, name="hubspot_company_id")
      *
      * @Assert\Type("integer")
      * @Assert\Positive
      */
     private int $companyId;
 
-    public function __construct(User $user, int $companyId)
+    public function __construct(Company $company, int $companyId)
     {
-        $this->user      = $user;
+        $this->company   = $company;
         $this->companyId = $companyId;
     }
 
@@ -50,14 +50,14 @@ class HubspotCompany
         return $this->id;
     }
 
-    public function getUser(): User
+    public function getCompany(): Company
     {
-        return $this->user;
+        return $this->company;
     }
 
-    public function setUser(User $user): HubspotCompany
+    public function setCompany(Company $company): HubspotCompany
     {
-        $this->user = $user;
+        $this->company = $company;
 
         return $this;
     }
