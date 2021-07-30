@@ -30,6 +30,11 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         ];
     }
 
+    public static function getStaffReferenceName(User $user, Company $company): string
+    {
+        return 'staff_' . $user->getId() . '_' . $company->getId();
+    }
+
     /**
      * @throws Exception
      */
@@ -65,9 +70,107 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         $this->createMultipleStaff($adminCompany, $adminStaff, $admin);
     }
 
-    public static function getStaffReferenceName(User $user, Company $company): string
+    /**
+     * @throws Exception
+     */
+    private function createMultipleStaff(Company $adminCompany, Staff $adminStaff, User $admin): void
     {
-        return 'staff_' . $user->getId() . '_' . $company->getId();
+        foreach ($this->getUserData() as $userReference => $datum) {
+            /** @var User $user */
+            $user    = $this->getReference($userReference);
+            $company = $datum['company'] ?? $adminCompany;
+            $staff   = $this->createStaffWithCompany($user, $company);
+
+            if (false === \in_array($userReference, [UserFixtures::AUDITOR, UserFixtures::ACCOUNTANT], true)) {
+                $staff->setArrangementProjectCreationPermission(true);
+            }
+
+            $this->addStaffReference($staff);
+            $this->entityManager->persist($staff);
+        }
+
+        // Create CA banks staff
+        /** @var User $participant */
+        $participant = $this->getReference(UserFixtures::PARTICIPANT);
+
+        foreach (CompanyFixtures::CA_SHORTCODE as $companyShortCode) {
+            /** @var Company $company */
+            $company = $this->getReference('company:' . $companyShortCode);
+
+            if ($company !== $adminCompany) {
+                $staff = $this->createStaffWithCompany($participant, $company);
+                $this->addAllCompanyGroupTag($staff);
+                $this->addStaffReference($staff);
+                $this->entityManager->persist($staff);
+            }
+        }
+
+        $this->entityManager->flush();
+
+        // Create inactive staff
+        /** @var User $inactiveUser */
+        $inactiveUser = $this->getReference(UserFixtures::INACTIVE);
+
+        foreach ($inactiveUser->getStaff() as $staff) {
+            $staff->setCurrentStatus(new StaffStatus($staff, StaffStatus::STATUS_INACTIVE, $adminStaff));
+            $this->addRandomCompanyGroupTag($staff);
+            $this->entityManager->persist($staff);
+        }
+
+        $this->entityManager->flush();
+
+        // Create manyStaff company staff
+        /** @var Company $manyStaffCompany */
+        $manyStaffCompany = $this->getReference(CompanyFixtures::COMPANY_MANY_STAFF);
+
+        $manyStaffAdminStaff = $this->createStaffWithCompany($admin, $manyStaffCompany);
+        $manyStaffAdminStaff->setManager(true);
+        $this->addAllCompanyGroupTag($manyStaffAdminStaff);
+        $this->entityManager->persist($manyStaffAdminStaff);
+
+        foreach (\range(0, 50) as $i) {
+            $user = new User($this->faker->email);
+            $this->entityManager->persist($user);
+
+            $staff = $this->createStaffWithCompany($user, $manyStaffCompany);
+            $this->addRandomCompanyGroupTag($staff);
+            $this->entityManager->persist($staff);
+        }
+
+        $this->entityManager->flush();
+    }
+
+    private function getUserData(): array
+    {
+        return [
+            UserFixtures::AUDITOR             => [],
+            UserFixtures::ACCOUNTANT          => [],
+            UserFixtures::OPERATOR            => [],
+            UserFixtures::MANAGER             => [],
+            UserFixtures::UNITIALIZED         => [],
+            UserFixtures::EXTBANK_INITIALIZED => [
+                'company' => $this->getReference(CompanyFixtures::COMPANY_EXTERNAL),
+            ],
+            UserFixtures::EXTBANK_INVITED => [
+                'company' => $this->getReference(CompanyFixtures::COMPANY_EXTERNAL),
+            ],
+            UserFixtures::INACTIVE => [],
+        ];
+    }
+
+    private function addStaffReference(Staff $staff): void
+    {
+        $this->addReference(static::getStaffReferenceName($staff->getUser(), $staff->getCompany()), $staff);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function createStaffWithCompany(User $user, ?Company $company = null): Staff
+    {
+        $company = $company ?? $this->getReference(CompanyFixtures::KLS);
+
+        return new Staff($user, $company->getRootTeam());
     }
 
     /**
@@ -77,18 +180,18 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
     {
         // We need to use SQL since we cannot instantiate Staff entity
         $sql = <<<SQL
-                INSERT INTO `core_staff`
-                    (id_team, id_user, manager, updated, added, public_id, arrangement_project_creation_permission, agency_project_creation_permission) VALUES 
-                    (
-                        "{$company->getRootTeam()->getId()}", 
-                        "{$user->getId()}", 
-                        1,
-                        '2020-01-01', '2020-01-01', 
-                        "user{$user->getId()}-company{$company->getId()}-staff",
-                        1,
-                        1
-                    )
-            SQL;
+            INSERT INTO `core_staff`
+                (id_team, id_user, manager, updated, added, public_id, arrangement_project_creation_permission, agency_project_creation_permission) VALUES 
+                (
+                    "{$company->getRootTeam()->getId()}",
+                    "{$user->getId()}",
+                    1,
+                    '2020-01-01', '2020-01-01',
+                    "user{$user->getId()}-company{$company->getId()}-staff",
+                    1,
+                    1
+                )
+        SQL;
 
         $this->entityManager->getConnection()->exec($sql);
 
@@ -117,101 +220,6 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         return $this->entityManager->getReference(Staff::class, $staffId);
     }
 
-    /**
-     * @throws Exception
-     */
-    private function createMultipleStaff(Company $adminCompany, Staff $adminStaff, User $admin): void
-    {
-        foreach ($this->getUserData() as $userReference => $datum) {
-            /** @var User $user */
-            $user    = $this->getReference($userReference);
-            $company = $datum['company'] ?? $adminCompany;
-            $staff   = $this->createStaffWithCompany($user, $company);
-
-            if (false === \in_array($userReference, [UserFixtures::AUDITOR, UserFixtures::ACCOUNTANT], true)) {
-                $staff->setArrangementProjectCreationPermission(true);
-            }
-
-            $this->addStaffReference($staff);
-            $this->entityManager->persist($staff);
-        }
-
-        // Create staff for CA banks
-        /** @var User $participant */
-        $participant = $this->getReference(UserFixtures::PARTICIPANT);
-
-        foreach (CompanyFixtures::CA_SHORTCODE as $companyShortCode) {
-            /** @var Company $company */
-            $company = $this->getReference('company:' . $companyShortCode);
-
-            if ($company !== $adminCompany) {
-                $staff = $this->createStaffWithCompany($participant, $company);
-                $this->addStaffReference($staff);
-                $this->entityManager->persist($staff);
-            }
-        }
-
-        $this->entityManager->flush();
-
-        /** @var User $inactiveUser */
-        $inactiveUser = $this->getReference(UserFixtures::INACTIVE);
-
-        foreach ($inactiveUser->getStaff() as $staff) {
-            $staff->setCurrentStatus(new StaffStatus($staff, StaffStatus::STATUS_INACTIVE, $adminStaff));
-            $this->addRandomCompanyGroupTag($staff);
-            $this->entityManager->persist($staff);
-        }
-
-        $this->entityManager->flush();
-
-        /** @var Company $manyStaffCompany */
-        $manyStaffCompany = $this->getReference(CompanyFixtures::COMPANY_MANY_STAFF);
-
-        $manyStaffAdminStaff = $this->createStaffWithCompany($admin, $manyStaffCompany);
-        $manyStaffAdminStaff->setManager(true);
-        $this->addAllCompanyGroupTag($manyStaffAdminStaff);
-        $this->entityManager->persist($manyStaffAdminStaff);
-
-        foreach (\range(0, 50) as $i) {
-            $user = new User($this->faker->email);
-            $this->entityManager->persist($user);
-
-            $staff = $this->createStaffWithCompany($user, $manyStaffCompany);
-            $this->addRandomCompanyGroupTag($staff);
-            $this->entityManager->persist($staff);
-        }
-
-        $this->entityManager->flush();
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function createStaffWithCompany(User $user, ?Company $company = null): Staff
-    {
-        $company = $company ?? $this->getReference(CompanyFixtures::KLS);
-
-        return new Staff($user, $company->getRootTeam());
-    }
-
-    private function getUserData(): array
-    {
-        return [
-            UserFixtures::AUDITOR             => [],
-            UserFixtures::ACCOUNTANT          => [],
-            UserFixtures::OPERATOR            => [],
-            UserFixtures::MANAGER             => [],
-            UserFixtures::UNITIALIZED         => [],
-            UserFixtures::EXTBANK_INITIALIZED => [
-                'company' => $this->getReference(CompanyFixtures::COMPANY_EXTERNAL),
-            ],
-            UserFixtures::EXTBANK_INVITED => [
-                'company' => $this->getReference(CompanyFixtures::COMPANY_EXTERNAL),
-            ],
-            UserFixtures::INACTIVE => [],
-        ];
-    }
-
     private function addRandomCompanyGroupTag(Staff $staff): void
     {
         $companyGroupTags = $staff->getCompany()->getCompanyGroupTags();
@@ -230,10 +238,5 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
         foreach ($companyGroupTags as $companyGroupTag) {
             $staff->addCompanyGroupTag($companyGroupTag);
         }
-    }
-
-    private function addStaffReference(Staff $staff): void
-    {
-        $this->addReference(static::getStaffReferenceName($staff->getUser(), $staff->getCompany()), $staff);
     }
 }
