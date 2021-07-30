@@ -588,6 +588,10 @@ class Term
      */
     public function isPendingBorrowerInput(): bool
     {
+        if ($this->hasBreach()) {
+            return false;
+        }
+
         switch ($this->getNature()) {
             case Covenant::NATURE_CONTROL:
                 return false;
