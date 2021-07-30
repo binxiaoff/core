@@ -47,7 +47,7 @@ class TermNormalizer implements ContextAwareDenormalizerInterface, DenormalizerA
         $sharing = $data['shared'] ?? false;
         unset($data['shared']);
 
-        $archived = $data['archived'] ?? false;
+        $archiving = $data['archived'] ?? false;
         unset($data['archived']);
 
         $objectToPopulate = $this->extractObjectToPopulate(Term::class, $context);
@@ -74,7 +74,7 @@ class TermNormalizer implements ContextAwareDenormalizerInterface, DenormalizerA
             $term->share();
         }
 
-        if ($archived && $isAgent && $term->isShared() && false === $term->isArchived()) {
+        if ($archiving && $isAgent && $term->isShared() && false === $term->isArchived()) {
             $term->archive();
         }
 
