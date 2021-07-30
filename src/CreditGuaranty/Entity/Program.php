@@ -161,7 +161,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *     message="CreditGuaranty.Program.companyGroupTag.invalid"
      * )
      *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     * @Groups({"creditGuaranty:program:list", "creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private CompanyGroupTag $companyGroupTag;
 
@@ -311,7 +311,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @MaxDepth(1)
      *
-     * @Groups({"creditGuaranty:program:read"})
+     * @Groups({"creditGuaranty:program:list", "creditGuaranty:program:read"})
      */
     private ?ProgramStatus $currentStatus;
 
