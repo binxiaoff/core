@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Command\Hubspot;
 
-use Psr\Log\LoggerInterface;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use JsonException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -17,23 +19,22 @@ use Unilend\Core\Service\Hubspot\HubspotManager;
 
 class SynchronizeMappingCommand extends Command
 {
-    protected static $defaultName = 'kls:hubspot:synchronize-contact-mapping';
+    private const DEFAULT_CONTACTS_LIMIT = 100;
+    protected static $defaultName        = 'kls:hubspot:synchronize-contact';
 
     private HubspotManager $hubspotManager;
-    private LoggerInterface $logger;
 
-    public function __construct(HubspotManager $hubspotManager, LoggerInterface $logger)
+    public function __construct(HubspotManager $hubspotManager)
     {
         parent::__construct();
         $this->hubspotManager = $hubspotManager;
-        $this->logger         = $logger;
     }
 
     protected function configure(): void
     {
         $this
             ->setDescription('Synchronize users from our database and the hubspot database')
-            ->setHelp('kls:hubspot:synchronize-mapping')
+            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'How many users we want to synchronize')
         ;
     }
 
@@ -42,22 +43,23 @@ class SynchronizeMappingCommand extends Command
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws JsonException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $contactAdded  = 0;
+        $limit         = $input->getOption('limit') ?: self::DEFAULT_CONTACTS_LIMIT;
+        $lastContactId = null;
 
-        $response = $this->hubspotManager->fetchContacts();
+        do {
+            $data = $this->hubspotManager->synchronizeContacts((int) $lastContactId);
+            $contactAdded += $data['contactAddedNb'];
+            $lastContactId = $data['lastContactId'];
+        } while ($contactAdded <= $limit && $lastContactId);
 
-        if (!$response['results']) {
-            $this->logger->info('No contacts found, try to add users from our database');
-
-            return self::FAILURE;
-        }
-
-        $this->hubspotManager->handleContacts($response);
-
-        $io->info('All users has been successfully eported to hubspot');
+        $output->writeln(\sprintf('%s contacts has been linked to our existing users', $contactAdded));
 
         return self::SUCCESS;
     }

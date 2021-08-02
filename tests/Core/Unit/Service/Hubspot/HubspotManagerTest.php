@@ -2,32 +2,30 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Service\Hubspot\Client;
+namespace Unilend\Test\Core\Unit\Service\Hubspot;
 
-use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\ResponseInterface;
+use Unilend\Core\Entity\HubspotContact;
 use Unilend\Core\Entity\User;
+use Unilend\Core\Repository\HubspotContactRepository;
 use Unilend\Core\Repository\UserRepository;
 use Unilend\Core\Service\Hubspot\Client\HubspotClient;
 use Unilend\Core\Service\Hubspot\HubspotManager;
 
 /**
- * @internal
+ * @coversDefaultClass \Unilend\Core\Service\Hubspot\HubspotManager
  *
- * @coversDefaultClass /Unilend/Core/Service/Hubspot/HubspotManager
+ * @internal
  */
 class HubspotManagerTest extends TestCase
 {
     /** @var ObjectProphecy|HubspotClient */
     private $hubspotClient;
-
-    /** @var ObjectProphecy|\Doctrine\ORM\EntityManagerInterface */
-    private $entityManager;
 
     /** @var ObjectProphecy|UserRepository */
     private $userRepository;
@@ -35,23 +33,29 @@ class HubspotManagerTest extends TestCase
     /** @var ObjectProphecy|LoggerInterface */
     private $logger;
 
+    /** @var ObjectProphecy|HubspotContactRepository */
+    private $hubspotContactRepository;
+
     protected function setUp(): void
     {
-        $this->hubspotClient  = $this->prophesize(HubspotClient::class);
-        $this->userRepository = $this->prophesize(UserRepository::class);
-        $this->entityManager  = $this->prophesize(EntityManagerInterface::class);
-        $this->logger         = $this->prophesize(LoggerInterface::class);
+        $this->hubspotClient            = $this->prophesize(HubspotClient::class);
+        $this->userRepository           = $this->prophesize(UserRepository::class);
+        $this->logger                   = $this->prophesize(LoggerInterface::class);
+        $this->hubspotContactRepository = $this->prophesize(HubspotContactRepository::class);
     }
 
     protected function tearDown(): void
     {
-        $this->hubspotClient  = null;
-        $this->userRepository = null;
-        $this->entityManager  = null;
-        $this->logger         = null;
+        $this->hubspotClient            = null;
+        $this->userRepository           = null;
+        $this->logger                   = null;
+        $this->hubspotContactRepository = null;
     }
 
-    public function testGetDailyApiUsage(): void
+    /**
+     * @covers ::getDailyApiUsage
+     */
+    public function testGetDailyApiUsageWithOkReturn(): void
     {
         $response = $this->prophesize(ResponseInterface::class);
         $this->hubspotClient->getDailyUsageApi()->shouldBeCalledOnce()->willReturn($response->reveal());
@@ -70,48 +74,99 @@ class HubspotManagerTest extends TestCase
         ];
         $response->getContent()->shouldBeCalledOnce()->willReturn(\json_encode($content));
 
-        $this->createTestObject()->getDailyApiUsage();
-        static::assertArrayHasKey(0, $content);
+        $result = $this->createTestObject()->getDailyApiUsage();
+
+        static::assertArrayHasKey(0, $result);
+        static::assertArrayHasKey('currentUsage', $result[0]);
     }
 
-    public function testFetchContacts(): void
+    /**
+     * @covers ::getDailyApiUsage
+     */
+    public function testGetDailyApiUsageWithNotOkReturn(): void
+    {
+        $response = $this->prophesize(ResponseInterface::class);
+        $this->hubspotClient->getDailyUsageApi()->shouldBeCalledOnce()->willReturn($response->reveal());
+
+        $response->getStatusCode()->shouldBeCalledOnce()->willReturn(Response::HTTP_BAD_REQUEST);
+
+        $response->getContent()->shouldNotBeCalled();
+
+        $result = $this->createTestObject()->getDailyApiUsage();
+
+        static::assertEmpty($result);
+    }
+
+    /**
+     * @covers ::synchronizeContact
+     */
+    public function testSynchronizeContactsWithNoContactFound(): void
     {
         $response = $this->prophesize(ResponseInterface::class);
 
+        $this->hubspotClient->fetchAllContacts(null)->shouldBeCalledOnce()->willReturn($response->reveal());
         $response->getStatusCode()->willReturn(Response::HTTP_OK);
-        $response->getContent()->willReturn(\json_encode($this->getSingleRealContact()));
+        $response->getContent()->willReturn(\json_encode($this->getContact()));
 
-        $this->hubspotClient->fetchAllContacts([])->willReturn($response);
+        $this->hubspotContactRepository->findOneBy(['contactId' => 18051])->shouldBeCalled()->willReturn(null);
 
-        $this->createTestObject()->fetchContacts();
+        $this->userRepository->findOneBy(['email' => 'test@test.fr'])->shouldBeCalledOnce()->willReturn(null);
 
-        static::assertArrayHasKey('results', $this->getSingleRealContact());
+        $this->hubspotContactRepository->persist(Argument::any())->shouldNotBeCalled();
+        $this->hubspotContactRepository->flush()->shouldBeCalledOnce();
+
+        $result = $this->createTestObject()->synchronizeContacts(null);
+        static::assertArrayHasKey('lastContactId', $result);
+        static::assertArrayHasKey('contactAddedNb', $result);
+        static::assertNull($result['lastContactId']);
+        static::assertSame(0, $result['contactAddedNb']);
     }
 
-    public function testHandleContactsWithAnUnknownUser(): void
+    /**
+     * @covers ::synchronizeContact
+     */
+    public function testSynchronizeContactsWithAddContact(): void
     {
-        $manager = $this->prophesize(HubspotManager::class);
-        $this->userRepository->findOneBy(['email' => $this->getSingleRealContact()['results'][0]['properties']['email']])->shouldBeCalled()->willReturn(null);
+        $response = $this->prophesize(ResponseInterface::class);
+        $user     = new User('test@test.fr');
 
-        $this->entityManager->persist(Argument::any())->shouldNotBeCalled();
-        $this->entityManager->flush()->shouldBeCalledOnce();
+        $this->hubspotClient->fetchAllContacts(null)->shouldBeCalledOnce()->willReturn($response->reveal());
+        $response->getStatusCode()->willReturn(Response::HTTP_OK);
+        $response->getContent()->willReturn(\json_encode($this->getContact()));
 
-        $manager->fetchContacts([])->shouldNotBeCalled();
+        $this->hubspotContactRepository->findOneBy(['contactId' => 18051])->shouldBeCalled()->willReturn(null);
 
-        $this->createTestObject()->handleContacts($this->getSingleRealContact());
+        $this->userRepository->findOneBy(['email' => 'test@test.fr'])->shouldBeCalledOnce()->willReturn($user);
+
+        $this->hubspotContactRepository->persist(Argument::type(HubspotContact::class))->shouldBeCalledOnce();
+        $this->hubspotContactRepository->flush()->shouldBeCalledOnce();
+
+        $result = $this->createTestObject()->synchronizeContacts(null);
+        static::assertArrayHasKey('lastContactId', $result);
+        static::assertArrayHasKey('contactAddedNb', $result);
+        static::assertNull($result['lastContactId']);
+        static::assertSame(1, $result['contactAddedNb']);
     }
 
-    public function testHandleContactsWithUser(): void
+    public function testSynchronizeContactWithNoResult(): void
     {
-        $user = new User('admin.kls-paltform.com');
-        $this->userRepository->findOneBy(['email' => $this->getExistingContact()['results'][0]['properties']['email']])->shouldBeCalled()->willReturn($user);
-        $this->entityManager->persist(Argument::any())->shouldBeCalledOnce();
-        $this->entityManager->flush()->shouldBeCalledOnce();
+        $response = $this->prophesize(ResponseInterface::class);
 
-        $this->createTestObject()->handleContacts($this->getExistingContact());
+        $this->hubspotClient->fetchAllContacts(null)->shouldBeCalledOnce()->willReturn($response->reveal());
+        $response->getStatusCode()->willReturn(Response::HTTP_OK);
+        $response->getContent()->willReturn(\json_encode([]));
+
+        $this->hubspotContactRepository->findOneBy(Argument::any())->shouldNotBeCalled();
+        $this->userRepository->findOneBy(Argument::any())->shouldNotBeCalled();
+
+        $this->hubspotContactRepository->persist(Argument::any())->shouldNotBeCalled();
+        $this->hubspotContactRepository->flush()->shouldNotBeCalled();
+
+        $result = $this->createTestObject()->synchronizeContacts(null);
+        static::assertEmpty($result);
     }
 
-    public function getExistingContact(): array
+    public function getContact(): array
     {
         return [
             'results' => [
@@ -131,23 +186,10 @@ class HubspotManagerTest extends TestCase
         ];
     }
 
-    private function getSingleRealContact(): array
+    public function getFakeContentReturn(): array
     {
         return [
-            'results' => [
-                0 => [
-                    'id'         => 18051,
-                    'properties' => [
-                        'createdate' => '2021-07-27T09:08:59.969Z',
-                        'email'      => 'admin.kls-paltform.com',
-                        'firstname'  => 'Test',
-                        'lastname'   => 'test',
-                    ],
-                    'createdAt' => '2021-07-27T09:08:59.969Z',
-                    'updatedAt' => '2021-07-29T10:27:26.305Z',
-                    'archived'  => false,
-                ],
-            ],
+            'blablabla' => [],
         ];
     }
 
@@ -156,8 +198,8 @@ class HubspotManagerTest extends TestCase
         return new HubspotManager(
             $this->hubspotClient->reveal(),
             $this->userRepository->reveal(),
-            $this->entityManager->reveal(),
-            $this->logger->reveal()
+            $this->logger->reveal(),
+            $this->hubspotContactRepository->reveal()
         );
     }
 }
