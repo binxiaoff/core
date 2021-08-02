@@ -21,7 +21,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class HubspotManager
 {
-    private HubspotClient $hubspotClient;
+    private HubspotClient $hubspotCrmClient;
     private UserRepository $userRepository;
     private LoggerInterface $logger;
     private HubspotContactRepository $hubspotContactRepository;
