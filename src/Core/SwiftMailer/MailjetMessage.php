@@ -81,7 +81,7 @@ class MailjetMessage extends \Swift_Message
     {
         $this->vars = $this->filterVars($vars);
 
-        $this->getHeaders()->addTextHeader('X-MJ-Vars', \json_encode($vars, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT));
+        $this->getHeaders()->addTextHeader('X-MJ-Vars', \json_encode($vars, JSON_THROW_ON_ERROR));
 
         return $this;
     }
