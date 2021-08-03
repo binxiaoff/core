@@ -74,7 +74,13 @@ class TermNormalizer implements ContextAwareDenormalizerInterface, DenormalizerA
             $term->share();
         }
 
-        if ($archiving && $isAgent && $term->isShared() && false === $term->isArchived()) {
+        if (
+            $archiving
+            && $isAgent
+            && $term->isShared()
+            && false === $term->isArchived()
+            && (false === $term->hasBreach() || null !== $term->getWaiver())
+        ) {
             $term->archive();
         }
 
