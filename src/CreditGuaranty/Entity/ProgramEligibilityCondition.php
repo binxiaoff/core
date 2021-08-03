@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -55,7 +56,9 @@ class ProgramEligibilityCondition
      * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration", inversedBy="programEligibilityConditions")
      * @ORM\JoinColumn(name="id_program_eligibility_configuration", nullable=false)
      *
-     * @Groups({"creditGuaranty:programEligibilityCondition:create"})
+     * @ApiProperty(readableLink=false, writableLink=false)
+     *
+     * @Groups({"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:programEligibilityCondition:create"})
      */
     private ProgramEligibilityConfiguration $programEligibilityConfiguration;
 
