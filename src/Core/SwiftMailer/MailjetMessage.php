@@ -14,7 +14,7 @@ class MailjetMessage extends \Swift_Message
 
     public const TEMPLATE_AGENCY_AGENT_MEMBER_PROJECT_PUBLISHED               = 3024626;
     public const TEMPLATE_AGENCY_BORROWER_MEMBER_PROJECT_PUBLISHED            = 3011629;
-    public const TEMPLATE_AGENCY_PARTICIPATION_MEMBER_PROJECT_PUBLISHED       = 3011629; // 3024637
+    public const TEMPLATE_AGENCY_PARTICIPATION_MEMBER_PROJECT_PUBLISHED       = 3024637;
     public const TEMPLATE_AGENCY_REMIND_TERM_AGENT                            = 3011644;
     public const TEMPLATE_AGENCY_REMIND_TERM_BORROWER                         = 3011644;
     public const TEMPLATE_ARRANGER_INVITATION_EXTERNAL_BANK                   = 1853530;
