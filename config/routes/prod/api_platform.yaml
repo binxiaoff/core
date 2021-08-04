@@ -1,0 +1,3 @@
+api_doc:
+    path: /docs
+    controller: ApiPlatform\Core\Action\NotFoundAction
