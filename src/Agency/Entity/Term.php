@@ -372,9 +372,12 @@ class Term
 
     public function setBorrowerDocument(?File $borrowerDocument): Term
     {
-        $this->borrowerDocument  = $borrowerDocument;
-        $this->borrowerInputDate = $this->borrowerDocument && Covenant::NATURE_DOCUMENT === $this->getNature() ? new DateTimeImmutable() : $this->borrowerInputDate;
-        $this->awaitValidation();
+        $this->borrowerDocument = $borrowerDocument;
+
+        if (Covenant::NATURE_DOCUMENT === $this->getNature()) {
+            $this->borrowerInputDate = null !== $this->borrowerDocument ? new DateTimeImmutable() : null;
+            $this->awaitValidation();
+        }
 
         return $this;
     }
@@ -470,10 +473,12 @@ class Term
 
     public function setBorrowerInput(?string $borrowerInput): Term
     {
-        $this->borrowerInput     = $borrowerInput;
-        $this->borrowerInputDate = null !== $this->borrowerInput && $this->isFinancial() ? new DateTimeImmutable() : $this->borrowerInputDate;
+        $this->borrowerInput = $borrowerInput;
 
-        $this->awaitValidation();
+        if ($this->isFinancial()) {
+            $this->borrowerInputDate = null !== $this->borrowerInput ? new DateTimeImmutable() : null;
+            $this->awaitValidation();
+        }
 
         return $this;
     }

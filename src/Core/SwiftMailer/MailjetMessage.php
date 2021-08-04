@@ -33,6 +33,8 @@ class MailjetMessage extends \Swift_Message
     public const TEMPLATE_SYNDICATION_UNINITIALIZED_USER                      = 1853467;
     public const TEMPLATE_USER_PASSWORD_REQUEST                               = 1852070;
 
+    private array $vars;
+
     public function __construct(?string $subject = null, ?string $body = null, ?string $contentType = null, ?string $charset = null)
     {
         parent::__construct($subject, $body, $contentType, $charset);
@@ -43,6 +45,8 @@ class MailjetMessage extends \Swift_Message
         // If email domain defined here is the same as template, email and name defined below are used.
         $this->setFrom('support@kls-platform.com', 'KLS');
         $this->enableTemplatingLanguage();
+
+        $this->vars = [];
     }
 
     public function getTemplateId(): ?int
@@ -75,21 +79,16 @@ class MailjetMessage extends \Swift_Message
      */
     public function setVars(array $vars = []): MailjetMessage
     {
-        $vars = $this->filterVars($vars);
+        $this->vars = $this->filterVars($vars);
 
-        $this->getHeaders()->addTextHeader('X-MJ-Vars', \json_encode($vars, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        $this->getHeaders()->addTextHeader('X-MJ-Vars', \json_encode($this->vars, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
         return $this;
     }
 
-    /**
-     * @throws JsonException
-     */
     public function getVars(): array
     {
-        $vars = $this->getHeaders()->get('X-MJ-Vars');
-
-        return $vars ? \json_decode($vars->getFieldBody(), true, 512, JSON_THROW_ON_ERROR) : [];
+        return $this->vars;
     }
 
     public function setTemplateErrorEmail(?string $email): MailjetMessage
