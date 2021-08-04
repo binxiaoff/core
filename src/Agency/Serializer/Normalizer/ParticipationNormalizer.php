@@ -5,25 +5,31 @@ declare(strict_types=1);
 namespace Unilend\Agency\Serializer\Normalizer;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
 use Unilend\Agency\Entity\Participation;
 use Unilend\Agency\Entity\ParticipationTrancheAllocation;
 use Unilend\Agency\Entity\Project;
+use Unilend\Agency\Security\Voter\ParticipationVoter;
 
 class ParticipationNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
     use NestedDenormalizationTrait;
+    use ObjectToPopulateTrait;
 
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
     private IriConverterInterface $iriConverter;
+    private Security $security;
 
-    public function __construct(IriConverterInterface $iriConverter)
+    public function __construct(IriConverterInterface $iriConverter, Security $security)
     {
         $this->iriConverter = $iriConverter;
+        $this->security     = $security;
     }
 
     /**
@@ -45,7 +51,9 @@ class ParticipationNormalizer implements ContextAwareDenormalizerInterface, Deno
     {
         $context[static::ALREADY_CALLED] = true;
 
-        if (isset($data['project'])) {
+        if (isset($data['project']) && empty($data['pool'])) {
+            unset($data['project']);
+
             try {
                 $project = $this->iriConverter->getItemFromIri($data['project']);
             } catch (\Exception $exception) {
@@ -57,7 +65,19 @@ class ParticipationNormalizer implements ContextAwareDenormalizerInterface, Deno
             }
         }
 
-        return $this->nestedDenormalize($data, $type, $format, $context, ['allocations']);
+        $archived = $data['archived'] ?? false;
+        unset($data['archived']);
+
+        /** @var Participation $denormalized */
+        $denormalized = $this->nestedDenormalize($data, $type, $format, $context, ['allocations']);
+
+        $canArchive = $this->security->isGranted(ParticipationVoter::ATTRIBUTE_DELETE, $denormalized);
+
+        if ($canArchive && $archived && false === $denormalized->isArchived() && $denormalized->getProject()->isPublished()) {
+            $denormalized->archive();
+        }
+
+        return $denormalized;
     }
 
     /**

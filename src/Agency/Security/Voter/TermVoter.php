@@ -12,10 +12,7 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class TermVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_DELETE = 'delete';
-    public const ATTRIBUTE_AGENT  = 'agent';
+    public const ATTRIBUTE_AGENT = 'agent';
 
     /**
      * @throws Exception
@@ -23,7 +20,12 @@ class TermVoter extends AbstractEntityVoter
     protected function canView(Term $term, User $user): bool
     {
         return $this->authorizationChecker->isGranted(CovenantVoter::ATTRIBUTE_VIEW, $term->getCovenant())
-            && $term->getStartDate() >= $this->getToday();
+            && $term->getStartDate() <= $this->getToday()
+            && (
+                $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $term->getProject())
+                || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $term->getProject())
+                || $term->isShared()
+            );
     }
 
     /**
@@ -39,14 +41,12 @@ class TermVoter extends AbstractEntityVoter
             return false;
         }
 
-        if ($term->isShared()) {
+        if (false === $term->getProject()->isEditable()) {
             return false;
         }
 
-        return ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $term->getProject())
-            || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $term->getProject()))
-            && $term->getProject()->isEditable()
-            && $term->getStartDate() <= $this->getToday();
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $term->getProject())
+            || ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $term->getProject()) && $term->isPendingBorrowerInput());
     }
 
     /**

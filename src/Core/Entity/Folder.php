@@ -100,8 +100,8 @@ class Folder extends AbstractFolder
             throw new FolderAlreadyExistsException();
         }
 
-        $this->name     = $name;
-        $this->path     = ('/' === $parentPath ? '' : $parentPath) . DIRECTORY_SEPARATOR . $name;
+        $this->name     = trim($name);
+        $this->path     = ('/' === $parentPath ? '' : $parentPath) . DIRECTORY_SEPARATOR . $this->name;
         $this->pathHash = hash('crc32b', $this->path);
         $this->added    = new DateTimeImmutable();
         $this->setPublicId();

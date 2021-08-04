@@ -16,8 +16,6 @@ use Unilend\Core\Entity\Interfaces\MoneyInterface;
 class NullableMoney implements MoneyInterface
 {
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="decimal", precision=15, scale=2, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
@@ -28,12 +26,10 @@ class NullableMoney implements MoneyInterface
      *
      * @Groups({"nullableMoney:read", "nullableMoney:write"})
      */
-    protected $amount;
+    protected ?string $amount;
 
     /**
      * 3 letter ISO 4217 code (Currency code).
-     *
-     * @var string|null
      *
      * @ORM\Column(type="string", length=3, nullable=true)
      *
@@ -44,39 +40,31 @@ class NullableMoney implements MoneyInterface
      *
      * @Groups({"nullableMoney:read", "nullableMoney:write"})
      */
-    protected $currency;
+    protected ?string $currency;
 
-    /**
-     * @param string|null $currency
-     * @param string|null $amount
-     */
     public function __construct(?string $currency = null, ?string $amount = null)
     {
         $this->amount   = $amount;
         $this->currency = $currency;
     }
 
-    /**
-     * @return bool
-     */
     public function isValid(): bool
     {
         return $this->currency && $this->amount;
     }
 
-    /**
-     * @return string|null
-     */
     public function getAmount(): ?string
     {
         return $this->amount;
     }
 
-    /**
-     * @return string|null
-     */
     public function getCurrency(): ?string
     {
         return $this->currency;
+    }
+
+    public function isNull(): bool
+    {
+        return null === $this->amount || null === $this->currency;
     }
 }

@@ -24,16 +24,16 @@ use Unilend\Syndication\Repository\ProjectRepository;
 class ProjectNotifier
 {
     private Slack $slack;
-    private ProjectRepository $projectRepository;
     private Swift_Mailer $mailer;
     private RouterInterface $router;
+    private ProjectRepository $projectRepository;
 
-    public function __construct(Slack $client, ProjectRepository $projectRepository, Swift_Mailer $mailer, RouterInterface $router)
+    public function __construct(Slack $client, Swift_Mailer $mailer, RouterInterface $router, ProjectRepository $projectRepository)
     {
         $this->slack             = $client;
-        $this->projectRepository = $projectRepository;
         $this->mailer            = $mailer;
         $this->router            = $router;
+        $this->projectRepository = $projectRepository;
     }
 
     /**
@@ -70,7 +70,7 @@ class ProjectNotifier
             ->attach(
                 (new Attachment())
                     ->addField(new AttachmentField('Entité', $project->getSubmitterCompany()->getDisplayName(), true))
-                    ->addField(new AttachmentField('Entités invitées', (string) count($project->getProjectParticipations()), true))
+                    ->addField(new AttachmentField('Entités invitées', (string) \count($project->getProjectParticipations()), true))
                     ->addField(new AttachmentField('Utilisateur', $project->getSubmitterUser()->getEmail(), true))
                     ->addField(new AttachmentField('Utilisateurs invités', (string) $this->projectRepository->countProjectParticipationMembers($project), true))
             )
@@ -126,9 +126,11 @@ class ProjectNotifier
                         ->setTo($activeProjectParticipationMember->getStaff()->getUser()->getEmail())
                         ->setTemplateId(MailjetMessage::TEMPLATE_PROJECT_FILE_UPLOADED)
                         ->setVars([
-                            'front_viewParticipation_URL' => $this->router->generate('front_viewParticipation', [
-                                'projectParticipationPublicId' => $participation->getPublicId(),
-                            ], RouterInterface::ABSOLUTE_URL),
+                            'front_viewParticipation_URL' => $this->router->generate(
+                                'front_viewParticipation',
+                                ['projectParticipationPublicId' => $participation->getPublicId()],
+                                RouterInterface::ABSOLUTE_URL
+                            ),
                             'client_firstName'      => $activeProjectParticipationMember->getStaff()->getUser()->getFirstName() ?? '',
                             'project_arranger'      => $project->getSubmitterCompany()->getDisplayName(),
                             'project_title'         => $project->getTitle(),

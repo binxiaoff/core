@@ -14,11 +14,34 @@ use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
+    // user-defined list type fields
     private const FIELDS = [
+        'field-aid_intensity' => [
+            '0.20', '0.40', '0.60', '0.80',
+        ],
         'field-borrower_type' => [
             'Installé',
             'En reconversion',
             'Agriculture',
+            'Apiculteur',
+        ],
+        'field-activity_country' => [
+            'FR',
+        ],
+        'field-investment_country' => [
+            'FR',
+        ],
+        'field-investment_location' => [
+            'Paris',
+        ],
+        'field-company_naf_code' => [
+            '0001A',
+        ],
+        'field-loan_naf_code' => [
+            '0001A',
+        ],
+        'field-exploitation_size' => [
+            '42',
         ],
     ];
 
@@ -40,12 +63,15 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
     {
         /** @var Program $program */
         $program = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
-        /** @var Field $field */
-        $field = $this->getReference('field-borrower_type');
 
-        foreach (self::FIELDS['field-borrower_type'] as $item) {
-            $programChoiceOption = new ProgramChoiceOption($program, $item, $field);
-            $manager->persist($programChoiceOption);
+        foreach (self::FIELDS as $fieldReference => $descriptions) {
+            /** @var Field $field */
+            $field = $this->getReference($fieldReference);
+
+            foreach ($descriptions as $description) {
+                $programChoiceOption = new ProgramChoiceOption($program, $description, $field);
+                $manager->persist($programChoiceOption);
+            }
         }
 
         $manager->flush();

@@ -63,8 +63,6 @@ doctrine:
                             dir: '%kernel.project_dir%/src/CreditGuaranty/Entity'
                             prefix: 'Unilend\CreditGuaranty\Entity'
                             alias: Unilend\CreditGuaranty
-                    hydrators:
-                        HYDRATE_COLUMN: 'Unilend\Core\Doctrine\ORM\ColumnHydrator'
                     filters:
                         softdeletable:
                             class: 'Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter'

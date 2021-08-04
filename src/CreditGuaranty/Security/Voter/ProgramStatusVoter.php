@@ -10,8 +10,6 @@ use Unilend\CreditGuaranty\Entity\ProgramStatus;
 
 class ProgramStatusVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-
     /**
      * @param ProgramStatus $subject
      */

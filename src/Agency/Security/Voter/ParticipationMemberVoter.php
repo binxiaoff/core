@@ -13,10 +13,6 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class ParticipationMemberVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_EDIT   = 'edit';
-
     private ParticipationMemberRepository $participationMemberRepository;
 
     public function __construct(AuthorizationCheckerInterface $authorizationChecker, ParticipationMemberRepository $participationMemberRepository)
@@ -68,7 +64,7 @@ class ParticipationMemberVoter extends AbstractEntityVoter
         return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $participationMember->getProject());
     }
 
-    protected function canEdit(ParticipationMember $participationMember, User $user)
+    protected function canEdit(ParticipationMember $participationMember, User $user): bool
     {
         $staff = $user->getCurrentStaff();
 
@@ -78,11 +74,16 @@ class ParticipationMemberVoter extends AbstractEntityVoter
 
         $project = $participationMember->getProject();
 
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PARTICIPANT, $project)
-            && false === $participationMember->isArchived()
+        return false === $participationMember->isArchived()
             && false === $participationMember->getParticipation()->isArchived()
             && $project->isEditable()
-            && $staff->getCompany() === $participationMember->getParticipation()->getParticipant()
+            && (
+                (
+                    $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PARTICIPANT, $project)
+                    && $staff->getCompany() === $participationMember->getParticipation()->getParticipant()
+                )
+                || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
+            )
         ;
     }
 }

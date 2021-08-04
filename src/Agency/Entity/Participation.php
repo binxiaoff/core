@@ -16,13 +16,16 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Controller\Dataroom\Delete;
 use Unilend\Core\Controller\Dataroom\Get;
 use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Model\Bitmask;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
+use Unilend\Core\Service\MoneyCalculator;
 
 /**
  * "money:read" is needed for allocation.
@@ -31,8 +34,9 @@ use Unilend\Core\Model\Bitmask;
  *     normalizationContext={
  *         "groups": {
  *             "agency:participation:read",
+ *             "money:read",
  *             "nullableMoney:read",
- *             "money:read"
+ *             "lendingRate:read"
  *         }
  *     },
  *     collectionOperations={
@@ -42,6 +46,7 @@ use Unilend\Core\Model\Bitmask;
  *                 "groups": {
  *                     "agency:participation:create",
  *                     "agency:participation:write",
+ *                     "nullableMoney:write",
  *                     "money:write",
  *                     "agency:participationTrancheAllocation:write"
  *                 }
@@ -58,11 +63,13 @@ use Unilend\Core\Model\Bitmask;
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:participation:write",
+ *                     "agency:projectPartaker:write",
+ *                     "nullableMoney:write",
  *                     "money:write",
  *                     "agency:participationTrancheAllocation:write"
  *                 }
  *             },
- *             "security_post_denormalize": "is_granted('edit', object)",
+ *             "security": "is_granted('edit', object)",
  *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
  *         },
  *         "delete": {
@@ -86,7 +93,7 @@ use Unilend\Core\Model\Bitmask;
  *         "post_dataroom": {
  *             "method": "POST",
  *             "deserialize": false,
- *             "security": "is_granted('view', object)",
+ *             "security": "is_granted('dataroom', object)",
  *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
  *             "controller": Post::class,
  *             "requirements": {
@@ -101,7 +108,7 @@ use Unilend\Core\Model\Bitmask;
  *         },
  *         "delete_dataroom": {
  *             "method": "DELETE",
- *             "security": "is_granted('view', object)",
+ *             "security": "is_granted('dataroom', object)",
  *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
  *             "controller": Delete::class,
  *             "requirements": {
@@ -130,19 +137,17 @@ use Unilend\Core\Model\Bitmask;
  *     filterClass=GroupFilter::class,
  *     arguments={
  *         "whitelist": {
+ *             "company:read",
  *             "agency:participationTrancheAllocation:read",
  *             "agency:participationMember:read",
- *             "user:read"
+ *             "user:read",
+ *             "agency:tranche:read"
  *         }
  *     }
  * )
  */
 class Participation extends AbstractProjectPartaker
 {
-    public const RESPONSIBILITY_AGENT           = 1 << 0;
-    public const RESPONSIBILITY_ARRANGER        = 1 << 1;
-    public const RESPONSIBILITY_DEPUTY_ARRANGER = 1 << 2;
-
     /**
      * @var Collection|ParticipationMember[]
      *
@@ -163,7 +168,7 @@ class Participation extends AbstractProjectPartaker
      *
      * @Assert\NotBlank
      *
-     * @Groups({"agency:participation:read"})
+     * @Groups({"agency:participation:read", "agency:participation:create"})
      *
      * @ApiProperty(readableLink=false)
      */
@@ -191,82 +196,31 @@ class Participation extends AbstractProjectPartaker
     private ?string $participantCommission;
 
     /**
-     * @ORM\Column(type="bitmask", nullable=false)
-     *
-     * @Assert\Expression(expression="false === (0 === value && this.isSecondary())", message="Agency.Participation.responsabilities.secondary")
-     * @Assert\Expression(expression="false === (this.isArranger() && this.isDeputyArranger())", message="Agency.Participation.responsabilities.arranger")
-     * @Assert\Expression(
-     *     expression="(this.isAgent() && (this.getParticipant() === this.getProject().getAgentCompany())) || (false === this.isAgent())",
-     *     message="Agency.Participation.responsabilities.agent"
-     * )
-     *
-     * @Groups({"agency:participation:read", "agency:participation:write"})
-     */
-    private Bitmask $responsibilities;
-
-    /**
-     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
-     *
-     * @Assert\NotBlank(allowNull=true)
-     * @Assert\Type("numeric")
-     * @Assert\PositiveOrZero
-     * @Assert\AtLeastOneOf(
-     *     constraints={
-     *         @Assert\IsNull,
-     *         @Assert\Expression("this.isAgent()")
-     *     },
-     *     message="Agency.Participation.commission.agent"
-     * )
-     *
-     * @Groups({"agency:participation:read", "agency:participation:write"})
-     */
-    private ?string $agentCommission;
-
-    /**
-     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
-     *
-     * @Assert\NotBlank(allowNull=true)
-     * @Assert\Type("numeric")
-     * @Assert\PositiveOrZero
-     *
-     * @Assert\AtLeastOneOf(
-     *     constraints={
-     *         @Assert\IsNull,
-     *         @Assert\Expression("this.isArranger()")
-     *     },
-     *     message="Agency.Participation.commission.arranger"
-     * )
-     * @Groups({"agency:participation:read", "agency:participation:write"})
-     */
-    private ?string $arrangerCommission;
-
-    /**
-     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
-     *
-     * @Assert\NotBlank(allowNull=true)
-     * @Assert\Type("numeric")
-     * @Assert\PositiveOrZero
-     *
-     * @Assert\AtLeastOneOf(
-     *     constraints={
-     *         @Assert\IsNull,
-     *         @Assert\Expression("this.isDeputyArranger()")
-     *     },
-     *     message="Agency.Participation.commission.deputyArranger"
-     * )
-     *
-     * @Groups({"agency:participation:read", "agency:participation:write"})
-     */
-    private ?string $deputyArrangerCommission;
-
-    /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
-     *
-     * @Groups({"agency:participation:read", "agency:participation:write"})
+     * @ORM\Embedded(class=NullableMoney::class)
      *
      * @Assert\Valid
+     *
+     * @Groups({"agency:participation:read", "agency:participation:write"})
      */
-    private Money $finalAllocation;
+    private NullableMoney $agentCommission;
+
+    /**
+     * @ORM\Embedded(class=NullableMoney::class)
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"agency:participation:read", "agency:participation:write"})
+     */
+    private NullableMoney $arrangerCommission;
+
+    /**
+     * @ORM\Embedded(class=NullableMoney::class)
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"agency:participation:read", "agency:participation:write"})
+     */
+    private NullableMoney $deputyArrangerCommission;
 
     /**
      * @ORM\Column(type="boolean")
@@ -278,7 +232,7 @@ class Participation extends AbstractProjectPartaker
     /**
      * @var ParticipationTrancheAllocation[]|Collection
      *
-     * @ORM\OneToMany(targetEntity=ParticipationTrancheAllocation::class, cascade={"persist", "remove"}, mappedBy="participation")
+     * @ORM\OneToMany(targetEntity=ParticipationTrancheAllocation::class, cascade={"persist", "remove"}, mappedBy="participation", orphanRemoval=true)
      *
      * @Assert\Count(min="1", groups={"published"})
      * @Assert\Valid
@@ -298,25 +252,24 @@ class Participation extends AbstractProjectPartaker
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"agency:participation:read"})
      */
     private ?DateTimeImmutable $archivingDate;
 
     public function __construct(
-        ParticipationPool $project,
+        ParticipationPool $pool,
         Company $participant,
-        Money $finalAllocation,
-        Money $capital
+        ?NullableMoney $capital = null
     ) {
-        parent::__construct($participant->getSiren() ?? '', $capital);
-        $this->responsibilities         = new Bitmask(0);
-        $this->pool                     = $project;
-        $this->finalAllocation          = $finalAllocation;
+        parent::__construct($participant->getSiren() ?? '', $capital ?? new NullableMoney($pool->getProject()->getCurrency(), '0'));
+        $this->pool                     = $pool;
         $this->participant              = $participant;
         $this->prorata                  = false;
         $this->participantCommission    = '0';
-        $this->arrangerCommission       = null;
-        $this->agentCommission          = null;
-        $this->deputyArrangerCommission = null;
+        $this->arrangerCommission       = new NullableMoney();
+        $this->agentCommission          = new NullableMoney();
+        $this->deputyArrangerCommission = new NullableMoney();
         $this->allocations              = new ArrayCollection();
         $this->archivingDate            = null;
         $this->members                  = new ArrayCollection();
@@ -333,35 +286,25 @@ class Participation extends AbstractProjectPartaker
         return $this->pool;
     }
 
+    /**
+     * @Groups({"agency:participation:read"})
+     */
     public function getProject(): Project
     {
         return $this->pool->getProject();
     }
 
-    public function getResponsibilities(): Bitmask
-    {
-        return $this->responsibilities;
-    }
-
-    public function setResponsibilities($responsibilities): Participation
-    {
-        $this->responsibilities = new Bitmask($responsibilities);
-
-        return $this;
-    }
-
     public function isAgent(): bool
     {
-        // TODO deduce from data instead if possible
-        return $this->responsibilities->has(static::RESPONSIBILITY_AGENT);
+        return $this->getProject()->getAgent()->getCompany() === $this->getParticipant();
     }
 
-    public function getAgentCommission(): ?string
+    public function getAgentCommission(): NullableMoney
     {
         return $this->agentCommission;
     }
 
-    public function setAgentCommission(?string $agentCommission): Participation
+    public function setAgentCommission(NullableMoney $agentCommission): Participation
     {
         $this->agentCommission = $agentCommission;
 
@@ -370,15 +313,15 @@ class Participation extends AbstractProjectPartaker
 
     public function isArranger(): bool
     {
-        return $this->responsibilities->has(static::RESPONSIBILITY_ARRANGER);
+        return false === $this->getArrangerCommission()->isNull();
     }
 
-    public function getArrangerCommission(): ?string
+    public function getArrangerCommission(): NullableMoney
     {
         return $this->arrangerCommission;
     }
 
-    public function setArrangerCommission(?string $arrangerCommission): Participation
+    public function setArrangerCommission(NullableMoney $arrangerCommission): Participation
     {
         $this->arrangerCommission = $arrangerCommission;
 
@@ -387,15 +330,15 @@ class Participation extends AbstractProjectPartaker
 
     public function isDeputyArranger(): bool
     {
-        return $this->responsibilities->has(static::RESPONSIBILITY_DEPUTY_ARRANGER);
+        return false === $this->getDeputyArrangerCommission()->isNull();
     }
 
-    public function getDeputyArrangerCommission(): ?string
+    public function getDeputyArrangerCommission(): NullableMoney
     {
         return $this->deputyArrangerCommission;
     }
 
-    public function setDeputyArrangerCommission(?string $deputyArrangerCommission): Participation
+    public function setDeputyArrangerCommission(NullableMoney $deputyArrangerCommission): Participation
     {
         $this->deputyArrangerCommission = $deputyArrangerCommission;
 
@@ -412,10 +355,8 @@ class Participation extends AbstractProjectPartaker
 
     /**
      * @param iterable|ParticipationTrancheAllocation[] $allocations
-     *
-     * @return Participation
      */
-    public function setAllocations(iterable $allocations)
+    public function setAllocations(iterable $allocations): Participation
     {
         $this->allocations = $allocations;
 
@@ -444,16 +385,18 @@ class Participation extends AbstractProjectPartaker
         return $this;
     }
 
-    public function getFinalAllocation(): Money
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getFinalAllocation(): MoneyInterface
     {
-        return $this->finalAllocation;
-    }
+        $result = MoneyCalculator::sum($this->allocations->map(fn (ParticipationTrancheAllocation $allocation) => $allocation->getAllocation())->toArray());
 
-    public function setFinalAllocation(Money $finalAllocation): Participation
-    {
-        $this->finalAllocation = $finalAllocation;
+        if (null === $result->getCurrency()) {
+            $result = new NullableMoney($this->getProject()->getCurrency(), $result->getAmount() ?? '0');
+        }
 
-        return $this;
+        return $result;
     }
 
     public function isProrata(): bool
@@ -566,19 +509,17 @@ class Participation extends AbstractProjectPartaker
     /**
      * @Groups({"agency:participation:read"})
      */
-    public function getCapital(): Money
+    public function getCapital(): NullableMoney
     {
-        return $this->capital;
+        return parent::getCapital();
     }
 
     /**
      * @Groups({"agency:participation:write"})
      */
-    public function setCapital(Money $capital): AbstractProjectPartaker
+    public function setCapital(NullableMoney $capital): AbstractProjectPartaker
     {
-        $this->capital = $capital;
-
-        return $this;
+        return parent::setCapital($capital);
     }
 
     /**
@@ -665,7 +606,7 @@ class Participation extends AbstractProjectPartaker
         $validationGroups = ['Default', 'Project'];
 
         if ($participation->getProject()->isPublished()) {
-            $validationGroups[] = ['published'];
+            $validationGroups[] = 'published';
         }
 
         return $validationGroups;
@@ -701,8 +642,78 @@ class Participation extends AbstractProjectPartaker
         return $this;
     }
 
+    /**
+     * @Groups({"agency:participation:read"})
+     */
     public function isArchived(): bool
     {
         return null !== $this->archivingDate;
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getPoolShare(): float
+    {
+        $allocationSum = $this->getPool()->getAllocationSum();
+
+        if ((float) 0 === (float) ($allocationSum->getAmount())) {
+            return 0;
+        }
+
+        return MoneyCalculator::ratio($this->getFinalAllocation(), $allocationSum);
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function getActivePoolShare(): float
+    {
+        if ($this->isArchived()) {
+            return 0.0;
+        }
+
+        $allocationSum = $this->getPool()->getActiveParticipantAllocationSum();
+
+        if ((float) 0 === (float) ($allocationSum->getAmount())) {
+            return 0.0;
+        }
+
+        return MoneyCalculator::ratio($this->getFinalAllocation(), $allocationSum);
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateParticipant(ExecutionContextInterface $context)
+    {
+        foreach ($this->getProject()->getParticipations() as $participation) {
+            if (
+                $participation !== $this
+                && $participation->getParticipant()->getSiren() === $this->getParticipant()->getSiren()
+            ) {
+                $context->buildViolation('Agency.Participation.participant.duplicate')
+                    ->setParameter('participant', $participation->getParticipant()->getDisplayName())
+                    ->setParameter('pool', $participation->getPool()->isSecondary() ? 'secondary' : 'primary')
+                    ->atPath('participant')
+                    ->addViolation()
+                ;
+            }
+        }
+    }
+
+    public function validateAgentCommission(ExecutionContextInterface $context)
+    {
+        if ($this->isAgent() && $this->getAgentCommission()->isNull()) {
+            $context->buildViolation('Agency.Participation.agentCommission.missingCommission')
+                ->addViolation()
+            ;
+        }
+
+        if (false === $this->isAgent() && false === $this->getAgentCommission()->isNull()) {
+            $context->buildViolation('Agency.Participation.agentCommission.notAgent')
+                ->addViolation()
+            ;
+        }
     }
 }

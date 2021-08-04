@@ -11,15 +11,22 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use LogicException;
+use RuntimeException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Controller\Dataroom\Delete;
+use Unilend\Core\Controller\Dataroom\Get;
+use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\Constant\CARatingType;
+use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Interfaces\DriveCarrierInterface;
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Interfaces\StatusInterface;
 use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
@@ -38,7 +45,50 @@ use Unilend\Core\Validator\Constraints\PreviousValue;
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
  *         "patch": {"security": "is_granted('edit', object)"},
- *         "delete": {"security": "is_granted('delete', object)"}
+ *         "delete": {"security": "is_granted('delete', object)"},
+ *         "get_program_dataroom": {
+ *             "method": "GET",
+ *             "path": "/credit_guaranty/program/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('view', object)",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "post_program_dataroom": {
+ *             "method": "POST",
+ *             "path": "/credit_guaranty/program/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('edit', object)",
+ *             "deserialize": false,
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "delete_program_dataroom": {
+ *             "method": "DELETE",
+ *             "path": "/credit_guaranty/program/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('edit', object)",
+ *             "controller": Delete::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             }
+ *         }
  *     },
  *     collectionOperations={
  *         "post": {
@@ -68,7 +118,7 @@ use Unilend\Core\Validator\Constraints\PreviousValue;
  *
  * @UniqueEntity({"name"}, message="CreditGuaranty.Program.name.unique")
  */
-class Program implements TraceableStatusAwareInterface
+class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -93,6 +143,16 @@ class Program implements TraceableStatusAwareInterface
     private ?string $description;
 
     /**
+     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\JoinColumn(name="id_managing_company", nullable=false)
+     *
+     * @ApiProperty(readableLink=false)
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:create"})
+     */
+    private Company $managingCompany;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
      * @ORM\JoinColumn(name="id_company_group_tag", nullable=false)
      *
@@ -101,7 +161,7 @@ class Program implements TraceableStatusAwareInterface
      *     message="CreditGuaranty.Program.companyGroupTag.invalid"
      * )
      *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     * @Groups({"creditGuaranty:program:list", "creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private CompanyGroupTag $companyGroupTag;
 
@@ -193,6 +253,56 @@ class Program implements TraceableStatusAwareInterface
     private NullableMoney $guarantyCost;
 
     /**
+     * @ORM\Column(type="smallint", nullable=true)
+     *
+     * The max of a signed "smallint" is 32767
+     * @Assert\Range(min="1", max="32767")
+     * @Assert\NotBlank(allowNull=true)
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     */
+    private ?int $reservationDuration;
+
+    /**
+     * @ORM\Column(length=60, nullable=true)
+     *
+     * @Assert\Choice(callback={CARatingType::class, "getConstList"})
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     */
+    private ?string $ratingType = null;
+
+    /**
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     */
+    private NullableMoney $maxFeiCredit;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     */
+    private ?bool $esbCalculationActivated = null;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     */
+    private ?bool $loanReleasedOnInvoice = null;
+
+    /**
+     * @ORM\Column(length=1200, nullable=true)
+     *
+     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     */
+    private ?string $requestedDocumentsDescription;
+
+    /**
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
@@ -201,7 +311,7 @@ class Program implements TraceableStatusAwareInterface
      *
      * @MaxDepth(1)
      *
-     * @Groups({"creditGuaranty:program:read"})
+     * @Groups({"creditGuaranty:program:list", "creditGuaranty:program:read"})
      */
     private ?ProgramStatus $currentStatus;
 
@@ -219,35 +329,21 @@ class Program implements TraceableStatusAwareInterface
     private Collection $statuses;
 
     /**
-     * @ORM\Column(length=60, nullable=true)
-     *
-     * @Assert\Choice(callback={CARatingType::class, "getConstList"})
-     *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Drive", cascade={"persist", "remove"})
+     * @ORM\JoinColumn(name="id_drive", nullable=false, unique=true)
      */
-    private ?string $ratingType = null;
-
-    /**
-     * @ORM\Column(type="smallint", nullable=true)
-     * The max of a signed "smallint" is 32767
-     * @Assert\Range(min="1", max="32767")
-     * @Assert\NotBlank(allowNull=true)
-     *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
-     */
-    private ?int $reservationDuration;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
-     * @ORM\JoinColumn(name="id_managing_company", nullable=false)
-     *
-     * @ApiProperty(readableLink=false)
-     *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:create"})
-     */
-    private Company $managingCompany;
+    private Drive $drive;
 
     // Subresource
+
+    /**
+     * @var Collection|ProgramContact[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramContact", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
+     */
+    private Collection $programContacts;
 
     /**
      * @var Collection|ProgramGradeAllocation[]
@@ -281,15 +377,6 @@ class Program implements TraceableStatusAwareInterface
      * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
      */
     private Collection $programChoiceOptions;
-
-    /**
-     * @var Collection|ProgramContact[]
-     *
-     * @ApiSubresource
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramContact", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
-     */
-    private Collection $programContacts;
 
     /**
      * @var Collection|ProgramEligibility[]
@@ -327,17 +414,19 @@ class Program implements TraceableStatusAwareInterface
     public function __construct(string $name, CompanyGroupTag $companyGroupTag, Money $funds, Staff $addedBy)
     {
         $this->name                           = $name;
+        $this->managingCompany                = $addedBy->getCompany();
         $this->companyGroupTag                = $companyGroupTag;
         $this->funds                          = $funds;
-        $this->addedBy                        = $addedBy->getUser();
-        $this->managingCompany                = $addedBy->getCompany();
         $this->guarantyCost                   = new NullableMoney();
+        $this->maxFeiCredit                   = new NullableMoney();
+        $this->drive                          = new Drive();
         $this->statuses                       = new ArrayCollection();
         $this->programGradeAllocations        = new ArrayCollection();
         $this->programBorrowerTypeAllocations = new ArrayCollection();
         $this->programChoiceOptions           = new ArrayCollection();
         $this->participations                 = new ArrayCollection();
         $this->reservations                   = new ArrayCollection();
+        $this->addedBy                        = $addedBy->getUser();
         $this->added                          = new DateTimeImmutable();
         $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_DRAFT, $addedBy));
     }
@@ -364,6 +453,11 @@ class Program implements TraceableStatusAwareInterface
         $this->description = $description;
 
         return $this;
+    }
+
+    public function getManagingCompany(): Company
+    {
+        return $this->managingCompany;
     }
 
     public function getCompanyGroupTag(): CompanyGroupTag
@@ -455,25 +549,14 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    /**
-     * @return Collection|ProgramStatus[]
-     */
-    public function getStatuses(): Collection
+    public function getReservationDuration(): ?int
     {
-        return $this->statuses;
+        return $this->reservationDuration;
     }
 
-    public function getCurrentStatus(): StatusInterface
+    public function setReservationDuration(?int $reservationDuration): Program
     {
-        return $this->currentStatus;
-    }
-
-    /**
-     * @param StatusInterface|ProgramStatus $status
-     */
-    public function setCurrentStatus(StatusInterface $status): Program
-    {
-        $this->currentStatus = $status;
+        $this->reservationDuration = $reservationDuration;
 
         return $this;
     }
@@ -497,21 +580,75 @@ class Program implements TraceableStatusAwareInterface
         return $this;
     }
 
-    public function getReservationDuration(): ?int
+    public function getMaxFeiCredit(): NullableMoney
     {
-        return $this->reservationDuration;
+        return $this->maxFeiCredit;
     }
 
-    public function setReservationDuration(?int $reservationDuration): Program
+    public function setMaxFeiCredit(NullableMoney $maxFeiCredit): Program
     {
-        $this->reservationDuration = $reservationDuration;
+        $this->maxFeiCredit = $maxFeiCredit;
 
         return $this;
     }
 
-    public function getManagingCompany(): Company
+    public function isEsbCalculationActivated(): ?bool
     {
-        return $this->managingCompany;
+        return $this->esbCalculationActivated;
+    }
+
+    public function setEsbCalculationActivated(?bool $esbCalculationActivated): Program
+    {
+        $this->esbCalculationActivated = $esbCalculationActivated;
+
+        return $this;
+    }
+
+    public function isLoanReleasedOnInvoice(): ?bool
+    {
+        return $this->loanReleasedOnInvoice;
+    }
+
+    public function setLoanReleasedOnInvoice(?bool $loanReleasedOnInvoice): Program
+    {
+        $this->loanReleasedOnInvoice = $loanReleasedOnInvoice;
+
+        return $this;
+    }
+
+    public function getRequestedDocumentsDescription(): ?string
+    {
+        return $this->requestedDocumentsDescription;
+    }
+
+    public function setRequestedDocumentsDescription(?string $requestedDocumentsDescription): Program
+    {
+        $this->requestedDocumentsDescription = $requestedDocumentsDescription;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ProgramStatus[]
+     */
+    public function getStatuses(): Collection
+    {
+        return $this->statuses;
+    }
+
+    public function getCurrentStatus(): StatusInterface
+    {
+        return $this->currentStatus;
+    }
+
+    /**
+     * @param StatusInterface|ProgramStatus $status
+     */
+    public function setCurrentStatus(StatusInterface $status): Program
+    {
+        $this->currentStatus = $status;
+
+        return $this;
     }
 
     public function archive(Staff $archivedBy): Program
@@ -549,6 +686,11 @@ class Program implements TraceableStatusAwareInterface
         return ProgramStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
     }
 
+    public function getDrive(): Drive
+    {
+        return $this->drive;
+    }
+
     /**
      * @param Collection|ProgramContact[] $programContacts
      */
@@ -557,60 +699,6 @@ class Program implements TraceableStatusAwareInterface
         $this->programContacts = $programContacts;
 
         return $this;
-    }
-
-    /**
-     * @return Collection|ProgramEligibility[]
-     */
-    public function getProgramEligibilities(): Collection
-    {
-        return $this->programEligibilities;
-    }
-
-    /**
-     * @param Collection|ProgramEligibility[] $programEligibilities
-     */
-    public function setProgramEligibilities(Collection $programEligibilities): Program
-    {
-        $this->programEligibilities = $programEligibilities;
-
-        return $this;
-    }
-
-    public function addProgramEligibility(ProgramEligibility $programEligibility): Program
-    {
-        $callback = fn (int $key, ProgramEligibility $existingProgramEligibility): bool => $existingProgramEligibility->getField() === $programEligibility->getField();
-        if (
-            $programEligibility->getProgram() === $this
-            && false === $this->programEligibilities->exists($callback)
-        ) {
-            $this->programEligibilities->add($programEligibility);
-        }
-
-        return $this;
-    }
-
-    public function hasParticipant(Company $company): bool
-    {
-        return $this->getParticipants()->contains($company);
-    }
-
-    /**
-     * @param Collection|Participation[] $participations
-     */
-    public function setParticipations(Collection $participations): Program
-    {
-        $this->participations = $participations;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Participation[]
-     */
-    public function getParticipations(): Collection
-    {
-        return $this->participations;
     }
 
     /**
@@ -706,6 +794,68 @@ class Program implements TraceableStatusAwareInterface
     }
 
     /**
+     * @return Collection|ProgramEligibility[]
+     */
+    public function getProgramEligibilities(): Collection
+    {
+        return $this->programEligibilities;
+    }
+
+    /**
+     * @param Collection|ProgramEligibility[] $programEligibilities
+     */
+    public function setProgramEligibilities(Collection $programEligibilities): Program
+    {
+        $this->programEligibilities = $programEligibilities;
+
+        return $this;
+    }
+
+    public function addProgramEligibility(ProgramEligibility $programEligibility): Program
+    {
+        $callback = fn (int $key, ProgramEligibility $existingProgramEligibility): bool => $existingProgramEligibility->getField() === $programEligibility->getField();
+        if (
+            $programEligibility->getProgram() === $this
+            && false === $this->programEligibilities->exists($callback)
+        ) {
+            $this->programEligibilities->add($programEligibility);
+        }
+
+        return $this;
+    }
+
+    public function hasParticipant(Company $company): bool
+    {
+        return $this->getParticipants()->contains($company);
+    }
+
+    /**
+     * @param Collection|Participation[] $participations
+     */
+    public function setParticipations(Collection $participations): Program
+    {
+        $this->participations = $participations;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Participation[]
+     */
+    public function getParticipations(): Collection
+    {
+        return $this->participations;
+    }
+
+    /**
+     * @return Collection|Reservation[]
+     */
+    public function getReservations()
+    {
+        return $this->reservations;
+    }
+
+    /**
      * @param array $filter Possible criteria for the filter are
      *                      - grade: borrower's grade
      *                      - borrowerType: borrower type (ProgramChoiceOption) id
@@ -714,6 +864,7 @@ class Program implements TraceableStatusAwareInterface
     public function getTotalProjectFunds(array $filter = []): Money
     {
         $totalProjectFunds = new Money($this->funds->getCurrency());
+
         foreach ($this->reservations as $reservation) {
             if ($reservation->isSent()) {
                 if (false === $this->applyTotalProjectFundsFilters($reservation, $filter)) {
@@ -721,7 +872,7 @@ class Program implements TraceableStatusAwareInterface
                 }
 
                 if (false === $reservation->getProject() instanceof Project) {
-                    throw new \RuntimeException(sprintf('Cannot find the project for reservation %d. Please check the data.', $reservation->getId()));
+                    throw new RuntimeException(\sprintf('Cannot find the project for reservation %d. Please check the data.', $reservation->getId()));
                 }
                 $totalProjectFunds = MoneyCalculator::add($reservation->getProject()->getFundingMoney(), $totalProjectFunds);
             }
@@ -731,28 +882,43 @@ class Program implements TraceableStatusAwareInterface
     }
 
     /**
-     * @Groups({"creditGuaranty:program:list"})
+     * @Groups({"creditGuaranty:program:list", "creditGuaranty:program:read"})
      */
     public function getAmountAvailable(): MoneyInterface
     {
         return MoneyCalculator::subtract($this->getFunds(), $this->getTotalProjectFunds());
     }
 
+    /**
+     * @Groups({"creditGuaranty:program:read"})
+     */
+    public function getReservedAmountsSum(): MoneyInterface
+    {
+        $reservations  = $this->getReservations()->filter(static fn (Reservation $item) => $item->isSent() && false === $item->isFormalized());
+        $fundingMoneys = $reservations->map(static fn (Reservation $reservation) => $reservation->getProject()->getFundingMoney())->toArray();
+
+        return MoneyCalculator::sum($fundingMoneys);
+    }
+
+    /**
+     * @Groups({"creditGuaranty:program:read"})
+     */
+    public function getContractualizedAmountsSum(): MoneyInterface
+    {
+        $reservations  = $this->getReservations()->filter(static fn (Reservation $item) => $item->isFormalized());
+        $fundingMoneys = $reservations->map(static fn (Reservation $reservation) => $reservation->getProject()->getFundingMoney())->toArray();
+
+        return MoneyCalculator::sum($fundingMoneys);
+    }
+
     public function duplicate(Staff $duplicatedBy): Program
     {
         $duplicatedProgram          = clone $this;
+        $duplicatedProgram->drive   = new Drive();
         $duplicatedProgram->addedBy = $duplicatedBy->getUser();
         $duplicatedProgram->setCurrentStatus(new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $duplicatedBy));
 
         return $duplicatedProgram;
-    }
-
-    /**
-     * @return Collection|Reservation[]
-     */
-    public function getReservations()
-    {
-        return $this->reservations;
     }
 
     protected function onClone(): Program
@@ -791,7 +957,7 @@ class Program implements TraceableStatusAwareInterface
     private function applyTotalProjectFundsFilters(Reservation $reservation, array $filter): bool
     {
         if (false === $reservation->getBorrower()->getBorrowerType() instanceof ProgramChoiceOption) {
-            throw new \RuntimeException(sprintf('Cannot find the borrower type for reservation %d. Please check the data.', $reservation->getId()));
+            throw new RuntimeException(\sprintf('Cannot find the borrower type for reservation %d. Please check the data.', $reservation->getId()));
         }
 
         if (isset($filter['grade']) && $reservation->getBorrower()->getGrade() !== $filter['grade']) {
@@ -803,10 +969,10 @@ class Program implements TraceableStatusAwareInterface
         }
 
         if (isset($filter['exclude'])) {
-            if (is_int($filter['exclude'])) {
+            if (\is_int($filter['exclude'])) {
                 $filter['exclude'] = [$filter['exclude']];
             }
-            if (in_array($reservation->getProgram()->getId(), $filter['exclude'], true)) {
+            if (\in_array($reservation->getProgram()->getId(), $filter['exclude'], true)) {
                 return false;
             }
         }
@@ -822,8 +988,8 @@ class Program implements TraceableStatusAwareInterface
         $clonedArrayCollection = new ArrayCollection();
         foreach ($collectionToDuplicate as $item) {
             $clonedItem = clone $item;
-            if (false === method_exists($clonedItem, 'setProgram')) {
-                throw new \LogicException(sprintf('Cannot find the method setProgram of the class %s. Make sure it exists or it is accessible.', get_class($clonedItem)));
+            if (false === \method_exists($clonedItem, 'setProgram')) {
+                throw new LogicException(\sprintf('Cannot find the method setProgram of the class %s. Make sure it exists or it is accessible.', \get_class($clonedItem)));
             }
             $clonedItem->setProgram($this);
             $clonedArrayCollection->add($clonedItem);
@@ -845,7 +1011,7 @@ class Program implements TraceableStatusAwareInterface
             ->first()
         ;
         if (false === $clonedProgramChoiceOption instanceof ProgramChoiceOption) {
-            throw new \LogicException(sprintf(
+            throw new LogicException(\sprintf(
                 'The new program choice option cannot be found on program %s with field %s and description %s',
                 $this->getName(),
                 $originalProgramChoiceOption->getField()->getId(),

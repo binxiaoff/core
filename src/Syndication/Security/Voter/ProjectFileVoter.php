@@ -10,18 +10,11 @@ use Unilend\Syndication\Entity\ProjectFile;
 
 class ProjectFileVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_DELETE = 'delete';
-
     /**
-     * @param ProjectFile $projectFile
-     * @param User        $user
-     *
-     * @return bool
+     * @param ProjectFile $subject
      */
-    protected function isGrantedAll($projectFile, User $user): bool
+    protected function isGrantedAll($subject, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $projectFile->getProject());
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $subject->getProject());
     }
 }

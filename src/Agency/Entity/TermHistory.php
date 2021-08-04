@@ -119,14 +119,8 @@ class TermHistory
         $this->borrowerInput   = $term->getBorrowerComment();
         $this->borrowerComment = $term->getBorrowerInput();
         $this->agentComment    = $term->getAgentComment();
-
-        $this->update($term);
-    }
-
-    public function update(Term $term)
-    {
-        $this->validation     = $term->getValidation();
-        $this->validationDate = $term->getValidationDate();
+        $this->validation      = $term->getValidation();
+        $this->validationDate  = $term->getValidationDate();
 
         // Irregularity fields
         $this->grantedDelay        = $term->getGrantedDelay();

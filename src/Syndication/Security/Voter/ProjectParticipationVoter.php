@@ -9,26 +9,18 @@ use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\Syndication\Entity\{ProjectParticipation, ProjectParticipationMember, ProjectStatus};
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectParticipationMember;
+use Unilend\Syndication\Entity\ProjectStatus;
 use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ProjectParticipationVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_DELETE = 'delete';
-
     public const ATTRIBUTE_SENSITIVE_VIEW = 'sensitive_view';
     public const ATTRIBUTE_ADMIN_VIEW     = 'admin_view';
 
-    /** @var ProjectParticipationMemberRepository */
     private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
 
-    /**
-     * @param AuthorizationCheckerInterface        $authorizationChecker
-     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
-     */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         ProjectParticipationMemberRepository $projectParticipationMemberRepository
@@ -39,21 +31,29 @@ class ProjectParticipationVoter extends AbstractEntityVoter
 
     /**
      * @param mixed $subject
-     * @param User  $user
-     *
-     * @return bool
      */
     protected function fulfillPreconditions($subject, User $user): bool
     {
         return null !== $user->getCurrentStaff();
     }
 
-    /**
-     * @param ProjectParticipation $subject
-     * @param User                 $user
-     *
-     * @return bool
-     */
+    protected function canCreate(ProjectParticipation $subject, User $user): bool
+    {
+        // $subject->getParticipant()->isCAGMember() should be changed when other group banks use platform
+        $staff = $user->getCurrentStaff();
+
+        if (false === $staff instanceof Staff) {
+            return false;
+        }
+
+        $project = $subject->getProject();
+
+        $arrangerParticipation = $project->getArrangerProjectParticipation();
+
+        return $this->hasPermissionEffective($arrangerParticipation, $staff, ProjectParticipationMember::PERMISSION_WRITE)
+            && ($subject->getParticipant()->isCAGMember() || $subject->getProject()->getArranger()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT_EXTERNAL_BANK));
+    }
+
     protected function canView(ProjectParticipation $subject, User $user): bool
     {
         $staff = $user->getCurrentStaff();
@@ -62,8 +62,8 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $this->hasPermissionEffective($subject, $staff, ProjectParticipationMember::PERMISSION_READ) ||
-            $this->hasPermissionEffective($subject->getProject()->getArrangerProjectParticipation(), $staff, ProjectParticipationMember::PERMISSION_READ);
+        return $this->hasPermissionEffective($subject, $staff, ProjectParticipationMember::PERMISSION_READ)
+            || $this->hasPermissionEffective($subject->getProject()->getArrangerProjectParticipation(), $staff, ProjectParticipationMember::PERMISSION_READ);
 
         /*
          *
@@ -80,12 +80,6 @@ class ProjectParticipationVoter extends AbstractEntityVoter
          */
     }
 
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param User                 $user
-     *
-     * @return bool
-     */
     protected function canAdminView(ProjectParticipation $projectParticipation, User $user): bool
     {
         $staff = $user->getCurrentStaff();
@@ -98,24 +92,12 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             || $this->hasPermissionEffective($projectParticipation->getProject()->getArrangerProjectParticipation(), $staff, ProjectParticipationMember::PERMISSION_READ);
     }
 
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param User                 $user
-     *
-     * @return bool
-     */
     protected function canSensitiveView(ProjectParticipation $projectParticipation, User $user): bool
     {
         return $this->canAdminView($projectParticipation, $user);
         // Visibility is not used for now || Project::OFFER_VISIBILITY_PUBLIC === $projectParticipation->getProject()->getOfferVisibility();
     }
 
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param User                 $user
-     *
-     * @return bool
-     */
     protected function canEdit(ProjectParticipation $projectParticipation, User $user): bool
     {
         $project = $projectParticipation->getProject();
@@ -142,35 +124,6 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             && $this->hasPermissionEffective($projectParticipation, $staff, ProjectParticipationMember::PERMISSION_WRITE);
     }
 
-    /**
-     * @param ProjectParticipation $subject
-     * @param User                 $user
-     *
-     * @return bool
-     */
-    protected function canCreate(ProjectParticipation $subject, User $user): bool
-    {
-        // $subject->getParticipant()->isCAGMember() should be changed when other group banks use platform
-        $staff = $user->getCurrentStaff();
-
-        if (false === $staff instanceof Staff) {
-            return false;
-        }
-
-        $project = $subject->getProject();
-
-        $arrangerParticipation = $project->getArrangerProjectParticipation();
-
-        return $this->hasPermissionEffective($arrangerParticipation, $staff, ProjectParticipationMember::PERMISSION_WRITE)
-            && ($subject->getParticipant()->isCAGMember() || $subject->getProject()->getArranger()->hasModuleActivated(CompanyModule::MODULE_ARRANGEMENT_EXTERNAL_BANK));
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param User                 $user
-     *
-     * @return bool
-     */
     protected function canDelete(ProjectParticipation $projectParticipation, User $user): bool
     {
         $staff = $user->getCurrentStaff();
@@ -188,24 +141,16 @@ class ProjectParticipationVoter extends AbstractEntityVoter
             && $projectParticipation->getParticipant() !== $project->getArranger();
     }
 
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Staff                $staff
-     * @param int                  $permission
-     *
-     * @return bool
-     */
-    protected function hasPermissionEffective(ProjectParticipation $projectParticipation, Staff $staff, int $permission = 0)
+    private function hasPermissionEffective(ProjectParticipation $projectParticipation, Staff $staff, int $permission = 0): bool
     {
         $testedParticipations = [$projectParticipation];
-
-        $participant = $projectParticipation->getParticipant();
+        $participant          = $projectParticipation->getParticipant();
 
         if (($participant->isProspect() || $participant->hasRefused()) && $participant->isSameGroup($staff->getCompany())) {
             $testedParticipation[] = $projectParticipation->getProject()->getArrangerProjectParticipation();
         }
 
-        $testedParticipations = array_unique($testedParticipations);
+        $testedParticipations = \array_unique($testedParticipations);
 
         foreach ($testedParticipations as $testedParticipation) {
             $member = $this->projectParticipationMemberRepository->findOneBy([
@@ -222,7 +167,7 @@ class ProjectParticipationVoter extends AbstractEntityVoter
                 return false;
             }
 
-            if (0 < count($this->projectParticipationMemberRepository->findActiveByProjectParticipationAndManagerAndPermissionEnabled($testedParticipation, $staff, $permission))) {
+            if (0 < \count($this->projectParticipationMemberRepository->findActiveByProjectParticipationAndManagerAndPermissionEnabled($testedParticipation, $staff, $permission))) {
                 return true;
             }
         }

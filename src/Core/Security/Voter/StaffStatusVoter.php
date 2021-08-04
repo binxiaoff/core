@@ -9,16 +9,11 @@ use Unilend\Core\Entity\User;
 
 class StaffStatusVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-
     /**
-     * @param StaffStatus $staffStatus
-     * @param User        $user
-     *
-     * @return bool
+     * @param StaffStatus $subject
      */
-    protected function isGrantedAll($staffStatus, User $user): bool
+    protected function isGrantedAll($subject, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(StaffVoter::ATTRIBUTE_EDIT, $staffStatus->getStaff());
+        return $this->authorizationChecker->isGranted(StaffVoter::ATTRIBUTE_EDIT, $subject->getStaff());
     }
 }

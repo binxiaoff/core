@@ -108,7 +108,6 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
             $agencyTranche = new Tranche(
                 $agencyProject,
                 $tranche->getName(),
-                $tranche->isSyndicated(),
                 $tranche->getColor(),
                 $tranche->getLoanType(),
                 $tranche->getRepaymentType(),
@@ -141,15 +140,11 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
             if (null === $agencyParticipation) {
                 $agencyParticipation = new Participation(
                     $agencyProject->getPrimaryParticipationPool(),
-                    $arrangementParticipation->getParticipant(),
-                    $finalAllocation,
-                    new Money($agencyProject->getGlobalFundingMoney()->getCurrency())
+                    $arrangementParticipation->getParticipant()
                 );
 
                 $agencyProject->addParticipation($agencyParticipation);
             }
-
-            $agencyParticipation->setFinalAllocation($finalAllocation);
 
             foreach ($arrangementParticipation->getProjectParticipationMembers() as $arrangementMember) {
                 $agencyParticipation->addMember(new ParticipationMember($agencyParticipation, $arrangementMember->getStaff()->getUser()));

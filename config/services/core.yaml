@@ -1,0 +1,9 @@
+parameters:
+    hubspot.api.key: '%env(HUBSPOT_API_KEY)%'
+    hubspot.base_crm_uri: '%env(HUBSPOT_BASE_CRM_URI)%'
+    hubspot.base_integration_uri: '%env(HUBSPOT_BASE_INTEGRATION_URI)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true

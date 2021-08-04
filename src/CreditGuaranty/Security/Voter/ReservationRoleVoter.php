@@ -34,6 +34,9 @@ class ReservationRoleVoter extends Voter
         return $subject instanceof Reservation && \in_array($attribute, static::getAvailableRoles(), true);
     }
 
+    /**
+     * @param Reservation $subject
+     */
     protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
     {
         $staff = $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;

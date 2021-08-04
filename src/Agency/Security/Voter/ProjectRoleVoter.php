@@ -28,11 +28,8 @@ class ProjectRoleVoter extends Voter
     public const ROLE_SECONDARY_PARTICIPANT = 'secondary_participant';
 
     private BorrowerMemberRepository $borrowerMemberRepository;
-
     private ParticipationMemberRepository $participationMemberRepository;
-
     private UserRepository $userRepository;
-
     private AgentMemberRepository $agentMemberRepository;
 
     public function __construct(
@@ -52,16 +49,13 @@ class ProjectRoleVoter extends Voter
         return static::getConstants('ROLE_');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function supports(string $attribute, $subject): bool
     {
         return $subject instanceof Project && \in_array($attribute, static::getAvailableRoles(), true);
     }
 
     /**
-     * {@inheritDoc}
+     * @param Project $subject
      *
      * @throws NonUniqueResultException
      */
@@ -99,7 +93,8 @@ class ProjectRoleVoter extends Voter
         $user = false === $user instanceof User ? $this->userRepository->findOneBy(['email' => $user->getUsername()]) : $user;
 
         // Borrower Member are not enabled until project is published
-        return $this->borrowerMemberRepository->existsByProjectAndUserAndActive($project, $user) && $project->isPublished();
+        return $this->borrowerMemberRepository->existsByProjectAndUserAndActive($project, $user)
+            && false === $project->isDraft();
     }
 
     /**
@@ -148,7 +143,7 @@ class ProjectRoleVoter extends Voter
     private function isParticipant(Project $project, TokenInterface $token, bool $secondary): bool
     {
         // Participant can only be participant on project if project is published
-        if (false === $project->isPublished()) {
+        if ($project->isDraft()) {
             return false;
         }
 

@@ -14,8 +14,6 @@ use Unilend\CreditGuaranty\Service\StaffPermissionManager;
 
 class ReservationStatusVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-
     private StaffPermissionManager $staffPermissionManager;
 
     public function __construct(AuthorizationCheckerInterface $authorizationChecker, StaffPermissionManager $staffPermissionManager)

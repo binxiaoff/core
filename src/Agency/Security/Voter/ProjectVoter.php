@@ -6,15 +6,28 @@ namespace Unilend\Agency\Security\Voter;
 
 use Exception;
 use Unilend\Agency\Entity\Project;
+use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class ProjectVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_DELETE = 'delete';
+    /**
+     * Do not use can{Role} because object is not yet in database.
+     */
+    protected function canCreate(Project $project, User $user): bool
+    {
+        $staff = $user->getCurrentStaff();
+
+        if (null === $staff) {
+            return false;
+        }
+
+        // Should we verify permission inheritance for agency project creation .
+        return $staff->getCompany() === $project->getAgentCompany()
+            && $staff->hasAgencyProjectCreationPermission()
+            && $staff->getCompany()->hasModuleActivated(CompanyModule::MODULE_AGENCY);
+    }
 
     /**
      * @throws Exception
@@ -29,21 +42,6 @@ class ProjectVoter extends AbstractEntityVoter
         }
 
         return false;
-    }
-
-    /**
-     * Do not use can{Role} because object is not yet in database.
-     */
-    protected function canCreate(Project $project, User $user): bool
-    {
-        $staff = $user->getCurrentStaff();
-
-        if (null === $staff) {
-            return false;
-        }
-
-        // Should we verify permission inheritance for agency project creation .
-        return $staff->getCompany() === $project->getAgentCompany() && $staff->hasAgencyProjectCreationPermission();
     }
 
     protected function canEdit(Project $project, User $user): bool

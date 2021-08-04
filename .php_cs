@@ -23,6 +23,7 @@ return PhpCsFixer\Config::create()
         'is_null'                                => true, //risky
         'mb_str_functions'                       => true, //risky
         'modernize_types_casting'                => true, //risky
+        'native_function_invocation'             => true, //risky
         'phpdoc_types_order'                     => ['null_adjustment' => 'always_last', 'sort_algorithm' => 'none'],
         'php_unit_construct'                     => true, //risky
         'php_unit_set_up_tear_down_visibility'   => true, //risky

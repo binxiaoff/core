@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Test\CreditGuaranty\DataFixtures;
 
+use DateTimeImmutable;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
@@ -58,7 +59,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
             'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,
             'cappedAt'             => '0.15',
             'description'          => 'La description pour le programme en distribution',
-            'distributionDeadline' => new \DateTimeImmutable(),
+            'distributionDeadline' => new DateTimeImmutable(),
             'distributionProcess'  => [
                 'Création d’un dossier emprunteur',
                 'Vérification de l’éligibilité',
@@ -67,10 +68,13 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'Signature du client et contractualisation',
                 'Renseignement du N° de prêt et montant des réalisations',
             ],
-            'guarantyDuration'    => 240,
-            'guarantyCoverage'    => '0.07',
-            'guarantyCost'        => ['currency' => 'EUR', 'amount' => '1000'],
-            'reservationDuration' => 2,
+            'guarantyDuration'        => 240,
+            'guarantyCoverage'        => '0.07',
+            'guarantyCost'            => ['currency' => 'EUR', 'amount' => '1000'],
+            'maxFeiCredit'            => ['currency' => 'EUR', 'amount' => '20000'],
+            'reservationDuration'     => 2,
+            'esbCalculationActivated' => true,
+            'loanReleasedOnInvoice'   => false,
         ];
     }
 
@@ -111,12 +115,24 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
             $program->setGuarantyCost(new NullableMoney($programData['guarantyCost']['currency'], $programData['guarantyCost']['amount']));
         }
 
+        if (false === empty($programData['maxFeiCredit'])) {
+            $program->setMaxFeiCredit(new NullableMoney($programData['maxFeiCredit']['currency'], $programData['maxFeiCredit']['amount']));
+        }
+
         if (false === empty($programData['reservationDuration'])) {
             $program->setReservationDuration($programData['reservationDuration']);
         }
 
+        if (false === empty($programData['esbCalculationActivated'])) {
+            $program->setEsbCalculationActivated($programData['esbCalculationActivated']);
+        }
+
+        if (false === empty($programData['loanReleasedOnInvoice'])) {
+            $program->setLoanReleasedOnInvoice($programData['loanReleasedOnInvoice']);
+        }
+
         $cARatingType = CARatingType::getConstList();
-        $program->setRatingType($cARatingType[array_rand($cARatingType)]);
+        $program->setRatingType($cARatingType[\array_rand($cARatingType)]);
 
         return $program;
     }

@@ -6,11 +6,12 @@ namespace Unilend\Core\Repository;
 
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\TemporaryToken;
+use Unilend\Core\Entity\User;
 
 /**
  * @method TemporaryToken|null find($id, $lockMode = null, $lockVersion = null)
@@ -20,17 +21,12 @@ use Unilend\Core\Entity\TemporaryToken;
  */
 class TemporaryTokenRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, TemporaryToken::class);
     }
 
     /**
-     * @param TemporaryToken $temporaryToken
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -41,8 +37,6 @@ class TemporaryTokenRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param TemporaryToken $temporaryToken
-     *
      * @throws ORMException
      */
     public function persist(TemporaryToken $temporaryToken): void
@@ -51,8 +45,6 @@ class TemporaryTokenRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param User $user
-     *
      * @throws Exception
      */
     public function expireTemporaryTokens(User $user): void
@@ -70,5 +62,19 @@ class TemporaryTokenRepository extends ServiceEntityRepository
                 ->execute()
             ;
         }
+    }
+
+    public function findOneActiveByUser(User $user): ?TemporaryToken
+    {
+        return $this->createQueryBuilder('t')
+            ->select('t')
+            ->andWhere('t.expires < :now')
+            ->andWhere('t.user = :user')
+            ->setParameter('user', $user)
+            ->setParameter('now', new DateTimeImmutable())
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
     }
 }

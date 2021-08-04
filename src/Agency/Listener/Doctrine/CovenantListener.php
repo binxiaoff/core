@@ -47,7 +47,7 @@ class CovenantListener
     {
         $entity = $args->getEntity();
 
-        if ($entity instanceof Covenant) {
+        if ($entity instanceof Covenant && $entity->isArchived()) {
             $em = $args->getEntityManager();
 
             // Needed because the filter will add condition to the query otherwise

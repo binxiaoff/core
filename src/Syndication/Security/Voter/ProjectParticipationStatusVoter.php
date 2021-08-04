@@ -13,12 +13,9 @@ use Unilend\Syndication\Entity\ProjectParticipationStatus;
 
 class ProjectParticipationStatusVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-
     protected function canCreate(ProjectParticipationStatus $projectParticipationStatus, User $user): bool
     {
-        $staff = $user->getCurrentStaff();
-
+        $staff   = $user->getCurrentStaff();
         $company = $staff ? $staff->getCompany() : null;
 
         if (null === $company) {

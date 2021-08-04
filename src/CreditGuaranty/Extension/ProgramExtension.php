@@ -11,13 +11,14 @@ use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\CreditGuaranty\Entity\Program;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
+use Unilend\CreditGuaranty\Extension\Traits\ProgramPermissionTrait;
 use Unilend\CreditGuaranty\Service\StaffPermissionManager;
 
 class ProgramExtension implements QueryCollectionExtensionInterface
 {
-    private Security               $security;
-    private StaffPermissionManager $staffPermissionManager;
+    use ProgramPermissionTrait;
+
+    private Security $security;
 
     public function __construct(Security $security, StaffPermissionManager $staffPermissionManager)
     {
@@ -34,32 +35,6 @@ class ProgramExtension implements QueryCollectionExtensionInterface
         /** @var Staff|null $staff */
         $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
 
-        if (null === $staff || false === $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_PROGRAM)) {
-            $queryBuilder->andWhere('1 = 0');
-
-            return;
-        }
-
-        $rootAlias = $queryBuilder->getRootAliases()[0];
-
-        $queryBuilder
-            ->distinct()
-            ->andWhere("{$rootAlias}.managingCompany = :managingCompany")
-            ->setParameter('managingCompany', $staff->getCompany())
-        ;
-
-        if (false === $staff->isAdmin()) {
-            $queryBuilder
-                ->andWhere("{$rootAlias}.companyGroupTag in (:companyGroupTags)")
-                ->setParameter('companyGroupTags', $staff->getCompanyGroupTags())
-            ;
-        }
-
-        if ($staff->isManager()) {
-            $queryBuilder
-                ->orWhere("{$rootAlias}.addedBy in (:managedUsers)")
-                ->setParameter('managedUsers', iterator_to_array($staff->getManagedUsers(), false))
-            ;
-        }
+        $this->applyProgramManagerFilter($staff, $queryBuilder, $queryBuilder->getRootAliases()[0]);
     }
 }

@@ -10,10 +10,11 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class BorrowerVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_DELETE = 'delete';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_VIEW   = 'view';
+    public function canCreate(Borrower $borrower, User $user): bool
+    {
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $borrower->getProject())
+            && $borrower->getProject()->isEditable();
+    }
 
     public function canView(Borrower $borrower, User $user): bool
     {
@@ -22,20 +23,18 @@ class BorrowerVoter extends AbstractEntityVoter
 
     public function canEdit(Borrower $borrower, User $user): bool
     {
-        return ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $borrower->getProject())
-                || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $borrower->getProject()))
+        return (
+                $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $borrower->getProject())
+                || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $borrower->getProject())
+            )
             && $borrower->getProject()->isEditable();
     }
 
     public function canDelete(Borrower $borrower, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $borrower->getProject())
-            && $borrower->getProject()->isEditable();
-    }
+        $project = $borrower->getProject();
 
-    public function canCreate(Borrower $borrower, User $user): bool
-    {
         return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $borrower->getProject())
-            && $borrower->getProject()->isEditable();
+            && $project->isDraft();
     }
 }

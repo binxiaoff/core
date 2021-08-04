@@ -16,6 +16,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Constant\Tranche\CommissionType;
 use Unilend\Core\Entity\Constant\Tranche\LoanType;
 use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
@@ -77,17 +78,6 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  * @ORM\Entity
  * @ORM\Table(name="agency_tranche")
  *
- * @ApiResource(
- *     itemOperations={
- *         "get": {
- *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
- *             "read": false,
- *             "output": false,
- *         }
- *     },
- *     collectionOperations={}
- * )
- *
  * @ApiFilter(
  *     filterClass=GroupFilter::class,
  *     arguments={
@@ -114,28 +104,21 @@ class Tranche
     private Project $project;
 
     /**
-     * @ORM\Column(length=30)
+     * @ORM\Column(type="string", length=200)
      *
      * @Assert\NotBlank
-     * @Assert\Length(max=30)
+     * @Assert\Length(max=200)
      *
      * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private string $name;
 
     /**
-     * @ORM\Column(type="boolean")
+     * Kept for historical reasons.
      *
-     * @Groups({"agency:tranche:read", "agency:tranche:write"})
-     */
-    private bool $syndicated;
-
-    /**
      * @ORM\Column(length=255, nullable=true)
      *
-     * @Assert\NotBlank(allowNull=true)
      * @Assert\Length(max="255")
-     * @Assert\Expression(expression="(!this.isSyndicated() && value) || !value", message="Agency.Tranche.thirdPartySyndicate.invalid")
      *
      * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
@@ -257,8 +240,6 @@ class Tranche
     /**
      * @ORM\Column(type="date_immutable", nullable=true)
      *
-     * @Assert\GreaterThanOrEqual(value="today")
-     *
      * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private ?DateTimeImmutable $validityDate;
@@ -283,7 +264,6 @@ class Tranche
     public function __construct(
         Project $project,
         string $name,
-        bool $syndicated,
         string $color,
         string $loanType,
         string $repaymentType,
@@ -293,7 +273,6 @@ class Tranche
     ) {
         $this->project             = $project;
         $this->name                = $name;
-        $this->syndicated          = $syndicated;
         $this->thirdPartySyndicate = null;
         $this->color               = $color;
         $this->loanType            = $loanType;
@@ -334,20 +313,59 @@ class Tranche
         return $this;
     }
 
+    /**
+     * @Groups({"agency:tranche:read"})
+     */
     public function isSyndicated(): bool
     {
-        return $this->syndicated;
+        return false === $this->isUnsyndicated();
     }
 
-    public function setSyndicated(bool $syndicated): Tranche
+    /**
+     * @Groups({"agency:tranche:read"})
+     */
+    public function isUnsyndicated(): bool
     {
-        $this->syndicated = $syndicated;
+        return 2 > \count($this->allocations);
+    }
 
-        if (false === $syndicated) {
-            $this->allocations = new ArrayCollection();
+    /**
+     * @Groups({"agency:tranche:read"})
+     */
+    public function getSoleParticipant(): ?Company
+    {
+        if (1 === \count($this->allocations)) {
+            $allocations = $this->allocations->toArray();
+            /** @var ParticipationTrancheAllocation $allocation */
+            $allocation = \reset($allocations);
+
+            return $allocation->getParticipation()->getParticipant();
         }
 
-        return $this;
+        return null;
+    }
+
+    /**
+     * @Groups({"agency:tranche:read"})
+     */
+    public function isArrangerFinanced(): bool
+    {
+        $arrangerParticipation = $this->getProject()->getArrangerParticipation();
+
+        return null !== $arrangerParticipation
+            && null !== $this->getSoleParticipant()
+            && $arrangerParticipation->getParticipant() === $this->getSoleParticipant();
+    }
+
+    /**
+     * @Groups({"agency:tranche:read"})
+     */
+    public function isAgentFinanced(): bool
+    {
+        $agentCompany = $this->getProject()->getAgent()->getCompany();
+
+        return null !== $this->getSoleParticipant()
+            && $agentCompany === $this->getSoleParticipant();
     }
 
     public function getThirdPartySyndicate(): ?string
@@ -360,14 +378,6 @@ class Tranche
         $this->thirdPartySyndicate = $thirdPartySyndicate;
 
         return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isArrangerFullyFinanced()
-    {
-        return false === $this->isSyndicated() && null === $this->thirdPartySyndicate;
     }
 
     public function getColor(): string
@@ -562,15 +572,6 @@ class Tranche
      */
     public function validateCommission(ExecutionContextInterface $context)
     {
-        if (
-            ($this->getCommissionRate() || '0' === $this->getCommissionRate() || $this->getCommissionType())
-            && false === \in_array($this->getLoanType(), LoanType::getChargeableLoanTypes(), true)
-        ) {
-            $context->buildViolation('Agency.Tranche.commission.invalidLoanType')
-                ->addViolation()
-            ;
-        }
-
         if (($this->getCommissionRate() || '0' === $this->getCommissionRate()) xor $this->getCommissionType()) {
             $context->buildViolation('Agency.Tranche.commission.incomplete')
                 ->atPath($this->getCommissionType() ? 'commissionRate' : 'commissionType')

@@ -7,6 +7,9 @@ namespace Unilend\Core\Security\Voter;
 use InvalidArgumentException;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Unilend\Agency\Entity\Term;
+use Unilend\Agency\Repository\TermRepository;
+use Unilend\Agency\Security\Voter\TermVoter;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\FileDownload;
@@ -27,28 +30,21 @@ use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class FileDownloadVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-
     private FileVersionSignatureRepository $fileVersionSignatureRepository;
-
     private ProjectFileRepository $projectFileRepository;
-
     private ProjectRepository $projectRepository;
-
     private ProjectParticipationRepository $projectParticipationRepository;
-
     private MessageFileRepository $messageFileRepository;
+    private TermRepository $termRepository;
 
-    /**
-     * FileDownloadVoter constructor.
-     */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         FileVersionSignatureRepository $fileVersionSignatureRepository,
         ProjectFileRepository $projectFileRepository,
         ProjectRepository $projectRepository,
         ProjectParticipationRepository $projectParticipationRepository,
-        MessageFileRepository $messageFileRepository
+        MessageFileRepository $messageFileRepository,
+        TermRepository $termRepository
     ) {
         parent::__construct($authorizationChecker);
         $this->fileVersionSignatureRepository = $fileVersionSignatureRepository;
@@ -56,14 +52,15 @@ class FileDownloadVoter extends AbstractEntityVoter
         $this->projectRepository              = $projectRepository;
         $this->projectParticipationRepository = $projectParticipationRepository;
         $this->messageFileRepository          = $messageFileRepository;
+        $this->termRepository                 = $termRepository;
     }
 
     /**
-     * @param FileDownload $fileDownload
+     * @param FileDownload $subject
      */
-    protected function fulfillPreconditions($fileDownload, User $user): bool
+    protected function fulfillPreconditions($subject, User $user): bool
     {
-        return $fileDownload->getFileVersion()->getFile() && $fileDownload->getFileVersion() === $fileDownload->getFileVersion()->getFile()->getCurrentFileVersion();
+        return $subject->getFileVersion()->getFile() && $subject->getFileVersion() === $subject->getFileVersion()->getFile()->getCurrentFileVersion();
     }
 
     protected function canCreate(FileDownload $fileDownload, User $user): bool
@@ -72,6 +69,14 @@ class FileDownloadVoter extends AbstractEntityVoter
         $type    = $fileDownload->getType();
         $project = null;
         $staff   = $user->getCurrentStaff();
+
+        // TODO Move specific product code into its folder
+        // Before staff verification because borrower can download file
+        if (Term::FILE_TYPE_BORROWER_DOCUMENT === $type) {
+            $term = $this->termRepository->findOneBy(['borrowerDocument' => $file]);
+
+            return $term && $this->authorizationChecker->isGranted(TermVoter::ATTRIBUTE_VIEW, $term);
+        }
 
         if (null === $staff) {
             return false;
@@ -107,7 +112,7 @@ class FileDownloadVoter extends AbstractEntityVoter
                     break;
 
                 default:
-                    throw new InvalidArgumentException(sprintf('The type %s is not supported.', $type));
+                    throw new InvalidArgumentException(\sprintf('The type %s is not supported.', $type));
             }
         }
 
@@ -170,7 +175,7 @@ class FileDownloadVoter extends AbstractEntityVoter
     private function isAddedBeforeOfferCollected(Project $project, FileVersion $fileVersion): bool
     {
         $statuses  = $project->getStatuses();
-        $lastIndex = count($statuses) - 1;
+        $lastIndex = \count($statuses) - 1;
         /** @var int $i */
         for ($i = $lastIndex; $i <= 0; --$i) {
             $status = $statuses[$i];

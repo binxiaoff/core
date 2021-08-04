@@ -5,10 +5,32 @@ KLS Api
 Table of contents
 =================
 
-`Coding Standard <coding-standard.rst>`_
+Functional
+__________
+`Architecture <functional/architecture.rst>`_
 
-`PhpStorm setting <phpstorm-settings.rst>`_
+`Postman <functional/postman.rst>`_
 
-*How to*
+`Glossary <functional/glossary.rst>`_
 
-`Doctrine migration roll up <how-to/doctrine-migration-rollup.rst>`_
+`Tests <functional/tests.rst>`_
+
+Technical
+__________
+`Application configuration <technical/application-configuration.rst>`_
+
+`Coding Standard <technical/coding-standard.rst>`_
+
+`PhpStorm setting <technical/phpstorm-settings.rst>`_
+
+`Doctrine migration roll up <technical/doctrine-migration-rollup.rst>`_
+
+`Initialize dev environnement <technical/init-dev-env-docker.rst>`_
+
+`Create database table <technical/create-update-database-table.rst>`_
+
+`Grumphp <technical/grumphp.rst>`_
+
+`Tests <technical/tests.rst>`_
+
+`API Resource <technical/api-resource.rst>`_

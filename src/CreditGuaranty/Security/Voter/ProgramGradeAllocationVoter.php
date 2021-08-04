@@ -10,10 +10,6 @@ use Unilend\CreditGuaranty\Entity\ProgramGradeAllocation;
 
 class ProgramGradeAllocationVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_DELETE = 'delete';
-
     /**
      * @param ProgramGradeAllocation $subject
      */

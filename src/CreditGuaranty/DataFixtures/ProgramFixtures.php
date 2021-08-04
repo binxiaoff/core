@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\DataFixtures;
 
+use DateTimeImmutable;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\DataFixtures\CompanyGroupFixture;
 use Unilend\Core\DataFixtures\StaffFixtures;
+use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\Constant\CARatingType;
 use Unilend\Core\Entity\Embeddable\Money;
 use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Repository\CompanyGroupTagRepository;
 use Unilend\CreditGuaranty\Entity\Program;
 use Unilend\CreditGuaranty\Entity\ProgramStatus;
 
@@ -33,12 +33,15 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
     private const REFERENCE_COMMERCIALIZED = 'commercialized_program';
     private const REFERENCE_PAUSED         = 'paused_program';
 
-    private CompanyGroupTagRepository $companyGroupTagRepository;
-
-    public function __construct(TokenStorageInterface $tokenStorage, CompanyGroupTagRepository $companyGroupTagRepository)
+    /**
+     * @return string[]
+     */
+    public function getDependencies(): array
     {
-        parent::__construct($tokenStorage);
-        $this->companyGroupTagRepository = $companyGroupTagRepository;
+        return [
+            CompanyGroupFixture::class,
+            StaffFixtures::class,
+        ];
     }
 
     /**
@@ -49,31 +52,31 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
         $programData = [
             self::REFERENCE_DRAFT => [
                 'name'                 => 'Programme en brouillon',
-                'companyGroupTag'      => Program::COMPANY_GROUP_TAG_CORPORATE,
+                'companyGroupTag'      => CompanyGroupFixture::CORPORATE,
                 'funds'                => ['currency' => 'EUR', 'amount' => '100000000'],
                 'addedBy'              => StaffFixtures::CASA,
                 'currentStatus'        => ProgramStatus::STATUS_DRAFT,
-                'cappedAt'             => random_int(10, 40) / 100,
+                'cappedAt'             => \random_int(10, 40) / 100,
                 'description'          => 'La description pour le programme en brouillon',
-                'distributionDeadline' => new \DateTimeImmutable(),
+                'distributionDeadline' => new DateTimeImmutable(),
             ],
             self::REFERENCE_CANCELLED => [
                 'name'            => 'Programme annulée',
-                'companyGroupTag' => Program::COMPANY_GROUP_TAG_AGRICULTURE,
+                'companyGroupTag' => CompanyGroupFixture::AGRICULTURE,
                 'funds'           => ['currency' => 'EUR', 'amount' => '200000000'],
                 'addedBy'         => StaffFixtures::CASA,
                 'currentStatus'   => ProgramStatus::STATUS_ARCHIVED,
-                'cappedAt'        => random_int(10, 40) / 100,
+                'cappedAt'        => \random_int(10, 40) / 100,
             ],
             self::REFERENCE_COMMERCIALIZED => [
                 'name'                 => 'Programme commercialisée',
-                'companyGroupTag'      => Program::COMPANY_GROUP_TAG_AGRICULTURE,
+                'companyGroupTag'      => CompanyGroupFixture::AGRICULTURE,
                 'funds'                => ['currency' => 'EUR', 'amount' => '300000000'],
                 'addedBy'              => StaffFixtures::CASA,
                 'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,
                 'cappedAt'             => random_int(10, 40) / 100,
                 'description'          => 'La description pour le programme en distribution',
-                'distributionDeadline' => new \DateTimeImmutable(),
+                'distributionDeadline' => new DateTimeImmutable(),
                 'distributionProcess'  => [
                     'Création d’un dossier emprunteur',
                     'Vérification de l’éligibilité',
@@ -82,25 +85,32 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                     'Signature du client et contractualisation',
                     'Renseignement du N° de prêt et montant des réalisations',
                 ],
-                'guarantyDuration'    => 240,
-                'guarantyCoverage'    => '0.07',
-                'guarantyCost'        => ['currency' => 'EUR', 'amount' => '1000'],
-                'reservationDuration' => 2,
+                'guarantyDuration'        => 240,
+                'guarantyCoverage'        => '0.07',
+                'guarantyCost'            => ['currency' => 'EUR', 'amount' => '1000'],
+                'maxFeiCredit'            => ['currency' => 'EUR', 'amount' => '20000'],
+                'reservationDuration'     => 2,
+                'esbCalculationActivated' => $this->faker->boolean,
+                'loanReleasedOnInvoice'   => $this->faker->boolean,
             ],
             self::REFERENCE_PAUSED => [
-                'name'            => 'Programme en pause',
-                'companyGroupTag' => Program::COMPANY_GROUP_TAG_CORPORATE,
-                'funds'           => ['currency' => 'EUR', 'amount' => '400000000'],
-                'addedBy'         => StaffFixtures::CASA,
-                'currentStatus'   => ProgramStatus::STATUS_PAUSED,
+                'name'                    => 'Programme en pause',
+                'companyGroupTag'         => CompanyGroupFixture::CORPORATE,
+                'funds'                   => ['currency' => 'EUR', 'amount' => '400000000'],
+                'addedBy'                 => StaffFixtures::CASA,
+                'currentStatus'           => ProgramStatus::STATUS_PAUSED,
+                'esbCalculationActivated' => $this->faker->boolean,
+                'loanReleasedOnInvoice'   => $this->faker->boolean,
             ],
         ];
 
         foreach ($programData as $reference => $programDatum) {
-            $program = $this->buildProgram($programDatum, $manager);
+            $program = $this->buildProgram($programDatum);
             $manager->persist($program);
 
+            /** @var Staff $addedBy */
             $addedBy = $this->getReference($programDatum['addedBy']);
+
             if (ProgramStatus::STATUS_PAUSED === $programDatum['currentStatus']) {
                 $status = new ProgramStatus($program, ProgramStatus::STATUS_DISTRIBUTED, $addedBy);
                 $manager->persist($status);
@@ -113,16 +123,18 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
 
             $this->addReference($reference, $program);
         }
+
         $manager->flush();
     }
 
-    public function buildProgram(array $programDatum): Program
+    private function buildProgram(array $programDatum): Program
     {
         /** @var Staff $addedBy */
         $addedBy = $this->getReference($programDatum['addedBy']);
-        // todo: put the references on the compnayGroupTag and use them here
-        $companyGroupTag = $this->companyGroupTagRepository->findOneBy(['code' => $programDatum['companyGroupTag']]);
-        $program         = new Program($programDatum['name'], $companyGroupTag, new Money($programDatum['funds']['currency'], $programDatum['funds']['amount']), $addedBy);
+        /** @var CompanyGroupTag $companyGroupTag */
+        $companyGroupTag = $this->getReference($programDatum['companyGroupTag']);
+
+        $program = new Program($programDatum['name'], $companyGroupTag, new Money($programDatum['funds']['currency'], $programDatum['funds']['amount']), $addedBy);
 
         if (false === empty($programDatum['cappedAt'])) {
             $program->setCappedAt((string) $programDatum['cappedAt']);
@@ -152,24 +164,25 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
             $program->setGuarantyCost(new NullableMoney($programDatum['guarantyCost']['currency'], $programDatum['guarantyCost']['amount']));
         }
 
+        if (false === empty($programDatum['maxFeiCredit'])) {
+            $program->setMaxFeiCredit(new NullableMoney($programDatum['maxFeiCredit']['currency'], $programDatum['maxFeiCredit']['amount']));
+        }
+
         if (false === empty($programDatum['reservationDuration'])) {
             $program->setReservationDuration($programDatum['reservationDuration']);
         }
 
+        if (false === empty($programDatum['esbCalculationActivated'])) {
+            $program->setEsbCalculationActivated($programDatum['esbCalculationActivated']);
+        }
+
+        if (false === empty($programDatum['loanReleasedOnInvoice'])) {
+            $program->setLoanReleasedOnInvoice($programDatum['loanReleasedOnInvoice']);
+        }
+
         $cARatingType = CARatingType::getConstList();
-        $program->setRatingType($cARatingType[array_rand($cARatingType)]);
+        $program->setRatingType($cARatingType[\array_rand($cARatingType)]);
 
         return $program;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getDependencies(): array
-    {
-        return [
-            CompanyGroupFixture::class,
-            StaffFixtures::class,
-        ];
     }
 }

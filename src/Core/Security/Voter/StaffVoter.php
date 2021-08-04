@@ -4,27 +4,15 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Security\Voter;
 
-use Doctrine\ORM\Mapping\MappingException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\{Staff};
 use Unilend\Core\Repository\CompanyAdminRepository;
-use Unilend\Core\Repository\StaffRepository;
 
 class StaffVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW       = 'view';
-    public const ATTRIBUTE_EDIT       = 'edit';
-    public const ATTRIBUTE_DELETE     = 'delete';
-    public const ATTRIBUTE_CREATE     = 'create';
-
-    /** @var CompanyAdminRepository */
     private CompanyAdminRepository $companyAdminRepository;
 
-    /**
-     * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param CompanyAdminRepository        $companyAdminRepository
-     */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         CompanyAdminRepository $companyAdminRepository
@@ -35,9 +23,6 @@ class StaffVoter extends AbstractEntityVoter
 
     /**
      * @param Staff $subject
-     * @param User  $user
-     *
-     * @return bool
      */
     protected function fulfillPreconditions($subject, User $user): bool
     {
@@ -52,24 +37,15 @@ class StaffVoter extends AbstractEntityVoter
 
     /**
      * @param Staff $subject
-     * @param User  $submitterUser
-     *
-     * @return bool
      */
-    protected function isGrantedAll($subject, User $submitterUser): bool
+    protected function isGrantedAll($subject, User $user): bool
     {
         $company = $subject->getCompany();
 
-        return null !== $this->companyAdminRepository->findOneBy(['company' => $company, 'user' => $submitterUser]);
+        return null !== $this->companyAdminRepository->findOneBy(['company' => $company, 'user' => $user]);
     }
 
-    /**
-     * @param Staff $subject
-     * @param User  $user
-     *
-     * @return bool
-     */
-    protected function canCreate(Staff $subject, User $user): bool
+    protected function canCreate(Staff $staff, User $user): bool
     {
         $submitterStaff = $user->getCurrentStaff();
 
@@ -80,9 +56,9 @@ class StaffVoter extends AbstractEntityVoter
         return
             (
                 // You can create a staff for external banks
-                false === $subject->getCompany()->isCAGMember()
+                false === $staff->getCompany()->isCAGMember()
                 || (
-                    $submitterStaff->getCompany() === $subject->getCompany()
+                    $submitterStaff->getCompany() === $staff->getCompany()
                     && $submitterStaff->isManager()
                 )
             )
@@ -90,13 +66,7 @@ class StaffVoter extends AbstractEntityVoter
             && $submitterStaff->getCompany()->isCAGMember();
     }
 
-    /**
-     * @param $subject
-     * @param User $user
-     *
-     * @return bool
-     */
-    protected function canView($subject, User $user): bool
+    protected function canView(Staff $staff, User $user): bool
     {
         $submitterStaff = $user->getCurrentStaff();
 
@@ -104,16 +74,10 @@ class StaffVoter extends AbstractEntityVoter
             return false;
         }
 
-        return $subject === $submitterStaff || $this->isSuperior($submitterStaff, $subject);
+        return $staff === $submitterStaff || $this->isSuperior($submitterStaff, $staff);
     }
 
-    /**
-     * @param Staff $subject
-     * @param User  $user
-     *
-     * @return bool
-     */
-    protected function canEdit(Staff $subject, User $user): bool
+    protected function canEdit(Staff $staff, User $user): bool
     {
         $submitterStaff = $user->getCurrentStaff();
 
@@ -126,20 +90,14 @@ class StaffVoter extends AbstractEntityVoter
         }
 
         // A staff cannot edit self
-        if ($submitterStaff->getPublicId() === $subject->getPublicId()) {
+        if ($submitterStaff->getPublicId() === $staff->getPublicId()) {
             return false;
         }
 
-        return $this->isSuperior($submitterStaff, $subject);
+        return $this->isSuperior($submitterStaff, $staff);
     }
 
-    /**
-     * @param Staff $superior
-     * @param Staff $subordinate
-     *
-     * @return bool
-     */
-    private function isSuperior(Staff $superior, Staff $subordinate)
+    private function isSuperior(Staff $superior, Staff $subordinate): bool
     {
         if (false === $superior->isManager()) {
             return false;

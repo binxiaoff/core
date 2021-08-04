@@ -11,9 +11,12 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\User;
+use Unilend\Core\SwiftMailer\MailjetMessage;
 
 /**
  * @ApiResource(
@@ -177,5 +180,19 @@ class BorrowerMember extends AbstractProjectMember
     public function isArchived(): bool
     {
         return parent::isArchived();
+    }
+
+    public static function getProjectPublicationNotificationMailjetTemplateId(): int
+    {
+        return MailjetMessage::TEMPLATE_AGENCY_BORROWER_MEMBER_PROJECT_PUBLISHED;
+    }
+
+    public function getProjectFrontUrl(RouterInterface $router): string
+    {
+        return $router->generate(
+            'front_agencyBorrowerProjectView',
+            ['projectPublicId' => $this->getProject()->getPublicId(), 'borrowerPublicId' => $this->getPublicId()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
     }
 }

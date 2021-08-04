@@ -1,3 +1,11 @@
+agencyAgentProjectView:
+  path: /agency/dossier/{projectPublicId}
+agencyBorrowerProjectView:
+  path: /agency/dossier/{projectPublicId}/emprunteur/{borrowerPublicId}
+agencyParticipationProjectView:
+  path: /agency/dossier/{projectPublicId}/participation/{participationPublicId}
+agencyDashboard:
+  path: /agency/dashboard
 home:
   path: /
 projectForm:

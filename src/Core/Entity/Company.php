@@ -125,7 +125,7 @@ class Company implements TraceableStatusAwareInterface
      *
      * @Assert\NotBlank
      *
-     * @Groups({"company:read", "company:jwt:read"})
+     * @Groups({"company:read"})
      */
     private string $displayName;
 
@@ -134,7 +134,7 @@ class Company implements TraceableStatusAwareInterface
      *
      * @Assert\NotBlank
      *
-     * @Groups({"company:read", "company:jwt:read"})
+     * @Groups({"company:read"})
      */
     private string $companyName;
 
@@ -184,7 +184,7 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
      *
-     * @Groups({"company:read", "company:jwt:read"})
+     * @Groups({"company:read"})
      */
     private ?string $emailDomain;
 
@@ -193,7 +193,7 @@ class Company implements TraceableStatusAwareInterface
      *
      * @ORM\Column(type="string", length=10, nullable=false, unique=true)
      *
-     * @Groups({"company:read", "company:jwt:read"})
+     * @Groups({"company:read"})
      */
     private string $shortCode;
 
@@ -243,9 +243,9 @@ class Company implements TraceableStatusAwareInterface
         $this->companyGroup = null;
         $this->siren        = $siren;
         $moduleCodes        = CompanyModule::getAvailableModuleCodes();
-        $this->modules      = new ArrayCollection(array_map(function ($module) {
+        $this->modules      = new ArrayCollection(\array_map(function ($module) {
             return new CompanyModule($module, $this);
-        }, array_combine($moduleCodes, $moduleCodes)));
+        }, \array_combine($moduleCodes, $moduleCodes)));
         $this->applicableVat = static::VAT_METROPOLITAN;
         $this->setCurrentStatus(new CompanyStatus($this, CompanyStatus::STATUS_PROSPECT));
     }
@@ -301,7 +301,7 @@ class Company implements TraceableStatusAwareInterface
      */
     public function getStaffCount(): int
     {
-        return iterator_count($this->getStaff());
+        return \iterator_count($this->getStaff());
     }
 
     public function findStaffByUser(User $user): ?Staff
@@ -374,6 +374,9 @@ class Company implements TraceableStatusAwareInterface
         return $this;
     }
 
+    /**
+     * @Groups({"company:read"})
+     */
     public function hasSigned(): bool
     {
         /** @var CompanyStatus $currentStatus */
@@ -413,7 +416,7 @@ class Company implements TraceableStatusAwareInterface
             return $module->getCode();
         });
 
-        return array_values($activatedModuleCodes->toArray());
+        return \array_values($activatedModuleCodes->toArray());
     }
 
     /**
@@ -493,7 +496,7 @@ class Company implements TraceableStatusAwareInterface
      */
     public function isEligibleParticipant(): bool
     {
-        return !in_array($this->shortCode, self::NON_ELIGIBLE_TO_PARTICIPANT);
+        return !\in_array($this->shortCode, self::NON_ELIGIBLE_TO_PARTICIPANT);
     }
 
     /**

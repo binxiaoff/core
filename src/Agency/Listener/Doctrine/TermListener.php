@@ -9,17 +9,9 @@ use Doctrine\ORM\ORMException;
 use Exception;
 use Unilend\Agency\Entity\Term;
 use Unilend\Agency\Entity\TermHistory;
-use Unilend\Agency\Repository\TermHistoryRepository;
 
 class TermListener
 {
-    private TermHistoryRepository $termHistoryRepository;
-
-    public function __construct(TermHistoryRepository $termHistoryRepository)
-    {
-        $this->termHistoryRepository = $termHistoryRepository;
-    }
-
     /**
      * @throws ORMException
      * @throws Exception
@@ -35,15 +27,8 @@ class TermListener
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
             if ($entity instanceof Term) {
-                $changeSet = $uow->getEntityChangeSet($entity);
+                $historyEntry = new TermHistory($entity);
 
-                $historyEntry = $this->termHistoryRepository->findLatestHistoryEntry($entity);
-
-                if (null === $historyEntry || \array_key_exists('borrowerInput', $changeSet) || \array_key_exists('borrowerDocument', $changeSet)) {
-                    $historyEntry = new TermHistory($entity);
-                }
-
-                $historyEntry->update($entity);
                 $em->persist($historyEntry);
 
                 $uow->computeChangeSet($termHistoryMetadata, $historyEntry);

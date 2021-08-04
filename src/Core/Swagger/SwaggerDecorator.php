@@ -11,13 +11,8 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class SwaggerDecorator implements NormalizerInterface
 {
     private NormalizerInterface $decorated;
-
     private RouterInterface $router;
 
-    /**
-     * @param NormalizerInterface $decorated
-     * @param RouterInterface     $router
-     */
     public function __construct(NormalizerInterface $decorated, RouterInterface $router)
     {
         $this->decorated = $decorated;
@@ -25,20 +20,135 @@ class SwaggerDecorator implements NormalizerInterface
     }
 
     /**
-     * @param mixed       $object
-     * @param string|null $format
-     * @param array       $context
+     * @param mixed $data
+     */
+    public function supportsNormalization($data, ?string $format = null): bool
+    {
+        return $this->decorated->supportsNormalization($data, $format);
+    }
+
+    /**
+     * @param mixed $object
      *
      * @throws ExceptionInterface
-     *
-     * @return array
      */
     public function normalize($object, ?string $format = null, array $context = []): array
     {
         /** @var array $docs */
         $docs = $this->decorated->normalize($object, $format, $context);
 
-        $docs['paths'][$this->router->generate('gesdinet_jwt_refresh_token')] = [
+        // Definitions
+        $docs['definitions']['Folder'] = [
+            'properties' => [
+                'name' => ['type' => 'string'],
+            ],
+        ];
+
+        // Paths
+        $authenticationPaths = [
+            $this->router->generate('authentication_token')       => $this->generateAuthenticationTokenPath(),
+            $this->router->generate('gesdinet_jwt_refresh_token') => $this->generateRefreshTokenPath(),
+        ];
+        // put authentication paths at top of the list
+        $docs['paths'] = \array_merge($authenticationPaths, $docs['paths']);
+
+        // @todo to refactorize in CALS-4262
+        // remove unused routes (ItemOperations are necessary for APIPlatform but we don't expose those endpoints)
+        $removedGetRoutes = [
+            '/acceptations_legal_docs/{id}',
+            '/company_modules/{id}',
+            '/files/{id}',
+            '/file_versions/{id}',
+            '/legal_documents/{id}',
+            '/project_files/{id}',
+            '/project_organizers/{id}',
+            '/project_statuses/{id}',
+            '/project_participation_collections/{id}',
+            '/project_participation_members/{id}',
+            '/project_participation_statuses/{id}',
+            '/project_participation_tranches/{id}',
+            '/staff_statuses/{id}',
+        ];
+
+        foreach ($removedGetRoutes as $route) {
+            if (isset($docs['paths'][$route]['get'])) {
+                unset($docs['paths'][$route]['get']);
+            }
+        }
+
+        return $docs;
+    }
+
+    private function generateAuthenticationTokenPath(): array
+    {
+        return [
+            'post' => [
+                'tags'        => ['Authentication'],
+                'operationId' => 'postAuthenticationToken',
+                'summary'     => 'Retrieve authentication tokens',
+                'requestBody' => [
+                    'content' => [
+                        'application/x-www-form-urlencoded' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'username' => [
+                                        'description' => 'Email',
+                                        'type'        => 'string',
+                                    ],
+                                    'password' => [
+                                        'description' => 'Password',
+                                        'type'        => 'string',
+                                    ],
+                                    'captchaValue' => [
+                                        'description' => 'Captcha value',
+                                        'type'        => 'string',
+                                    ],
+                                ],
+                                'required' => ['username', 'password', 'captchaValue'],
+                            ],
+                        ],
+                    ],
+                ],
+                'responses' => [
+                    '200' => [
+                        'description' => 'Retrieving succeeded',
+                        'content'     => [
+                            'application/x-form-' => [
+                                'schema' => [
+                                    'type'       => 'object',
+                                    'properties' => [
+                                        'username' => [
+                                            'description' => 'Email',
+                                            'type'        => 'string',
+                                        ],
+                                        'password' => [
+                                            'description' => 'Password',
+                                            'type'        => 'string',
+                                        ],
+                                        'captchaValue' => [
+                                            'description' => 'Captcha value',
+                                            'type'        => 'string',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    '401' => [
+                        'description' => 'Invalid credentials',
+                        'content'     => [
+                            'application/json' => [],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    private function generateRefreshTokenPath(): array
+    {
+        return [
             'post' => [
                 'tags'        => ['Authentication'],
                 'operationId' => 'postRefreshToken',
@@ -61,7 +171,7 @@ class SwaggerDecorator implements NormalizerInterface
                 ],
                 'responses' => [
                     '200' => [
-                        'description' => 'Refresh succeded',
+                        'description' => 'Refresh succeeded',
                         'content'     => [
                             'application/x-form-' => [
                                 'schema' => [
@@ -77,7 +187,7 @@ class SwaggerDecorator implements NormalizerInterface
                         ],
                     ],
                     '401' => [
-                        'description' => 'Refresh token don\'t exist',
+                        'description' => 'Refresh token does not exist',
                         'content'     => [
                             'application/json' => [],
                         ],
@@ -85,48 +195,5 @@ class SwaggerDecorator implements NormalizerInterface
                 ],
             ],
         ];
-
-        // Remove unused routes (ItemOperations are necessary for APIPlatform but we don't expose those endpoints)
-        $removedGetRoutes = [
-            '/acceptations_legal_docs/{id}',
-            '/company_modules/{id}',
-            '/files/{id}',
-            '/file_versions/{id}',
-            '/legal_documents/{id}',
-            '/project_files/{id}',
-            '/project_messages/{id}',
-            '/project_organizers/{id}',
-            '/project_statuses/{id}',
-            '/project_participation_collections/{id}',
-            '/project_participation_members/{id}',
-            '/project_participation_statuses/{id}',
-            '/project_participation_tranches/{id}',
-            '/staff_statuses/{id}',
-        ];
-
-        foreach ($removedGetRoutes as $route) {
-            if (isset($docs['paths'][$route]['get'])) {
-                unset($docs['paths'][$route]['get']);
-            }
-        }
-
-        $docs['definitions']['Folder'] = [
-            'properties' => [
-                'name' => ['type' => 'string'],
-            ],
-        ];
-
-        return $docs;
-    }
-
-    /**
-     * @param mixed       $data
-     * @param string|null $format
-     *
-     * @return bool
-     */
-    public function supportsNormalization($data, ?string $format = null): bool
-    {
-        return $this->decorated->supportsNormalization($data, $format);
     }
 }

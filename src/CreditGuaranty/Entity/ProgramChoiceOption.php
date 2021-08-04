@@ -20,8 +20,9 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
+ * Pagination need to be enabled (which is the default configuration) on the resource, otherwise it will be out of memory.
+ *
  * @ApiResource(
- *     attributes={"pagination_enabled": false},
  *     normalizationContext={"groups": {"creditGuaranty:programChoiceOption:read", "creditGuaranty:field:read", "timestampable:read"}},
  *     denormalizationContext={"groups": {"creditGuaranty:programChoiceOption:write"}},
  *     itemOperations={
@@ -41,7 +42,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *     }
  * )
  *
- * @ApiFilter(SearchFilter::class, properties={"field.publicId"})
+ * @ApiFilter(SearchFilter::class, properties={"field.publicId", "field.fieldAlias"})
  *
  * @ORM\Entity
  * @ORM\Table(
@@ -67,7 +68,7 @@ class ProgramChoiceOption
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:programChoiceOption:create"})
+     * @Groups({"creditGuaranty:programChoiceOption:read", "creditGuaranty:programChoiceOption:create"})
      */
     private Program $program;
 
@@ -132,7 +133,7 @@ class ProgramChoiceOption
             return true;
         }
 
-        return in_array($this->description, $this->getField()->getPredefinedItems(), true);
+        return \in_array($this->description, $this->getField()->getPredefinedItems(), true);
     }
 
     /**
@@ -172,7 +173,7 @@ class ProgramChoiceOption
             return;
         }
 
-        if (count($this->field->getPredefinedItems()) && false === in_array($this->description, $this->field->getPredefinedItems(), true)) {
+        if (\count($this->field->getPredefinedItems()) && false === \in_array($this->description, $this->field->getPredefinedItems(), true)) {
             $context->buildViolation('CreditGuaranty.ProgramChoiceOption.invalid')->atPath('description')->addViolation();
         }
     }

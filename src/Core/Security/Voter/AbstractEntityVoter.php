@@ -12,33 +12,27 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
 
 abstract class AbstractEntityVoter extends Voter
 {
-    // TODO CALS-3576 Move common attribute here as they are the same everywhere
     use ConstantsAwareTrait;
 
-    /** @var AuthorizationCheckerInterface */
+    public const ATTRIBUTE_CREATE = 'create';
+    public const ATTRIBUTE_VIEW   = 'view';
+    public const ATTRIBUTE_EDIT   = 'edit';
+    public const ATTRIBUTE_DELETE = 'delete';
+
     protected AuthorizationCheckerInterface $authorizationChecker;
 
-    /**
-     * @param AuthorizationCheckerInterface $authorizationChecker
-     */
     public function __construct(AuthorizationCheckerInterface $authorizationChecker)
     {
         $this->authorizationChecker = $authorizationChecker;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     final protected function supports($attribute, $subject): bool
     {
-        $entityClass = str_replace(['Security\\Voter\\', 'Voter'], ['Entity\\', ''], static::class);
+        $entityClass = \str_replace(['Security\\Voter\\', 'Voter'], ['Entity\\', ''], static::class);
 
         return $subject instanceof $entityClass && \in_array($attribute, static::getConstants('ATTRIBUTE_'), true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     final protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
         $user = $this->getUser($token);
@@ -51,20 +45,15 @@ abstract class AbstractEntityVoter extends Voter
             return true;
         }
 
-        $methodName = 'can' . implode('', array_map('ucfirst', explode('_', $attribute)));
+        $methodName = 'can' . \implode('', \array_map('ucfirst', \explode('_', $attribute)));
 
-        if (false === method_exists($this, $methodName)) {
+        if (false === \method_exists($this, $methodName)) {
             return false;
         }
 
         return $user && $this->fulfillPreconditions($subject, $user) && $this->{$methodName}($subject, $user);
     }
 
-    /**
-     * @param TokenInterface $token
-     *
-     * @return User|null
-     */
     protected function getUser(TokenInterface $token): ?User
     {
         /** @var User $user */
@@ -75,9 +64,6 @@ abstract class AbstractEntityVoter extends Voter
 
     /**
      * @param mixed $subject
-     * @param User  $user
-     *
-     * @return bool
      */
     protected function isGrantedAll($subject, User $user): bool
     {
@@ -86,9 +72,6 @@ abstract class AbstractEntityVoter extends Voter
 
     /**
      * @param mixed $subject
-     * @param User  $user
-     *
-     * @return bool
      */
     protected function fulfillPreconditions($subject, User $user): bool
     {

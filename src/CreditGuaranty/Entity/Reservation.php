@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -13,12 +16,19 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Core\Controller\Dataroom\Delete;
+use Unilend\Core\Controller\Dataroom\Get;
+use Unilend\Core\Controller\Dataroom\Post;
 use Unilend\Core\Entity\Company;
+use Unilend\Core\Entity\Drive;
+use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Interfaces\DriveCarrierInterface;
 use Unilend\Core\Entity\Interfaces\StatusInterface;
 use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\Core\Service\MoneyCalculator;
 
 /**
  * @ApiResource(
@@ -26,17 +36,12 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *         "creditGuaranty:reservation:read",
  *         "creditGuaranty:reservationStatus:read",
  *         "creditGuaranty:borrower:read",
- *         "creditGuaranty:borrowerBusinessActivity:read",
  *         "creditGuaranty:project:read",
  *         "money:read",
  *         "nullableMoney:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "creditGuaranty:reservation:write",
- *         "creditGuaranty:reservation:write",
- *         "creditGuaranty:borrower:write",
- *         "creditGuaranty:borrowerBusinessActivity:write",
- *         "creditGuaranty:project:write",
  *         "money:write",
  *         "nullableMoney:write"
  *     }},
@@ -49,21 +54,71 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)"
+ *         },
+ *         "get_reservation_dataroom": {
+ *             "method": "GET",
+ *             "path": "/credit_guaranty/reservation/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('view', object)",
+ *             "controller": Get::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "post_reservation_dataroom": {
+ *             "method": "POST",
+ *             "path": "/credit_guaranty/reservation/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('edit', object)",
+ *             "deserialize": false,
+ *             "controller": Post::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             },
+ *             "normalization_context": {
+ *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *             }
+ *         },
+ *         "delete_reservation_dataroom": {
+ *             "method": "DELETE",
+ *             "path": "/credit_guaranty/reservation/{publicId}/dataroom/{path?}",
+ *             "security": "is_granted('edit', object)",
+ *             "controller": Delete::class,
+ *             "requirements": {
+ *                 "path": ".+"
+ *             },
+ *             "defaults": {
+ *                 "path": "/"
+ *             }
  *         }
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)"
  *         },
- *         "get"
+ *         "get",
+ *         "api_credit_guaranty_programs_reservations_get_subresource": {
+ *             "method": "GET",
+ *             "pagination_client_items_per_page": true
+ *         }
  *     }
  * )
+ *
+ * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
+ * @ApiFilter(OrderFilter::class, properties={"currentStatus.added"}, arguments={"orderParameterName": "order"})
  *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_reservation")
  * @ORM\HasLifecycleCallbacks
  */
-class Reservation implements TraceableStatusAwareInterface
+class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -77,6 +132,13 @@ class Reservation implements TraceableStatusAwareInterface
     private Program $program;
 
     /**
+     * @ORM\Column(type="string", nullable=true)
+     *
+     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
+     */
+    private ?string $name;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
      * @ORM\JoinColumn(name="id_managing_company", nullable=false)
      *
@@ -85,34 +147,33 @@ class Reservation implements TraceableStatusAwareInterface
     private Company $managingCompany;
 
     /**
-     * @ApiSubresource
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Borrower", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
      *
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Borrower", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
-     * @ORM\JoinColumn(name="id_borrower", nullable=false)
-     *
-     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
+     * @Groups({"creditGuaranty:reservation:read"})
      */
-    private Borrower $borrower;
+    private ?Borrower $borrower = null;
 
     /**
-     * @ApiSubresource
+     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Project", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
      *
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\BorrowerBusinessActivity", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
-     * @ORM\JoinColumn(name="id_borrower_business_activity")
-     *
-     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
-     */
-    private ?BorrowerBusinessActivity $borrowerBusinessActivity = null;
-
-    /**
-     * @ApiSubresource
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Project", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
-     * @ORM\JoinColumn(name="id_project")
-     *
-     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
+     * @Groups({"creditGuaranty:reservation:read"})
      */
     private ?Project $project = null;
+
+    /**
+     * @var Collection|FinancingObject[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\FinancingObject", mappedBy="reservation", orphanRemoval=true, fetch="EXTRA_LAZY")
+     */
+    private Collection $financingObjects;
+
+    /**
+     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Drive", cascade={"persist", "remove"})
+     * @ORM\JoinColumn(name="id_drive", nullable=false, unique=true)
+     */
+    private Drive $drive;
 
     /**
      * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\ReservationStatus", cascade={"persist"})
@@ -141,20 +202,18 @@ class Reservation implements TraceableStatusAwareInterface
     private Collection $statuses;
 
     /**
-     * @var Collection|FinancingObject[]
+     * @ORM\Column(type="date_immutable", nullable=true)
      *
-     * @ApiSubresource
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\FinancingObject", mappedBy="reservation", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
      */
-    private Collection $financingObjects;
+    private ?DateTimeImmutable $signingDate = null;
 
-    public function __construct(Program $program, Borrower $borrower, Staff $addedBy)
+    public function __construct(Program $program, Staff $addedBy)
     {
         $this->program          = $program;
         $this->managingCompany  = $addedBy->getCompany();
-        $this->borrower         = $borrower;
         $this->financingObjects = new ArrayCollection();
+        $this->drive            = new Drive();
         $this->added            = new DateTimeImmutable();
         $this->statuses         = new ArrayCollection();
         $this->setCurrentStatus(new ReservationStatus($this, ReservationStatus::STATUS_DRAFT, $addedBy));
@@ -165,12 +224,24 @@ class Reservation implements TraceableStatusAwareInterface
         return $this->program;
     }
 
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): Reservation
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
     public function getManagingCompany(): Company
     {
         return $this->managingCompany;
     }
 
-    public function getBorrower(): Borrower
+    public function getBorrower(): ?Borrower
     {
         return $this->borrower;
     }
@@ -178,18 +249,6 @@ class Reservation implements TraceableStatusAwareInterface
     public function setBorrower(Borrower $borrower): Reservation
     {
         $this->borrower = $borrower;
-
-        return $this;
-    }
-
-    public function getBorrowerBusinessActivity(): ?BorrowerBusinessActivity
-    {
-        return $this->borrowerBusinessActivity;
-    }
-
-    public function setBorrowerBusinessActivity(?BorrowerBusinessActivity $borrowerBusinessActivity): Reservation
-    {
-        $this->borrowerBusinessActivity = $borrowerBusinessActivity;
 
         return $this;
     }
@@ -209,6 +268,20 @@ class Reservation implements TraceableStatusAwareInterface
     public function getFinancingObjects()
     {
         return $this->financingObjects;
+    }
+
+    public function addFinancingObject(FinancingObject $financingObject): Reservation
+    {
+        if (false === $this->financingObjects->contains($financingObject)) {
+            $this->financingObjects->add($financingObject);
+        }
+
+        return $this;
+    }
+
+    public function getDrive(): Drive
+    {
+        return $this->drive;
     }
 
     /**
@@ -250,6 +323,18 @@ class Reservation implements TraceableStatusAwareInterface
         return $this;
     }
 
+    public function getSigningDate(): ?DateTimeImmutable
+    {
+        return $this->signingDate;
+    }
+
+    public function setSigningDate(?DateTimeImmutable $signingDate): Reservation
+    {
+        $this->signingDate = $signingDate;
+
+        return $this;
+    }
+
     public function archive(Staff $archivedBy): Reservation
     {
         $this->setCurrentStatus(new ReservationStatus($this, ReservationStatus::STATUS_ARCHIVED, $archivedBy));
@@ -267,6 +352,11 @@ class Reservation implements TraceableStatusAwareInterface
         return ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY === $this->getCurrentStatus()->getStatus();
     }
 
+    public function isRefusedByManagingCompany(): bool
+    {
+        return ReservationStatus::STATUS_REFUSED_BY_MANAGING_COMPANY === $this->getCurrentStatus()->getStatus();
+    }
+
     public function isFormalized(): bool
     {
         return ReservationStatus::STATUS_CONTRACT_FORMALIZED === $this->getCurrentStatus()->getStatus();
@@ -275,5 +365,27 @@ class Reservation implements TraceableStatusAwareInterface
     public function isArchived(): bool
     {
         return ReservationStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
+    }
+
+    public function getDateByStatus(int $status): ?DateTimeImmutable
+    {
+        foreach ($this->getStatuses() as $reservationStatus) {
+            if ($status === $reservationStatus->getStatus()) {
+                return $reservationStatus->getAdded();
+            }
+        }
+
+        return null;
+    }
+
+    public function isGrossSubsidyEquivalentEligible(): bool
+    {
+        $grossSubsidyEquivalents = $this->getFinancingObjects()->map(static fn (FinancingObject $financingObject) => $financingObject->getGrossSubsidyEquivalent())->toArray();
+        $esbTotal                = MoneyCalculator::sum($grossSubsidyEquivalents);
+        $maxFeiCredit            = $this->getProject()->getMaxFeiCredit();
+
+        $comparison = MoneyCalculator::compare($esbTotal, $maxFeiCredit);
+
+        return 0 >= $comparison;
     }
 }

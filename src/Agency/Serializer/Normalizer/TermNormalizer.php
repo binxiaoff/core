@@ -47,7 +47,7 @@ class TermNormalizer implements ContextAwareDenormalizerInterface, DenormalizerA
         $sharing = $data['shared'] ?? false;
         unset($data['shared']);
 
-        $archived = $data['archived'] ?? false;
+        $archiving = $data['archived'] ?? false;
         unset($data['archived']);
 
         $objectToPopulate = $this->extractObjectToPopulate(Term::class, $context);
@@ -55,7 +55,7 @@ class TermNormalizer implements ContextAwareDenormalizerInterface, DenormalizerA
         $isAgent = $this->security->isGranted(TermVoter::ATTRIBUTE_AGENT, $objectToPopulate);
 
         if ($isAgent) {
-            $context['groups'] = array_merge($context['groups'] ?? [], ['agency:term:update:agent']);
+            $context['groups'] = \array_merge($context['groups'] ?? [], ['agency:term:update:agent']);
         }
 
         /** @var Term $term */
@@ -65,11 +65,22 @@ class TermNormalizer implements ContextAwareDenormalizerInterface, DenormalizerA
             return $term;
         }
 
-        if ($sharing && $isAgent && (false === $term->isShared())) {
+        if (
+            $sharing
+            && $isAgent
+            && (false === $term->isShared())
+            && ($term->hasBreach() || $term->getWaiver() || $term->isValid())
+        ) {
             $term->share();
         }
 
-        if ($archived && $isAgent && $term->isShared() && false === $term->isArchived()) {
+        if (
+            $archiving
+            && $isAgent
+            && $term->isShared()
+            && false === $term->isArchived()
+            && (false === $term->hasBreach() || null !== $term->getWaiver())
+        ) {
             $term->archive();
         }
 

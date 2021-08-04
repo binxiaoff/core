@@ -11,23 +11,19 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class CovenantVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_DELETE = 'delete';
+    protected function canCreate(Covenant $covenant, User $user): bool
+    {
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $covenant->getProject())
+            && $covenant->getProject()->isEditable();
+    }
 
     /**
      * @throws Exception
      */
     protected function canView(Covenant $covenant, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $covenant->getProject());
-    }
-
-    protected function canCreate(Covenant $covenant, User $user): bool
-    {
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $covenant->getProject())
-            && $covenant->getProject()->isEditable();
+        return $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $covenant->getProject())
+            && ($covenant->isPublished() || $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $covenant->getProject()));
     }
 
     /**

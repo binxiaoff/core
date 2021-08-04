@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -41,9 +43,18 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *         "get": {
  *             "normalization_context": {"groups": {
  *                 "creditGuaranty:participation:list",
- *                 "creditGuaranty:program:list",
+ *                 "creditGuaranty:programStatus:read",
  *                 "money:read"
  *             }}
+ *         }
+ *     }
+ * )
+ *
+ * @ApiFilter(
+ *     filterClass=GroupFilter::class,
+ *     arguments={
+ *         "whitelist": {
+ *             "creditGuaranty:program:list",
  *         }
  *     }
  * )
@@ -71,7 +82,7 @@ class Participation
      *
      * @ApiProperty(writableLink=false)
      *
-     * @Groups({"creditGuaranty:participation:list", "creditGuaranty:participation:create"})
+     * @Groups({"creditGuaranty:participation:list", "creditGuaranty:participation:read", "creditGuaranty:participation:create"})
      */
     private Program $program;
 
@@ -180,7 +191,7 @@ class Participation
      */
     public function isParticipantValid(): bool
     {
-        return in_array($this->getParticipant()->getShortCode(), CARegionalBank::REGIONAL_BANKS, true);
+        return \in_array($this->getParticipant()->getShortCode(), CARegionalBank::REGIONAL_BANKS, true);
     }
 
     private function countParticipantReservationByStatus(int $status): int

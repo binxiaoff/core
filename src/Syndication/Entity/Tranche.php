@@ -6,15 +6,22 @@ namespace Unilend\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Validator\{Constraints as Assert, Context\ExecutionContextInterface};
-use Unilend\Core\Entity\Constant\Tranche\{CommissionType, LoanType, RepaymentType};
-use Unilend\Core\Entity\Embeddable\{LendingRate, Money, NullableMoney};
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Unilend\Core\Entity\Constant\Tranche\CommissionType;
+use Unilend\Core\Entity\Constant\Tranche\LoanType;
+use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
+use Unilend\Core\Entity\Embeddable\LendingRate;
+use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Interfaces\MoneyInterface;
-use Unilend\Core\Entity\Traits\{PublicizeIdentityTrait, TimestampableTrait};
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
@@ -56,8 +63,6 @@ class Tranche
     public const UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY = 'third_party';
 
     /**
-     * @var Project
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Project", inversedBy="tranches")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
@@ -66,8 +71,6 @@ class Tranche
     private Project $project;
 
     /**
-     * @var string
-     *
      * @ORM\Column(length=191)
      *
      * @Assert\NotBlank
@@ -79,8 +82,6 @@ class Tranche
     private string $name;
 
     /**
-     * @var string
-     *
      * @ORM\Column(length=30)
      *
      * @Assert\NotBlank
@@ -93,8 +94,6 @@ class Tranche
     private string $loanType;
 
     /**
-     * @var string
-     *
      * @ORM\Column(length=30)
      *
      * @Assert\NotBlank
@@ -108,8 +107,6 @@ class Tranche
 
     /**
      * Duration in month. It is used to calculate the maturity date once the project is funded.
-     *
-     * @var int
      *
      * @ORM\Column(type="smallint")
      *
@@ -125,8 +122,6 @@ class Tranche
     /**
      * The capital repayment periodicity in month.
      *
-     * @var int|null
-     *
      * @ORM\Column(type="smallint", nullable=true)
      *
      * @Gedmo\Versioned
@@ -136,8 +131,6 @@ class Tranche
     /**
      * The interest repayment periodicity in month.
      *
-     * @var int|null
-     *
      * @ORM\Column(type="smallint", nullable=true)
      *
      * @Gedmo\Versioned
@@ -145,8 +138,6 @@ class Tranche
     private ?int $interestPeriodicity;
 
     /**
-     * @var Money
-     *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
      *
      * @Assert\NotBlank
@@ -159,8 +150,6 @@ class Tranche
     private Money $money;
 
     /**
-     * @var LendingRate
-     *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\LendingRate")
      *
      * @Assert\NotBlank
@@ -173,8 +162,6 @@ class Tranche
     private LendingRate $rate;
 
     /**
-     * @var DateTimeImmutable|null
-     *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Gedmo\Versioned
@@ -182,8 +169,6 @@ class Tranche
     private ?DateTimeImmutable $expectedReleasingDate;
 
     /**
-     * @var DateTimeImmutable|null
-     *
      * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Gedmo\Versioned
@@ -191,8 +176,6 @@ class Tranche
     private ?DateTimeImmutable $expectedStartingDate;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
@@ -203,8 +186,6 @@ class Tranche
     private ?string $commissionType = null;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
@@ -220,8 +201,6 @@ class Tranche
     private ?string $commissionRate = null;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="text", nullable=true)
      *
      * @Groups({"tranche:write", "tranche:read"})
@@ -229,8 +208,6 @@ class Tranche
     private ?string $comment;
 
     /**
-     * @var bool
-     *
      * @ORM\Column(type="boolean")
      *
      * @Groups({"tranche:write", "tranche:read"})
@@ -238,8 +215,6 @@ class Tranche
     private bool $syndicated;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\Expression(
@@ -253,8 +228,6 @@ class Tranche
     private ?string $unsyndicatedFunderType;
 
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\Expression(
@@ -267,8 +240,6 @@ class Tranche
     private ?string $thirdPartyFunder;
 
     /**
-     * @var string
-     *
      * @ORM\Column(type="string")
      *
      * @Assert\Regex(pattern="/#[0-9a-f]{3}([0-9a-f]{3})?/i", message="Syndication.Tranche.color.regex")
@@ -288,14 +259,6 @@ class Tranche
     private $projectParticipationTranches;
 
     /**
-     * @param Project $project
-     * @param Money   $money
-     * @param string  $name
-     * @param int     $duration
-     * @param string  $repaymentType
-     * @param string  $loanType
-     * @param string  $color
-     *
      * @throws \Exception
      */
     public function __construct(Project $project, Money $money, string $name, int $duration, string $repaymentType, string $loanType, string $color)
@@ -315,19 +278,11 @@ class Tranche
         $this->thirdPartyFunder             = null;
     }
 
-    /**
-     * @return Project
-     */
     public function getProject(): Project
     {
         return $this->project;
     }
 
-    /**
-     * @param Project $project
-     *
-     * @return Tranche
-     */
     public function setProject(Project $project): Tranche
     {
         $this->project = $project;
@@ -335,19 +290,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @param string $name
-     *
-     * @return Tranche
-     */
     public function setName(string $name): Tranche
     {
         $this->name = $name;
@@ -355,19 +302,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return Money
-     */
     public function getMoney(): Money
     {
         return $this->money;
     }
 
-    /**
-     * @param Money $money
-     *
-     * @return Tranche
-     */
     public function setMoney(Money $money): Tranche
     {
         $this->money = $money;
@@ -375,19 +314,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getLoanType(): string
     {
         return $this->loanType;
     }
 
-    /**
-     * @param string $loanType
-     *
-     * @return Tranche
-     */
     public function setLoanType(string $loanType): Tranche
     {
         if (false === \in_array($loanType, LoanType::getChargeableLoanTypes())) {
@@ -401,19 +332,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getRepaymentType(): string
     {
         return $this->repaymentType;
     }
 
-    /**
-     * @param string $repaymentType
-     *
-     * @return Tranche
-     */
     public function setRepaymentType(string $repaymentType): Tranche
     {
         $this->repaymentType = $repaymentType;
@@ -421,19 +344,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getDuration(): int
     {
         return $this->duration;
     }
 
-    /**
-     * @param int $duration
-     *
-     * @return Tranche
-     */
     public function setDuration(int $duration): Tranche
     {
         $this->duration = $duration;
@@ -441,19 +356,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return int|null
-     */
     public function getCapitalPeriodicity(): ?int
     {
         return $this->capitalPeriodicity;
     }
 
-    /**
-     * @param int $capitalPeriodicity
-     *
-     * @return Tranche
-     */
     public function setCapitalPeriodicity(int $capitalPeriodicity): Tranche
     {
         $this->capitalPeriodicity = $capitalPeriodicity;
@@ -461,19 +368,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return int|null
-     */
     public function getInterestPeriodicity(): ?int
     {
         return $this->interestPeriodicity;
     }
 
-    /**
-     * @param int $interestPeriodicity
-     *
-     * @return Tranche
-     */
     public function setInterestPeriodicity(int $interestPeriodicity): Tranche
     {
         $this->interestPeriodicity = $interestPeriodicity;
@@ -481,19 +380,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return LendingRate
-     */
     public function getRate(): LendingRate
     {
         return $this->rate;
     }
 
-    /**
-     * @param LendingRate $rate
-     *
-     * @return Tranche
-     */
     public function setRate(LendingRate $rate): Tranche
     {
         $this->rate = $rate;
@@ -501,19 +392,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return DateTimeImmutable|null
-     */
     public function getExpectedReleasingDate(): ?DateTimeImmutable
     {
         return $this->expectedReleasingDate;
     }
 
-    /**
-     * @param DateTimeImmutable|null $expectedReleasingDate
-     *
-     * @return Tranche
-     */
     public function setExpectedReleasingDate(?DateTimeImmutable $expectedReleasingDate): Tranche
     {
         $this->expectedReleasingDate = $expectedReleasingDate;
@@ -521,19 +404,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return DateTimeImmutable|null
-     */
     public function getExpectedStartingDate(): ?DateTimeImmutable
     {
         return $this->expectedStartingDate;
     }
 
-    /**
-     * @param DateTimeImmutable|null $expectedStartingDate
-     *
-     * @return Tranche
-     */
     public function setExpectedStartingDate(?DateTimeImmutable $expectedStartingDate): Tranche
     {
         $this->expectedStartingDate = $expectedStartingDate;
@@ -549,11 +424,6 @@ class Tranche
         return $this->comment;
     }
 
-    /**
-     * @param string|null $comment
-     *
-     * @return Tranche
-     */
     public function setComment(?string $comment): Tranche
     {
         $this->comment = $comment;
@@ -561,19 +431,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isSyndicated(): bool
     {
         return $this->syndicated;
     }
 
-    /**
-     * @param bool $syndicated
-     *
-     * @return Tranche
-     */
     public function setSyndicated(bool $syndicated): Tranche
     {
         $this->syndicated = $syndicated;
@@ -586,19 +448,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getUnsyndicatedFunderType(): ?string
     {
         return $this->unsyndicatedFunderType;
     }
 
-    /**
-     * @param string|null $unsyndicatedFunderType
-     *
-     * @return Tranche
-     */
     public function setUnsyndicatedFunderType(?string $unsyndicatedFunderType): Tranche
     {
         $this->unsyndicatedFunderType = $unsyndicatedFunderType;
@@ -610,19 +464,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getThirdPartyFunder(): ?string
     {
         return $this->thirdPartyFunder;
     }
 
-    /**
-     * @param string|null $thirdPartyFunder
-     *
-     * @return Tranche
-     */
     public function setThirdPartyFunder(?string $thirdPartyFunder): Tranche
     {
         $this->thirdPartyFunder = $thirdPartyFunder ?: null;
@@ -630,19 +476,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getColor(): string
     {
         return $this->color;
     }
 
-    /**
-     * @param string $color
-     *
-     * @return Tranche
-     */
     public function setColor(string $color): Tranche
     {
         $this->color = $color;
@@ -652,8 +490,6 @@ class Tranche
 
     /**
      * Method created because the expression would be too long to put on one line.
-     *
-     * @return bool
      */
     public function isThirdPartyFunderValid(): bool
     {
@@ -669,22 +505,14 @@ class Tranche
         return static::getConstants('UNSYNDICATED_FUNDER_TYPE_');
     }
 
-    /**
-     * @return string|null
-     */
     public function getCommissionType(): ?string
     {
         return $this->commissionType;
     }
 
-    /**
-     * @param string|null $commissionType
-     *
-     * @return Tranche
-     */
     public function setCommissionType(?string $commissionType): Tranche
     {
-        $this->commissionType = $commissionType;
+        $this->commissionType = $commissionType ?: null;
 
         if (null === $this->commissionType) {
             $this->commissionRate = null;
@@ -693,19 +521,11 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getCommissionRate(): ?string
     {
         return $this->commissionRate;
     }
 
-    /**
-     * @param string|null $commissionRate
-     *
-     * @return Tranche
-     */
     public function setCommissionRate(?string $commissionRate): Tranche
     {
         $this->commissionRate = '' === $commissionRate ? null : $commissionRate;
@@ -715,15 +535,12 @@ class Tranche
 
     /**
      * Used in an expression constraints.
-     *
-     * @return bool
      */
     public function isCommissionRateValid(): bool
     {
         return (null === $this->getCommissionType() && null === $this->getCommissionRate())
             || (
                 ($this->getCommissionRate() || '0' === $this->getCommissionRate())
-                && \in_array($this->getLoanType(), LoanType::getChargeableLoanTypes(), true)
                 && \in_array($this->getCommissionType(), CommissionType::getConstList(), true)
             );
     }
@@ -736,9 +553,6 @@ class Tranche
         return $this->projectParticipationTranches;
     }
 
-    /**
-     * @return MoneyInterface
-     */
     public function getTotalAllocationMoney(): MoneyInterface
     {
         $totalAllocation = new NullableMoney();
@@ -752,8 +566,6 @@ class Tranche
 
     /**
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
      */
     public function validateCurrencyConsistency(ExecutionContextInterface $context): void
     {
@@ -762,13 +574,12 @@ class Tranche
         if (MoneyCalculator::isDifferentCurrency($this->getMoney(), $globalFundingMoney)) {
             $context->buildViolation('Core.Money.currency.inconsistent')
                 ->atPath('money')
-                ->addViolation();
+                ->addViolation()
+            ;
         }
     }
 
     /**
-     * @param ProjectParticipationTranche $projectParticipationTranche
-     *
      * @return Tranche
      */
     public function addProjectParticipationTranche(ProjectParticipationTranche $projectParticipationTranche)
@@ -786,11 +597,6 @@ class Tranche
         return $this;
     }
 
-    /**
-     * @param ProjectParticipationTranche $projectParticipationTranche
-     *
-     * @return bool
-     */
     public function hasProjectParticipationTranche(ProjectParticipationTranche $projectParticipationTranche): bool
     {
         return isset($this->projectParticipationTranches[$projectParticipationTranche->getProjectParticipation()->getId()]);

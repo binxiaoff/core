@@ -13,7 +13,7 @@ use Unilend\Core\Entity\Traits\IdentityTrait;
 /**
  * @ApiResource(
  *     attributes={
- *         "pagination_enabled": false
+ *         "pagination_items_per_page": 200
  *     },
  *     collectionOperations={"get"},
  *     itemOperations={

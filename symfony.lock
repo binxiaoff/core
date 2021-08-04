@@ -43,14 +43,14 @@
     "aws/aws-sdk-php": {
         "version": "3.111.0"
     },
-    "azuyalabs/yasumi": {
-        "version": "2.1.0"
-    },
     "beberlei/doctrineextensions": {
         "version": "v1.2.1"
     },
     "behat/transliterator": {
         "version": "v1.2.0"
+    },
+    "box/spout": {
+        "version": "v3.3.0"
     },
     "clue/stream-filter": {
         "version": "v1.4.1"
@@ -252,6 +252,9 @@
     "facile-it/doctrine-mysql-come-back": {
         "version": "v1.7"
     },
+    "fakerphp/faker": {
+        "version": "v1.14.1"
+    },
     "fig/link-util": {
         "version": "1.0.0"
     },
@@ -281,9 +284,6 @@
         "files": [
             "config/routes/fos_js_routing.yaml"
         ]
-    },
-    "fzaninotto/faker": {
-        "version": "v1.8.0"
     },
     "gedmo/doctrine-extensions": {
         "version": "v2.4.37"
@@ -380,9 +380,6 @@
     "mtdowling/jmespath.php": {
         "version": "2.4.0"
     },
-    "mustangostang/spyc": {
-        "version": "0.6.2"
-    },
     "myclabs/deep-copy": {
         "version": "1.9.3"
     },
@@ -419,9 +416,6 @@
     },
     "nexylan/slack-bundle": {
         "version": "v2.1.0"
-    },
-    "nikic/php-parser": {
-        "version": "v4.2.2"
     },
     "ocramius/package-versions": {
         "version": "1.4.0"
@@ -545,9 +539,6 @@
     },
     "phpstan/phpstan-symfony": {
         "version": "0.11.6"
-    },
-    "piwik/device-detector": {
-        "version": "3.11.7"
     },
     "psr/cache": {
         "version": "1.0.1"
@@ -783,15 +774,6 @@
     },
     "symfony/lock": {
         "version": "v4.3.0"
-    },
-    "symfony/maker-bundle": {
-        "version": "1.0",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "master",
-            "version": "1.0",
-            "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
-        }
     },
     "symfony/messenger": {
         "version": "4.3",

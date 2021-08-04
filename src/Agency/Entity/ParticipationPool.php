@@ -21,7 +21,9 @@ use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use Unilend\Core\Entity\Drive;
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Service\MoneyCalculator;
 
 /**
  * @ApiResource(
@@ -30,6 +32,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "agency:participationPool:read",
  *             "money:read",
  *             "nullableMoney:read",
+ *             "lendingRate:read"
  *         }
  *     },
  *     collectionOperations={},
@@ -60,7 +63,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *             "method": "POST",
  *             "deserialize": false,
  *             "path": "/agency/participation_pools/{publicId}/dataroom/{path?}",
- *             "security": "is_granted('view', object)",
+ *             "security": "is_granted('edit', object)",
  *             "controller": Post::class,
  *             "normalization_context": {
  *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
@@ -75,7 +78,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *         "delete_dataroom": {
  *             "method": "DELETE",
  *             "path": "/agency/participation_pools/{publicId}/dataroom/{path?}",
- *             "security": "is_granted('view', object)",
+ *             "security": "is_granted('edit', object)",
  *             "controller": Delete::class,
  *             "requirements": {
  *                 "path": ".+"
@@ -128,6 +131,7 @@ class ParticipationPool
      * @Assert\All({
      *     @Assert\Expression("value.getPool() === this")
      * })
+     * @Assert\Valid
      *
      * @Groups({"agency:participationPool:read"})
      */
@@ -137,7 +141,7 @@ class ParticipationPool
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\Choice(callback={SyndicationType::class, "getConstList"})
-     * @Assert\NotBlank(groups={"ParticipationPool:published"})
+     * @Assert\NotBlank(groups={"ParticipationPool:published:active"})
      *
      * @Groups({"agency:participationPool:read", "agency:participationPool:write"})
      */
@@ -147,7 +151,7 @@ class ParticipationPool
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\Choice(callback={ParticipationType::class, "getConstList"})
-     * @Assert\NotBlank(groups={"ParticipationPool:published"})
+     * @Assert\NotBlank(groups={"ParticipationPool:published:active"})
      *
      * @Groups({"agency:participationPool:read", "agency:participationPool:write"})
      */
@@ -157,10 +161,10 @@ class ParticipationPool
      * @ORM\Column(type="string", nullable=true, length=30)
      *
      * @Assert\Choice(callback={RiskType::class, "getConstList"})
-     * @Assert\Expression(
-     *     expression="(false === this.isPrincipalSubParticipation() and null === value) or (this.isPrincipalSubParticipation() and value)",
-     *     groups={"ParticipationPool:published"}
-     * )
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Expression("this.isSubParticipation()"),
+     *     @Assert\Expression("false === this.isSubParticipation() && null === value")
+     * }, groups={"ParticipationPool:published:active"})
      *
      * @Groups({"agency:participationPool:read", "agency:participationPool:write"})
      */
@@ -181,10 +185,13 @@ class ParticipationPool
 
     public function __construct(Project $project, bool $secondary)
     {
-        $this->project        = $project;
-        $this->participations = new ArrayCollection();
-        $this->secondary      = $secondary;
-        $this->sharedDrive    = new Drive();
+        $this->project           = $project;
+        $this->participations    = new ArrayCollection();
+        $this->secondary         = $secondary;
+        $this->sharedDrive       = new Drive();
+        $this->riskType          = null;
+        $this->syndicationType   = null;
+        $this->participationType = null;
     }
 
     public function getProject(): Project
@@ -239,6 +246,10 @@ class ParticipationPool
     {
         $this->participationType = $participationType;
 
+        if ($this->riskType && false === $this->isSubParticipation()) {
+            $this->riskType = null;
+        }
+
         return $this;
     }
 
@@ -264,12 +275,22 @@ class ParticipationPool
         return false === $this->isSecondary();
     }
 
-    public function getCurrentValidationGroups(self $pool): array
+    public function isSubParticipation(): bool
+    {
+        return ParticipationType::SUB_PARTICIPATION === $this->participationType;
+    }
+
+    public function isEmpty(): bool
+    {
+        return 0 === \count($this->getParticipations());
+    }
+
+    public static function getCurrentValidationGroups(self $pool): array
     {
         $validationGroups = ['Default', 'ParticipationPool'];
 
-        if ($pool->getProject()->isPublished()) {
-            $validationGroups[] = 'ParticipationPool:published';
+        if ($pool->getProject()->isPublished() && ($pool->isPrimary() || ($pool->isSecondary() && false === $pool->isEmpty()))) {
+            $validationGroups[] = 'ParticipationPool:published:active';
         }
 
         return $validationGroups;
@@ -278,5 +299,22 @@ class ParticipationPool
     public function getSharedDrive(): Drive
     {
         return $this->sharedDrive;
+    }
+
+    public function getAllocationSum(): MoneyInterface
+    {
+        return MoneyCalculator::sum(
+            $this->participations->map(fn (Participation $participation) => $participation->getFinalAllocation())->toArray()
+        );
+    }
+
+    public function getActiveParticipantAllocationSum(): MoneyInterface
+    {
+        return MoneyCalculator::sum(
+            $this->participations
+                ->filter(fn (Participation $participation) => false === $participation->isArchived())
+                ->map(fn (Participation $participation)    => $participation->getFinalAllocation())
+                ->toArray()
+        );
     }
 }

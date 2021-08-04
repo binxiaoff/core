@@ -20,9 +20,6 @@ trait BlamableAddedTrait
      */
     private $addedBy;
 
-    /**
-     * @return Staff
-     */
     public function getAddedBy(): Staff
     {
         return $this->addedBy;

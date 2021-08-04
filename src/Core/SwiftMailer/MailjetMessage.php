@@ -12,25 +12,29 @@ class MailjetMessage extends \Swift_Message
 {
     use ConstantsAwareTrait;
 
-    public const TEMPLATE_STAFF_USER_INITIALISATION = 1851115;
-    public const TEMPLATE_USER_PASSWORD_REQUEST = 1852070;
-    public const TEMPLATE_PUBLICATION_PROSPECT_COMPANY = 1852083;
-    public const TEMPLATE_PUBLICATION_UNINITIALIZED_USER = 1852104;
-    public const TEMPLATE_PUBLICATION = 1853426;
-    public const TEMPLATE_SYNDICATION_PROSPECT_COMPANY = 1853443;
-    public const TEMPLATE_SYNDICATION_UNINITIALIZED_USER = 1853467;
-    public const TEMPLATE_SYNDICATION = 1853479;
-    public const TEMPLATE_PROJECT_FILE_UPLOADED = 1853491;
-    public const TEMPLATE_PARTICIPANT_REPLY = 1853502;
-    public const TEMPLATE_ARRANGER_INVITATION_EXTERNAL_BANK = 1853530;
-    public const TEMPLATE_MESSAGE_UNREAD_USER_NOTIFICATION = 2154702;
+    public const TEMPLATE_AGENCY_AGENT_MEMBER_PROJECT_PUBLISHED               = 3024626;
+    public const TEMPLATE_AGENCY_BORROWER_MEMBER_PROJECT_PUBLISHED            = 3011629;
+    public const TEMPLATE_AGENCY_PARTICIPATION_MEMBER_PROJECT_PUBLISHED       = 3024637;
+    public const TEMPLATE_AGENCY_REMIND_TERM_AGENT                            = 3011644;
+    public const TEMPLATE_AGENCY_REMIND_TERM_BORROWER                         = 3011644;
+    public const TEMPLATE_ARRANGER_INVITATION_EXTERNAL_BANK                   = 1853530;
+    public const TEMPLATE_CREDIT_GUARANTY_REMIND_EXPIRING_RESERVATION_CASA    = 3041686;
+    public const TEMPLATE_CREDIT_GUARANTY_REMIND_EXPIRING_RESERVATION_CR      = 3041937;
+    public const TEMPLATE_CREDIT_GUARANTY_REMIND_EXPIRING_RESERVATION_LIST_CR = 3049076;
+    public const TEMPLATE_MESSAGE_UNREAD_USER_NOTIFICATION                    = 2154702;
+    public const TEMPLATE_PARTICIPANT_REPLY                                   = 1853502;
+    public const TEMPLATE_PROJECT_FILE_UPLOADED                               = 1853491;
+    public const TEMPLATE_PUBLICATION                                         = 1853426;
+    public const TEMPLATE_PUBLICATION_PROSPECT_COMPANY                        = 1852083;
+    public const TEMPLATE_PUBLICATION_UNINITIALIZED_USER                      = 1852104;
+    public const TEMPLATE_STAFF_USER_INITIALISATION                           = 1851115;
+    public const TEMPLATE_SYNDICATION                                         = 1853479;
+    public const TEMPLATE_SYNDICATION_PROSPECT_COMPANY                        = 1853443;
+    public const TEMPLATE_SYNDICATION_UNINITIALIZED_USER                      = 1853467;
+    public const TEMPLATE_USER_PASSWORD_REQUEST                               = 1852070;
 
-    /**
-     * @param string|null $subject
-     * @param string|null $body
-     * @param string|null $contentType
-     * @param string|null $charset
-     */
+    private array $vars;
+
     public function __construct(?string $subject = null, ?string $body = null, ?string $contentType = null, ?string $charset = null)
     {
         parent::__construct($subject, $body, $contentType, $charset);
@@ -41,24 +45,21 @@ class MailjetMessage extends \Swift_Message
         // If email domain defined here is the same as template, email and name defined below are used.
         $this->setFrom('support@kls-platform.com', 'KLS');
         $this->enableTemplatingLanguage();
+
+        $this->vars = [];
     }
 
-    /**
-     * @return int|null
-     */
     public function getTemplateId(): ?int
     {
-        $header =  $this->getHeaders()->get('X-MJ-TemplateID');
+        $header = $this->getHeaders()->get('X-MJ-TemplateID');
 
         return $header ? $header->getFieldBodyModel() : null;
     }
 
     /**
-     * @param int|null $templateId
-     *
-     * @return MailjetMessage
+     * @throws InvalidArgumentException
      */
-    public function setTemplateId(?int $templateId): self
+    public function setTemplateId(?int $templateId): MailjetMessage
     {
         if ($templateId && false === \in_array($templateId, static::getAvailableTemplates(), true)) {
             throw new InvalidArgumentException('This template id does not exist');
@@ -74,27 +75,23 @@ class MailjetMessage extends \Swift_Message
     }
 
     /**
-     * @param array $vars
-     *
-     * @return MailjetMessage
-     *
      * @throws JsonException
      */
-    public function setVars(array $vars = []): self
+    public function setVars(array $vars = []): MailjetMessage
     {
-        $vars = $this->filterVars($vars);
+        $this->vars = $this->filterVars($vars);
 
-        $this->getHeaders()->addTextHeader('X-MJ-Vars', json_encode($vars, JSON_THROW_ON_ERROR));
+        $this->getHeaders()->addTextHeader('X-MJ-Vars', \json_encode($this->vars, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
         return $this;
     }
 
-    /**
-     * @param string|null $email
-     *
-     * @return MailjetMessage
-     */
-    public function setTemplateErrorEmail(?string $email): self
+    public function getVars(): array
+    {
+        return $this->vars;
+    }
+
+    public function setTemplateErrorEmail(?string $email): MailjetMessage
     {
         // Remove the previously existing headers to prevent the duplication.
         $this->getHeaders()->removeAll('X-MJ-TemplateErrorReporting');
@@ -105,10 +102,7 @@ class MailjetMessage extends \Swift_Message
         return $this;
     }
 
-    /**
-     * @return MailjetMessage
-     */
-    public function enableErrorDelivery(): self
+    public function enableErrorDelivery(): MailjetMessage
     {
         // Remove the previously existing headers to prevent the duplication.
         $this->getHeaders()->removeAll('X-MJ-TemplateErrorDeliver');
@@ -117,10 +111,7 @@ class MailjetMessage extends \Swift_Message
         return $this;
     }
 
-    /**
-     * @return MailjetMessage
-     */
-    public function disableErrorDelivery(): self
+    public function disableErrorDelivery(): MailjetMessage
     {
         $this->getHeaders()->removeAll('X-MJ-TemplateErrorDeliver');
 
@@ -135,26 +126,18 @@ class MailjetMessage extends \Swift_Message
         return static::getConstants('TEMPLATE_');
     }
 
-    /**
-     * @return MailjetMessage
-     */
-    private function enableTemplatingLanguage(): self
+    private function enableTemplatingLanguage(): MailjetMessage
     {
         $this->getHeaders()->addTextHeader('X-MJ-TemplateLanguage', '1');
 
         return $this;
     }
 
-    /**
-     * @param array $vars
-     *
-     * @return array
-     */
     private function filterVars(array $vars): array
     {
         // MailJet do not let var with null value, empty value has to be false instead
-        array_walk_recursive($vars, function (&$value) {
-            $value = (null === $value) ? false : $value;
+        \array_walk_recursive($vars, function (&$value) {
+            $value = $value ?? false;
         });
 
         return $vars;

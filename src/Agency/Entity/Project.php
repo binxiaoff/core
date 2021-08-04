@@ -16,6 +16,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Generator;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -32,16 +33,18 @@ use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\FundingSpecificity;
 use Unilend\Core\Entity\Drive;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Embeddable\NullablePerson;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\BlamableAddedTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Model\Bitmask;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 use Unilend\Syndication\Entity\Project as ArrangementProject;
 
 /**
+ * TODO CALS-4266 "agency:term:read" should not used (too much data returned without filter).
+ *
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
@@ -100,7 +103,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "method": "GET",
  *             "security": "is_granted('view', object)",
  *             "normalization_context": {
- *                 "groups": {"agency:covenant:read"},
+ *                 "groups": {"agency:covenant:read", "agency:inequality:read"},
  *             },
  *             "controller": GetCovenants::class
  *         },
@@ -156,7 +159,7 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *         "delete_borrower_dataroom_shared": {
  *             "method": "DELETE",
  *             "path": "/agency/projects/{publicId}/borrowers/dataroom/shared/{path?}",
- *             "security": "is_granted('agent', object) || is_granted('borrower', object)",
+ *             "security": "is_granted('agent', object)",
  *             "controller": Delete::class,
  *             "requirements": {
  *                 "path": ".+"
@@ -239,7 +242,10 @@ use Unilend\Syndication\Entity\Project as ArrangementProject;
  *             "agency:participationTrancheAllocation:read",
  *             "agency:tranche:read",
  *             "agency:covenant:read",
+ *             "agency:covenantRule:read",
  *             "agency:term:read",
+ *             "file:read",
+ *             "fileVersion:read",
  *             "user:read",
  *         }
  *     }
@@ -342,13 +348,15 @@ class Project
      *     @Assert\Expression("value.getProject() === this")
      * })
      *
+     * @Assert\Count(min="1", groups={"published"})
+     *
      * TODO Create custom endpoint to handle security
      * @ApiSubresource
      */
     private Collection $tranches;
 
     /**
-     * @var Borrower[]|iterable
+     * @var Borrower[]|Collection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
@@ -360,7 +368,7 @@ class Project
      *
      * @ApiSubresource
      */
-    private iterable $borrowers;
+    private Collection $borrowers;
 
     /**
      * @Groups({"agency:project:read", "agency:project:write"})
@@ -396,7 +404,7 @@ class Project
     /**
      * @ORM\Column(type="date_immutable")
      *
-     * @Assert\GreaterThan(propertyPath="closingDate")
+     * @Assert\GreaterThanOrEqual(propertyPath="closingDate")
      *
      * @Groups({"agency:project:write", "agency:project:read"})
      */
@@ -504,6 +512,7 @@ class Project
 
         $this->borrowers          = new ArrayCollection();
         $this->tranches           = new ArrayCollection();
+        $this->covenants          = new ArrayCollection();
         $this->participationPools = new ArrayCollection([false => new ParticipationPool($this, false), true => new ParticipationPool($this, true)]);
 
         $this->agent = new Agent($this, $addedBy->getCompany());
@@ -518,12 +527,9 @@ class Project
 
         $participation = new Participation(
             $this->getPrimaryParticipationPool(),
-            $this->agent->getCompany(),
-            new Money($this->getCurrency()),
-            new Money($this->getCurrency())
+            $this->agent->getCompany()
         );
-        $participation->setResponsibilities(new Bitmask(Participation::RESPONSIBILITY_AGENT));
-        $participation->setAgentCommission('0');
+        $participation->setAgentCommission(new NullableMoney($this->getCurrency(), '0'));
 
         $this->participationPools[false]->addParticipation($participation);
 
@@ -581,34 +587,43 @@ class Project
      */
     public function hasSilentSyndication(): bool
     {
-        return 0 < count(
-            $this->getSecondaryParticipationPool()
-                ->getParticipations()
-        );
+        return false === $this->getSecondaryParticipationPool()->isEmpty();
     }
 
     /**
-     * @return Borrower[]|iterable
+     * @return Borrower[]|Collection
      */
-    public function getBorrowers(): iterable
+    public function getBorrowers(): Collection
     {
         return $this->borrowers;
     }
 
     /**
-     * @param Borrower[]|iterable $borrowers
-     *
-     * @return Project
+     * @param Borrower[]|Collection $borrowers
      */
-    public function setBorrowers(iterable $borrowers)
+    public function setBorrowers(Collection $borrowers): Project
     {
         $this->borrowers = $borrowers;
 
         return $this;
     }
 
+    public function addBorrower(Borrower $borrower): Project
+    {
+        $this->borrowers[] = $borrower;
+
+        return $this;
+    }
+
+    public function removeBorrower(Borrower $borrower): Project
+    {
+        $this->borrowers->removeElement($borrower);
+
+        return $this;
+    }
+
     /**
-     * @return iterable|Tranche[]
+     * @return Collection|Tranche[]
      */
     public function getTranches()
     {
@@ -636,16 +651,6 @@ class Project
         $this->tranches->removeElement($tranche);
 
         return $this;
-    }
-
-    /**
-     * @Assert\Count(min="1", groups={"published"})
-     *
-     * @return Tranche[]|iterable
-     */
-    public function getSyndicatedTranches(): iterable
-    {
-        return $this->tranches->filter(fn (Tranche $tranche) => $tranche->isSyndicated());
     }
 
     /**
@@ -747,7 +752,7 @@ class Project
      *
      * @ApiProperty(security="is_granted('agent', object)")
      */
-    public function getParticipations(): iterable
+    public function getParticipations(): Generator
     {
         foreach ($this->participationPools as $pool) {
             yield from $pool->getParticipations();
@@ -915,6 +920,11 @@ class Project
         return $this->borrowerConfidentialDrive;
     }
 
+    /**
+     * @Groups({"agency:project:read"})
+     *
+     * @ApiProperty(readableLink=false, writableLink=false)
+     */
     public function getAgentParticipation(): Participation
     {
         return $this->findParticipationByParticipant($this->getAgentCompany());
@@ -961,12 +971,54 @@ class Project
         return $this;
     }
 
+    public function getParticipants(): Generator
+    {
+        foreach ($this->getParticipations() as $participation) {
+            yield $participation->getParticipant();
+        }
+    }
+
     /**
-     * @param $payload
-     *
      * @Assert\Callback
      */
-    public function validateStatusTransition(ExecutionContextInterface $context, $payload)
+    public function validateParticipants(ExecutionContextInterface $context)
+    {
+        $participants = \iterator_to_array($this->getParticipants(), false);
+
+        $sirens = \array_map(static fn (Company $company) => $company->getSiren(), $participants);
+
+        $sirens = \array_count_values($sirens);
+
+        $duplicatedSirens = \array_filter($sirens, static fn ($count) => $count > 1);
+
+        foreach ($duplicatedSirens as $siren => $count) {
+            $context->buildViolation('Agency.Project.participations.duplicate')
+                ->setParameter('siren', (string) $siren)
+                ->addViolation()
+            ;
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateStatusEntry(ExecutionContextInterface $context)
+    {
+        if (
+            ($this->currentStatus > 0)
+            && $this->statuses->exists(fn ($key, ProjectStatusHistory $statusHistory) => $statusHistory->getStatus() > $this->currentStatus)
+        ) {
+            $context->buildViolation('Agency.Project.passedStatus')
+                ->setParameter('status', (string) $this->currentStatus)
+                ->addViolation()
+            ;
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateStatusTransition(ExecutionContextInterface $context)
     {
         $statuses = [];
 
@@ -988,11 +1040,11 @@ class Project
                 break;
         }
 
-        sort($statuses);
+        \sort($statuses);
 
-        reset($statuses);
+        \reset($statuses);
 
-        while (($status = current($statuses))) {
+        while (($status = \current($statuses))) {
             if (false === $this->statuses->exists(fn ($_, ProjectStatusHistory $history) => $history->getStatus() === $status)) {
                 $context->buildViolation('Agency.Project.missingStatus', [
                     '{{ missingStatus }}' => $status,
@@ -1000,7 +1052,39 @@ class Project
                 ])->addViolation();
             }
 
-            next($statuses);
+            \next($statuses);
         }
+    }
+
+    public function findBorrowerBySiren(string $siren): ?Borrower
+    {
+        return $this->borrowers->filter(fn (Borrower $borrower) => $borrower->getMatriculationNumber() === $siren)->first() ?: null;
+    }
+
+    /**
+     * @return iterable|AbstractProjectMember[]
+     */
+    public function getMembers(): iterable
+    {
+        yield from $this->getAgent()->getMembers();
+
+        foreach ($this->getBorrowers() as $borrower) {
+            yield from $borrower->getMembers();
+        }
+
+        foreach ($this->getParticipations() as $participation) {
+            yield from $participation->getMembers();
+        }
+    }
+
+    public function getArrangerParticipation(): ?Participation
+    {
+        foreach ($this->getParticipations() as $participation) {
+            if ($participation->isArranger()) {
+                return $participation;
+            }
+        }
+
+        return null;
     }
 }

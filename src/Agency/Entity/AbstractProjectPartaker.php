@@ -7,8 +7,9 @@ namespace Unilend\Agency\Entity;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Entity\User;
@@ -24,36 +25,26 @@ abstract class AbstractProjectPartaker
 
     /**
      * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $corporateName;
 
     /**
      * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $legalForm;
 
     /**
      * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $headOffice;
 
     /**
      * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $bankInstitution;
 
     /**
      * @ORM\Column(type="string", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $bankAddress;
 
@@ -61,7 +52,6 @@ abstract class AbstractProjectPartaker
      * @ORM\Column(type="string", length=11, nullable=true)
      *
      * @Assert\Bic
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $bic;
 
@@ -69,7 +59,6 @@ abstract class AbstractProjectPartaker
      * @ORM\Column(type="string", length=34, nullable=true)
      *
      * @Assert\Iban
-     * @Assert\NotBlank(groups={"published"})
      */
     protected ?string $iban;
 
@@ -91,24 +80,27 @@ abstract class AbstractProjectPartaker
     protected string $matriculationNumber;
 
     /**
-     * @Assert\Valid
-     * @Assert\NotBlank
-     *
-     * @ORM\Embedded(class=Money::class)
-     */
-    protected Money $capital;
-
-    /**
      * @ORM\Column(type="string", length=40, nullable=true)
      *
      * @Assert\Length(max="40")
      */
     protected ?string $rcs;
 
-    public function __construct(string $matriculationNumber, Money $capital)
+    /**
+     * TODO Move this field to borrower (agent and participant do not need a capital).
+     *
+     * @ORM\Embedded(class=NullableMoney::class)
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
+     */
+    private NullableMoney $capital;
+
+    public function __construct(string $matriculationNumber, ?NullableMoney $capital = null)
     {
         $this->matriculationNumber = $matriculationNumber;
-        $this->capital             = $capital;
+        $this->capital             = $capital ?? new NullableMoney();
         $this->rcs                 = null;
         $this->added               = new DateTimeImmutable();
         $this->setPublicId();
@@ -121,6 +113,16 @@ abstract class AbstractProjectPartaker
         return $this->matriculationNumber;
     }
 
+    public function getCapital(): NullableMoney
+    {
+        return $this->capital;
+    }
+
+    public function getRcs(): ?string
+    {
+        return $this->rcs;
+    }
+
     public function setMatriculationNumber(string $matriculationNumber): AbstractProjectPartaker
     {
         $this->matriculationNumber = $matriculationNumber;
@@ -128,21 +130,11 @@ abstract class AbstractProjectPartaker
         return $this;
     }
 
-    public function getCapital(): Money
-    {
-        return $this->capital;
-    }
-
-    public function setCapital(Money $capital): AbstractProjectPartaker
+    public function setCapital(NullableMoney $capital): AbstractProjectPartaker
     {
         $this->capital = $capital;
 
         return $this;
-    }
-
-    public function getRcs(): ?string
-    {
-        return $this->rcs;
     }
 
     public function setRcs(?string $rcs): AbstractProjectPartaker

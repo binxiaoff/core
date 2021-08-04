@@ -6,6 +6,7 @@ namespace Unilend\Agency\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Staff;
@@ -164,4 +165,8 @@ abstract class AbstractProjectMember
             ;
         }
     }
+
+    abstract public static function getProjectPublicationNotificationMailjetTemplateId(): int;
+
+    abstract public function getProjectFrontUrl(RouterInterface $router): string;
 }

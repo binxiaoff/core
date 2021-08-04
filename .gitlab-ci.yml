@@ -24,11 +24,40 @@ cache:
     paths:
       - .composer-cache/
 
+.deploy-api:
+  image: python:3.9-slim-buster
+  cache: []
+  before_script:
+    - apt-get update
+    - apt-get install --yes openssh-client git
+    - pip install ansible==4.*
+    - ansible --version
+    - eval $(ssh-agent -s)
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - |
+      if [[ "${CI_ENVIRONMENT_NAME}" = "prod" ]]
+      then
+        export SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY_PROD
+        export ANSIBLE_VAULT_PASS=$ANSIBLE_VAULT_PASS_PROD
+        echo "$SSH_KNOWN_HOSTS_PROD" >> ~/.ssh/known_hosts
+      else
+        ssh-keyscan "private.${CI_ENVIRONMENT_NAME}.kls-platform.com" >> ~/.ssh/known_hosts
+      fi
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - chmod 644 ~/.ssh/known_hosts
+    - git clone -b "${ANSIBLE_BRANCH:-master}" --single-branch https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/ca-lending-services/infra.git
+    - echo "$ANSIBLE_VAULT_PASS" > infra/.vault_pass
+    - cd infra/provisioning || exit 1
+  script:
+    - ansible-playbook -i "inventory/private/${CI_ENVIRONMENT_NAME}.yml" deploy-api.yml --extra-vars="gitBranch=${CI_COMMIT_REF_NAME}"
+  when: manual
+
 ###
 # Job configuration
 ###
 stages:
   - test
+  - deploy
 
 test:application:
   ### Uncomment the following if using a database
@@ -41,5 +70,50 @@ test:application:
     - composer install
   script:
     - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='unit'
-  tags:
-    - docker
+
+###
+# Deployment
+###
+deploy:preprod:
+  stage: deploy
+  extends: .deploy-api
+  environment:
+    name: preprod
+    url: https://api.preprod.kls-platform.com
+  only:
+    refs:
+      - /^release/.*/
+      - /^hotfix/.*/
+      - /^[1-9][0-9]*\.[0-9]+\.[0-9]+(-rc[1-9][0-9]*)?$/
+
+deploy:demo:
+  stage: deploy
+  extends: .deploy-api
+  environment:
+    name: demo
+    url: https://api.demo.kls-platform.com
+
+deploy:integration:
+  stage: deploy
+  extends: .deploy-api
+  environment:
+    name: integration
+    url: https://api.integration.kls-platform.com
+  when: on_success
+  only:
+    refs:
+      - develop
+
+deploy:agency:
+  stage: deploy
+  extends: .deploy-api
+  environment:
+    name: agency
+    url: https://api.agency.kls-platform.com
+
+deploy:cg:
+  stage: deploy
+  extends: .deploy-api
+  environment:
+    name: cg
+    url: https://api.cg.kls-platform.com

@@ -17,6 +17,8 @@ use Unilend\Agency\Security\Voter\ProjectVoter;
 class ProjectVoterTest extends AbstractProjectVoterTest
 {
     /**
+     * TODO Add companyModule (agency) activated tests.
+     *
      * @covers ::canCreate
      * @covers ::canEdit
      * @covers ::canView

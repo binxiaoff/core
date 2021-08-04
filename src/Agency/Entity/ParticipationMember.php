@@ -11,10 +11,13 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\User;
+use Unilend\Core\SwiftMailer\MailjetMessage;
 
 /**
  * @ApiResource(
@@ -46,7 +49,9 @@ use Unilend\Core\Entity\User;
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
  *                 "groups": {
- *                     "agency:participationMember:write"
+ *                     "agency:participationMember:write",
+ *                     "user:create",
+ *                     "user:write"
  *                 }
  *             }
  *         }
@@ -109,7 +114,7 @@ class ParticipationMember extends AbstractProjectMember
     }
 
     /**
-     * @Groups({"agency:participationMember:create"})
+     * @Groups({"agency:participationMember:write"})
      */
     public function setUser(User $user): AbstractProjectMember
     {
@@ -119,7 +124,7 @@ class ParticipationMember extends AbstractProjectMember
     }
 
     /**
-     * @Groups({"agency:borrowerMember:read"})
+     * @Groups({"agency:participationMember:read"})
      */
     public function getProjectFunction(): ?string
     {
@@ -127,7 +132,7 @@ class ParticipationMember extends AbstractProjectMember
     }
 
     /**
-     * @Groups({"agency:borrowerMember:write"})
+     * @Groups({"agency:participationMember:write"})
      */
     public function setProjectFunction(?string $projectFunction): AbstractProjectMember
     {
@@ -187,6 +192,11 @@ class ParticipationMember extends AbstractProjectMember
     {
         $company = $this->participation->getParticipant();
 
+        // Exception for external bank
+        if (false === $company->hasSigned()) {
+            return;
+        }
+
         $staff = $company->findStaffByUser($this->getUser());
 
         if (null === $staff || $staff->isArchived()) {
@@ -198,5 +208,19 @@ class ParticipationMember extends AbstractProjectMember
                 ->addViolation()
             ;
         }
+    }
+
+    public static function getProjectPublicationNotificationMailjetTemplateId(): int
+    {
+        return MailjetMessage::TEMPLATE_AGENCY_PARTICIPATION_MEMBER_PROJECT_PUBLISHED;
+    }
+
+    public function getProjectFrontUrl(RouterInterface $router): string
+    {
+        return $router->generate(
+            'front_agencyParticipationProjectView',
+            ['projectPublicId' => $this->getProject()->getPublicId(), 'participationPublicId' => $this->getPublicId()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
     }
 }

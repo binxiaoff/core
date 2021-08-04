@@ -41,100 +41,51 @@ class LegalDocument
 
     public const TYPE_SERVICE_TERMS = 1;
 
-    public const CURRENT_SERVICE_TERMS = 2;
+    // TODO CALS-4049 Should not use id here
+    public const CURRENT_SERVICE_TERMS_ID = 3;
 
     /**
-     * @var int
-     *
      * @ORM\Column(type="smallint")
      */
-    private $type;
+    private int $type;
 
     /**
-     * @var string
-     *
      * @ORM\Column(length=191)
      *
      * @Groups({"legalDocument:read"})
      */
-    private $title;
+    private string $title;
 
     /**
-     * @var string
-     *
      * @ORM\Column(type="text")
      *
      * @Groups({"legalDocument:read"})
      */
-    private $content;
+    private string $content;
 
     /**
-     * LegalDocument constructor.
-     *
      * @throws Exception
      */
-    public function __construct()
+    public function __construct(int $type, string $title, string $content)
     {
-        $this->added = new DateTimeImmutable();
+        $this->added   = new DateTimeImmutable();
+        $this->type    = $type;
+        $this->title   = $title;
+        $this->content = $content;
     }
 
-    /**
-     * @return int
-     */
     public function getType(): int
     {
         return $this->type;
     }
 
-    /**
-     * @param int $type
-     *
-     * @return LegalDocument
-     */
-    public function setType(int $type): LegalDocument
-    {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
     public function getTitle(): string
     {
         return $this->title;
     }
 
-    /**
-     * @param string $title
-     *
-     * @return LegalDocument
-     */
-    public function setTitle(string $title): LegalDocument
-    {
-        $this->title = $title;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
     public function getContent(): string
     {
         return $this->content;
-    }
-
-    /**
-     * @param string $content
-     *
-     * @return LegalDocument
-     */
-    public function setContent(string $content): LegalDocument
-    {
-        $this->content = $content;
-
-        return $this;
     }
 }

@@ -23,6 +23,8 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
+ * TODO CALS-4266 "agency:term:read" should not used (too much data returned without filter).
+ *
  * @ORM\Table(name="agency_covenant")
  * @ORM\Entity
  *
@@ -39,7 +41,14 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         },
  *         "patch": {
  *             "denormalization_context": {
- *                 "groups": {"agency:covenant:update", "agency:covenant:write"}
+ *                 "groups": {
+ *                     "agency:covenant:update",
+ *                     "agency:covenant:write",
+ *                     "agency:covenantRule:create",
+ *                     "agency:marginRule:create",
+ *                     "agency:marginImpact:create",
+ *                     "agency:inequality:write"
+ *                 }
  *             },
  *             "security_denormalize": "is_granted('edit', object)"
  *         },
@@ -72,6 +81,8 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *             "agency:marginRule:read",
  *             "agency:marginImpact:read",
  *             "agency:term:read",
+ *             "file:read",
+ *             "fileVersion:read",
  *         }
  *     }
  * )
@@ -87,6 +98,7 @@ class Covenant
     public const NATURE_FINANCIAL_ELEMENT = 'financial_element';
     public const NATURE_FINANCIAL_RATIO   = 'financial_ratio';
 
+    public const RECURRENCE_1M  = 'P1M';
     public const RECURRENCE_3M  = 'P3M';
     public const RECURRENCE_6M  = 'P6M';
     public const RECURRENCE_12M = 'P12M';
@@ -102,9 +114,9 @@ class Covenant
     private Project $project;
 
     /**
-     * @ORM\Column(type="string", length=50)
+     * @ORM\Column(type="string", length=150)
      *
-     * @Assert\Length(max="50")
+     * @Assert\Length(max="150")
      * @Assert\NotBlank
      *
      * @Groups({"agency:covenant:read", "agency:covenant:write"})
@@ -121,9 +133,7 @@ class Covenant
     private ?string $contractArticle = null;
 
     /**
-     * @ORM\Column(type="string", nullable=true, length=500)
-     *
-     * @Assert\Length(max="500")
+     * @ORM\Column(type="text", nullable=true)
      *
      * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
@@ -149,7 +159,7 @@ class Covenant
     /**
      * @ORM\Column(name="startDate", type="date_immutable")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private DateTimeImmutable $startDate;
 
@@ -159,16 +169,16 @@ class Covenant
      * @Assert\Type("integer")
      * @Assert\Positive
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private int $delay;
 
     /**
      * @ORM\Column(name="endDate", type="date_immutable")
      *
-     * @Assert\GreaterThan(propertyPath="startDate")
+     * @Assert\GreaterThanOrEqual(propertyPath="startDate")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private DateTimeImmutable $endDate;
 
@@ -177,14 +187,14 @@ class Covenant
      *
      * @Assert\Choice(callback="getRecurrences")
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private ?string $recurrence;
 
     /**
      * @var CovenantRule[]|Collection
      *
-     * @ORM\OneToMany(targetEntity=CovenantRule::class, mappedBy="covenant", indexBy="year", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity=CovenantRule::class, mappedBy="covenant", indexBy="year", cascade={"persist", "remove"}, orphanRemoval=true, fetch="EAGER")
      * @ORM\OrderBy({"year": "ASC"})
      *
      * @Assert\Valid
@@ -192,7 +202,7 @@ class Covenant
      *     @Assert\Expression("value.getCovenant() === this")
      * })
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private Collection $covenantRules;
 
@@ -232,7 +242,7 @@ class Covenant
     /**
      * @var MarginRule[]|Collection
      *
-     * @ORM\OneToMany(targetEntity=MarginRule::class, mappedBy="covenant", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity=MarginRule::class, mappedBy="covenant", cascade={"persist", "remove"}, fetch="EAGER", orphanRemoval=true)
      *
      * @Assert\Valid
      * @Assert\AtLeastOneOf({
@@ -243,7 +253,7 @@ class Covenant
      *     @Assert\Expression("value.getCovenant() === this")
      * })
      *
-     * @Groups({"agency:covenant:read", "agency:covenant:create"})
+     * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
     private Collection $marginRules;
 
@@ -403,14 +413,13 @@ class Covenant
 
     public function addCovenantRule(CovenantRule $covenantRule): Covenant
     {
-        $this->covenantRules[$covenantRule->getYear()] = $covenantRule;
+        $this->covenantRules[$covenantRule->getYear()] = $this->covenantRules[$covenantRule->getYear()] ?? $covenantRule;
+
+        $this->covenantRules[$covenantRule->getYear()]->setInequality($covenantRule->getInequality());
 
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     public function removeCovenantRule(CovenantRule $covenantRule): Covenant
     {
         $this->covenantRules->removeElement($covenantRule);
@@ -473,7 +482,7 @@ class Covenant
      */
     public function validateCovenantRules(ExecutionContextInterface $context)
     {
-        $covenantRulesCount = count($this->covenantRules);
+        $covenantRulesCount = \count($this->covenantRules);
 
         // non financial covenant must not have rules
         if (0 !== $covenantRulesCount && (false === $this->isFinancial())) {
@@ -485,7 +494,7 @@ class Covenant
 
         // financial covenant must have 1 rule per year (including starting year)
         if ($this->isFinancial()) {
-            foreach (range($this->getStartYear(), $this->getEndYear()) as $year) {
+            foreach (\range($this->getStartYear(), $this->getEndYear()) as $year) {
                 if (false === isset($this->covenantRules[$year])) {
                     $context->buildViolation('Agency.Covenant.covenantRules.missingYear')
                         ->atPath('covenantRules')
@@ -539,7 +548,7 @@ class Covenant
         $datePeriod = new DatePeriod($this->startDate, new DateInterval($this->recurrence), $this->endDate);
 
         foreach ($datePeriod as $termStart) {
-            $termEnd       = DateTimeImmutable::createFromFormat('U', (string) strtotime('+' . $this->delay . ' days', $termStart->getTimestamp()));
+            $termEnd       = DateTimeImmutable::createFromFormat('U', (string) \strtotime('+' . $this->delay . ' days', $termStart->getTimestamp()));
             $this->terms[] = new Term($this, $termStart, $termEnd);
         }
 

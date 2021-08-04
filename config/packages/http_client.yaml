@@ -4,3 +4,11 @@ framework:
         scoped_clients:
             psn.client:
                 base_uri: '%psn.base_uri%'
+            hubspot.crm.client:
+                base_uri: '%hubspot.base_crm_uri%'
+                query:
+                    hapikey: '%hubspot.api.key%'
+            hubspot.integration.client:
+                base_uri: '%hubspot.base_integration_uri%'
+                query:
+                    hapikey: '%hubspot.api.key%'

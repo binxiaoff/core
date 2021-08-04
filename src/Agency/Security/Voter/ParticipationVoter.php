@@ -10,12 +10,15 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class ParticipationVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_EDIT   = 'edit';
-    public const ATTRIBUTE_CREATE = 'create';
-    public const ATTRIBUTE_VIEW   = 'view';
-    public const ATTRIBUTE_DELETE = 'delete';
+    public const ATTRIBUTE_DATAROOM = 'dataroom';
 
-    protected function canView(Participation $participation, User $user)
+    protected function canCreate(Participation $participation, User $user): bool
+    {
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participation->getProject())
+            && $participation->getProject()->isEditable();
+    }
+
+    protected function canView(Participation $participation, User $user): bool
     {
         if (false === $this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $participation->getProject())) {
             return false;
@@ -25,15 +28,15 @@ class ParticipationVoter extends AbstractEntityVoter
             return true;
         }
 
-        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER) && $participation->isPrimary()) {
+        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $participation->getProject()) && $participation->isPrimary()) {
             return true;
         }
 
-        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PRIMARY_PARTICIPANT) && $participation->isPrimary()) {
+        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PRIMARY_PARTICIPANT, $participation->getProject()) && $participation->isPrimary()) {
             return true;
         }
 
-        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_SECONDARY_PARTICIPANT) && $participation->isSecondary()) {
+        if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_SECONDARY_PARTICIPANT, $participation->getProject()) && $participation->isSecondary()) {
             return true;
         }
 
@@ -63,16 +66,22 @@ class ParticipationVoter extends AbstractEntityVoter
             );
     }
 
-    protected function canCreate(Participation $participation, User $user): bool
-    {
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participation->getProject())
-            && $participation->getProject()->isEditable();
-    }
-
     protected function canDelete(Participation $participation, User $user): bool
     {
         return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participation->getProject())
             && false === $participation->isAgent()
             && $participation->getProject()->isEditable();
+    }
+
+    protected function canDataroom(Participation $participation, User $user): bool
+    {
+        $staff = $user->getCurrentStaff();
+
+        if (null === $staff) {
+            return false;
+        }
+
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_PARTICIPANT, $participation->getProject())
+            && $staff->getCompany() === $participation->getParticipant();
     }
 }

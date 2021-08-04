@@ -45,9 +45,10 @@ class CovenantNormalizer implements ContextAwareDenormalizerInterface, Denormali
         $publication = $data['published'] ?? false;
         unset($data['published']);
 
+        /** @var Covenant $denormalized */
         $denormalized = $this->nestedDenormalize($data, $type, $format, $context, ['covenantRules', 'marginRules']);
 
-        if ($publication && $denormalized && (false === $denormalized->isPublished())) {
+        if ($publication && $denormalized && (false === $denormalized->isPublished()) && $denormalized->getProject()->isPublished()) {
             $denormalized->publish();
         }
 

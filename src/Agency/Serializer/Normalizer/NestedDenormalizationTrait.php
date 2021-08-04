@@ -26,13 +26,13 @@ trait NestedDenormalizationTrait
      */
     private function nestedDenormalize($data, string $type, ?string $format = null, array $context = [], array $nestedProperties = [])
     {
-        $denormalized = $this->denormalizer->denormalize(array_diff_key($data, array_flip($nestedProperties)), $type, $format, $context);
+        $denormalized = $this->denormalizer->denormalize(\array_diff_key($data, \array_flip($nestedProperties)), $type, $format, $context);
 
         $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $denormalized;
 
         $context = $this->updateContextBeforeSecondDenormalization($denormalized, $context);
 
-        $nestedData = array_filter(array_intersect_key($data, array_flip($nestedProperties)));
+        $nestedData = \array_intersect_key($data, \array_flip($nestedProperties));
 
         if ($nestedData) {
             $denormalized = $this->denormalizer->denormalize($nestedData, $type, $format, $context);

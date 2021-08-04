@@ -11,7 +11,7 @@ Agency:
 
     Project:
         missingStatus: Vous ne pouvez pas aller de l'état {{ nextStatus }} sans passer par l'état {{ missingStatus }}
-
+        passedStatus: Ce projet est déja passé par l'état {{ status }}
     Contact:
         type:
             unique: Il ne peut y avoir qu'un seul contact agency par projet
@@ -19,7 +19,7 @@ Agency:
     Tranche:
         commission:
             incomplete: Ce champ est manquant pour valider la commission de la tranche
-            invalidLoanType: Le type de prêt ne permet d'avoir une commission
+            wrongLoanType: Le type de prêt ne permet pas d'avoir de commission sur cette tranche
 
     Participation:
         responsabilities:
@@ -27,9 +27,15 @@ Agency:
             secondary: Etant dans la syndication silencieuse, vous ne pouvez pas avoir de responsabilité
             arranger: Vous ne pouvez pas être arranger et co-arrangeur
         commission:
-            agent: Vous devez être agent pour remplir cette commission
-            arrangeur: Vous devez être arrangeur pour remplir cette commission
-            deputyArrangeur: Vous devez être co-arrangeur pour remplir cette commission
+            agent:
+                zero: La commission de l'agent doit être à zéro
+                role: La participation doit être marquée comme agent
+            arranger:
+                zero: La commission de l'arrangeur doit être à zéro
+                role: La participation doit être marquée comme arrangeur
+            deputyArranger:
+                zero: La commission de co-arrangement doit être à zéro
+                role: La participation doit être marquée comme co-arrangeur
 
     ParticipationMember:
         user:
@@ -233,7 +239,7 @@ CreditGuaranty:
         value:
             outOfRange: Merci de mettre un chiffre entre 0 et 1 pour une comparaison de type "rate".
         operandField:
-            nonComparable: Le champs choisi n'est pas comparable.
+            nonComparable: Le champ choisi n'est pas comparable.
         rightOperandField:
             selfComparaison: Vous ne pouvez pas comparer un champ à lui-même.
             empty: rightOperandField est requis pour une comparaison de type "rate".
@@ -242,12 +248,26 @@ CreditGuaranty:
         grade:
             invalid: Le grade choisi n'est pas valable.
     Reservation:
+        category:
+            ineligibles: Les champs {{ fieldAliases }} de la catégorie {{ category }} de la réservation sont inéligibles.
+        esb:
+            ineligible: La réservation ne peut être envoyée, le montant de l'équivalent subvention brut doit être inférieur ou égal au montant maximum du prêt FEI.
         borrower:
-            missing: La réservation ne peut être envoyée, les informations de l'emprunteur n'ont pas été remplies.
-        borrowerBusinessActivity:
-            missing: La réservation ne peut être envoyée, les informations de l'activité de l'entreprise n'ont pas été remplies.
+            required: La réservation ne peut être envoyée, les informations du bénéficiaire n'ont pas été remplies.
         project:
-            missing: La réservation ne peut être envoyée, les informations du projet n'ont pas été remplies.
+            required: La réservation ne peut être envoyée, les informations du projet n'ont pas été remplies.
+            aidIntensity:
+                requiredForEsb: L'intensité d'aide du projet doit être renseigné pour calculer l'équivalent subvention brute.
+            grant:
+                requiredForEsb: Les subventions liés au projet du projet doivent être renseignées pour calculer l'équivalent subvention brute.
+            totalFeiCredit:
+                requiredForEsb: Le montant total du crédit FEI du projet doit être renseigné pour calculer l'équivalent subvention brute.
         financingObject:
-            missing: La réservation ne peut être envoyée, au moins un objet de financement doit être défini.
-        ineligibleCategory: La catégorie {{ category }} de la réservation est inéligible.
+            required: La réservation ne peut être envoyée, au moins un objet de financement doit être défini.
+            loanDuration:
+                requiredForEsb: La durée du prêt de l'objet de financement doit être renseignée pour calculer l'équivalent subvention brute.
+        financingObjectUnblocking:
+            invoiceMoney:
+                requiredForLoanReleasedOnInvoice: Le montant des factures du déblocage de l'objet de financement doit être renseigné car les prêts sont débloqués sur facture dans ce programme.
+            achievementMoney:
+                requiredForLoanReleasedOnInvoice: Le montant de la réalisation du déblocage de l'objet de financement doit être renseigné car les prêts sont débloqués sur facture dans ce programme.

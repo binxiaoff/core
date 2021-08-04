@@ -4,25 +4,29 @@ declare(strict_types=1);
 
 namespace Unilend\CreditGuaranty\Serializer\Normalizer;
 
+use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\ORM\ORMException;
+use JsonException;
 use LogicException;
-use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
+use RuntimeException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
 use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
+use Unilend\CreditGuaranty\Entity\Field;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
 use Unilend\CreditGuaranty\Entity\Program;
 use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
+use Unilend\CreditGuaranty\Entity\Reservation;
 use Unilend\CreditGuaranty\Repository\FieldRepository;
 use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
 use Unilend\CreditGuaranty\Security\Voter\ProgramChoiceOptionVoter;
-use function Symfony\Component\String\s;
 
 class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -32,35 +36,35 @@ class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizer
     private const ALREADY_CALLED = 'PROGRAM_CHOICE_OPTION_DENORMALIZER_ALREADY_CALLED';
 
     private Security                      $security;
+    private IriConverterInterface         $iriConverter;
     private ProgramChoiceOptionRepository $programChoiceOptionRepository;
     private FieldRepository               $fieldRepository;
-    private PropertyAccessorInterface     $propertyAccessor;
 
     public function __construct(
         Security $security,
+        IriConverterInterface $iriConverter,
         ProgramChoiceOptionRepository $programChoiceOptionRepository,
-        FieldRepository $fieldRepository,
-        PropertyAccessorInterface $propertyAccessor
+        FieldRepository $fieldRepository
     ) {
         $this->security                      = $security;
+        $this->iriConverter                  = $iriConverter;
         $this->programChoiceOptionRepository = $programChoiceOptionRepository;
         $this->fieldRepository               = $fieldRepository;
-        $this->propertyAccessor              = $propertyAccessor;
     }
 
     public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
     {
-        $object = $this->extractObjectToPopulate($type, $context);
-
-        return !isset($context[self::ALREADY_CALLED]) && $object instanceof ProgramAwareInterface && $object instanceof ProgramChoiceOptionCarrierInterface;
+        return !isset($context[self::ALREADY_CALLED])
+            && is_a($type, ProgramAwareInterface::class, true)
+            && is_a($type, ProgramChoiceOptionCarrierInterface::class, true)
+        ;
     }
 
     /**
      * @param mixed $data
      *
+     * @throws JsonException
      * @throws ORMException
-     * @throws LogicException
-     * @throws AccessDeniedException
      * @throws ExceptionInterface
      */
     public function denormalize($data, string $type, string $format = null, array $context = [])
@@ -68,12 +72,32 @@ class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizer
         $context[self::ALREADY_CALLED] = true;
         $object                        = $this->extractObjectToPopulate($type, $context);
 
-        foreach ($data as $propertyName => $description) {
-            $fieldAlias = s($propertyName)->snake()->toString();
-            if (in_array($fieldAlias, FieldAlias::PROGRAM_CHOICE_OPTION_FIELDS, true)) {
-                $programChoiceOption = $this->denormalizeChoiceOption($fieldAlias, $description, $object->getProgram());
-                $this->propertyAccessor->setValue($object, $propertyName, $programChoiceOption);
-                unset($data[$propertyName]);
+        foreach ($data as $propertyName => $propertyValue) {
+            $field = $this->fieldRepository->findOneBy([
+                'propertyPath' => $propertyName,
+                'objectClass'  => $type,
+            ]);
+
+            if (
+                $field instanceof Field
+                && in_array($field->getFieldAlias(), FieldAlias::PROGRAM_CHOICE_OPTION_FIELDS, true)
+            ) {
+                if ($object) {
+                    $program = $object->getProgram();
+                } elseif (false === empty($data['reservation'])) {
+                    $reservation = $this->iriConverter->getItemFromIri($data['reservation'], [AbstractNormalizer::GROUPS => []]);
+                    if (false === $reservation instanceof Reservation) {
+                        throw new RuntimeException(sprintf('Cannot detect the reservation from data %s', json_encode($data, JSON_THROW_ON_ERROR)));
+                    }
+                    $program = $reservation->getProgram();
+                }
+
+                if (false === isset($program) || false === $program instanceof Program) {
+                    throw new RuntimeException(sprintf('Cannot detect the program from data %s', json_encode($data, JSON_THROW_ON_ERROR)));
+                }
+
+                $programChoiceOption = $this->denormalizeChoiceOption($field, $propertyValue, $program);
+                $data[$propertyName] = $this->iriConverter->getIriFromItem($programChoiceOption);
             }
         }
 
@@ -83,10 +107,8 @@ class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizer
     /**
      * @throws ORMException
      */
-    private function denormalizeChoiceOption(string $fieldAlias, string $description, Program $program)
+    private function denormalizeChoiceOption(Field $field, string $description, Program $program): ProgramChoiceOption
     {
-        $field = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
-
         $programChoiceOption = $this->programChoiceOptionRepository->findOneBy([
             'program'     => $program,
             'field'       => $field,
@@ -94,6 +116,14 @@ class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizer
         ]);
 
         if (false === $programChoiceOption instanceof ProgramChoiceOption) {
+            if (is_array($field->getPredefinedItems()) && false === in_array($description, $field->getPredefinedItems(), true)) {
+                throw new LogicException(sprintf(
+                    'You cannot create a ProgramChoiceOption for %s field alias because the description (%s) is not in the pre-defined list.',
+                    $field->getFieldAlias(),
+                    $description
+                ));
+            }
+
             $programChoiceOption = new ProgramChoiceOption($program, $description, $field);
 
             if (false === $this->security->isGranted(ProgramChoiceOptionVoter::ATTRIBUTE_CREATE, $programChoiceOption)) {

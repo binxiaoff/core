@@ -11,10 +11,13 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\User;
+use Unilend\Core\SwiftMailer\MailjetMessage;
 
 /**
  * @ApiResource(
@@ -49,6 +52,9 @@ use Unilend\Core\Entity\User;
  *                     "agency:agentMember:write"
  *                 }
  *             }
+ *         },
+ *         "delete": {
+ *             "security": "is_granted('delete', object)"
  *         }
  *     }
  * )
@@ -126,7 +132,7 @@ class AgentMember extends AbstractProjectMember
     }
 
     /**
-     * @Groups({"agency:borrowerMember:write"})
+     * @Groups({"agency:agentMember:write"})
      */
     public function setProjectFunction(?string $projectFunction): AbstractProjectMember
     {
@@ -172,7 +178,7 @@ class AgentMember extends AbstractProjectMember
     }
 
     /**
-     * @Groups({"agency:borrowerMember:read"})
+     * @Groups({"agency:agentMember:read"})
      */
     public function isArchived(): bool
     {
@@ -197,5 +203,15 @@ class AgentMember extends AbstractProjectMember
                 ->addViolation()
             ;
         }
+    }
+
+    public static function getProjectPublicationNotificationMailjetTemplateId(): int
+    {
+        return MailjetMessage::TEMPLATE_AGENCY_AGENT_MEMBER_PROJECT_PUBLISHED;
+    }
+
+    public function getProjectFrontUrl(RouterInterface $router): string
+    {
+        return $router->generate('front_agencyAgentProjectView', ['projectPublicId' => $this->getProject()->getPublicId()], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 }

@@ -6,14 +6,20 @@ namespace Unilend\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullableMoney;
+use Unilend\Core\Entity\Interfaces\MoneyInterface;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
+use Unilend\Core\Service\MoneyCalculator;
+use Unilend\CreditGuaranty\Entity\Constant\GrossSubsidyEquivalent;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
 
@@ -21,11 +27,13 @@ use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface
  * @ApiResource(
  *     normalizationContext={"groups": {
  *         "creditGuaranty:financingObject:read",
- *         "money:read"
+ *         "money:read",
+ *         "nullableMoney:read"
  *     }},
  *     denormalizationContext={"groups": {
  *         "creditGuaranty:financingObject:write",
- *         "money:write"
+ *         "money:write",
+ *         "nullableMoney:write"
  *     }},
  *     itemOperations={
  *         "get": {
@@ -60,40 +68,129 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
     private Reservation $reservation;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
-     * @ORM\JoinColumn(name="id_financing_object", nullable=false)
-     *
-     * @Assert\Expression("value.getProgram() === this.getProgram()")
-     *
-     * @Groups({"creditGuaranty:financingObject:write"})
-     */
-    private ProgramChoiceOption $financingObject;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
-     * @ORM\JoinColumn(name="id_loan_type", nullable=false)
-     *
-     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     * @ORM\Column(type="boolean")
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
-    private ProgramChoiceOption $loanType;
+    private bool $mainLoan;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?bool $supportingGenerationsRenewal = null;
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?string $name;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\JoinColumn(name="id_financing_object_type", nullable=true)
+     *
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:financingObject:write"})
+     */
+    private ?ProgramChoiceOption $financingObjectType = null;
+
+    /**
+     * Numéro GREEN = numéro du prêt CA.
+     * GREEN = outil CA de gestion des prêts.
+     *
+     * @ORM\Column(type="string", length=50, nullable=true)
+     *
+     * @Assert\NotBlank(allowNull=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?string $loanNumber = null;
+
+    /**
+     * @ORM\Column(type="string", length=50, nullable=true)
+     *
+     * @Assert\NotBlank(allowNull=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?string $operationNumber = null;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\JoinColumn(name="id_loan_naf_code", nullable=true)
+     *
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:financingObject:write"})
+     */
+    private ?ProgramChoiceOption $loanNafCode = null;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\JoinColumn(name="id_loan_type", nullable=true)
+     *
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?ProgramChoiceOption $loanType = null;
 
     /**
      * Duration in month.
      *
-     * @ORM\Column(type="smallint")
+     * @ORM\Column(type="smallint", nullable=true)
+     *
+     * @Assert\GreaterThanOrEqual(1)
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
+     *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
+     *     @Assert\Expression("true === this.getProgram().isEsbCalculationActivated() && null !== value")
+     * }, message="CreditGuaranty.Reservation.financingObject.loanDuration.requiredForEsb", includeInternalMessages=false)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?int $loanDuration = null;
+
+    /**
+     * Duration in month.
+     *
+     * @ORM\Column(type="smallint", nullable=true)
      *
      * @Assert\GreaterThanOrEqual(1)
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
-    private int $loanDuration;
+    private ?int $loanDeferral = null;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\JoinColumn(name="id_loan_periodicity", nullable=true)
+     *
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?ProgramChoiceOption $loanPeriodicity = null;
+
+    /**
+     * Duration in month.
+     *
+     * @ORM\Column(type="smallint", nullable=true)
+     *
+     * @Assert\GreaterThanOrEqual(1)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?int $newMaturity = null;
 
     /**
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
@@ -105,27 +202,53 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     private Money $loanMoney;
 
     /**
-     * @ORM\Column(type="boolean")
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
-    private bool $releasedOnInvoice;
+    private NullableMoney $bfrValue;
+
+    /**
+     * Capital restant dû (CRD).
+     *
+     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private NullableMoney $remainingCapital;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\JoinColumn(name="id_investment_location", nullable=true)
+     *
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?ProgramChoiceOption $investmentLocation = null;
+
+    /**
+     * @var Collection|FinancingObjectUnblocking[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(
+     *     targetEntity="Unilend\CreditGuaranty\Entity\FinancingObjectUnblocking",
+     *     mappedBy="financingObject", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     * )
+     */
+    private Collection $financingObjectUnblockings;
 
     public function __construct(
         Reservation $reservation,
-        ProgramChoiceOption $financingObject,
-        ProgramChoiceOption $loanType,
-        int $loanDuration,
         Money $loanMoney,
-        bool $releasedOnInvoice
+        bool $mainLoan
     ) {
-        $this->reservation       = $reservation;
-        $this->financingObject   = $financingObject;
-        $this->loanType          = $loanType;
-        $this->loanDuration      = $loanDuration;
-        $this->loanMoney         = $loanMoney;
-        $this->releasedOnInvoice = $releasedOnInvoice;
-        $this->added             = new DateTimeImmutable();
+        $this->reservation = $reservation;
+        $this->loanMoney   = $loanMoney;
+        $this->bfrValue    = new NullableMoney();
+        $this->mainLoan    = $mainLoan;
+        $this->added       = new DateTimeImmutable();
     }
 
     public function getReservation(): Reservation
@@ -138,34 +261,124 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         return $this->getReservation()->getProgram();
     }
 
-    public function getFinancingObject(): ProgramChoiceOption
+    public function isMainLoan(): bool
     {
-        return $this->financingObject;
+        return $this->mainLoan;
     }
 
-    public function setFinancingObject(ProgramChoiceOption $financingObject): FinancingObject
+    public function setMainLoan(bool $mainLoan): FinancingObject
     {
-        $this->financingObject = $financingObject;
+        $this->mainLoan = $mainLoan;
+
+        return $this;
+    }
+
+    public function isSupportingGenerationsRenewal(): ?bool
+    {
+        return $this->supportingGenerationsRenewal;
+    }
+
+    public function setSupportingGenerationsRenewal(?bool $supportingGenerationsRenewal): FinancingObject
+    {
+        $this->supportingGenerationsRenewal = $supportingGenerationsRenewal;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): FinancingObject
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getFinancingObjectType(): ?ProgramChoiceOption
+    {
+        return $this->financingObjectType;
+    }
+
+    public function setFinancingObjectType(?ProgramChoiceOption $financingObjectType): FinancingObject
+    {
+        $this->financingObjectType = $financingObjectType;
 
         return $this;
     }
 
     /**
-     * @SerializedName("financingObject")
+     * @SerializedName("financingObjectType")
      *
      * @Groups({"creditGuaranty:financingObject:read"})
      */
-    public function getFinancingObjectDescription(): ?string
+    public function getFinancingObjectTypeDescription(): ?string
     {
-        return $this->financingObject->getDescription();
+        if ($this->financingObjectType instanceof ProgramChoiceOption) {
+            return $this->financingObjectType->getDescription();
+        }
+
+        return null;
     }
 
-    public function getLoanType(): ProgramChoiceOption
+    public function getLoanNumber(): ?string
+    {
+        return $this->loanNumber;
+    }
+
+    public function setLoanNumber(?string $loanNumber): FinancingObject
+    {
+        $this->loanNumber = $loanNumber;
+
+        return $this;
+    }
+
+    public function getOperationNumber(): ?string
+    {
+        return $this->operationNumber;
+    }
+
+    public function setOperationNumber(?string $operationNumber): FinancingObject
+    {
+        $this->operationNumber = $operationNumber;
+
+        return $this;
+    }
+
+    public function getLoanNafCode(): ?ProgramChoiceOption
+    {
+        return $this->loanNafCode;
+    }
+
+    public function setLoanNafCode(?ProgramChoiceOption $loanNafCode): FinancingObject
+    {
+        $this->loanNafCode = $loanNafCode;
+
+        return $this;
+    }
+
+    /**
+     * @SerializedName("loanNafCode")
+     *
+     * @Groups({"creditGuaranty:financingObject:read"})
+     */
+    public function getLoanNafCodeDescription(): ?string
+    {
+        if ($this->loanNafCode instanceof ProgramChoiceOption) {
+            return $this->loanNafCode->getDescription();
+        }
+
+        return null;
+    }
+
+    public function getLoanType(): ?ProgramChoiceOption
     {
         return $this->loanType;
     }
 
-    public function setLoanType(ProgramChoiceOption $loanType): FinancingObject
+    public function setLoanType(?ProgramChoiceOption $loanType): FinancingObject
     {
         $this->loanType = $loanType;
 
@@ -179,17 +392,71 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      */
     public function getLoanTypeDescription(): ?string
     {
-        return $this->loanType->getDescription();
+        if ($this->loanType instanceof ProgramChoiceOption) {
+            return $this->loanType->getDescription();
+        }
+
+        return null;
     }
 
-    public function getLoanDuration(): int
+    public function getLoanDuration(): ?int
     {
         return $this->loanDuration;
     }
 
-    public function setLoanDuration(int $loanDuration): FinancingObject
+    public function setLoanDuration(?int $loanDuration): FinancingObject
     {
         $this->loanDuration = $loanDuration;
+
+        return $this;
+    }
+
+    public function getLoanDeferral(): ?int
+    {
+        return $this->loanDeferral;
+    }
+
+    public function setLoanDeferral(?int $loanDeferral): FinancingObject
+    {
+        $this->loanDeferral = $loanDeferral;
+
+        return $this;
+    }
+
+    public function getLoanPeriodicity(): ?ProgramChoiceOption
+    {
+        return $this->loanPeriodicity;
+    }
+
+    public function setLoanPeriodicity(?ProgramChoiceOption $loanPeriodicity): FinancingObject
+    {
+        $this->loanPeriodicity = $loanPeriodicity;
+
+        return $this;
+    }
+
+    /**
+     * @SerializedName("loanPeriodicity")
+     *
+     * @Groups({"creditGuaranty:financingObject:read"})
+     */
+    public function getLoanPeriodicityDescription(): ?string
+    {
+        if ($this->loanPeriodicity instanceof ProgramChoiceOption) {
+            return $this->loanPeriodicity->getDescription();
+        }
+
+        return null;
+    }
+
+    public function getNewMaturity(): ?int
+    {
+        return $this->newMaturity;
+    }
+
+    public function setNewMaturity(?int $newMaturity): FinancingObject
+    {
+        $this->newMaturity = $newMaturity;
 
         return $this;
     }
@@ -206,16 +473,62 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         return $this;
     }
 
-    public function isReleasedOnInvoice(): bool
+    public function getBfrValue(): NullableMoney
     {
-        return $this->releasedOnInvoice;
+        return $this->bfrValue;
     }
 
-    public function setReleasedOnInvoice(bool $releasedOnInvoice): FinancingObject
+    public function setBfrValue(NullableMoney $bfrValue): FinancingObject
     {
-        $this->releasedOnInvoice = $releasedOnInvoice;
+        $this->bfrValue = $bfrValue;
 
         return $this;
+    }
+
+    public function getRemainingCapital(): NullableMoney
+    {
+        return $this->remainingCapital;
+    }
+
+    public function setRemainingCapital(NullableMoney $remainingCapital): FinancingObject
+    {
+        $this->remainingCapital = $remainingCapital;
+
+        return $this;
+    }
+
+    public function getInvestmentLocation(): ?ProgramChoiceOption
+    {
+        return $this->investmentLocation;
+    }
+
+    public function setInvestmentLocation(?ProgramChoiceOption $investmentLocation): FinancingObject
+    {
+        $this->investmentLocation = $investmentLocation;
+
+        return $this;
+    }
+
+    /**
+     * @SerializedName("investmentLocation")
+     *
+     * @Groups({"creditGuaranty:financingObject:read"})
+     */
+    public function getInvestmentLocationDescription(): ?string
+    {
+        if ($this->investmentLocation instanceof ProgramChoiceOption) {
+            return $this->investmentLocation->getDescription();
+        }
+
+        return null;
+    }
+
+    /**
+     * @return Collection|FinancingObjectUnblocking[]
+     */
+    public function getFinancingObjectUnblockings(): Collection
+    {
+        return $this->financingObjectUnblockings;
     }
 
     /**
@@ -232,5 +545,17 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     public function getUpdated(): ?DateTimeImmutable
     {
         return $this->updated;
+    }
+
+    /**
+     * Montant équivalent de subvention Brut (ESB).
+     *
+     * @Groups({"creditGuaranty:financingObject:read"})
+     */
+    public function getGrossSubsidyEquivalent(): MoneyInterface
+    {
+        $esb = MoneyCalculator::multiply($this->getLoanMoney(), (float) $this->getProgram()->getGuarantyCoverage());
+
+        return MoneyCalculator::multiply($esb, (float) \bcmul((string) $this->getLoanDuration(), (string) GrossSubsidyEquivalent::FACTOR, 4));
     }
 }

@@ -10,15 +10,6 @@ use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class ParticipationPoolVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_EDIT = 'edit';
-    public const ATTRIBUTE_VIEW = 'view';
-
-    protected function canEdit(ParticipationPool $participationPool): bool
-    {
-        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participationPool->getProject())
-            && $participationPool->getProject()->isEditable();
-    }
-
     protected function canView(ParticipationPool $participationPool, User $user): bool
     {
         if ($this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participationPool->getProject())) {
@@ -43,5 +34,11 @@ class ParticipationPoolVoter extends AbstractEntityVoter
         }
 
         return false;
+    }
+
+    protected function canEdit(ParticipationPool $participationPool): bool
+    {
+        return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $participationPool->getProject())
+            && $participationPool->getProject()->isEditable();
     }
 }
