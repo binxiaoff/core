@@ -37,11 +37,19 @@ class PermissionProviderTest extends TestCase
     }
 
     /**
+     * @covers ::getName
+     */
+    public function testGetName(): void
+    {
+        static::assertSame('credit_guaranty', $this->createTestObject()->getName());
+    }
+
+    /**
      * @covers ::provide
      *
      * @dataProvider staffProvider
      */
-    public function testProvide(Staff $staff, ?StaffPermission $staffPermission = null, array $expected): void
+    public function testProvide(Staff $staff, array $expected, ?StaffPermission $staffPermission = null): void
     {
         $this->staffPermissionRepository->findOneBy(['staff' => $staff])->shouldBeCalledOnce()->willReturn($staffPermission);
 
@@ -57,19 +65,19 @@ class PermissionProviderTest extends TestCase
 
         yield 'staff without cg permissions' => [
             $staff,
+            ['permissions' => 0, 'grant_permissions' => 0],
             null,
-            ['credit_guaranty' => []],
         ];
         yield 'staff with cg permissions' => [
             $staff,
+            ['permissions' => StaffPermission::MANAGING_COMPANY_ADMIN_PERMISSIONS, 'grant_permissions' => 0],
             new StaffPermission($staff, new Bitmask(StaffPermission::MANAGING_COMPANY_ADMIN_PERMISSIONS)),
-            ['credit_guaranty' => ['permissions' => 15, 'grant_permissions' => 0]],
         ];
         yield 'staff with cg permissions and grant_permissions' => [
             $staff,
+            ['permissions' => StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS, 'grant_permissions' => StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS],
             (new StaffPermission($staff, new Bitmask(StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS)))
                 ->setGrantPermissions(StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS),
-            ['credit_guaranty' => ['permissions' => 57, 'grant_permissions' => 57]],
         ];
     }
 
@@ -85,7 +93,22 @@ class PermissionProviderTest extends TestCase
         $permissionProvider = $this->createTestObject();
         $result             = $permissionProvider->provide($user, null);
 
-        static::assertSame(['credit_guaranty' => []], $result);
+        static::assertSame(['permissions' => 0, 'grant_permissions' => 0], $result);
+    }
+
+    /**
+     * @covers ::provide
+     */
+    public function testProvideWithoutStaffPermission(): void
+    {
+        $staff = $this->createStaff();
+
+        $this->staffPermissionRepository->findOneBy(['staff' => $staff])->shouldBeCalledOnce()->willReturn(null);
+
+        $permissionProvider = $this->createTestObject();
+        $result             = $permissionProvider->provide($staff->getUser(), $staff);
+
+        static::assertSame(['permissions' => 0, 'grant_permissions' => 0], $result);
     }
 
     private function createStaff(): Staff

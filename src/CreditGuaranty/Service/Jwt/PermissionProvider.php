@@ -21,9 +21,17 @@ class PermissionProvider implements PermissionProviderInterface
         $this->staffPermissionRepository = $staffPermissionRepository;
     }
 
+    public function getName(): string
+    {
+        return self::NAME;
+    }
+
     public function provide(User $user, ?Staff $staff = null): array
     {
-        $permissions = [self::NAME => []];
+        $permissions = [
+            'permissions'       => 0,
+            'grant_permissions' => 0,
+        ];
 
         if (false === ($staff instanceof Staff)) {
             return $permissions;
@@ -35,8 +43,8 @@ class PermissionProvider implements PermissionProviderInterface
             return $permissions;
         }
 
-        $permissions[self::NAME]['permissions']       = $staffPermission->getPermissions()->get();
-        $permissions[self::NAME]['grant_permissions'] = $staffPermission->getGrantPermissions()->get();
+        $permissions['permissions']       = $staffPermission->getPermissions()->get();
+        $permissions['grant_permissions'] = $staffPermission->getGrantPermissions()->get();
 
         return $permissions;
     }

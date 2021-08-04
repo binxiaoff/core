@@ -9,5 +9,7 @@ use Unilend\Core\Entity\User;
 
 interface PermissionProviderInterface
 {
+    public function getName(): string;
+
     public function provide(User $user, ?Staff $staff = null): array;
 }
