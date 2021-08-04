@@ -1,3 +1,6 @@
+## 5.0.1 (04/08/2021)
+[Release note](https://lafabriquebyca.atlassian.net/browse/CALS/fixforversion/10093)
+
 ## 5.0.0 (04/08/2021)
 [Release note](https://lafabriquebyca.atlassian.net/browse/CALS/fixforversion/10090)
 
