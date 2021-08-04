@@ -42,6 +42,8 @@ services:
     _instanceof:
         Unilend\Core\EventSubscriber\Jwt\PermissionProviderInterface:
             tags: ['unilend.jwt.permission_provider']
+        Unilend\Core\Service\Staff\StaffLoginInterface:
+            tags: [ 'unilend.staff.login.checker' ]
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -87,6 +89,10 @@ services:
         $accountHost: '%env(DOCUSIGN_ACCOUNT_HOST)%'
         $apiHost: '%env(DOCUSIGN_API_HOST)%'
         $debug: '%kernel.debug%'
+
+    Unilend\Core\Service\Staff\StaffLoginChecker:
+        arguments:
+            $checkers: !tagged unilend.staff.login.checker
 
     currency_formatter:
         public: true
