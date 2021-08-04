@@ -385,18 +385,18 @@ class ImportProjectCommand extends Command
         while ($rowIterator->valid() && ($row = $rowIterator->current())) {
             $cells = $row->getCells();
 
-            $siren = \preg_replace('/\D*/', '', $cells[1]->getValue());
-
-            $name    = \trim((string) $cells[0]->getValue());
-            $address = \trim((string) $cells[2]->getValue());
-            $rcs     = \trim((string) $cells[3]->getValue());
-            $capital = \preg_replace('/\D*/', '', $cells[5]->getValue());
-            $capital = new NullableMoney('EUR', $capital);
+            $name      = \trim((string) $cells[0]->getValue());
+            $siren     = \preg_replace('/\D*/', '', $cells[1]->getValue());
+            $address   = \trim((string) $cells[2]->getValue());
+            $rcs       = \trim((string) $cells[3]->getValue());
+            $legalForm = \trim((string) $cells[4]->getValue());
+            $capital   = \preg_replace('/\D*/', '', $cells[5]->getValue());
+            $capital   = new NullableMoney('EUR', $capital);
 
             $borrower = (new Borrower(
                 $project,
                 $name,
-                $cells[4]->getValue(),
+                $legalForm,
                 $capital,
                 $address,
                 $siren
@@ -622,7 +622,7 @@ class ImportProjectCommand extends Command
             $startDate       = DateTimeImmutable::createFromMutable($cells[5]->getValue());
             $delay           = (int) \preg_replace('/\D*/', '', $cells[6]->getValue()) ?: 1; //  TODO Discuss with metier about this
             $recurrence      = $this->getMapping($cells[8]->getValue(), self::MAPPING_COVENANT_RECURRENCE);
-            $endDate         = null === $recurrence ? $project->getContractEndDate() : null;
+            $endDate         = null === $recurrence ? $startDate->add(\DateInterval::createFromDateString("+ {$delay} days")) : null;
             $endDate         = $cells[7]->getValue() ? DateTimeImmutable::createFromMutable($cells[7]->getValue()) : $endDate;
             if (null === $endDate) {
                 throw new Exception(\sprintf('You must have an enddate if there is recurrence (line %d)', $rowIterator->key()));
