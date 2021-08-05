@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
@@ -43,6 +44,7 @@ class HubspotContact
     {
         $this->user      = $user;
         $this->contactId = $contactId;
+        $this->added     = new DateTimeImmutable();
     }
 
     public function getId(): int
