@@ -54,11 +54,27 @@ class StaffLoginCheckerTest extends TestCase
     /**
      * @covers ::isGrantedLogin
      */
-    public function testIsNotGrantedLogin(): void
+    public function testIsNotGrantedLoginWithoutPermissions(): void
     {
         $staff = $this->createStaff();
 
         $this->staffPermissionRepository->findOneBy(['staff' => $staff])->shouldBeCalledOnce()->willReturn(null);
+
+        static::assertFalse($this->createTestObject()->isGrantedLogin($staff));
+    }
+
+    /**
+     * @covers ::isGrantedLogin
+     */
+    public function testIsNotGrantedLoginWithPermissions0(): void
+    {
+        $staff           = $this->createStaff();
+        $staffPermission = new StaffPermission(
+            $staff,
+            new Bitmask(0)
+        );
+
+        $this->staffPermissionRepository->findOneBy(['staff' => $staff])->shouldBeCalledOnce()->willReturn($staffPermission);
 
         static::assertFalse($this->createTestObject()->isGrantedLogin($staff));
     }

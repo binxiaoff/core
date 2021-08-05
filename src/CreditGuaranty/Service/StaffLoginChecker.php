@@ -22,7 +22,7 @@ class StaffLoginChecker implements StaffLoginInterface
     {
         $staffPermission = $this->staffPermissionRepository->findOneBy(['staff' => $staff]);
 
-        if (false === ($staffPermission instanceof StaffPermission)) {
+        if (false === ($staffPermission instanceof StaffPermission) || 0 === $staffPermission->getPermissions()->get()) {
             return false;
         }
 

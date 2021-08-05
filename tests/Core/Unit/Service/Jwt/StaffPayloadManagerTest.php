@@ -7,6 +7,7 @@ namespace Unilend\Test\Core\Unit\Service\Jwt;
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Exception\ItemNotFoundException;
 use Doctrine\Common\Collections\ArrayCollection;
+use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -58,26 +59,18 @@ class StaffPayloadManagerTest extends TestCase
      */
     public function testGetPayloads(): void
     {
-        $user = new User('user@mail.com');
-        // staff 1
-        $staff1 = $this->createStaff($user);
-        $staff1->setPublicId();
-        $staff1Iri = '/core/staff/' . $staff1->getPublicId();
-        // staff 2
-        $staff2 = $this->createStaff($user);
-        $this->forceStaff($user, new ArrayCollection([$staff1, $staff2]));
-        // staff 3
-        $staff3 = $this->createStaff($user);
-        $staff3->setPublicId();
-        $staff3Iri = '/core/staff/' . $staff3->getPublicId();
-        $this->forceStaff($user, new ArrayCollection([$staff1, $staff2, $staff3]));
+        $user           = $this->createUserWithStaff(3);
+        $staff1         = $user->getStaff()[0];
+        $staff2         = $user->getStaff()[1];
+        $staff3         = $user->getStaff()[2];
+        $staffIriPrefix = '/core/staff/';
 
         $this->staffLoginChecker->isGrantedLogin($staff1)->shouldBeCalledOnce()->willReturn(true);
-        $this->iriConverter->getIriFromItem($staff1)->shouldBeCalledOnce()->willReturn($staff1Iri);
+        $this->iriConverter->getIriFromItem($staff1)->shouldBeCalledOnce()->willReturn($staffIriPrefix . $staff1->getPublicId());
         $this->staffLoginChecker->isGrantedLogin($staff2)->shouldBeCalledOnce()->willReturn(false);
         $this->iriConverter->getIriFromItem($staff2)->shouldNotBeCalled();
         $this->staffLoginChecker->isGrantedLogin($staff3)->shouldBeCalledOnce()->willReturn(true);
-        $this->iriConverter->getIriFromItem($staff3)->shouldBeCalledOnce()->willReturn($staff3Iri);
+        $this->iriConverter->getIriFromItem($staff3)->shouldBeCalledOnce()->willReturn($staffIriPrefix . $staff3->getPublicId());
 
         $staffPayloadManager = $this->createTestObject();
         $result              = \iterator_to_array($staffPayloadManager->getPayloads($user));
@@ -94,11 +87,10 @@ class StaffPayloadManagerTest extends TestCase
      */
     public function testUpdateSecurityToken(): void
     {
-        $staff = $this->createStaff();
-        $staff->setPublicId();
+        $staff    = $this->createUserWithStaff()->getCurrentStaff();
         $staffIri = 'core/staff/' . $staff->getPublicId();
-        $token    = $this->createToken($staff);
         $payload  = ['staff' => $staffIri];
+        $token    = $this->createToken($staff);
 
         $this->iriConverter->getItemFromIri($staffIri, [AbstractNormalizer::GROUPS => []])->shouldBeCalledOnce()->willReturn($staff);
 
@@ -117,7 +109,7 @@ class StaffPayloadManagerTest extends TestCase
      */
     public function testUpdateSecurityTokenWithoutStaffInPayload(): void
     {
-        $staff   = $this->createStaff();
+        $staff   = $this->createUserWithStaff()->getCurrentStaff();
         $token   = $this->createToken($staff);
         $payload = [];
 
@@ -136,8 +128,7 @@ class StaffPayloadManagerTest extends TestCase
      */
     public function testIsPayloadValidWithStaff(): void
     {
-        $staff = $this->createStaff();
-        $staff->setPublicId();
+        $staff    = $this->createUserWithStaff()->getCurrentStaff();
         $staffIri = 'core/staff/' . $staff->getPublicId();
         $payload  = ['staff' => $staffIri];
 
@@ -153,7 +144,7 @@ class StaffPayloadManagerTest extends TestCase
      */
     public function testIsPayloadValidWithoutStaff(): void
     {
-        $staff   = $this->createStaff();
+        $staff   = $this->createUserWithStaff()->getCurrentStaff();
         $payload = [];
 
         $this->iriConverter->getItemFromIri(Argument::cetera())->shouldNotBeCalled();
@@ -183,7 +174,7 @@ class StaffPayloadManagerTest extends TestCase
      */
     public function testIsPayloadInvalidWithStaffNotGrantedLogin(): void
     {
-        $staff = $this->createStaff();
+        $staff = $this->createUserWithStaff()->getCurrentStaff();
         $staff->setPublicId();
         $staffIri = 'core/staff/' . $staff->getPublicId();
         $payload  = ['staff' => $staffIri];
@@ -203,20 +194,31 @@ class StaffPayloadManagerTest extends TestCase
         return new JWTUserToken($user->getRoles(), $user);
     }
 
-    private function createStaff(?User $user = null): Staff
+    /**
+     * @throws Exception
+     */
+    private function createUserWithStaff(int $staffNb = 1): User
     {
         $teamRoot = Team::createRootTeam(new Company('Company', 'Company', ''));
         $team     = Team::createTeam('Team', $teamRoot);
+        $user     = new User('user@mail.com');
+        $staff    = new ArrayCollection();
 
-        return new Staff($user ?? new User('user@mail.com'), $team);
-    }
+        foreach (\range(1, $staffNb) as $index) {
+            $staffItem = new Staff($user, $team);
+            $staffItem->setPublicId();
+            $staff->add($staffItem);
+        }
 
-    private function forceStaff(User $user, ArrayCollection $staff): void
-    {
+        $user->setCurrentStaff($staff[0]);
+
+        // force User::setStaff
         $reflection = new \ReflectionClass(User::class);
         $property   = $reflection->getProperty('staff');
         $property->setAccessible(true);
         $property->setValue($user, $staff);
+
+        return $user;
     }
 
     private function createTestObject(): StaffPayloadManager

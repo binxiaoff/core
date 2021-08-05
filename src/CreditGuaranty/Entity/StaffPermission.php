@@ -10,6 +10,7 @@ use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\Traits\PermissionTrait;
 use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
@@ -86,7 +87,11 @@ class StaffPermission
     private Staff $staff;
 
     /**
+     * We must first have permissions to be able to grant permissions.
+     *
      * @ORM\Column(type="bitmask")
+     *
+     * @Assert\Expression("(this.getPermissions().get() & this.getGrantPermissions().get()) === this.getGrantPermissions().get()")
      *
      * @Groups({"creditGuaranty:staffPermission:read"})
      */
