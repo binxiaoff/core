@@ -14,7 +14,7 @@ abstract class AbstractScalarPreviousValueComparisonValidator extends AbstractPr
      */
     protected function checkPreconditions($value, Constraint $constraint): void
     {
-        if (is_object($value)) {
+        if (\is_object($value)) {
             throw new UnexpectedTypeException($value, 'non object');
         }
     }

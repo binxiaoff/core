@@ -11,27 +11,21 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\StaffStatus;
+use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\UserRepository;
 use Unilend\Syndication\Entity\ProjectParticipationStatus;
 use Unilend\Syndication\Entity\ProjectStatus;
 
 class CurrentStaff implements SerializerContextBuilderInterface
 {
-    /**  @var SerializerContextBuilderInterface */
     private SerializerContextBuilderInterface $decorated;
-    /** @var Security */
+
     private Security $security;
-    /** @var UserRepository */
+
     private UserRepository $userRepository;
 
-    /**
-     * @param SerializerContextBuilderInterface $decorated
-     * @param Security                          $security
-     * @param UserRepository                    $userRepository
-     */
     public function __construct(SerializerContextBuilderInterface $decorated, Security $security, UserRepository $userRepository)
     {
         $this->decorated      = $decorated;
@@ -42,13 +36,7 @@ class CurrentStaff implements SerializerContextBuilderInterface
     /**
      * Creates a serialization context from a Request.
      *
-     * @param Request    $request
-     * @param bool       $normalization
-     * @param array|null $extractedAttributes
-     *
      * @throws ReflectionException
-     *
-     * @return array
      */
     public function createFromRequest(Request $request, bool $normalization, array $extractedAttributes = null): array
     {
@@ -81,9 +69,9 @@ class CurrentStaff implements SerializerContextBuilderInterface
 
             // Needed for ProjectStatus because we patch project to change status
             // Put here because there is no need for more advance customisation of their denormalisation
-            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['addedBy'] = $staff;
-            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][StaffStatus::class]['addedBy']   = $staff;
-            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationStatus::class]['addedBy']   = $staff;
+            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['addedBy']              = $staff;
+            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][StaffStatus::class]['addedBy']                = $staff;
+            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationStatus::class]['addedBy'] = $staff;
         }
 
         return $context;

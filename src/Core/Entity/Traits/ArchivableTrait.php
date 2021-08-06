@@ -21,8 +21,6 @@ trait ArchivableTrait
 
     /**
      * @param DateTime $archived
-     *
-     * @return self
      */
     public function setArchived(?DateTime $archived): self
     {

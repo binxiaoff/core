@@ -46,9 +46,9 @@ class Rcs extends Sequentially
     {
         $value = $context->getValue();
 
-        $tokens = explode(' ', $value);
+        $tokens = \explode(' ', $value);
 
-        $siren = $tokens ? end($tokens) : null;
+        $siren = $tokens ? \end($tokens) : null;
 
         $validator = $context->getValidator()->inContext($context);
 

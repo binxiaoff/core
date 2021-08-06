@@ -15,17 +15,12 @@ class FileVersionCreatedListener
      */
     private $dataCrypto;
 
-    /**
-     * @param DataCrypto $dataCrypto
-     */
     public function __construct(DataCrypto $dataCrypto)
     {
         $this->dataCrypto = $dataCrypto;
     }
 
     /**
-     * @param FileVersion $attachment
-     *
      * @throws EnvironmentIsBrokenException
      */
     public function encryptKey(FileVersion $attachment): void

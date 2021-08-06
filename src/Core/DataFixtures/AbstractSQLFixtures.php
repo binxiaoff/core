@@ -10,9 +10,6 @@ abstract class AbstractSQLFixtures extends AbstractFixtures
 {
     protected static string $sql;
 
-    /**
-     * @param ObjectManager $manager
-     */
     public function load(ObjectManager $manager): void
     {
         if (static::$sql) {

@@ -78,7 +78,7 @@ class PayloadManagerSubscriber implements EventSubscriberInterface
         $payloadManager = $this->payloadManagers[$scope] ?? null;
 
         if (null === $payloadManager) {
-            throw new \LogicException(sprintf('At this point there should be a corresponding payload generator for %s', $scope));
+            throw new \LogicException(\sprintf('At this point there should be a corresponding payload generator for %s', $scope));
         }
 
         $payloadManager->updateSecurityToken($token, $payload);
@@ -112,7 +112,7 @@ class PayloadManagerSubscriber implements EventSubscriberInterface
     public function addPayloadManager(PayloadManagerInterface $payloadManager)
     {
         if (isset($this->payloadManagers[$payloadManager::getScope()])) {
-            throw new \InvalidArgumentException(sprintf(
+            throw new \InvalidArgumentException(\sprintf(
                 'This scope %s is already used by another jwt payload manager. Check the classes %s and %s',
                 $payloadManager::getScope(),
                 \get_class($payloadManager),

@@ -34,7 +34,7 @@ class ArrayFilter extends AbstractContextAwareFilter
 
         $properties = $this->getProperties();
         if (null === $properties) {
-            $properties = array_fill_keys($this->getClassMetadata($resourceClass)->getFieldNames(), null);
+            $properties = \array_fill_keys($this->getClassMetadata($resourceClass)->getFieldNames(), null);
         }
 
         foreach ($properties as $property => $unused) {
@@ -67,12 +67,7 @@ class ArrayFilter extends AbstractContextAwareFilter
     /**
      * Passes a property through the filter.
      *
-     * @param string                      $property
-     * @param mixed                       $values
-     * @param QueryBuilder                $queryBuilder
-     * @param QueryNameGeneratorInterface $queryNameGenerator
-     * @param string                      $resourceClass
-     * @param string|null                 $operationName
+     * @param mixed $values
      *
      * @throws Exception
      */
@@ -85,7 +80,7 @@ class ArrayFilter extends AbstractContextAwareFilter
         string $operationName = null
     ) {
         if (
-            false === is_array($values)
+            false === \is_array($values)
             || false === $this->isPropertyEnabled($property, $resourceClass)
             || false === $this->isPropertyMapped($property, $resourceClass, true)
             || false === $this->isArrayField($property, $resourceClass)
@@ -117,36 +112,24 @@ class ArrayFilter extends AbstractContextAwareFilter
         }
     }
 
-    /**
-     * @param string $property
-     * @param string $resourceClass
-     *
-     * @return bool
-     */
     private function isArrayField(string $property, string $resourceClass): bool
     {
         return isset(self::DOCTRINE_ARRAY_TYPES[(string) $this->getDoctrineFieldType($property, $resourceClass)]);
     }
 
-    /**
-     * @param array  $values
-     * @param string $property
-     *
-     * @return array|null
-     */
     private function normalizeValues(array $values, string $property): ?array
     {
         $operators = [self::PARAMETER_ANY, self::PARAMETER_ALL];
 
         foreach ($values as $operator => $value) {
-            if (!in_array($operator, $operators, true)) {
+            if (!\in_array($operator, $operators, true)) {
                 unset($values[$operator]);
             }
         }
 
         if (empty($values)) {
             $this->getLogger()->notice('Invalid filter ignored', [
-                'exception' => new InvalidArgumentException(sprintf('At least one valid operator ("%s") is required for "%s" property', implode('", "', $operators), $property)),
+                'exception' => new InvalidArgumentException(\sprintf('At least one valid operator ("%s") is required for "%s" property', \implode('", "', $operators), $property)),
             ]);
 
             return null;
@@ -156,12 +139,8 @@ class ArrayFilter extends AbstractContextAwareFilter
     }
 
     /**
-     * @param QueryBuilder                $queryBuilder
-     * @param QueryNameGeneratorInterface $queryNameGenerator
-     * @param mixed                       $alias
-     * @param string                      $field
-     * @param string                      $operator
-     * @param mixed                       $value
+     * @param mixed $alias
+     * @param mixed $value
      *
      * @throws Exception
      */
@@ -174,7 +153,7 @@ class ArrayFilter extends AbstractContextAwareFilter
         $logicOperation = (self::PARAMETER_ANY === $operator) ? $expr->orX() : $logicOperation;
 
         if (null === $logicOperation) {
-            $this->getLogger()->critical('Ignored filter (should be impossible)', compact($operator, $value));
+            $this->getLogger()->critical('Ignored filter (should be impossible)', \compact($operator, $value));
 
             return;
         }

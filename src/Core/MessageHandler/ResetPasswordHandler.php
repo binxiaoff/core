@@ -8,7 +8,8 @@ use Exception;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Unilend\Core\Entity\Request\ResetPassword;
 use Unilend\Core\Repository\UserRepository;
-use Unilend\Core\Service\{GoogleRecaptchaManager, User\UserNotifier};
+use Unilend\Core\Service\GoogleRecaptchaManager;
+use Unilend\Core\Service\User\UserNotifier;
 
 class ResetPasswordHandler implements MessageHandlerInterface
 {
@@ -19,11 +20,6 @@ class ResetPasswordHandler implements MessageHandlerInterface
     /** @var GoogleRecaptchaManager */
     private $googleRecaptchaManager;
 
-    /**
-     * @param UserRepository         $userRepository
-     * @param UserNotifier           $notifier
-     * @param GoogleRecaptchaManager $googleRecaptchaManager
-     */
     public function __construct(
         UserRepository $userRepository,
         UserNotifier $notifier,
@@ -35,8 +31,6 @@ class ResetPasswordHandler implements MessageHandlerInterface
     }
 
     /**
-     * @param ResetPassword $resetPasswordRequest
-     *
      * @throws Exception
      */
     public function __invoke(ResetPassword $resetPasswordRequest): void

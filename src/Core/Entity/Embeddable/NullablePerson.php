@@ -101,19 +101,11 @@ class NullablePerson
      */
     private $phone;
 
-    /**
-     * @return string|null
-     */
     public function getFirstName(): ?string
     {
         return $this->firstName;
     }
 
-    /**
-     * @param string|null $firstName
-     *
-     * @return NullablePerson
-     */
     public function setFirstName(?string $firstName): NullablePerson
     {
         $this->firstName = $firstName;
@@ -121,19 +113,11 @@ class NullablePerson
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getLastName(): ?string
     {
         return $this->lastName;
     }
 
-    /**
-     * @param string|null $lastName
-     *
-     * @return NullablePerson
-     */
     public function setLastName(?string $lastName): NullablePerson
     {
         $this->lastName = $lastName;
@@ -141,19 +125,11 @@ class NullablePerson
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getParentUnit(): ?string
     {
         return $this->parentUnit;
     }
 
-    /**
-     * @param string|null $parentUnit
-     *
-     * @return NullablePerson
-     */
     public function setParentUnit(?string $parentUnit): NullablePerson
     {
         $this->parentUnit = $parentUnit;
@@ -161,19 +137,11 @@ class NullablePerson
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getOccupation(): ?string
     {
         return $this->occupation;
     }
 
-    /**
-     * @param string|null $occupation
-     *
-     * @return NullablePerson
-     */
     public function setOccupation(?string $occupation): NullablePerson
     {
         $this->occupation = $occupation;
@@ -181,19 +149,11 @@ class NullablePerson
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    /**
-     * @param string|null $email
-     *
-     * @return NullablePerson
-     */
     public function setEmail(?string $email): NullablePerson
     {
         $this->email = $email;
@@ -201,19 +161,11 @@ class NullablePerson
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getPhone(): ?string
     {
         return $this->phone;
     }
 
-    /**
-     * @param string|null $phone
-     *
-     * @return NullablePerson
-     */
     public function setPhone(?string $phone): NullablePerson
     {
         $this->phone = $phone;
@@ -221,11 +173,8 @@ class NullablePerson
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isValid(): bool
     {
-        return $this->firstName && $this->lastName && $this->parentUnit && $this->occupation && $this->email  && $this->phone;
+        return $this->firstName && $this->lastName && $this->parentUnit && $this->occupation && $this->email && $this->phone;
     }
 }

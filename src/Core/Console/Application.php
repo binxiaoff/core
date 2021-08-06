@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Unilend\Core\Console;
 
 use Symfony\Bundle\FrameworkBundle\Console\Application as FrameworkBundleApplication;
-use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Lock\{Lock, LockFactory, Store\SemaphoreStore};
+use Symfony\Component\Lock\Lock;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\SemaphoreStore;
 
 class Application extends FrameworkBundleApplication
 {
@@ -38,7 +42,7 @@ class Application extends FrameworkBundleApplication
 
                 if (false === $lock->acquire()) {
                     $logger  = $this->getKernel()->getContainer()->get('monolog.logger.console');
-                    $message = sprintf('The command %s is already running in another process.', $this->getCommandName($input));
+                    $message = \sprintf('The command %s is already running in another process.', $this->getCommandName($input));
                     $output->writeln($message);
                     if ($logger) {
                         $logger->warning($message);

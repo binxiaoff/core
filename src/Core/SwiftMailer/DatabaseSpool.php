@@ -73,7 +73,7 @@ class DatabaseSpool extends Swift_ConfigurableSpool
         $limit        = $limit > 0 ? $limit : null;
         $pendingMails = $this->mailQueueRepository->getPendingMails($limit);
 
-        if (!count($pendingMails)) {
+        if (!\count($pendingMails)) {
             return 0;
         }
 

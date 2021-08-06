@@ -22,8 +22,6 @@ class MailQueueRepository extends ServiceEntityRepository
 {
     /**
      * MailQueueRepository constructor.
-     *
-     * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
     {
@@ -39,8 +37,6 @@ class MailQueueRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param int|null $limit
-     *
      * @throws Exception
      *
      * @return MailQueue[]
@@ -52,9 +48,9 @@ class MailQueueRepository extends ServiceEntityRepository
             ->andWhere('mq.scheduledAt <= :now')
             ->setParameters([
                 'status' => MailQueue::STATUS_PENDING,
-                'now' => new DateTime(),
+                'now'    => new DateTime(),
             ])
-            ->setMaxResults(is_numeric($limit) ? $limit : null)
+            ->setMaxResults(\is_numeric($limit) ? $limit : null)
             ->orderBy('mq.scheduledAt', 'ASC')
             ->getQuery()
             ->getResult()

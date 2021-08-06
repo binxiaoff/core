@@ -54,8 +54,6 @@ class MessageThread
     use TimestampableAddedOnlyTrait;
 
     /**
-     * @var ProjectParticipation|null
-     *
      * @ORM\OneToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation")
      * @ORM\JoinColumn(name="id_project_participation", referencedColumnName="id")
      *
@@ -93,8 +91,6 @@ class MessageThread
     }
 
     /**
-     * @param ProjectParticipation|null $projectParticipation
-     *
      * @return $this
      */
     public function setProjectParticipation(?ProjectParticipation $projectParticipation): self
@@ -104,9 +100,6 @@ class MessageThread
         return $this;
     }
 
-    /**
-     * @return ProjectParticipation|null
-     */
     public function getProjectParticipation(): ?ProjectParticipation
     {
         return $this->projectParticipation;
@@ -116,8 +109,6 @@ class MessageThread
      * @ApiProperty(readableLink=false, writableLink=false)
      *
      * @Groups({"messageThread:read"})
-     *
-     * @return Project
      */
     public function getProject(): Project
     {
@@ -126,8 +117,6 @@ class MessageThread
 
     /**
      * @Groups({"messageThread:read"})
-     *
-     * @return string
      */
     public function getProjectTitle(): string
     {
@@ -136,8 +125,6 @@ class MessageThread
 
     /**
      * @Groups({"messageThread:read"})
-     *
-     * @return string
      */
     public function getParticipantName(): string
     {
@@ -148,8 +135,6 @@ class MessageThread
      * @ApiProperty(readableLink=false, writableLink=false)
      *
      * @Groups({"messageThread:read"})
-     *
-     * @return Company
      */
     public function getParticipant(): Company
     {
@@ -160,8 +145,6 @@ class MessageThread
      * @ApiProperty(readableLink=false, writableLink=false)
      *
      * @Groups({"messageThread:read"})
-     *
-     * @return Company
      */
     public function getProjectSubmitterCompany(): Company
     {
@@ -170,8 +153,6 @@ class MessageThread
 
     /**
      * @Groups({"messageThread:read"})
-     *
-     * @return string
      */
     public function getProjectSubmitterCompanyName(): string
     {

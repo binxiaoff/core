@@ -41,27 +41,17 @@ class Money implements MoneyInterface
      */
     protected $currency;
 
-    /**
-     * @param string $currency
-     * @param string $amount
-     */
     public function __construct(string $currency, string $amount = '0')
     {
         $this->currency = $currency;
         $this->amount   = $amount;
     }
 
-    /**
-     * @return string
-     */
     public function getAmount(): string
     {
         return $this->amount;
     }
 
-    /**
-     * @return string
-     */
     public function getCurrency(): string
     {
         return $this->currency;

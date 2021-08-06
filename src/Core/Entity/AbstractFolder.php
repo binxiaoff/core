@@ -69,13 +69,13 @@ abstract class AbstractFolder
 
     public function getFile(string $path): ?File
     {
-        $parentFolder = $this->getFolder(dirname($path));
+        $parentFolder = $this->getFolder(\dirname($path));
 
         if ($parentFolder === $this) {
-            return $this->files->filter(fn (File $file) => $file->getName() === basename($path))->first() ?: null;
+            return $this->files->filter(fn (File $file) => $file->getName() === \basename($path))->first() ?: null;
         }
 
-        return $parentFolder ? $parentFolder->getFile(basename($path)) : null;
+        return $parentFolder ? $parentFolder->getFile(\basename($path)) : null;
     }
 
     abstract public function getFolder(string $path): ?AbstractFolder;
@@ -123,13 +123,13 @@ abstract class AbstractFolder
     {
         $files = $this->getFiles();
 
-        $folders = array_values($this->getFolders(1)->toArray());
+        $folders = \array_values($this->getFolders(1)->toArray());
 
         $result = [...$files, ...$folders];
 
         if ($depth > 1) {
             foreach ($folders as $folder) {
-                $result = array_merge($result, $folder->list($depth - 1));
+                $result = \array_merge($result, $folder->list($depth - 1));
             }
         }
 

@@ -16,38 +16,28 @@ class EntityVoterNormalizer implements NormalizerInterface, NormalizerAwareInter
 
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
-    /**
-     * @var Security
-     */
     private Security $security;
 
-    /**
-     * @var ResourceClassResolverInterface
-     */
     private ResourceClassResolverInterface $resourceClassResolver;
 
-    /**
-     * @param Security                       $security
-     * @param ResourceClassResolverInterface $resourceClassResolver
-     */
     public function __construct(Security $security, ResourceClassResolverInterface $resourceClassResolver)
     {
-        $this->security = $security;
+        $this->security              = $security;
         $this->resourceClassResolver = $resourceClassResolver;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
-        return false === isset($context[static::ALREADY_CALLED]) &&
-            \is_object($data) &&
-            $this->resourceClassResolver->isResourceClass(\get_class($data));
+        return false === isset($context[static::ALREADY_CALLED])
+            && \is_object($data)
+            && $this->resourceClassResolver->isResourceClass(\get_class($data));
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function normalize($object, string $format = null, array $context = [])
     {
@@ -58,7 +48,7 @@ class EntityVoterNormalizer implements NormalizerInterface, NormalizerAwareInter
 
         if (\is_array($normalized)) {
             $normalized['permissions'] = [
-                'edit' => $this->security->isGranted('edit', $object),
+                'edit'   => $this->security->isGranted('edit', $object),
                 'delete' => $this->security->isGranted('delete', $object),
             ];
         }

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Listener\Doctrine\Entity\FileVersion;
 
-use Defuse\Crypto\Exception\{EnvironmentIsBrokenException, WrongKeyOrModifiedCiphertextException};
+use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
+use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
 use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Service\DataCrypto;
 
@@ -15,17 +16,12 @@ class FileVersionLoadedListener
      */
     private $dataCrypto;
 
-    /**
-     * @param DataCrypto $dataCrypto
-     */
     public function __construct(DataCrypto $dataCrypto)
     {
         $this->dataCrypto = $dataCrypto;
     }
 
     /**
-     * @param FileVersion $attachment
-     *
      * @throws EnvironmentIsBrokenException
      * @throws WrongKeyOrModifiedCiphertextException
      */

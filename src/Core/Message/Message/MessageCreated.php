@@ -9,15 +9,10 @@ use Unilend\Core\Message\AsyncMessageInterface;
 
 class MessageCreated implements AsyncMessageInterface
 {
-    /**
-     * @var int|null
-     */
     private ?int $messageId;
 
     /**
      * MessageCreated constructor.
-     *
-     * @param Message $message
      */
     public function __construct(Message $message)
     {
@@ -32,4 +27,3 @@ class MessageCreated implements AsyncMessageInterface
         return $this->messageId;
     }
 }
-

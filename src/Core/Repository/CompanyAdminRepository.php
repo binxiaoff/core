@@ -18,8 +18,6 @@ class CompanyAdminRepository extends ServiceEntityRepository
 {
     /**
      * CompanyRepository constructor.
-     *
-     * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
     {

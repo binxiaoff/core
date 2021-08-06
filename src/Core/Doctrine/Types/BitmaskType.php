@@ -6,7 +6,6 @@ namespace Unilend\Core\Doctrine\Types;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
-use InvalidArgumentException;
 use Unilend\Core\Model\Bitmask;
 
 class BitmaskType extends Type
@@ -14,20 +13,17 @@ class BitmaskType extends Type
     public const BITMASK = 'bitmask';
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
     {
         return $platform->getIntegerTypeDeclarationSQL($fieldDeclaration);
     }
 
-
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @param int|null $value
-     *
-     * @return Bitmask|null
      */
     public function convertToPHPValue($value, AbstractPlatform $platform): ?Bitmask
     {
@@ -35,7 +31,7 @@ class BitmaskType extends Type
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @param Bitmask|null $value
      *
@@ -47,7 +43,7 @@ class BitmaskType extends Type
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getName(): string
     {
@@ -55,7 +51,7 @@ class BitmaskType extends Type
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function requiresSQLCommentHint(AbstractPlatform $platform): bool
     {

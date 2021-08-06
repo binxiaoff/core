@@ -10,20 +10,13 @@ use Unilend\Core\Entity\User;
 
 class UpdatedByListener
 {
-    /** @var Security */
     private Security $security;
 
-    /**
-     * @param Security $security
-     */
     public function __construct(Security $security)
     {
         $this->security = $security;
     }
 
-    /**
-     * @param PreUpdateEventArgs $args
-     */
     public function preUpdate(PreUpdateEventArgs $args)
     {
         $entity = $args->getEntity();
@@ -32,7 +25,7 @@ class UpdatedByListener
 
         $currentStaff = $user instanceof User ? $user->getCurrentStaff() : null;
 
-        if (method_exists($entity, 'setUpdatedBy')) {
+        if (\method_exists($entity, 'setUpdatedBy')) {
             $entity->setUpdatedBy($currentStaff);
         }
     }

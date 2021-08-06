@@ -17,9 +17,6 @@ trait BlamableUpdatedTrait
      */
     private $updatedBy;
 
-    /**
-     * @return Staff|null
-     */
     public function getUpdatedBy(): ?Staff
     {
         return $this->updatedBy;
@@ -27,8 +24,6 @@ trait BlamableUpdatedTrait
 
     /**
      * @param Staff|null $updatedBy
-     *
-     * @return self
      */
     public function setUpdatedBy(Staff $updatedBy): self
     {

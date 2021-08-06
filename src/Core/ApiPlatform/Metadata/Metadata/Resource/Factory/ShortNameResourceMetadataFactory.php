@@ -12,9 +12,6 @@ final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryI
 {
     private ResourceMetadataFactoryInterface $decorated;
 
-    /**
-     * @param ResourceMetadataFactoryInterface $decorated
-     */
     public function __construct(ResourceMetadataFactoryInterface $decorated)
     {
         $this->decorated = $decorated;
@@ -29,10 +26,10 @@ final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryI
 
         $resourceMetadata = $this->decorated->create($resourceClass);
 
-        if (false !== strrpos($resourceClass, '\\')) {
-            $exploded  = explode('\\', $resourceClass);
+        if (false !== \mb_strrpos($resourceClass, '\\')) {
+            $exploded  = \explode('\\', $resourceClass);
             $domain    = $inflector->tableize($exploded[1]);
-            $entity    = $inflector->tableize(end($exploded));
+            $entity    = $inflector->tableize(\end($exploded));
             $shortName = $domain . '_' . $entity;
 
             return $resourceMetadata->withShortName($shortName);

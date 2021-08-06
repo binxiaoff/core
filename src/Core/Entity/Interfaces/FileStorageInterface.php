@@ -12,8 +12,6 @@ interface FileStorageInterface
     public function getRelativeFilePath(): ?string;
 
     /**
-     * @param string|null $relativeFilePath
-     *
      * @return mixed
      */
     public function setRelativeFilePath(?string $relativeFilePath);

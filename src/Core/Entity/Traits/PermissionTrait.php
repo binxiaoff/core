@@ -14,17 +14,12 @@ trait PermissionTrait
     use ConstantsAwareTrait;
 
     /**
-     * @var Bitmask
-     *
      * @ORM\Column(type="bitmask")
      *
      * @Groups({"permission:read", "permission:write"})
      */
     private Bitmask $permissions;
 
-    /**
-     * @return Bitmask
-     */
     public function getPermissions(): Bitmask
     {
         return $this->permissions;
@@ -32,8 +27,6 @@ trait PermissionTrait
 
     /**
      * @param mixed $permissions
-     *
-     * @return self
      */
     public function setPermissions($permissions): self
     {

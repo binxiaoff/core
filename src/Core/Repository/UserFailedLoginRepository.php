@@ -21,21 +21,13 @@ use Unilend\Core\Entity\UserFailedLogin;
  */
 class UserFailedLoginRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, UserFailedLogin::class);
     }
 
     /**
-     * @param string       $ipAddress
-     * @param DateInterval $period
-     *
      * @throws Exception
-     *
-     * @return int
      */
     public function countLastFailuresByIp(string $ipAddress, DateInterval $period): int
     {
@@ -51,8 +43,6 @@ class UserFailedLoginRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param UserFailedLogin $failedLogin
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */

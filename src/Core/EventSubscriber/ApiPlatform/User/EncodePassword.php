@@ -17,9 +17,6 @@ class EncodePassword implements EventSubscriberInterface
     /** @var UserPasswordEncoderInterface */
     private $encoder;
 
-    /**
-     * @param UserPasswordEncoderInterface $encoder
-     */
     public function __construct(UserPasswordEncoderInterface $encoder)
     {
         $this->encoder = $encoder;
@@ -36,8 +33,6 @@ class EncodePassword implements EventSubscriberInterface
     }
 
     /**
-     * @param ViewEvent $event
-     *
      * @throws Exception
      */
     public function encodePassword(ViewEvent $event)

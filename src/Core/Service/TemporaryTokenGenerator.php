@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Service;
 
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\{TemporaryToken};
@@ -15,22 +16,14 @@ class TemporaryTokenGenerator
     /** @var TemporaryTokenRepository */
     private $temporaryTokenRepository;
 
-    /**
-     * @param TemporaryTokenRepository $temporaryTokenRepository
-     */
     public function __construct(TemporaryTokenRepository $temporaryTokenRepository)
     {
         $this->temporaryTokenRepository = $temporaryTokenRepository;
     }
 
     /**
-     * @param User $user
-     *
-     * @return TemporaryToken
-     *
      * @throws OptimisticLockException
      * @throws Exception
-     *
      * @throws ORMException
      */
     public function generateMediumToken(User $user): TemporaryToken
@@ -43,13 +36,8 @@ class TemporaryTokenGenerator
     }
 
     /**
-     * @param User $user
-     *
-     * @return TemporaryToken
-     *
      * @throws OptimisticLockException
      * @throws Exception
-     *
      * @throws ORMException
      */
     public function generateUltraLongToken(User $user): TemporaryToken

@@ -41,6 +41,6 @@ class StatusInterfaceDenormalizer implements ContextAwareDenormalizerInterface, 
      */
     public function supportsDenormalization($data, $type, ?string $format = null, array $context = []): bool
     {
-        return !isset($context[self::ALREADY_CALLED]) && is_subclass_of($type, StatusInterface::class);
+        return !isset($context[self::ALREADY_CALLED]) && \is_subclass_of($type, StatusInterface::class);
     }
 }

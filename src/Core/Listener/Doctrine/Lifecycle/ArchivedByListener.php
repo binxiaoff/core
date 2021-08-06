@@ -44,7 +44,7 @@ class ArchivedByListener
             return;
         }
 
-        if (method_exists($entity, 'setArchivedBy')) {
+        if (\method_exists($entity, 'setArchivedBy')) {
             $entity->setArchivedBy($user->getCurrentStaff());
             $em->persist($entity);
             $uow->propertyChanged($entity, 'archivedBy', null, $user->getCurrentStaff());

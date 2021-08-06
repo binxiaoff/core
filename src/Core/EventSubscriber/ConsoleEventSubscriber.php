@@ -6,7 +6,8 @@ namespace Unilend\Core\EventSubscriber;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\ConsoleEvents;
-use Symfony\Component\Console\Event\{ConsoleCommandEvent, ConsoleTerminateEvent};
+use Symfony\Component\Console\Event\ConsoleCommandEvent;
+use Symfony\Component\Console\Event\ConsoleTerminateEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 
@@ -18,10 +19,6 @@ class ConsoleEventSubscriber implements EventSubscriberInterface
     /** @var Stopwatch */
     private $stopwatch;
 
-    /**
-     * @param LoggerInterface $consoleLogger
-     * @param Stopwatch       $stopwatch
-     */
     public function __construct(LoggerInterface $consoleLogger, Stopwatch $stopwatch)
     {
         $this->consoleLogger = $consoleLogger;
@@ -39,9 +36,6 @@ class ConsoleEventSubscriber implements EventSubscriberInterface
         ];
     }
 
-    /**
-     * @param ConsoleCommandEvent $event
-     */
     public function onCommandStart(ConsoleCommandEvent $event): void
     {
         $input   = $event->getInput();
@@ -55,9 +49,6 @@ class ConsoleEventSubscriber implements EventSubscriberInterface
         ]);
     }
 
-    /**
-     * @param ConsoleTerminateEvent $event
-     */
     public function onCommandEnd(ConsoleTerminateEvent $event): void
     {
         $input          = $event->getInput();
@@ -72,23 +63,16 @@ class ConsoleEventSubscriber implements EventSubscriberInterface
         ]);
     }
 
-    /**
-     * @param int $bytes
-     *
-     * @return string
-     */
     private function formatMemory(int $bytes): string
     {
-        return round($bytes / 1000 / 1000, 2) . 'MB';
+        return \round($bytes / 1000 / 1000, 2) . 'MB';
     }
 
     /**
      * @param int|float $microseconds
-     *
-     * @return string
      */
     private function formatDuration($microseconds): string
     {
-        return round($microseconds / 1000, 2) . 's';
+        return \round($microseconds / 1000, 2) . 's';
     }
 }

@@ -9,9 +9,6 @@ use Unilend\Core\Entity\Interfaces\StatusInterface;
 
 class StatusCreatedListener
 {
-    /**
-     * @param LifecycleEventArgs $args
-     */
     public function prePersist(LifecycleEventArgs $args): void
     {
         $entity = $args->getEntity();

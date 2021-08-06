@@ -17,19 +17,11 @@ trait BlamableArchivedTrait
      */
     private $archivedBy;
 
-    /**
-     * @return Staff|null
-     */
     public function getArchivedBy(): ?Staff
     {
         return $this->archivedBy;
     }
 
-    /**
-     * @param Staff $archivedBy
-     *
-     * @return self
-     */
     public function setArchivedBy(Staff $archivedBy): self
     {
         $this->archivedBy = $archivedBy;

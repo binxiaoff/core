@@ -163,7 +163,7 @@ class FileInputDataTransformer
         $currentStaff = $this->getCurrentStaff();
 
         if (false === ($currentStaff instanceof Staff)) {
-            throw new AccessDeniedException(sprintf('Cannot add new project file if there is no staff attached to logged user'));
+            throw new AccessDeniedException(\sprintf('Cannot add new project file if there is no staff attached to logged user'));
         }
 
         if (null === $file) {
@@ -177,7 +177,7 @@ class FileInputDataTransformer
             $projectFile = $this->projectFileRepository->findOneBy(['file' => $file, 'project' => $project, 'type' => $fileInput->type]);
 
             if (null === $projectFile) {
-                throw new RuntimeException(sprintf(
+                throw new RuntimeException(\sprintf(
                     'We cannot find the file (%s) for project (%s) of type (%s). Do you tend to upload a new file (instead of updating it) ?',
                     $file->getPublicId(),
                     $project->getPublicId(),
@@ -240,7 +240,7 @@ class FileInputDataTransformer
                 break;
 
             default:
-                throw new \InvalidArgumentException(sprintf('You cannot upload the file of the type %s.', $fileInput->type));
+                throw new \InvalidArgumentException(\sprintf('You cannot upload the file of the type %s.', $fileInput->type));
         }
 
         $this->fileUploadManager->upload($fileInput->uploadedFile, $user, $file, ['projectId' => $project->getId()], $this->getCurrentCompany());
@@ -309,7 +309,7 @@ class FileInputDataTransformer
 
     private static function denyUploadExistingFile(FileInput $request, File $existingFile, object $targetEntity): void
     {
-        throw new RuntimeException(sprintf(
+        throw new RuntimeException(\sprintf(
             'There is already a %s with id %s on the %s %s. You can only update its version',
             $request->type,
             $existingFile->getPublicId(),

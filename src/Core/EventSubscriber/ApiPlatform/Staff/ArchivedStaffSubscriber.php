@@ -25,10 +25,6 @@ class ArchivedStaffSubscriber implements EventSubscriberInterface
     /** @var Security */
     private $security;
 
-    /**
-     * @param StaffRepository $staffRepository
-     * @param Security        $security
-     */
     public function __construct(StaffRepository $staffRepository, Security $security)
     {
         $this->staffRepository = $staffRepository;
@@ -44,8 +40,6 @@ class ArchivedStaffSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param ViewEvent $event
-     *
      * @throws NonUniqueResultException
      * @throws Exception
      */

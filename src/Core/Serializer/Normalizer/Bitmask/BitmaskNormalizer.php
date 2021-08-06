@@ -10,7 +10,7 @@ use Unilend\Core\Model\Bitmask;
 class BitmaskNormalizer implements NormalizerInterface
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function normalize($object, string $format = null, array $context = [])
     {
@@ -18,7 +18,7 @@ class BitmaskNormalizer implements NormalizerInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsNormalization($data, string $format = null)
     {

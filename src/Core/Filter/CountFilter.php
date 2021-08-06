@@ -46,10 +46,6 @@ class CountFilter extends AbstractContextAwareFilter
      *     ]
      * The description can contain additional data specific to a filter.
      *
-     * @param string $resourceClass
-     *
-     * @return array
-     *
      * @see \ApiPlatform\Core\Swagger\Serializer\DocumentationNormalizer::getFiltersParameters
      */
     public function getDescription(string $resourceClass): array
@@ -58,7 +54,7 @@ class CountFilter extends AbstractContextAwareFilter
 
         $properties = $this->getProperties();
         if (null === $properties) {
-            $properties = array_fill_keys($this->getClassMetadata($resourceClass)->getFieldNames(), null);
+            $properties = \array_fill_keys($this->getClassMetadata($resourceClass)->getFieldNames(), null);
         }
 
         foreach ($properties as $property => $unused) {
@@ -89,12 +85,7 @@ class CountFilter extends AbstractContextAwareFilter
     /**
      * Passes a property through the filter.
      *
-     * @param string                      $property
-     * @param mixed                       $values
-     * @param QueryBuilder                $queryBuilder
-     * @param QueryNameGeneratorInterface $queryNameGenerator
-     * @param string                      $resourceClass
-     * @param string|null                 $operationName
+     * @param mixed $values
      */
     protected function filterProperty(
         string $property,
@@ -130,12 +121,6 @@ class CountFilter extends AbstractContextAwareFilter
         }
     }
 
-    /**
-     * @param string $property
-     * @param string $resourceClass
-     *
-     * @return bool
-     */
     private function isCountableField(string $property, string $resourceClass): bool
     {
         $propertyParts = $this->splitPropertyParts($property, $resourceClass);

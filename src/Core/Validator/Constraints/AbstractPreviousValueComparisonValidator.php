@@ -15,9 +15,6 @@ abstract class AbstractPreviousValueComparisonValidator extends ConstraintValida
 {
     private ManagerRegistry $managerRegistry;
 
-    /**
-     * @param ManagerRegistry $managerRegistry
-     */
     public function __construct(ManagerRegistry $managerRegistry)
     {
         $this->managerRegistry = $managerRegistry;
@@ -41,7 +38,7 @@ abstract class AbstractPreviousValueComparisonValidator extends ConstraintValida
 
         $entityManager = $this->managerRegistry->getManagerForClass(\get_class($entity));
         if (false === $entityManager instanceof EntityManagerInterface) {
-            throw new ConstraintDefinitionException(sprintf('Unable to find the entity manager associated with an entity of class "%s".', \get_class($entity)));
+            throw new ConstraintDefinitionException(\sprintf('Unable to find the entity manager associated with an entity of class "%s".', \get_class($entity)));
         }
 
         $previousEntity = $entityManager->getUnitOfWork()->getOriginalEntityData($entity);
@@ -56,8 +53,7 @@ abstract class AbstractPreviousValueComparisonValidator extends ConstraintValida
     }
 
     /**
-     * @param mixed      $value
-     * @param Constraint $constraint
+     * @param mixed $value
      *
      * @throw \Exception
      *
@@ -66,7 +62,6 @@ abstract class AbstractPreviousValueComparisonValidator extends ConstraintValida
     abstract protected function checkPreconditions($value, Constraint $constraint): void;
 
     /**
-     * @param array $previousEntity
      * @param mixed $value
      *
      * @return mixed

@@ -18,17 +18,12 @@ use Unilend\Core\Entity\CompanyModule;
  */
 class CompanyModuleRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $managerRegistry
-     */
     public function __construct(ManagerRegistry $managerRegistry)
     {
         parent::__construct($managerRegistry, CompanyModule::class);
     }
 
     /**
-     * @param CompanyModule $module
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */

@@ -28,24 +28,24 @@ class InvertedSearchFilter extends AbstractContextAwareFilter
      */
     protected function extractProperties(Request $request/*, string $resourceClass*/): array
     {
-        $this->properties = array_combine(
-            array_map(
+        $this->properties = \array_combine(
+            \array_map(
                 static function ($property) {
                     return $property . '!';
                 },
-                array_keys($this->properties)
+                \array_keys($this->properties)
             ),
-            array_values($this->properties)
+            \array_values($this->properties)
         );
         $extracted        = parent::extractProperties(...\func_get_args());
-        $this->properties = array_combine(
-            array_map(
+        $this->properties = \array_combine(
+            \array_map(
                 static function ($property) {
-                    return trim($property, '!');
+                    return \trim($property, '!');
                 },
-                array_keys($this->properties)
+                \array_keys($this->properties)
             ),
-            array_values($this->properties)
+            \array_values($this->properties)
         );
 
         return $extracted;
@@ -54,12 +54,7 @@ class InvertedSearchFilter extends AbstractContextAwareFilter
     /**
      * Passes a property through the filter.
      *
-     * @param string                      $property
-     * @param mixed                       $value
-     * @param QueryBuilder                $queryBuilder
-     * @param QueryNameGeneratorInterface $queryNameGenerator
-     * @param string                      $resourceClass
-     * @param string|null                 $operationName
+     * @param mixed $value
      */
     protected function filterProperty(
         string $property,
@@ -70,7 +65,7 @@ class InvertedSearchFilter extends AbstractContextAwareFilter
         string $operationName = null
     ) {
         if (
-            false === mb_strpos($property, '!')
+            false === \mb_strpos($property, '!')
             || false === $this->isPropertyEnabled($property)
             || false === $this->isPropertyMapped($property, $resourceClass, true)
         ) {
@@ -127,27 +122,23 @@ class InvertedSearchFilter extends AbstractContextAwareFilter
     }
 
     /**
-     * @param array $arguments
-     *
      * @return array
      */
     private function fixArguments(array $arguments)
     {
-        $property = reset($arguments);
+        $property = \reset($arguments);
         if ($property) {
             $arguments[0] = $this->removeExclamationMark($property);
         }
 
-        return array_values($arguments);
+        return \array_values($arguments);
     }
 
     /**
-     * @param string $string
-     *
      * @return string
      */
     private function removeExclamationMark(string $string)
     {
-        return rtrim($string, '!');
+        return \rtrim($string, '!');
     }
 }

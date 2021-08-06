@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Unilend\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\ORM\QueryBuilder;
-use Doctrine\ORM\{
-    NoResultException,
-    NonUniqueResultException,
-    ORMException,
-    OptimisticLockException
-};
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\{MessageStatus, MessageThread, Staff, UserStatus};
+use Unilend\Core\Entity\MessageStatus;
+use Unilend\Core\Entity\MessageThread;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\UserStatus;
 use Unilend\Syndication\Entity\ProjectStatus;
 
 /**
@@ -26,7 +27,6 @@ class MessageStatusRepository extends ServiceEntityRepository
 {
     /**
      * MessageStatusRepository constructor.
-     * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
     {
@@ -34,8 +34,6 @@ class MessageStatusRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param MessageStatus $messageStatus
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -46,8 +44,6 @@ class MessageStatusRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param MessageStatus $messageStatus
-     *
      * @throws ORMException
      */
     public function persist(MessageStatus $messageStatus): void
@@ -64,9 +60,6 @@ class MessageStatusRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
-    /**
-     * @param int $userId
-     */
     public function setMessageStatusesToUnreadNotified(int $userId): void
     {
         $messageStatusToBeNotified = $this->getQueryBuilderForPeriod()
@@ -80,46 +73,38 @@ class MessageStatusRepository extends ServiceEntityRepository
             ->where('msgst.id IN (:messageStatusToBeNotified)')
             ->setParameter('messageStatusToBeNotified', $messageStatusToBeNotified)
             ->getQuery()
-            ->execute();
+            ->execute()
+        ;
     }
 
-    /**
-     * @param int|null $limit
-     * @param int|null $offset
-     *
-     * @return array
-     */
     public function countUnreadMessageByRecipentForPeriod(int $limit = null, int $offset = null): array
     {
         $queryBuilder = $this->getQueryBuilderForPeriod()
             ->select('DISTINCT(u.id) AS id', 'COUNT(msgst.id) AS nb_messages_unread', 'u.email AS email', 'u.firstName AS first_name', 'u.lastName AS last_name')
             ->groupBy('u.id')
             ->setMaxResults($limit)
-            ->setFirstResult($offset);
+            ->setFirstResult($offset)
+        ;
 
         return $queryBuilder
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
     /**
      * @throws NoResultException
      * @throws NonUniqueResultException
-     *
-     * @return int
      */
     public function countRecipientsWithUnreadMessageForPeriod(): int
     {
         return (int) $this->getQueryBuilderForPeriod()
             ->select('COUNT(DISTINCT(u.id))')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
-    /**
-     * @param Staff         $recipient
-     * @param MessageThread $messageThread
-     */
     public function setMessageStatusesToRead(Staff $recipient, MessageThread $messageThread): void
     {
         // Doctrine update doesn't support inner joint, so we do a sub-query here.
@@ -145,12 +130,10 @@ class MessageStatusRepository extends ServiceEntityRepository
                 'unreadMessageStatus' => $messageStatusToBeUpdated,
             ])
             ->getQuery()
-            ->execute();
+            ->execute()
+        ;
     }
 
-    /**
-     * @return QueryBuilder
-     */
     private function getQueryBuilderForPeriod(): QueryBuilder
     {
         return $this->createQueryBuilder('msgst')
@@ -170,6 +153,7 @@ class MessageStatusRepository extends ServiceEntityRepository
                 'status'                 => MessageStatus::STATUS_UNREAD,
                 'project_current_status' => ProjectStatus::STATUS_DRAFT,
                 'user_status'            => UserStatus::STATUS_CREATED,
-            ]);
+            ])
+        ;
     }
 }

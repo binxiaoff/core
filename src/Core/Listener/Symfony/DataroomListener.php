@@ -47,9 +47,9 @@ class DataroomListener implements EventSubscriberInterface
         $arguments = $event->getArguments();
         $index     = null;
 
-        for ($argument = reset($arguments); null === $index && $argument = current($arguments); next($arguments)) {
+        for ($argument = \reset($arguments); null === $index && $argument = \current($arguments); \next($arguments)) {
             if ($argument instanceof DriveCarrierInterface) {
-                $index = key($arguments);
+                $index = \key($arguments);
             }
         }
 
@@ -61,7 +61,7 @@ class DataroomListener implements EventSubscriberInterface
         $drive             = $this->propertyAccessor->getValue($argument, $drivePropertyPath);
 
         if (false === ($drive instanceof Drive)) {
-            throw new \RuntimeException(sprintf('Cannot find the drive from %s::%s', get_class($argument), $drivePropertyPath));
+            throw new \RuntimeException(\sprintf('Cannot find the drive from %s::%s', \get_class($argument), $drivePropertyPath));
         }
 
         $arguments[$index] = $drive;

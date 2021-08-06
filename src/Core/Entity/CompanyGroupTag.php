@@ -14,8 +14,8 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  * @ORM\Table(
  *     name="core_company_group_tag",
  *     uniqueConstraints={
- *          @ORM\UniqueConstraint(name="uniq_companyGroup_code", columns={"code", "id_company_group"})
- *    }
+ *         @ORM\UniqueConstraint(name="uniq_companyGroup_code", columns={"code", "id_company_group"})
+ *     }
  * )
  *
  * @ApiResource(
@@ -35,8 +35,6 @@ class CompanyGroupTag
     use PublicizeIdentityTrait;
 
     /**
-     * @var string
-     *
      * @ORM\Column(type="string", nullable=false)
      *
      * @Groups({"companyGroupTag:read"})
@@ -46,42 +44,27 @@ class CompanyGroupTag
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroup", inversedBy="tags")
      * @ORM\JoinColumn(name="id_company_group", nullable=false)
-     *
-     * @var CompanyGroup
      */
     private CompanyGroup $companyGroup;
 
-    /**
-     * @param CompanyGroup $companyGroup
-     * @param string       $code
-     */
     public function __construct(CompanyGroup $companyGroup, string $code)
     {
-        $this->code = $code;
+        $this->code         = $code;
         $this->companyGroup = $companyGroup;
     }
 
-    /**
-     * @return string
-     */
+    public function __toString(): string
+    {
+        return $this->getCode();
+    }
+
     public function getCode(): string
     {
         return $this->code;
     }
 
-    /**
-     * @return CompanyGroup
-     */
     public function getCompanyGroup(): CompanyGroup
     {
         return $this->companyGroup;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->getCode();
     }
 }

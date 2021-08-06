@@ -16,9 +16,6 @@ use Unilend\Core\Entity\UserStatus;
  */
 class UserStatusRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, UserStatus::class);

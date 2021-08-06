@@ -51,7 +51,7 @@ class CompanyModuleFixtures extends AbstractFixtures implements DependentFixture
         }
 
         foreach (CompanyModule::getAvailableModuleCodes() as $moduleCode) {
-            if (in_array($moduleCode, $excludeModules, true)) {
+            if (\in_array($moduleCode, $excludeModules, true)) {
                 continue;
             }
 

@@ -22,10 +22,6 @@ class IpGeoLocManager
 
     /**
      * IpGeoLocManager constructor.
-     *
-     * @param GeoIpService    $geoIpService
-     * @param string          $defaultLocale
-     * @param LoggerInterface $logger
      */
     public function __construct(GeoIpService $geoIpService, string $defaultLocale, LoggerInterface $logger)
     {
@@ -34,11 +30,6 @@ class IpGeoLocManager
         $this->logger       = $logger;
     }
 
-    /**
-     * @param string $ip
-     *
-     * @return City|null
-     */
     public function getGeoIpRecord(string $ip): ?City
     {
         try {

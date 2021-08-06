@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Unilend\Core\Entity\MessageThread;
 
@@ -19,8 +20,6 @@ class MessageThreadRepository extends ServiceEntityRepository
 {
     /**
      * MessageThreadRepository constructor.
-     *
-     * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
     {
@@ -28,8 +27,6 @@ class MessageThreadRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param MessageThread $messageThread
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */

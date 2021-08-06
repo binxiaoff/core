@@ -21,9 +21,6 @@ class UserAgentManager
 
     /**
      * UserAgentManager constructor.
-     *
-     * @param UserAgentRepository $userAgentRepository
-     * @param LoggerInterface     $logger
      */
     public function __construct(UserAgentRepository $userAgentRepository, LoggerInterface $logger)
     {
@@ -31,12 +28,6 @@ class UserAgentManager
         $this->userAgentRepository = $userAgentRepository;
     }
 
-    /**
-     * @param User   $user
-     * @param string $userAgent
-     *
-     * @return UserAgent|null
-     */
     public function getUserUserAgent(User $user, string $userAgent): ?UserAgent
     {
         if (null === ($parsedUserAgent = $this->parse($userAgent))) {
@@ -57,16 +48,11 @@ class UserAgentManager
             ->setBrowserVersion($browser->version ? $browser->version->toString() : null)
             ->setDeviceModel($device->model)
             ->setDeviceBrand($device->getManufacturer() ?: null)
-            ->setDeviceType($device->type ? mb_strtolower($device->type) : null)
+            ->setDeviceType($device->type ? \mb_strtolower($device->type) : null)
             ->setUserAgentString($userAgent)
             ;
     }
 
-    /**
-     * @param string $userAgent
-     *
-     * @return Parser|null
-     */
     public function parse(string $userAgent): ?Parser
     {
         try {

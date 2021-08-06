@@ -43,10 +43,10 @@ class Download
         $user = $this->security->getUser();
 
         if (false === $user instanceof User) {
-            throw new AccessDeniedHttpException(sprintf(
+            throw new AccessDeniedHttpException(\sprintf(
                 'Attempt to download with %s%s instead of object of class %s',
                 \is_object($user) ? 'object of class ' : '',
-                \is_object($user) ? \get_class($user) : gettype($user),
+                \is_object($user) ? \get_class($user) : \gettype($user),
                 User::class
             ));
         }

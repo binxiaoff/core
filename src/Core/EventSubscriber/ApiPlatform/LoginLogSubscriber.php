@@ -4,50 +4,40 @@ declare(strict_types=1);
 
 namespace Unilend\Core\EventSubscriber\ApiPlatform;
 
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
 use Gesdinet\JWTRefreshTokenBundle\Event\RefreshEvent;
-use Lexik\Bundle\JWTAuthenticationBundle\Event\{AuthenticationFailureEvent, JWTCreatedEvent};
+use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationFailureEvent;
+use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Core\Exception\AccountStatusException;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Entity\{UserSuccessfulLogin};
-use Unilend\Core\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
-use Unilend\Core\Repository\{UserFailedLoginRepository, UserSuccessfulLoginRepository, UserRepository};
+use Unilend\Core\Event\TemporaryToken\TemporaryTokenAuthenticationEvents;
+use Unilend\Core\Event\TemporaryToken\TemporaryTokenAuthenticationFailureEvent;
+use Unilend\Core\Event\TemporaryToken\TemporaryTokenAuthenticationSuccessEvent;
+use Unilend\Core\Repository\UserFailedLoginRepository;
+use Unilend\Core\Repository\UserRepository;
+use Unilend\Core\Repository\UserSuccessfulLoginRepository;
 use Unilend\Core\Service\User\UserLoginFactory;
 
 class LoginLogSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var UserLoginFactory
-     */
     private UserLoginFactory $userLoginHistoryFactory;
-    /**
-     * @var UserRepository
-     */
+
     private UserRepository $userRepository;
-    /**
-     * @var UserSuccessfulLoginRepository
-     */
+
     private UserSuccessfulLoginRepository $userSuccessfulLoginRepository;
-    /**
-     * @var UserFailedLoginRepository
-     */
+
     private UserFailedLoginRepository $userFailedLoginRepository;
-    /**
-     * @var bool
-     */
+
     private bool $alreadyLogged;
 
     /**
      * LoginLogSubscriber constructor.
-     *
-     * @param UserLoginFactory              $userLoginHistoryFactory
-     * @param UserRepository                $userRepository
-     * @param UserSuccessfulLoginRepository $userSuccessfulLoginRepository
-     * @param UserFailedLoginRepository     $userFailedLoginRepository
      */
     public function __construct(
         UserLoginFactory $userLoginHistoryFactory,
@@ -77,8 +67,6 @@ class LoginLogSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param JWTCreatedEvent $event
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws Exception
@@ -99,8 +87,6 @@ class LoginLogSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param RefreshEvent $event
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws Exception
@@ -120,8 +106,6 @@ class LoginLogSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param AuthenticationFailureEvent $event
-     *
      * @throws Exception
      */
     public function onLoginFailure(AuthenticationFailureEvent $event): void
@@ -133,8 +117,6 @@ class LoginLogSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param TemporaryTokenAuthenticationSuccessEvent $event
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws Exception
@@ -149,8 +131,6 @@ class LoginLogSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param TemporaryTokenAuthenticationFailureEvent $event
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws Exception
@@ -163,11 +143,6 @@ class LoginLogSubscriber implements EventSubscriberInterface
         $this->userFailedLoginRepository->save($failedLogin);
     }
 
-    /**
-     * @param AuthenticationException $authenticationException
-     *
-     * @return string|null
-     */
     private function getFailedLoginUsername(AuthenticationException $authenticationException): ?string
     {
         if ($authenticationException instanceof AccountStatusException) {

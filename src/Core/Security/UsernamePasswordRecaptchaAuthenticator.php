@@ -23,6 +23,7 @@ use Unilend\Core\Service\GoogleRecaptchaManager;
 
 class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator implements PasswordAuthenticatedInterface
 {
+    public const GOOGLE_RECAPTCHA_RESULT_TOKEN_ATTRIBUTE = 'GOOGLE_RECAPTCHA_RESULT';
     private GoogleRecaptchaManager $googleRecaptchaManager;
 
     private AuthenticationSuccessHandlerInterface $authenticationSuccessHandler;
@@ -35,15 +36,6 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
 
     private GoogleRecaptchaResult $recaptchaResult;
 
-    public const GOOGLE_RECAPTCHA_RESULT_TOKEN_ATTRIBUTE = 'GOOGLE_RECAPTCHA_RESULT';
-
-    /**
-     * @param GoogleRecaptchaManager                $googleRecaptchaManager
-     * @param UserPasswordEncoderInterface          $passwordEncoder
-     * @param AuthenticationSuccessHandlerInterface $authenticationSuccessHandler
-     * @param AuthenticationFailureHandlerInterface $authenticationFailureHandler
-     * @param string                                $path
-     */
     public function __construct(
         GoogleRecaptchaManager $googleRecaptchaManager,
         UserPasswordEncoderInterface $passwordEncoder,
@@ -77,11 +69,11 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
             return false;
         }
 
-        if (false === mb_strpos((string) $request->getRequestFormat(), 'json') && false === mb_strpos((string) $request->getContentType(), 'json')) {
+        if (false === \mb_strpos((string) $request->getRequestFormat(), 'json') && false === \mb_strpos((string) $request->getContentType(), 'json')) {
             return false;
         }
 
-        $content = json_decode($request->getContent(), true, 512);
+        $content = \json_decode($request->getContent(), true, 512);
 
         if (null === $content) {
             return false;
@@ -96,7 +88,7 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
     public function getCredentials(Request $request)
     {
         try {
-            $content = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            $content = \json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
             throw new \UnexpectedValueException('Invalid JSON', 0, $exception);
         }
@@ -130,7 +122,6 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
         if (false === $recaptchaResult->valid) {
             throw new RecaptchaChallengeFailedException($this->recaptchaResult);
         }
-
 
         if (false === $this->passwordEncoder->isPasswordValid($user, $this->getPassword($credentials))) {
             throw new BadCredentialsException('Invalid credentials');

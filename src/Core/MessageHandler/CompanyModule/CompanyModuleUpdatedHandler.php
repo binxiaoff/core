@@ -13,25 +13,17 @@ use Unilend\Core\Service\CompanyModule\CompanyModuleNotifier;
 
 class CompanyModuleUpdatedHandler implements MessageHandlerInterface
 {
-    /** @var CompanyModuleRepository $om */
     private CompanyModuleRepository $repository;
 
-    /** @var CompanyModuleNotifier  */
     private CompanyModuleNotifier $notifier;
 
-    /**
-     * @param CompanyModuleRepository $repository
-     * @param CompanyModuleNotifier   $notifier
-     */
     public function __construct(CompanyModuleRepository $repository, CompanyModuleNotifier $notifier)
     {
         $this->repository = $repository;
-        $this->notifier = $notifier;
+        $this->notifier   = $notifier;
     }
 
     /**
-     * @param CompanyModuleUpdated $companyModuleUpdated
-     *
      * @throws Exception
      * @throws SlackApiException
      */

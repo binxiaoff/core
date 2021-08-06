@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Serializer\Normalizer\Bitmask;
 
-use InvalidArgumentException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Unilend\Core\Model\Bitmask;
 
 class BitmaskDenormalizer implements DenormalizerInterface
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
@@ -19,7 +18,7 @@ class BitmaskDenormalizer implements DenormalizerInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsDenormalization($data, string $type, string $format = null)
     {

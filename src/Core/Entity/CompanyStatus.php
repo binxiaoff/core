@@ -9,7 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\{Interfaces\StatusInterface, Interfaces\TraceableStatusAwareInterface, Traits\PublicizeIdentityTrait, Traits\TimestampableAddedOnlyTrait};
+use Unilend\Core\Entity\Interfaces\StatusInterface;
+use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
@@ -32,8 +35,6 @@ class CompanyStatus implements StatusInterface
     public const STATUS_SIGNED   = 10;
 
     /**
-     * @var Company
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company", inversedBy="statuses")
      * @ORM\JoinColumn(name="id_company", nullable=false)
      *
@@ -42,8 +43,6 @@ class CompanyStatus implements StatusInterface
     private Company $company;
 
     /**
-     * @var int
-     *
      * @ORM\Column(type="smallint")
      *
      * @Groups({"companyStatus:read", "companyStatus:create"})
@@ -51,9 +50,6 @@ class CompanyStatus implements StatusInterface
     private int $status;
 
     /**
-     * @param Company $company
-     * @param int     $status
-     *
      * @throws Exception
      */
     public function __construct(Company $company, int $status)
@@ -63,25 +59,16 @@ class CompanyStatus implements StatusInterface
         $this->added   = new DateTimeImmutable();
     }
 
-    /**
-     * @return Company
-     */
     public function getCompany(): Company
     {
         return $this->company;
     }
 
-    /**
-     * @return int
-     */
     public function getStatus(): int
     {
         return $this->status;
     }
 
-    /**
-     * @return array
-     */
     public static function getPossibleStatuses(): array
     {
         return static::getConstants('STATUS_');

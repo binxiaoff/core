@@ -12,7 +12,7 @@ use Unilend\Core\Entity\Staff;
 class CompanyAdminFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getDependencies()
     {
@@ -22,7 +22,7 @@ class CompanyAdminFixtures extends AbstractFixtures implements DependentFixtureI
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function load(ObjectManager $manager)
     {

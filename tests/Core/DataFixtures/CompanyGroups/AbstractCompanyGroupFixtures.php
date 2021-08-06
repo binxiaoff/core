@@ -13,7 +13,7 @@ use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 abstract class AbstractCompanyGroupFixtures extends AbstractFixtures
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws ReflectionException
      */
@@ -37,14 +37,9 @@ abstract class AbstractCompanyGroupFixtures extends AbstractFixtures
         $manager->flush();
     }
 
-    /**
-     * @return string
-     */
     abstract protected function getName(): string;
 
     /**
-     * @param CompanyGroup $companyGroup
-     *
      * @return array|CompanyGroupTag[]
      */
     abstract protected function getTags(CompanyGroup $companyGroup): array;

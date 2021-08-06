@@ -13,37 +13,25 @@ use Unilend\Core\Entity\Staff;
 
 class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
-    /**
-     * @var NormalizerInterface
-     */
-    private NormalizerInterface $normalizer;
-
     private const ALREADY_CALLED = 'STAFF_NORMALIZER_ALREADY_CALLED';
 
-    /** @var Security */
+    private NormalizerInterface $normalizer;
+
     private Security $security;
 
-    /**
-     * @param Security $security
-     */
     public function __construct(Security $security)
     {
         $this->security = $security;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
         return $data instanceof Staff && !isset($context[static::ALREADY_CALLED]);
     }
 
-    /**
-     * @param NormalizerInterface $normalizer
-     *
-     * @return StaffNormalizer
-     */
     public function setNormalizer(NormalizerInterface $normalizer): StaffNormalizer
     {
         $this->normalizer = $normalizer;
@@ -61,7 +49,7 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
         $currentUser = $this->security->getUser();
 
         if ($currentUser === $object->getUser()) {
-            $context[AbstractNormalizer::GROUPS] = $context[AbstractNormalizer::GROUPS] ?? [];
+            $context[AbstractNormalizer::GROUPS]   = $context[AbstractNormalizer::GROUPS] ?? [];
             $context[AbstractNormalizer::GROUPS][] = Staff::SERIALIZER_GROUP_OWNER_READ;
         }
 

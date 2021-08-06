@@ -14,7 +14,7 @@ abstract class AbstractNumericPreviousValueComparisonValidator extends AbstractP
      */
     protected function checkPreconditions($value, Constraint $constraint): void
     {
-        if (false === is_numeric($value)) {
+        if (false === \is_numeric($value)) {
             throw new UnexpectedTypeException($value, 'numeric');
         }
     }

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Filter\Company;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\{Filter\AbstractContextAwareFilter, Util\QueryNameGeneratorInterface};
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Core\Entity\Company;
@@ -38,7 +39,7 @@ class ParticipantCandidateFilter extends AbstractContextAwareFilter
         string $resourceClass,
         string $operationName = null
     ): void {
-        if (self::PARAMETER_NAME === $property && Company::class === $resourceClass && Request::METHOD_GET === strtoupper($operationName)) {
+        if (self::PARAMETER_NAME === $property && Company::class === $resourceClass && Request::METHOD_GET === \mb_strtoupper($operationName)) {
             $alias = $queryBuilder->getRootAliases()[0];
             $queryBuilder
                 ->andWhere($alias . '.shortCode not in (:nonEligibleCompanies)')

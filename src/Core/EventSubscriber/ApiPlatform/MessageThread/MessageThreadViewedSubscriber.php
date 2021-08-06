@@ -16,17 +16,12 @@ use Unilend\Core\Repository\MessageStatusRepository;
 
 class MessageThreadViewedSubscriber implements EventSubscriberInterface
 {
-    /** @var Security */
     private Security $security;
 
-    /** @var MessageStatusRepository */
     private MessageStatusRepository $messageStatusRepository;
 
     /**
      * MessageThreadViewedSubscriber constructor.
-     *
-     * @param Security                $security
-     * @param MessageStatusRepository $messageStatusRepository
      */
     public function __construct(Security $security, MessageStatusRepository $messageStatusRepository)
     {
@@ -42,9 +37,6 @@ class MessageThreadViewedSubscriber implements EventSubscriberInterface
         return [KernelEvents::REQUEST => ['markAsViewedMessageThreadMessageStatus', EventPriorities::POST_READ]];
     }
 
-    /**
-     * @param RequestEvent $event
-     */
     public function markAsViewedMessageThreadMessageStatus(RequestEvent $event): void
     {
         $request = $event->getRequest();

@@ -26,18 +26,13 @@ trait RoleableTrait
      */
     private $roles = [];
 
-    /**
-     * @return array
-     */
     public function getRoles(): array
     {
-        return array_unique($this->roles);
+        return \array_unique($this->roles);
     }
 
     /**
      * @param array $roles
-     *
-     * @return self
      */
     public function setRoles($roles): self
     {
@@ -46,23 +41,13 @@ trait RoleableTrait
         return $this;
     }
 
-    /**
-     * @param array $roles
-     *
-     * @return self
-     */
     public function addRoles(array $roles): self
     {
-        $this->roles = array_unique(array_merge($this->roles, $this->filterRoles($roles)));
+        $this->roles = \array_unique(\array_merge($this->roles, $this->filterRoles($roles)));
 
         return $this;
     }
 
-    /**
-     * @param string $role
-     *
-     * @return bool
-     */
     public function hasRole(string $role): bool
     {
         return \in_array($role, $this->getRoles(), true);
@@ -76,22 +61,14 @@ trait RoleableTrait
         $this->roles = [];
     }
 
-    /**
-     * @return array
-     */
     public static function getAvailableRoles(): array
     {
         return self::getConstants('DUTY_');
     }
 
-    /**
-     * @param string $role
-     *
-     * @return self
-     */
     private function removeRole(string $role): self
     {
-        $index = array_search($role, $this->roles, true);
+        $index = \array_search($role, $this->roles, true);
 
         if (false !== $index) {
             unset($this->roles[$index]);
@@ -100,13 +77,8 @@ trait RoleableTrait
         return $this;
     }
 
-    /**
-     * @param array $roles
-     *
-     * @return array
-     */
     private function filterRoles(array $roles): array
     {
-        return array_unique(array_values(array_intersect($roles, static::getAvailableRoles())));
+        return \array_unique(\array_values(\array_intersect($roles, static::getAvailableRoles())));
     }
 }

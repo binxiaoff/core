@@ -13,17 +13,12 @@ class EnvironmentProcessor implements ProcessorInterface
 {
     private $environment;
 
-    /**
-     * @param string $environment
-     */
     public function __construct(string $environment)
     {
         $this->environment = $environment;
     }
 
     /**
-     * @param array $record
-     *
      * @return array The processed records
      */
     public function __invoke(array $record): array
