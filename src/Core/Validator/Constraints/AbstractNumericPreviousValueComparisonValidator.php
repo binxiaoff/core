@@ -9,9 +9,6 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 abstract class AbstractNumericPreviousValueComparisonValidator extends AbstractPreviousValueComparisonValidator
 {
-    /**
-     * {@inheritDoc}
-     */
     protected function checkPreconditions($value, Constraint $constraint): void
     {
         if (false === \is_numeric($value)) {

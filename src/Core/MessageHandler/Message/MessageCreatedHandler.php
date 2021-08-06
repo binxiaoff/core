@@ -19,14 +19,9 @@ use Unilend\Syndication\Service\Project\ProjectManager;
 class MessageCreatedHandler implements MessageHandlerInterface
 {
     private MessageRepository $messageRepository;
-
     private ProjectManager $projectManager;
-
     private MessageStatusRepository $messageStatusRepository;
 
-    /**
-     * MessageCreatedHandler constructor.
-     */
     public function __construct(
         MessageRepository $messageRepository,
         ProjectManager $projectManager,

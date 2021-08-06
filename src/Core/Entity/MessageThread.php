@@ -73,9 +73,6 @@ class MessageThread
      */
     private Collection $messages;
 
-    /**
-     * MessageThread constructor.
-     */
     public function __construct()
     {
         $this->added    = new DateTimeImmutable();

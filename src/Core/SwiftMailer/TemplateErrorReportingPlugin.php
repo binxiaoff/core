@@ -18,9 +18,6 @@ class TemplateErrorReportingPlugin implements Swift_Events_SendListener
         $this->errorReportingEmail = $errorReportingEmail;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function beforeSendPerformed(Swift_Events_SendEvent $event): void
     {
         if ($this->enableErrorDelivery) {
@@ -34,9 +31,6 @@ class TemplateErrorReportingPlugin implements Swift_Events_SendListener
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function sendPerformed(Swift_Events_SendEvent $event): void
     {
     }

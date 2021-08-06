@@ -29,9 +29,6 @@ class SecurityCheckCommand extends Command
         $this->securityChecker  = new SecurityChecker();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function configure()
     {
         $this
@@ -48,8 +45,6 @@ class SecurityCheckCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws JsonException
      * @throws GuzzleException
      *

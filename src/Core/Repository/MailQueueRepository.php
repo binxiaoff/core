@@ -20,9 +20,6 @@ use Unilend\Core\Entity\{MailQueue};
  */
 class MailQueueRepository extends ServiceEntityRepository
 {
-    /**
-     * MailQueueRepository constructor.
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MailQueue::class);

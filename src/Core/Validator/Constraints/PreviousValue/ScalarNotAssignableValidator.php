@@ -8,9 +8,6 @@ use Unilend\Core\Validator\Constraints\AbstractScalarPreviousValueComparisonVali
 
 class ScalarNotAssignableValidator extends AbstractScalarPreviousValueComparisonValidator
 {
-    /**
-     * {@inheritDoc}
-     */
     protected function compareValues($value, $previousValue): bool
     {
         return null === $value || null !== $previousValue;

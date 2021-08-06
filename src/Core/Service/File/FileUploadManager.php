@@ -37,8 +37,6 @@ class FileUploadManager
     }
 
     /**
-     * @param File|null $file
-     *
      * @throws EnvironmentIsBrokenException
      * @throws FilesystemException
      * @throws IOException

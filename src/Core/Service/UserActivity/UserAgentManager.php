@@ -19,9 +19,6 @@ class UserAgentManager
     /** @var UserAgentRepository */
     private $userAgentRepository;
 
-    /**
-     * UserAgentManager constructor.
-     */
     public function __construct(UserAgentRepository $userAgentRepository, LoggerInterface $logger)
     {
         $this->logger              = $logger;

@@ -130,9 +130,6 @@ class ProjectStatus implements StatusInterface
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getStatus(): int
     {
         return $this->status;
@@ -162,9 +159,6 @@ class ProjectStatus implements StatusInterface
         return \lcfirst($statusLabel);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getPossibleStatuses(): array
     {
         return static::getConstants('STATUS_');

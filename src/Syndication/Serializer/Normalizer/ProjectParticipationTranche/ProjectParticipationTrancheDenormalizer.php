@@ -30,17 +30,11 @@ class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalize
         $this->security = $security;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsDenormalization($data, $type, string $format = null, array $context = []): bool
     {
         return !isset($context[self::ALREADY_CALLED]) && ProjectParticipationTranche::class === $type;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function denormalize($data, $type, string $format = null, array $context = [])
     {
         /** @var ProjectParticipationTranche $projectParticipationTranche */

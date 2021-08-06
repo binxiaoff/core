@@ -20,9 +20,6 @@ class Rcs extends Sequentially
      */
     public string $message = 'Invalid Rcs.';
 
-    /**
-     * {@inheritDoc}
-     */
     public function __construct(array $options)
     {
         parent::__construct([

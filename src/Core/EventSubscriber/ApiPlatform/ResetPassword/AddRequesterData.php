@@ -28,9 +28,6 @@ class AddRequesterData implements EventSubscriberInterface
         $this->userAgent  = $userAgentManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents()
     {
         return [

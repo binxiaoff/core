@@ -17,9 +17,6 @@ final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryI
         $this->decorated = $decorated;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function create(string $resourceClass): ResourceMetadata
     {
         $inflector = InflectorFactory::create()->build();

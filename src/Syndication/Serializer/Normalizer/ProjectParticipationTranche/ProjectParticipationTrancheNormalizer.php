@@ -26,9 +26,6 @@ class ProjectParticipationTrancheNormalizer implements ContextAwareNormalizerInt
         $this->security = $security;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         if (isset($context[self::ALREADY_CALLED])) {
@@ -38,9 +35,6 @@ class ProjectParticipationTrancheNormalizer implements ContextAwareNormalizerInt
         return $data instanceof ProjectParticipationTranche;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $context[AbstractNormalizer::GROUPS] = \array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalNormalizerGroups($object));

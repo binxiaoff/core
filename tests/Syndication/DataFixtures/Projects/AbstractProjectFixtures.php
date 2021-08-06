@@ -23,8 +23,6 @@ use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 abstract class AbstractProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     /**
-     * {@inheritDoc}
-     *
      * @throws ReflectionException
      * @throws Exception
      */

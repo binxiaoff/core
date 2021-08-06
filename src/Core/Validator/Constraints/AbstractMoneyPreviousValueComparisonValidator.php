@@ -10,9 +10,6 @@ use Unilend\Core\Entity\Interfaces\MoneyInterface;
 
 abstract class AbstractMoneyPreviousValueComparisonValidator extends AbstractPreviousValueComparisonValidator
 {
-    /**
-     * {@inheritDoc}
-     */
     protected function checkPreconditions($value, Constraint $constraint): void
     {
         if (false === $value instanceof MoneyInterface) {
@@ -20,9 +17,6 @@ abstract class AbstractMoneyPreviousValueComparisonValidator extends AbstractPre
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getPreviousValue($previousEntity, $value): MoneyInterface
     {
         $propertyPath = $this->context->getPropertyPath();

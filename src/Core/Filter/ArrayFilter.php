@@ -25,9 +25,6 @@ class ArrayFilter extends AbstractContextAwareFilter
 
     private const QUERY_PARAMETER_PREFIX = 'array_filter_term_';
 
-    /**
-     * {@inheritdoc}
-     */
     public function getDescription(string $resourceClass): array
     {
         $description = [];

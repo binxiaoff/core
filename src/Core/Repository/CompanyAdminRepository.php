@@ -16,9 +16,6 @@ use Unilend\Core\Entity\CompanyAdmin;
  */
 class CompanyAdminRepository extends ServiceEntityRepository
 {
-    /**
-     * CompanyRepository constructor.
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, CompanyAdmin::class);

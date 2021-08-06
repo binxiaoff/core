@@ -22,30 +22,19 @@ class DatabaseSpool extends Swift_ConfigurableSpool
         $this->mailQueueRepository = $mailQueueRepository;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function start()
     {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function stop()
     {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function isStarted()
     {
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */

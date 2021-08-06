@@ -26,9 +26,6 @@ class UserSubscriber implements EventSubscriberInterface
         $this->userRepository = $repository;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [

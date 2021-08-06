@@ -19,9 +19,7 @@ class CreateTeamDataTransformer implements DataTransformerInterface
     }
 
     /**
-     * @var CreateTeam
-     *
-     * {@inheritDoc}
+     * @param CreateTeam $object
      */
     public function transform($object, string $to, array $context = [])
     {
@@ -30,9 +28,6 @@ class CreateTeamDataTransformer implements DataTransformerInterface
         return Team::createTeam($object->name, $object->parent);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsTransformation($data, string $to, array $context = []): bool
     {
         return false === $data instanceof Team && Team::class === $to;

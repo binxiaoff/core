@@ -44,7 +44,8 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     }
 
     /**
-     * {@inheritdoc}
+     * @param mixed $data
+     * @param mixed $type
      *
      * @throws NonUniqueResultException
      */
@@ -112,9 +113,6 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         return $denormalized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsDenormalization($data, $type, ?string $format = null, array $context = []): bool
     {
         return !isset($context[self::ALREADY_CALLED]) && Staff::class === $type;

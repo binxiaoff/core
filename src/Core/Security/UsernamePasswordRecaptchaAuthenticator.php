@@ -50,9 +50,6 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
         $this->path                         = $path;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function start(Request $request, AuthenticationException $authException = null)
     {
         $exception = new AuthenticationException('Authentication required', 0, $authException);
@@ -60,9 +57,6 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
         return $this->onAuthenticationFailure($request, $exception);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supports(Request $request)
     {
         if ($request->getPathInfo() !== $this->path) {
@@ -82,9 +76,6 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
         return \array_key_exists('username', $content) && \array_key_exists('password', $content) && \array_key_exists('captchaValue', $content);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCredentials(Request $request)
     {
         try {
@@ -100,17 +91,11 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
         return $userProvider->loadUserByUsername($credentials['username']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function checkCredentials($credentials, UserInterface $user)
     {
         $recaptchaResult = $this->googleRecaptchaManager->getResult($credentials['captchaValue']);
@@ -130,33 +115,21 @@ class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator 
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
         return $this->authenticationFailureHandler->onAuthenticationFailure($request, $exception);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $providerKey)
     {
         return $this->authenticationSuccessHandler->onAuthenticationSuccess($request, $token);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsRememberMe()
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getPassword($credentials): ?string
     {
         return $credentials['password'] ?? null;

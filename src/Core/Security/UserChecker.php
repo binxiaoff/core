@@ -11,9 +11,6 @@ use Unilend\Core\Entity\User;
 
 class UserChecker implements UserCheckerInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function checkPreAuth(UserInterface $user): void
     {
         if (!$user instanceof User) {
@@ -28,9 +25,6 @@ class UserChecker implements UserCheckerInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function checkPostAuth(UserInterface $user): void
     {
         // nothing to check

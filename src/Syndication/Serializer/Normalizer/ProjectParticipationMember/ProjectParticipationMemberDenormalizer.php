@@ -33,17 +33,11 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
         $this->iriConverter = $iriConverter;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
     {
         return !isset($context[self::ALREADY_CALLED]) && ProjectParticipationMember::class === $type;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
         $context[self::ALREADY_CALLED] = true;

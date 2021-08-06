@@ -22,9 +22,6 @@ class EncodePassword implements EventSubscriberInterface
         $this->encoder = $encoder;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents()
     {
         return [

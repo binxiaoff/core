@@ -31,9 +31,6 @@ class FileSystemHelperTest extends TestCase
 
     private string $encryptedFilePath;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp(): void
     {
         $this->srcPath                     = \sys_get_temp_dir() . DIRECTORY_SEPARATOR . Base::lexify('?????');

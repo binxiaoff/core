@@ -86,9 +86,7 @@ class Team
     private Collection $incomingEdges;
 
     /**
-     * Constructor.
-     *
-     * Private to ensure correct object creation via static method
+     * Private to ensure correct object creation via static method.
      */
     private function __construct()
     {

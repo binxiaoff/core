@@ -19,11 +19,8 @@ class GoogleRecaptchaManager
     ];
 
     private Client $client;
-
     private string $secret;
-
     private LoggerInterface $logger;
-
     private bool $debug;
 
     public function __construct(Client $client, string $secret, LoggerInterface $logger, bool $debug = false)

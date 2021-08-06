@@ -15,9 +15,6 @@ class CARegionalBankFilter extends AbstractContextAwareFilter
 {
     private const PARAMETER_NAME = 'caRegionalBank';
 
-    /**
-     * {@inheritdoc}
-     */
     public function getDescription(string $resourceClass): array
     {
         $description[self::PARAMETER_NAME] = [
@@ -29,9 +26,6 @@ class CARegionalBankFilter extends AbstractContextAwareFilter
         return $description;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function filterProperty(
         string $property,
         $value,

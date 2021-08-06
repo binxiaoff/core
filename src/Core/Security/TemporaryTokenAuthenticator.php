@@ -32,9 +32,6 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
         $this->dispatcher               = $dispatcher;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function start(Request $request, AuthenticationException $authException = null): Response
     {
         $exception = new InvalidTemporaryTokenException('Temporary token is not found.', 0, $authException);
@@ -44,24 +41,18 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
         return $event->getResponse();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supports(Request $request): bool
     {
         return $request->headers->has('X-AUTH-TOKEN');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCredentials(Request $request)
     {
         return $request->headers->get('X-AUTH-TOKEN');
     }
 
     /**
-     * {@inheritdoc}
+     * @param mixed $credentials
      *
      * @throws Exception
      */
@@ -87,17 +78,11 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
         return $temporaryToken->getUser();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function checkCredentials($credentials, UserInterface $user): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function onAuthenticationFailure(Request $request, AuthenticationException $authException): Response
     {
         $event = new TemporaryTokenAuthenticationFailureEvent($authException, $this->buildAuthenticationFailureResponse($authException->getMessage()));
@@ -107,7 +92,7 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
     }
 
     /**
-     * {@inheritdoc}
+     * @param mixed $providerKey
      *
      * @throws Exception
      */
@@ -117,9 +102,6 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
         $this->dispatcher->dispatch($event, TemporaryTokenAuthenticationEvents::AUTHENTICATION_SUCCESS);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsRememberMe(): bool
     {
         return false;

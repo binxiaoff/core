@@ -7,6 +7,7 @@ namespace Unilend\Syndication\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Entity\User;
@@ -92,9 +93,7 @@ class ProjectComment
     private $visibility;
 
     /**
-     * ProjectComment constructor.
-     *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct()
     {

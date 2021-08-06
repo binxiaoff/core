@@ -18,9 +18,6 @@ use Unilend\Core\Entity\Message;
  */
 class MessageRepository extends ServiceEntityRepository
 {
-    /**
-     * MessageRepository constructor.
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Message::class);

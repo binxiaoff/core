@@ -44,7 +44,7 @@ class UserRepository extends ServiceEntityRepository
     /**
      * @param int|User $idUser
      *
-     **@throws NonUniqueResultException
+     * @throws NonUniqueResultException
      *
      * @return mixed
      */
@@ -66,7 +66,7 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     **@throws NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function findGrantedLoginAccountByEmail(string $email): ?User
     {

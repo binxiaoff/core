@@ -101,9 +101,6 @@ class Message
      */
     private ?string $broadcast = null;
 
-    /**
-     * Message constructor.
-     */
     public function __construct(Staff $sender, MessageThread $messageThread, string $body)
     {
         $this->sender          = $sender;

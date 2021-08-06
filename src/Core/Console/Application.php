@@ -15,9 +15,6 @@ use Symfony\Component\Lock\Store\SemaphoreStore;
 
 class Application extends FrameworkBundleApplication
 {
-    /**
-     * {@inheritdoc}
-     */
     public function __construct(KernelInterface $kernel)
     {
         parent::__construct($kernel);
@@ -25,9 +22,6 @@ class Application extends FrameworkBundleApplication
         $this->getDefinition()->addOption(new InputOption('--multi-process', null, InputOption::VALUE_NONE, 'This is a multi process or a single process.'));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function doRun(InputInterface $input, OutputInterface $output): int
     {
         $this->getKernel()->boot();

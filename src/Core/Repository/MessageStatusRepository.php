@@ -25,9 +25,6 @@ use Unilend\Syndication\Entity\ProjectStatus;
  */
 class MessageStatusRepository extends ServiceEntityRepository
 {
-    /**
-     * MessageStatusRepository constructor.
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MessageStatus::class);

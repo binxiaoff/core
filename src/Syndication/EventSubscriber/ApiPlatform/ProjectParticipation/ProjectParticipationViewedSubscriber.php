@@ -41,9 +41,6 @@ class ProjectParticipationViewedSubscriber implements EventSubscriberInterface
         $this->projectParticipationRepository = $projectParticipationRepository;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [KernelEvents::REQUEST => ['markAsViewedByParticipant', EventPriorities::POST_READ]];

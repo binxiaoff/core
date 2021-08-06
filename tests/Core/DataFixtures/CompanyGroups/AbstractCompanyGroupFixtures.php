@@ -13,8 +13,6 @@ use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 abstract class AbstractCompanyGroupFixtures extends AbstractFixtures
 {
     /**
-     * {@inheritDoc}
-     *
      * @throws ReflectionException
      */
     final public function load(ObjectManager $manager)

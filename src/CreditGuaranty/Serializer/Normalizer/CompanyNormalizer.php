@@ -24,17 +24,11 @@ class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
         $this->staffPermissionRepository = $staffPermissionRepository;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         return $data instanceof Company && !isset($context[static::ALREADY_CALLED]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $context[static::ALREADY_CALLED] = true;

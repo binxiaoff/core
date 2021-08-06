@@ -75,9 +75,6 @@ class UserSuccessfulLogin
      */
     private ?float $recaptchaScore;
 
-    /**
-     * UserLoginHistory constructor.
-     */
     public function __construct(User $user, string $action)
     {
         if (false === \in_array($action, self::getActions(), true)) {

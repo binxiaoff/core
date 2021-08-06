@@ -20,14 +20,9 @@ use Unilend\Syndication\Entity\ProjectStatus;
 class MessageFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     private StaffRepository $staffRepository;
-
     private ObjectManager $manager;
-
     private array $messageThreads = [];
 
-    /**
-     * MessageFixtures constructor.
-     */
     public function __construct(TokenStorageInterface $tokenStorage, StaffRepository $staffRepository)
     {
         parent::__construct($tokenStorage);

@@ -19,16 +19,13 @@ class ProjectParticipationCollectionDataPersister implements DataPersisterInterf
         $this->projectParticipationRepository = $projectParticipationRepository;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supports($data): bool
     {
         return $data instanceof ProjectParticipationCollection;
     }
 
     /**
-     * {@inheritdoc}
+     * @param mixed $data
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -44,9 +41,6 @@ class ProjectParticipationCollectionDataPersister implements DataPersisterInterf
         return $data;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function remove($data): void
     {
         // remove is not supported

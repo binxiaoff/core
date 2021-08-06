@@ -26,9 +26,6 @@ class EntityVoterNormalizer implements NormalizerInterface, NormalizerAwareInter
         $this->resourceClassResolver = $resourceClassResolver;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
         return false === isset($context[static::ALREADY_CALLED])
@@ -36,9 +33,6 @@ class EntityVoterNormalizer implements NormalizerInterface, NormalizerAwareInter
             && $this->resourceClassResolver->isResourceClass(\get_class($data));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $context[static::ALREADY_CALLED] = true;

@@ -84,8 +84,6 @@ class UserAgent
     private $id;
 
     /**
-     * UserAgent constructor.
-     *
      * @throws \Exception
      */
     public function __construct()

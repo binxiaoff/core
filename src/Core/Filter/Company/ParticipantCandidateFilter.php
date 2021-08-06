@@ -14,9 +14,6 @@ class ParticipantCandidateFilter extends AbstractContextAwareFilter
 {
     private const PARAMETER_NAME = 'eligibleParticipant';
 
-    /**
-     * {@inheritdoc}
-     */
     public function getDescription(string $resourceClass): array
     {
         $description[self::PARAMETER_NAME] = [
@@ -28,9 +25,6 @@ class ParticipantCandidateFilter extends AbstractContextAwareFilter
         return $description;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function filterProperty(
         string $property,
         $value,

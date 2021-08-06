@@ -11,9 +11,6 @@ class PathSegmentNameWithDomainGenerator implements PathSegmentNameGeneratorInte
 {
     private const API_DOMAINS = ['core', 'syndication', 'agency', 'credit_guaranty'];
 
-    /**
-     * {@inheritDoc}
-     */
     public function getSegmentName(string $name, bool $collection = true): string
     {
         $inflector = InflectorFactory::create()->build();

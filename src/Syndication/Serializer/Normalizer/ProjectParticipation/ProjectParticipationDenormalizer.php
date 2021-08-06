@@ -46,17 +46,11 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         $this->projectManager = $projectManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsDenormalization($data, $type, string $format = null, array $context = []): bool
     {
         return !isset($context[self::ALREADY_CALLED]) && ProjectParticipation::class === $type;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function denormalize($data, $type, string $format = null, array $context = [])
     {
         $context[self::ALREADY_CALLED] = true;

@@ -25,9 +25,6 @@ class ConsoleEventSubscriber implements EventSubscriberInterface
         $this->stopwatch     = $stopwatch;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [

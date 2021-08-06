@@ -20,9 +20,6 @@ class IpGeoLocManager
     /** @var LoggerInterface */
     private $logger;
 
-    /**
-     * IpGeoLocManager constructor.
-     */
     public function __construct(GeoIpService $geoIpService, string $defaultLocale, LoggerInterface $logger)
     {
         $this->geoIpService = $geoIpService;

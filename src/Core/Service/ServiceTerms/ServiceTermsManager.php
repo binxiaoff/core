@@ -12,7 +12,6 @@ use Unilend\Core\Repository\LegalDocumentRepository;
 class ServiceTermsManager
 {
     private AcceptationLegalDocsRepository $acceptationLegalDocsRepository;
-
     private LegalDocumentRepository $legalDocumentRepository;
 
     public function __construct(AcceptationLegalDocsRepository $acceptationLegalDocsRepository, LegalDocumentRepository $legalDocumentRepository)

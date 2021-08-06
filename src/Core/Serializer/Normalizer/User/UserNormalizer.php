@@ -23,9 +23,6 @@ class UserNormalizer implements ContextAwareNormalizerInterface, NormalizerAware
         $this->serviceTermsManager = $serviceTermsManager;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         return $data instanceof User && !isset($context[static::ALREADY_CALLED]);
@@ -38,9 +35,6 @@ class UserNormalizer implements ContextAwareNormalizerInterface, NormalizerAware
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $context[static::ALREADY_CALLED] = true;

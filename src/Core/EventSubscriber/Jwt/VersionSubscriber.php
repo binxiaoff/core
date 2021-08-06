@@ -13,9 +13,6 @@ class VersionSubscriber implements EventSubscriberInterface
 {
     public const JWT_VERSION = '2021-08-05';
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [

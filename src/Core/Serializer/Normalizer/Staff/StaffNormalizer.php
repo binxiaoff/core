@@ -24,9 +24,6 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
         $this->security = $security;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
         return $data instanceof Staff && !isset($context[static::ALREADY_CALLED]);
@@ -39,9 +36,6 @@ class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $context[static::ALREADY_CALLED] = true;

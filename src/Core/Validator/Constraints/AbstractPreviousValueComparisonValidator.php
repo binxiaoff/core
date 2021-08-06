@@ -20,9 +20,6 @@ abstract class AbstractPreviousValueComparisonValidator extends ConstraintValida
         $this->managerRegistry = $managerRegistry;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function validate($value, Constraint $constraint): void
     {
         if (false === $constraint instanceof AbstractPreviousValueComparison) {

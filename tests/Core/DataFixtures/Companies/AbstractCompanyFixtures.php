@@ -28,8 +28,6 @@ abstract class AbstractCompanyFixtures extends AbstractFixtures implements Depen
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @throws ReflectionException
      * @throws Exception
      */

@@ -26,9 +26,6 @@ class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
         $this->security = $security;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
         return $data instanceof Company && !isset($context[static::ALREADY_CALLED]);
@@ -41,9 +38,6 @@ class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $context[static::ALREADY_CALLED] = true;

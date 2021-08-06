@@ -30,9 +30,6 @@ class InviteUserCommand extends Command
         $this->staffNotifier  = $staffNotifier;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function configure(): void
     {
         $this->setDescription('This command notify a list of users to initialise their accounts.');
@@ -40,8 +37,6 @@ class InviteUserCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): ?int

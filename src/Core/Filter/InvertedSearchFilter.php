@@ -12,9 +12,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 class InvertedSearchFilter extends AbstractContextAwareFilter
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getDescription(string $resourceClass): array
     {
         //TODO we should add the description for this filter for swagger
@@ -22,9 +19,7 @@ class InvertedSearchFilter extends AbstractContextAwareFilter
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * Needed to handle custom sign at the end of property
+     * Needed to handle custom sign at the end of property.
      */
     protected function extractProperties(Request $request/*, string $resourceClass*/): array
     {
@@ -89,33 +84,21 @@ class InvertedSearchFilter extends AbstractContextAwareFilter
         ;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function isPropertyEnabled(string $property): bool
     {
         return parent::isPropertyEnabled(...$this->fixArguments(\func_get_args()));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function isPropertyMapped(string $property, string $resourceClass, bool $allowAssociation = false): bool
     {
         return parent::isPropertyMapped(...$this->fixArguments(\func_get_args()));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function isPropertyNested(string $property): bool
     {
         return parent::isPropertyNested(...$this->fixArguments(\func_get_args()));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function isPropertyEmbedded(string $property, string $resourceClass): bool
     {
         return parent::isPropertyEmbedded(...$this->fixArguments(\func_get_args()));

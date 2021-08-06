@@ -9,9 +9,6 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 abstract class AbstractScalarPreviousValueComparisonValidator extends AbstractPreviousValueComparisonValidator
 {
-    /**
-     * {@inheritDoc}
-     */
     protected function checkPreconditions($value, Constraint $constraint): void
     {
         if (\is_object($value)) {
@@ -19,9 +16,6 @@ abstract class AbstractScalarPreviousValueComparisonValidator extends AbstractPr
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getPreviousValue(array $previousEntity, $value)
     {
         $propertyPath = $this->context->getPropertyPath();

@@ -24,9 +24,6 @@ class FixtureCommandSubscriber implements EventSubscriberInterface
         $this->connection = $connection;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [

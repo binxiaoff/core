@@ -26,9 +26,6 @@ class DataroomListener implements EventSubscriberInterface
         $this->propertyAccessor = $propertyAccessor;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [

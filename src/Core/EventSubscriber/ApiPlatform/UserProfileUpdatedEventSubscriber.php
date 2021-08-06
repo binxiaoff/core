@@ -27,9 +27,6 @@ class UserProfileUpdatedEventSubscriber implements EventSubscriberInterface
         $this->tokenStorage             = $tokenStorage;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [KernelEvents::VIEW => ['expireTemporaryToken', EventPriorities::POST_WRITE]];

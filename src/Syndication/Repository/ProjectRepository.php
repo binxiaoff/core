@@ -25,9 +25,6 @@ class ProjectRepository extends ServiceEntityRepository
     use OrderByHandlerTrait;
     use PaginationHandlerTrait;
 
-    /**
-     * ProjectRepository constructor.
-     */
     public function __construct(ManagerRegistry $managerRegistry)
     {
         parent::__construct($managerRegistry, Project::class);

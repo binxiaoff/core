@@ -87,9 +87,6 @@ class MessageStatus
      */
     private $unreadNotified;
 
-    /**
-     * MessageStatus constructor.
-     */
     public function __construct(Message $message, Staff $recipient)
     {
         $this->message   = $message;

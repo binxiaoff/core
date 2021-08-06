@@ -21,9 +21,7 @@ use Unilend\Syndication\Service\ProjectParticipationMember\ProjectParticipationM
 class ProjectStatusUpdatedHandler implements MessageHandlerInterface
 {
     private ProjectRepository $projectRepository;
-
     private ProjectParticipationMemberNotifier $projectParticipationMemberNotifier;
-
     private ProjectNotifier $projectNotifier;
 
     public function __construct(

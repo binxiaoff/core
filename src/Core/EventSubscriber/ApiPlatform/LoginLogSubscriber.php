@@ -36,9 +36,6 @@ class LoginLogSubscriber implements EventSubscriberInterface
 
     private bool $alreadyLogged;
 
-    /**
-     * LoginLogSubscriber constructor.
-     */
     public function __construct(
         UserLoginFactory $userLoginHistoryFactory,
         UserRepository $userRepository,
@@ -52,9 +49,6 @@ class LoginLogSubscriber implements EventSubscriberInterface
         $this->alreadyLogged                 = false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [

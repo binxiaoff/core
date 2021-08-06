@@ -39,9 +39,6 @@ class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransform
         $this->security                      = $security;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsTransformation($data, string $to, array $context = []): bool
     {
         return (ProgramBorrowerTypeAllocation::class === $to) && (ProgramBorrowerTypeAllocationInput::class === $context['input']['class']);

@@ -46,9 +46,6 @@ class FileUploadManagerTest extends TestCase
     /** @var MessageBusInterface|ObjectProphecy */
     private $messageBus;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp(): void
     {
         $this->userAttachmentFilesystem = $this->prophesize(FilesystemOperator::class);

@@ -11,9 +11,6 @@ class MessageCreated implements AsyncMessageInterface
 {
     private ?int $messageId;
 
-    /**
-     * MessageCreated constructor.
-     */
     public function __construct(Message $message)
     {
         $this->messageId = $message->getId();

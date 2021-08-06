@@ -29,9 +29,6 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
         $this->security = $security;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
         if (isset($context[self::ALREADY_CALLED])) {
@@ -41,9 +38,6 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
         return $data instanceof Project;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $context[self::ALREADY_CALLED] = true;

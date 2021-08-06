@@ -51,9 +51,6 @@ class UserFailedLogin
      */
     private ?float $recaptchaScore;
 
-    /**
-     * Constructor.
-     */
     public function __construct()
     {
         $this->added = new DateTimeImmutable();

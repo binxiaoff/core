@@ -31,9 +31,6 @@ class ArchivedStaffSubscriber implements EventSubscriberInterface
         $this->security        = $security;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents()
     {
         return [KernelEvents::VIEW => ['fetchArchivedEntity', EventPriorities::PRE_VALIDATE]];

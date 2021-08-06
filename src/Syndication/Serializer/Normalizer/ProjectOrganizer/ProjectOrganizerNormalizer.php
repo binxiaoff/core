@@ -24,17 +24,11 @@ class ProjectOrganizerNormalizer implements ContextAwareNormalizerInterface, Nor
         $this->security = $security;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
         return !isset($context[self::ALREADY_CALLED]) && $data instanceof ProjectOrganizer;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $context[self::ALREADY_CALLED] = true;

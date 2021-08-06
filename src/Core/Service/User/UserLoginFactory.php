@@ -33,7 +33,7 @@ class UserLoginFactory
     }
 
     /**
-     **@throws Exception
+     * @throws Exception
      */
     public function createUserLoginSuccess(User $user, string $action): UserSuccessfulLogin
     {
@@ -70,7 +70,7 @@ class UserLoginFactory
     }
 
     /**
-     **@throws Exception
+     * @throws Exception
      */
     public function createUserLoginFailure(Throwable $exception, ?string $username = null): UserFailedLogin
     {

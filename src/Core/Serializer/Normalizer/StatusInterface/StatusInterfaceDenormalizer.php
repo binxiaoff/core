@@ -17,9 +17,6 @@ class StatusInterfaceDenormalizer implements ContextAwareDenormalizerInterface, 
 
     private const ALREADY_CALLED = 'STATUS_INTERFACE_ATTRIBUTE_DENORMALIZER_ALREADY_CALLED';
 
-    /**
-     * {@inheritdoc}
-     */
     public function denormalize($data, $type, ?string $format = null, array $context = [])
     {
         $context[self::ALREADY_CALLED] = true;
@@ -36,9 +33,6 @@ class StatusInterfaceDenormalizer implements ContextAwareDenormalizerInterface, 
         return $previousStatus->getStatus() === $denormalized->getStatus() ? $previousStatus : $denormalized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsDenormalization($data, $type, ?string $format = null, array $context = []): bool
     {
         return !isset($context[self::ALREADY_CALLED]) && \is_subclass_of($type, StatusInterface::class);

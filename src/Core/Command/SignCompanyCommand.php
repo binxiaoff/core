@@ -38,9 +38,6 @@ class SignCompanyCommand extends Command
         $this->moduleRepository  = $moduleRepository;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function configure(): void
     {
         $this->setDescription('This command change the status to "contract signed" for the given companies, then, notify their staff to initialise their accounts.');
@@ -48,8 +45,6 @@ class SignCompanyCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): ?int
