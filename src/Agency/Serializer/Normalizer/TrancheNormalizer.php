@@ -17,17 +17,11 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
 
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
         return Tranche::class === $type && false === isset($context[static::ALREADY_CALLED]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
         $context[static::ALREADY_CALLED] = true;
@@ -35,9 +29,6 @@ class TrancheNormalizer implements ContextAwareDenormalizerInterface, Denormaliz
         return $this->nestedDenormalize($data, $type, $format, $context, ['allocations', 'borrowerShares']);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
     {
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][BorrowerTrancheShare::class]['tranche']           = $denormalized;

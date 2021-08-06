@@ -18,7 +18,7 @@ class LegalDocumentFixtures extends AbstractFixtures
      */
     public function load(ObjectManager $manager)
     {
-        $serviceDoc = (new LegalDocument(LegalDocument::TYPE_SERVICE_TERMS, 'Service Document', nl2br($this->faker->paragraphs(50, true))));
+        $serviceDoc = (new LegalDocument(LegalDocument::TYPE_SERVICE_TERMS, 'Service Document', \nl2br($this->faker->paragraphs(50, true))));
         $this->forcePublicId($serviceDoc, '3ac531f2-14e9-11ea-8b64-0226455cbcab');
         $this->forceId($manager, $serviceDoc, LegalDocument::CURRENT_SERVICE_TERMS_ID);
         $manager->persist($serviceDoc);

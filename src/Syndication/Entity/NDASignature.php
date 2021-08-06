@@ -14,9 +14,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\{BlamableAddedTrait,
-    PublicizeIdentityTrait,
-    TimestampableAddedOnlyTrait};
+use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ApiResource(
@@ -53,8 +53,6 @@ class NDASignature
     use PublicizeIdentityTrait;
 
     /**
-     * @var ProjectParticipation
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation", inversedBy="ndaSignatures")
      * @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
      *
@@ -65,8 +63,6 @@ class NDASignature
     private ProjectParticipation $projectParticipation;
 
     /**
-     * @var FileVersion
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\FileVersion")
      * @ORM\JoinColumn(name="id_file_version")
      *
@@ -75,19 +71,12 @@ class NDASignature
     private FileVersion $fileVersion;
 
     /**
-     * @var string
-     *
      * @ORM\Column(type="text", length=65535)
      *
      * @Groups({"ndaSignature:read", "ndaSignature:create"})
      */
     private string $term;
 
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Staff                $addedBy
-     * @param string               $term
-     */
     public function __construct(ProjectParticipation $projectParticipation, Staff $addedBy, string $term)
     {
         $this->projectParticipation = $projectParticipation;
@@ -97,25 +86,16 @@ class NDASignature
         $this->term                 = $term;
     }
 
-    /**
-     * @return ProjectParticipation
-     */
     public function getProjectParticipation(): ProjectParticipation
     {
         return $this->projectParticipation;
     }
 
-    /**
-     * @return FileVersion
-     */
     public function getFileVersion(): FileVersion
     {
         return $this->fileVersion;
     }
 
-    /**
-     * @return string
-     */
     public function getTerm(): string
     {
         return $this->term;
@@ -123,8 +103,6 @@ class NDASignature
 
     /**
      * @Groups({"ndaSignature:read"})
-     *
-     * @return Staff
      */
     public function getSignatory(): Staff
     {

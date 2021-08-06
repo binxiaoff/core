@@ -13,17 +13,12 @@ class UserPlainPasswordSubmittedListener
     /** @var UserPasswordEncoderInterface */
     private $userPasswordEncoder;
 
-    /**
-     * @param UserPasswordEncoderInterface $userPasswordEncoder
-     */
     public function __construct(UserPasswordEncoderInterface $userPasswordEncoder)
     {
         $this->userPasswordEncoder = $userPasswordEncoder;
     }
 
     /**
-     * @param User $user
-     *
      * @throws Exception
      */
     public function encodePlainPassword(User $user): void

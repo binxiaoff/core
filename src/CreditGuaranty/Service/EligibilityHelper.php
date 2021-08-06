@@ -28,8 +28,8 @@ class EligibilityHelper
 
     public function getValue($entity, Field $field)
     {
-        $pathParts = explode('::', $field->getPropertyPath());
+        $pathParts = \explode('::', $field->getPropertyPath());
 
-        return $this->propertyAccessor->getValue($entity, implode('.', $pathParts));
+        return $this->propertyAccessor->getValue($entity, \implode('.', $pathParts));
     }
 }

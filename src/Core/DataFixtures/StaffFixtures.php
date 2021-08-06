@@ -180,18 +180,18 @@ class StaffFixtures extends AbstractFixtures implements DependentFixtureInterfac
     {
         // We need to use SQL since we cannot instantiate Staff entity
         $sql = <<<SQL
-            INSERT INTO `core_staff`
-                (id_team, id_user, manager, updated, added, public_id, arrangement_project_creation_permission, agency_project_creation_permission) VALUES 
-                (
-                    "{$company->getRootTeam()->getId()}",
-                    "{$user->getId()}",
-                    1,
-                    '2020-01-01', '2020-01-01',
-                    "user{$user->getId()}-company{$company->getId()}-staff",
-                    1,
-                    1
-                )
-        SQL;
+                INSERT INTO `core_staff`
+                    (id_team, id_user, manager, updated, added, public_id, arrangement_project_creation_permission, agency_project_creation_permission) VALUES 
+                    (
+                        "{$company->getRootTeam()->getId()}",
+                        "{$user->getId()}",
+                        1,
+                        '2020-01-01', '2020-01-01',
+                        "user{$user->getId()}-company{$company->getId()}-staff",
+                        1,
+                        1
+                    )
+            SQL;
 
         $this->entityManager->getConnection()->exec($sql);
 

@@ -46,9 +46,6 @@ class FileUploadManagerTest extends TestCase
     /** @var MessageBusInterface|ObjectProphecy */
     private $messageBus;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp(): void
     {
         $this->userAttachmentFilesystem = $this->prophesize(FilesystemOperator::class);
@@ -77,9 +74,9 @@ class FileUploadManagerTest extends TestCase
         $uploaderId = Base::randomDigitNotNull() + 1;
         $idUsersReflectionProperty->setValue($uploader, $uploaderId);
 
-        $filePath         = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';
-        $originalFileName = Base::asciify(str_repeat('*', 20));
-        fopen($filePath, 'wb+');
+        $filePath         = \sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';
+        $originalFileName = Base::asciify(\str_repeat('*', 20));
+        \fopen($filePath, 'wb+');
         $uploadedFile = new UploadedFile($filePath, $originalFileName, null, null, true);
 
         $fileWriter = $this->fileSystemHelper->writeTempFileToFileSystem(
@@ -92,7 +89,7 @@ class FileUploadManagerTest extends TestCase
         $fileNameNormalizer = $this->fileSystemHelper->normalizeFileName(Argument::type('string'));
         $fileNameNormalizer->willReturn($originalFileName);
 
-        $encryptionKey = Base::asciify(str_repeat('*', 440));
+        $encryptionKey = Base::asciify(\str_repeat('*', 440));
         $fileWriter->willReturn($encryptionKey);
 
         $dispatcher = $this->messageBus->dispatch(Argument::exact(new FileUploaded($file, $context)));
@@ -113,18 +110,18 @@ class FileUploadManagerTest extends TestCase
         $dispatcher->shouldHaveBeenCalled();
         $fileExistenceChecker->shouldHaveBeenCalled();
 
-        $pathInfo                    = pathinfo($file->getCurrentFileVersion()->getPath());
+        $pathInfo                    = \pathinfo($file->getCurrentFileVersion()->getPath());
         $uploadedFilename            = $pathInfo['filename'];
         $uploadedDirname             = $pathInfo['dirname'];
-        $originalFilename            = pathinfo($originalFileName, PATHINFO_FILENAME);
-        $uploadedFilePathDirectories = explode(DIRECTORY_SEPARATOR, trim($uploadedDirname, '/'));
+        $originalFilename            = \pathinfo($originalFileName, PATHINFO_FILENAME);
+        $uploadedFilePathDirectories = \explode(DIRECTORY_SEPARATOR, \trim($uploadedDirname, '/'));
 
         static::assertNotSame($originalFilename, $uploadedFilename);
 
         static::assertGreaterThanOrEqual(3, $uploadedFilePathDirectories, 'minimum number of directories');
 
-        static::assertSame(1, mb_strlen(array_shift($uploadedFilePathDirectories)), 'first mandatory subdirectory');
-        static::assertSame(1, mb_strlen(array_shift($uploadedFilePathDirectories)), 'second mandatory subdirectory');
+        static::assertSame(1, \mb_strlen(\array_shift($uploadedFilePathDirectories)), 'first mandatory subdirectory');
+        static::assertSame(1, \mb_strlen(\array_shift($uploadedFilePathDirectories)), 'second mandatory subdirectory');
 
         static::assertSame($uploader, $file->getCurrentFileVersion()->getAddedBy());
         static::assertStringContainsString((string) $uploader->getId(), $file->getCurrentFileVersion()->getPath());

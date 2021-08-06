@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Syndication\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Unilend\Syndication\Entity\ProjectParticipationStatus;
 
@@ -17,17 +18,12 @@ use Unilend\Syndication\Entity\ProjectParticipationStatus;
  */
 class ProjectParticipationStatusRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ProjectParticipationStatus::class);
     }
 
     /**
-     * @param ProjectParticipationStatus $ProjectParticipationStatus
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -38,8 +34,6 @@ class ProjectParticipationStatusRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param ProjectParticipationStatus $ProjectParticipationStatus
-     *
      * @throws ORMException
      */
     public function persist(ProjectParticipationStatus $ProjectParticipationStatus): void

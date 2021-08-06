@@ -4,22 +4,18 @@ declare(strict_types=1);
 
 namespace Unilend\Core\EventSubscriber;
 
-use Doctrine\DBAL\{Connection, Exception};
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\ConsoleEvents;
-use Symfony\Component\Console\Event\{ConsoleCommandEvent, ConsoleTerminateEvent};
+use Symfony\Component\Console\Event\ConsoleCommandEvent;
+use Symfony\Component\Console\Event\ConsoleTerminateEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class FixtureCommandSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var Connection
-     */
     private Connection $connection;
 
-    /**
-     * @param Connection $connection
-     */
     public function __construct(Connection $connection)
     {
         // Attention: the connection injected here is the "default" connection. If someone uses "--em" to specify the entity manager for the command fixtures:load,
@@ -28,9 +24,6 @@ class FixtureCommandSubscriber implements EventSubscriberInterface
         $this->connection = $connection;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -40,8 +33,6 @@ class FixtureCommandSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param ConsoleCommandEvent $event
-     *
      * @throws Exception
      */
     public function onCommandStart(ConsoleCommandEvent $event): void
@@ -52,8 +43,6 @@ class FixtureCommandSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param ConsoleTerminateEvent $event
-     *
      * @throws Exception
      */
     public function onCommandEnd(ConsoleTerminateEvent $event): void
@@ -63,11 +52,6 @@ class FixtureCommandSubscriber implements EventSubscriberInterface
         }
     }
 
-    /**
-     * @param Command|null $command
-     *
-     * @return bool
-     */
     private function isFixtureCommand(?Command $command): bool
     {
         return $command && 'doctrine:fixtures:load' === $command->getName();

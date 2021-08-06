@@ -48,7 +48,7 @@ trait PublicizeIdentityTrait
             try {
                 $this->publicId = (string) (Uuid::uuid4());
             } catch (Throwable $e) {
-                $this->publicId = md5(uniqid('', false));
+                $this->publicId = \md5(\uniqid('', false));
             }
         }
 

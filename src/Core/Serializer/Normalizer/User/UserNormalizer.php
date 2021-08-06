@@ -12,37 +12,22 @@ use Unilend\Core\Service\ServiceTerms\ServiceTermsManager;
 
 class UserNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
-    /**
-     * @var NormalizerInterface
-     */
-    private NormalizerInterface $normalizer;
-
     private const ALREADY_CALLED = 'USER_NORMALIZER_ALREADY_CALLED';
 
-    /** @var ServiceTermsManager */
+    private NormalizerInterface $normalizer;
+
     private ServiceTermsManager $serviceTermsManager;
 
-    /**
-     * @param ServiceTermsManager $serviceTermsManager
-     */
     public function __construct(ServiceTermsManager $serviceTermsManager)
     {
         $this->serviceTermsManager = $serviceTermsManager;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         return $data instanceof User && !isset($context[static::ALREADY_CALLED]);
     }
 
-    /**
-     * @param NormalizerInterface $normalizer
-     *
-     * @return UserNormalizer
-     */
     public function setNormalizer(NormalizerInterface $normalizer): UserNormalizer
     {
         $this->normalizer = $normalizer;
@@ -50,9 +35,6 @@ class UserNormalizer implements ContextAwareNormalizerInterface, NormalizerAware
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $context[static::ALREADY_CALLED] = true;

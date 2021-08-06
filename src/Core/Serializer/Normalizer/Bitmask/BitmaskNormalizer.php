@@ -9,17 +9,11 @@ use Unilend\Core\Model\Bitmask;
 
 class BitmaskNormalizer implements NormalizerInterface
 {
-    /**
-     * @inheritDoc
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         return $object->get();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function supportsNormalization($data, string $format = null)
     {
         return $data instanceof Bitmask;

@@ -149,21 +149,13 @@ class ImportProjectCommand extends Command
     private const AMUNDI = 'Amundi';
 
     private ArrayCollection $tranches;
-
     private ProjectRepository $projectRepository;
-
     private CompanyRepository $companyRepository;
-
     private StaffRepository $staffRepository;
-
     private CompanyGroupTagRepository $companyGroupTagRepository;
-
     private UserRepository $userRepository;
-
     private TokenStorageInterface $tokenStorage;
-
     private ValidatorInterface $validator;
-
     private PhoneNumberUtil $phoneNumberUtil;
 
     public function __construct(
@@ -188,9 +180,6 @@ class ImportProjectCommand extends Command
         $this->phoneNumberUtil           = $phoneNumberUtil;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function configure(): void
     {
         $this
@@ -203,8 +192,6 @@ class ImportProjectCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): ?int

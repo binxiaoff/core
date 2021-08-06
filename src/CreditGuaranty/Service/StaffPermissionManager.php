@@ -41,6 +41,6 @@ class StaffPermissionManager
 
     public function checkCompanyGroupTag(Program $program, Staff $staff): bool
     {
-        return $staff->isAdmin() || in_array($program->getCompanyGroupTag(), $staff->getCompanyGroupTags(), true);
+        return $staff->isAdmin() || \in_array($program->getCompanyGroupTag(), $staff->getCompanyGroupTags(), true);
     }
 }

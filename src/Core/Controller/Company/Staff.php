@@ -10,8 +10,6 @@ use Unilend\Core\Entity\Staff as Entity;
 class Staff
 {
     /**
-     * @param Company $data
-     *
      * @return Entity[]|iterable
      */
     public function __invoke(Company $data): iterable

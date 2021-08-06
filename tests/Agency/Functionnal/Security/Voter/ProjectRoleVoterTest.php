@@ -43,7 +43,7 @@ class ProjectRoleVoterTest extends AbstractProjectVoterTest
         $tests = [];
 
         foreach (['draft', 'published'] as $project) {
-            $tests = array_merge($tests, [
+            $tests = \array_merge($tests, [
                 "AGENT: Connected user without staff cannot is not agent in {$project} project" => [
                     'user-a',
                     $project,

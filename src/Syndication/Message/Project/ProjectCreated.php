@@ -11,17 +11,11 @@ class ProjectCreated implements AsyncMessageInterface
 {
     private $projectId;
 
-    /**
-     * @param Project $project
-     */
     public function __construct(Project $project)
     {
         $this->projectId = $project->getId();
     }
 
-    /**
-     * @return int
-     */
     public function getProjectId(): int
     {
         return $this->projectId;

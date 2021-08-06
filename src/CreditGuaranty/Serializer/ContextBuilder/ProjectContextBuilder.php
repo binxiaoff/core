@@ -31,8 +31,6 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @throws Exception
      */
     public function createFromRequest(Request $request, bool $normalization, array $extractedAttributes = null): array

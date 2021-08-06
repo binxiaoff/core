@@ -12,17 +12,11 @@ class CompanyModuleUpdatedListener
 {
     private MessageBusInterface $bus;
 
-    /**
-     * @param MessageBusInterface $bus
-     */
     public function __construct(MessageBusInterface $bus)
     {
         $this->bus = $bus;
     }
 
-    /**
-     * @param CompanyModule $companyModule
-     */
     public function postUpdate(CompanyModule $companyModule)
     {
         $this->bus->dispatch(new CompanyModuleUpdated($companyModule));

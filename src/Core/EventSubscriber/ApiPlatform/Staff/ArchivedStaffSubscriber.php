@@ -25,27 +25,18 @@ class ArchivedStaffSubscriber implements EventSubscriberInterface
     /** @var Security */
     private $security;
 
-    /**
-     * @param StaffRepository $staffRepository
-     * @param Security        $security
-     */
     public function __construct(StaffRepository $staffRepository, Security $security)
     {
         $this->staffRepository = $staffRepository;
         $this->security        = $security;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents()
     {
         return [KernelEvents::VIEW => ['fetchArchivedEntity', EventPriorities::PRE_VALIDATE]];
     }
 
     /**
-     * @param ViewEvent $event
-     *
      * @throws NonUniqueResultException
      * @throws Exception
      */

@@ -11,22 +11,15 @@ class ProjectDecorator implements NormalizerInterface
 {
     private NormalizerInterface $decorated;
 
-    /**
-     * @param NormalizerInterface $decorated
-     */
     public function __construct(NormalizerInterface $decorated)
     {
         $this->decorated = $decorated;
     }
 
     /**
-     * @param mixed       $object
-     * @param string|null $format
-     * @param array       $context
+     * @param mixed $object
      *
      * @throws ExceptionInterface
-     *
-     * @return array
      */
     public function normalize($object, ?string $format = null, array $context = []): array
     {
@@ -35,24 +28,24 @@ class ProjectDecorator implements NormalizerInterface
 
         $swagger = [
             'get' => [
-                'tags'        => ['agency_project'],
-                'summary'     => 'View dataroom',
-                'produces'  => [
+                'tags'     => ['agency_project'],
+                'summary'  => 'View dataroom',
+                'produces' => [
                     'application/ld+json',
                     'application/json',
                 ],
                 'parameters' => [
                     [
-                        'name' => 'id',
-                        'in' => 'path',
+                        'name'     => 'id',
+                        'in'       => 'path',
                         'required' => true,
-                        'type' => 'string',
+                        'type'     => 'string',
                     ],
                     [
-                        'name' => 'path',
-                        'in' => 'path',
+                        'name'     => 'path',
+                        'in'       => 'path',
                         'required' => false,
-                        'type' => 'string',
+                        'type'     => 'string',
                     ],
                 ],
                 'responses' => [
@@ -68,23 +61,20 @@ class ProjectDecorator implements NormalizerInterface
             ],
         ];
 
-        $docs['paths']['/agency/projects/{id}/dataroom/shared/agentBorrower/{path}'] = $swagger;
-        $docs['paths']['/agency/projects/{id}/dataroom/shared/agentBorrower/{path}']['operationId'] = 'project_dataroom_shared_agentBorrower';
-        $docs['paths']['/agency/projects/{id}/dataroom/shared/agentPrincipalParticipant/{path}'] = $swagger;
+        $docs['paths']['/agency/projects/{id}/dataroom/shared/agentBorrower/{path}']                            = $swagger;
+        $docs['paths']['/agency/projects/{id}/dataroom/shared/agentBorrower/{path}']['operationId']             = 'project_dataroom_shared_agentBorrower';
+        $docs['paths']['/agency/projects/{id}/dataroom/shared/agentPrincipalParticipant/{path}']                = $swagger;
         $docs['paths']['/agency/projects/{id}/dataroom/shared/agentPrincipalParticipant/{path}']['operationId'] = 'project_dataroom_shared_agentPrincipalParticipant';
-        $docs['paths']['/agency/projects/{id}/dataroom/shared/agentSecondaryParticipant/{path}'] = $swagger;
+        $docs['paths']['/agency/projects/{id}/dataroom/shared/agentSecondaryParticipant/{path}']                = $swagger;
         $docs['paths']['/agency/projects/{id}/dataroom/shared/agentSecondaryParticipant/{path}']['operationId'] = 'project_dataroom_shared_agentSecondaryParticipant';
-        $docs['paths']['/agency/projects/{id}/dataroom/confidential/{path}'] = $swagger;
-        $docs['paths']['/agency/projects/{id}/dataroom/confidential/{path}']['operationId'] = 'project_dataroom_confidential';
+        $docs['paths']['/agency/projects/{id}/dataroom/confidential/{path}']                                    = $swagger;
+        $docs['paths']['/agency/projects/{id}/dataroom/confidential/{path}']['operationId']                     = 'project_dataroom_confidential';
 
         return $docs;
     }
 
     /**
-     * @param mixed       $data
-     * @param string|null $format
-     *
-     * @return bool
+     * @param mixed $data
      */
     public function supportsNormalization($data, ?string $format = null): bool
     {

@@ -4,14 +4,29 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Service;
 
-use DocuSign\eSign\Api\{AuthenticationApi, AuthenticationApi\LoginOptions, EnvelopesApi};
-use DocuSign\eSign\Model\{Document, EnvelopeDefinition, LoginAccount, LoginInformation, RecipientEmailNotification, RecipientViewRequest, Recipients, SignHere, Signer, Tabs};
-use DocuSign\eSign\{ApiClient, ApiException, Configuration};
+use DocuSign\eSign\Api\AuthenticationApi;
+use DocuSign\eSign\Api\AuthenticationApi\LoginOptions;
+use DocuSign\eSign\Api\EnvelopesApi;
+use DocuSign\eSign\ApiClient;
+use DocuSign\eSign\ApiException;
+use DocuSign\eSign\Configuration;
+use DocuSign\eSign\Model\Document;
+use DocuSign\eSign\Model\EnvelopeDefinition;
+use DocuSign\eSign\Model\LoginAccount;
+use DocuSign\eSign\Model\LoginInformation;
+use DocuSign\eSign\Model\RecipientEmailNotification;
+use DocuSign\eSign\Model\Recipients;
+use DocuSign\eSign\Model\RecipientViewRequest;
+use DocuSign\eSign\Model\Signer;
+use DocuSign\eSign\Model\SignHere;
+use DocuSign\eSign\Model\Tabs;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Key;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\{Request, RequestStack, Session\SessionInterface};
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Unilend\Core\Entity\User;
@@ -72,17 +87,6 @@ class ElectronicSignatureManager
     /** @var bool */
     private $debug;
 
-    /**
-     * @param string              $integratorKey
-     * @param string              $userId
-     * @param string              $privateKey
-     * @param HttpClientInterface $httpClient
-     * @param string              $accountHost
-     * @param string              $apiHost
-     * @param RequestStack        $requestStack
-     * @param LoggerInterface     $logger
-     * @param bool                $debug
-     */
     public function __construct(
         string $integratorKey,
         string $userId,
@@ -107,17 +111,6 @@ class ElectronicSignatureManager
 
     /**
      * For demonstration purpose, only one document, one signer.
-     *
-     * @param User   $signerClient
-     * @param string $emailSubject
-     * @param string $documentName
-     * @param string $documentContent
-     * @param string $documentExtension
-     * @param string $signatureOffsetX
-     * @param string $signatureOffsetY
-     * @param string $returnUrl
-     *
-     * @return array|null
      */
     public function createSignatureRequest(
         User $signerClient,
@@ -195,7 +188,7 @@ class ElectronicSignatureManager
             ;
 
             $host = $loginAccount->getBaseUrl();
-            $host = explode('/v2', $host);
+            $host = \explode('/v2', $host);
             $host = $host[0];
 
             $configuration = $this->createConfiguration($host);
@@ -240,8 +233,6 @@ class ElectronicSignatureManager
 
     /**
      * @throws ApiException
-     *
-     * @return LoginAccount|null
      */
     private function getLoginAccount(): ?LoginAccount
     {
@@ -252,7 +243,7 @@ class ElectronicSignatureManager
         $options           = new LoginOptions();
         $loginInformation  = $authenticationApi->login($options);
 
-        if ($loginInformation instanceof LoginInformation && count($loginInformation->getLoginAccounts()) > 0) {
+        if ($loginInformation instanceof LoginInformation && \count($loginInformation->getLoginAccounts()) > 0) {
             foreach ($loginInformation->getLoginAccounts() as $loginAccount) {
                 if ('true' === $loginAccount['is_default']) {
                     return $loginAccount;
@@ -263,11 +254,6 @@ class ElectronicSignatureManager
         return null;
     }
 
-    /**
-     * @param string $host
-     *
-     * @return Configuration
-     */
     private function createConfiguration(string $host): Configuration
     {
         $accessToken   = $this->createAccessToken();
@@ -281,15 +267,12 @@ class ElectronicSignatureManager
         return $configuration;
     }
 
-    /**
-     * @return string|null
-     */
     private function createAccessToken(): ?string
     {
         $session      = $this->getSession();
         $sessionToken = $session->get(self::SESSION_TOKEN_KEY);
 
-        if (null !== $sessionToken && $sessionToken['expiration'] > time()) {
+        if (null !== $sessionToken && $sessionToken['expiration'] > \time()) {
             return $sessionToken['token'];
         }
 
@@ -298,8 +281,8 @@ class ElectronicSignatureManager
         $token   = $builder
             ->issuedBy($this->integratorKey)
             ->withClaim('sub', $this->userId)
-            ->issuedAt(time())
-            ->expiresAt(time() + 3600)
+            ->issuedAt(\time())
+            ->expiresAt(\time() + 3600)
             ->permittedFor($this->accountHost)
             ->withClaim('scope', 'signature impersonation')
             ->getToken($signer, new Key($this->privateKey))
@@ -313,11 +296,11 @@ class ElectronicSignatureManager
                 ],
             ]);
 
-            $accessTokenResponse = json_decode($response->getContent());
+            $accessTokenResponse = \json_decode($response->getContent());
 
             $session->set(self::SESSION_TOKEN_KEY, [
                 'token'      => $accessTokenResponse->access_token,
-                'expiration' => time() + $accessTokenResponse->expires_in,
+                'expiration' => \time() + $accessTokenResponse->expires_in,
             ]);
 
             return $accessTokenResponse->access_token;
@@ -328,25 +311,16 @@ class ElectronicSignatureManager
         return null;
     }
 
-    /**
-     * @return string
-     */
     private function getOAuthEndpoint(): string
     {
         return 'https://' . $this->accountHost . '/oauth/token';
     }
 
-    /**
-     * @return string
-     */
     private function getLoginAccountEndpoint(): string
     {
         return 'https://' . $this->apiHost . '/restapi';
     }
 
-    /**
-     * @return SessionInterface|null
-     */
     private function getSession(): ?SessionInterface
     {
         $request = $this->requestStack->getCurrentRequest();

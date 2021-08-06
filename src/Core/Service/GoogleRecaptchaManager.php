@@ -18,21 +18,11 @@ class GoogleRecaptchaManager
         'forgottenPasswordRequest' => 0.5,
     ];
 
-    /** @var Client */
     private Client $client;
-    /** @var string */
     private string $secret;
-    /** @var LoggerInterface */
     private LoggerInterface $logger;
-    /** @var bool */
     private bool $debug;
 
-    /**
-     * @param Client          $client
-     * @param string          $secret
-     * @param LoggerInterface $logger
-     * @param bool            $debug
-     */
     public function __construct(Client $client, string $secret, LoggerInterface $logger, bool $debug = false)
     {
         $this->client = $client;
@@ -41,12 +31,6 @@ class GoogleRecaptchaManager
         $this->debug  = $debug;
     }
 
-    /**
-     * @param string|null $captchaResponse
-     * @param string|null $remoteIp
-     *
-     * @return GoogleRecaptchaResult
-     */
     public function getResult(?string $captchaResponse, ?string $remoteIp = null): GoogleRecaptchaResult
     {
         $result = new GoogleRecaptchaResult();
@@ -71,7 +55,7 @@ class GoogleRecaptchaManager
                 throw new \RuntimeException('The request failed');
             }
 
-            $content = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+            $content = \json_decode($content, true, 512, JSON_THROW_ON_ERROR);
             $success = $content['success'] ?? null;
 
             if (!$success) {
@@ -79,7 +63,7 @@ class GoogleRecaptchaManager
             }
 
             $action = $content['action'] ?? null;
-            $score =  $content['score'] ?? null;
+            $score  = $content['score']  ?? null;
 
             if (!$action) {
                 throw new \RuntimeException('The response do not contain mandatory "action" field');
@@ -92,12 +76,12 @@ class GoogleRecaptchaManager
             $threshold = static::ACTIONS_THRESHOLD[$action] ?? null;
 
             if (!$threshold) {
-                throw new \RuntimeException(sprintf('This action "%s" is unknown', $action));
+                throw new \RuntimeException(\sprintf('This action "%s" is unknown', $action));
             }
 
-            $result->score = $score;
+            $result->score  = $score;
             $result->action = $action;
-            $result->valid = $score >= static::ACTIONS_THRESHOLD[$action];
+            $result->valid  = $score >= static::ACTIONS_THRESHOLD[$action];
         } catch (\Exception $e) {
             $this->logger->warning('Unable to check Google reCAPTCHA - ' . $e->getMessage());
             $result->valid = true;
@@ -108,12 +92,6 @@ class GoogleRecaptchaManager
         return $result;
     }
 
-    /**
-     * @param string      $captchaResponse
-     * @param string|null $remoteIp
-     *
-     * @return ResponseInterface
-     */
     private function verify(string $captchaResponse, ?string $remoteIp = null): ResponseInterface
     {
         return $this->client->post('', [

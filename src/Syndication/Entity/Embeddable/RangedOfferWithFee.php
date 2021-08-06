@@ -25,10 +25,6 @@ class RangedOfferWithFee extends OfferWithFee
     private NullableMoney $maxMoney;
 
     /**
-     * @param NullableMoney|null $money
-     * @param string|null        $feeRate
-     * @param NullableMoney|null $maxMoney
-     *
      * @throws Exception
      */
     public function __construct(?NullableMoney $money = null, ?string $feeRate = null, ?NullableMoney $maxMoney = null)
@@ -38,9 +34,6 @@ class RangedOfferWithFee extends OfferWithFee
         parent::__construct($money, $feeRate);
     }
 
-    /**
-     * @return NullableMoney
-     */
     public function getMaxMoney(): NullableMoney
     {
         return $this->maxMoney;

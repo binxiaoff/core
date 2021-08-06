@@ -47,7 +47,7 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
     {
         yield self::PARTICIPANT_BASIC => [
             'company' => $this->getReference('company:basic'),
-            'quota'   => (string) (mt_rand() / mt_getrandmax()),
+            'quota'   => (string) (\mt_rand() / \mt_getrandmax()),
         ];
     }
 }

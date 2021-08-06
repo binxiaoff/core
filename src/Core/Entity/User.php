@@ -172,8 +172,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     private ?GoogleRecaptchaResult $recaptchaResult = null;
 
     /**
-     * Users constructor.
-     *
      * @throws Exception
      */
     public function __construct(string $email)
@@ -197,7 +195,7 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     }
 
     /**
-     **@throws Exception
+     * @throws Exception
      */
     public function setLastName(?string $lastName): User
     {
@@ -214,7 +212,7 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     }
 
     /**
-     **@throws Exception
+     * @throws Exception
      */
     public function setFirstName(?string $firstName): User
     {
@@ -255,7 +253,7 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     }
 
     /**
-     **@throws Exception
+     * @throws Exception
      */
     public function setPassword(?string $password): User
     {
@@ -326,9 +324,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $this->isInStatus([UserStatus::STATUS_INVITED]) || false === $this->isProfileCompleted();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isEqualTo(UserInterface $user): bool
     {
         if (false === $user instanceof self) {
@@ -350,25 +345,16 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSalt(): string
     {
         return ''; // Since we use the BCrypt password encoder, the salt will be ignored. The auto-generated one is always the best.
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUsername(): string
     {
         return $this->getEmail();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function eraseCredentials(): void
     {
         $this->plainPassword = null;

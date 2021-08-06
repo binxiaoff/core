@@ -12,9 +12,6 @@ class ProjectParticipationMemberCreatedListener
 {
     use MessageDispatcherTrait;
 
-    /**
-     * @param ProjectParticipationMember $projectParticipationMember
-     */
     public function postPersist(ProjectParticipationMember $projectParticipationMember): void
     {
         $this->messageBus->dispatch(new ProjectParticipationMemberCreated($projectParticipationMember));

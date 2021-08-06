@@ -12,9 +12,6 @@ trait NestedDenormalizationTrait
 {
     use DenormalizerAwareTrait;
 
-    /**
-     * @param $denormalized
-     */
     abstract protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array;
 
     /**

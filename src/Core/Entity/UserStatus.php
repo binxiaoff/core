@@ -65,52 +65,38 @@ class UserStatus implements StatusInterface
     private $id;
 
     /**
-     * @param User $users
-     * @param int  $status
-     *
      * @throws \Exception
      */
     public function __construct(User $users, int $status)
     {
-        if (!in_array($status, static::getPossibleStatuses(), true)) {
+        if (!\in_array($status, static::getPossibleStatuses(), true)) {
             throw new InvalidArgumentException(
-                sprintf('%s is not a possible status for %s', $status, __CLASS__)
+                \sprintf('%s is not a possible status for %s', $status, __CLASS__)
             );
         }
-        $this->status  = $status;
-        $this->user  = $users;
-        $this->added   = new DateTimeImmutable();
+        $this->status = $status;
+        $this->user   = $users;
+        $this->added  = new DateTimeImmutable();
     }
 
     /**
      * Get idUser.
-     *
-     * @return User
      */
     public function getUser(): User
     {
         return $this->user;
     }
 
-    /**
-     * @return int|null
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return int
-     */
     public function getStatus(): int
     {
         return $this->status;
     }
 
-    /**
-     * @return array
-     */
     public static function getPossibleStatuses(): array
     {
         return static::getConstants('STATUS_');

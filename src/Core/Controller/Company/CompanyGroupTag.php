@@ -10,8 +10,6 @@ use Unilend\Core\Entity\CompanyGroupTag as Entity;
 class CompanyGroupTag
 {
     /**
-     * @param Company $data
-     *
      * @return Entity[]|iterable
      */
     public function __invoke(Company $data): iterable

@@ -5,13 +5,18 @@ declare(strict_types=1);
 namespace Unilend\Core\Security;
 
 use Exception;
-use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\{Exception\AuthenticationException, User\UserInterface, User\UserProviderInterface};
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Unilend\Core\Entity\TemporaryToken;
-use Unilend\Core\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
+use Unilend\Core\Event\TemporaryToken\TemporaryTokenAuthenticationEvents;
+use Unilend\Core\Event\TemporaryToken\TemporaryTokenAuthenticationFailureEvent;
+use Unilend\Core\Event\TemporaryToken\TemporaryTokenAuthenticationSuccessEvent;
 use Unilend\Core\Exception\TemporaryToken\InvalidTemporaryTokenException;
 use Unilend\Core\Repository\TemporaryTokenRepository;
 
@@ -21,19 +26,12 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
 
     private EventDispatcherInterface $dispatcher;
 
-    /**
-     * @param TemporaryTokenRepository $temporaryTokenRepository
-     * @param EventDispatcherInterface $dispatcher
-     */
     public function __construct(TemporaryTokenRepository $temporaryTokenRepository, EventDispatcherInterface $dispatcher)
     {
         $this->temporaryTokenRepository = $temporaryTokenRepository;
         $this->dispatcher               = $dispatcher;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function start(Request $request, AuthenticationException $authException = null): Response
     {
         $exception = new InvalidTemporaryTokenException('Temporary token is not found.', 0, $authException);
@@ -43,24 +41,18 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
         return $event->getResponse();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supports(Request $request): bool
     {
         return $request->headers->has('X-AUTH-TOKEN');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCredentials(Request $request)
     {
         return $request->headers->get('X-AUTH-TOKEN');
     }
 
     /**
-     * {@inheritdoc}
+     * @param mixed $credentials
      *
      * @throws Exception
      */
@@ -86,17 +78,11 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
         return $temporaryToken->getUser();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function checkCredentials($credentials, UserInterface $user): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function onAuthenticationFailure(Request $request, AuthenticationException $authException): Response
     {
         $event = new TemporaryTokenAuthenticationFailureEvent($authException, $this->buildAuthenticationFailureResponse($authException->getMessage()));
@@ -106,7 +92,7 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
     }
 
     /**
-     * {@inheritdoc}
+     * @param mixed $providerKey
      *
      * @throws Exception
      */
@@ -116,19 +102,11 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
         $this->dispatcher->dispatch($event, TemporaryTokenAuthenticationEvents::AUTHENTICATION_SUCCESS);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsRememberMe(): bool
     {
         return false;
     }
 
-    /**
-     * @param string $message
-     *
-     * @return JsonResponse
-     */
     private function buildAuthenticationFailureResponse(string $message): JsonResponse
     {
         return new JsonResponse(['code' => JsonResponse::HTTP_UNAUTHORIZED, 'message' => $message], JsonResponse::HTTP_UNAUTHORIZED);

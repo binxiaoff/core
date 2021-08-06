@@ -62,7 +62,7 @@ class FileInput
      */
     public static function getFileTypes(): array
     {
-        return array_merge(...array_values(static::getFileTypesEntityMapping()));
+        return \array_merge(...\array_values(static::getFileTypesEntityMapping()));
     }
 
     /**
@@ -96,7 +96,7 @@ class FileInput
     private static function getFileTypesEntityMapping(): array
     {
         return [
-            Project::class              => array_merge(Project::getProjectFileTypes(), ProjectFile::getProjectFileTypes()),
+            Project::class              => \array_merge(Project::getProjectFileTypes(), ProjectFile::getProjectFileTypes()),
             ProjectParticipation::class => ProjectParticipation::getFileTypes(),
             Message::class              => Message::getFileTypes(),
             Term::class                 => Term::getFileTypes(),

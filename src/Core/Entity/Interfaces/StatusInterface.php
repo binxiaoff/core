@@ -11,14 +11,8 @@ use DateTimeImmutable;
  */
 interface StatusInterface
 {
-    /**
-     * @return int
-     */
     public function getStatus(): int;
 
-    /**
-     * @return DateTimeImmutable
-     */
     public function getAdded(): DateTimeImmutable;
 
     /**
@@ -31,8 +25,5 @@ interface StatusInterface
      */
     public function getAttachedObject();
 
-    /**
-     * @return int|null
-     */
     public function getId(): ?int;
 }

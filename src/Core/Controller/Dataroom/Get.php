@@ -55,7 +55,7 @@ class Get
 
         if (
             $return instanceof File
-            && in_array('application/octet-stream', $request->getAcceptableContentTypes(), true)
+            && \in_array('application/octet-stream', $request->getAcceptableContentTypes(), true)
         ) {
             $user = $this->security->getUser();
 

@@ -9,9 +9,6 @@ use Unilend\Core\Validator\Constraints\AbstractMoneyPreviousValueComparisonValid
 
 class MoneyGreaterThanOrEqualValidator extends AbstractMoneyPreviousValueComparisonValidator
 {
-    /**
-     * {@inheritDoc}
-     */
     protected function compareValues($value, $previousValue): bool
     {
         return -1 !== MoneyCalculator::compare($value, $previousValue);

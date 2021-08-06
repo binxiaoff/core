@@ -86,7 +86,7 @@ class TemporaryToken
      */
     private function __construct(User $users, string $expirationDelay)
     {
-        $this->token   = bin2hex(random_bytes(16));
+        $this->token   = \bin2hex(\random_bytes(16));
         $this->user    = $users;
         $this->added   = new DateTimeImmutable();
         $this->expires = (new DateTimeImmutable())->add(DateInterval::createFromDateString($expirationDelay));

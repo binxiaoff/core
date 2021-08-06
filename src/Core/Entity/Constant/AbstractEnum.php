@@ -11,7 +11,7 @@ abstract class AbstractEnum
     use ConstantsAwareTrait;
 
     /**
-     * Is private to forbid instantiation
+     * Is private to forbid instantiation.
      */
     final private function __construct()
     {

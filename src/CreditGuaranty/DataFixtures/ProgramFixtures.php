@@ -74,7 +74,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'funds'                => ['currency' => 'EUR', 'amount' => '300000000'],
                 'addedBy'              => StaffFixtures::CASA,
                 'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,
-                'cappedAt'             => random_int(10, 40) / 100,
+                'cappedAt'             => \random_int(10, 40) / 100,
                 'description'          => 'La description pour le programme en distribution',
                 'distributionDeadline' => new DateTimeImmutable(),
                 'distributionProcess'  => [

@@ -16,9 +16,6 @@ use Unilend\Syndication\Entity\NDASignature;
  */
 class NDASignatureRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $managerRegistry
-     */
     public function __construct(ManagerRegistry $managerRegistry)
     {
         parent::__construct($managerRegistry, NDASignature::class);

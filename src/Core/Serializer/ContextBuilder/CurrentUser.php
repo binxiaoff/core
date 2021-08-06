@@ -15,18 +15,12 @@ use Unilend\Core\Repository\UserRepository;
 
 class CurrentUser implements SerializerContextBuilderInterface
 {
-    /**  @var SerializerContextBuilderInterface */
     private SerializerContextBuilderInterface $decorated;
-    /** @var Security */
+
     private Security $security;
-    /** @var UserRepository */
+
     private UserRepository $userRepository;
 
-    /**
-     * @param SerializerContextBuilderInterface $decorated
-     * @param Security                          $security
-     * @param UserRepository                    $userRepository
-     */
     public function __construct(SerializerContextBuilderInterface $decorated, Security $security, UserRepository $userRepository)
     {
         $this->decorated      = $decorated;
@@ -36,12 +30,6 @@ class CurrentUser implements SerializerContextBuilderInterface
 
     /**
      * Creates a serialization context from a Request.
-     *
-     * @param Request    $request
-     * @param bool       $normalization
-     * @param array|null $extractedAttributes
-     *
-     * @return array
      */
     public function createFromRequest(Request $request, bool $normalization, array $extractedAttributes = null): array
     {

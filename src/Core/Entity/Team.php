@@ -86,9 +86,7 @@ class Team
     private Collection $incomingEdges;
 
     /**
-     * Constructor.
-     *
-     * Private to ensure correct object creation via static method
+     * Private to ensure correct object creation via static method.
      */
     private function __construct()
     {
@@ -184,7 +182,7 @@ class Team
             return $this;
         }
 
-        $depth = max($this->incomingEdges->map(fn (TeamEdge $edge) => $edge->getDepth())->toArray());
+        $depth = \max($this->incomingEdges->map(fn (TeamEdge $edge) => $edge->getDepth())->toArray());
 
         return $this->incomingEdges[$depth]->getAncestor();
     }
@@ -194,7 +192,7 @@ class Team
      */
     public function isRoot()
     {
-        return 0 === count($this->incomingEdges);
+        return 0 === \count($this->incomingEdges);
     }
 
     public function setName(string $name): Team

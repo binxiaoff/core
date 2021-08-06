@@ -20,9 +20,6 @@ use Unilend\Core\Controller\Dataroom\Post;
  */
 class DataroomListener implements EventSubscriberInterface
 {
-    /**
-     * {@inheritDoc}
-     */
     public static function getSubscribedEvents()
     {
         return [
@@ -42,9 +39,9 @@ class DataroomListener implements EventSubscriberInterface
         $request   = $event->getRequest();
         $index     = null;
 
-        for ($argument = reset($arguments); null === $index && $argument = current($arguments); next($arguments)) {
+        for ($argument = \reset($arguments); null === $index && $argument = \current($arguments); \next($arguments)) {
             if (\in_array(\get_class($argument), [Project::class, Participation::class, ParticipationPool::class, Agent::class])) {
-                $index = key($arguments);
+                $index = \key($arguments);
             }
         }
 

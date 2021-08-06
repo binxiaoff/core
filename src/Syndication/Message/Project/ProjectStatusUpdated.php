@@ -17,11 +17,6 @@ class ProjectStatusUpdated implements AsyncMessageInterface
     /** @var int */
     private $newStatus;
 
-    /**
-     * @param Project       $project
-     * @param ProjectStatus $oldStatus
-     * @param ProjectStatus $newStatus
-     */
     public function __construct(Project $project, ProjectStatus $oldStatus, ProjectStatus $newStatus)
     {
         $this->projectId = $project->getId();
@@ -29,25 +24,16 @@ class ProjectStatusUpdated implements AsyncMessageInterface
         $this->newStatus = $newStatus->getStatus();
     }
 
-    /**
-     * @return int
-     */
     public function getProjectId(): int
     {
         return $this->projectId;
     }
 
-    /**
-     * @return int
-     */
     public function getOldStatus(): int
     {
         return $this->oldStatus;
     }
 
-    /**
-     * @return int
-     */
     public function getNewStatus(): int
     {
         return $this->newStatus;

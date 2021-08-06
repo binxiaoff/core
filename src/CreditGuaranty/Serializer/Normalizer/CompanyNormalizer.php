@@ -24,17 +24,11 @@ class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
         $this->staffPermissionRepository = $staffPermissionRepository;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         return $data instanceof Company && !isset($context[static::ALREADY_CALLED]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $context[static::ALREADY_CALLED] = true;
@@ -43,7 +37,7 @@ class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
         $data = $this->normalizer->normalize($object, $format, $context);
 
         if (false === isset($data['creditGuarantyAdminStaff'])) {
-            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['staff:read', 'user:read']);
+            $context[AbstractNormalizer::GROUPS] = \array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['staff:read', 'user:read']);
             $data['creditGuarantyAdminStaff']    = [];
             if ($object instanceof Company) {
                 $staffPermissions = $this->staffPermissionRepository->findParticipationAdmins($object);

@@ -15,37 +15,22 @@ use Unilend\Core\Entity\User;
 
 class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
-    /**
-     * @var NormalizerInterface
-     */
-    private NormalizerInterface $normalizer;
-
     private const ALREADY_CALLED = 'COMPANY_NORMALIZER_ALREADY_CALLED';
 
-    /** @var Security */
+    private NormalizerInterface $normalizer;
+
     private Security $security;
 
-    /**
-     * @param Security $security
-     */
     public function __construct(Security $security)
     {
         $this->security = $security;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
         return $data instanceof Company && !isset($context[static::ALREADY_CALLED]);
     }
 
-    /**
-     * @param NormalizerInterface $normalizer
-     *
-     * @return CompanyNormalizer
-     */
     public function setNormalizer(NormalizerInterface $normalizer): CompanyNormalizer
     {
         $this->normalizer = $normalizer;
@@ -53,9 +38,6 @@ class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $context[static::ALREADY_CALLED] = true;
@@ -67,7 +49,7 @@ class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
         $currentCompany = $currentStaff instanceof Staff ? $currentStaff->getCompany() : null;
 
         if ($currentCompany === $object) {
-            $context[AbstractNormalizer::GROUPS] = $context[AbstractNormalizer::GROUPS] ?? [];
+            $context[AbstractNormalizer::GROUPS]   = $context[AbstractNormalizer::GROUPS] ?? [];
             $context[AbstractNormalizer::GROUPS][] = Company::SERIALIZER_GROUP_COMPANY_STAFF_READ;
 
             if ($currentStaff->isManager()) {

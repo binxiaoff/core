@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Service\File;
 
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Security\Core\{Exception\AccessDeniedException, Security};
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\File;
-use Unilend\Syndication\Entity\{Project, ProjectFile};
-use Unilend\Syndication\Repository\{ProjectFileRepository, ProjectRepository};
-use Unilend\Syndication\Security\Voter\{ProjectFileVoter, ProjectVoter};
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectFile;
+use Unilend\Syndication\Repository\ProjectFileRepository;
+use Unilend\Syndication\Repository\ProjectRepository;
+use Unilend\Syndication\Security\Voter\ProjectFileVoter;
+use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class FileDeleteManager
 {
@@ -21,11 +26,6 @@ class FileDeleteManager
     /** @var Security */
     private $security;
 
-    /**
-     * @param ProjectRepository     $projectRepository
-     * @param ProjectFileRepository $projectFileRepository
-     * @param Security              $security
-     */
     public function __construct(ProjectRepository $projectRepository, ProjectFileRepository $projectFileRepository, Security $security)
     {
         $this->projectRepository     = $projectRepository;
@@ -34,21 +34,18 @@ class FileDeleteManager
     }
 
     /**
-     * @param File   $file
-     * @param string $type
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
     public function delete(File $file, string $type): void
     {
-        if (in_array($type, ProjectFile::getProjectFileTypes(), true)) {
+        if (\in_array($type, ProjectFile::getProjectFileTypes(), true)) {
             $this->deleteForProjectFile($file, $type);
 
             return;
         }
 
-        if (in_array($type, Project::getProjectFileTypes(), true)) {
+        if (\in_array($type, Project::getProjectFileTypes(), true)) {
             $this->deleteForProject($file, $type);
 
             return;
@@ -58,24 +55,24 @@ class FileDeleteManager
     }
 
     /**
-     * @param File   $file
-     * @param string $type
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
     private function deleteForProject(File $file, string $type): void
     {
         $field = null;
+
         switch ($type) {
             case Project::PROJECT_FILE_TYPE_DESCRIPTION:
                 $field = 'descriptionDocument';
 
                 break;
+
             case Project::PROJECT_FILE_TYPE_NDA:
                 $field = 'nda';
 
                 break;
+
             default:
                 $this->throwException($file, $type);
         }
@@ -90,16 +87,13 @@ class FileDeleteManager
             throw new AccessDeniedException();
         }
 
-        $setter = 'set' . ucfirst($field);
+        $setter = 'set' . \ucfirst($field);
         $project->{$setter}(null);
 
         $this->projectRepository->flush();
     }
 
     /**
-     * @param File   $file
-     * @param string $type
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -118,12 +112,8 @@ class FileDeleteManager
         $this->projectFileRepository->remove($projectFile);
     }
 
-    /**
-     * @param File   $file
-     * @param string $type
-     */
     private function throwException(File $file, string $type): void
     {
-        throw new NotFoundHttpException(sprintf('Unable to delete the file "%s" of type "%s"', $file->getPublicId(), $type));
+        throw new NotFoundHttpException(\sprintf('Unable to delete the file "%s" of type "%s"', $file->getPublicId(), $type));
     }
 }

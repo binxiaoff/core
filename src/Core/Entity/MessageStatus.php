@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiFilter, ApiResource};
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
-use Symfony\Component\Serializer\Annotation\{Groups, MaxDepth};
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
@@ -20,19 +22,19 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ORM\HasLifecycleCallbacks
  *
  * @ApiResource(
- *  attributes={"pagination_enabled": false},
- *  normalizationContext={"groups": {
- *     "messageStatus:read",
- *     "message:read"
- *  }},
- *  itemOperations={
- *      "get": {
- *          "security": "is_granted('view', object)"
+ *     attributes={"pagination_enabled": false},
+ *     normalizationContext={"groups": {
+ *         "messageStatus:read",
+ *         "message:read"
+ *     }},
+ *     itemOperations={
+ *         "get": {
+ *             "security": "is_granted('view', object)"
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "get"
  *     }
- *  },
- *  collectionOperations={
- *      "get"
- *  }
  * )
  * @ApiFilter(SearchFilter::class, properties={"status": "exact"})
  */
@@ -42,11 +44,9 @@ class MessageStatus
     use ConstantsAwareTrait;
 
     public const STATUS_UNREAD = 0;
-    public const STATUS_READ = 1;
+    public const STATUS_READ   = 1;
 
     /**
-     * @var int
-     *
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="IDENTITY")
@@ -54,8 +54,6 @@ class MessageStatus
     private int $id;
 
     /**
-     * @var int
-     *
      * @ORM\Column(type="smallint")
      *
      * @Assert\Choice(callback="getPossibleStatuses")
@@ -75,11 +73,8 @@ class MessageStatus
     private Message $message;
 
     /**
-     * @var Staff
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff")
      * @ORM\JoinColumn(name="id_recipient", nullable=false)
-     *
      *
      * @Groups({"messageStatus:read"})
      */
@@ -92,12 +87,6 @@ class MessageStatus
      */
     private $unreadNotified;
 
-    /**
-     * MessageStatus constructor.
-     *
-     * @param Message $message
-     * @param Staff   $recipient
-     */
     public function __construct(Message $message, Staff $recipient)
     {
         $this->message   = $message;
@@ -106,24 +95,19 @@ class MessageStatus
         $this->setStatus(self::STATUS_UNREAD);
     }
 
-    /**
-     * @return int
-     */
     public function getId(): int
     {
         return $this->id;
     }
 
     /**
-     * @param int $status
-     *
      * @return $this
      */
     public function setStatus(int $status): MessageStatus
     {
-        if (!in_array($status, self::getPossibleStatuses(), true)) {
+        if (!\in_array($status, self::getPossibleStatuses(), true)) {
             throw new InvalidArgumentException(
-                sprintf('%s is not a possible status for %s', $status, __CLASS__)
+                \sprintf('%s is not a possible status for %s', $status, __CLASS__)
             );
         }
         $this->status = $status;
@@ -131,44 +115,26 @@ class MessageStatus
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getStatus(): int
     {
         return $this->status;
     }
 
-    /**
-     * @return array
-     */
     public static function getPossibleStatuses(): array
     {
         return static::getConstants('STATUS_');
     }
 
-    /**
-     * @return Message
-     */
     public function getMessage(): Message
     {
         return $this->message;
     }
 
-
-    /**
-     * @return Staff
-     */
     public function getRecipient(): Staff
     {
         return $this->recipient;
     }
 
-    /**
-     * @param DateTimeImmutable|null $unreadNotified
-     *
-     * @return self
-     */
     public function setUnreadNotified(?DateTimeImmutable $unreadNotified): self
     {
         $this->unreadNotified = $unreadNotified;

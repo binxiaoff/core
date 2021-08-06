@@ -46,7 +46,7 @@ class ProgramBorrowerTypeAllocationFixtures extends AbstractFixtures implements 
             $programBorrowerTypeAllocation = new ProgramBorrowerTypeAllocation(
                 $programBorrowerTypeConfiguration->getProgramEligibility()->getProgram(),
                 $programBorrowerTypeConfiguration->getProgramChoiceOption(),
-                (string) (random_int(0, 100) / 100)
+                (string) (\random_int(0, 100) / 100)
             );
             $manager->persist($programBorrowerTypeAllocation);
         }

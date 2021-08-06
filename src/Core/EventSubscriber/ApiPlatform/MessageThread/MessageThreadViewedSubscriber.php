@@ -16,35 +16,20 @@ use Unilend\Core\Repository\MessageStatusRepository;
 
 class MessageThreadViewedSubscriber implements EventSubscriberInterface
 {
-    /** @var Security */
     private Security $security;
-
-    /** @var MessageStatusRepository */
     private MessageStatusRepository $messageStatusRepository;
 
-    /**
-     * MessageThreadViewedSubscriber constructor.
-     *
-     * @param Security                $security
-     * @param MessageStatusRepository $messageStatusRepository
-     */
     public function __construct(Security $security, MessageStatusRepository $messageStatusRepository)
     {
         $this->security                = $security;
         $this->messageStatusRepository = $messageStatusRepository;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [KernelEvents::REQUEST => ['markAsViewedMessageThreadMessageStatus', EventPriorities::POST_READ]];
     }
 
-    /**
-     * @param RequestEvent $event
-     */
     public function markAsViewedMessageThreadMessageStatus(RequestEvent $event): void
     {
         $request = $event->getRequest();

@@ -10,9 +10,7 @@ use Unilend\Core\Message\AsyncMessageInterface;
 class ProjectMemberUpdated implements AsyncMessageInterface
 {
     private int $projectMemberId;
-
     private array $changeSet;
-
     private string $projectMemberClass;
 
     public function __construct(AbstractProjectMember $projectMember, array $changeSet = [])

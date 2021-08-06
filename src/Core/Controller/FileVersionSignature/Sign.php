@@ -32,7 +32,7 @@ class Sign
     {
         // todo: If the business requires, we can have a option to "force" the sending of signature request even the status is not valid.
         if ($data->getStatus() > FileVersionSignature::STATUS_REQUESTED) {
-            throw new \InvalidArgumentException(sprintf('The signature (id: %s) has already been treated', $data->getPublicId()));
+            throw new \InvalidArgumentException(\sprintf('The signature (id: %s) has already been treated', $data->getPublicId()));
         }
 
         return $this->requestSender->requestSignature($data);

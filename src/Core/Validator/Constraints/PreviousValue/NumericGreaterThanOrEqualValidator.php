@@ -8,9 +8,6 @@ use Unilend\Core\Validator\Constraints\AbstractScalarPreviousValueComparisonVali
 
 class NumericGreaterThanOrEqualValidator extends AbstractScalarPreviousValueComparisonValidator
 {
-    /**
-     * {@inheritDoc}
-     */
     protected function compareValues($value, $previousValue): bool
     {
         return $value >= $previousValue;

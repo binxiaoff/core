@@ -15,9 +15,6 @@ class SkipNullValue implements SerializerContextBuilderInterface
      */
     private $decorated;
 
-    /**
-     * @param SerializerContextBuilderInterface $decorated
-     */
     public function __construct(SerializerContextBuilderInterface $decorated)
     {
         $this->decorated = $decorated;
@@ -25,12 +22,6 @@ class SkipNullValue implements SerializerContextBuilderInterface
 
     /**
      * Creates a serialization context from a Request.
-     *
-     * @param Request    $request
-     * @param bool       $normalization
-     * @param array|null $extractedAttributes
-     *
-     * @return array
      */
     public function createFromRequest(Request $request, bool $normalization, array $extractedAttributes = null): array
     {

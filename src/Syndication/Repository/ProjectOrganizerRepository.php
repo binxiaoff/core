@@ -16,9 +16,6 @@ use Unilend\Syndication\Entity\ProjectOrganizer;
  */
 class ProjectOrganizerRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ProjectOrganizer::class);

@@ -53,7 +53,7 @@ class DraftProjectFixtures extends AbstractProjectFixtures
 
         $borrower = $this->createTestBorrower($project);
 
-        array_map(
+        \array_map(
             [$manager, 'persist'],
             [
                 $project,

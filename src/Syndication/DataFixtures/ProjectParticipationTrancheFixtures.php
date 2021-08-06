@@ -7,7 +7,8 @@ namespace Unilend\Syndication\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Unilend\Core\DataFixtures\{AbstractFixtures, StaffFixtures};
+use Unilend\Core\DataFixtures\AbstractFixtures;
+use Unilend\Core\DataFixtures\StaffFixtures;
 use Unilend\Core\Entity\Staff;
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectParticipationStatus;
@@ -20,8 +21,6 @@ class ProjectParticipationTrancheFixtures extends AbstractFixtures implements De
     use OfferFixtureTrait;
 
     /**
-     * @param ObjectManager $manager
-     *
      * @throws Exception
      */
     public function load(ObjectManager $manager): void
@@ -37,15 +36,15 @@ class ProjectParticipationTrancheFixtures extends AbstractFixtures implements De
                 foreach ($project->getProjectParticipations() as $participation) {
                     foreach ($project->getTranches() as $tranche) {
                         if (
-                            $tranche->isSyndicated() ||
-                            (
-                                $tranche->getUnsyndicatedFunderType() === Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER &&
-                                $participation->getParticipant() === $project->getSubmitterCompany()
+                            $tranche->isSyndicated()
+                            || (
+                                Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER === $tranche->getUnsyndicatedFunderType()
+                                && $participation->getParticipant() === $project->getSubmitterCompany()
                             )
                         ) {
                             $participationTranche = (new ProjectParticipationTranche($participation, $tranche, $staff));
 
-                            $repliedStatuses =  [ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED, ProjectParticipationStatus::STATUS_COMMITTEE_PENDED];
+                            $repliedStatuses = [ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED, ProjectParticipationStatus::STATUS_COMMITTEE_PENDED];
                             if (\in_array($participation->getCurrentStatus()->getStatus(), $repliedStatuses, true)) {
                                 $participationTranche->setInvitationReply($this->createOffer(1000000));
                                 if ($project === $this->getReference(ProjectFixtures::PROJECT_ALLOCATION)) {

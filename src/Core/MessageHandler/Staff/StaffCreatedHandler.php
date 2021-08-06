@@ -6,7 +6,9 @@ namespace Unilend\Core\MessageHandler\Staff;
 
 use Exception;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use Unilend\Core\Message\Staff\StaffCreated;
 use Unilend\Core\Repository\StaffRepository;
 use Unilend\Core\Service\Staff\StaffNotifier;
@@ -18,10 +20,6 @@ class StaffCreatedHandler implements MessageHandlerInterface
     /** @var StaffNotifier */
     private $notifier;
 
-    /**
-     * @param StaffRepository $staffRepository
-     * @param StaffNotifier   $notifier
-     */
     public function __construct(StaffRepository $staffRepository, StaffNotifier $notifier)
     {
         $this->staffRepository = $staffRepository;
@@ -29,8 +27,6 @@ class StaffCreatedHandler implements MessageHandlerInterface
     }
 
     /**
-     * @param StaffCreated $staffCreated
-     *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError

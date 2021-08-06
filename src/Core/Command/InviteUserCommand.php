@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Unilend\Core\Command;
 
 use Exception;
-use Symfony\Component\Console\{Command\Command, Input\InputArgument, Input\InputInterface, Output\OutputInterface};
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Core\Entity\User;
 use Unilend\Core\Repository\UserRepository;
 use Unilend\Core\Service\Staff\StaffNotifier;
@@ -19,10 +22,6 @@ class InviteUserCommand extends Command
     /** @var StaffNotifier */
     private $staffNotifier;
 
-    /**
-     * @param UserRepository $userRepository
-     * @param StaffNotifier  $staffNotifier
-     */
     public function __construct(UserRepository $userRepository, StaffNotifier $staffNotifier)
     {
         parent::__construct();
@@ -31,9 +30,6 @@ class InviteUserCommand extends Command
         $this->staffNotifier  = $staffNotifier;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function configure(): void
     {
         $this->setDescription('This command notify a list of users to initialise their accounts.');
@@ -41,8 +37,6 @@ class InviteUserCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): ?int
@@ -50,9 +44,9 @@ class InviteUserCommand extends Command
         $userIds = $input->getArgument('users');
 
         foreach ($userIds as $userId) {
-            $user = $this->userRepository->find($userId);
-            $staff  = $user instanceof User ? $user->getStaff() : [];
-            if (0 === count($staff)) {
+            $user  = $this->userRepository->find($userId);
+            $staff = $user instanceof User ? $user->getStaff() : [];
+            if (0 === \count($staff)) {
                 continue;
             }
             $currentStaff = $staff->current();

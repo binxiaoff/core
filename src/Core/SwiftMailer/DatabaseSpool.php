@@ -22,30 +22,19 @@ class DatabaseSpool extends Swift_ConfigurableSpool
         $this->mailQueueRepository = $mailQueueRepository;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function start()
     {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function stop()
     {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function isStarted()
     {
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -73,7 +62,7 @@ class DatabaseSpool extends Swift_ConfigurableSpool
         $limit        = $limit > 0 ? $limit : null;
         $pendingMails = $this->mailQueueRepository->getPendingMails($limit);
 
-        if (!count($pendingMails)) {
+        if (!\count($pendingMails)) {
             return 0;
         }
 

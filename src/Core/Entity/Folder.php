@@ -93,16 +93,16 @@ class Folder extends AbstractFolder
         $this->drive = $drive;
 
         if (null === $this->drive->getFolder($parentPath)) {
-            throw new InvalidArgumentException(sprintf('Given path %s is not a folder in drive', $parentPath));
+            throw new InvalidArgumentException(\sprintf('Given path %s is not a folder in drive', $parentPath));
         }
 
         if ($drive->exist(('/' === $parentPath ? '' : $parentPath) . DIRECTORY_SEPARATOR . $name)) {
             throw new FolderAlreadyExistsException();
         }
 
-        $this->name     = trim($name);
+        $this->name     = \trim($name);
         $this->path     = ('/' === $parentPath ? '' : $parentPath) . DIRECTORY_SEPARATOR . $this->name;
-        $this->pathHash = hash('crc32b', $this->path);
+        $this->pathHash = \hash('crc32b', $this->path);
         $this->added    = new DateTimeImmutable();
         $this->setPublicId();
     }
@@ -181,8 +181,8 @@ class Folder extends AbstractFolder
             throw new \InvalidArgumentException('The depth parameter must strictly be above 0');
         }
 
-        return $this->drive->getFolders(count(explode(DIRECTORY_SEPARATOR, $this->path)) + (int) $depth - 1)
-            ->filter(fn (Folder $folder) => 0 === mb_strpos($folder->getPath(), $this->path) && $this->path !== $folder->getPath())
+        return $this->drive->getFolders(\count(\explode(DIRECTORY_SEPARATOR, $this->path)) + (int) $depth - 1)
+            ->filter(fn (Folder $folder) => 0 === \mb_strpos($folder->getPath(), $this->path) && $this->path !== $folder->getPath())
         ;
     }
 
@@ -206,7 +206,7 @@ class Folder extends AbstractFolder
             $test = $test->getPath();
         }
 
-        if (str_starts_with(DIRECTORY_SEPARATOR, $test) && false === str_starts_with($test, $this->path)) {
+        if (\str_starts_with(DIRECTORY_SEPARATOR, $test) && false === \str_starts_with($test, $this->path)) {
             throw new \LogicException();
         }
     }
@@ -222,7 +222,7 @@ class Folder extends AbstractFolder
             $path = $path->getPath();
         }
 
-        $relativePath = 0 === mb_strpos($path, DIRECTORY_SEPARATOR) ? mb_substr($path, mb_strlen($this->path) + 1) : $path;
+        $relativePath = 0 === \mb_strpos($path, DIRECTORY_SEPARATOR) ? \mb_substr($path, \mb_strlen($this->path) + 1) : $path;
 
         return $this->path . DIRECTORY_SEPARATOR . $relativePath;
     }

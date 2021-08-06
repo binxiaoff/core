@@ -8,9 +8,6 @@ use Unilend\Core\Validator\Constraints\AbstractMoneyPreviousValueComparisonValid
 
 class MoneyNotAssignableValidator extends AbstractMoneyPreviousValueComparisonValidator
 {
-    /**
-     * {@inheritDoc}
-     */
     protected function compareValues($value, $previousValue): bool
     {
         return null === $value->getAmount() || null !== $previousValue->getAmount();

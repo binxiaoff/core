@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Syndication\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -25,8 +27,6 @@ class InterestReplyVersion
     private int $id;
 
     /**
-     * @var Offer
-     *
      * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\Offer")
      *
      * @Assert\Valid
@@ -36,17 +36,11 @@ class InterestReplyVersion
     private Offer $interestReply;
 
     /**
-     * @var ProjectParticipation
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation", inversedBy="interestReplyVersions")
      * @ORM\JoinColumn(name="id_project_participation", nullable=false)
      */
     private ProjectParticipation $projectParticipation;
 
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Staff                $addedBy
-     */
     public function __construct(ProjectParticipation $projectParticipation, Staff $addedBy)
     {
         $this->projectParticipation = $projectParticipation;
@@ -62,17 +56,11 @@ class InterestReplyVersion
         return $this->id;
     }
 
-    /**
-     * @return Offer
-     */
     public function getInterestReply(): Offer
     {
         return $this->interestReply;
     }
 
-    /**
-     * @return ProjectParticipation
-     */
     public function getProjectParticipation(): ProjectParticipation
     {
         return $this->projectParticipation;

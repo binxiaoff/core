@@ -6,16 +6,15 @@ namespace Unilend\Syndication\Serializer\Normalizer\ProjectParticipationMember;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
-    ContextAwareDenormalizerInterface,
-    DenormalizerAwareInterface,
-    DenormalizerAwareTrait,
-    ObjectToPopulateTrait};
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\ProjectParticipation;
 use Unilend\Syndication\Entity\ProjectParticipationMember;
-use Unilend\Syndication\Security\Voter\ProjectParticipationMemberVoter;
 
 class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -24,32 +23,21 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
 
     private const ALREADY_CALLED = 'PROJECT_PARTICIPATION_MEMBER_ATTRIBUTE_DENORMALIZER_ALREADY_CALLED';
 
-    /** @var Security */
     private Security $security;
-    /** @var IriConverterInterface */
+
     private IriConverterInterface $iriConverter;
 
-    /**
-     * @param Security              $security
-     * @param IriConverterInterface $iriConverter
-     */
     public function __construct(Security $security, IriConverterInterface $iriConverter)
     {
-        $this->security = $security;
+        $this->security     = $security;
         $this->iriConverter = $iriConverter;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
     {
         return !isset($context[self::ALREADY_CALLED]) && ProjectParticipationMember::class === $type;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
         $context[self::ALREADY_CALLED] = true;
@@ -76,10 +64,10 @@ class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizer
 
         // permit to create staff from email (CALS-2023)
         if (null === $projectParticipationMember) {
-            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['role:write', 'staff:create', 'user:create']);
+            $context[AbstractNormalizer::GROUPS] = \array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['role:write', 'staff:create', 'user:create']);
         }
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationMember::class]['addedBy'] = $user->getCurrentStaff();
-        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['team'] = $participation->getParticipant()->getRootTeam();
+        $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][Staff::class]['team']                         = $participation->getParticipant()->getRootTeam();
 
         return $this->denormalizer->denormalize($data, $type, $format, $context);
     }

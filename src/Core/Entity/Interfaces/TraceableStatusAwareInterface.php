@@ -19,8 +19,6 @@ interface TraceableStatusAwareInterface
     public function getCurrentStatus();
 
     /**
-     * @param StatusInterface $status
-     *
      * @return static
      */
     public function setCurrentStatus(StatusInterface $status);

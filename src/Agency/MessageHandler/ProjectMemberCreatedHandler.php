@@ -31,7 +31,7 @@ class ProjectMemberCreatedHandler implements MessageHandlerInterface
         $manager = $this->registry->getManagerForClass($projectMemberCreated->getProjectMemberClass());
 
         if (null === $manager) {
-            throw new InvalidArgumentException(sprintf('Missing manager for %s', $projectMemberCreated->getProjectMemberClass()));
+            throw new InvalidArgumentException(\sprintf('Missing manager for %s', $projectMemberCreated->getProjectMemberClass()));
         }
 
         /** @var AbstractProjectMember $projectMember */
@@ -39,7 +39,7 @@ class ProjectMemberCreatedHandler implements MessageHandlerInterface
 
         if (null === $projectMember) {
             throw new InvalidArgumentException(
-                sprintf("Project member of class %s with id %d doesn't exist", $projectMemberCreated->getProjectMemberClass(), $projectMemberCreated->getProjectMemberId())
+                \sprintf("Project member of class %s with id %d doesn't exist", $projectMemberCreated->getProjectMemberClass(), $projectMemberCreated->getProjectMemberId())
             );
         }
 

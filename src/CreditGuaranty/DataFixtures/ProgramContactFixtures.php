@@ -39,10 +39,10 @@ class ProgramContactFixtures extends AbstractFixtures implements DependentFixtur
     private function buildProgramContacts(Program $program, ObjectManager $manager): void
     {
         $workingScope = ['Aide à la réservation', 'Eligibilité et process', 'Gestion des recouvrements et des appels en garantie', 'Reporting', 'Bagage commercial'];
-        for ($i = 1; $i <= random_int(1, 5); ++$i) {
+        for ($i = 1; $i <= \random_int(1, 5); ++$i) {
             $firstName = $this->faker->firstName;
             $lastName  = $this->faker->lastName;
-            $email     = transliterator_transliterate(
+            $email     = \transliterator_transliterate(
                 'NFKC; [:Nonspacing Mark:] Remove; NFKC; Any-Latin; Latin-ASCII',
                 $firstName . '.' . $lastName . '@' . $this->faker->domainName
             );
@@ -50,8 +50,8 @@ class ProgramContactFixtures extends AbstractFixtures implements DependentFixtur
                 $program,
                 $firstName,
                 $lastName,
-                $workingScope[array_rand($workingScope)],
-                mb_strtolower($email),
+                $workingScope[\array_rand($workingScope)],
+                \mb_strtolower($email),
                 $this->faker->phoneNumber
             );
             $manager->persist($programContact);

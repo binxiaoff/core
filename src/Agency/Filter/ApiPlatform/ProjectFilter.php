@@ -38,9 +38,6 @@ class ProjectFilter extends AbstractContextAwareFilter
         $this->security = $security;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getDescription(string $resourceClass): array
     {
         if (false === (Project::class === $resourceClass)) {
@@ -69,9 +66,6 @@ class ProjectFilter extends AbstractContextAwareFilter
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function filterProperty(
         string $property,
         $value,
@@ -109,7 +103,7 @@ class ProjectFilter extends AbstractContextAwareFilter
                 $conditions[] = $this->includeAgent($queryBuilder);
             }
 
-            $conditions = array_filter($conditions);
+            $conditions = \array_filter($conditions);
 
             if ($conditions) {
                 $queryBuilder->andWhere($queryBuilder->expr()->orX(...$conditions));
@@ -155,7 +149,7 @@ class ProjectFilter extends AbstractContextAwareFilter
             ->leftJoin($participationPoolAlias . '.participations', $participationAlias)
             ->leftJoin($participationAlias . '.members', $participationMemberAlias)
             ->setParameter($companyParameterName, $staff->getCompany())
-            ->setParameter($usersParameterName, iterator_to_array($staff->getManagedUsers()))
+            ->setParameter($usersParameterName, \iterator_to_array($staff->getManagedUsers()))
         ;
 
         return "{$participationAlias}.participant = :{$companyParameterName} and {$participationMemberAlias}.user IN (:{$usersParameterName})";
@@ -180,7 +174,7 @@ class ProjectFilter extends AbstractContextAwareFilter
             ->leftJoin("{$rootAlias}.agent", $agentAlias)
             ->leftJoin("{$agentAlias}.members", $agentMemberAlias)
             ->setParameter($companyParameterName, $staff->getCompany())
-            ->setParameter($usersParameterName, iterator_to_array($staff->getManagedUsers()))
+            ->setParameter($usersParameterName, \iterator_to_array($staff->getManagedUsers()))
         ;
 
         return "{$agentAlias}.company = :{$companyParameterName} and {$agentMemberAlias}.user IN (:{$usersParameterName})";

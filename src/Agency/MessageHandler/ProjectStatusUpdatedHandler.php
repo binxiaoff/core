@@ -15,7 +15,6 @@ use Unilend\Agency\Repository\ProjectRepository;
 class ProjectStatusUpdatedHandler implements MessageHandlerInterface
 {
     private ProjectRepository $projectRepository;
-
     private ProjectMemberNotifier $projectMemberNotifier;
 
     public function __construct(
@@ -34,7 +33,7 @@ class ProjectStatusUpdatedHandler implements MessageHandlerInterface
         $project = $this->projectRepository->find($projectStatusUpdated->getProjectId());
 
         if (null === $project) {
-            throw new InvalidArgumentException(sprintf("Project with id %d doesn't exist", $projectStatusUpdated->getProjectId()));
+            throw new InvalidArgumentException(\sprintf("Project with id %d doesn't exist", $projectStatusUpdated->getProjectId()));
         }
 
         if (Project::STATUS_DRAFT === $projectStatusUpdated->getPreviousStatus() && Project::STATUS_PUBLISHED === $projectStatusUpdated->getNextStatus()) {

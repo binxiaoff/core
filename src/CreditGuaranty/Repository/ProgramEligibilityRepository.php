@@ -45,6 +45,6 @@ class ProgramEligibilityRepository extends ServiceEntityRepository
             ->getResult()
         ;
 
-        return array_column($categories, 'category');
+        return \array_column($categories, 'category');
     }
 }

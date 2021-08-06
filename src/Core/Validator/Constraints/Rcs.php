@@ -20,9 +20,6 @@ class Rcs extends Sequentially
      */
     public string $message = 'Invalid Rcs.';
 
-    /**
-     * {@inheritDoc}
-     */
     public function __construct(array $options)
     {
         parent::__construct([
@@ -46,9 +43,9 @@ class Rcs extends Sequentially
     {
         $value = $context->getValue();
 
-        $tokens = explode(' ', $value);
+        $tokens = \explode(' ', $value);
 
-        $siren = $tokens ? end($tokens) : null;
+        $siren = $tokens ? \end($tokens) : null;
 
         $validator = $context->getValidator()->inContext($context);
 

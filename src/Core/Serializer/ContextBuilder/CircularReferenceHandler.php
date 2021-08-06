@@ -16,10 +16,6 @@ class CircularReferenceHandler implements SerializerContextBuilderInterface
     /** @var IriConverterInterface */
     private $iriConverter;
 
-    /**
-     * @param SerializerContextBuilderInterface $decorated
-     * @param IriConverterInterface             $iriConverter
-     */
     public function __construct(
         SerializerContextBuilderInterface $decorated,
         IriConverterInterface $iriConverter
@@ -30,12 +26,6 @@ class CircularReferenceHandler implements SerializerContextBuilderInterface
 
     /**
      * Creates a serialization context from a Request.
-     *
-     * @param Request    $request
-     * @param bool       $normalization
-     * @param array|null $extractedAttributes
-     *
-     * @return array
      */
     public function createFromRequest(Request $request, bool $normalization, array $extractedAttributes = null): array
     {

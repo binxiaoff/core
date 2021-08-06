@@ -5,35 +5,27 @@ declare(strict_types=1);
 namespace Unilend\Syndication\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Unilend\Syndication\Entity\Request\ProjectParticipationCollection;
 use Unilend\Syndication\Repository\ProjectParticipationRepository;
 
 class ProjectParticipationCollectionDataPersister implements DataPersisterInterface
 {
-    /** @var ProjectParticipationRepository */
     private ProjectParticipationRepository $projectParticipationRepository;
 
-    /**
-     * @param ProjectParticipationRepository $projectParticipationRepository
-     */
     public function __construct(ProjectParticipationRepository $projectParticipationRepository)
     {
         $this->projectParticipationRepository = $projectParticipationRepository;
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @return bool
-     */
     public function supports($data): bool
     {
         return $data instanceof ProjectParticipationCollection;
     }
 
     /**
-     * {@inheritdoc}
+     * @param mixed $data
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -49,9 +41,6 @@ class ProjectParticipationCollectionDataPersister implements DataPersisterInterf
         return $data;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function remove($data): void
     {
         // remove is not supported

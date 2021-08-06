@@ -19,9 +19,6 @@ trait TimestampableAddedOnlyTrait
      */
     protected $added;
 
-    /**
-     * @return DateTimeImmutable
-     */
     public function getAdded(): DateTimeImmutable
     {
         return $this->added;

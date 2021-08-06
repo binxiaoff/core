@@ -28,9 +28,7 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
     public const IMPORT_QUERY_PARAMETER = 'import';
 
     private ArrangementProjectRepository $arrangementProjectRepository;
-
     private Security $security;
-
     private SerializerContextBuilderInterface $decorated;
 
     public function __construct(
@@ -44,8 +42,6 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @throws Exception
      */
     public function createFromRequest(Request $request, bool $normalization, array $extractedAttributes = null): array

@@ -60,7 +60,7 @@ class StaffVoterTest extends KernelTestCase
 
         $fixtures = $repository->createQueryBuilder('s', 's.publicId')->getQuery()->getResult();
 
-        return array_merge(
+        return \array_merge(
             $this->providerView($fixtures),
             $this->providerEdit($fixtures)
         );

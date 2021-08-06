@@ -6,6 +6,7 @@ namespace Unilend\Agency\Serializer\Normalizer;
 
 use Exception;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
@@ -24,7 +25,6 @@ class AbstractProjectMemberNormalizer implements ContextAwareDenormalizerInterfa
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
     private Security $security;
-
     private UserRepository $userRepository;
 
     public function __construct(
@@ -35,18 +35,16 @@ class AbstractProjectMemberNormalizer implements ContextAwareDenormalizerInterfa
         $this->userRepository = $userRepository;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
         return !isset($context[static::ALREADY_CALLED]) && \in_array($type, [AbstractProjectMember::class, BorrowerMember::class, AgentMember::class, ParticipationMember::class]);
     }
 
     /**
-     * {@inheritDoc}
+     * @param mixed $data
      *
      * @throws Exception
+     * @throws ExceptionInterface
      */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {

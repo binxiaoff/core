@@ -20,10 +20,6 @@ class AddRequesterData implements EventSubscriberInterface
     /** @var UserAgentManager */
     private $userAgent;
 
-    /**
-     * @param IpGeoLocManager  $geoLocator
-     * @param UserAgentManager $userAgentManager
-     */
     public function __construct(
         IpGeoLocManager $geoLocator,
         UserAgentManager $userAgentManager
@@ -32,9 +28,6 @@ class AddRequesterData implements EventSubscriberInterface
         $this->userAgent  = $userAgentManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents()
     {
         return [
@@ -43,8 +36,6 @@ class AddRequesterData implements EventSubscriberInterface
     }
 
     /**
-     * @param ViewEvent $event
-     *
      * @throws Exception
      */
     public function addRequesterData(ViewEvent $event)
@@ -60,13 +51,13 @@ class AddRequesterData implements EventSubscriberInterface
         $ip = $request->getClientIp();
 
         $geoLocation = $ip ? $this->geoLocator->getGeoIpRecord($ip) : null;
-        $geoLocation = $geoLocation ? implode(' ', [$geoLocation->city->name, $geoLocation->country->name]) : null;
+        $geoLocation = $geoLocation ? \implode(' ', [$geoLocation->city->name, $geoLocation->country->name]) : null;
 
         $userAgent = $this->userAgent->parse($request->headers->get('User-Agent'));
         $browser   = $userAgent->browser ?? null;
         $browser   = null !== $browser ? $browser->getName() . ' ' . $browser->getVersion() : '';
 
-        $requesterData = array_filter([
+        $requesterData = \array_filter([
             'ip'       => $ip,
             'browser'  => $browser,
             'location' => $geoLocation,

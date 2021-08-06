@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Unilend\Syndication\EventSubscriber\ApiPlatform\ProjectParticipation;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\{Event\RequestEvent, KernelEvents};
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\{ProjectParticipation};
@@ -27,12 +29,6 @@ class ProjectParticipationViewedSubscriber implements EventSubscriberInterface
     /** @var ProjectParticipationRepository */
     private $projectParticipationRepository;
 
-    /**
-     * @param Security                       $security
-     * @param ProjectParticipationManager    $projectParticipationManager
-     * @param ProjectParticipationRepository $projectParticipationRepository
-     * @param LoggerInterface                $logger
-     */
     public function __construct(
         Security $security,
         ProjectParticipationManager $projectParticipationManager,
@@ -45,17 +41,12 @@ class ProjectParticipationViewedSubscriber implements EventSubscriberInterface
         $this->projectParticipationRepository = $projectParticipationRepository;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [KernelEvents::REQUEST => ['markAsViewedByParticipant', EventPriorities::POST_READ]];
     }
 
     /**
-     * @param RequestEvent $event
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -78,7 +69,7 @@ class ProjectParticipationViewedSubscriber implements EventSubscriberInterface
         if (!$staff) {
             $this->logger->warning('Cannot get the current staff for user', [
                 'id_user' => $user->getId(),
-                'class'     => self::class,
+                'class'   => self::class,
             ]);
 
             return;

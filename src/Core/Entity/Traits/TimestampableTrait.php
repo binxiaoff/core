@@ -21,11 +21,6 @@ trait TimestampableTrait
      */
     protected $updated;
 
-    /**
-     * @param DateTimeImmutable|null $updated
-     *
-     * @return self
-     */
     public function setUpdated(?DateTimeImmutable $updated): self
     {
         $this->updated = $updated;
@@ -33,9 +28,6 @@ trait TimestampableTrait
         return $this;
     }
 
-    /**
-     * @return DateTimeImmutable|null
-     */
     public function getUpdated(): ?DateTimeImmutable
     {
         return $this->updated;

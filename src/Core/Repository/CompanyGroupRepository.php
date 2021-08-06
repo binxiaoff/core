@@ -16,9 +16,6 @@ use Unilend\Core\Entity\CompanyGroup;
  */
 class CompanyGroupRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, CompanyGroup::class);

@@ -100,17 +100,17 @@ class Post
      */
     private function handleFiles(AbstractFolder $parent, Request $request, User $user): void
     {
-        $files = array_values($request->files->all());
+        $files = \array_values($request->files->all());
 
         // Verify filenames before any upload
         // Hence the need to have 2 loops
-        $fileEntities = array_map(static function ($file) use ($parent) {
+        $fileEntities = \array_map(static function ($file) use ($parent) {
             if (false === $file instanceof UploadedFile) {
                 throw new BadRequestException();
             }
 
-            if (false === in_array($file->getClientMimeType(), FileInput::ACCEPTED_MEDIA_TYPE)) {
-                throw new BadRequestException(sprintf('%s is not an acceptable media type', $file->getClientMimeType()));
+            if (false === \in_array($file->getClientMimeType(), FileInput::ACCEPTED_MEDIA_TYPE)) {
+                throw new BadRequestException(\sprintf('%s is not an acceptable media type', $file->getClientMimeType()));
             }
 
             $file = new File($file->getClientOriginalName());

@@ -14,9 +14,6 @@ use Unilend\Agency\Entity\Term;
  */
 class TermFilter extends SQLFilter
 {
-    /**
-     * {@inheritDoc}
-     */
     public function addFilterConstraint(ClassMetadata $targetEntity, $targetTableAlias)
     {
         if (false === (Term::class === $targetEntity->name)) {

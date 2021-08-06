@@ -30,9 +30,6 @@ class ProgramEligibilityConfigurationInputDataTransformer implements DataTransfo
         $this->security                      = $security;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsTransformation($data, string $to, array $context = []): bool
     {
         return (ProgramEligibilityConfiguration::class === $to) && (ProgramEligibilityConfigurationInput::class === $context['input']['class']);

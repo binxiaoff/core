@@ -54,10 +54,10 @@ class UserFixtures extends AbstractFixtures
      */
     public function load(ObjectManager $manager): void
     {
-        $users = array_filter(static::getConstants(), '\is_string');
-        $users = array_flip($users);
+        $users = \array_filter(static::getConstants(), '\is_string');
+        $users = \array_flip($users);
 
-        foreach (array_keys($users) as $value) {
+        foreach (\array_keys($users) as $value) {
             $user = new User($value . '@' . $this->getEmailDomain($value));
             $this->forcePublicId($user, $value);
             $manager->persist($user);
@@ -91,6 +91,6 @@ class UserFixtures extends AbstractFixtures
 
     private function getEmailDomain(string $username): string
     {
-        return false !== mb_strpos($username, 'extbank') ? 'extbank.com' : 'kls-platform.com';
+        return false !== \mb_strpos($username, 'extbank') ? 'extbank.com' : 'kls-platform.com';
     }
 }

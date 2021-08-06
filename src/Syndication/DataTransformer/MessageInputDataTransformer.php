@@ -25,18 +25,11 @@ use Unilend\Syndication\Service\Project\ProjectManager;
 class MessageInputDataTransformer implements DataTransformerInterface
 {
     private ValidatorInterface $validator;
-
     private Security $security;
-
     private MessageThreadRepository $messageThreadRepository;
-
     private IriConverterInterface $iriConverter;
-
     private ProjectManager $projectManager;
 
-    /**
-     * MessageInputDataTransformer constructor.
-     */
     public function __construct(
         ValidatorInterface $validator,
         Security $security,

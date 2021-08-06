@@ -62,7 +62,7 @@ abstract class AbstractEligibilityTest extends TestCase
             ->setAddressPostCode('75042')
             ->setAddressDepartment('Ile-De-France')
             ->setAddressCountry(new ProgramChoiceOption($program, 'FR', $activityCountryField))
-            ->setSiret(str_repeat('1', 14))
+            ->setSiret(\str_repeat('1', 14))
             ->setLegalForm(new ProgramChoiceOption($program, 'legal form', $legalFormField))
             ->setEmployeesNumber(42)
             ->setTurnover(new NullableMoney('EUR', '128'))

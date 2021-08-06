@@ -34,11 +34,11 @@ class UserFixtures extends AbstractFixtures
 
         // User with symbols are meant to be staffless
         $users = [
-            ...array_map([$this, 'createInitializedUser'], [...range(1, 10), ...range(21, 25), ...range('a', 'z'), '€', '@', '$', '£', '+']),
-            ...array_map([$this, 'createUser'], [...range(11, 20), 'uninitialized']), // These users are meant to be uninitialized
+            ...\array_map([$this, 'createInitializedUser'], [...\range(1, 10), ...\range(21, 25), ...\range('a', 'z'), '€', '@', '$', '£', '+']),
+            ...\array_map([$this, 'createUser'], [...\range(11, 20), 'uninitialized']), // These users are meant to be uninitialized
         ];
 
-        array_walk($users, [$manager, 'persist']);
+        \array_walk($users, [$manager, 'persist']);
 
         $manager->flush();
     }

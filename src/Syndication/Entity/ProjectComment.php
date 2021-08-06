@@ -7,6 +7,7 @@ namespace Unilend\Syndication\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Entity\User;
@@ -92,36 +93,23 @@ class ProjectComment
     private $visibility;
 
     /**
-     * ProjectComment constructor.
-     *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct()
     {
         $this->added = new DateTimeImmutable();
     }
 
-    /**
-     * @return int
-     */
     public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @return ProjectComment|null
-     */
     public function getParent(): ?ProjectComment
     {
         return $this->parent;
     }
 
-    /**
-     * @param ProjectComment|null $parent
-     *
-     * @return ProjectComment
-     */
     public function setParent(?ProjectComment $parent): ProjectComment
     {
         $this->parent = $parent;
@@ -129,19 +117,11 @@ class ProjectComment
         return $this;
     }
 
-    /**
-     * @return Project
-     */
     public function getProject(): Project
     {
         return $this->project;
     }
 
-    /**
-     * @param Project $project
-     *
-     * @return ProjectComment
-     */
     public function setProject(Project $project): ProjectComment
     {
         $this->project = $project;
@@ -149,19 +129,11 @@ class ProjectComment
         return $this;
     }
 
-    /**
-     * @return User
-     */
     public function getUser(): User
     {
         return $this->user;
     }
 
-    /**
-     * @param User $user
-     *
-     * @return ProjectComment
-     */
     public function setUser(User $user): ProjectComment
     {
         $this->user = $user;
@@ -169,19 +141,11 @@ class ProjectComment
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getContent(): string
     {
         return $this->content;
     }
 
-    /**
-     * @param string $content
-     *
-     * @return ProjectComment
-     */
     public function setContent(string $content): ProjectComment
     {
         $this->content = $content;
@@ -189,19 +153,11 @@ class ProjectComment
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getVisibility(): int
     {
         return $this->visibility;
     }
 
-    /**
-     * @param int $visibility
-     *
-     * @return ProjectComment
-     */
     public function setVisibility(int $visibility): ProjectComment
     {
         $this->visibility = $visibility;

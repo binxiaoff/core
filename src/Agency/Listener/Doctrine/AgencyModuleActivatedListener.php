@@ -19,7 +19,7 @@ class AgencyModuleActivatedListener
         foreach ($uow->getScheduledEntityUpdates() as $companyModule) {
             if (
                 $companyModule instanceof CompanyModule
-                && array_key_exists(CompanyModule::PROPERTY_ACTIVATED, $uow->getEntityChangeSet($companyModule))
+                && \array_key_exists(CompanyModule::PROPERTY_ACTIVATED, $uow->getEntityChangeSet($companyModule))
                 && CompanyModule::MODULE_AGENCY === $companyModule->getCode()
                 && $companyModule->isActivated()
             ) {

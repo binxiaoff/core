@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Unilend\Core\Service\FileSystem;
 
-use Defuse\Crypto\{Exception\BadFormatException, Exception\EnvironmentIsBrokenException, Exception\IOException, Exception\WrongKeyOrModifiedCiphertextException, File, Key};
+use Defuse\Crypto\Exception\BadFormatException;
+use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
+use Defuse\Crypto\Exception\IOException;
+use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
+use Defuse\Crypto\File;
+use Defuse\Crypto\Key;
 
 class FileCrypto
 {
     /**
-     * @param string $inputFilePath
-     * @param string $outputFilePath
-     *
      * @throws IOException
      * @throws EnvironmentIsBrokenException
-     *
-     * @return string
      */
     public function encryptFile(string $inputFilePath, string $outputFilePath): string
     {
@@ -28,7 +28,6 @@ class FileCrypto
     /**
      * @param resource $inputFileResource
      * @param resource $outputFileResource
-     * @param string   $key
      *
      * @throws EnvironmentIsBrokenException
      * @throws IOException

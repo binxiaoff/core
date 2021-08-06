@@ -7,24 +7,21 @@ namespace Unilend\Core\Service\User;
 use Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Throwable;
-use Unilend\Core\Entity\{User, UserFailedLogin, UserSuccessfulLogin};
+use Unilend\Core\Entity\User;
+use Unilend\Core\Entity\UserFailedLogin;
+use Unilend\Core\Entity\UserSuccessfulLogin;
 use Unilend\Core\Exception\Authentication\RecaptchaChallengeFailedException;
-use Unilend\Core\Service\{UserActivity\IpGeoLocManager, UserActivity\UserAgentManager};
+use Unilend\Core\Service\UserActivity\IpGeoLocManager;
+use Unilend\Core\Service\UserActivity\UserAgentManager;
 
 class UserLoginFactory
 {
-    /** @var IpGeoLocManager */
     private IpGeoLocManager $ipGeoLocManager;
-    /** @var UserAgentManager */
+
     private UserAgentManager $userAgentManager;
-    /** @var RequestStack */
+
     private RequestStack $requestStack;
 
-    /**
-     * @param IpGeoLocManager  $ipGeoLocManager
-     * @param UserAgentManager $userAgentManager
-     * @param RequestStack     $requestStack
-     */
     public function __construct(
         IpGeoLocManager $ipGeoLocManager,
         UserAgentManager $userAgentManager,
@@ -36,13 +33,7 @@ class UserLoginFactory
     }
 
     /**
-     * @param User   $user
-     * @param string $action
-     *
-     * @return UserSuccessfulLogin
-
-     **@throws Exception
-     *
+     * @throws Exception
      */
     public function createUserLoginSuccess(User $user, string $action): UserSuccessfulLogin
     {
@@ -79,13 +70,7 @@ class UserLoginFactory
     }
 
     /**
-     * @param Throwable   $exception
-     * @param string|null $username
-     *
-     * @return UserFailedLogin
-
-     **@throws Exception
-     *
+     * @throws Exception
      */
     public function createUserLoginFailure(Throwable $exception, ?string $username = null): UserFailedLogin
     {

@@ -106,7 +106,7 @@ class Inequality
      */
     public function validate(ExecutionContextInterface $context)
     {
-        if ($this->maxValue && -1 !== bccomp($this->value, $this->maxValue, 4)) {
+        if ($this->maxValue && -1 !== \bccomp($this->value, $this->maxValue, 4)) {
             $context->buildViolation('Inequality.maxValue.greaterThan')
                 ->addViolation()
             ;
@@ -120,9 +120,9 @@ class Inequality
      */
     public function isConform(string $evaluatedNumber)
     {
-        $comp = bccomp($this->value, $evaluatedNumber, 4);
+        $comp = \bccomp($this->value, $evaluatedNumber, 4);
 
-        $maxValueComp = $this->maxValue ? bccomp($this->maxValue, $evaluatedNumber, 4) : false;
+        $maxValueComp = $this->maxValue ? \bccomp($this->maxValue, $evaluatedNumber, 4) : false;
 
         switch ($this->operator) {
             case MathOperator::EQUAL:

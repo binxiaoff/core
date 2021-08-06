@@ -20,18 +20,18 @@ class BasicCompanyFixtures extends AbstractCompanyFixtures
 
     protected function getTeams(Team $companyRootTeam): array
     {
-        $teams = array_map($this->getTeamFactory($companyRootTeam), ['A' => 'A', 'B' => 'B']);
-        $teams += array_map($this->getTeamFactory($teams['A']), ['1' => '1', '2' => '2']);
-        $teams += array_map($this->getTeamFactory($teams['B']), ['3' => '3', '4' => '4']);
-        $teams += array_map($this->getTeamFactory($teams['1']), ['c' => 'c', 'd' => 'd']);
-        $teams += array_map($this->getTeamFactory($teams['c']), ['.' => '.', '%' => '%', '£' => '£']);
+        $teams = \array_map($this->getTeamFactory($companyRootTeam), ['A' => 'A', 'B' => 'B']);
+        $teams += \array_map($this->getTeamFactory($teams['A']), ['1' => '1', '2' => '2']);
+        $teams += \array_map($this->getTeamFactory($teams['B']), ['3' => '3', '4' => '4']);
+        $teams += \array_map($this->getTeamFactory($teams['1']), ['c' => 'c', 'd' => 'd']);
+        $teams += \array_map($this->getTeamFactory($teams['c']), ['.' => '.', '%' => '%', '£' => '£']);
 
         return $teams;
     }
 
     protected function getAdmins(Company $company): array
     {
-        return array_map(static function (User $user) use ($company) {
+        return \array_map(static function (User $user) use ($company) {
             return new CompanyAdmin($user, $company);
         }, [$this->getReference('user-1'), $this->getReference('user-11'), $this->getReference('user-12')]);
     }

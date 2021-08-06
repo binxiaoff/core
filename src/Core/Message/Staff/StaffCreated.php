@@ -12,17 +12,11 @@ class StaffCreated implements AsyncMessageInterface
     /** @var Staff */
     private $staffId;
 
-    /**
-     * @param Staff $staff
-     */
     public function __construct(Staff $staff)
     {
         $this->staffId = $staff->getId();
     }
 
-    /**
-     * @return int
-     */
     public function getStaffId(): int
     {
         return $this->staffId;

@@ -12,17 +12,11 @@ class ProjectCreatedListener
     /** @var HTMLPurifier */
     private $htmlPurifier;
 
-    /**
-     * @param HTMLPurifier $htmlPurifier
-     */
     public function __construct(HTMLPurifier $htmlPurifier)
     {
         $this->htmlPurifier = $htmlPurifier;
     }
 
-    /**
-     * @param Project $project
-     */
     public function purify(Project $project): void
     {
         if (null === $project->getDescription()) {

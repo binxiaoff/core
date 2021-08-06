@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Unilend\Core\Entity\Message;
 
@@ -17,19 +18,12 @@ use Unilend\Core\Entity\Message;
  */
 class MessageRepository extends ServiceEntityRepository
 {
-    /**
-     * MessageRepository constructor.
-     *
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Message::class);
     }
 
     /**
-     * @param Message $message
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */

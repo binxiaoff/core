@@ -128,7 +128,7 @@ class ProjectMemberCreatedHandlerTest extends TestCase
 
     public function providerWrongStatusProject(): iterable
     {
-        foreach (array_filter(Project::getAvailableStatuses(), static fn ($status) => Project::STATUS_PUBLISHED !== $status) as $status) {
+        foreach (\array_filter(Project::getAvailableStatuses(), static fn ($status) => Project::STATUS_PUBLISHED !== $status) as $status) {
             $project = $this->prophesize(Project::class);
             $project->getCurrentStatus()->willReturn($status);
             $project->isPublished()->willReturn(false);
@@ -139,7 +139,7 @@ class ProjectMemberCreatedHandlerTest extends TestCase
                 $projectMember->getId()->willReturn(1);
                 $projectMember->getProject()->willReturn($project);
 
-                yield sprintf('It should not notify with status %d and class %s', $status, $class) => [$projectMember->reveal()];
+                yield \sprintf('It should not notify with status %d and class %s', $status, $class) => [$projectMember->reveal()];
             }
         }
     }
@@ -180,7 +180,7 @@ class ProjectMemberCreatedHandlerTest extends TestCase
             $projectMember->getId()->willReturn(1);
             $projectMember->getProject()->willReturn($project);
 
-            yield sprintf('It should notify with class %s', $class) => [$projectMember->reveal()];
+            yield \sprintf('It should notify with class %s', $class) => [$projectMember->reveal()];
         }
     }
 

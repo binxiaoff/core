@@ -47,7 +47,7 @@ abstract class AbstractFixtures extends Fixture
      */
     protected function forcePropertyValue($entity, string $property, $value)
     {
-        $ref               = new ReflectionClass(get_class($entity));
+        $ref               = new ReflectionClass(\get_class($entity));
         $reflexionProperty = $ref->getProperty($property);
         $reflexionProperty->setAccessible(true);
         $reflexionProperty->setValue($entity, $value);
@@ -59,7 +59,7 @@ abstract class AbstractFixtures extends Fixture
     protected function forceId(ObjectManager $manager, object $entity, int $value): void
     {
         $this->disableAutoIncrement($manager, $entity);
-        $ref      = new ReflectionClass(get_class($entity));
+        $ref      = new ReflectionClass(\get_class($entity));
         $property = $ref->getProperty('id');
         $property->setAccessible(true);
         $property->setValue($entity, $value);
@@ -72,9 +72,9 @@ abstract class AbstractFixtures extends Fixture
      */
     protected function getReferences(array $names): array
     {
-        return array_map(function (string $name) {
+        return \array_map(function (string $name) {
             return $this->getReference($name);
-        }, array_combine($names, $names));
+        }, \array_combine($names, $names));
     }
 
     /**
@@ -82,7 +82,7 @@ abstract class AbstractFixtures extends Fixture
      */
     protected function login($staff): void
     {
-        if (is_string($staff)) {
+        if (\is_string($staff)) {
             $staff = $this->getReference($staff);
         }
 
@@ -101,8 +101,8 @@ abstract class AbstractFixtures extends Fixture
      */
     protected function restoreAutoIncrement($entity, ObjectManager $manager): void
     {
-        if (!is_string($entity)) {
-            $entity = get_class($entity);
+        if (!\is_string($entity)) {
+            $entity = \get_class($entity);
         }
         // @var string $entity
         [$type, $generator] = $this->idGenerator[$entity];
@@ -114,7 +114,7 @@ abstract class AbstractFixtures extends Fixture
 
     private function disableAutoIncrement(ObjectManager $manager, object $entity): void
     {
-        $entity = get_class($entity);
+        $entity = \get_class($entity);
         /** @var ClassMetadata $metadata */
         $metadata = $manager->getClassMetadata($entity);
         /** @var string $entity */

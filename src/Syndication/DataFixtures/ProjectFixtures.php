@@ -10,36 +10,35 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
 use ReflectionException;
-use Unilend\Core\DataFixtures\{AbstractFixtures,
-    StaffFixtures,
-    UserFixtures};
+use Unilend\Core\DataFixtures\AbstractFixtures;
+use Unilend\Core\DataFixtures\StaffFixtures;
+use Unilend\Core\DataFixtures\UserFixtures;
 use Unilend\Core\Entity\Constant\CAInternalRating;
 use Unilend\Core\Entity\Constant\FundingSpecificity;
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
-use Unilend\Core\Entity\{
-    Embeddable\Money,
-    Embeddable\NullablePerson,
-    File,
-    FileVersion,
-    Staff, User};
+use Unilend\Core\Entity\Embeddable\Money;
+use Unilend\Core\Entity\Embeddable\NullablePerson;
+use Unilend\Core\Entity\File;
+use Unilend\Core\Entity\FileVersion;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\User;
 use Unilend\Syndication\Entity\Project;
 use Unilend\Syndication\Entity\ProjectStatus;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-
-    public const PROJECT_DRAFT = 'PROJECT_DRAFT';
-    public const PROJECT_DRAFT_PARTICIPATION = 'PROJECT_DRAFT_PARTICIPATION';
-    public const PROJECT_INTEREST = 'PROJECT_INTEREST';
-    public const PROJECT_REPLY = 'PROJECT_REPLY';
+    public const PROJECT_DRAFT                    = 'PROJECT_DRAFT';
+    public const PROJECT_DRAFT_PARTICIPATION      = 'PROJECT_DRAFT_PARTICIPATION';
+    public const PROJECT_INTEREST                 = 'PROJECT_INTEREST';
+    public const PROJECT_REPLY                    = 'PROJECT_REPLY';
     public const PROJECT_REPLY_COMMITTEE_ACCEPTED = 'PROJECT_REPLY_COMMITTEE_ACCEPTED';
-    public const PROJECT_REPLY_COMMITTEE_REFUSED = 'PROJECT_REPLY_COMMITTEE_REFUSED';
-    public const PROJECT_REPLY_COMMITTEE_PENDING = 'PROJECT_REPLY_COMMITTEE_PENDING';
-    public const PROJECT_ALLOCATION = 'PROJECT_ALLOCATION';
-    public const PROJECT_FINISHED = 'PROJECT_FINISHED';
-    public const PROJECT_ARCHIVED = 'PROJECT_ARCHIVED';
-    public const PROJECT_OTHER_USER = 'PROJECT_OTHER_USER';
+    public const PROJECT_REPLY_COMMITTEE_REFUSED  = 'PROJECT_REPLY_COMMITTEE_REFUSED';
+    public const PROJECT_REPLY_COMMITTEE_PENDING  = 'PROJECT_REPLY_COMMITTEE_PENDING';
+    public const PROJECT_ALLOCATION               = 'PROJECT_ALLOCATION';
+    public const PROJECT_FINISHED                 = 'PROJECT_FINISHED';
+    public const PROJECT_ARCHIVED                 = 'PROJECT_ARCHIVED';
+    public const PROJECT_OTHER_USER               = 'PROJECT_OTHER_USER';
 
     public const PROJECTS = [
         self::PROJECT_DRAFT,
@@ -75,15 +74,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         self::PROJECT_FINISHED,
     ];
     public const PREVIOUS_STATUSES = [
-        ProjectStatus::STATUS_PARTICIPANT_REPLY => [ProjectStatus::STATUS_DRAFT],
-        ProjectStatus::STATUS_ALLOCATION => [ProjectStatus::STATUS_DRAFT, ProjectStatus::STATUS_PARTICIPANT_REPLY],
-        ProjectStatus::STATUS_SYNDICATION_FINISHED => [ProjectStatus::STATUS_DRAFT, ProjectStatus::STATUS_PARTICIPANT_REPLY, ProjectStatus::STATUS_ALLOCATION],
+        ProjectStatus::STATUS_PARTICIPANT_REPLY     => [ProjectStatus::STATUS_DRAFT],
+        ProjectStatus::STATUS_ALLOCATION            => [ProjectStatus::STATUS_DRAFT, ProjectStatus::STATUS_PARTICIPANT_REPLY],
+        ProjectStatus::STATUS_SYNDICATION_FINISHED  => [ProjectStatus::STATUS_DRAFT, ProjectStatus::STATUS_PARTICIPANT_REPLY, ProjectStatus::STATUS_ALLOCATION],
         ProjectStatus::STATUS_SYNDICATION_CANCELLED => [ProjectStatus::STATUS_DRAFT, ProjectStatus::STATUS_PARTICIPANT_REPLY],
     ];
 
-    /**
-     * @var ObjectManager
-     */
     private ObjectManager $manager;
 
     /**
@@ -93,15 +89,15 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         return [
             ProjectStatus::STATUS_DRAFT => [
-                'Project created' => self::PROJECT_DRAFT,
-                'Project draft' => self::PROJECT_DRAFT_PARTICIPATION,
+                'Project created'    => self::PROJECT_DRAFT,
+                'Project draft'      => self::PROJECT_DRAFT_PARTICIPATION,
                 'Project other user' => self::PROJECT_OTHER_USER,
             ],
             ProjectStatus::STATUS_INTEREST_EXPRESSION => [
                 'Project interest' => self::PROJECT_INTEREST,
             ],
             ProjectStatus::STATUS_PARTICIPANT_REPLY => [
-                'Project reply' => self::PROJECT_REPLY,
+                'Project reply'       => self::PROJECT_REPLY,
                 'Project reply c acc' => self::PROJECT_REPLY_COMMITTEE_ACCEPTED,
                 'Project reply c ref' => self::PROJECT_REPLY_COMMITTEE_REFUSED,
                 'Project reply c pen' => self::PROJECT_REPLY_COMMITTEE_PENDING,
@@ -119,8 +115,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
-     * @param ObjectManager $manager
-     *
      * @throws ReflectionException
      */
     public function load(ObjectManager $manager): void
@@ -146,12 +140,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
-     * @param string     $title
-     * @param int        $status
-     * @param Staff|null $staff
-     *
-     * @return Project
-     *
      * @throws ReflectionException
      * @throws Exception
      */
@@ -161,9 +149,10 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $staff = $staff ?: $this->getReference(StaffFixtures::ADMIN);
 
         // NDA File
-        $ndaFile = (new File());
+        $ndaFile        = (new File());
         $ndaFileVersion = (new FileVersion('/fake.pdf', $staff->getUser(), $ndaFile, 'user_attachment', '', 'application/pdf', $staff->getCompany()))
-            ->setOriginalName($title . ' NDA.pdf');
+            ->setOriginalName($title . ' NDA.pdf')
+        ;
         $ndaFile->setCurrentFileVersion($ndaFileVersion);
 
         $companyGroupTags = $staff->getCompany()->getCompanyGroupTags();
@@ -186,7 +175,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
                     ? DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+10 days', '+1 year'))
                     : null
             )
-            ->setCompanyGroupTag(reset($companyGroupTags) ?: null)
+            ->setCompanyGroupTag(\reset($companyGroupTags) ?: null)
             ->setParticipantReplyDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+70 days', '+1 year')))
             ->setAllocationDeadline(DateTimeImmutable::createFromMutable($this->faker->dateTimeInInterval('+1 year', '+2 year')))
             ->setPrivilegedContactPerson(
@@ -198,7 +187,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
                     ->setOccupation($staff->getUser()->getJobFunction())
                     ->setParentUnit('Unit')
             )
-            ->setDescription($this->faker->sentence);
+            ->setDescription($this->faker->sentence)
+        ;
         $this->forcePublicId($project, Urlizer::urlize($title));
 
         // Persist
@@ -226,10 +216,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
-     * Needed because we do not record the current status in the statuses array and this array is not persisted
-     *
-     * @param Project $project
-     * @param Staff   $addedBy
+     * Needed because we do not record the current status in the statuses array and this array is not persisted.
      *
      * @throws Exception
      */

@@ -15,9 +15,6 @@ class TemporaryTokenCreatedListener
      */
     private $repository;
 
-    /**
-     * @param TemporaryTokenRepository $repository
-     */
     public function __construct(
         TemporaryTokenRepository $repository
     ) {
@@ -25,8 +22,6 @@ class TemporaryTokenCreatedListener
     }
 
     /**
-     * @param TemporaryToken $token
-     *
      * @throws Exception
      */
     public function expireOldTemporaryToken(TemporaryToken $token): void

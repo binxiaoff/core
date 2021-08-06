@@ -18,8 +18,6 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
 class Offer
 {
     /**
-     * @var NullableMoney
-     *
      * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
      *
      * @Assert\Valid
@@ -31,8 +29,6 @@ class Offer
     protected NullableMoney $money;
 
     /**
-     * @var DateTimeImmutable|null
-     *
      * @ORM\Column(name="added", type="datetime_immutable", nullable=true)
      *
      * @Groups({"offer:read"})
@@ -40,8 +36,6 @@ class Offer
     protected ?DateTimeImmutable $added = null;
 
     /**
-     * @param NullableMoney|null $money
-     *
      * @throws Exception
      */
     public function __construct(?NullableMoney $money = null)
@@ -54,25 +48,16 @@ class Offer
         }
     }
 
-    /**
-     * @return NullableMoney
-     */
     public function getMoney(): NullableMoney
     {
         return $this->money;
     }
 
-    /**
-     * @return DateTimeImmutable|null
-     */
     public function getAdded(): ?DateTimeImmutable
     {
         return $this->added;
     }
 
-    /**
-     * @return bool
-     */
     public function isValid(): bool
     {
         return $this->money->isValid();

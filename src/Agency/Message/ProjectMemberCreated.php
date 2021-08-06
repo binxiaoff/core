@@ -10,7 +10,6 @@ use Unilend\Core\Message\AsyncMessageInterface;
 class ProjectMemberCreated implements AsyncMessageInterface
 {
     private int $projectMemberId;
-
     // Class must inherit of AbstractProjectMember (AgentMember, ParticipationMember and BorrowerMember)
     private string $projectMemberClass;
 

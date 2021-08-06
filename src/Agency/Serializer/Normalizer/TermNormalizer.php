@@ -27,16 +27,13 @@ class TermNormalizer implements ContextAwareDenormalizerInterface, DenormalizerA
         $this->security = $security;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
         return !isset($context[static::ALREADY_CALLED]) && Term::class === $type;
     }
 
     /**
-     * {@inheritDoc}
+     * @param mixed $data
      *
      * @throws Exception
      */

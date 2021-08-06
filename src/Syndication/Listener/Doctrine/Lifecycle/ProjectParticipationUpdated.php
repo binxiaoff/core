@@ -14,18 +14,12 @@ use Unilend\Syndication\Entity\ProjectParticipation;
 
 class ProjectParticipationUpdated
 {
-    /** @var Security */
-    private Security $security;
-
-    /** @var UserRepository */
-    private UserRepository $userRepository;
-
     public const INTEREST_REPLY_PROPERTY = 'interestReply.money.amount';
 
-    /**
-     * @param Security       $security
-     * @param UserRepository $userRepository
-     */
+    private Security $security;
+
+    private UserRepository $userRepository;
+
     public function __construct(Security $security, UserRepository $userRepository)
     {
         $this->security       = $security;
@@ -33,17 +27,15 @@ class ProjectParticipationUpdated
     }
 
     /**
-     * @param OnFlushEventArgs $args
-     *
      * @throws \Exception
      */
     public function onFlush(OnFlushEventArgs $args): void
     {
-        $em = $args->getEntityManager();
+        $em  = $args->getEntityManager();
         $uow = $em->getUnitOfWork();
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
-            if ($entity instanceof ProjectParticipation && array_key_exists(self::INTEREST_REPLY_PROPERTY, $uow->getEntityChangeSet($entity))) {
+            if ($entity instanceof ProjectParticipation && \array_key_exists(self::INTEREST_REPLY_PROPERTY, $uow->getEntityChangeSet($entity))) {
                 /** @var User $user */
                 $user = $this->security->getUser();
 

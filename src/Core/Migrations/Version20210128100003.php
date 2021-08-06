@@ -9,18 +9,12 @@ use Doctrine\Migrations\AbstractMigration;
 
 final class Version20210128100003 extends AbstractMigration
 {
-    /**
-     * @return string
-     */
-    public function getDescription() : string
+    public function getDescription(): string
     {
         return 'Add team edge table';
     }
 
-    /**
-     * @param Schema $schema
-     */
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
         $this->addSql('CREATE TABLE core_team_edge (id INT AUTO_INCREMENT NOT NULL, id_ancestor INT DEFAULT NULL, id_descendent INT DEFAULT NULL, depth INT NOT NULL, INDEX IDX_EB8717395B9F892E (id_ancestor), INDEX IDX_EB871739380C851D (id_descendent), UNIQUE INDEX uniq_team_edge_ancestor_descendent (id_ancestor, id_descendent), UNIQUE INDEX uniq_team_edge_descendent_depth (id_descendent, depth), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('ALTER TABLE core_team_edge ADD CONSTRAINT FK_EB8717395B9F892E FOREIGN KEY (id_ancestor) REFERENCES core_team (id)');
@@ -30,10 +24,7 @@ final class Version20210128100003 extends AbstractMigration
         $this->addSql('ALTER TABLE core_team DROP id_parent');
     }
 
-    /**
-     * @param Schema $schema
-     */
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
         $this->addSql('DROP TABLE core_team_edge');
         $this->addSql('ALTER TABLE core_team ADD id_parent INT DEFAULT NULL');

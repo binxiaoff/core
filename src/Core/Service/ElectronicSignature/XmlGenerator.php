@@ -33,10 +33,10 @@ class XmlGenerator
         $signatory   = $fileVersionSignature->getSignatory();
         $fileVersion = $fileVersionSignature->getFileVersion();
         if (null === $fileVersion) {
-            throw new \RuntimeException(sprintf('No file version found for signature for %d', $fileVersionSignature->getId()));
+            throw new \RuntimeException(\sprintf('No file version found for signature for %d', $fileVersionSignature->getId()));
         }
         $fileSystem        = $this->fileSystemHelper->getFileSystem($fileVersion);
-        $fileBase64Content = base64_encode($fileSystem->read($fileVersion->getPath()));
+        $fileBase64Content = \base64_encode($fileSystem->read($fileVersion->getPath()));
 
         $xml = new SimpleXMLElement('<Donnees/>');
         $xml->addChild('InfoControle')->addAttribute('Date', (new \DateTime())->format('Y-m-d H:i:s \G\M\TP'));

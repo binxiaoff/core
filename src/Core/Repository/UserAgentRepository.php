@@ -20,28 +20,18 @@ use WhichBrowser\Model\Version;
  */
 class UserAgentRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, UserAgent::class);
     }
 
-    /**
-     * @param User    $user
-     * @param Browser $browser
-     * @param Device  $device
-     *
-     * @return UserAgent|null
-     */
     public function findOneByUserAndBrowserAndDevice(
         User $user,
         Browser $browser,
         Device $device
     ): ?UserAgent {
         return $this->findOneBy([
-            'user'         => $user,
+            'user'           => $user,
             'browserName'    => $browser->name,
             'browserVersion' => ($browser->version instanceof Version) ? $browser->version->toString() : null,
             'deviceModel'    => $device->model,

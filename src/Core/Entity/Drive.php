@@ -66,7 +66,7 @@ class Drive extends AbstractFolder
             throw new InvalidArgumentException('The depth parameter must strictly be above 0');
         }
 
-        return $this->folders->filter(fn (Folder $folder) => null === $depth || count(explode(DIRECTORY_SEPARATOR, $folder->getPath())) <= ($depth + 1));
+        return $this->folders->filter(fn (Folder $folder) => null === $depth || \count(\explode(DIRECTORY_SEPARATOR, $folder->getPath())) <= ($depth + 1));
     }
 
     /**
@@ -80,11 +80,11 @@ class Drive extends AbstractFolder
             return $this;
         }
 
-        $explodedPath = array_filter(explode(DIRECTORY_SEPARATOR, $path));
+        $explodedPath = \array_filter(\explode(DIRECTORY_SEPARATOR, $path));
 
-        $lastItem = array_pop($explodedPath);
+        $lastItem = \array_pop($explodedPath);
 
-        $parentPath = $this->canonicalizePath(implode(DIRECTORY_SEPARATOR, $explodedPath));
+        $parentPath = $this->canonicalizePath(\implode(DIRECTORY_SEPARATOR, $explodedPath));
 
         $this->createFolder($parentPath);
 
@@ -116,7 +116,7 @@ class Drive extends AbstractFolder
         $path = $this->canonicalizePath($path);
 
         foreach ($this->folders as $folder) {
-            if (0 === mb_strpos($folder->getPath(), $path)) {
+            if (0 === \mb_strpos($folder->getPath(), $path)) {
                 unset($this->folders[$folder->getPath()]);
             }
         }
@@ -148,7 +148,7 @@ class Drive extends AbstractFolder
             return $folder;
         }
 
-        $parentFolder = $this->getFolder(dirname($path));
+        $parentFolder = $this->getFolder(\dirname($path));
 
         if (null === $parentFolder) {
             return null;
@@ -174,7 +174,7 @@ class Drive extends AbstractFolder
             return true;
         }
 
-        $parentPath = dirname($path);
+        $parentPath = \dirname($path);
 
         $parentFolder = DIRECTORY_SEPARATOR === $parentPath ? $this : $this->folders[$parentPath];
 
@@ -193,9 +193,9 @@ class Drive extends AbstractFolder
             $this->removeFile($toDelete);
         }
 
-        $parentFolder = is_string($toDelete) ? $this->getFolder(dirname($toDelete)) : null;
+        $parentFolder = \is_string($toDelete) ? $this->getFolder(\dirname($toDelete)) : null;
 
-        $toDelete = is_string($toDelete) ? $this->get($toDelete) : $toDelete;
+        $toDelete = \is_string($toDelete) ? $this->get($toDelete) : $toDelete;
 
         if ($toDelete instanceof Folder) {
             $this->deleteFolder($toDelete);
@@ -216,7 +216,7 @@ class Drive extends AbstractFolder
             $this->removeFile($path);
         }
 
-        $parentFolder = is_string($path) ? $this->getFolder(dirname($path)) : null;
+        $parentFolder = \is_string($path) ? $this->getFolder(\dirname($path)) : null;
 
         if ($path instanceof File && $parentFolder) {
             $parentFolder->removeFile($path);
@@ -232,6 +232,6 @@ class Drive extends AbstractFolder
 
     private function canonicalizePath(string $path): string
     {
-        return DIRECTORY_SEPARATOR . trim($path, DIRECTORY_SEPARATOR);
+        return DIRECTORY_SEPARATOR . \trim($path, DIRECTORY_SEPARATOR);
     }
 }

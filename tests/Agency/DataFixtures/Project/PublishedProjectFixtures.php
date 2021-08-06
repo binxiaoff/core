@@ -15,7 +15,7 @@ class PublishedProjectFixtures extends DraftProjectFixtures
 {
     public function getDependencies(): array
     {
-        return array_merge(parent::getDependencies(), [
+        return \array_merge(parent::getDependencies(), [
             QuxCompanyFixtures::class,
             LoxCompanyFixtures::class,
         ]);
@@ -45,7 +45,7 @@ class PublishedProjectFixtures extends DraftProjectFixtures
         $borrower       = $this->createTestBorrower($project, $project->getAddedBy());
         $borrowerMember = new BorrowerMember($borrower, $this->getReference('user-@'));
 
-        array_map(
+        \array_map(
             [$manager, 'persist'],
             [
                 $project,

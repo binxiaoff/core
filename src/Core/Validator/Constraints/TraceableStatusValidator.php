@@ -10,9 +10,7 @@ use Unilend\Core\Entity\Interfaces\StatusInterface;
 class TraceableStatusValidator
 {
     /**
-     * @param StatusInterface           $object
-     * @param ExecutionContextInterface $context
-     * @param                           $payload
+     * @param $payload
      */
     public static function validate(StatusInterface $object, ExecutionContextInterface $context, $payload): void
     {
@@ -30,7 +28,7 @@ class TraceableStatusValidator
                 ;
             }
 
-            if (isset($payload['allowedStatus'][$lastStatusValue]) && false === in_array($object->getStatus(), $payload['allowedStatus'][$lastStatusValue], true)) {
+            if (isset($payload['allowedStatus'][$lastStatusValue]) && false === \in_array($object->getStatus(), $payload['allowedStatus'][$lastStatusValue], true)) {
                 $context->buildViolation('Core.StatusInterface.invalid')
                     ->setInvalidValue($object->getStatus())
                     ->atPath($path)

@@ -6,7 +6,11 @@ namespace Unilend\CreditGuaranty\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\{File, Staff, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableAddedOnlyTrait};
+use Unilend\Core\Entity\File;
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 class ProgramFile
@@ -35,12 +39,6 @@ class ProgramFile
      */
     private string $type;
 
-    /**
-     * @param Program $program
-     * @param File    $file
-     * @param string  $type
-     * @param Staff   $addedBy
-     */
     public function __construct(Program $program, File $file, string $type, Staff $addedBy)
     {
         $this->program = $program;
@@ -49,33 +47,21 @@ class ProgramFile
         $this->addedBy = $addedBy;
     }
 
-    /**
-     * @return Program
-     */
     public function getProgram(): Program
     {
         return $this->program;
     }
 
-    /**
-     * @return File
-     */
     public function getFile(): File
     {
         return $this->file;
     }
 
-    /**
-     * @return string
-     */
     public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * @return array
-     */
     public static function getTypes(): array
     {
         return self::getConstants('TYPE_');

@@ -44,7 +44,6 @@ use Unilend\Core\Entity\UserStatus;
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     private ValidatorInterface $validator;
-
     private UserPasswordEncoderInterface $passwordEncoder;
 
     public function __construct(TokenStorageInterface $tokenStorage, ValidatorInterface $validator, UserPasswordEncoderInterface $passwordEncoder)
@@ -55,8 +54,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @throws Exception
      */
     public function load(ObjectManager $manager)

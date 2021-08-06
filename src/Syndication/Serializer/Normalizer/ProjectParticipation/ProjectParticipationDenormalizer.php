@@ -7,17 +7,17 @@ namespace Unilend\Syndication\Serializer\Normalizer\ProjectParticipation;
 use ApiPlatform\Core\Api\IriConverterInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
-    ContextAwareDenormalizerInterface,
-    DenormalizerAwareInterface,
-    DenormalizerAwareTrait,
-    ObjectToPopulateTrait};
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
 use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\{ProjectParticipation,
-    ProjectParticipationMember,
-    ProjectParticipationStatus,
-    ProjectParticipationTranche,
-    ProjectStatus};
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectParticipationMember;
+use Unilend\Syndication\Entity\ProjectParticipationStatus;
+use Unilend\Syndication\Entity\ProjectParticipationTranche;
+use Unilend\Syndication\Entity\ProjectStatus;
 use Unilend\Syndication\Security\Voter\ProjectParticipationMemberVoter;
 use Unilend\Syndication\Security\Voter\ProjectParticipationVoter;
 use Unilend\Syndication\Security\Voter\ProjectVoter;
@@ -31,39 +31,26 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
 
     private const ALREADY_CALLED = 'PROJECT_PARTICIPATION_ATTRIBUTE_DENORMALIZER_ALREADY_CALLED';
 
-    /** @var Security */
     private Security $security;
-    /** @var IriConverterInterface */
+
     private IriConverterInterface $iriConverter;
-    /** @var ProjectParticipationManager */
+
     private ProjectParticipationManager $projectParticipationManager;
-    /** @var ProjectManager */
+
     private ProjectManager $projectManager;
 
-    /**
-     * @param Security                    $security
-     * @param IriConverterInterface       $iriConverter
-     * @param ProjectManager              $projectManager
-     * @param ProjectParticipationManager $projectParticipationManager
-     */
     public function __construct(Security $security, IriConverterInterface $iriConverter, ProjectManager $projectManager, ProjectParticipationManager $projectParticipationManager)
     {
-        $this->security = $security;
-        $this->iriConverter = $iriConverter;
+        $this->security       = $security;
+        $this->iriConverter   = $iriConverter;
         $this->projectManager = $projectManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsDenormalization($data, $type, string $format = null, array $context = []): bool
     {
         return !isset($context[self::ALREADY_CALLED]) && ProjectParticipation::class === $type;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function denormalize($data, $type, string $format = null, array $context = [])
     {
         $context[self::ALREADY_CALLED] = true;
@@ -71,8 +58,8 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         /** @var ProjectParticipation $projectParticipation */
         $projectParticipation = $this->extractObjectToPopulate(ProjectParticipation::class, $context);
         if ($projectParticipation) {
-            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipation));
-            if (isset($data['currentStatus']) && is_array($data['currentStatus'])) {
+            $context[AbstractNormalizer::GROUPS] = \array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalDenormalizerGroups($projectParticipation));
+            if (isset($data['currentStatus']) && \is_array($data['currentStatus'])) {
                 unset($data['currentStatus']['projectParticipation']);
                 $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationStatus::class]['projectParticipation'] = $projectParticipation;
             }
@@ -100,13 +87,12 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
 
             /** @var ProjectParticipationTranche $denormalized */
             $denormalized = $this->denormalizer->denormalize($projectParticipationTranche, ProjectParticipationTranche::class, 'array', [
-                AbstractNormalizer::OBJECT_TO_POPULATE =>
-                    isset($projectParticipationTranche['@id']) ? $this->iriConverter->getItemFromIri($projectParticipationTranche['@id']) : null,
+                AbstractNormalizer::OBJECT_TO_POPULATE => isset($projectParticipationTranche['@id']) ? $this->iriConverter->getItemFromIri($projectParticipationTranche['@id']) : null,
                 // @todo set group according to project status ?
                 // These group should be analog to ProjectParticipationTranche::post operation and ProjectParticipationTranche:patch operation
-                 AbstractNormalizer::GROUPS => isset($projectParticipationTranche['@id']) ?
-                     ['offer:write', 'nullableMoney:write'] : // PATCH
-                     ['projectParticipationTranche:create'], // POST
+                AbstractNormalizer::GROUPS => isset($projectParticipationTranche['@id']) ?
+                    ['offer:write', 'nullableMoney:write'] : // PATCH
+                    ['projectParticipationTranche:create'], // POST
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     ProjectParticipationTranche::class => [
                         'projectParticipation' => $projectParticipation,
@@ -119,7 +105,6 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
             $projectParticipation->addProjectParticipationTranche($denormalized);
         }
 
-
         $projectParticipationMembers = $data['projectParticipationMembers'] ?? [];
 
         foreach ($projectParticipationMembers as $projectParticipationMember) {
@@ -127,16 +112,14 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
             unset($projectParticipationMember['projectParticipation']);
 
             // Disallow requestData to set staff company when its an array
-            if (isset($projectParticipationMember['staff']) && is_array($projectParticipationMember['staff'])) {
+            if (isset($projectParticipationMember['staff']) && \is_array($projectParticipationMember['staff'])) {
                 unset($projectParticipationMember['staff']['company']);
             }
 
             /** @var ProjectParticipationMember $denormalized */
             $denormalized = $this->denormalizer->denormalize($projectParticipationMember, ProjectParticipationMember::class, 'array', [
-                AbstractNormalizer::OBJECT_TO_POPULATE =>
-                    isset($projectParticipationMember['@id']) ? $this->iriConverter->getItemFromIri($projectParticipationMember['@id']) : null,
-                AbstractNormalizer::GROUPS =>
-                    // These group should be analog to ProjectParticipationMember::post operation and ProjectParticipationMember:patch operation and Staff::post operation
+                AbstractNormalizer::OBJECT_TO_POPULATE => isset($projectParticipationMember['@id']) ? $this->iriConverter->getItemFromIri($projectParticipationMember['@id']) : null,
+                AbstractNormalizer::GROUPS             => // These group should be analog to ProjectParticipationMember::post operation and ProjectParticipationMember:patch operation and Staff::post operation
                     isset($projectParticipationMember['@id'])
                         ? ['archivable:write', 'permission:write'] // PATCH
                         : ['projectParticipationMember:create', 'projectParticipationMember:write', 'permission:write'], // POST
@@ -163,11 +146,6 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
         return $projectParticipation;
     }
 
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return array
-     */
     private function getAdditionalDenormalizerGroups(ProjectParticipation $projectParticipation): array
     {
         $groups = [];
@@ -185,9 +163,12 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                 switch ($currentStatus) {
                     case ProjectStatus::STATUS_INTEREST_EXPRESSION:
                         $groups[] = 'projectParticipation:owner:interestExpression:write';
+
                         break;
+
                     case ProjectStatus::STATUS_PARTICIPANT_REPLY:
                         $groups[] = 'projectParticipation:owner:participantReply:write';
+
                         break;
                 }
             }
@@ -198,17 +179,24 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
                         $groups[] = 'projectParticipation:arranger:draft:write';
                         $groups[] = $project->isInterestExpressionEnabled() ?
                             'projectParticipation:arranger:interestExpression:write' : 'projectParticipation:arranger:participantReply:write';
+
                         break;
+
                     case ProjectStatus::STATUS_INTEREST_EXPRESSION:
                         $groups[] = 'projectParticipation:arranger:interestExpression:write';
+
                         break;
+
                     case ProjectStatus::STATUS_PARTICIPANT_REPLY:
                         $groups[] = 'projectParticipation:arranger:participantReply:write';
+
                         break;
+
                     case ProjectStatus::STATUS_ALLOCATION:
                         if ($projectParticipation->isArrangerParticipation()) {
                             $groups[] = 'projectParticipation:arrangerOwner:allocation:write';
                         }
+
                         break;
                 }
             }

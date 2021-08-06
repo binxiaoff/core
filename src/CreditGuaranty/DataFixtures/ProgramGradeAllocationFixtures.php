@@ -45,11 +45,11 @@ class ProgramGradeAllocationFixtures extends AbstractFixtures implements Depende
     {
         $maxAllocationRates = ['0.10', '0.20', '0.30', '0.40', '0.50', '0.60', '0.70', '0.80', '0.90', '1'];
         $grades             = CARatingType::CA_INTERNAL_RETAIL_RATING === $program->getRatingType() ? CAInternalRetailRating::getConstList() : CAInternalRating::getConstList();
-        $nbGrades           = count($grades);
-        shuffle($grades);
+        $nbGrades           = \count($grades);
+        \shuffle($grades);
 
-        for ($i = 0; $i <= random_int(1, $nbGrades - 1); ++$i) {
-            $programGradeAllocation = new ProgramGradeAllocation($program, array_values($grades)[$i], $maxAllocationRates[array_rand($maxAllocationRates)]);
+        for ($i = 0; $i <= \random_int(1, $nbGrades - 1); ++$i) {
+            $programGradeAllocation = new ProgramGradeAllocation($program, \array_values($grades)[$i], $maxAllocationRates[\array_rand($maxAllocationRates)]);
             $manager->persist($programGradeAllocation);
         }
     }

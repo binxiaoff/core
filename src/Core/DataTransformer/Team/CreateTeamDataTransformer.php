@@ -13,18 +13,13 @@ class CreateTeamDataTransformer implements DataTransformerInterface
 {
     private ValidatorInterface $validator;
 
-    /**
-     * @param ValidatorInterface $validator
-     */
     public function __construct(ValidatorInterface $validator)
     {
         $this->validator = $validator;
     }
 
     /**
-     * @var CreateTeam $object
-     *
-     * @inheritDoc
+     * @param CreateTeam $object
      */
     public function transform($object, string $to, array $context = [])
     {
@@ -33,9 +28,6 @@ class CreateTeamDataTransformer implements DataTransformerInterface
         return Team::createTeam($object->name, $object->parent);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function supportsTransformation($data, string $to, array $context = []): bool
     {
         return false === $data instanceof Team && Team::class === $to;

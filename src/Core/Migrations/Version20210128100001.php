@@ -22,7 +22,6 @@ final class Version20210128100001 extends AbstractMigration
         return 'Update schema for new habilitations';
     }
 
-
     public function up(Schema $schema): void
     {
         $uuid = "LOWER(
@@ -103,45 +102,45 @@ final class Version20210128100001 extends AbstractMigration
         $this->addSql('RENAME TABLE core_company_admin TO company_admin');
         $this->addSql('RENAME TABLE syndication_nda_signature TO nda_signature');
 
-        $adminRole = static::DUTY_STAFF_ADMIN;
-        $managerRole = static::DUTY_STAFF_MANAGER;
+        $adminRole    = static::DUTY_STAFF_ADMIN;
+        $managerRole  = static::DUTY_STAFF_MANAGER;
         $operatorRole = static::DUTY_STAFF_OPERATOR;
 
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE core_staff ADD roles JSON NOT NULL');
         $this->addSql(<<<SQL
-UPDATE core_staff 
-    INNER JOIN core_company ON core_company.id_root_team = core_staff.id_team
-    INNER JOIN company_admin ON staff.id_user = company_admin.id_user AND company_admin.id_company = core_company.id
-    SET roles = JSON_ARRAY_INSERT(IFNULL(roles,'[]'), '$[0]', '{$adminRole}')
-    WHERE TRUE
-SQL);
+            UPDATE core_staff 
+                INNER JOIN core_company ON core_company.id_root_team = core_staff.id_team
+                INNER JOIN company_admin ON staff.id_user = company_admin.id_user AND company_admin.id_company = core_company.id
+                SET roles = JSON_ARRAY_INSERT(IFNULL(roles,'[]'), '$[0]', '{$adminRole}')
+                WHERE TRUE
+            SQL);
         $this->addSql(<<<SQL
-UPDATE core_staff
-    SET roles = JSON_ARRAY_INSERT(IFNULL(roles,'[]'), '$[0]', '{$managerRole}')
-    WHERE core_staff.manager = 1
-SQL);
+            UPDATE core_staff
+                SET roles = JSON_ARRAY_INSERT(IFNULL(roles,'[]'), '$[0]', '{$managerRole}')
+                WHERE core_staff.manager = 1
+            SQL);
         $this->addSql(<<<SQL
-UPDATE core_staff
-    SET roles = JSON_ARRAY_INSERT('[]', '$[0]', '{$operatorRole}')
-    WHERE core_staff.roles IS NULL
-SQL);
+            UPDATE core_staff
+                SET roles = JSON_ARRAY_INSERT('[]', '$[0]', '{$operatorRole}')
+                WHERE core_staff.roles IS NULL
+            SQL);
         $this->addSql('ALTER TABLE core_staff ADD id_company INT NOT NULL');
-        $this->addSql(<<<SQL
-WITH RECURSIVE tree AS (
-    SELECT team.*, c.id as company
-    FROM team
-    INNER JOIN core_company c ON c.id_root_team = team.id
-    UNION ALL
-    SELECT team.*, tree.company
-    FROM team
-    INNER JOIN tree ON tree.id_parent = team.id
-)
-UPDATE core_staff
-    INNER JOIN tree t ON core_staff.id_team = t.id
-    SET id_company = tree.company
-    WHERE TRUE
-SQL);
+        $this->addSql(<<<'SQL'
+            WITH RECURSIVE tree AS (
+                SELECT team.*, c.id as company
+                FROM team
+                INNER JOIN core_company c ON c.id_root_team = team.id
+                UNION ALL
+                SELECT team.*, tree.company
+                FROM team
+                INNER JOIN tree ON tree.id_parent = team.id
+            )
+            UPDATE core_staff
+                INNER JOIN tree t ON core_staff.id_team = t.id
+                SET id_company = tree.company
+                WHERE TRUE
+            SQL);
         $this->addSql('ALTER TABLE core_company DROP FOREIGN KEY FK_5DA8BC7C308A30F');
         $this->addSql('ALTER TABLE core_staff DROP FOREIGN KEY FK_14EFD2724FC0BA1D');
         $this->addSql('ALTER TABLE team DROP FOREIGN KEY FK_C4E0A61F1BB9D5A2');
@@ -159,12 +158,12 @@ SQL);
         $this->addSql('ALTER TABLE syndication_project_participation_member ADD id_accepted_nda_version INT DEFAULT NULL, ADD nda_accepted DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', ADD accepted_nda_term TEXT CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, DROP permissions');
         $this->addSql('ALTER TABLE syndication_project_participation_member ADD CONSTRAINT FK_4CEF2D05EFC7EA74 FOREIGN KEY (id_accepted_nda_version) REFERENCES core_file_version (id) ON UPDATE NO ACTION ON DELETE NO ACTION');
         $this->addSql(<<<'SQL'
-UPDATE syndication_project_participation_member 
-    INNER JOIN nda_signature ns on syndication_project_participation_member.id_staff = ns.added_by 
-           AND syndication_project_participation_member.id_project_participation = ns.id_project_participation
-SET accepted_nda_term = ns.term, ns.added = nda_accepted, ns.id_file_version = id_accepted_nda_version
-WHERE TRUE
-SQL
+            UPDATE syndication_project_participation_member 
+                INNER JOIN nda_signature ns on syndication_project_participation_member.id_staff = ns.added_by 
+                       AND syndication_project_participation_member.id_project_participation = ns.id_project_participation
+            SET accepted_nda_term = ns.term, ns.added = nda_accepted, ns.id_file_version = id_accepted_nda_version
+            WHERE TRUE
+            SQL
         );
         $this->addSql('CREATE INDEX IDX_4CEF2D05EFC7EA74 ON syndication_project_participation_member (id_accepted_nda_version)');
         $this->addSql('DROP TABLE nda_signature');

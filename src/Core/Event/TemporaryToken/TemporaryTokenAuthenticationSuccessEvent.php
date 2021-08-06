@@ -14,9 +14,6 @@ class TemporaryTokenAuthenticationSuccessEvent extends Event
      */
     protected $user;
 
-    /**
-     * @param UserInterface $user
-     */
     public function __construct(UserInterface $user)
     {
         $this->user = $user;

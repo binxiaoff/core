@@ -12,40 +12,34 @@ use Unilend\Core\Entity\CompanyModuleLog;
 use Unilend\Core\Entity\User;
 
 /**
- * TODO Refactor because we should not use doctrine for automatic insert of log
+ * TODO Refactor because we should not use doctrine for automatic insert of log.
  */
 class CompanyModuleUpdatedListener
 {
-    /** @var Security */
     private Security $security;
 
-    /**
-     * @param Security $security
-     */
     public function __construct(Security $security)
     {
         $this->security = $security;
     }
 
     /**
-     * @param OnFlushEventArgs $args
-     *
      * @throws Exception
      */
     public function onFlush(OnFlushEventArgs $args)
     {
         // Necessary to refetch updatedBy Here because preUpdate is after onFlush
         // TODO This code should be delete in CALS-2359
-        $user = $this->security->getUser();
+        $user         = $this->security->getUser();
         $currentStaff = $user instanceof User ? $user->getCurrentStaff() : null;
-        $em = $args->getEntityManager();
-        $uow = $em->getUnitOfWork();
+        $em           = $args->getEntityManager();
+        $uow          = $em->getUnitOfWork();
 
         $classMetadata = $em->getClassMetadata(CompanyModuleLog::class);
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
             if (($entity instanceof CompanyModule)) {
-                $em = $args->getEntityManager();
+                $em  = $args->getEntityManager();
                 $uow = $em->getUnitOfWork();
                 $entity->setUpdatedBy($currentStaff);
                 $log = new CompanyModuleLog($entity);

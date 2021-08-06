@@ -17,8 +17,8 @@ class FooCompanyFixtures extends AbstractCompanyFixtures
 
     protected function getTeams(Team $companyRootTeam): array
     {
-        $teams = array_map($this->getTeamFactory($companyRootTeam), ['A' => 'A', 'B' => 'B']);
-        $teams += array_map($this->getTeamFactory($teams['A']), ['1' => '1']);
+        $teams = \array_map($this->getTeamFactory($companyRootTeam), ['A' => 'A', 'B' => 'B']);
+        $teams += \array_map($this->getTeamFactory($teams['A']), ['1' => '1']);
 
         return $teams;
     }

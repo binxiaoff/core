@@ -5,28 +5,27 @@ declare(strict_types=1);
 namespace Unilend\Core\Command;
 
 use Exception;
-use Symfony\Component\Console\{Command\Command, Input\InputArgument, Input\InputInterface, Output\OutputInterface};
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Core\Entity\CompanyModule;
 use Unilend\Core\Entity\{CompanyStatus};
-use Unilend\Core\Repository\{CompanyModuleRepository, CompanyRepository};
+use Unilend\Core\Repository\CompanyModuleRepository;
+use Unilend\Core\Repository\CompanyRepository;
 use Unilend\Core\Service\Staff\StaffNotifier;
 
 class SignCompanyCommand extends Command
 {
     /** @var string */
     protected static $defaultName = 'kls:company:sign';
-    /** @var CompanyRepository */
+
     private CompanyRepository $companyRepository;
-    /** @var StaffNotifier */
+
     private StaffNotifier $staffNotifier;
-    /** @var CompanyModuleRepository */
+
     private CompanyModuleRepository $moduleRepository;
 
-    /**
-     * @param CompanyRepository       $companyRepository
-     * @param StaffNotifier           $staffNotifier
-     * @param CompanyModuleRepository $moduleRepository
-     */
     public function __construct(
         CompanyRepository $companyRepository,
         StaffNotifier $staffNotifier,
@@ -39,9 +38,6 @@ class SignCompanyCommand extends Command
         $this->moduleRepository  = $moduleRepository;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function configure(): void
     {
         $this->setDescription('This command change the status to "contract signed" for the given companies, then, notify their staff to initialise their accounts.');
@@ -49,8 +45,6 @@ class SignCompanyCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): ?int

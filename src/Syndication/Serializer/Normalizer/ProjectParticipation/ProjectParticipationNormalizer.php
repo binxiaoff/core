@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Unilend\Syndication\Serializer\Normalizer\ProjectParticipation;
 
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
-    ContextAwareNormalizerInterface,
-    NormalizerAwareInterface,
-    NormalizerAwareTrait};
-use Unilend\Syndication\Entity\{ProjectParticipation, ProjectParticipationTranche};
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectParticipationTranche;
 use Unilend\Syndication\Security\Voter\ProjectParticipationVoter;
 
 class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
@@ -18,20 +19,13 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
 
     private const ALREADY_CALLED = 'PROJECT_PARTICIPATION_ATTRIBUTE_NORMALIZER_ALREADY_CALLED';
 
-    /** @var Security */
     private Security $security;
 
-    /**
-     * @param Security $security
-     */
     public function __construct(Security $security)
     {
         $this->security = $security;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         if (isset($context[self::ALREADY_CALLED])) {
@@ -41,23 +35,15 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
         return $data instanceof ProjectParticipation;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
-        $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalNormalizerGroups($object));
+        $context[AbstractNormalizer::GROUPS] = \array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalNormalizerGroups($object));
 
         $context[self::ALREADY_CALLED] = true;
 
         return $this->normalizer->normalize($object, $format, $context);
     }
 
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return array
-     */
     private function getAdditionalNormalizerGroups(ProjectParticipation $projectParticipation): array
     {
         $group = [];
@@ -67,7 +53,7 @@ class ProjectParticipationNormalizer implements ContextAwareNormalizerInterface,
         }
 
         if ($this->security->isGranted(ProjectParticipationVoter::ATTRIBUTE_SENSITIVE_VIEW, $projectParticipation)) {
-            $group = array_merge($group, [ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ]);
+            $group = \array_merge($group, [ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ]);
         }
 
         return $group;

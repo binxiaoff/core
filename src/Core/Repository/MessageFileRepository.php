@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Unilend\Core\Entity\MessageFile;
 
@@ -17,19 +18,12 @@ use Unilend\Core\Entity\MessageFile;
  */
 class MessageFileRepository extends ServiceEntityRepository
 {
-    /**
-     * MessageFileRepository constructor.
-     *
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MessageFile::class);
     }
 
     /**
-     * @param MessageFile $messageFile
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -40,8 +34,6 @@ class MessageFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param MessageFile $messageStatus
-     *
      * @throws ORMException
      */
     public function persist(MessageFile $messageStatus): void

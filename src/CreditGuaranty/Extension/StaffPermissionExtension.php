@@ -39,7 +39,7 @@ class StaffPermissionExtension implements QueryCollectionExtensionInterface
         $queryBuilder
             ->innerJoin("{$rootAlias}.staff", 's')
             ->andWhere('s.team in (:teams)')
-            ->setParameter('teams', iterator_to_array($staff->getCompany()->getTeams(), false))
+            ->setParameter('teams', \iterator_to_array($staff->getCompany()->getTeams(), false))
         ;
     }
 }
