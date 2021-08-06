@@ -10,38 +10,30 @@ use Faker\Provider\Miscellaneous;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\CreditGuaranty\Entity\Field;
-use Unilend\CreditGuaranty\Repository\{ProgramEligibilityConfigurationRepository, ProgramEligibilityRepository};
+use Unilend\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
+use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
 
 class ProgramEligibilityConfigurationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     private const CHANCE_OF_ELIGIBILITY = 80;
 
-    /** @var ProgramEligibilityRepository */
     private ProgramEligibilityRepository $programEligibilityRepository;
-    /** @var ProgramEligibilityConfigurationRepository */
+
     private ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository;
 
-    /**
-     * @param TokenStorageInterface                     $tokenStorage
-     * @param ProgramEligibilityRepository              $programEligibilityRepository
-     * @param ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository
-     */
     public function __construct(
         TokenStorageInterface $tokenStorage,
         ProgramEligibilityRepository $programEligibilityRepository,
         ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository
     ) {
         parent::__construct($tokenStorage);
-        $this->programEligibilityRepository  = $programEligibilityRepository;
+        $this->programEligibilityRepository              = $programEligibilityRepository;
         $this->programEligibilityConfigurationRepository = $programEligibilityConfigurationRepository;
     }
 
-    /**
-     * @param ObjectManager $manager
-     */
     public function load(ObjectManager $manager): void
     {
-        $allProgramEligibilities = $this->programEligibilityRepository->findAll();
+        $allProgramEligibilities          = $this->programEligibilityRepository->findAll();
         $programEligibilityConfigurations = $this->programEligibilityConfigurationRepository->findBy(['programEligibility' => $allProgramEligibilities]);
 
         foreach ($programEligibilityConfigurations as $programEligibilityConfiguration) {

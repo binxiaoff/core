@@ -16,9 +16,6 @@ use Unilend\CreditGuaranty\Entity\Field;
  */
 class FieldRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $managerRegistry
-     */
     public function __construct(ManagerRegistry $managerRegistry)
     {
         parent::__construct($managerRegistry, Field::class);

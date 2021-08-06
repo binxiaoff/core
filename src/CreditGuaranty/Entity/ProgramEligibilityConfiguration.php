@@ -241,7 +241,7 @@ class ProgramEligibilityConfiguration
             }
         }
 
-        if (count($violationPaths) > 0) {
+        if (\count($violationPaths) > 0) {
             foreach ($violationPaths as $path) {
                 $context->buildViolation('CreditGuaranty.ProgramEligibilityConfiguration.' . $path . '.invalid')
                     ->atPath($path)

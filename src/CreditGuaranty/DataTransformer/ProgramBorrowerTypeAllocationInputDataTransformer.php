@@ -84,7 +84,7 @@ class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransform
         if (isset($context['item_operation_name']) && 'patch' === $context['item_operation_name']) {
             $programBorrowerTypeAllocation = $context[AbstractNormalizer::OBJECT_TO_POPULATE] ?? null;
             if (false === $programBorrowerTypeAllocation instanceof ProgramBorrowerTypeAllocation) {
-                throw new \RuntimeException(sprintf('Can not populate the object of %s from the context.', ProgramBorrowerTypeAllocation::class));
+                throw new \RuntimeException(\sprintf('Can not populate the object of %s from the context.', ProgramBorrowerTypeAllocation::class));
             }
 
             if (false === $this->security->isGranted(ProgramBorrowerTypeAllocationVoter::ATTRIBUTE_EDIT, $programBorrowerTypeAllocation)) {
@@ -112,6 +112,6 @@ class ProgramBorrowerTypeAllocationInputDataTransformer implements DataTransform
             return $programBorrowerTypeAllocation;
         }
 
-        throw new \RuntimeException(sprintf('The operation is not supported by %s', __CLASS__));
+        throw new \RuntimeException(\sprintf('The operation is not supported by %s', __CLASS__));
     }
 }

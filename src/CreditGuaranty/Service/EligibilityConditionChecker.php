@@ -52,7 +52,7 @@ class EligibilityConditionChecker
 
         if (ProgramEligibilityCondition::VALUE_TYPE_RATE === $eligibilityCondition->getValueType()) {
             if (null === $rightOperandField) {
-                throw new LogicException(sprintf('The ProgramEligibilityCondition #%d of rate type should have an rightOperandField.', $eligibilityCondition->getId()));
+                throw new LogicException(\sprintf('The ProgramEligibilityCondition #%d of rate type should have an rightOperandField.', $eligibilityCondition->getId()));
             }
 
             $rightEntity = $this->eligibilityHelper->getEntity($reservation, $rightOperandField);

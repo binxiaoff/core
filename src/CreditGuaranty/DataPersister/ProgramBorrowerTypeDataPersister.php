@@ -56,7 +56,7 @@ class ProgramBorrowerTypeDataPersister implements DataPersisterInterface
         $programEligibilities = $program->getProgramEligibilities()->filter(fn (ProgramEligibility $item) => $borrowerTypeField === $item->getField());
 
         if (1 !== $programEligibilities->count()) {
-            throw new \LogicException(sprintf('1 program eligibility expected, but found %d', $programEligibilities->count()));
+            throw new \LogicException(\sprintf('1 program eligibility expected, but found %d', $programEligibilities->count()));
         }
         /** @var ProgramEligibility $programEligibility */
         $programEligibility = $programEligibilities->current();

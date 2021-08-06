@@ -43,7 +43,7 @@ class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
         $data = $this->normalizer->normalize($object, $format, $context);
 
         if (false === isset($data['creditGuarantyAdminStaff'])) {
-            $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['staff:read', 'user:read']);
+            $context[AbstractNormalizer::GROUPS] = \array_merge($context[AbstractNormalizer::GROUPS] ?? [], ['staff:read', 'user:read']);
             $data['creditGuarantyAdminStaff']    = [];
             if ($object instanceof Company) {
                 $staffPermissions = $this->staffPermissionRepository->findParticipationAdmins($object);
