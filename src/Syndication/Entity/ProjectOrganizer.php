@@ -14,7 +14,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
+use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\RoleableTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
@@ -91,7 +93,7 @@ class ProjectOrganizer
     private $company;
 
     /**
-     * Overriden here to disabled validation on role count
+     * Overriden here to disabled validation on role count.
      *
      * @var array
      *
@@ -105,9 +107,6 @@ class ProjectOrganizer
     private $roles = [];
 
     /**
-     * @param Company               $company
-     * @param Project               $project
-     * @param Staff                 $addedBy
      * @param array|string[]|string $roles
      *
      * @throws Exception
@@ -130,9 +129,6 @@ class ProjectOrganizer
         return $this->id;
     }
 
-    /**
-     * @return Project
-     */
     public function getProject(): Project
     {
         return $this->project;
@@ -146,11 +142,6 @@ class ProjectOrganizer
         return $this->company;
     }
 
-    /**
-     * @param string $role
-     *
-     * @return bool
-     */
     public static function isUniqueRole(string $role): bool
     {
         return \in_array($role, [
@@ -161,8 +152,6 @@ class ProjectOrganizer
 
     /**
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
      */
     public function validateUniqueRoles(ExecutionContextInterface $context): void
     {
@@ -170,10 +159,10 @@ class ProjectOrganizer
         $organizers = $this->project->getOrganizers()->toArray();
         foreach ($this->roles as $role) {
             if (static::isUniqueRole($role)) {
-                $organizer = reset($organizers);
+                $organizer = \reset($organizers);
                 // Search for already existing organizers with tested role
                 while ($organizer && (false === $organizer->hasRole($role) || $organizer === $this)) {
-                    $organizer = next($organizers);
+                    $organizer = \next($organizers);
                 }
                 if ($organizer) {
                     $context->buildViolation('Syndication.ProjectOrganizer.roles.duplicatedUniqueRole')
@@ -192,8 +181,6 @@ class ProjectOrganizer
 
     /**
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
      */
     public function validateRunRole(ExecutionContextInterface $context): void
     {

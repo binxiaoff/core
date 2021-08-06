@@ -80,7 +80,7 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
 
         $manager = $staffRepository->findOneBy(['publicId' => $managerPublicId]);
 
-        $expected = array_map(function ($key) {
+        $expected = \array_map(function ($key) {
             return $this->projectParticipationMembers[$key]->getPublicId();
         }, $expected);
 
@@ -90,7 +90,7 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
         $result = $projectParticipationMemberRepository->findActiveByManager($manager);
 
         static::assertIsArray($result);
-        static::assertCount(count($expected), $result);
+        static::assertCount(\count($expected), $result);
         static::assertContainsOnlyInstancesOf(ProjectParticipationMember::class, $result);
 
         foreach ($result as $item) {
@@ -131,14 +131,14 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
         /** @var ProjectParticipationMemberRepository $projectParticipationMemberRepository */
         $projectParticipationMemberRepository = static::$container->get(ProjectParticipationMemberRepository::class);
 
-        $expected = array_map(function ($key) {
+        $expected = \array_map(function ($key) {
             return $this->projectParticipationMembers[$key]->getPublicId();
         }, $expected);
 
         $result = $projectParticipationMemberRepository->findActiveByProjectParticipationAndManagerAndPermissionEnabled($projectParticipation, $manager, $permission);
 
         static::assertIsArray($result);
-        static::assertCount(count($expected), $result);
+        static::assertCount(\count($expected), $result);
         static::assertContainsOnlyInstancesOf(ProjectParticipationMember::class, $result);
 
         /** @var ProjectParticipationMember $item */

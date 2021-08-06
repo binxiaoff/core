@@ -23,7 +23,7 @@ use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 abstract class AbstractProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws ReflectionException
      * @throws Exception
@@ -48,7 +48,6 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
         }
 
         $this->setPublicId($project, $projectReference);
-
 
         $tranches = $this->getTranches($project);
         foreach ($tranches as $tranche) {
@@ -78,32 +77,18 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
         $manager->flush();
     }
 
-    /**
-     * @return Money
-     */
     abstract protected function getGlobalFundingMoney(): Money;
 
-    /**
-     * @return string
-     */
     abstract protected static function getName(): string;
 
-    /**
-     * @return Staff
-     */
     abstract protected function getSubmitterStaff(): Staff;
 
-    /**
-     * @return string
-     */
     protected function getRiskGroupName(): string
     {
         return Faker\Company::asciify();
     }
 
     /**
-     * @param Project $project
-     *
      * @return iterable|ProjectParticipation[]
      */
     protected function getAdditionalProjectParticipations(Project $project)
@@ -112,8 +97,6 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
     }
 
     /**
-     * @param Project $project
-     *
      * @return iterable|Tranche[]
      */
     protected function getTranches(Project $project): iterable
@@ -122,8 +105,6 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
     }
 
     /**
-     * @param ProjectParticipation $projectParticipation
-     *
      * @return iterable|ProjectParticipationMember[]
      */
     protected function getProjectParticipationMembers(ProjectParticipation $projectParticipation): iterable
@@ -132,9 +113,6 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
     }
 
     /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Tranche              $tranche
-     *
      * @return ?ProjectParticipationTranche
      */
     protected function getProjectParticipationTranche(ProjectParticipation $projectParticipation, Tranche $tranche): ?ProjectParticipationTranche
@@ -151,37 +129,44 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
     }
 
     /**
-     * @param Project $project
-     * @param int     $getStatus
-     * @param Staff   $adder
+     * @throws Exception
      *
      * @return ProjectStatus[]
-     *
-     * @throws Exception
      */
     private function getProjectStatuses(Project $project, int $getStatus, Staff $adder)
     {
         $possibleStatuses = ProjectStatus::getPossibleStatuses();
 
-        sort($possibleStatuses);
+        \sort($possibleStatuses);
 
         $statuses = [];
+
         switch ($getStatus) {
             case ProjectStatus::STATUS_SYNDICATION_CANCELLED:
                 $statuses = [ProjectStatus::STATUS_SYNDICATION_CANCELLED];
+
                 break;
+
             case ProjectStatus::STATUS_DRAFT:
                 $statuses = [];
+
                 break;
+
             case ProjectStatus::STATUS_INTEREST_EXPRESSION:
                 $statuses = [ProjectStatus::STATUS_INTEREST_EXPRESSION];
+
                 break;
+
             case ProjectStatus::STATUS_PARTICIPANT_REPLY:
                 $statuses = [ProjectStatus::STATUS_INTEREST_EXPRESSION, ProjectStatus::STATUS_PARTICIPANT_REPLY];
+
                 break;
+
             case ProjectStatus::STATUS_ALLOCATION:
                 $statuses = [ProjectStatus::STATUS_INTEREST_EXPRESSION, ProjectStatus::STATUS_PARTICIPANT_REPLY, ProjectStatus::STATUS_ALLOCATION];
+
                 break;
+
             case ProjectStatus::STATUS_SYNDICATION_FINISHED:
                 $statuses = [
                     ProjectStatus::STATUS_INTEREST_EXPRESSION,
@@ -189,10 +174,11 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
                     ProjectStatus::STATUS_ALLOCATION,
                     ProjectStatus::STATUS_SYNDICATION_FINISHED,
                 ];
+
                 break;
         }
 
-        return array_map(static function ($status) use ($project, $adder) {
+        return \array_map(static function ($status) use ($project, $adder) {
             return new ProjectStatus($project, $status, $adder);
         }, $statuses);
     }

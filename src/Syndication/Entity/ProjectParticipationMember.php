@@ -15,12 +15,12 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\CompanyGroupTag;
 use Unilend\Core\Entity\FileVersion;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\{ArchivableTrait,
-    BlamableAddedTrait,
-    BlamableArchivedTrait,
-    PermissionTrait,
-    PublicizeIdentityTrait,
-    TimestampableAddedOnlyTrait};
+use Unilend\Core\Entity\Traits\ArchivableTrait;
+use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\BlamableArchivedTrait;
+use Unilend\Core\Entity\Traits\PermissionTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Model\Bitmask;
 
 /**
@@ -66,8 +66,6 @@ class ProjectParticipationMember
     public const PERMISSION_WRITE = 1 << 0;
 
     /**
-     * @var ProjectParticipation
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation", inversedBy="projectParticipationMembers")
      * @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
      *
@@ -78,8 +76,6 @@ class ProjectParticipationMember
     private ProjectParticipation $projectParticipation;
 
     /**
-     * @var Staff
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff", cascade={"persist"})
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_staff", referencedColumnName="id", nullable=false)
@@ -96,10 +92,6 @@ class ProjectParticipationMember
     private Staff $staff;
 
     /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Staff                $staff
-     * @param Staff                $addedBy
-     *
      * @throws Exception
      */
     public function __construct(ProjectParticipation $projectParticipation, Staff $staff, Staff $addedBy)
@@ -111,9 +103,6 @@ class ProjectParticipationMember
         $this->permissions          = new Bitmask(0);
     }
 
-    /**
-     * @return ProjectParticipation
-     */
     public function getProjectParticipation(): ProjectParticipation
     {
         return $this->projectParticipation;
@@ -121,8 +110,6 @@ class ProjectParticipationMember
 
     /**
      * @deprecated
-     *
-     * @return DateTimeImmutable|null
      *
      * @Groups({"projectParticipationMember:read"})
      */
@@ -136,8 +123,6 @@ class ProjectParticipationMember
     /**
      * @deprecated
      *
-     * @return FileVersion|null
-     *
      * @Groups({"projectParticipationMember:read"})
      */
     public function getAcceptedNDAVersion(): ?FileVersion
@@ -148,8 +133,6 @@ class ProjectParticipationMember
     }
 
     /**
-     * @return FileVersion|null
-     *
      * @Groups({"projectParticipationMember:read"})
      */
     public function getAcceptableNdaVersion(): ?FileVersion
@@ -159,17 +142,11 @@ class ProjectParticipationMember
         return $file ? $file->getCurrentFileVersion() : null;
     }
 
-    /**
-     * @return bool
-     */
     public function isArchived(): bool
     {
         return null !== $this->archived;
     }
 
-    /**
-     * @return Staff
-     */
     public function getStaff(): Staff
     {
         return $this->staff;
@@ -177,8 +154,6 @@ class ProjectParticipationMember
 
     /**
      * @deprecated
-     *
-     * @return string|null
      *
      * @Groups({"projectParticipationMember:read"})
      */
@@ -207,21 +182,17 @@ class ProjectParticipationMember
 
     /**
      * @Groups({"projectParticipationMember:read"})
-     *
-     * @return string
      */
     public function getMemberName(): string
     {
         $firstName = $this->staff->getUser()->getFirstName();
-        $lastName = $this->staff->getUser()->getLastName();
-        $email = $this->staff->getUser()->getEmail();
+        $lastName  = $this->staff->getUser()->getLastName();
+        $email     = $this->staff->getUser()->getEmail();
 
         return (!$firstName || !$lastName) ? $email : ($firstName . ' ' . $lastName);
     }
 
     /**
-     * @return bool
-     *
      * @Groups({"projectParticipationMember:read"})
      */
     public function isManager(): bool
@@ -241,8 +212,6 @@ class ProjectParticipationMember
 
     /**
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
      */
     public function validateArchived(ExecutionContextInterface $context): void
     {

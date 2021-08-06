@@ -11,7 +11,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Core\Entity\File;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
+use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
@@ -71,11 +73,6 @@ class ProjectFile
     private $project;
 
     /**
-     * @param string  $type
-     * @param File    $file
-     * @param Project $project
-     * @param Staff   $addedBy
-     *
      * @throws Exception
      */
     public function __construct(string $type, File $file, Project $project, Staff $addedBy)
@@ -87,41 +84,26 @@ class ProjectFile
         $this->added   = new \DateTimeImmutable();
     }
 
-    /**
-     * @return string
-     */
     public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * @return File
-     */
     public function getFile(): File
     {
         return $this->file;
     }
 
-    /**
-     * @return array
-     */
     public static function getTypes(): array
     {
         return self::getConstants('TYPE_');
     }
 
-    /**
-     * @return Project
-     */
     public function getProject(): Project
     {
         return $this->project;
     }
 
-    /**
-     * @return array
-     */
     public static function getProjectFileTypes(): array
     {
         return self::getConstants('PROJECT_FILE_TYPE_');

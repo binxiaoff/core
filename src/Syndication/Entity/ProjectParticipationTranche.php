@@ -15,7 +15,10 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\{Staff, Traits\BlamableAddedTrait, Traits\PublicizeIdentityTrait, Traits\TimestampableTrait};
+use Unilend\Core\Entity\Staff;
+use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use Unilend\Core\Entity\Traits\TimestampableTrait;
 use Unilend\Core\Service\MoneyCalculator;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 use Unilend\Syndication\Entity\Embeddable\Offer;
@@ -70,8 +73,6 @@ class ProjectParticipationTranche
     public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipationTranche:sensitive:read';
 
     /**
-     * @var Tranche
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Tranche", inversedBy="projectParticipationTranches")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_tranche", nullable=false)
@@ -87,8 +88,6 @@ class ProjectParticipationTranche
     private Tranche $tranche;
 
     /**
-     * @var ProjectParticipation
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation", inversedBy="projectParticipationTranches")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
@@ -100,8 +99,6 @@ class ProjectParticipationTranche
 
     /**
      * Réponse ferme : Répartition donnée par le participant à l'arrangeur.
-     *
-     * @var Offer
      *
      * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\Offer")
      *
@@ -118,8 +115,6 @@ class ProjectParticipationTranche
     private Offer $invitationReply;
 
     /**
-     * @var Offer
-     *
      * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\Offer")
      *
      * @Assert\Valid
@@ -128,8 +123,8 @@ class ProjectParticipationTranche
      *
      * @Groups({
      *     ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ,
-     *    "projectParticipationTranche:arranger:allocation:write"
-     *})
+     *     "projectParticipationTranche:arranger:allocation:write"
+     * })
      */
     private Offer $allocation;
 
@@ -143,52 +138,34 @@ class ProjectParticipationTranche
     private Collection $invitationReplyVersions;
 
     /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Tranche              $tranche
-     * @param Staff                $addedBy
-     *
      * @throws Exception
      */
     public function __construct(ProjectParticipation $projectParticipation, Tranche $tranche, Staff $addedBy)
     {
-        $this->projectParticipation     = $projectParticipation;
-        $this->tranche                  = $tranche;
-        $this->addedBy                  = $addedBy;
-        $this->added                    = new DateTimeImmutable();
-        $this->invitationReply          = new Offer();
-        $this->allocation               = new Offer();
-        $this->invitationReplyVersions  = new ArrayCollection();
+        $this->projectParticipation    = $projectParticipation;
+        $this->tranche                 = $tranche;
+        $this->addedBy                 = $addedBy;
+        $this->added                   = new DateTimeImmutable();
+        $this->invitationReply         = new Offer();
+        $this->allocation              = new Offer();
+        $this->invitationReplyVersions = new ArrayCollection();
     }
 
-    /**
-     * @return Tranche
-     */
     public function getTranche(): Tranche
     {
         return $this->tranche;
     }
 
-    /**
-     * @return ProjectParticipation
-     */
     public function getProjectParticipation(): ProjectParticipation
     {
         return $this->projectParticipation;
     }
 
-    /**
-     * @return Offer
-     */
     public function getInvitationReply(): Offer
     {
         return $this->invitationReply;
     }
 
-    /**
-     * @param Offer $invitationReply
-     *
-     * @return ProjectParticipationTranche
-     */
     public function setInvitationReply(Offer $invitationReply): ProjectParticipationTranche
     {
         $this->invitationReply = $invitationReply;
@@ -196,19 +173,11 @@ class ProjectParticipationTranche
         return $this;
     }
 
-    /**
-     * @return Offer
-     */
     public function getAllocation(): Offer
     {
         return $this->allocation;
     }
 
-    /**
-     * @param Offer $allocation
-     *
-     * @return ProjectParticipationTranche
-     */
     public function setAllocation(Offer $allocation): ProjectParticipationTranche
     {
         $this->allocation = $allocation;
@@ -226,10 +195,6 @@ class ProjectParticipationTranche
 
     /**
      * Used in an expression constraints: we can only add the tranche of the project.
-     *
-     * @param Tranche $tranche
-     *
-     * @return bool
      */
     public function isOwnTranche(Tranche $tranche): bool
     {
@@ -238,35 +203,30 @@ class ProjectParticipationTranche
 
     /**
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
-     *
-     * @return void
      */
     public function validateAllocation(ExecutionContextInterface $context): void
     {
         $arrangerParticipation = $this->getProjectParticipation()->getProject()->getArrangerProjectParticipation();
 
         if (
-            $this->getProjectParticipation() !== $arrangerParticipation &&
-            $this->getAllocation()->isValid() &&
-            $this->getInvitationReply()->isValid() &&
-            MoneyCalculator::compare($this->getInvitationReply()->getMoney(), $this->getAllocation()->getMoney()) < 0
+            $this->getProjectParticipation() !== $arrangerParticipation
+            && $this->getAllocation()->isValid()
+            && $this->getInvitationReply()->isValid()
+            && MoneyCalculator::compare($this->getInvitationReply()->getMoney(), $this->getAllocation()->getMoney()) < 0
         ) {
             $context->buildViolation('Syndication.ProjectParticipationTranche.allocation.aboveInvitationReply')
                 ->atPath('allocation')
                 ->setParameters([
                     'invitationReplyAmount' => $this->getInvitationReply()->getMoney()->getAmount(),
-                    'allocationAmount' => $this->getAllocation()->getMoney()->getAmount(),
+                    'allocationAmount'      => $this->getAllocation()->getMoney()->getAmount(),
                 ])
-                ->addViolation();
+                ->addViolation()
+            ;
         }
     }
 
     /**
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
      */
     public function validateCurrencyConsistency(ExecutionContextInterface $context): void
     {
@@ -275,20 +235,20 @@ class ProjectParticipationTranche
         if (MoneyCalculator::isDifferentCurrency($this->invitationReply->getMoney(), $globalFundingMoney)) {
             $context->buildViolation('Core.Money.currency.inconsistent')
                 ->atPath('invitationReply')
-                ->addViolation();
+                ->addViolation()
+            ;
         }
 
         if (MoneyCalculator::isDifferentCurrency($this->allocation->getMoney(), $globalFundingMoney)) {
             $context->buildViolation('Core.Money.currency.inconsistent')
                 ->atPath('allocation')
-                ->addViolation();
+                ->addViolation()
+            ;
         }
     }
 
     /**
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
      */
     public function validateSyndicationStatus(ExecutionContextInterface $context): void
     {
@@ -304,6 +264,7 @@ class ProjectParticipationTranche
 
         $context->buildViolation('Syndication.ProjectParticipationTranche.tranche.unsyndicated')
             ->atPath('tranche')
-            ->addViolation();
+            ->addViolation()
+        ;
     }
 }

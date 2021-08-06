@@ -6,22 +6,19 @@ namespace Unilend\Syndication\MessageHandler\ProjectParticipationMember;
 
 use InvalidArgumentException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use Unilend\Syndication\Message\ProjectParticipationMember\ProjectParticipationMemberCreated;
 use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 use Unilend\Syndication\Service\{ProjectParticipationMember\ProjectParticipationMemberNotifier};
 
 class ProjectParticipationMemberCreatedHandler implements MessageHandlerInterface
 {
-    /** @var ProjectParticipationMemberRepository */
     private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
-    /** @var ProjectParticipationMemberNotifier */
+
     private ProjectParticipationMemberNotifier $projectParticipationMemberNotifier;
 
-    /**
-     * @param ProjectParticipationMemberRepository $projectParticipationMemberRepository
-     * @param ProjectParticipationMemberNotifier   $projectParticipationMemberNotifier
-     */
     public function __construct(
         ProjectParticipationMemberRepository $projectParticipationMemberRepository,
         ProjectParticipationMemberNotifier $projectParticipationMemberNotifier
@@ -31,8 +28,6 @@ class ProjectParticipationMemberCreatedHandler implements MessageHandlerInterfac
     }
 
     /**
-     * @param ProjectParticipationMemberCreated $projectParticipationMemberCreated
-     *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
@@ -43,7 +38,7 @@ class ProjectParticipationMemberCreatedHandler implements MessageHandlerInterfac
         $projectParticipationMember   = $this->projectParticipationMemberRepository->find($projectParticipationMemberId);
 
         if (!$projectParticipationMember) {
-            throw new InvalidArgumentException(sprintf("The participationMember with id %d doesn't exist anymore", $projectParticipationMemberId));
+            throw new InvalidArgumentException(\sprintf("The participationMember with id %d doesn't exist anymore", $projectParticipationMemberId));
         }
 
         $this->projectParticipationMemberNotifier->notifyMemberAdded($projectParticipationMember);

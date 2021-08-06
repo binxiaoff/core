@@ -7,12 +7,14 @@ namespace Unilend\Syndication\Serializer\Normalizer\Project;
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
-use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer,
-    ContextAwareDenormalizerInterface,
-    DenormalizerAwareInterface,
-    DenormalizerAwareTrait,
-    ObjectToPopulateTrait};
-use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectStatus;
 
 class ProjectDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -21,19 +23,14 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
 
     private const ALREADY_CALLED = 'PROJECT_DENORMALIZER_ALREADY_CALLED';
 
-    /** @var IriConverterInterface */
     private IriConverterInterface $iriConverter;
-    /** @var ValidatorInterface */
+
     private ValidatorInterface $validator;
 
-    /**
-     * @param IriConverterInterface $iriConverter
-     * @param ValidatorInterface    $validator
-     */
     public function __construct(IriConverterInterface $iriConverter, ValidatorInterface $validator)
     {
         $this->iriConverter = $iriConverter;
-        $this->validator = $validator;
+        $this->validator    = $validator;
     }
 
     /**
@@ -66,7 +63,7 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
         foreach ($projectParticipations as $projectParticipation) {
             if (isset($projectParticipation['@id'])) {
                 $projectParticipation = $this->updateProjectParticipation($projectParticipation);
-                // Avoid projectParticipation creation after allocation
+            // Avoid projectParticipation creation after allocation
             } elseif ($denormalized->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_ALLOCATION) {
                 $projectParticipation = $this->createProjectParticipation($projectParticipation, $denormalized);
             }
@@ -85,10 +82,6 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
     }
 
     /**
-     * @param array $projectParticipation
-     *
-     * @return ProjectParticipation
-     *
      * @throws ExceptionInterface
      */
     private function updateProjectParticipation(array $projectParticipation): ProjectParticipation
@@ -114,11 +107,6 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
     }
 
     /**
-     * @param array   $data
-     * @param Project $project
-     *
-     * @return ProjectParticipation
-     *
      * @throws ExceptionInterface
      */
     private function createProjectParticipation(array $data, Project $project): ProjectParticipation
@@ -130,7 +118,7 @@ class ProjectDenormalizer implements ContextAwareDenormalizerInterface, Denormal
             ProjectParticipation::class,
             'array',
             [
-                AbstractNormalizer::GROUPS => ['projectParticipation:create', 'offerWithFee:write', 'nullableMoney:write', 'offer:write', 'rangedOfferWithFee:write'],
+                AbstractNormalizer::GROUPS                        => ['projectParticipation:create', 'offerWithFee:write', 'nullableMoney:write', 'offer:write', 'rangedOfferWithFee:write'],
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     ProjectParticipation::class => [
                         'project' => $project,

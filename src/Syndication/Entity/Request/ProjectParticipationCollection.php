@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\Entity\Request;
 
-use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Syndication\Entity\{Project, ProjectParticipation};
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectParticipation;
 
 /**
  * @ApiResource(
@@ -55,19 +57,12 @@ class ProjectParticipationCollection
      */
     private ArrayCollection $projectParticipations;
 
-    /**
-     * @var Project
-     */
     private Project $project;
 
-    /**
-     * @param ArrayCollection $projectParticipations
-     * @param Project         $project
-     */
     public function __construct(ArrayCollection $projectParticipations, Project $project)
     {
         $this->projectParticipations = $projectParticipations;
-        $this->project = $project;
+        $this->project               = $project;
     }
 
     /**
@@ -78,9 +73,6 @@ class ProjectParticipationCollection
         return $this->projectParticipations;
     }
 
-    /**
-     * @return Project
-     */
     public function getProject(): Project
     {
         return $this->project;
@@ -90,8 +82,6 @@ class ProjectParticipationCollection
      * API Platform need an identifier to show the result of POST. We add here a fake id.
      *
      * @ApiProperty(identifier=true)
-     *
-     * @return string
      */
     public function getId(): string
     {
@@ -100,8 +90,6 @@ class ProjectParticipationCollection
 
     /**
      * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
      */
     public function checkParticipationUniqueness(ExecutionContextInterface $context): void
     {
@@ -110,7 +98,7 @@ class ProjectParticipationCollection
             $companyIds[] = $participation->getParticipant()->getId();
         }
 
-        if (count($companyIds) !== count(array_unique($companyIds))) {
+        if (\count($companyIds) !== \count(\array_unique($companyIds))) {
             $context->buildViolation('Syndication.ProjectParticipationCollection.projectParticipations.duplicated')
                 ->atPath('projectParticipations')
                 ->addViolation()

@@ -8,13 +8,16 @@ use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer, ContextAwareDenormalizerInterface, DenormalizerAwareInterface, DenormalizerAwareTrait, ObjectToPopulateTrait};
-use Unilend\Core\Entity\User;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
 use Unilend\Core\Entity\Staff;
-use Unilend\Syndication\Entity\{ProjectParticipation,
-    ProjectParticipationMember,
-    Request\ProjectParticipationCollection
-};
+use Unilend\Core\Entity\User;
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectParticipationMember;
+use Unilend\Syndication\Entity\Request\ProjectParticipationCollection;
 
 class ProjectParticipationCollectionDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -23,15 +26,10 @@ class ProjectParticipationCollectionDenormalizer implements ContextAwareDenormal
 
     private const ALREADY_CALLED = 'PROJECT_PARTICIPATION_COLLECTION_ATTRIBUTE_DENORMALIZER_ALREADY_CALLED';
 
-    /** @var Security */
     private Security $security;
-    /** @var IriConverterInterface */
+
     private IriConverterInterface $iriConverter;
 
-    /**
-     * @param Security              $security
-     * @param IriConverterInterface $iriConverter
-     */
     public function __construct(Security $security, IriConverterInterface $iriConverter)
     {
         $this->security     = $security;

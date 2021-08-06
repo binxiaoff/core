@@ -15,7 +15,8 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Unilend\Core\Entity\Interfaces\StatusInterface;
 use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
+use Unilend\Core\Entity\Traits\BlamableAddedTrait;
+use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
@@ -81,8 +82,6 @@ class ProjectStatus implements StatusInterface
     ];
 
     /**
-     * @var Project
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Project", inversedBy="statuses")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
@@ -91,8 +90,6 @@ class ProjectStatus implements StatusInterface
     private Project $project;
 
     /**
-     * @var int
-     *
      * @ORM\Column(type="smallint")
      *
      * @Groups({"projectStatus:read", "projectStatus:create"})
@@ -100,8 +97,6 @@ class ProjectStatus implements StatusInterface
     private int $status;
 
     /**
-     * @var int|null
-     *
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      * @ORM\Column(type="integer")
@@ -109,17 +104,13 @@ class ProjectStatus implements StatusInterface
     private ?int $id = null;
 
     /**
-     * @param Project $project
-     * @param int     $status
-     * @param Staff   $addedBy
-     *
      * @throws Exception
      */
     public function __construct(Project $project, int $status, Staff $addedBy)
     {
         if (!\in_array($status, static::getPossibleStatuses(), true)) {
             throw new InvalidArgumentException(
-                sprintf('%s is not a possible status for %s', $status, __CLASS__)
+                \sprintf('%s is not a possible status for %s', $status, __CLASS__)
             );
         }
 
@@ -129,17 +120,11 @@ class ProjectStatus implements StatusInterface
         $this->addedBy = $addedBy;
     }
 
-    /**
-     * @return Project
-     */
     public function getProject(): Project
     {
         return $this->project;
     }
 
-    /**
-     * @return int|null
-     */
     public function getId(): ?int
     {
         return $this->id;
@@ -154,29 +139,27 @@ class ProjectStatus implements StatusInterface
     }
 
     /**
-     * @return string
-     *
      * @Groups({"projectStatus:read"})
      */
     public function getHumanLabel(): string
     {
-        $constantName = array_flip(static::getPossibleStatuses())[$this->status];
-        $lowercaseConstantName = mb_strtolower($constantName);
+        $constantName          = \array_flip(static::getPossibleStatuses())[$this->status];
+        $lowercaseConstantName = \mb_strtolower($constantName);
 
         // CamelCased status label
-        $tokens = explode('_', $lowercaseConstantName);
+        $tokens = \explode('_', $lowercaseConstantName);
 
         // Remove "status" prefix
-        array_shift($tokens);
+        \array_shift($tokens);
 
         // Capitalize all tokens
-        $capitalizedTokens = array_map('ucfirst', $tokens);
+        $capitalizedTokens = \array_map('ucfirst', $tokens);
 
         // Join to create  PascalCase statusLabel
-        $statusLabel = implode('', $capitalizedTokens);
+        $statusLabel = \implode('', $capitalizedTokens);
 
         // Return camelCase statusLabel
-        return lcfirst($statusLabel);
+        return \lcfirst($statusLabel);
     }
 
     /**
@@ -187,11 +170,6 @@ class ProjectStatus implements StatusInterface
         return static::getConstants('STATUS_');
     }
 
-    /**
-     * @param Project $project
-     *
-     * @return ProjectStatus
-     */
     public function setProject(Project $project): ProjectStatus
     {
         $this->project = $project;
@@ -210,8 +188,7 @@ class ProjectStatus implements StatusInterface
     /**
      * @Assert\Callback
      *
-     * @param ExecutionContextInterface $context
-     * @param                           $payload
+     * @param $payload
      */
     public function validateSyndicationAndParticipationTypes(ExecutionContextInterface $context, $payload)
     {
@@ -234,15 +211,15 @@ class ProjectStatus implements StatusInterface
     /**
      * @Assert\Callback
      *
-     * @param ExecutionContextInterface $context
-     * @param                           $payload
+     * @param $payload
      */
     public function validateOversubscription(ExecutionContextInterface $context, $payload)
     {
         if ($this->getStatus() > self::STATUS_ALLOCATION && $this->getProject()->isOversubscribed()) {
             $context->buildViolation('Syndication.ProjectStatus.project.oversubscribed')
                 ->atPath('status')
-                ->addViolation();
+                ->addViolation()
+            ;
         }
     }
 }

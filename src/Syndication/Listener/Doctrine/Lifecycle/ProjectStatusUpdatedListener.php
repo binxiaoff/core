@@ -168,7 +168,7 @@ class ProjectStatusUpdatedListener
             $currentStatus = $participation->getCurrentStatus();
 
             if (null === $currentStatus) {
-                throw new RuntimeException(sprintf('The participation with the publicId %s should have a current status', $participation->getPublicId()));
+                throw new RuntimeException(\sprintf('The participation with the publicId %s should have a current status', $participation->getPublicId()));
             }
 
             $status = $currentStatus->getStatus();

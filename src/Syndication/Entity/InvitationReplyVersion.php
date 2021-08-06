@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Syndication\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -18,8 +20,6 @@ class InvitationReplyVersion
     use BlamableAddedTrait;
 
     /**
-     * @var int
-     *
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
@@ -27,17 +27,12 @@ class InvitationReplyVersion
     private int $id;
 
     /**
-     * @var ProjectParticipationTranche
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipationTranche", inversedBy="invitationReplyVersions")
      * @ORM\JoinColumn(name="id_project_participation_tranche", nullable=false)
      */
     private ProjectParticipationTranche $projectParticipationTranche;
 
     /**
-     *
-     * @var Offer
-     *
      * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\Offer")
      *
      * @Assert\Valid
@@ -47,8 +42,6 @@ class InvitationReplyVersion
     private Offer $invitationReply;
 
     /**
-     * @var ProjectParticipationStatus
-     *
      * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipationStatus")
      * @ORM\JoinColumn(name="id_project_participation_status", nullable=false)
      *
@@ -56,10 +49,6 @@ class InvitationReplyVersion
      */
     private ProjectParticipationStatus $currentProjectParticipationStatus;
 
-    /**
-     * @param ProjectParticipationTranche $projectParticipationTranche
-     * @param Staff                       $addedBy
-     */
     public function __construct(ProjectParticipationTranche $projectParticipationTranche, Staff $addedBy)
     {
         $this->projectParticipationTranche       = $projectParticipationTranche;
@@ -68,33 +57,21 @@ class InvitationReplyVersion
         $this->addedBy                           = $addedBy;
     }
 
-    /**
-     * @return int
-     */
     public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @return ProjectParticipationTranche
-     */
     public function getProjectParticipationTranche(): ProjectParticipationTranche
     {
         return $this->projectParticipationTranche;
     }
 
-    /**
-     * @return Offer
-     */
     public function getInvitationReply(): Offer
     {
         return $this->invitationReply;
     }
 
-    /**
-     * @return ProjectParticipationStatus
-     */
     public function getCurrentProjectParticipationStatus(): ProjectParticipationStatus
     {
         return $this->currentProjectParticipationStatus;

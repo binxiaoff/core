@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\MessageHandler\Project;
 
-use Doctrine\ORM\{NoResultException, NonUniqueResultException};
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Http\Client\Exception;
 use Nexy\Slack\Exception\SlackApiException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use Unilend\Syndication\Entity\ProjectStatus;
 use Unilend\Syndication\Message\Project\ProjectStatusUpdated;
 use Unilend\Syndication\Repository\ProjectRepository;
@@ -17,18 +20,12 @@ use Unilend\Syndication\Service\ProjectParticipationMember\ProjectParticipationM
 
 class ProjectStatusUpdatedHandler implements MessageHandlerInterface
 {
-    /** @var ProjectRepository */
     private ProjectRepository $projectRepository;
-    /** @var ProjectParticipationMemberNotifier */
+
     private ProjectParticipationMemberNotifier $projectParticipationMemberNotifier;
-    /** @var ProjectNotifier */
+
     private ProjectNotifier $projectNotifier;
 
-    /**
-     * @param ProjectRepository                  $projectRepository
-     * @param ProjectNotifier                    $projectNotifier
-     * @param ProjectParticipationMemberNotifier $projectParticipationMemberNotifier
-     */
     public function __construct(
         ProjectRepository $projectRepository,
         ProjectNotifier $projectNotifier,
@@ -40,8 +37,6 @@ class ProjectStatusUpdatedHandler implements MessageHandlerInterface
     }
 
     /**
-     * @param ProjectStatusUpdated $projectStatusUpdated
-     *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError

@@ -9,26 +9,24 @@ use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Core\DataFixtures\AbstractFixtures;
 use Unilend\Core\DataFixtures\StaffFixtures;
-use Unilend\Core\Entity\{Message, MessageThread, Staff};
+use Unilend\Core\Entity\Message;
+use Unilend\Core\Entity\MessageThread;
+use Unilend\Core\Entity\Staff;
 use Unilend\Core\Repository\StaffRepository;
-use Unilend\Syndication\Entity\{Project, ProjectParticipation, ProjectStatus};
+use Unilend\Syndication\Entity\Project;
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectStatus;
 
 class MessageFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    /** @var StaffRepository */
     private StaffRepository $staffRepository;
 
-    /** @var ObjectManager */
     private ObjectManager $manager;
 
-    /** @var array */
     private array $messageThreads = [];
 
     /**
      * MessageFixtures constructor.
-     *
-     * @param TokenStorageInterface $tokenStorage
-     * @param StaffRepository       $staffRepository
      */
     public function __construct(TokenStorageInterface $tokenStorage, StaffRepository $staffRepository)
     {
@@ -36,9 +34,6 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
         $this->staffRepository = $staffRepository;
     }
 
-    /**
-     * @param ObjectManager $manager
-     */
     public function load(ObjectManager $manager): void
     {
         $this->manager = $manager;
@@ -71,14 +66,9 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
         ];
     }
 
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return MessageThread
-     */
     private function getProjectParticipationMessageThread(ProjectParticipation $projectParticipation): MessageThread
     {
-        if (false === array_key_exists($projectParticipation->getId(), $this->messageThreads)) {
+        if (false === \array_key_exists($projectParticipation->getId(), $this->messageThreads)) {
             $messageThread = (new MessageThread())->setProjectParticipation($projectParticipation);
             $this->manager->persist($messageThread);
             $this->manager->flush();
@@ -88,10 +78,6 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
         return $this->messageThreads[$projectParticipation->getId()];
     }
 
-    /**
-     * @param Project    $project
-     * @param Staff|null $sender
-     */
     private function createMessagesForProjectParticipations(Project $project, Staff $sender = null): void
     {
         if ($project->getCurrentStatus()->getStatus() <= ProjectStatus::STATUS_DRAFT) {
@@ -105,8 +91,8 @@ class MessageFixtures extends AbstractFixtures implements DependentFixtureInterf
                 $messageThread               = $this->getProjectParticipationMessageThread($projectParticipation);
 
                 // If sender not set, pick one of projectParticipationMembers as a message sender
-                $sender  = $sender ?: $projectParticipationMembers[array_rand($projectParticipationMembers, 1)]->getStaff();
-                $message = (new Message($sender, $messageThread, sprintf(
+                $sender  = $sender ?: $projectParticipationMembers[\array_rand($projectParticipationMembers, 1)]->getStaff();
+                $message = (new Message($sender, $messageThread, \sprintf(
                     'Message on project "%s" from user "%s" to company "%s" member\'s',
                     $project->getTitle(),
                     $sender->getUser()->getEmail(),

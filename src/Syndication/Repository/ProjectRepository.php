@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Unilend\Syndication\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\{
-    NoResultException,
-    NonUniqueResultException,
-    ORMException,
-    OptimisticLockException
-};
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Repository\Traits\{OrderByHandlerTrait, PaginationHandlerTrait};
+use Unilend\Core\Repository\Traits\OrderByHandlerTrait;
+use Unilend\Core\Repository\Traits\PaginationHandlerTrait;
 use Unilend\Syndication\Entity\Project;
 
 /**
@@ -28,8 +27,6 @@ class ProjectRepository extends ServiceEntityRepository
 
     /**
      * ProjectRepository constructor.
-     *
-     * @param ManagerRegistry $managerRegistry
      */
     public function __construct(ManagerRegistry $managerRegistry)
     {
@@ -37,8 +34,6 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Project $project
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -58,12 +53,8 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Project $project
-     *
      * @throws NoResultException
      * @throws NonUniqueResultException
-     *
-     * @return int
      */
     public function countProjectParticipationMembers(Project $project): int
     {

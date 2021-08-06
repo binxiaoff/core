@@ -19,19 +19,13 @@ class ProjectParticipationStatusUpdatedHandler implements MessageHandlerInterfac
 
     private ProjectParticipationNotifier $projectParticipationNotifier;
 
-    /**
-     * @param ProjectParticipationRepository $projectParticipationRepository
-     * @param ProjectParticipationNotifier   $projectParticipationNotifier
-     */
     public function __construct(ProjectParticipationRepository $projectParticipationRepository, ProjectParticipationNotifier $projectParticipationNotifier)
     {
         $this->projectParticipationRepository = $projectParticipationRepository;
-        $this->projectParticipationNotifier = $projectParticipationNotifier;
+        $this->projectParticipationNotifier   = $projectParticipationNotifier;
     }
 
     /**
-     * @param ProjectParticipationStatusUpdated $projectParticipationStatusUpdated
-     *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError

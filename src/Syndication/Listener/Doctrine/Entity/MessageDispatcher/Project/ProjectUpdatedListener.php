@@ -13,10 +13,6 @@ class ProjectUpdatedListener
 {
     use MessageDispatcherTrait;
 
-    /**
-     * @param Project            $project
-     * @param PreUpdateEventArgs $args
-     */
     public function preUpdate(Project $project, PreUpdateEventArgs $args): void
     {
         if ($args->hasChangedField(Project::FIELD_CURRENT_STATUS)) {

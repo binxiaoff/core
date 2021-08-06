@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Syndication\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Unilend\Syndication\Entity\ProjectComment;
 
@@ -17,17 +18,12 @@ use Unilend\Syndication\Entity\ProjectComment;
  */
 class ProjectCommentRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ProjectComment::class);
     }
 
     /**
-     * @param ProjectComment $comment
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */

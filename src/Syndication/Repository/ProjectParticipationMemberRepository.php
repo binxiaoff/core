@@ -9,7 +9,8 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Entity\TeamEdge;
-use Unilend\Syndication\Entity\{ProjectParticipation, ProjectParticipationMember};
+use Unilend\Syndication\Entity\ProjectParticipation;
+use Unilend\Syndication\Entity\ProjectParticipationMember;
 
 /**
  * @method ProjectParticipationMember|null find($id, $lockMode = null, $lockVersion = null)
@@ -19,19 +20,11 @@ use Unilend\Syndication\Entity\{ProjectParticipation, ProjectParticipationMember
  */
 class ProjectParticipationMemberRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ProjectParticipationMember::class);
     }
 
-    /**
-     * @param Staff $manager
-     *
-     * @return array
-     */
     public function findActiveByManager(Staff $manager): array
     {
         if (false === $manager->isManager()) {
@@ -45,16 +38,10 @@ class ProjectParticipationMemberRepository extends ServiceEntityRepository
             ->andWhere('ppm.archived is NULL')
             ->setParameter('team', $manager->getTeam())
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
-    /**
-     * @param ProjectParticipation $projectParticipation
-     * @param Staff                $manager
-     * @param int                  $permission
-     *
-     * @return array
-     */
     public function findActiveByProjectParticipationAndManagerAndPermissionEnabled(ProjectParticipation $projectParticipation, Staff $manager, int $permission = 0): array
     {
         if (false === $manager->isManager()) {
@@ -62,8 +49,8 @@ class ProjectParticipationMemberRepository extends ServiceEntityRepository
         }
 
         return $projectParticipation->getProjectParticipationMembers()->filter(function (ProjectParticipationMember $projectParticipationMember) use ($permission, $manager) {
-            return $projectParticipationMember->getPermissions()->has($permission) && false === $projectParticipationMember->isArchived() &&
-                (\in_array($projectParticipationMember->getStaff()->getTeam(), [...$manager->getTeam()->getDescendents(), $manager->getTeam()], true));
+            return $projectParticipationMember->getPermissions()->has($permission) && false === $projectParticipationMember->isArchived()
+                && (\in_array($projectParticipationMember->getStaff()->getTeam(), [...$manager->getTeam()->getDescendents(), $manager->getTeam()], true));
         })->toArray();
     }
 }

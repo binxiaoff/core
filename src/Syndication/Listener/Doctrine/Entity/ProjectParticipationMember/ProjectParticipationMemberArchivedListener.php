@@ -11,20 +11,15 @@ use Unilend\Syndication\Entity\ProjectParticipationMember;
 
 class ProjectParticipationMemberArchivedListener
 {
-    /** @var Security */
     private Security $security;
 
-    /**
-     * @param Security $security
-     */
     public function __construct(Security $security)
     {
         $this->security = $security;
     }
 
     /**
-     * @param ProjectParticipationMember $projectParticipationMember
-     * @param PreUpdateEventArgs         $args
+     * @param PreUpdateEventArgs $args
      *
      * I do not use ArchivedByListener because we need to get all members on the front side. Soft deletable is not adapted for this case.
      */

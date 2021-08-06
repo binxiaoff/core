@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Unilend\Syndication\Serializer\Normalizer\Project;
 
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Serializer\Normalizer\{AbstractNormalizer, ContextAwareNormalizerInterface, NormalizerAwareInterface, NormalizerAwareTrait};
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Unilend\Core\Entity\Company;
 use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use Unilend\Core\Entity\Staff;
@@ -19,12 +22,8 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
 
     private const ALREADY_CALLED = 'PROJECT_ATTRIBUTE_NORMALIZER_ALREADY_CALLED';
 
-    /** @var Security */
     private Security $security;
 
-    /**
-     * @param Security $security
-     */
     public function __construct(Security $security)
     {
         $this->security = $security;
@@ -57,23 +56,17 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
 
         $isCAGMember = $currentCompany instanceof Company ? $currentCompany->isCAGMember() : false;
 
-        $context[AbstractNormalizer::GROUPS] = array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalNormalizerGroups($object, $currentCompany));
+        $context[AbstractNormalizer::GROUPS] = \array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalNormalizerGroups($object, $currentCompany));
 
         $normalized = $this->normalizer->normalize($object, $format, $context);
 
-        if (\is_array($normalized) && false === $isCAGMember && $normalized['participationType'] === ParticipationType::SUB_PARTICIPATION) {
+        if (\is_array($normalized) && false === $isCAGMember && ParticipationType::SUB_PARTICIPATION === $normalized['participationType']) {
             unset($normalized['participationType']);
         }
 
         return $normalized;
     }
 
-    /**
-     * @param Project      $project
-     * @param Company|null $connectedCompany
-     *
-     * @return array
-     */
     private function getAdditionalNormalizerGroups(Project $project, ?Company $connectedCompany): array
     {
         $additionalGroups = [];

@@ -5,36 +5,30 @@ declare(strict_types=1);
 namespace Unilend\Syndication\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Unilend\Core\Entity\Message;
-use Unilend\Core\Repository\{MessageRepository, MessageThreadRepository};
+use Unilend\Core\Repository\MessageRepository;
+use Unilend\Core\Repository\MessageThreadRepository;
 
 final class MessageDataPersister implements DataPersisterInterface
 {
-    /** @var MessageRepository */
     private MessageRepository $messageRepository;
 
-    /** @var MessageThreadRepository */
     private MessageThreadRepository $messageThreadRepository;
 
-    /**
-     * @param MessageRepository       $messageRepository
-     * @param MessageThreadRepository $messageThreadRepository
-     */
     public function __construct(MessageRepository $messageRepository, MessageThreadRepository $messageThreadRepository)
     {
-        $this->messageRepository        = $messageRepository;
-        $this->messageThreadRepository  = $messageThreadRepository;
+        $this->messageRepository       = $messageRepository;
+        $this->messageThreadRepository = $messageThreadRepository;
     }
 
     /**
      * @param Message $data
-     *
-     * @return bool
      */
     public function supports($data): bool
     {
-        return ($data instanceof Message);
+        return $data instanceof Message;
     }
 
     /**
@@ -42,8 +36,6 @@ final class MessageDataPersister implements DataPersisterInterface
      *
      * @throws ORMException
      * @throws OptimisticLockException
-     *
-     * @return Message
      */
     public function persist($data): Message
     {

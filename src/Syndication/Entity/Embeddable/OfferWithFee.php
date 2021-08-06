@@ -18,8 +18,6 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
 class OfferWithFee extends Offer
 {
     /**
-     * @var string|null
-     *
      * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
@@ -32,9 +30,6 @@ class OfferWithFee extends Offer
     protected ?string $feeRate = null;
 
     /**
-     * @param NullableMoney|null $money
-     * @param string|null        $feeRate
-     *
      * @throws Exception
      */
     public function __construct(?NullableMoney $money = null, ?string $feeRate = null)
@@ -48,19 +43,13 @@ class OfferWithFee extends Offer
         parent::__construct($money);
     }
 
-    /**
-     * @return string|null
-     */
     public function getFeeRate(): ?string
     {
         return $this->feeRate;
     }
 
-    /**
-     * @return bool
-     */
     public function isValid(): bool
     {
-        return parent::isValid() && $this->feeRate !== null;
+        return parent::isValid() && null !== $this->feeRate;
     }
 }

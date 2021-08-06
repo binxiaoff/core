@@ -14,19 +14,14 @@ use Unilend\Syndication\Entity\ProjectParticipationTranche;
 
 class ProjectParticipationTrancheUpdatedListener
 {
-    /** @var Security */
-    private Security $security;
-
-    /** @var UserRepository */
-    private UserRepository $userRepository;
-
-    public array $idsProjectParticipations = [];
     public const INVITATION_REPLY_PROPERTY = 'invitationReply.money.amount';
 
-    /**
-     * @param Security       $security
-     * @param UserRepository $userRepository
-     */
+    public array $idsProjectParticipations = [];
+
+    private Security $security;
+
+    private UserRepository $userRepository;
+
     public function __construct(Security $security, UserRepository $userRepository)
     {
         $this->security       = $security;
@@ -34,17 +29,15 @@ class ProjectParticipationTrancheUpdatedListener
     }
 
     /**
-     * @param OnFlushEventArgs $args
-     *
      * @throws \Exception
      */
     public function onFlush(OnFlushEventArgs $args): void
     {
-        $em = $args->getEntityManager();
+        $em  = $args->getEntityManager();
         $uow = $em->getUnitOfWork();
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
-            if ($entity instanceof ProjectParticipationTranche && array_key_exists(self::INVITATION_REPLY_PROPERTY, $uow->getEntityChangeSet($entity))) {
+            if ($entity instanceof ProjectParticipationTranche && \array_key_exists(self::INVITATION_REPLY_PROPERTY, $uow->getEntityChangeSet($entity))) {
                 /** @var User $user */
                 $user = $this->security->getUser();
 
@@ -54,7 +47,7 @@ class ProjectParticipationTrancheUpdatedListener
 
                 $projectParticipation = $entity->getProjectParticipation();
 
-                if (!in_array($projectParticipation->getPublicId(), $this->idsProjectParticipations)) {
+                if (!\in_array($projectParticipation->getPublicId(), $this->idsProjectParticipations)) {
                     foreach ($projectParticipation->getProjectParticipationTranches() as $projectParticipationTranche) {
                         $version = new InvitationReplyVersion($projectParticipationTranche, $user->getCurrentStaff());
                         $em->persist($version);

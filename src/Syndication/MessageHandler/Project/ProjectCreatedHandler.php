@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Syndication\MessageHandler\Project;
 
-use Doctrine\ORM\{NoResultException, NonUniqueResultException};
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Http\Client\Exception;
 use Nexy\Slack\Exception\SlackApiException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
@@ -19,10 +20,6 @@ class ProjectCreatedHandler implements MessageHandlerInterface
     /** @var ProjectNotifier */
     private $projectNotifier;
 
-    /**
-     * @param ProjectRepository $projectRepository
-     * @param ProjectNotifier   $projectNotifier
-     */
     public function __construct(ProjectRepository $projectRepository, ProjectNotifier $projectNotifier)
     {
         $this->projectRepository = $projectRepository;
@@ -30,8 +27,6 @@ class ProjectCreatedHandler implements MessageHandlerInterface
     }
 
     /**
-     * @param ProjectCreated $projectCreated
-     *
      * @throws NoResultException
      * @throws NonUniqueResultException
      * @throws Exception

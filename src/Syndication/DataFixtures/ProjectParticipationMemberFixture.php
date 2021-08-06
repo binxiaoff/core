@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Syndication\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Unilend\Core\DataFixtures\{AbstractFixtures, StaffFixtures};
+use Unilend\Core\DataFixtures\AbstractFixtures;
+use Unilend\Core\DataFixtures\StaffFixtures;
 use Unilend\Core\Entity\Staff;
 use Unilend\Core\Model\Bitmask;
 use Unilend\Syndication\Entity\Project;
@@ -18,8 +21,6 @@ class ProjectParticipationMemberFixture extends AbstractFixtures implements Depe
     public static int $id = 0; // Auto increment public ids
 
     /**
-     * @param ObjectManager $manager
-     *
      * @throws Exception
      */
     public function load(ObjectManager $manager): void

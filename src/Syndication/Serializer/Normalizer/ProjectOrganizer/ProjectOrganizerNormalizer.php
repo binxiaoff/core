@@ -17,19 +17,15 @@ class ProjectOrganizerNormalizer implements ContextAwareNormalizerInterface, Nor
 
     private const ALREADY_CALLED = 'PROJECT_ORGANIZER_ATTRIBUTE_NORMALIZER_ALREADY_CALLED';
 
-    /** @var Security */
     private Security $security;
 
-    /**
-     * @param Security $security
-     */
     public function __construct(Security $security)
     {
         $this->security = $security;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
@@ -37,7 +33,7 @@ class ProjectOrganizerNormalizer implements ContextAwareNormalizerInterface, Nor
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function normalize($object, string $format = null, array $context = [])
     {
@@ -55,7 +51,7 @@ class ProjectOrganizerNormalizer implements ContextAwareNormalizerInterface, Nor
         $isCAG = null !== $company ? $company->isCAGMember() : false;
 
         if (\is_array($normalized) && false === $isCAG) {
-            $index = array_search(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_RUN, $normalized['roles'] ?? [], true);
+            $index = \array_search(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_RUN, $normalized['roles'] ?? [], true);
 
             if (false !== $index) {
                 unset($normalized['roles'][$index]);
