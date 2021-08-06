@@ -40,7 +40,7 @@ class ProjectListener
         foreach ($uow->getScheduledEntityInsertions() as $entity) {
             if ($entity instanceof Project) {
                 if (false === ($currentStaff instanceof Staff)) {
-                    throw new LogicException(sprintf('ProjectStatus history only accept %s as valid addedBy', Staff::class));
+                    throw new LogicException(\sprintf('ProjectStatus history only accept %s as valid addedBy', Staff::class));
                 }
 
                 $projectStatusHistory = new ProjectStatusHistory($entity, $currentStaff);
@@ -56,7 +56,7 @@ class ProjectListener
                 $changeSet = $uow->getEntityChangeSet($entity);
                 if (isset($changeSet['currentStatus'])) {
                     if (false === ($currentStaff instanceof Staff)) {
-                        throw new LogicException(sprintf('ProjectStatus history only accept %s as valid addedBy', Staff::class));
+                        throw new LogicException(\sprintf('ProjectStatus history only accept %s as valid addedBy', Staff::class));
                     }
 
                     $projectStatusHistory = new ProjectStatusHistory($entity, $currentStaff);
@@ -71,7 +71,7 @@ class ProjectListener
         foreach ($uow->getScheduledEntityDeletions() as $entity) {
             if ($entity instanceof Project && false === $entity->isDraft()) {
                 if (false === ($currentStaff instanceof Staff)) {
-                    throw new LogicException(sprintf('ProjectStatus history only accept %s as valid addedBy', Staff::class));
+                    throw new LogicException(\sprintf('ProjectStatus history only accept %s as valid addedBy', Staff::class));
                 }
 
                 if ($entity->isPublished()) {

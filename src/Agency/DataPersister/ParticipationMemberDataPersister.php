@@ -16,7 +16,6 @@ use Unilend\Core\Repository\StaffRepository;
 class ParticipationMemberDataPersister implements ContextAwareDataPersisterInterface
 {
     private ContextAwareDataPersisterInterface $decorated;
-
     private StaffRepository $staffRepository;
 
     public function __construct(ContextAwareDataPersisterInterface $decorated, StaffRepository $staffRepository)

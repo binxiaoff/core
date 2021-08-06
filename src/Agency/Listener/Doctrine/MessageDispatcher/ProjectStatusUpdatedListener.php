@@ -13,9 +13,6 @@ class ProjectStatusUpdatedListener
 {
     use MessageDispatcherTrait;
 
-    /**
-     * @param Project $projectParticipation
-     */
     public function preUpdate(Project $project, PreUpdateEventArgs $args): void
     {
         if ($args->hasChangedField('currentStatus')) {

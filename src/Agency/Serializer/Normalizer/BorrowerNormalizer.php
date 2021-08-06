@@ -18,17 +18,11 @@ class BorrowerNormalizer implements ContextAwareDenormalizerInterface, Denormali
 
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
         return Borrower::class === $type && false === isset($context[static::ALREADY_CALLED]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
         $context[static::ALREADY_CALLED] = true;
@@ -38,14 +32,10 @@ class BorrowerNormalizer implements ContextAwareDenormalizerInterface, Denormali
         return $denormalized;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
     {
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][BorrowerMember::class]['borrower'] = $denormalized;
 
         return $context;
     }
-
 }

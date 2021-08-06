@@ -32,9 +32,6 @@ class ParticipationNormalizer implements ContextAwareDenormalizerInterface, Deno
         $this->security     = $security;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
         return Participation::class === $type && false === isset($context[static::ALREADY_CALLED]);
@@ -80,9 +77,6 @@ class ParticipationNormalizer implements ContextAwareDenormalizerInterface, Deno
         return $denormalized;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
     {
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ParticipationTrancheAllocation::class]['participation'] = $denormalized;

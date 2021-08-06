@@ -108,7 +108,7 @@ class ProjectExtension implements QueryCollectionExtensionInterface
         ;
 
         $queryBuilder
-            ->setParameter($managedUserParameterName, iterator_to_array($staff->getManagedUsers(), false))
+            ->setParameter($managedUserParameterName, \iterator_to_array($staff->getManagedUsers(), false))
             ->setParameter($companyParameterName, $staff->getCompany())
         ;
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Agency\Serializer\Normalizer;
 
 use Exception;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
@@ -25,18 +26,16 @@ class CovenantNormalizer implements ContextAwareDenormalizerInterface, Denormali
     private const ALREADY_CALLED_NORMALIZER   = __CLASS__ . '_ALREADY_CALLED_NORMALIZER';
     private const ALREADY_CALLED_DENORMALIZER = __CLASS__ . '_ALREADY_CALLED_DENORMALIZER';
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = [])
     {
         return !isset($context[static::ALREADY_CALLED_DENORMALIZER]) && Covenant::class === $type;
     }
 
     /**
-     * {@inheritDoc}
+     * @param mixed $data
      *
      * @throws Exception
+     * @throws ExceptionInterface
      */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
@@ -55,9 +54,6 @@ class CovenantNormalizer implements ContextAwareDenormalizerInterface, Denormali
         return $denormalized;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $context[static::ALREADY_CALLED_NORMALIZER] = true;
@@ -66,24 +62,18 @@ class CovenantNormalizer implements ContextAwareDenormalizerInterface, Denormali
         $data = $this->normalizer->normalize($object, $format, $context);
 
         // Enforce array for association field with indexBy attribute
-        if (array_key_exists('covenantRules', $data)) {
-            $data['covenantRules'] = array_values($data['covenantRules']);
+        if (\array_key_exists('covenantRules', $data)) {
+            $data['covenantRules'] = \array_values($data['covenantRules']);
         }
 
         return $data;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
         return $data instanceof Covenant && !isset($context[static::ALREADY_CALLED_NORMALIZER]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function updateContextBeforeSecondDenormalization($denormalized, array $context): array
     {
         $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][CovenantRule::class]['covenant'] = $denormalized;

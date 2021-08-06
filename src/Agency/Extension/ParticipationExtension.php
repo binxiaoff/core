@@ -84,7 +84,7 @@ class ParticipationExtension implements QueryCollectionExtensionInterface
         $companyParameterName     = $queryNameGenerator->generateParameterName('company');
 
         $queryBuilder
-            ->setParameter($managedUserParameterName, iterator_to_array($staff->getManagedUsers(), false))
+            ->setParameter($managedUserParameterName, \iterator_to_array($staff->getManagedUsers(), false))
             ->setParameter($companyParameterName, $staff->getCompany())
         ;
 

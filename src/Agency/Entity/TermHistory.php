@@ -246,7 +246,7 @@ class TermHistory
 
             case Covenant::NATURE_FINANCIAL_ELEMENT:
             case Covenant::NATURE_FINANCIAL_RATIO:
-                if (null === $this->borrowerInput || false === is_numeric($this->borrowerInput)) {
+                if (null === $this->borrowerInput || false === \is_numeric($this->borrowerInput)) {
                     return false;
                 }
 

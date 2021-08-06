@@ -103,7 +103,7 @@ class ProjectStatusUpdatedHandlerTest extends TestCase
         $this->projectRepository->find($projectId)->shouldHaveBeenCalled();
 
         // Each of these condition forbids the sending of the notification
-        if (Project::STATUS_DRAFT !== $previousStatus || Project::STATUS_PUBLISHED !== $nextStatus || 0 === count($projectMembers)) {
+        if (Project::STATUS_DRAFT !== $previousStatus || Project::STATUS_PUBLISHED !== $nextStatus || 0 === \count($projectMembers)) {
             $this->projectMemberNotifier->notifyProjectPublication(Argument::any())->shouldNotHaveBeenCalled();
 
             return;
@@ -125,7 +125,7 @@ class ProjectStatusUpdatedHandlerTest extends TestCase
         foreach ($transitions as $previousStatus => $nextStatuses) {
             foreach ($nextStatuses as $nextStatus) {
                 foreach ($this->getProjectMemberCollectionPossibilities() as $projectMemberCollectionPossibilityDescription => $possibility) {
-                    yield sprintf(
+                    yield \sprintf(
                         'Test with transition %d to %d and %s',
                         $previousStatus,
                         $nextStatus,
@@ -138,7 +138,7 @@ class ProjectStatusUpdatedHandlerTest extends TestCase
 
     private function getProjectMemberCollectionPossibilities()
     {
-        $random = random_int(2, 10);
+        $random = \random_int(2, 10);
 
         // TODO Add more possible combination (e.g. 1 agent member and 0 participation member, 1 agent member and n participation, etc.)
         $classes = [AgentMember::class, BorrowerMember::class, ParticipationMember::class];
@@ -146,11 +146,11 @@ class ProjectStatusUpdatedHandlerTest extends TestCase
         foreach ($classes as $class) {
             $projectMember = $this->prophesize($class);
 
-            $class = ltrim(mb_substr($class, mb_strrpos($class, '\\')), '\\');
+            $class = \ltrim(\mb_substr($class, \mb_strrpos($class, '\\')), '\\');
 
             yield "with O {$class}" => [];
             yield "with 1 {$class}" => [$projectMember];
-            yield "with {$random} {$class}" => array_fill(1, $random, $projectMember);
+            yield "with {$random} {$class}" => \array_fill(1, $random, $projectMember);
         }
     }
 }

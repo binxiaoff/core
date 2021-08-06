@@ -129,9 +129,6 @@ class RemindTermCommand extends Command
         ;
     }
 
-    /**
-     * @throws JsonException
-     */
     private function send(MailjetMessage $mailjetMessage, OutputInterface $output): void
     {
         $vars = $mailjetMessage->getVars();

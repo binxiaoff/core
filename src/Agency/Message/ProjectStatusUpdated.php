@@ -9,9 +9,7 @@ use Unilend\Core\Message\AsyncMessageInterface;
 class ProjectStatusUpdated implements AsyncMessageInterface
 {
     private int $projectId;
-
     private int $previousStatus;
-
     private int $nextStatus;
 
     public function __construct(int $projectId, int $previousStatus, int $nextStatus)
