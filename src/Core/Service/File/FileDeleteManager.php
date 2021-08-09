@@ -19,18 +19,15 @@ use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class FileDeleteManager
 {
-    /** @var ProjectRepository */
-    private $projectRepository;
-    /** @var ProjectFileRepository */
-    private $projectFileRepository;
-    /** @var Security */
-    private $security;
+    private Security $security;
+    private ProjectRepository $projectRepository;
+    private ProjectFileRepository $projectFileRepository;
 
-    public function __construct(ProjectRepository $projectRepository, ProjectFileRepository $projectFileRepository, Security $security)
+    public function __construct(Security $security, ProjectRepository $projectRepository, ProjectFileRepository $projectFileRepository)
     {
+        $this->security              = $security;
         $this->projectRepository     = $projectRepository;
         $this->projectFileRepository = $projectFileRepository;
-        $this->security              = $security;
     }
 
     /**
@@ -64,7 +61,7 @@ class FileDeleteManager
 
         switch ($type) {
             case Project::PROJECT_FILE_TYPE_DESCRIPTION:
-                $field = 'descriptionDocument';
+                $field = 'termSheet';
 
                 break;
 
