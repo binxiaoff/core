@@ -14,7 +14,11 @@ api_platform:
         html: [ 'text/html' ]
         file: [ 'application/octet-stream' ]
     mapping:
-        paths: ['%kernel.project_dir%/src/Syndication/Entity', '%kernel.project_dir%/src/Core/Entity', '%kernel.project_dir%/src/Agency/Entity', '%kernel.project_dir%/src/CreditGuaranty/Entity']
+        paths:
+            - '%kernel.project_dir%/src/Core/Entity'
+            - '%kernel.project_dir%/src/Agency/Entity'
+            - '%kernel.project_dir%/src/CreditGuaranty/Entity'
+            - '%kernel.project_dir%/src/Syndication/Arrangement/Entity'
     patch_formats:
         json:     ['application/merge-patch+json']
     swagger:

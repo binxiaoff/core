@@ -6,8 +6,8 @@ namespace KLS\Core\MessageHandler\File;
 
 use InvalidArgumentException;
 use KLS\Core\Message\File\FileUploaded;
-use KLS\Syndication\Repository\ProjectRepository;
-use KLS\Syndication\Service\Project\ProjectNotifier;
+use KLS\Syndication\Arrangement\Repository\ProjectRepository;
+use KLS\Syndication\Arrangement\Service\Project\ProjectNotifier;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;

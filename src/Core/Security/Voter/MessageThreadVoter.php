@@ -6,7 +6,7 @@ namespace KLS\Core\Security\Voter;
 
 use KLS\Core\Entity\MessageThread;
 use KLS\Core\Entity\User;
-use KLS\Syndication\Security\Voter\ProjectParticipationVoter;
+use KLS\Syndication\Arrangement\Security\Voter\ProjectParticipationVoter;
 
 class MessageThreadVoter extends AbstractEntityVoter
 {

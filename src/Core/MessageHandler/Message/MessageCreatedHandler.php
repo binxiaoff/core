@@ -12,8 +12,8 @@ use KLS\Core\Entity\MessageStatus;
 use KLS\Core\Message\Message\MessageCreated;
 use KLS\Core\Repository\MessageRepository;
 use KLS\Core\Repository\MessageStatusRepository;
-use KLS\Syndication\Entity\ProjectParticipation;
-use KLS\Syndication\Service\Project\ProjectManager;
+use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
+use KLS\Syndication\Arrangement\Service\Project\ProjectManager;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
 class MessageCreatedHandler implements MessageHandlerInterface

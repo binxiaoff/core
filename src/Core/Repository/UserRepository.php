@@ -15,7 +15,7 @@ use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
 use KLS\Core\Entity\UserStatus;
-use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
 use PDO;
 
 /**

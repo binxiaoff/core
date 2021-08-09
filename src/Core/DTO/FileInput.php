@@ -6,9 +6,9 @@ namespace KLS\Core\DTO;
 
 use KLS\Agency\Entity\Term;
 use KLS\Core\Entity\Message;
-use KLS\Syndication\Entity\Project;
-use KLS\Syndication\Entity\ProjectFile;
-use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Arrangement\Entity\Project;
+use KLS\Syndication\Arrangement\Entity\ProjectFile;
+use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;

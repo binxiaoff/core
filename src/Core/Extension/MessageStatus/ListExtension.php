@@ -12,9 +12,9 @@ use KLS\Core\Entity\MessageStatus;
 use KLS\Core\Entity\MessageThread;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
-use KLS\Syndication\Entity\Project;
-use KLS\Syndication\Entity\ProjectParticipation;
-use KLS\Syndication\Entity\ProjectStatus;
+use KLS\Syndication\Arrangement\Entity\Project;
+use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
+use KLS\Syndication\Arrangement\Entity\ProjectStatus;
 use Symfony\Component\Security\Core\Security;
 
 class ListExtension implements QueryCollectionExtensionInterface

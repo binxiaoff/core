@@ -30,17 +30,17 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: preRemove, entity: KLS\Core\Entity\Folder, method: cascadeDeletion }
 
-    KLS\Syndication\Listener\Doctrine\Entity\Project\ProjectCreatedListener:
+    KLS\Syndication\Arrangement\Listener\Doctrine\Entity\Project\ProjectCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, entity: KLS\Syndication\Entity\Project, method: purify }
+            - { name: doctrine.orm.entity_listener, event: prePersist, entity: KLS\Syndication\Arrangement\Entity\Project, method: purify }
 
-    KLS\Syndication\Listener\Doctrine\Entity\Project\ProjectUpdatedListener:
+    KLS\Syndication\Arrangement\Listener\Doctrine\Entity\Project\ProjectUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Entity\Project, method: purify }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Arrangement\Entity\Project, method: purify }
 
-    KLS\Syndication\Listener\Doctrine\Entity\ProjectParticipationMember\ProjectParticipationMemberArchivedListener:
+    KLS\Syndication\Arrangement\Listener\Doctrine\Entity\ProjectParticipationMember\ProjectParticipationMemberArchivedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Entity\ProjectParticipationMember, method: setArchivedBy }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Arrangement\Entity\ProjectParticipationMember, method: setArchivedBy }
 
     KLS\CreditGuaranty\Listener\Doctrine\Entity\ProgramCreatedListener:
         tags:
@@ -63,21 +63,21 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Core\Entity\Message}
 
-    KLS\Syndication\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectCreatedListener:
+    KLS\Syndication\Arrangement\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Entity\Project }
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Arrangement\Entity\Project }
 
-    KLS\Syndication\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationMember\ProjectParticipationMemberCreatedListener:
+    KLS\Syndication\Arrangement\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationMember\ProjectParticipationMemberCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Entity\ProjectParticipationMember }
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Arrangement\Entity\ProjectParticipationMember }
 
-    KLS\Syndication\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectUpdatedListener:
+    KLS\Syndication\Arrangement\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Entity\Project}
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Arrangement\Entity\Project}
 
-    KLS\Syndication\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipation\ProjectParticipationUpdatedListener:
+    KLS\Syndication\Arrangement\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipation\ProjectParticipationUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Entity\ProjectParticipation}
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Arrangement\Entity\ProjectParticipation}
 
     KLS\Agency\Listener\Doctrine\MessageDispatcher\ProjectMemberCreatedListener:
         tags:
@@ -116,15 +116,15 @@ services:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    KLS\Syndication\Listener\Doctrine\Lifecycle\ProjectStatusUpdatedListener:
+    KLS\Syndication\Arrangement\Listener\Doctrine\Lifecycle\ProjectStatusUpdatedListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    KLS\Syndication\Listener\Doctrine\Lifecycle\ProjectParticipationUpdated:
+    KLS\Syndication\Arrangement\Listener\Doctrine\Lifecycle\ProjectParticipationUpdated:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    KLS\Syndication\Listener\Doctrine\Lifecycle\ProjectParticipationTrancheUpdatedListener:
+    KLS\Syndication\Arrangement\Listener\Doctrine\Lifecycle\ProjectParticipationTrancheUpdatedListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 

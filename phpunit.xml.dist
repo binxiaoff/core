@@ -29,13 +29,13 @@
 
         <testsuite name="unit">
             <directory>tests/Core/Unit</directory>
-            <directory>tests/Syndication/Unit</directory>
+            <directory>tests/Syndication/Arrangement/Unit</directory>
             <directory>tests/CreditGuaranty/Unit</directory>
         </testsuite>
 
         <testsuite name="functional">
             <directory>tests/Core/Functional</directory>
-            <directory>tests/Syndication/Functional</directory>
+            <directory>tests/Syndication/Arrangement/Functional</directory>
             <directory>tests/CreditGuaranty/Functional</directory>
         </testsuite>
 
@@ -55,12 +55,12 @@
             <directory>tests/Syndication</directory>
         </testsuite>
 
-        <testsuite name="syndication\unit">
-            <directory>tests/Syndication/Unit</directory>
+        <testsuite name="syndication\arrangement\unit">
+            <directory>tests/Syndication/Arrangement/Unit</directory>
         </testsuite>
 
-        <testsuite name="syndication\functional">
-            <directory>tests/Syndication/Functional</directory>
+        <testsuite name="syndication\arrangement\functional">
+            <directory>tests/Syndication/Arrangement/Functional</directory>
         </testsuite>
     </testsuites>
 

@@ -38,7 +38,7 @@ use KLS\Core\Entity\Traits\BlamableAddedTrait;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Traits\ConstantsAwareTrait;
-use KLS\Syndication\Entity\Project as ArrangementProject;
+use KLS\Syndication\Arrangement\Entity\Project as ArrangementProject;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;

@@ -15,7 +15,7 @@ use KLS\Core\Entity\MessageStatus;
 use KLS\Core\Entity\MessageThread;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\UserStatus;
-use KLS\Syndication\Entity\ProjectStatus;
+use KLS\Syndication\Arrangement\Entity\ProjectStatus;
 
 /**
  * @method MessageStatus|null find($id, $lockMode = null, $lockVersion = null)

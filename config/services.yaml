@@ -52,7 +52,7 @@ services:
         # The directory KLS contains the legacy bundles. The services are managed by their own configurations.
         exclude: [
             '%kernel.project_dir%/src/Kernel.php',
-            '%kernel.project_dir%/src/{Core,Syndication,Agency,CreditGuaranty}/{Console,Entity,Migrations,Controller,Tests,Traits,Listener/Doctrine}'
+            '%kernel.project_dir%/src/{Core,Syndication/Arrangement,Agency,CreditGuaranty}/{Console,Entity,Migrations,Controller,Tests,Traits,Listener/Doctrine}'
         ]
 
     KLS\Core\Controller\:
