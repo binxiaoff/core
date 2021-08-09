@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\File;
+namespace KLS\Core\Service\File;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use KLS\Core\Entity\File;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectFile;
+use KLS\Syndication\Repository\ProjectFileRepository;
+use KLS\Syndication\Repository\ProjectRepository;
+use KLS\Syndication\Security\Voter\ProjectFileVoter;
+use KLS\Syndication\Security\Voter\ProjectVoter;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\File;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectFile;
-use Unilend\Syndication\Repository\ProjectFileRepository;
-use Unilend\Syndication\Repository\ProjectRepository;
-use Unilend\Syndication\Security\Voter\ProjectFileVoter;
-use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class FileDeleteManager
 {

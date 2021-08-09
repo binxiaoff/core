@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Functional\Api;
+namespace KLS\Test\Core\Functional\Api;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Bridge\Symfony\Bundle\Test\ApiTestCase;
+use KLS\Core\EventSubscriber\Jwt\VersionSubscriber;
+use KLS\Core\Repository\UserRepository;
+use KLS\Test\Core\DataFixtures\UserFixtures;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Unilend\Core\EventSubscriber\Jwt\VersionSubscriber;
-use Unilend\Core\Repository\UserRepository;
-use Unilend\Test\Core\DataFixtures\UserFixtures;
 
 /**
  * @coversNothing

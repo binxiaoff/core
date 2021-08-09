@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\CreditGuaranty\DataFixtures;
+namespace KLS\Test\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Unilend\CreditGuaranty\Entity\Participation;
-use Unilend\CreditGuaranty\Entity\Program;
-use Unilend\Test\Core\DataFixtures\AbstractFixtures;
-use Unilend\Test\Core\DataFixtures\Companies\BasicCompanyFixtures;
+use KLS\CreditGuaranty\Entity\Participation;
+use KLS\CreditGuaranty\Entity\Program;
+use KLS\Test\Core\DataFixtures\AbstractFixtures;
+use KLS\Test\Core\DataFixtures\Companies\BasicCompanyFixtures;
 
 class ParticipationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

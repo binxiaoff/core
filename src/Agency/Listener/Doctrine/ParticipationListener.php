@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Listener\Doctrine;
+namespace KLS\Agency\Listener\Doctrine;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
 use Exception;
-use Unilend\Agency\Entity\Participation;
+use KLS\Agency\Entity\Participation;
 
 class ParticipationListener
 {

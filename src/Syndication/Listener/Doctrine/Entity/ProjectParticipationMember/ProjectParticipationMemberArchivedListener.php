@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Listener\Doctrine\Entity\ProjectParticipationMember;
+namespace KLS\Syndication\Listener\Doctrine\Entity\ProjectParticipationMember;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
+use KLS\Core\Entity\User;
+use KLS\Syndication\Entity\ProjectParticipationMember;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\ProjectParticipationMember;
 
 class ProjectParticipationMemberArchivedListener
 {

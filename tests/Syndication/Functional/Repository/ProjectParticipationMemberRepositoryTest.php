@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Syndication\Functional\Repository;
+namespace KLS\Test\Syndication\Functional\Repository;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use KLS\Core\Repository\StaffRepository;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectParticipationMember;
+use KLS\Syndication\Repository\ProjectParticipationMemberRepository;
+use KLS\Syndication\Repository\ProjectParticipationRepository;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Unilend\Core\Repository\StaffRepository;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectParticipationMember;
-use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
-use Unilend\Syndication\Repository\ProjectParticipationRepository;
 
 /**
- * @coversDefaultClass \Unilend\Syndication\Repository\ProjectParticipationMemberRepository
+ * @coversDefaultClass \KLS\Syndication\Repository\ProjectParticipationMemberRepository
  *
  * @internal
  */

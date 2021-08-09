@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Filter\Company;
+namespace KLS\Core\Filter\Company;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
+use KLS\Core\Entity\Company;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Core\Entity\Company;
 
 class ParticipantCandidateFilter extends AbstractContextAwareFilter
 {

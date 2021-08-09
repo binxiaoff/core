@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Constant\Tranche;
+namespace KLS\Core\Entity\Constant\Tranche;
 
-use Unilend\Core\Entity\Constant\AbstractEnum;
+use KLS\Core\Entity\Constant\AbstractEnum;
 
 final class CommissionType extends AbstractEnum
 {

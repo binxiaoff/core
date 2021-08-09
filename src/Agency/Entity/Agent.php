@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Entity;
+namespace KLS\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Controller\Dataroom\Delete;
+use KLS\Core\Controller\Dataroom\Get;
+use KLS\Core\Controller\Dataroom\Post;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Drive;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Embeddable\NullablePerson;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Controller\Dataroom\Delete;
-use Unilend\Core\Controller\Dataroom\Get;
-use Unilend\Core\Controller\Dataroom\Post;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Drive;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Embeddable\NullablePerson;
 
 /**
  * @ApiResource(
@@ -97,7 +97,7 @@ class Agent extends AbstractProjectPartaker
     /**
      * @var Collection|AgentMember[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\AgentMember", mappedBy="agent", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="KLS\Agency\Entity\AgentMember", mappedBy="agent", cascade={"persist", "remove"})
      *
      * @Assert\Count(min=1)
      * @Assert\Valid
@@ -110,7 +110,7 @@ class Agent extends AbstractProjectPartaker
     protected Collection $members;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="agent")
+     * @ORM\OneToOne(targetEntity="KLS\Agency\Entity\Project", inversedBy="agent")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE", unique=true)
      *
      * @Assert\NotBlank
@@ -122,7 +122,7 @@ class Agent extends AbstractProjectPartaker
     private Project $project;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company")
      * @ORM\JoinColumn(name="id_company", nullable=false)
      *
      * @Groups({"agency:agent:read"})
@@ -141,7 +141,7 @@ class Agent extends AbstractProjectPartaker
     private ?string $displayName;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullablePerson", columnPrefix="agency_contact_")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullablePerson", columnPrefix="agency_contact_")
      *
      * @Assert\Valid
      *
@@ -150,7 +150,7 @@ class Agent extends AbstractProjectPartaker
     private NullablePerson $contact;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Drive", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity="KLS\Core\Entity\Drive", cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_confidential_drive", nullable=false, unique=true, onDelete="CASCADE")
      */
     private Drive $confidentialDrive;

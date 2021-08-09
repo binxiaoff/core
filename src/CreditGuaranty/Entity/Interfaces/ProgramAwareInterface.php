@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity\Interfaces;
+namespace KLS\CreditGuaranty\Entity\Interfaces;
 
-use Unilend\CreditGuaranty\Entity\Program;
+use KLS\CreditGuaranty\Entity\Program;
 
 interface ProgramAwareInterface
 {

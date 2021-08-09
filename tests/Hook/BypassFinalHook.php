@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Hook;
+namespace KLS\Test\Hook;
 
 use DG\BypassFinals;
 use PHPUnit\Runner\BeforeTestHook;

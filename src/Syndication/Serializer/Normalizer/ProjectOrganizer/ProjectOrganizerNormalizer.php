@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Serializer\Normalizer\ProjectOrganizer;
+namespace KLS\Syndication\Serializer\Normalizer\ProjectOrganizer;
 
+use KLS\Core\Entity\User;
+use KLS\Syndication\Entity\ProjectOrganizer;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\ProjectOrganizer;
 
 class ProjectOrganizerNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {

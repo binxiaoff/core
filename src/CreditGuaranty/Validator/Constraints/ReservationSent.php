@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Validator\Constraints;
+namespace KLS\CreditGuaranty\Validator\Constraints;
 
 use Symfony\Component\Validator\Constraint;
 

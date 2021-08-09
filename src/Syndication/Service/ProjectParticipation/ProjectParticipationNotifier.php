@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Service\ProjectParticipation;
+namespace KLS\Syndication\Service\ProjectParticipation;
 
 use JsonException;
+use KLS\Core\SwiftMailer\MailjetMessage;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectParticipationStatus;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Core\SwiftMailer\MailjetMessage;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectParticipationStatus;
 
 class ProjectParticipationNotifier
 {

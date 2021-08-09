@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Serializer\ContextBuilder;
+namespace KLS\CreditGuaranty\Serializer\ContextBuilder;
 
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use Exception;
+use KLS\Core\Entity\Staff;
+use KLS\CreditGuaranty\Entity\Program;
+use KLS\CreditGuaranty\Repository\ProgramRepository;
+use KLS\CreditGuaranty\Security\Voter\ProgramVoter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Core\Entity\Staff;
-use Unilend\CreditGuaranty\Entity\Program;
-use Unilend\CreditGuaranty\Repository\ProgramRepository;
-use Unilend\CreditGuaranty\Security\Voter\ProgramVoter;
 
 class ProjectContextBuilder implements SerializerContextBuilderInterface
 {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\Document;
+namespace KLS\Core\Service\Document;
 
 use Doctrine\Persistence\ManagerRegistry;
 use InvalidArgumentException;
+use KLS\Core\Entity\Interfaces\FileStorageInterface;
 use RuntimeException;
-use Unilend\Core\Entity\Interfaces\FileStorageInterface;
 
 abstract class AbstractDocumentGenerator
 {

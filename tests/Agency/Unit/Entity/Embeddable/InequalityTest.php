@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Agency\Unit\Entity\Embeddable;
+namespace KLS\Test\Agency\Unit\Entity\Embeddable;
 
+use KLS\Agency\Entity\Embeddable\Inequality;
+use KLS\Core\Entity\Constant\MathOperator;
 use PHPUnit\Framework\TestCase;
-use Unilend\Agency\Entity\Embeddable\Inequality;
-use Unilend\Core\Entity\Constant\MathOperator;
 
 /**
- * @coversDefaultClass \Unilend\Agency\Entity\Embeddable\Inequality
+ * @coversDefaultClass \KLS\Agency\Entity\Embeddable\Inequality
  *
  * @internal
  */

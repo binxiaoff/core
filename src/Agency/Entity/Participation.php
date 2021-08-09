@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Entity;
+namespace KLS\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
@@ -13,19 +13,19 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Controller\Dataroom\Delete;
+use KLS\Core\Controller\Dataroom\Get;
+use KLS\Core\Controller\Dataroom\Post;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Drive;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
+use KLS\Core\Service\MoneyCalculator;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Controller\Dataroom\Delete;
-use Unilend\Core\Controller\Dataroom\Get;
-use Unilend\Core\Controller\Dataroom\Post;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Drive;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
-use Unilend\Core\Service\MoneyCalculator;
 
 /**
  * "money:read" is needed for allocation.

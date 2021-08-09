@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\EventSubscriber\Jwt;
+namespace KLS\Core\EventSubscriber\Jwt;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Repository\UserRepository;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Repository\UserRepository;
 
 class PermissionSubscriber implements EventSubscriberInterface
 {

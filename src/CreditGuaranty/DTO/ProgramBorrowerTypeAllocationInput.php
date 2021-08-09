@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\DTO;
+namespace KLS\CreditGuaranty\DTO;
 
+use KLS\CreditGuaranty\Entity\Program;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\CreditGuaranty\Entity\Program;
 
 class ProgramBorrowerTypeAllocationInput
 {

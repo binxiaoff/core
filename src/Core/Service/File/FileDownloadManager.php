@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\File;
+namespace KLS\Core\Service\File;
 
 use Exception;
+use KLS\Core\Entity\FileVersion;
+use KLS\Core\Service\FileSystem\FileSystemHelper;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Service\FileSystem\FileSystemHelper;
 
 class FileDownloadManager
 {

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\CompanyGroupTag;
+use KLS\Core\Entity\CompanyGroupTag;
 
 /**
  * @method CompanyGroupTag|null find($id, $lockMode = null, $lockVersion = null)

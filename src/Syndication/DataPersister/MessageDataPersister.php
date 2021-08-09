@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\DataPersister;
+namespace KLS\Syndication\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Unilend\Core\Entity\Message;
-use Unilend\Core\Repository\MessageRepository;
-use Unilend\Core\Repository\MessageThreadRepository;
+use KLS\Core\Entity\Message;
+use KLS\Core\Repository\MessageRepository;
+use KLS\Core\Repository\MessageThreadRepository;
 
 final class MessageDataPersister implements DataPersisterInterface
 {

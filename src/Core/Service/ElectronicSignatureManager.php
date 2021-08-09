@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service;
+namespace KLS\Core\Service;
 
 use DocuSign\eSign\Api\AuthenticationApi;
 use DocuSign\eSign\Api\AuthenticationApi\LoginOptions;
@@ -20,6 +20,7 @@ use DocuSign\eSign\Model\RecipientViewRequest;
 use DocuSign\eSign\Model\Signer;
 use DocuSign\eSign\Model\SignHere;
 use DocuSign\eSign\Model\Tabs;
+use KLS\Core\Entity\User;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Key;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
@@ -29,7 +30,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Unilend\Core\Entity\User;
 
 /**
  * @todo webhooks: https://developers.docusign.com/esign-rest-api/code-examples/webhook-status

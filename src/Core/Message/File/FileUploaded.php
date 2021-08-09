@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Message\File;
+namespace KLS\Core\Message\File;
 
-use Unilend\Core\Entity\File;
-use Unilend\Core\Message\AsyncMessageInterface;
+use KLS\Core\Entity\File;
+use KLS\Core\Message\AsyncMessageInterface;
 
 class FileUploaded implements AsyncMessageInterface
 {

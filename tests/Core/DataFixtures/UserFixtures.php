@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\DataFixtures;
+namespace KLS\Test\Core\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Faker\Provider\fr_FR\Person;
+use KLS\Core\Entity\User;
+use KLS\Core\Entity\UserStatus;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\UserStatus;
 
 class UserFixtures extends AbstractFixtures
 {

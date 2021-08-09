@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\DataFixtures;
+namespace KLS\Syndication\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
+use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\Core\DataFixtures\CompanyFixtures;
+use KLS\Core\Entity\Constant\Tranche\LoanType;
+use KLS\Core\Entity\Embeddable\LendingRate;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\Tranche;
 use ReflectionException;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\Core\DataFixtures\CompanyFixtures;
-use Unilend\Core\Entity\Constant\Tranche\LoanType;
-use Unilend\Core\Entity\Embeddable\LendingRate;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\Tranche;
 
 class TrancheFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Exception\Staff;
+namespace KLS\Core\Exception\Staff;
 
 use Exception;
 

@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Serializer\ContextBuilder;
+namespace KLS\Agency\Serializer\ContextBuilder;
 
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use DateTimeImmutable;
 use Exception;
+use KLS\Agency\Entity\Participation;
+use KLS\Agency\Entity\ParticipationMember;
+use KLS\Agency\Entity\ParticipationTrancheAllocation;
+use KLS\Agency\Entity\Project as AgencyProject;
+use KLS\Agency\Entity\Tranche;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Staff;
+use KLS\Syndication\Entity\Project as ArrangementProject;
+use KLS\Syndication\Repository\ProjectRepository as ArrangementProjectRepository;
+use KLS\Syndication\Security\Voter\ProjectVoter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Agency\Entity\Participation;
-use Unilend\Agency\Entity\ParticipationMember;
-use Unilend\Agency\Entity\ParticipationTrancheAllocation;
-use Unilend\Agency\Entity\Project as AgencyProject;
-use Unilend\Agency\Entity\Tranche;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Staff;
-use Unilend\Syndication\Entity\Project as ArrangementProject;
-use Unilend\Syndication\Repository\ProjectRepository as ArrangementProjectRepository;
-use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class ProjectContextBuilder implements SerializerContextBuilderInterface
 {

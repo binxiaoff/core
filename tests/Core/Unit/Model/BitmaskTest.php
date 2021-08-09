@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Model;
+namespace KLS\Test\Core\Unit\Model;
 
 use InvalidArgumentException;
+use KLS\Core\Model\Bitmask;
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\Model\Bitmask;
 
 /**
- * @coversDefaultClass \Unilend\Core\Model\Bitmask
+ * @coversDefaultClass \KLS\Core\Model\Bitmask
  *
  * @internal
  */

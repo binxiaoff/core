@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Listener\Doctrine\Entity\MessageDispatcher\Project;
+namespace KLS\Syndication\Listener\Doctrine\Entity\MessageDispatcher\Project;
 
-use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Message\Project\ProjectCreated;
+use KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Message\Project\ProjectCreated;
 
 class ProjectCreatedListener
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Entity;
+namespace KLS\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
@@ -11,17 +11,17 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Service\MoneyCalculator;
+use KLS\Core\Traits\ConstantsAwareTrait;
+use KLS\Syndication\Entity\Embeddable\Offer;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Service\MoneyCalculator;
-use Unilend\Core\Traits\ConstantsAwareTrait;
-use Unilend\Syndication\Entity\Embeddable\Offer;
 
 /**
  * @ApiResource(
@@ -51,7 +51,7 @@ use Unilend\Syndication\Entity\Embeddable\Offer;
  *     }
  * )
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedProjectParticipationTranche")
+ * @Gedmo\Loggable(logEntryClass="KLS\Syndication\Entity\Versioned\VersionedProjectParticipationTranche")
  *
  * @ORM\Table(
  *     name="syndication_project_participation_tranche",
@@ -73,7 +73,7 @@ class ProjectParticipationTranche
     public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipationTranche:sensitive:read';
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Tranche", inversedBy="projectParticipationTranches")
+     * @ORM\ManyToOne(targetEntity="KLS\Syndication\Entity\Tranche", inversedBy="projectParticipationTranches")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_tranche", nullable=false)
      * })
@@ -88,7 +88,7 @@ class ProjectParticipationTranche
     private Tranche $tranche;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation", inversedBy="projectParticipationTranches")
+     * @ORM\ManyToOne(targetEntity="KLS\Syndication\Entity\ProjectParticipation", inversedBy="projectParticipationTranches")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
      * })
@@ -100,7 +100,7 @@ class ProjectParticipationTranche
     /**
      * Réponse ferme : Répartition donnée par le participant à l'arrangeur.
      *
-     * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\Offer")
+     * @ORM\Embedded(class="KLS\Syndication\Entity\Embeddable\Offer")
      *
      * @Assert\Valid
      *
@@ -115,7 +115,7 @@ class ProjectParticipationTranche
     private Offer $invitationReply;
 
     /**
-     * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\Offer")
+     * @ORM\Embedded(class="KLS\Syndication\Entity\Embeddable\Offer")
      *
      * @Assert\Valid
      *
@@ -131,7 +131,7 @@ class ProjectParticipationTranche
     /**
      * @var Collection|InvitationReplyVersion[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\InvitationReplyVersion", mappedBy="projectParticipationTranche", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="KLS\Syndication\Entity\InvitationReplyVersion", mappedBy="projectParticipationTranche", orphanRemoval=true)
      *
      * @Groups({ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ})
      */

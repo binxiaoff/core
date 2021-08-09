@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Message;
+namespace KLS\Agency\Message;
 
-use Unilend\Core\Message\AsyncMessageInterface;
+use KLS\Core\Message\AsyncMessageInterface;
 
 class ProjectStatusUpdated implements AsyncMessageInterface
 {

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity\Traits;
+namespace KLS\CreditGuaranty\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
+use KLS\CreditGuaranty\Entity\ProgramChoiceOption;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
 
 trait AddressTrait
 {

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Entity;
+namespace KLS\Agency\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
@@ -27,7 +27,7 @@ class TermHistory
     private ?int $id = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Term")
+     * @ORM\ManyToOne(targetEntity="KLS\Agency\Entity\Term")
      * @ORM\JoinColumn(name="id_term", onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -35,7 +35,7 @@ class TermHistory
     private Term $term;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\File")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\File")
      * @ORM\JoinColumn(name="id_document", nullable=true)
      */
     private ?File $document;

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\CreditGuaranty\Functional\Api;
+namespace KLS\Test\CreditGuaranty\Functional\Api;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Repository\StaffRepository;
+use KLS\CreditGuaranty\Entity\Reservation;
+use KLS\CreditGuaranty\Repository\ReservationRepository;
+use KLS\Test\Core\Functional\Api\AbstractApiTest;
+use KLS\Test\CreditGuaranty\DataFixtures\ReservationFixtures;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Repository\StaffRepository;
-use Unilend\CreditGuaranty\Entity\Reservation;
-use Unilend\CreditGuaranty\Repository\ReservationRepository;
-use Unilend\Test\Core\Functional\Api\AbstractApiTest;
-use Unilend\Test\CreditGuaranty\DataFixtures\ReservationFixtures;
 
 /**
  * @coversNothing

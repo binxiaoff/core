@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Message;
+namespace KLS\Agency\Message;
 
-use Unilend\Agency\Entity\AbstractProjectMember;
-use Unilend\Core\Message\AsyncMessageInterface;
+use KLS\Agency\Entity\AbstractProjectMember;
+use KLS\Core\Message\AsyncMessageInterface;
 
 class ProjectMemberUpdated implements AsyncMessageInterface
 {

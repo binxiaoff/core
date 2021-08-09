@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Security\Voter;
+namespace KLS\Syndication\Security\Voter;
 
-use Unilend\Core\Entity\User;
-use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\Syndication\Entity\ProjectParticipationStatus;
-use Unilend\Syndication\Entity\ProjectParticipationTranche;
+use KLS\Core\Entity\User;
+use KLS\Core\Security\Voter\AbstractEntityVoter;
+use KLS\Syndication\Entity\ProjectParticipationStatus;
+use KLS\Syndication\Entity\ProjectParticipationTranche;
 
 class ProjectParticipationTrancheVoter extends AbstractEntityVoter
 {

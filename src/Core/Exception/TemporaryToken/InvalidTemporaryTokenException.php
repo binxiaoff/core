@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Exception\TemporaryToken;
+namespace KLS\Core\Exception\TemporaryToken;
 
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 

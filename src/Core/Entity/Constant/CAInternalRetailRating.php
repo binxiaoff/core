@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Constant;
+namespace KLS\Core\Entity\Constant;
 
 class CAInternalRetailRating extends AbstractEnum
 {

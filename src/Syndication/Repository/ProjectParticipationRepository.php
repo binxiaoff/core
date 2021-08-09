@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Repository;
+namespace KLS\Syndication\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectParticipation;
 
 /**
  * @method ProjectParticipation|null find($id, $lockMode = null, $lockVersion = null)

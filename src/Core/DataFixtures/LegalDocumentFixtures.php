@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\DataFixtures;
+namespace KLS\Core\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
 use Exception;
+use KLS\Core\Entity\AcceptationsLegalDocs;
+use KLS\Core\Entity\LegalDocument;
 use ReflectionException;
-use Unilend\Core\Entity\AcceptationsLegalDocs;
-use Unilend\Core\Entity\LegalDocument;
 
 class LegalDocumentFixtures extends AbstractFixtures
 {

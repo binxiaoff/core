@@ -2,23 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\EventSubscriber\Jwt;
+namespace KLS\Core\EventSubscriber\Jwt;
 
+use KLS\Core\Repository\UserRepository;
+use KLS\Core\Service\Jwt\PayloadManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTAuthenticatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Unilend\Core\Repository\UserRepository;
-use Unilend\Core\Service\Jwt\PayloadManagerInterface;
 
 class PayloadManagerSubscriber implements EventSubscriberInterface
 {
     private array $payloadManagers;
-
     private JWTTokenManagerInterface $jwtManager;
-
     private UserRepository $userRepository;
 
     public function __construct(JWTTokenManagerInterface $jwtManager, UserRepository $userRepository, iterable $payloadManagers = [])

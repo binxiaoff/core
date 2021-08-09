@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity;
+namespace KLS\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -11,32 +11,32 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Controller\Dataroom\Delete;
+use KLS\Core\Controller\Dataroom\Get;
+use KLS\Core\Controller\Dataroom\Post;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\CompanyGroupTag;
+use KLS\Core\Entity\Constant\CARatingType;
+use KLS\Core\Entity\Drive;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
+use KLS\Core\Entity\Interfaces\StatusInterface;
+use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\BlamableUserAddedTrait;
+use KLS\Core\Entity\Traits\CloneableTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Service\MoneyCalculator;
+use KLS\Core\Validator\Constraints\PreviousValue;
 use LogicException;
 use RuntimeException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Controller\Dataroom\Delete;
-use Unilend\Core\Controller\Dataroom\Get;
-use Unilend\Core\Controller\Dataroom\Post;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\CompanyGroupTag;
-use Unilend\Core\Entity\Constant\CARatingType;
-use Unilend\Core\Entity\Drive;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Interfaces\DriveCarrierInterface;
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
-use Unilend\Core\Entity\Interfaces\StatusInterface;
-use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\BlamableUserAddedTrait;
-use Unilend\Core\Entity\Traits\CloneableTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Service\MoneyCalculator;
-use Unilend\Core\Validator\Constraints\PreviousValue;
 
 /**
  * @ApiResource(
@@ -143,7 +143,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private ?string $description;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company")
      * @ORM\JoinColumn(name="id_managing_company", nullable=false)
      *
      * @ApiProperty(readableLink=false)
@@ -153,7 +153,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private Company $managingCompany;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\CompanyGroupTag")
      * @ORM\JoinColumn(name="id_company_group_tag", nullable=false)
      *
      * @Assert\Expression(
@@ -186,7 +186,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private ?string $cappedAt;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
      *
      * @Assert\Valid
      * @Assert\AtLeastOneOf({
@@ -244,7 +244,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private ?string $guarantyCoverage;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Assert\Valid
      *
@@ -273,7 +273,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private ?string $ratingType = null;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Assert\Valid
      *
@@ -303,7 +303,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private ?string $requestedDocumentsDescription;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramStatus", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -320,7 +320,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @Assert\Valid
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramStatus", mappedBy="program", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\Entity\ProgramStatus", mappedBy="program", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      *
      * @ORM\OrderBy({"added": "ASC"})
      *
@@ -329,7 +329,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private Collection $statuses;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Drive", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity="KLS\Core\Entity\Drive", cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_drive", nullable=false, unique=true)
      */
     private Drive $drive;
@@ -341,7 +341,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramContact", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\Entity\ProgramContact", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
      */
     private Collection $programContacts;
 
@@ -351,7 +351,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      * @ApiSubresource
      *
      * @ORM\OneToMany(
-     *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramGradeAllocation",
+     *     targetEntity="KLS\CreditGuaranty\Entity\ProgramGradeAllocation",
      *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}, indexBy="grade"
      * )
      */
@@ -363,7 +363,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      * @ApiSubresource
      *
      * @ORM\OneToMany(
-     *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation",
+     *     targetEntity="KLS\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation",
      *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}, indexBy="id_program_choice_option"
      * )
      */
@@ -374,7 +374,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\Entity\ProgramChoiceOption", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
      */
     private Collection $programChoiceOptions;
 
@@ -383,7 +383,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibility", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\Entity\ProgramEligibility", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
      */
     private Collection $programEligibilities;
 
@@ -393,7 +393,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      * @ApiSubresource
      *
      * @ORM\OneToMany(
-     *     targetEntity="Unilend\CreditGuaranty\Entity\Participation",
+     *     targetEntity="KLS\CreditGuaranty\Entity\Participation",
      *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}, indexBy="id_company"
      * )
      */
@@ -405,7 +405,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      * @ApiSubresource
      *
      * @ORM\OneToMany(
-     *     targetEntity="Unilend\CreditGuaranty\Entity\Reservation",
+     *     targetEntity="KLS\CreditGuaranty\Entity\Reservation",
      *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
      * )
      */

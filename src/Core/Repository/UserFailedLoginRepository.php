@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use DateInterval;
 use DateTime;
@@ -11,7 +11,7 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
-use Unilend\Core\Entity\UserFailedLogin;
+use KLS\Core\Entity\UserFailedLogin;
 
 /**
  * @method UserFailedLogin|null find($id, $lockMode = null, $lockVersion = null)

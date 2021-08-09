@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Serializer\Normalizer;
+namespace KLS\Agency\Serializer\Normalizer;
 
 use Exception;
+use KLS\Agency\Entity\Term;
+use KLS\Agency\Security\Voter\TermVoter;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
-use Unilend\Agency\Entity\Term;
-use Unilend\Agency\Security\Voter\TermVoter;
 
 class TermNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

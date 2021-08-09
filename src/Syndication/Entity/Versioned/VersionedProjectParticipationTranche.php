@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Entity\Versioned;
+namespace KLS\Syndication\Entity\Versioned;
 
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Loggable\Entity\MappedSuperclass\AbstractLogEntry;

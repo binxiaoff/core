@@ -2,44 +2,44 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\DataFixtures;
+namespace KLS\Agency\DataFixtures;
 
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
+use KLS\Agency\Entity\Borrower;
+use KLS\Agency\Entity\BorrowerMember;
+use KLS\Agency\Entity\BorrowerTrancheShare;
+use KLS\Agency\Entity\Covenant;
+use KLS\Agency\Entity\CovenantRule;
+use KLS\Agency\Entity\Embeddable\Inequality;
+use KLS\Agency\Entity\MarginImpact;
+use KLS\Agency\Entity\MarginRule;
+use KLS\Agency\Entity\Participation;
+use KLS\Agency\Entity\ParticipationTrancheAllocation;
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Entity\Tranche;
+use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\Core\DataFixtures\CompanyFixtures;
+use KLS\Core\DataFixtures\StaffFixtures;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Constant\LegalForm;
+use KLS\Core\Entity\Constant\MathOperator;
+use KLS\Core\Entity\Constant\SyndicationModality\ParticipationType;
+use KLS\Core\Entity\Constant\SyndicationModality\SyndicationType;
+use KLS\Core\Entity\Constant\Tranche\LoanType;
+use KLS\Core\Entity\Constant\Tranche\RepaymentType;
+use KLS\Core\Entity\Embeddable\LendingRate;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Core\Entity\UserStatus;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Unilend\Agency\Entity\Borrower;
-use Unilend\Agency\Entity\BorrowerMember;
-use Unilend\Agency\Entity\BorrowerTrancheShare;
-use Unilend\Agency\Entity\Covenant;
-use Unilend\Agency\Entity\CovenantRule;
-use Unilend\Agency\Entity\Embeddable\Inequality;
-use Unilend\Agency\Entity\MarginImpact;
-use Unilend\Agency\Entity\MarginRule;
-use Unilend\Agency\Entity\Participation;
-use Unilend\Agency\Entity\ParticipationTrancheAllocation;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Entity\Tranche;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\Core\DataFixtures\CompanyFixtures;
-use Unilend\Core\DataFixtures\StaffFixtures;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Constant\LegalForm;
-use Unilend\Core\Entity\Constant\MathOperator;
-use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
-use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
-use Unilend\Core\Entity\Constant\Tranche\LoanType;
-use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
-use Unilend\Core\Entity\Embeddable\LendingRate;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\UserStatus;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

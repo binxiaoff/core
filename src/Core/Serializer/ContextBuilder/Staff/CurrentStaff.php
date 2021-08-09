@@ -2,28 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Serializer\ContextBuilder\Staff;
+namespace KLS\Core\Serializer\ContextBuilder\Staff;
 
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\StaffStatus;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\UserRepository;
+use KLS\Syndication\Entity\ProjectParticipationStatus;
+use KLS\Syndication\Entity\ProjectStatus;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\StaffStatus;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\UserRepository;
-use Unilend\Syndication\Entity\ProjectParticipationStatus;
-use Unilend\Syndication\Entity\ProjectStatus;
 
 class CurrentStaff implements SerializerContextBuilderInterface
 {
     private SerializerContextBuilderInterface $decorated;
-
     private Security $security;
-
     private UserRepository $userRepository;
 
     public function __construct(SerializerContextBuilderInterface $decorated, Security $security, UserRepository $userRepository)

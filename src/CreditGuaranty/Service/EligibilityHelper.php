@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Service;
+namespace KLS\CreditGuaranty\Service;
 
+use KLS\CreditGuaranty\Entity\Field;
+use KLS\CreditGuaranty\Entity\Reservation;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
-use Unilend\CreditGuaranty\Entity\Field;
-use Unilend\CreditGuaranty\Entity\Reservation;
 
 class EligibilityHelper
 {

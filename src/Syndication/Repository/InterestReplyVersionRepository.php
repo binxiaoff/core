@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Repository;
+namespace KLS\Syndication\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Syndication\Entity\InterestReplyVersion;
+use KLS\Syndication\Entity\InterestReplyVersion;
 
 /**
  * @method InterestReplyVersion|null find($id, $lockMode = null, $lockVersion = null)

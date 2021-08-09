@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Agency\DataFixtures\Project;
+namespace KLS\Test\Agency\DataFixtures\Project;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Exception;
-use Unilend\Agency\Entity\Borrower;
-use Unilend\Agency\Entity\Covenant;
-use Unilend\Agency\Entity\Participation;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Entity\Tranche;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Constant\LegalForm;
-use Unilend\Core\Entity\Constant\Tranche\LoanType;
-use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
-use Unilend\Core\Entity\Embeddable\LendingRate;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Test\Core\DataFixtures\AbstractFixtures;
+use KLS\Agency\Entity\Borrower;
+use KLS\Agency\Entity\Covenant;
+use KLS\Agency\Entity\Participation;
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Entity\Tranche;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Constant\LegalForm;
+use KLS\Core\Entity\Constant\Tranche\LoanType;
+use KLS\Core\Entity\Constant\Tranche\RepaymentType;
+use KLS\Core\Entity\Embeddable\LendingRate;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Test\Core\DataFixtures\AbstractFixtures;
 
 abstract class AbstractProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

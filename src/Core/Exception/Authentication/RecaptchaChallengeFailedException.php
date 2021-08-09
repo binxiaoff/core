@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Exception\Authentication;
+namespace KLS\Core\Exception\Authentication;
 
+use KLS\Core\DTO\GoogleRecaptchaResult;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Unilend\Core\DTO\GoogleRecaptchaResult;
 
 class RecaptchaChallengeFailedException extends AuthenticationException
 {

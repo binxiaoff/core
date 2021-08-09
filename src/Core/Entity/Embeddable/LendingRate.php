@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Embeddable;
+namespace KLS\Core\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Embeddable

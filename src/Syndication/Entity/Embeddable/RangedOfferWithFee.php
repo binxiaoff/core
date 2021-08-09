@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Entity\Embeddable;
+namespace KLS\Syndication\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use KLS\Core\Entity\Embeddable\NullableMoney;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
 
 /**
  * @ORM\Embeddable
@@ -16,7 +16,7 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
 class RangedOfferWithFee extends OfferWithFee
 {
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Gedmo\Versioned
      *

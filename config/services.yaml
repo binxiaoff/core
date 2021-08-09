@@ -26,7 +26,7 @@ services:
         bind:
             $consoleLogger: '@monolog.logger.console'
             $defaultLocale: '%locale%'
-            $templateMessageFQCN: 'Unilend\Core\SwiftMailer\TemplateMessage'
+            $templateMessageFQCN: 'KLS\Core\SwiftMailer\TemplateMessage'
             $numberFormatter: '@number_formatter'
             $currencyFormatter: '@currency_formatter'
             $percentageFormatter: '@percentage_formatter'
@@ -40,40 +40,40 @@ services:
             $senderAddress: '%mailer.sender_address%'
 
     _instanceof:
-        Unilend\Core\EventSubscriber\Jwt\PermissionProviderInterface:
-            tags: ['unilend.jwt.permission_provider']
-        Unilend\Core\Service\Staff\StaffLoginInterface:
-            tags: [ 'unilend.staff.login.checker' ]
+        KLS\Core\EventSubscriber\Jwt\PermissionProviderInterface:
+            tags: ['kls.jwt.permission_provider']
+        KLS\Core\Service\Staff\StaffLoginInterface:
+            tags: [ 'kls.staff.login.checker' ]
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
-    Unilend\:
+    KLS\:
         resource: '%kernel.project_dir%/src/*'
-        # The directory Unilend contains the legacy bundles. The services are managed by their own configurations.
+        # The directory KLS contains the legacy bundles. The services are managed by their own configurations.
         exclude: [
             '%kernel.project_dir%/src/Kernel.php',
             '%kernel.project_dir%/src/{Core,Syndication,Agency,CreditGuaranty}/{Console,Entity,Migrations,Controller,Tests,Traits,Listener/Doctrine}'
         ]
 
-    Unilend\Core\Controller\:
+    KLS\Core\Controller\:
         resource: '%kernel.project_dir%/src/Core/Controller'
         tags:
             - { name: 'controller.service_arguments' }
 
-    Unilend\Agency\Controller\:
+    KLS\Agency\Controller\:
         resource: '%kernel.project_dir%/src/Agency/Controller'
         tags:
             - { name: 'controller.service_arguments' }
 
-    Unilend\CreditGuaranty\Controller\:
+    KLS\CreditGuaranty\Controller\:
         resource: '%kernel.project_dir%/src/CreditGuaranty/Controller'
         tags:
             - { name: 'controller.service_arguments' }
 
-    Unilend\Core\Service\WebServiceClient\InseeManager:
+    KLS\Core\Service\WebServiceClient\InseeManager:
         $client: '@eight_points_guzzle.client.insee'
 
-    Unilend\Core\Service\GoogleRecaptchaManager:
+    KLS\Core\Service\GoogleRecaptchaManager:
         $client: '@eight_points_guzzle.client.google_recaptcha'
         $secret: '%env(GOOGLE_RECAPTCHA_SECRET)%'
 
@@ -81,7 +81,7 @@ services:
         class: 'Symfony\Contracts\HttpClient\HttpClientInterface'
         factory: ['Symfony\Component\HttpClient\HttpClient', create]
 
-    Unilend\Core\Service\ElectronicSignatureManager:
+    KLS\Core\Service\ElectronicSignatureManager:
         $integratorKey: '%env(DOCUSIGN_INTEGRATOR_KEY)%'
         $userId: '%env(DOCUSIGN_USER_ID)%'
         $privateKey: '%env(file:DOCUSIGN_PRIVATE_KEY)%'
@@ -90,9 +90,9 @@ services:
         $apiHost: '%env(DOCUSIGN_API_HOST)%'
         $debug: '%kernel.debug%'
 
-    Unilend\Core\Service\Staff\StaffLoginChecker:
+    KLS\Core\Service\Staff\StaffLoginChecker:
         arguments:
-            $checkers: !tagged unilend.staff.login.checker
+            $checkers: !tagged kls.staff.login.checker
 
     currency_formatter:
         public: true
@@ -140,80 +140,80 @@ services:
                   - !php/const \NumberFormatter::FRACTION_DIGITS
                   - 2
 
-    Unilend\Core\Swagger\SwaggerDecorator:
+    KLS\Core\Swagger\SwaggerDecorator:
         decorates: 'api_platform.openapi.normalizer.api_gateway'
 
-    Unilend\Core\Serializer\ContextBuilder\Staff\CurrentStaff:
+    KLS\Core\Serializer\ContextBuilder\Staff\CurrentStaff:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Core\Serializer\ContextBuilder\CurrentUser:
+    KLS\Core\Serializer\ContextBuilder\CurrentUser:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Core\Serializer\ContextBuilder\SkipNullValue:
+    KLS\Core\Serializer\ContextBuilder\SkipNullValue:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Core\Serializer\ContextBuilder\MaxDepth:
+    KLS\Core\Serializer\ContextBuilder\MaxDepth:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Core\Serializer\ContextBuilder\CircularReferenceHandler:
+    KLS\Core\Serializer\ContextBuilder\CircularReferenceHandler:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Core\Serializer\ContextBuilder\DeepObjectToPopulate:
+    KLS\Core\Serializer\ContextBuilder\DeepObjectToPopulate:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\CreditGuaranty\Serializer\ContextBuilder\ProjectContextBuilder:
+    KLS\CreditGuaranty\Serializer\ContextBuilder\ProjectContextBuilder:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    Unilend\Core\Service\ElectronicSignature\XmlSigner:
+    KLS\Core\Service\ElectronicSignature\XmlSigner:
         $publicKey: '%psn.public_key%'
         $privateKey: '%psn.private_key%'
 
-    Unilend\Core\Service\DataCrypto:
+    KLS\Core\Service\DataCrypto:
         $masterKeyPath: '%file_encryption.kek_file%'
         $masterKeyPassPhrase: '%file_encryption.kek_passphrase%'
 
-    Unilend\Core\Security\UsernamePasswordRecaptchaAuthenticator:
+    KLS\Core\Security\UsernamePasswordRecaptchaAuthenticator:
         $authenticationSuccessHandler: '@lexik_jwt_authentication.handler.authentication_success'
         $authenticationFailureHandler: '@lexik_jwt_authentication.handler.authentication_failure'
         $path: '/core/authentication_token'
 
-    Unilend\Core\Listener\MaintenanceListener:
+    KLS\Core\Listener\MaintenanceListener:
         arguments: ["%maintenance%"]
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
 
-    Unilend\Core\SwiftMailer\TemplateErrorReportingPlugin:
+    KLS\Core\SwiftMailer\TemplateErrorReportingPlugin:
         tags:
             - { name: swiftmailer.default.plugin }
         arguments:
             $enableErrorDelivery: '%env(MAILJET_ERROR_DELIVERY)%'
             $errorReportingEmail: '%mailer.error_reporting_email%'
 
-    Unilend\Core\ApiPlatform\Metadata\Metadata\Resource\Factory\ShortNameResourceMetadataFactory:
+    KLS\Core\ApiPlatform\Metadata\Metadata\Resource\Factory\ShortNameResourceMetadataFactory:
         decorates: 'api_platform.metadata.resource.metadata_factory'
 
-    Unilend\Core\EventSubscriber\Jwt\PayloadManagerSubscriber:
+    KLS\Core\EventSubscriber\Jwt\PayloadManagerSubscriber:
         calls:
-            - addPayloadManager: ['@Unilend\Core\Service\Jwt\StaffPayloadManager']
+            - addPayloadManager: ['@KLS\Core\Service\Jwt\StaffPayloadManager']
 
-    Unilend\Core\EventSubscriber\Jwt\PermissionSubscriber:
+    KLS\Core\EventSubscriber\Jwt\PermissionSubscriber:
         arguments:
-            $permissionProviders: !tagged unilend.jwt.permission_provider
+            $permissionProviders: !tagged kls.jwt.permission_provider
 
     ### Agency
-    Unilend\Agency\Swagger\ProjectDecorator:
+    KLS\Agency\Swagger\ProjectDecorator:
         decorates: 'api_platform.swagger.normalizer.api_gateway'
 
-    Unilend\Agency\DataPersister\ParticipationMemberDataPersister:
+    KLS\Agency\DataPersister\ParticipationMemberDataPersister:
         decorates: 'api_platform.doctrine.orm.data_persister'
 
-    Unilend\Agency\Serializer\ContextBuilder\ProjectContextBuilder:
+    KLS\Agency\Serializer\ContextBuilder\ProjectContextBuilder:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false

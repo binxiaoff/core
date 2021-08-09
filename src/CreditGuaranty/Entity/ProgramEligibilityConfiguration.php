@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity;
+namespace KLS\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
@@ -12,14 +12,14 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\CloneableTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Traits\CloneableTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
 
 /**
  * @ApiResource(
@@ -69,7 +69,7 @@ class ProgramEligibilityConfiguration
     use CloneableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibility", inversedBy="programEligibilityConfigurations")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramEligibility", inversedBy="programEligibilityConfigurations")
      * @ORM\JoinColumn(name="id_program_eligibility", nullable=false)
      *
      * @ApiProperty(readableLink=false, writableLink=false)
@@ -82,7 +82,7 @@ class ProgramEligibilityConfiguration
      * When its value is not null, it means that we configure the eligibility based on the user's choice of the target field.
      * $programChoiceOption and $value cannot be both filed at the same time.
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_program_choice_option", onDelete="CASCADE")
      */
     private ?ProgramChoiceOption $programChoiceOption;
@@ -110,7 +110,7 @@ class ProgramEligibilityConfiguration
      * @ApiSubresource
      *
      * @ORM\OneToMany(
-     *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition",
+     *     targetEntity="KLS\CreditGuaranty\Entity\ProgramEligibilityCondition",
      *     mappedBy="programEligibilityConfiguration", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
      * )
      */

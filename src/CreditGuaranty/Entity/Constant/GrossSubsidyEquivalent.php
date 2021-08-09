@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity\Constant;
+namespace KLS\CreditGuaranty\Entity\Constant;
 
-use Unilend\Core\Entity\Constant\AbstractEnum;
+use KLS\Core\Entity\Constant\AbstractEnum;
 
 class GrossSubsidyEquivalent extends AbstractEnum
 {

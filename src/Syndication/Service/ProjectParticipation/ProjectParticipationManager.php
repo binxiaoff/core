@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Service\ProjectParticipation;
+namespace KLS\Syndication\Service\ProjectParticipation;
 
-use Unilend\Core\Entity\Staff;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectParticipationMember;
-use Unilend\Syndication\Repository\NDASignatureRepository;
-use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
+use KLS\Core\Entity\Staff;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectParticipationMember;
+use KLS\Syndication\Repository\NDASignatureRepository;
+use KLS\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ProjectParticipationManager
 {

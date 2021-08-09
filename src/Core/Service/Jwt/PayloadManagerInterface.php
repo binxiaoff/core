@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\Jwt;
+namespace KLS\Core\Service\Jwt;
 
+use KLS\Core\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Unilend\Core\Entity\User;
 
 interface PayloadManagerInterface
 {

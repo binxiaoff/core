@@ -14,4 +14,4 @@ parameters:
     excludes_analyse:
         - src/Core/Migrations
     symfony:
-        container_xml_path: %rootDir%/../../../var/cache/dev/Unilend_KernelDevDebugContainer.xml
+        container_xml_path: %rootDir%/../../../var/cache/dev/KLS_KernelDevDebugContainer.xml

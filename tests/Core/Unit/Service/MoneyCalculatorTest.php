@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Service;
+namespace KLS\Test\Core\Unit\Service;
 
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
+use KLS\Core\Exception\Money\DifferentCurrencyException;
+use KLS\Core\Service\MoneyCalculator;
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
-use Unilend\Core\Exception\Money\DifferentCurrencyException;
-use Unilend\Core\Service\MoneyCalculator;
 
 /**
- * @coversDefaultClass \Unilend\Core\Service\MoneyCalculator
+ * @coversDefaultClass \KLS\Core\Service\MoneyCalculator
  *
  * @internal
  */

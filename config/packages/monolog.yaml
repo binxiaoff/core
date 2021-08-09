@@ -64,4 +64,4 @@ monolog:
             include_extra: true
         critical_security_email:
             type: service
-            id: Unilend\Core\Service\Monolog\Handler\MailHandler
+            id: KLS\Core\Service\Monolog\Handler\MailHandler

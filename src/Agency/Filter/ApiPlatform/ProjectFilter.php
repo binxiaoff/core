@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Filter\ApiPlatform;
+namespace KLS\Agency\Filter\ApiPlatform;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use KLS\Agency\Entity\Project;
+use KLS\Core\Entity\Staff;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
-use Unilend\Agency\Entity\Project;
-use Unilend\Core\Entity\Staff;
 
 class ProjectFilter extends AbstractContextAwareFilter
 {

@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Entity;
+namespace KLS\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use KLS\Core\Entity\CompanyGroupTag;
+use KLS\Core\Entity\FileVersion;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\ArchivableTrait;
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\BlamableArchivedTrait;
+use KLS\Core\Entity\Traits\PermissionTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\Core\Model\Bitmask;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\CompanyGroupTag;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\ArchivableTrait;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
-use Unilend\Core\Entity\Traits\BlamableArchivedTrait;
-use Unilend\Core\Entity\Traits\PermissionTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Core\Model\Bitmask;
 
 /**
  * @ApiResource(
@@ -66,7 +66,7 @@ class ProjectParticipationMember
     public const PERMISSION_WRITE = 1 << 0;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation", inversedBy="projectParticipationMembers")
+     * @ORM\ManyToOne(targetEntity="KLS\Syndication\Entity\ProjectParticipation", inversedBy="projectParticipationMembers")
      * @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"projectParticipationMember:create"})
@@ -76,7 +76,7 @@ class ProjectParticipationMember
     private ProjectParticipation $projectParticipation;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Staff", cascade={"persist"})
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_staff", referencedColumnName="id", nullable=false)
      * })

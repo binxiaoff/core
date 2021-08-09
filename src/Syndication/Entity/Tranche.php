@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Entity;
+namespace KLS\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
@@ -10,20 +10,20 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use KLS\Core\Entity\Constant\Tranche\CommissionType;
+use KLS\Core\Entity\Constant\Tranche\LoanType;
+use KLS\Core\Entity\Constant\Tranche\RepaymentType;
+use KLS\Core\Entity\Embeddable\LendingRate;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Service\MoneyCalculator;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Constant\Tranche\CommissionType;
-use Unilend\Core\Entity\Constant\Tranche\LoanType;
-use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
-use Unilend\Core\Entity\Embeddable\LendingRate;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Service\MoneyCalculator;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
@@ -49,7 +49,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ORM\Table(name="syndication_tranche")
  * @ORM\HasLifecycleCallbacks
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedTranche")
+ * @Gedmo\Loggable(logEntryClass="KLS\Syndication\Entity\Versioned\VersionedTranche")
  *
  * Short explanations about loan facilities can be found at https://www.translegal.com/lesson/3263
  */
@@ -63,7 +63,7 @@ class Tranche
     public const UNSYNDICATED_FUNDER_TYPE_THIRD_PARTY = 'third_party';
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Project", inversedBy="tranches")
+     * @ORM\ManyToOne(targetEntity="KLS\Syndication\Entity\Project", inversedBy="tranches")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"tranche:create", "tranche:read"})
@@ -138,7 +138,7 @@ class Tranche
     private ?int $interestPeriodicity;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -150,7 +150,7 @@ class Tranche
     private Money $money;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\LendingRate")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\LendingRate")
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -252,7 +252,7 @@ class Tranche
     /**
      * @var ProjectParticipationTranche[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectParticipationTranche", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true, fetch="LAZY")
+     * @ORM\OneToMany(targetEntity="KLS\Syndication\Entity\ProjectParticipationTranche", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true, fetch="LAZY")
      *
      * @Groups({"tranche:read"})
      */

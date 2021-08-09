@@ -2,9 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Serializer\Normalizer\ProjectParticipation;
+namespace KLS\Syndication\Serializer\Normalizer\ProjectParticipation;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
+use KLS\Core\Entity\User;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectParticipationMember;
+use KLS\Syndication\Entity\ProjectParticipationStatus;
+use KLS\Syndication\Entity\ProjectParticipationTranche;
+use KLS\Syndication\Entity\ProjectStatus;
+use KLS\Syndication\Security\Voter\ProjectParticipationMemberVoter;
+use KLS\Syndication\Security\Voter\ProjectParticipationVoter;
+use KLS\Syndication\Security\Voter\ProjectVoter;
+use KLS\Syndication\Service\Project\ProjectManager;
+use KLS\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -12,17 +23,6 @@ use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectParticipationMember;
-use Unilend\Syndication\Entity\ProjectParticipationStatus;
-use Unilend\Syndication\Entity\ProjectParticipationTranche;
-use Unilend\Syndication\Entity\ProjectStatus;
-use Unilend\Syndication\Security\Voter\ProjectParticipationMemberVoter;
-use Unilend\Syndication\Security\Voter\ProjectParticipationVoter;
-use Unilend\Syndication\Security\Voter\ProjectVoter;
-use Unilend\Syndication\Service\Project\ProjectManager;
-use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Agency\DataFixtures\Project;
+namespace KLS\Test\Agency\DataFixtures\Project;
 
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Agency\Entity\BorrowerMember;
-use Unilend\Agency\Entity\ParticipationMember;
-use Unilend\Agency\Entity\Project;
-use Unilend\Test\Core\DataFixtures\Companies\LoxCompanyFixtures;
-use Unilend\Test\Core\DataFixtures\Companies\QuxCompanyFixtures;
+use KLS\Agency\Entity\BorrowerMember;
+use KLS\Agency\Entity\ParticipationMember;
+use KLS\Agency\Entity\Project;
+use KLS\Test\Core\DataFixtures\Companies\LoxCompanyFixtures;
+use KLS\Test\Core\DataFixtures\Companies\QuxCompanyFixtures;
 
 class PublishedProjectFixtures extends DraftProjectFixtures
 {

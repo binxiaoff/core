@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\DataFixtures;
+namespace KLS\Syndication\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\Core\DataFixtures\StaffFixtures;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Model\Bitmask;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectParticipationMember;
+use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\Core\DataFixtures\StaffFixtures;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Model\Bitmask;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectParticipationMember;
 
 class ProjectParticipationMemberFixture extends AbstractFixtures implements DependentFixtureInterface
 {

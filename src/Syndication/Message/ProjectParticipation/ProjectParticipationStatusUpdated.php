@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Message\ProjectParticipation;
+namespace KLS\Syndication\Message\ProjectParticipation;
 
-use Unilend\Core\Message\AsyncMessageInterface;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectParticipationStatus;
+use KLS\Core\Message\AsyncMessageInterface;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectParticipationStatus;
 
 class ProjectParticipationStatusUpdated implements AsyncMessageInterface
 {

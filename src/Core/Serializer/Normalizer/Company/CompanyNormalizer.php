@@ -2,23 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Serializer\Normalizer\Company;
+namespace KLS\Core\Serializer\Normalizer\Company;
 
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
 
 class CompanyNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
     private const ALREADY_CALLED = 'COMPANY_NORMALIZER_ALREADY_CALLED';
 
     private NormalizerInterface $normalizer;
-
     private Security $security;
 
     public function __construct(Security $security)

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Table(
@@ -25,7 +25,7 @@ class UserAgent
     /**
      * @var User
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\User")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_user", referencedColumnName="id", nullable=false)
      * })

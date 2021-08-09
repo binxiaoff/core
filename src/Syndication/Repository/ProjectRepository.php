@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Repository;
+namespace KLS\Syndication\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
@@ -10,9 +10,9 @@ use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Repository\Traits\OrderByHandlerTrait;
-use Unilend\Core\Repository\Traits\PaginationHandlerTrait;
-use Unilend\Syndication\Entity\Project;
+use KLS\Core\Repository\Traits\OrderByHandlerTrait;
+use KLS\Core\Repository\Traits\PaginationHandlerTrait;
+use KLS\Syndication\Entity\Project;
 
 /**
  * @method Project|null find($id, $lockMode = null, $lockVersion = null)

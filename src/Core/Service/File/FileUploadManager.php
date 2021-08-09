@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\File;
+namespace KLS\Core\Service\File;
 
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
 use Defuse\Crypto\Exception\IOException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use InvalidArgumentException;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\FileVersion;
+use KLS\Core\Entity\User;
+use KLS\Core\Message\File\FileUploaded;
+use KLS\Core\Repository\FileRepository;
+use KLS\Core\Service\FileSystem\FileSystemHelper;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Message\File\FileUploaded;
-use Unilend\Core\Repository\FileRepository;
-use Unilend\Core\Service\FileSystem\FileSystemHelper;
 
 class FileUploadManager
 {

@@ -1,11 +1,11 @@
 security:
     encoders:
-        Unilend\Core\Entity\User:
+        KLS\Core\Entity\User:
             algorithm: 'auto'
 
     providers:
         database_users:
-            entity: { class: Unilend\Core\Entity\User, property: email }
+            entity: { class: KLS\Core\Entity\User, property: email }
 
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER
@@ -18,12 +18,12 @@ security:
         api:
             stateless: true
             anonymous: true
-            user_checker: Unilend\Core\Security\UserChecker
+            user_checker: KLS\Core\Security\UserChecker
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
-                    - Unilend\Core\Security\TemporaryTokenAuthenticator
-                    - Unilend\Core\Security\UsernamePasswordRecaptchaAuthenticator
+                    - KLS\Core\Security\TemporaryTokenAuthenticator
+                    - KLS\Core\Security\UsernamePasswordRecaptchaAuthenticator
                 entry_point: lexik_jwt_authentication.jwt_token_authenticator
 
     access_control:

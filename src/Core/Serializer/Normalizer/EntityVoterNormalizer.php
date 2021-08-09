@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Serializer\Normalizer;
+namespace KLS\Core\Serializer\Normalizer;
 
 use ApiPlatform\Core\Api\ResourceClassResolverInterface;
 use Symfony\Component\Security\Core\Security;

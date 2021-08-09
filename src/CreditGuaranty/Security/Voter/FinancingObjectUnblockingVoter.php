@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Security\Voter;
+namespace KLS\CreditGuaranty\Security\Voter;
 
-use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\CreditGuaranty\Entity\FinancingObjectUnblocking;
+use KLS\Core\Security\Voter\AbstractEntityVoter;
+use KLS\CreditGuaranty\Entity\FinancingObjectUnblocking;
 
 class FinancingObjectUnblockingVoter extends AbstractEntityVoter
 {

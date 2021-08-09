@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Message\Project;
+namespace KLS\Syndication\Message\Project;
 
-use Unilend\Core\Message\AsyncMessageInterface;
-use Unilend\Syndication\Entity\Project;
+use KLS\Core\Message\AsyncMessageInterface;
+use KLS\Syndication\Entity\Project;
 
 class ProjectCreated implements AsyncMessageInterface
 {

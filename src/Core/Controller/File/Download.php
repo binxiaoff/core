@@ -2,28 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Controller\File;
+namespace KLS\Core\Controller\File;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
+use KLS\Core\Entity\FileDownload;
+use KLS\Core\Entity\FileVersion;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\FileDownloadRepository;
+use KLS\Core\Security\Voter\FileDownloadVoter;
+use KLS\Core\Service\File\FileDownloadManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\FileDownload;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\FileDownloadRepository;
-use Unilend\Core\Security\Voter\FileDownloadVoter;
-use Unilend\Core\Service\File\FileDownloadManager;
 
 class Download
 {
     private Security $security;
-
     private FileDownloadRepository $fileDownloadRepository;
-
     private FileDownloadManager $fileDownloadManager;
 
     public function __construct(FileDownloadManager $fileDownloadManager, FileDownloadRepository $fileDownloadRepository, Security $security)

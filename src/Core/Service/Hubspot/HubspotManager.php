@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\Hubspot;
+namespace KLS\Core\Service\Hubspot;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use JsonException;
+use KLS\Core\Entity\HubspotContact;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\HubspotContactRepository;
+use KLS\Core\Repository\UserRepository;
+use KLS\Core\Service\Hubspot\Client\HubspotClient;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
-use Unilend\Core\Entity\HubspotContact;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\HubspotContactRepository;
-use Unilend\Core\Repository\UserRepository;
-use Unilend\Core\Service\Hubspot\Client\HubspotClient;
 
 class HubspotManager
 {

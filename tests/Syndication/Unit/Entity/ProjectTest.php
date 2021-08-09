@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Syndication\Unit\Entity;
+namespace KLS\Test\Syndication\Unit\Entity;
 
 use Exception;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Syndication\Entity\Project;
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\Project;
 
 /**
  * @internal

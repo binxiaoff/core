@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Repository;
+namespace KLS\Agency\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Agency\Entity\Project;
+use KLS\Agency\Entity\Project;
 
 /**
  * @method Project|null find($id, $lockMode = null, $lockVersion = null)

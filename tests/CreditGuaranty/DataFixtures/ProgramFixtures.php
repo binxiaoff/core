@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\CreditGuaranty\DataFixtures;
+namespace KLS\Test\CreditGuaranty\DataFixtures;
 
 use DateTimeImmutable;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Unilend\Core\Entity\CompanyGroupTag;
-use Unilend\Core\Entity\Constant\CARatingType;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Staff;
-use Unilend\CreditGuaranty\Entity\Program;
-use Unilend\CreditGuaranty\Entity\ProgramStatus;
-use Unilend\Test\Core\DataFixtures\AbstractFixtures;
-use Unilend\Test\Core\DataFixtures\CompanyGroups\FooCompanyGroupFixtures;
+use KLS\Core\Entity\CompanyGroupTag;
+use KLS\Core\Entity\Constant\CARatingType;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Staff;
+use KLS\CreditGuaranty\Entity\Program;
+use KLS\CreditGuaranty\Entity\ProgramStatus;
+use KLS\Test\Core\DataFixtures\AbstractFixtures;
+use KLS\Test\Core\DataFixtures\CompanyGroups\FooCompanyGroupFixtures;
 
 class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity;
+namespace KLS\CreditGuaranty\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 class ProgramFile
 {
@@ -21,13 +21,13 @@ class ProgramFile
     use PublicizeIdentityTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\Program")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      */
     private Program $program;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\File")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\File")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      */
     private File $file;

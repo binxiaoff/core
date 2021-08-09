@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
  *         @ORM\Index(name="idx_user_failed_login_ip", columns={"ip"})
  *     }
  * )
- * @ORM\Entity(repositoryClass="Unilend\Core\Repository\UserFailedLoginRepository")
+ * @ORM\Entity(repositoryClass="KLS\Core\Repository\UserFailedLoginRepository")
  */
 class UserFailedLogin
 {

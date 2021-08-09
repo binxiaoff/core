@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\ApiPlatform\Operation;
+namespace KLS\Core\ApiPlatform\Operation;
 
 use ApiPlatform\Core\Operation\PathSegmentNameGeneratorInterface;
 use Doctrine\Inflector\InflectorFactory;

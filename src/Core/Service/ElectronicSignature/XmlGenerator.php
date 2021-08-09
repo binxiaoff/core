@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\ElectronicSignature;
+namespace KLS\Core\Service\ElectronicSignature;
 
 use Exception;
+use KLS\Core\Entity\FileVersionSignature;
+use KLS\Core\Service\FileSystem\FileSystemHelper;
 use League\Flysystem\FilesystemException;
 use SimpleXMLElement;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Core\Entity\FileVersionSignature;
-use Unilend\Core\Service\FileSystem\FileSystemHelper;
 
 class XmlGenerator
 {

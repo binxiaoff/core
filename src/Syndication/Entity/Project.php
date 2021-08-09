@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Entity;
+namespace KLS\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -18,32 +18,32 @@ use Doctrine\ORM\Mapping as ORM;
 use DomainException;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\CompanyGroupTag;
+use KLS\Core\Entity\Constant\CAInternalRating;
+use KLS\Core\Entity\Constant\FundingSpecificity;
+use KLS\Core\Entity\Constant\SyndicationModality\ParticipationType;
+use KLS\Core\Entity\Constant\SyndicationModality\RiskType;
+use KLS\Core\Entity\Constant\SyndicationModality\SyndicationType;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Embeddable\NullablePerson;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
+use KLS\Core\Entity\Interfaces\StatusInterface;
+use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Entity\User;
+use KLS\Core\Filter\ArrayFilter;
+use KLS\Core\Service\MoneyCalculator;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use RuntimeException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\CompanyGroupTag;
-use Unilend\Core\Entity\Constant\CAInternalRating;
-use Unilend\Core\Entity\Constant\FundingSpecificity;
-use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
-use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
-use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Embeddable\NullablePerson;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
-use Unilend\Core\Entity\Interfaces\StatusInterface;
-use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Filter\ArrayFilter;
-use Unilend\Core\Service\MoneyCalculator;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
@@ -188,7 +188,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedProject")
+ * @Gedmo\Loggable(logEntryClass="KLS\Syndication\Entity\Versioned\VersionedProject")
  */
 class Project implements TraceableStatusAwareInterface
 {
@@ -222,7 +222,7 @@ class Project implements TraceableStatusAwareInterface
     private string $riskGroupName;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company_submitter", referencedColumnName="id", nullable=false)
      * })
@@ -234,7 +234,7 @@ class Project implements TraceableStatusAwareInterface
     private Company $submitterCompany;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\User")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_user_submitter",  referencedColumnName="id", nullable=false)
      * })
@@ -264,7 +264,7 @@ class Project implements TraceableStatusAwareInterface
     private ?string $description = null;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File", orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="KLS\Core\Entity\File", orphanRemoval=true)
      * @ORM\JoinColumn(name="id_term_sheet", unique=true)
      *
      * @Groups({"project:write", "project:read"})
@@ -272,7 +272,7 @@ class Project implements TraceableStatusAwareInterface
     private ?File $termSheet = null;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File")
+     * @ORM\OneToOne(targetEntity="KLS\Core\Entity\File")
      * @ORM\JoinColumn(name="id_nda", unique=true)
      *
      * @Groups({"project:write", "project:read"})
@@ -360,7 +360,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var ProjectParticipation[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="KLS\Syndication\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
      *
      * @MaxDepth(2)
      *
@@ -373,14 +373,14 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var ProjectOrganizer[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectOrganizer", mappedBy="project", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="KLS\Syndication\Entity\ProjectOrganizer", mappedBy="project", cascade={"persist"})
      */
     private Collection $organizers;
 
     /**
      * @var ProjectComment[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectComment", mappedBy="project")
+     * @ORM\OneToMany(targetEntity="KLS\Syndication\Entity\ProjectComment", mappedBy="project")
      * @ORM\OrderBy({"added": "DESC"})
      *
      * @Groups({"project:read"})
@@ -390,7 +390,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var Tranche[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\Tranche", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="KLS\Syndication\Entity\Tranche", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      *
      * @Assert\Valid
      *
@@ -399,7 +399,7 @@ class Project implements TraceableStatusAwareInterface
     private Collection $tranches;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Syndication\Entity\ProjectStatus", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="KLS\Syndication\Entity\ProjectStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -412,7 +412,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @var ProjectStatus[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="KLS\Syndication\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      * @ORM\OrderBy({"added": "ASC"})
      *
      * @Groups({"project:read"})
@@ -456,7 +456,7 @@ class Project implements TraceableStatusAwareInterface
     private ?string $riskType = null;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -482,7 +482,7 @@ class Project implements TraceableStatusAwareInterface
     private ?bool $interestExpressionEnabled;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"project:admin:read", "project:write"})
      */
@@ -498,7 +498,7 @@ class Project implements TraceableStatusAwareInterface
     private ?string $fundingSpecificity;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullablePerson", columnPrefix="privileged_contact_")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullablePerson", columnPrefix="privileged_contact_")
      *
      * @Assert\Valid
      *
@@ -507,7 +507,7 @@ class Project implements TraceableStatusAwareInterface
     private NullablePerson $privilegedContactPerson;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\CompanyGroupTag")
      * @ORM\JoinColumn(name="id_company_group_tag")
      *
      * @Groups({"project:read", "project:write"})

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\User;
+namespace KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\User;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
-use Unilend\Core\Message\User\UserUpdated;
+use KLS\Core\Entity\User;
+use KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
+use KLS\Core\Message\User\UserUpdated;
 
 class UserUpdatedListener
 {

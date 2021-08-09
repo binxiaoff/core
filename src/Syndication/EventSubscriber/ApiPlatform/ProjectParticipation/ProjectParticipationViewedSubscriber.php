@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\EventSubscriber\ApiPlatform\ProjectParticipation;
+namespace KLS\Syndication\EventSubscriber\ApiPlatform\ProjectParticipation;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use KLS\Core\Entity\User;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Repository\ProjectParticipationRepository;
+use KLS\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\{ProjectParticipation};
-use Unilend\Syndication\Repository\ProjectParticipationRepository;
-use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationManager;
 
 class ProjectParticipationViewedSubscriber implements EventSubscriberInterface
 {

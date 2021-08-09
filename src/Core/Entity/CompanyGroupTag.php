@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ORM\Entity
@@ -42,7 +42,7 @@ class CompanyGroupTag
     private string $code;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroup", inversedBy="tags")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\CompanyGroup", inversedBy="tags")
      * @ORM\JoinColumn(name="id_company_group", nullable=false)
      */
     private CompanyGroup $companyGroup;

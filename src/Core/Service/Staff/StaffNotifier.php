@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\Staff;
+namespace KLS\Core\Service\Staff;
 
 use Doctrine\ORM\ORMException;
 use JsonException;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Service\TemporaryTokenGenerator;
+use KLS\Core\SwiftMailer\MailjetMessage;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Service\TemporaryTokenGenerator;
-use Unilend\Core\SwiftMailer\MailjetMessage;
 
 class StaffNotifier
 {

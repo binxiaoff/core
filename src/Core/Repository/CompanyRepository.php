@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Repository\Traits\OrderByHandlerTrait;
+use KLS\Core\Entity\Company;
+use KLS\Core\Repository\Traits\OrderByHandlerTrait;
 
 /**
  * @method Company|null find($id, $lockMode = null, $lockVersion = null)

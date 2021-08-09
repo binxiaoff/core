@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Serializer\Normalizer;
+namespace KLS\Agency\Serializer\Normalizer;
 
 use Exception;
+use KLS\Agency\Entity\Covenant;
+use KLS\Agency\Entity\CovenantRule;
+use KLS\Agency\Entity\MarginRule;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
@@ -13,9 +16,6 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
-use Unilend\Agency\Entity\Covenant;
-use Unilend\Agency\Entity\CovenantRule;
-use Unilend\Agency\Entity\MarginRule;
 
 class CovenantNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface, NormalizerAwareInterface, ContextAwareNormalizerInterface
 {

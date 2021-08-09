@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Repository;
+namespace KLS\Agency\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Entity\Term;
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Entity\Term;
 
 /**
  * @method Term|null find($id, $lockMode = null, $lockVersion = null)

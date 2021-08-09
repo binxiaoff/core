@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Validator\Constraints;
+namespace KLS\Core\Validator\Constraints;
 
+use KLS\Core\Repository\CompanyRepository;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
-use Unilend\Core\Repository\CompanyRepository;
 
 class EmailDomainValidator extends ConstraintValidator
 {

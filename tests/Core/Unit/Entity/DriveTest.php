@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Entity;
+namespace KLS\Test\Core\Unit\Entity;
 
 use InvalidArgumentException;
+use KLS\Core\Entity\Drive;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\FileVersion;
+use KLS\Core\Entity\Folder;
+use KLS\Core\Entity\User;
+use KLS\Core\Exception\Drive\FolderAlreadyExistsException;
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\Entity\Drive;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\Folder;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Exception\Drive\FolderAlreadyExistsException;
 
 /**
- * @coversDefaultClass \Unilend\Core\Entity\Drive
+ * @coversDefaultClass \KLS\Core\Entity\Drive
  *
  * @internal
  */

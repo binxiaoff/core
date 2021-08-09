@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Command;
+namespace KLS\Core\Command;
 
 use Enlightn\SecurityChecker\SecurityChecker;
 use GuzzleHttp\Exception\GuzzleException;

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Security\Voter;
+namespace KLS\Agency\Security\Voter;
 
-use Unilend\Agency\Entity\ParticipationPool;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Security\Voter\AbstractEntityVoter;
+use KLS\Agency\Entity\ParticipationPool;
+use KLS\Core\Entity\User;
+use KLS\Core\Security\Voter\AbstractEntityVoter;
 
 class ParticipationPoolVoter extends AbstractEntityVoter
 {

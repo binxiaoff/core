@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Repository;
+namespace KLS\Agency\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Agency\Entity\BorrowerMember;
-use Unilend\Agency\Entity\Project;
-use Unilend\Core\Entity\User;
+use KLS\Agency\Entity\BorrowerMember;
+use KLS\Agency\Entity\Project;
+use KLS\Core\Entity\User;
 
 /**
  * @method BorrowerMemberRepository|null find($id, $lockMode = null, $lockVersion = null)

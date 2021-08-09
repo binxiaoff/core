@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Controller;
+namespace KLS\CreditGuaranty\Controller;
 
-use Unilend\CreditGuaranty\Entity\Request\Eligibility;
-use Unilend\CreditGuaranty\Service\EligibilityChecker;
+use KLS\CreditGuaranty\Entity\Request\Eligibility;
+use KLS\CreditGuaranty\Service\EligibilityChecker;
 
 class EligibilityChecking
 {

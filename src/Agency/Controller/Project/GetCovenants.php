@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Controller\Project;
+namespace KLS\Agency\Controller\Project;
 
+use KLS\Agency\Entity\Covenant;
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Entity\Term;
+use KLS\Agency\Security\Voter\ProjectRoleVoter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Agency\Entity\Covenant;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Entity\Term;
-use Unilend\Agency\Security\Voter\ProjectRoleVoter;
 
 class GetCovenants
 {

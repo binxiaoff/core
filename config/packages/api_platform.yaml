@@ -31,4 +31,4 @@ api_platform:
         Doctrine\ORM\OptimisticLockException: 409
         # Convert not found exception to 403 for security reason
         Symfony\Component\HttpKernel\Exception\NotFoundHttpException: 403
-    path_segment_name_generator: 'Unilend\Core\ApiPlatform\Operation\PathSegmentNameWithDomainGenerator'
+    path_segment_name_generator: 'KLS\Core\ApiPlatform\Operation\PathSegmentNameWithDomainGenerator'

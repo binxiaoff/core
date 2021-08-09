@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Doctrine\Entity\FileVersion;
+namespace KLS\Core\Listener\Doctrine\Entity\FileVersion;
 
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Service\DataCrypto;
+use KLS\Core\Entity\FileVersion;
+use KLS\Core\Service\DataCrypto;
 
 class FileVersionCreatedListener
 {

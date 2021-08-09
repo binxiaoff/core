@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Entity;
+namespace KLS\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Entity\User;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Entity\User;
 
 /**
  * @ApiResource(
@@ -24,7 +24,7 @@ use Unilend\Core\Entity\User;
  *     }
  * )
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedProjectComment")
+ * @Gedmo\Loggable(logEntryClass="KLS\Syndication\Entity\Versioned\VersionedProjectComment")
  *
  * @ORM\Entity
  * @ORM\Table(name="syndication_project_comment")
@@ -48,20 +48,20 @@ class ProjectComment
     /**
      * @var ProjectComment
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectComment", inversedBy="children")
+     * @ORM\ManyToOne(targetEntity="KLS\Syndication\Entity\ProjectComment", inversedBy="children")
      * @ORM\JoinColumn(name="id_parent", referencedColumnName="id", onDelete="CASCADE", nullable=true)
      */
     private $parent;
 
     /**
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectComment", mappedBy="parent")
+     * @ORM\OneToMany(targetEntity="KLS\Syndication\Entity\ProjectComment", mappedBy="parent")
      */
     private $children;
 
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Project", inversedBy="projectComments")
+     * @ORM\ManyToOne(targetEntity="KLS\Syndication\Entity\Project", inversedBy="projectComments")
      * @ORM\JoinColumn(name="id_project", referencedColumnName="id", nullable=false, onDelete="CASCADE")
      */
     private $project;
@@ -69,7 +69,7 @@ class ProjectComment
     /**
      * @var User
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\User")
      * @ORM\JoinColumn(name="id_user", referencedColumnName="id", nullable=false)
      */
     private $user;

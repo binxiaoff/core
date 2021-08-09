@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Doctrine\Lifecycle;
+namespace KLS\Core\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 
 class UuidListener
 {

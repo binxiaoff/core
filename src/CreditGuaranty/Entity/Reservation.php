@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity;
+namespace KLS\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -13,22 +13,22 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Controller\Dataroom\Delete;
+use KLS\Core\Controller\Dataroom\Get;
+use KLS\Core\Controller\Dataroom\Post;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Drive;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
+use KLS\Core\Entity\Interfaces\StatusInterface;
+use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Service\MoneyCalculator;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Controller\Dataroom\Delete;
-use Unilend\Core\Controller\Dataroom\Get;
-use Unilend\Core\Controller\Dataroom\Post;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Drive;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Interfaces\DriveCarrierInterface;
-use Unilend\Core\Entity\Interfaces\StatusInterface;
-use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Service\MoneyCalculator;
 
 /**
  * @ApiResource(
@@ -124,7 +124,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="reservations")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\Program", inversedBy="reservations")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
      * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
@@ -139,7 +139,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     private ?string $name;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company")
      * @ORM\JoinColumn(name="id_managing_company", nullable=false)
      *
      * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:create"})
@@ -147,14 +147,14 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     private Company $managingCompany;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Borrower", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\Entity\Borrower", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
      *
      * @Groups({"creditGuaranty:reservation:read"})
      */
     private ?Borrower $borrower = null;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Project", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\Entity\Project", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
      *
      * @Groups({"creditGuaranty:reservation:read"})
      */
@@ -165,18 +165,18 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\FinancingObject", mappedBy="reservation", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\Entity\FinancingObject", mappedBy="reservation", orphanRemoval=true, fetch="EXTRA_LAZY")
      */
     private Collection $financingObjects;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Drive", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity="KLS\Core\Entity\Drive", cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_drive", nullable=false, unique=true)
      */
     private Drive $drive;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\ReservationStatus", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\Entity\ReservationStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -193,7 +193,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      *
      * @Assert\Valid
      *
-     * @ORM\OneToMany(targetEntity="Unilend\CreditGuaranty\Entity\ReservationStatus", mappedBy="reservation", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\Entity\ReservationStatus", mappedBy="reservation", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      *
      * @ORM\OrderBy({"added": "ASC"})
      *

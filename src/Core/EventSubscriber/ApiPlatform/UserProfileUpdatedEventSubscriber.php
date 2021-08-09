@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\EventSubscriber\ApiPlatform;
+namespace KLS\Core\EventSubscriber\ApiPlatform;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\TemporaryTokenRepository;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\TemporaryTokenRepository;
 
 class UserProfileUpdatedEventSubscriber implements EventSubscriberInterface
 {

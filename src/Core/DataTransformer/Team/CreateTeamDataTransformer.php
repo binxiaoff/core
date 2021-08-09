@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\DataTransformer\Team;
+namespace KLS\Core\DataTransformer\Team;
 
 use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
-use Unilend\Core\DTO\Team\CreateTeam;
-use Unilend\Core\Entity\Team;
+use KLS\Core\DTO\Team\CreateTeam;
+use KLS\Core\Entity\Team;
 
 class CreateTeamDataTransformer implements DataTransformerInterface
 {

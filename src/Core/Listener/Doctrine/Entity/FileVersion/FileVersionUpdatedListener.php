@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Doctrine\Entity\FileVersion;
+namespace KLS\Core\Listener\Doctrine\Entity\FileVersion;
 
 use LogicException;
 

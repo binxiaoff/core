@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
@@ -20,7 +20,7 @@ class CompanyModuleLog
     use BlamableAddedTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyModule", inversedBy="logs")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\CompanyModule", inversedBy="logs")
      * @ORM\JoinColumn(nullable=false, name="id_module")
      */
     private CompanyModule $companyModule;

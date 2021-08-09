@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\Core\SwiftMailer\MailjetMessage;
 use Swift_Mime_SimpleMessage;
 use UnexpectedValueException;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Core\SwiftMailer\MailjetMessage;
 
 /**
  * @ORM\Table(name="core_mail_queue", indexes={

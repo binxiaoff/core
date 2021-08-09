@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Security\Voter;
+namespace KLS\Core\Security\Voter;
 
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\UserStatus;
+use KLS\Core\Entity\User;
+use KLS\Core\Entity\UserStatus;
 
 class UserStatusVoter extends AbstractEntityVoter
 {

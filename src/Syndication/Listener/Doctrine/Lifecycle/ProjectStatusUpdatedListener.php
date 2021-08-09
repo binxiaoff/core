@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Listener\Doctrine\Lifecycle;
+namespace KLS\Syndication\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
 use Exception;
+use KLS\Core\Entity\User;
+use KLS\Syndication\Entity\Embeddable\Offer;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectParticipationStatus;
+use KLS\Syndication\Entity\ProjectParticipationTranche;
+use KLS\Syndication\Entity\ProjectStatus;
+use KLS\Syndication\Entity\Tranche;
 use RuntimeException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\Embeddable\Offer;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectParticipationStatus;
-use Unilend\Syndication\Entity\ProjectParticipationTranche;
-use Unilend\Syndication\Entity\ProjectStatus;
-use Unilend\Syndication\Entity\Tranche;
 
 /**
  * TODO Refactor because we should not use doctrine for automatic status action.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
@@ -10,13 +10,13 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Traits\BlamableUpdatedTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Traits\BlamableUpdatedTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
@@ -68,7 +68,7 @@ class CompanyModule
     private string $code;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company", inversedBy="modules")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company", inversedBy="modules")
      * @ORM\JoinColumn(nullable=false, name="id_company")
      *
      * @Assert\NotBlank
@@ -83,7 +83,7 @@ class CompanyModule
     private bool $activated;
 
     /**
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\CompanyModuleLog", mappedBy="companyModule")
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\CompanyModuleLog", mappedBy="companyModule")
      * @ORM\OrderBy({"added": "ASC"})
      */
     private Collection $logs;
@@ -91,7 +91,7 @@ class CompanyModule
     /**
      * TODO This is temporary. Remove when facturation is handled by the platform.
      *
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"companyModule:read"})
      */

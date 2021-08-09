@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Entity;
+namespace KLS\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -12,27 +12,27 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\FileVersion;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
+use KLS\Core\Entity\Interfaces\StatusInterface;
+use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Service\MoneyCalculator;
+use KLS\Core\Traits\ConstantsAwareTrait;
+use KLS\Syndication\Entity\Embeddable\Offer;
+use KLS\Syndication\Entity\Embeddable\OfferWithFee;
+use KLS\Syndication\Entity\Embeddable\RangedOfferWithFee;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
-use Unilend\Core\Entity\Interfaces\StatusInterface;
-use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Service\MoneyCalculator;
-use Unilend\Core\Traits\ConstantsAwareTrait;
-use Unilend\Syndication\Entity\Embeddable\Offer;
-use Unilend\Syndication\Entity\Embeddable\OfferWithFee;
-use Unilend\Syndication\Entity\Embeddable\RangedOfferWithFee;
 
 /**
  * @ApiResource(
@@ -155,7 +155,7 @@ use Unilend\Syndication\Entity\Embeddable\RangedOfferWithFee;
  *     }
  * )
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Syndication\Entity\Versioned\VersionedProjectParticipation")
+ * @Gedmo\Loggable(logEntryClass="KLS\Syndication\Entity\Versioned\VersionedProjectParticipation")
  *
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status", "currentStatus.status"})
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status", "currentStatus.status"})
@@ -164,7 +164,7 @@ use Unilend\Syndication\Entity\Embeddable\RangedOfferWithFee;
  *     "projectParticipationMembers.staff.publicId": "exact",
  *     "participant.publicId": "exact"
  * })
- * @ApiFilter("Unilend\Core\Filter\InvertedSearchFilter", properties={"project.submitterCompany.publicId"})
+ * @ApiFilter("KLS\Core\Filter\InvertedSearchFilter", properties={"project.submitterCompany.publicId"})
  *
  * @ORM\Table(
  *     name="syndication_project_participation",
@@ -193,7 +193,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     public const INVITATION_REPLY_MODE_CUSTOMIZED = 'customized';
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Project", inversedBy="projectParticipations")
+     * @ORM\ManyToOne(targetEntity="KLS\Syndication\Entity\Project", inversedBy="projectParticipations")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"projectParticipation:read", "projectParticipation:create"})
@@ -205,7 +205,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private Project $project;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company")
      * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=false)
      *
      * @Groups({"projectParticipation:read", "projectParticipation:create"})
@@ -215,7 +215,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private Company $participant;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipationStatus", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="KLS\Syndication\Entity\ProjectParticipationStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -263,7 +263,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * Marque d'interet sollicitation envoyé par l'arrangeur au participant.
      *
-     * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\RangedOfferWithFee")
+     * @ORM\Embedded(class="KLS\Syndication\Entity\Embeddable\RangedOfferWithFee")
      *
      * @Assert\Valid
      *
@@ -280,7 +280,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * Réponse de la sollicitation de l'arrangeur envoyé au participant.
      *
-     * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\Offer")
+     * @ORM\Embedded(class="KLS\Syndication\Entity\Embeddable\Offer")
      *
      * @Assert\Valid
      *
@@ -293,7 +293,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Collection|InterestReplyVersion[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\InterestReplyVersion", mappedBy="projectParticipation", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="KLS\Syndication\Entity\InterestReplyVersion", mappedBy="projectParticipation", orphanRemoval=true)
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
      */
@@ -302,7 +302,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * Réponse ferme : Invitation envoyé par l'arrangeur au participant.
      *
-     * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\OfferWithFee")
+     * @ORM\Embedded(class="KLS\Syndication\Entity\Embeddable\OfferWithFee")
      *
      * @Assert\Valid
      *
@@ -345,7 +345,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Collection|ProjectParticipationMember[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectParticipationMember", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="KLS\Syndication\Entity\ProjectParticipationMember", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      *
      * @Assert\Valid
      *
@@ -356,7 +356,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Collection|ProjectParticipationTranche[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectParticipationTranche", mappedBy="projectParticipation", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="KLS\Syndication\Entity\ProjectParticipationTranche", mappedBy="projectParticipation", cascade={"persist"})
      *
      * @Assert\Valid
      *
@@ -367,7 +367,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var Collection|ProjectParticipationStatus[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\ProjectParticipationStatus", mappedBy="projectParticipation", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="KLS\Syndication\Entity\ProjectParticipationStatus", mappedBy="projectParticipation", cascade={"persist"})
      * @ORM\OrderBy({"added": "ASC"})
      *
      * @Groups({"projectParticipation:read"})
@@ -375,7 +375,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     private Collection $statuses;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File")
+     * @ORM\OneToOne(targetEntity="KLS\Core\Entity\File")
      * @ORM\JoinColumn(name="id_nda")
      *
      * @Groups({
@@ -390,7 +390,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface
     /**
      * @var ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Syndication\Entity\NDASignature", mappedBy="projectParticipation")
+     * @ORM\OneToMany(targetEntity="KLS\Syndication\Entity\NDASignature", mappedBy="projectParticipation")
      */
     private iterable $ndaSignatures;
 

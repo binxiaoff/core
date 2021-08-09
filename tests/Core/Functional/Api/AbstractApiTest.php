@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Functional\Api;
+namespace KLS\Test\Core\Functional\Api;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Bridge\Symfony\Bundle\Test\ApiTestCase;
 use ApiPlatform\Core\Bridge\Symfony\Bundle\Test\Client;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Service\Jwt\StaffPayloadManager;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Service\Jwt\StaffPayloadManager;
 
 abstract class AbstractApiTest extends ApiTestCase
 {

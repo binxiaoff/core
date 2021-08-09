@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\UserActivity;
+namespace KLS\Core\Service\UserActivity;
 
 use Exception;
+use KLS\Core\Entity\User;
+use KLS\Core\Entity\UserAgent;
+use KLS\Core\Repository\UserAgentRepository;
 use Psr\Log\LoggerInterface;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\UserAgent;
-use Unilend\Core\Repository\UserAgentRepository;
 use WhichBrowser\Parser;
 
 class UserAgentManager

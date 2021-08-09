@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Agency\Functionnal\Security\Voter;
+namespace KLS\Test\Agency\Functionnal\Security\Voter;
 
 use Doctrine\ORM\EntityManagerInterface;
+use KLS\Agency\Entity\Project;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
-use Unilend\Agency\Entity\Project;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
 
 abstract class AbstractProjectVoterTest extends KernelTestCase
 {

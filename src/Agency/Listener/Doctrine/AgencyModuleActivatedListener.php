@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Listener\Doctrine;
+namespace KLS\Agency\Listener\Doctrine;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
-use Unilend\Core\Entity\CompanyModule;
-use Unilend\Core\Entity\Staff;
+use KLS\Core\Entity\CompanyModule;
+use KLS\Core\Entity\Staff;
 
 class AgencyModuleActivatedListener
 {

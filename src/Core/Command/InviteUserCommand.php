@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Command;
+namespace KLS\Core\Command;
 
 use Exception;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\UserRepository;
+use KLS\Core\Service\Staff\StaffNotifier;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\UserRepository;
-use Unilend\Core\Service\Staff\StaffNotifier;
 
 class InviteUserCommand extends Command
 {

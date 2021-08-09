@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\DataFixtures;
+namespace KLS\Test\Core\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Core\Entity\NafNace;
+use KLS\Core\Entity\NafNace;
 
 class NafNaceFixtures extends AbstractFixtures
 {

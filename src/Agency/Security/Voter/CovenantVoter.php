@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Security\Voter;
+namespace KLS\Agency\Security\Voter;
 
 use Exception;
-use Unilend\Agency\Entity\Covenant;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Security\Voter\AbstractEntityVoter;
+use KLS\Agency\Entity\Covenant;
+use KLS\Core\Entity\User;
+use KLS\Core\Security\Voter\AbstractEntityVoter;
 
 class CovenantVoter extends AbstractEntityVoter
 {

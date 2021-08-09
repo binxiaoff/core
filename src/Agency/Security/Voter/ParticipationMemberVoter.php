@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Security\Voter;
+namespace KLS\Agency\Security\Voter;
 
 use Doctrine\ORM\NonUniqueResultException;
+use KLS\Agency\Entity\ParticipationMember;
+use KLS\Agency\Repository\ParticipationMemberRepository;
+use KLS\Core\Entity\User;
+use KLS\Core\Security\Voter\AbstractEntityVoter;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Agency\Entity\ParticipationMember;
-use Unilend\Agency\Repository\ParticipationMemberRepository;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Security\Voter\AbstractEntityVoter;
 
 class ParticipationMemberVoter extends AbstractEntityVoter
 {

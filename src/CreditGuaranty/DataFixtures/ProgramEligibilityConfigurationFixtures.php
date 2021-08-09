@@ -2,23 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\DataFixtures;
+namespace KLS\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Provider\Miscellaneous;
+use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\CreditGuaranty\Entity\Field;
+use KLS\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
+use KLS\CreditGuaranty\Repository\ProgramEligibilityRepository;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\CreditGuaranty\Entity\Field;
-use Unilend\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
-use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
 
 class ProgramEligibilityConfigurationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     private const CHANCE_OF_ELIGIBILITY = 80;
 
     private ProgramEligibilityRepository $programEligibilityRepository;
-
     private ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository;
 
     public function __construct(

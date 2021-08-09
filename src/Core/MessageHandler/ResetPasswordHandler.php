@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\MessageHandler;
+namespace KLS\Core\MessageHandler;
 
 use Exception;
+use KLS\Core\Entity\Request\ResetPassword;
+use KLS\Core\Repository\UserRepository;
+use KLS\Core\Service\GoogleRecaptchaManager;
+use KLS\Core\Service\User\UserNotifier;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Unilend\Core\Entity\Request\ResetPassword;
-use Unilend\Core\Repository\UserRepository;
-use Unilend\Core\Service\GoogleRecaptchaManager;
-use Unilend\Core\Service\User\UserNotifier;
 
 class ResetPasswordHandler implements MessageHandlerInterface
 {

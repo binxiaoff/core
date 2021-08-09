@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\DataFixtures;
+namespace KLS\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\Core\DataFixtures\CompanyFixtures;
+use KLS\Core\DataFixtures\StaffFixtures;
+use KLS\Core\DataFixtures\UserFixtures;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\User;
+use KLS\Core\Model\Bitmask;
+use KLS\CreditGuaranty\Entity\StaffPermission;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\Core\DataFixtures\CompanyFixtures;
-use Unilend\Core\DataFixtures\StaffFixtures;
-use Unilend\Core\DataFixtures\UserFixtures;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Model\Bitmask;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
 
 class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

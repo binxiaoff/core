@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
-use ApiPlatform\Core\Annotation\{ApiResource};
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\DTO\MessageInput;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
-use Unilend\Core\DTO\MessageInput;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
@@ -56,7 +56,7 @@ class Message
     protected string $body;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\MessageThread", inversedBy="messages")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\MessageThread", inversedBy="messages")
      * @ORM\JoinColumn(name="id_message_thread", nullable=false)
      *
      * @Groups({"message:read"})
@@ -66,7 +66,7 @@ class Message
     private MessageThread $messageThread;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Staff")
      * @ORM\JoinColumn(name="id_sender", nullable=false)
      *
      * @Groups({"message:read"})
@@ -79,7 +79,7 @@ class Message
     /**
      * @var MessageFile[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\MessageFile", mappedBy="message", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\MessageFile", mappedBy="message", cascade={"persist"}, orphanRemoval=true)
      *
      * @Groups({"message:read"})
      */
@@ -88,7 +88,7 @@ class Message
     /**
      * @var MessageStatus[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\MessageStatus", mappedBy="message")
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\MessageStatus", mappedBy="message")
      *
      * @Groups({"message:read"})
      */

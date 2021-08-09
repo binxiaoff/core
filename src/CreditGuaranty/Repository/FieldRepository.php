@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Repository;
+namespace KLS\CreditGuaranty\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\CreditGuaranty\Entity\Field;
+use KLS\CreditGuaranty\Entity\Field;
 
 /**
  * @method Field|null find($id, $lockMode = null, $lockVersion = null)

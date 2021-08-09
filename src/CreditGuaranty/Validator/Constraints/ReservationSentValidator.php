@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Validator\Constraints;
+namespace KLS\CreditGuaranty\Validator\Constraints;
 
+use KLS\CreditGuaranty\Entity\Borrower;
+use KLS\CreditGuaranty\Entity\Project;
+use KLS\CreditGuaranty\Entity\ReservationStatus;
+use KLS\CreditGuaranty\Repository\ProgramEligibilityRepository;
+use KLS\CreditGuaranty\Service\EligibilityChecker;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
-use Unilend\CreditGuaranty\Entity\Borrower;
-use Unilend\CreditGuaranty\Entity\Project;
-use Unilend\CreditGuaranty\Entity\ReservationStatus;
-use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
-use Unilend\CreditGuaranty\Service\EligibilityChecker;
 
 class ReservationSentValidator extends ConstraintValidator
 {

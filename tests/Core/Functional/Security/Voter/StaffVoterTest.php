@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Functional\Security\Voter;
+namespace KLS\Test\Core\Functional\Security\Voter;
 
+use KLS\Core\Entity\Staff;
+use KLS\Core\Repository\StaffRepository;
+use KLS\Core\Security\Voter\StaffVoter;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Repository\StaffRepository;
-use Unilend\Core\Security\Voter\StaffVoter;
 
 /**
- * @coversDefaultClass \Unilend\Core\Security\Voter\StaffVoter
+ * @coversDefaultClass \KLS\Core\Security\Voter\StaffVoter
  *
  * @internal
  */

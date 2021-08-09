@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Serializer\Normalizer\ProjectParticipationTranche;
+namespace KLS\Syndication\Serializer\Normalizer\ProjectParticipationTranche;
 
+use KLS\Syndication\Entity\ProjectParticipationTranche;
+use KLS\Syndication\Security\Voter\ProjectParticipationTrancheVoter;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
-use Unilend\Syndication\Entity\ProjectParticipationTranche;
-use Unilend\Syndication\Security\Voter\ProjectParticipationTrancheVoter;
 
 class ProjectParticipationTrancheNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {

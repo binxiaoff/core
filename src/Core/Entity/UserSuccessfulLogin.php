@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Core\Traits\ConstantsAwareTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Table(name="core_user_successful_login", indexes={
  *     @ORM\Index(name="idx_user_successful_login_ip", columns={"ip"}),
  *     @ORM\Index(name="idx_user_successful_login_added", columns={"added"})
  * })
- * @ORM\Entity(repositoryClass="Unilend\Core\Repository\UserSuccessfulLoginRepository")
+ * @ORM\Entity(repositoryClass="KLS\Core\Repository\UserSuccessfulLoginRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class UserSuccessfulLogin

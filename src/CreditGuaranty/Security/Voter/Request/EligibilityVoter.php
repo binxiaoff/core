@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Security\Voter\Request;
+namespace KLS\CreditGuaranty\Security\Voter\Request;
 
-use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\CreditGuaranty\Entity\Request\Eligibility;
-use Unilend\CreditGuaranty\Security\Voter\ReservationVoter;
+use KLS\Core\Security\Voter\AbstractEntityVoter;
+use KLS\CreditGuaranty\Entity\Request\Eligibility;
+use KLS\CreditGuaranty\Security\Voter\ReservationVoter;
 
 class EligibilityVoter extends AbstractEntityVoter
 {

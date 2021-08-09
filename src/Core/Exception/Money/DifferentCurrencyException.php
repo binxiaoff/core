@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Exception\Money;
+namespace KLS\Core\Exception\Money;
 
 use InvalidArgumentException;
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
 
 class DifferentCurrencyException extends InvalidArgumentException
 {

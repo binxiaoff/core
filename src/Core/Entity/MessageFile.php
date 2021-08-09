@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
@@ -20,7 +20,7 @@ class MessageFile
     use TimestampableAddedOnlyTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\File", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\File", cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_file", nullable=false)
      *
      * @Groups({"messageFile:read"})
@@ -28,7 +28,7 @@ class MessageFile
     private File $file;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Message", inversedBy="messageFiles")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Message", inversedBy="messageFiles")
      * @ORM\JoinColumn(name="id_message", onDelete="CASCADE", nullable=false)
      */
     private Message $message;

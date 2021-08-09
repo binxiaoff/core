@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Doctrine\Entity;
+namespace KLS\Core\Listener\Doctrine\Entity;
 
 use Exception;
+use KLS\Core\Entity\User;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Unilend\Core\Entity\User;
 
 class UserPlainPasswordSubmittedListener
 {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Filter\Doctrine;
+namespace KLS\Agency\Filter\Doctrine;
 
 use DateTime;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query\Filter\SQLFilter;
-use Unilend\Agency\Entity\Term;
+use KLS\Agency\Entity\Term;
 
 /**
  * Filter to hide the created ahead of time covenant terms.

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Extension;
+namespace KLS\Agency\Extension;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
+use KLS\Agency\Entity\Project;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Agency\Entity\Project;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
 
 class ProjectExtension implements QueryCollectionExtensionInterface
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Entity;
+namespace KLS\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
@@ -13,11 +13,11 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use LogicException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ORM\Entity
@@ -97,7 +97,7 @@ class Term
     /**
      * TODO Should be unique.
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\File")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\File")
      * @ORM\JoinColumn(name="id_document", nullable=true)
      *
      * @Groups({"agency:term:read", "agency:term:update"})

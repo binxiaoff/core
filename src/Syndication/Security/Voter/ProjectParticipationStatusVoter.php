@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Security\Voter;
+namespace KLS\Syndication\Security\Voter;
 
 use DateTimeImmutable;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectParticipationStatus;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\User;
+use KLS\Core\Security\Voter\AbstractEntityVoter;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectParticipationStatus;
 
 class ProjectParticipationStatusVoter extends AbstractEntityVoter
 {

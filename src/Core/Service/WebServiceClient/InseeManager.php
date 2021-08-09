@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\WebServiceClient;
+namespace KLS\Core\Service\WebServiceClient;
 
 use GuzzleHttp\Client;
+use KLS\Core\Entity\Company;
 use Symfony\Component\HttpFoundation\Response;
-use Unilend\Core\Entity\Company;
 
 class InseeManager
 {

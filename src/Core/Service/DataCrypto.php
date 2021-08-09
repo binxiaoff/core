@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service;
+namespace KLS\Core\Service;
 
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Exception\BadFormatException;

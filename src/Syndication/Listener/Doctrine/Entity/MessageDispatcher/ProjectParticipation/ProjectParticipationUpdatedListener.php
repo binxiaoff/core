@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipation;
+namespace KLS\Syndication\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipation;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
-use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Message\ProjectParticipation\ProjectParticipationStatusUpdated;
+use KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Message\ProjectParticipation\ProjectParticipationStatusUpdated;
 
 class ProjectParticipationUpdatedListener
 {

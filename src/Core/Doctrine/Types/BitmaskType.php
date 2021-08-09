@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Doctrine\Types;
+namespace KLS\Core\Doctrine\Types;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
-use Unilend\Core\Model\Bitmask;
+use KLS\Core\Model\Bitmask;
 
 class BitmaskType extends Type
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Entity;
+namespace KLS\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
@@ -17,30 +17,30 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Generator;
+use KLS\Agency\Controller\Project\GetCovenants;
+use KLS\Agency\Controller\Project\GetTerms;
+use KLS\Agency\Entity\Versioned\VersionedProject;
+use KLS\Agency\Filter\ApiPlatform\ProjectFilter;
+use KLS\Core\Controller\Dataroom\Delete;
+use KLS\Core\Controller\Dataroom\Get;
+use KLS\Core\Controller\Dataroom\Post;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\CompanyGroupTag;
+use KLS\Core\Entity\Constant\CAInternalRating;
+use KLS\Core\Entity\Constant\FundingSpecificity;
+use KLS\Core\Entity\Drive;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Embeddable\NullablePerson;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
+use KLS\Syndication\Entity\Project as ArrangementProject;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Agency\Controller\Project\GetCovenants;
-use Unilend\Agency\Controller\Project\GetTerms;
-use Unilend\Agency\Entity\Versioned\VersionedProject;
-use Unilend\Agency\Filter\ApiPlatform\ProjectFilter;
-use Unilend\Core\Controller\Dataroom\Delete;
-use Unilend\Core\Controller\Dataroom\Get;
-use Unilend\Core\Controller\Dataroom\Post;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\CompanyGroupTag;
-use Unilend\Core\Entity\Constant\CAInternalRating;
-use Unilend\Core\Entity\Constant\FundingSpecificity;
-use Unilend\Core\Entity\Drive;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Embeddable\NullablePerson;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Traits\ConstantsAwareTrait;
-use Unilend\Syndication\Entity\Project as ArrangementProject;
 
 /**
  * TODO CALS-4266 "agency:term:read" should not used (too much data returned without filter).
@@ -267,7 +267,7 @@ class Project
     public const STATUS_FINISHED  = -20;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Agency\Entity\Agent", mappedBy="project", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity="KLS\Agency\Entity\Agent", mappedBy="project", cascade={"persist", "remove"})
      *
      * @Assert\Valid
      *
@@ -313,7 +313,7 @@ class Project
     private string $title;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -341,7 +341,7 @@ class Project
     /**
      * @var Collection|Tranche[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Tranche", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="KLS\Agency\Entity\Tranche", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
      * @Assert\Valid
      * @Assert\All({
@@ -358,7 +358,7 @@ class Project
     /**
      * @var Borrower[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="KLS\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
      *
      * @Assert\Valid
      * @Assert\Count(min="1", groups={"published"})
@@ -442,7 +442,7 @@ class Project
     /**
      * @var Collection|Covenant[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Covenant", mappedBy="project", cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="KLS\Agency\Entity\Covenant", mappedBy="project", cascade={"persist"}, fetch="EAGER")
      *
      * @Groups({"agency:project:read", "agency:project:write"})
      *

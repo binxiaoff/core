@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\DataFixtures;
+namespace KLS\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Faker\Provider\Miscellaneous;
+use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\CreditGuaranty\Entity\Field;
+use KLS\CreditGuaranty\Entity\FinancingObject;
+use KLS\CreditGuaranty\Entity\Program;
+use KLS\CreditGuaranty\Entity\ProgramEligibilityCondition;
+use KLS\CreditGuaranty\Repository\FieldRepository;
+use KLS\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
+use KLS\CreditGuaranty\Repository\ProgramEligibilityRepository;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\CreditGuaranty\Entity\Field;
-use Unilend\CreditGuaranty\Entity\FinancingObject;
-use Unilend\CreditGuaranty\Entity\Program;
-use Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition;
-use Unilend\CreditGuaranty\Repository\FieldRepository;
-use Unilend\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
-use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
 
 class ProgramEligibilityConditionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

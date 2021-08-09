@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity\Request;
+namespace KLS\CreditGuaranty\Entity\Request;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
-use Unilend\CreditGuaranty\Controller\EligibilityChecking;
-use Unilend\CreditGuaranty\Entity\Reservation;
+use KLS\CreditGuaranty\Controller\EligibilityChecking;
+use KLS\CreditGuaranty\Entity\Reservation;
 
 /**
  * @ApiResource(

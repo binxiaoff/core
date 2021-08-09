@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Command;
+namespace KLS\CreditGuaranty\Command;
 
 use DateInterval;
 use DateTime;
 use InvalidArgumentException;
 use JsonException;
+use KLS\Core\Entity\Staff;
+use KLS\Core\SwiftMailer\MailjetMessage;
+use KLS\CreditGuaranty\Entity\Reservation;
+use KLS\CreditGuaranty\Entity\ReservationStatus;
+use KLS\CreditGuaranty\Entity\StaffPermission;
+use KLS\CreditGuaranty\Repository\ReservationRepository;
+use KLS\CreditGuaranty\Service\StaffPermissionManager;
 use Swift_Mailer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\SwiftMailer\MailjetMessage;
-use Unilend\CreditGuaranty\Entity\Reservation;
-use Unilend\CreditGuaranty\Entity\ReservationStatus;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
-use Unilend\CreditGuaranty\Repository\ReservationRepository;
-use Unilend\CreditGuaranty\Service\StaffPermissionManager;
 
 class RemindExpiringReservationCommand extends Command
 {

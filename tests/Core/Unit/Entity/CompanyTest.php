@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Entity;
+namespace KLS\Test\Core\Unit\Entity;
 
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\CompanyModule;
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\CompanyModule;
 
 /**
  * @internal

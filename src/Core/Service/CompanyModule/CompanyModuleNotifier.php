@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\CompanyModule;
+namespace KLS\Core\Service\CompanyModule;
 
 use Http\Client\Exception;
+use KLS\Core\Entity\CompanyModule;
+use KLS\Core\Entity\CompanyModuleLog;
+use KLS\Core\Entity\User;
 use Nexy\Slack\Attachment;
 use Nexy\Slack\AttachmentField;
 use Nexy\Slack\Client as Slack;
 use Nexy\Slack\Exception\SlackApiException;
 use Nexy\Slack\MessageInterface;
-use Unilend\Core\Entity\CompanyModule;
-use Unilend\Core\Entity\CompanyModuleLog;
-use Unilend\Core\Entity\User;
 
 class CompanyModuleNotifier
 {

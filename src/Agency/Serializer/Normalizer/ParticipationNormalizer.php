@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Serializer\Normalizer;
+namespace KLS\Agency\Serializer\Normalizer;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
+use KLS\Agency\Entity\Participation;
+use KLS\Agency\Entity\ParticipationTrancheAllocation;
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Security\Voter\ParticipationVoter;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
-use Unilend\Agency\Entity\Participation;
-use Unilend\Agency\Entity\ParticipationTrancheAllocation;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Security\Voter\ParticipationVoter;
 
 class ParticipationNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

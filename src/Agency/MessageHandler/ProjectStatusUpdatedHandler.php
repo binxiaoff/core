@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\MessageHandler;
+namespace KLS\Agency\MessageHandler;
 
 use InvalidArgumentException;
 use JsonException;
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Message\ProjectStatusUpdated;
+use KLS\Agency\Notifier\ProjectMemberNotifier;
+use KLS\Agency\Repository\ProjectRepository;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Message\ProjectStatusUpdated;
-use Unilend\Agency\Notifier\ProjectMemberNotifier;
-use Unilend\Agency\Repository\ProjectRepository;
 
 class ProjectStatusUpdatedHandler implements MessageHandlerInterface
 {

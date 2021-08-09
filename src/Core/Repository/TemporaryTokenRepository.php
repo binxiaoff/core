@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -10,8 +10,8 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
-use Unilend\Core\Entity\TemporaryToken;
-use Unilend\Core\Entity\User;
+use KLS\Core\Entity\TemporaryToken;
+use KLS\Core\Entity\User;
 
 /**
  * @method TemporaryToken|null find($id, $lockMode = null, $lockVersion = null)

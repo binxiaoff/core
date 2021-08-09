@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity;
+namespace KLS\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Constant\CAInternalRating;
+use KLS\Core\Entity\Constant\CAInternalRetailRating;
+use KLS\Core\Entity\Constant\CARatingType;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
+use KLS\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
+use KLS\CreditGuaranty\Entity\Traits\AddressTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Constant\CAInternalRating;
-use Unilend\Core\Entity\Constant\CAInternalRetailRating;
-use Unilend\Core\Entity\Constant\CARatingType;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
-use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
-use Unilend\CreditGuaranty\Entity\Traits\AddressTrait;
 
 /**
  * @ApiResource(
@@ -61,7 +61,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     use TimestampableTrait;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", inversedBy="borrower")
+     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\Entity\Reservation", inversedBy="borrower")
      * @ORM\JoinColumn(name="id_reservation", nullable=false)
      *
      * @ApiProperty(readableLink=false, writableLink=false)
@@ -80,7 +80,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private ?string $beneficiaryName = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_borrower_type")
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
@@ -143,7 +143,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private ?string $taxNumber = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_legal_form")
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
@@ -153,7 +153,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private ?ProgramChoiceOption $legalForm = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_company_naf_code")
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
@@ -172,7 +172,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private ?int $employeesNumber = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_exploitation_size")
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")

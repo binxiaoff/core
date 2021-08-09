@@ -6,14 +6,14 @@ services:
     autowire: true
     autoconfigure: true
 
-  Unilend\Test\Core\DataFixtures\:
+  KLS\Test\Core\DataFixtures\:
     resource: '%kernel.project_dir%/tests/Core/DataFixtures'
 
-  Unilend\Test\Syndication\DataFixtures\:
+  KLS\Test\Syndication\DataFixtures\:
     resource: '%kernel.project_dir%/tests/Syndication/DataFixtures'
 
-  Unilend\Test\Agency\DataFixtures\:
+  KLS\Test\Agency\DataFixtures\:
     resource: '%kernel.project_dir%/tests/Agency/DataFixtures'
 
-  Unilend\Test\CreditGuaranty\DataFixtures\:
+  KLS\Test\CreditGuaranty\DataFixtures\:
     resource: '%kernel.project_dir%/tests/CreditGuaranty/DataFixtures'

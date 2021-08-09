@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Agency\Functionnal\Security\Voter;
+namespace KLS\Test\Agency\Functionnal\Security\Voter;
 
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Security\Voter\ProjectRoleVoter;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Security\Voter\ProjectRoleVoter;
 
 /**
- * @coversDefaultClass \Unilend\Agency\Security\Voter\ProjectRoleVoter
+ * @coversDefaultClass \KLS\Agency\Security\Voter\ProjectRoleVoter
  *
  * @internal
  */

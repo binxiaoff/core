@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Command\Hubspot;
+namespace KLS\Core\Command\Hubspot;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use JsonException;
+use KLS\Core\Service\Hubspot\HubspotManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -15,7 +16,6 @@ use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
-use Unilend\Core\Service\Hubspot\HubspotManager;
 
 class SynchronizeMappingCommand extends Command
 {
