@@ -31,7 +31,7 @@ trait OfferFixtureTrait
     {
         return new RangedOfferWithFee(
             $this->createNullableMoney($min),
-            $rate,
+            (string) $rate,
             $this->createNullableMoney($max)
         );
     }
@@ -41,16 +41,16 @@ trait OfferFixtureTrait
      */
     public function createOfferWithFee(int $value, float $rate = 0.03): OfferWithFee
     {
-        return new OfferWithFee($this->createNullableMoney($value), $rate);
+        return new OfferWithFee($this->createNullableMoney($value), (string) $rate);
     }
 
     public function createNullableMoney(?int $value = null): NullableMoney
     {
-        return new NullableMoney('EUR', $value ?: $this->faker->numberBetween(1000000, 5000000));
+        return new NullableMoney('EUR', (string) $value ?: $this->faker->numberBetween(1000000, 5000000));
     }
 
     public function createMoney(?int $value = null): Money
     {
-        return new Money('EUR', $value ?: $this->faker->numberBetween(1000000, 5000000));
+        return new Money('EUR', (string) $value ?: $this->faker->numberBetween(1000000, 5000000));
     }
 }
