@@ -14,7 +14,7 @@ final class Version20210730123524 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return '[Hubspot] CALS-4339 synchronize companies';
     }
 
     public function up(Schema $schema): void

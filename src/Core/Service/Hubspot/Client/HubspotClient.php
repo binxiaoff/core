@@ -10,9 +10,10 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class HubspotClient
 {
-    public const CONTACTS_LIMIT       = 100; // Maximum authorised
+    public const RESULT_PER_PAGE      = 100; // Maximum authorised
     private const GET_DAILY_USAGE_URL = 'v1/limit/daily?';
     private const CONTACTS_URL        = 'contact';
+    private const COMPANY_URL         = 'companies';
 
     public HttpClientInterface $hubspotIntegrationClient;
     public HttpClientInterface $hubspotCrmClient;
@@ -39,7 +40,7 @@ class HubspotClient
     public function fetchAllContacts(int $afterContactId = 0): ResponseInterface
     {
         $queryParams = [
-            'limit'    => self::CONTACTS_LIMIT,
+            'limit'    => self::RESULT_PER_PAGE,
             'archived' => 'false',
             'after'    => $afterContactId,
         ];
@@ -60,6 +61,22 @@ class HubspotClient
     {
         return $this->hubspotCrmClient->request('PATCH', self::CONTACTS_URL . '/' . $contactId, [
             'json' => $data,
+        ]);
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     */
+    public function fetchAllCompanies(?int $afterCompanyId = null): ResponseInterface
+    {
+        $queryParams = [
+            'limit'    => self::RESULT_PER_PAGE,
+            'archived' => 'false',
+            'after'    => $afterCompanyId,
+        ];
+
+        return $this->hubspotCrmClient->request('GET', self::COMPANY_URL, [
+            'query' => $queryParams,
         ]);
     }
 }
