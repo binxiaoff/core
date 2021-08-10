@@ -19,16 +19,16 @@ Enable GrumPHP or update the configuration:
 
 .. code-block:: bash
 
- docker run --rm -it --user $(id -u):$(id -g) -v $(pwd):/app -w /app klstech/php-ci:7.4.16 php ./vendor/bin/grumphp git:init
+ docker exec -it backend.api php ./vendor/bin/grumphp git:init
 
 Disable GrumPHP:
 
 .. code-block:: bash
 
- docker run --rm -it --user $(id -u):$(id -g) -v $(pwd):/app -w /app klstech/php-ci:7.4.16 php ./vendor/bin/grumphp git:deinit
+ docker exec -it backend.api php ./vendor/bin/grumphp git:deinit
 
 Run GrumPHP manually:
 
 .. code-block:: bash
 
-  docker run --rm -it --user $(id -u):$(id -g) -v $(pwd):/app -w /app klstech/php-ci:7.4.16 php ./vendor/bin/grumphp run
+  docker exec -it backend.api php ./vendor/bin/grumphp run
