@@ -31,14 +31,14 @@
             <directory>tests/Core/Unit</directory>
             <directory>tests/Syndication/Agency/Unit</directory>
             <directory>tests/Syndication/Arrangement/Unit</directory>
-            <directory>tests/CreditGuaranty/Unit</directory>
+            <directory>tests/CreditGuaranty/FEI/Unit</directory>
         </testsuite>
 
         <testsuite name="functional">
             <directory>tests/Core/Functional</directory>
             <directory>tests/Syndication/Agency/Functional</directory>
             <directory>tests/Syndication/Arrangement/Functional</directory>
-            <directory>tests/CreditGuaranty/Functional</directory>
+            <directory>tests/CreditGuaranty/FEI/Functional</directory>
         </testsuite>
 
         <testsuite name="core">

@@ -57,11 +57,11 @@ doctrine:
                             dir: '%kernel.project_dir%/src/Syndication/Agency/Entity'
                             prefix: 'KLS\Syndication\Agency\Entity'
                             alias: KLS\Agency
-                        KLS\CreditGuaranty:
+                        KLS\CreditGuaranty\FEI:
                             is_bundle: false
                             type: annotation
-                            dir: '%kernel.project_dir%/src/CreditGuaranty/Entity'
-                            prefix: 'KLS\CreditGuaranty\Entity'
+                            dir: '%kernel.project_dir%/src/CreditGuaranty/FEI/Entity'
+                            prefix: 'KLS\CreditGuaranty\FEI\Entity'
                             alias: KLS\CreditGuaranty
                     filters:
                         softdeletable:
