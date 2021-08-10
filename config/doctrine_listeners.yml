@@ -79,21 +79,21 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Arrangement\Entity\ProjectParticipation}
 
-    KLS\Agency\Listener\Doctrine\MessageDispatcher\ProjectMemberCreatedListener:
+    KLS\Syndication\Agency\Listener\Doctrine\MessageDispatcher\ProjectMemberCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Agency\Entity\BorrowerMember }
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Agency\Entity\AgentMember }
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Agency\Entity\ParticipationMember }
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Agency\Entity\BorrowerMember }
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Agency\Entity\AgentMember }
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Agency\Entity\ParticipationMember }
 
-    KLS\Agency\Listener\Doctrine\MessageDispatcher\ProjectMemberUpdatedListener:
+    KLS\Syndication\Agency\Listener\Doctrine\MessageDispatcher\ProjectMemberUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Agency\Entity\BorrowerMember }
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Agency\Entity\AgentMember }
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Agency\Entity\ParticipationMember }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Agency\Entity\BorrowerMember }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Agency\Entity\AgentMember }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Agency\Entity\ParticipationMember }
 
-    KLS\Agency\Listener\Doctrine\MessageDispatcher\ProjectStatusUpdatedListener:
+    KLS\Syndication\Agency\Listener\Doctrine\MessageDispatcher\ProjectStatusUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Agency\Entity\Project }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Agency\Entity\Project }
 
     # Doctrine Lifecycle Event Listener
     KLS\Core\Listener\Doctrine\Lifecycle\UuidListener:
@@ -128,20 +128,20 @@ services:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    KLS\Agency\Listener\Doctrine\TermListener:
+    KLS\Syndication\Agency\Listener\Doctrine\TermListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    KLS\Agency\Listener\Doctrine\CovenantListener:
+    KLS\Syndication\Agency\Listener\Doctrine\CovenantListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
             - { name: doctrine.event_listener, event: postUpdate }
 
-    KLS\Agency\Listener\Doctrine\ParticipationListener:
+    KLS\Syndication\Agency\Listener\Doctrine\ParticipationListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    KLS\Agency\Listener\Doctrine\ProjectListener:
+    KLS\Syndication\Agency\Listener\Doctrine\ProjectListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
@@ -153,6 +153,6 @@ services:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    KLS\Agency\Listener\Doctrine\AgencyModuleActivatedListener:
+    KLS\Syndication\Agency\Listener\Doctrine\AgencyModuleActivatedListener:
         tags:
            - { name: doctrine.event_listener, event: onFlush }

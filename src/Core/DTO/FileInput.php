@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace KLS\Core\DTO;
 
-use KLS\Agency\Entity\Term;
 use KLS\Core\Entity\Message;
+use KLS\Syndication\Agency\Entity\Term;
 use KLS\Syndication\Arrangement\Entity\Project;
 use KLS\Syndication\Arrangement\Entity\ProjectFile;
 use KLS\Syndication\Arrangement\Entity\ProjectParticipation;

@@ -12,8 +12,8 @@ services:
   KLS\Test\Syndication\Arrangement\DataFixtures\:
     resource: '%kernel.project_dir%/tests/Syndication/Arrangement/DataFixtures'
 
-  KLS\Test\Agency\DataFixtures\:
-    resource: '%kernel.project_dir%/tests/Agency/DataFixtures'
+  KLS\Test\Syndication\Agency\DataFixtures\:
+    resource: '%kernel.project_dir%/tests/Syndication/Agency/DataFixtures'
 
   KLS\Test\CreditGuaranty\DataFixtures\:
     resource: '%kernel.project_dir%/tests/CreditGuaranty/DataFixtures'

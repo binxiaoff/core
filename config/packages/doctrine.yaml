@@ -45,18 +45,18 @@ doctrine:
                             dir: '%kernel.project_dir%/src/Core/Entity'
                             prefix: 'KLS\Core\Entity'
                             alias: KLS\Core
-                        KLS\Agency:
-                            is_bundle: false
-                            type: annotation
-                            dir: '%kernel.project_dir%/src/Agency/Entity'
-                            prefix: 'KLS\Agency\Entity'
-                            alias: KLS\Agency
                         KLS\Syndication\Arrangement:
                             is_bundle: false
                             type: annotation
                             dir: '%kernel.project_dir%/src/Syndication/Arrangement/Entity'
                             prefix: 'KLS\Syndication\Arrangement\Entity'
                             alias: KLS
+                        KLS\Syndication\Agency:
+                            is_bundle: false
+                            type: annotation
+                            dir: '%kernel.project_dir%/src/Syndication/Agency/Entity'
+                            prefix: 'KLS\Syndication\Agency\Entity'
+                            alias: KLS\Agency
                         KLS\CreditGuaranty:
                             is_bundle: false
                             type: annotation
@@ -68,7 +68,7 @@ doctrine:
                             class: 'Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter'
                             enabled: true
                         term:
-                            class: KLS\Agency\Filter\Doctrine\TermFilter
+                            class: KLS\Syndication\Agency\Filter\Doctrine\TermFilter
                             enabled: true
             # entity manager dedicated to Doctrine Migration bundle (Doctrine Migration bundle ignores the option --conn, if it finds some entity manager)
             migration:
