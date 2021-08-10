@@ -1,6 +1,6 @@
 grumphp:
     git_hook_variables:
-        EXEC_GRUMPHP_COMMAND: 'docker run --rm --user $(id -u):$(id -g) -v $(pwd):/grumphp -w /grumphp klstech/php-ci:7.4.16'
+        EXEC_GRUMPHP_COMMAND: 'docker exec backend.api'
     fixer:
         enabled: true
         fix_by_default: true
