@@ -54,7 +54,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     filterClass=GroupFilter::class,
  *     arguments={
  *         "whitelist": {
- *             "creditGuaranty:program:list",
+ *             "creditGuaranty:program:read",
  *         }
  *     }
  * )
