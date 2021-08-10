@@ -1,5 +1,5 @@
 {
-  "name": "kls-api/application",
+  "name": "kls/api",
   "description": "KLS API application",
   "license": "proprietary",
   "type": "project",
