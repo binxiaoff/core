@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\CreditGuaranty\DataFixtures;
+namespace KLS\Test\CreditGuaranty\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
-use Unilend\CreditGuaranty\Entity\Borrower;
-use Unilend\CreditGuaranty\Entity\Field;
-use Unilend\CreditGuaranty\Entity\FinancingObject;
-use Unilend\CreditGuaranty\Entity\Project;
-use Unilend\Test\Core\DataFixtures\AbstractFixtures;
+use KLS\CreditGuaranty\Entity\Borrower;
+use KLS\CreditGuaranty\Entity\Field;
+use KLS\CreditGuaranty\Entity\FinancingObject;
+use KLS\CreditGuaranty\Entity\Project;
+use KLS\Test\Core\DataFixtures\AbstractFixtures;
 
 class FieldFixtures extends AbstractFixtures
 {

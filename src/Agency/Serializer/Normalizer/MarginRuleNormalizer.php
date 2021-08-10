@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Serializer\Normalizer;
+namespace KLS\Agency\Serializer\Normalizer;
 
+use KLS\Agency\Entity\MarginImpact;
+use KLS\Agency\Entity\MarginRule;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
-use Unilend\Agency\Entity\MarginImpact;
-use Unilend\Agency\Entity\MarginRule;
 
 class MarginRuleNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

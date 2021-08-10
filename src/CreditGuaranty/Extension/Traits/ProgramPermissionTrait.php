@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Extension\Traits;
+namespace KLS\CreditGuaranty\Extension\Traits;
 
 use Doctrine\ORM\QueryBuilder;
-use Unilend\Core\Entity\Staff;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
-use Unilend\CreditGuaranty\Service\StaffPermissionManager;
+use KLS\Core\Entity\Staff;
+use KLS\CreditGuaranty\Entity\StaffPermission;
+use KLS\CreditGuaranty\Service\StaffPermissionManager;
 
 /**
- * The conditions in this trait should be the same as those in Unilend\CreditGuaranty\Security\Voter\ProgramRoleVoter.
+ * The conditions in this trait should be the same as those in KLS\CreditGuaranty\Security\Voter\ProgramRoleVoter.
  */
 trait ProgramPermissionTrait
 {

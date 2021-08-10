@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Traits;
+namespace KLS\Core\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Model\Bitmask;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Model\Bitmask;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 trait PermissionTrait
 {

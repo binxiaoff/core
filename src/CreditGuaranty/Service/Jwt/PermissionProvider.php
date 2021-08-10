@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Service\Jwt;
+namespace KLS\CreditGuaranty\Service\Jwt;
 
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Core\EventSubscriber\Jwt\PermissionProviderInterface;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
-use Unilend\CreditGuaranty\Repository\StaffPermissionRepository;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Core\EventSubscriber\Jwt\PermissionProviderInterface;
+use KLS\CreditGuaranty\Entity\StaffPermission;
+use KLS\CreditGuaranty\Repository\StaffPermissionRepository;
 
 class PermissionProvider implements PermissionProviderInterface
 {

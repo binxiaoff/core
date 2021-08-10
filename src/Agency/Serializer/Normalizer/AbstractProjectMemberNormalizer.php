@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Serializer\Normalizer;
+namespace KLS\Agency\Serializer\Normalizer;
 
 use Exception;
+use KLS\Agency\Entity\AbstractProjectMember;
+use KLS\Agency\Entity\AgentMember;
+use KLS\Agency\Entity\BorrowerMember;
+use KLS\Agency\Entity\ParticipationMember;
+use KLS\Core\Repository\UserRepository;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
-use Unilend\Agency\Entity\AbstractProjectMember;
-use Unilend\Agency\Entity\AgentMember;
-use Unilend\Agency\Entity\BorrowerMember;
-use Unilend\Agency\Entity\ParticipationMember;
-use Unilend\Core\Repository\UserRepository;
 
 class AbstractProjectMemberNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

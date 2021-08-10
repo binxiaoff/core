@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\CreditGuaranty\DataFixtures;
+namespace KLS\Test\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Unilend\CreditGuaranty\Entity\Field;
-use Unilend\CreditGuaranty\Entity\Program;
-use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
-use Unilend\Test\Core\DataFixtures\AbstractFixtures;
+use KLS\CreditGuaranty\Entity\Field;
+use KLS\CreditGuaranty\Entity\Program;
+use KLS\CreditGuaranty\Entity\ProgramChoiceOption;
+use KLS\Test\Core\DataFixtures\AbstractFixtures;
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

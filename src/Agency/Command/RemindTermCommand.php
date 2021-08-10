@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Command;
+namespace KLS\Agency\Command;
 
 use JsonException;
+use KLS\Agency\Entity\AgentMember;
+use KLS\Agency\Entity\BorrowerMember;
+use KLS\Agency\Entity\Covenant;
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Entity\Term;
+use KLS\Agency\Repository\TermRepository;
+use KLS\Core\Entity\User;
+use KLS\Core\SwiftMailer\MailjetMessage;
 use Swift_Mailer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Agency\Entity\AgentMember;
-use Unilend\Agency\Entity\BorrowerMember;
-use Unilend\Agency\Entity\Covenant;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Entity\Term;
-use Unilend\Agency\Repository\TermRepository;
-use Unilend\Core\Entity\User;
-use Unilend\Core\SwiftMailer\MailjetMessage;
 
 class RemindTermCommand extends Command
 {

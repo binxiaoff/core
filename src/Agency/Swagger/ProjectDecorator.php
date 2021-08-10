@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Swagger;
+namespace KLS\Agency\Swagger;
 
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;

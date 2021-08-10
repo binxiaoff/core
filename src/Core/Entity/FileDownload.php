@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Core\Entity\Traits\IdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\Core\Entity\Traits\IdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
@@ -19,7 +19,7 @@ class FileDownload
     use IdentityTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\FileVersion", inversedBy="fileVersionDownloads")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\FileVersion", inversedBy="fileVersionDownloads")
      * @ORM\JoinColumn(name="id_file_version", nullable=false)
      */
     private FileVersion $fileVersion;
@@ -30,13 +30,13 @@ class FileDownload
     private string $type;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\User")
      * @ORM\JoinColumn(name="added_by", referencedColumnName="id", nullable=false)
      */
     private User $addedBy;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company")
      * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=true)
      */
     private ?Company $company;

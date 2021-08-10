@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\MessageHandler\ProjectParticipation;
+namespace KLS\Syndication\MessageHandler\ProjectParticipation;
 
+use KLS\Syndication\Entity\ProjectParticipationStatus;
+use KLS\Syndication\Message\ProjectParticipation\ProjectParticipationStatusUpdated;
+use KLS\Syndication\Repository\ProjectParticipationRepository;
+use KLS\Syndication\Service\ProjectParticipation\ProjectParticipationNotifier;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use Unilend\Syndication\Entity\ProjectParticipationStatus;
-use Unilend\Syndication\Message\ProjectParticipation\ProjectParticipationStatusUpdated;
-use Unilend\Syndication\Repository\ProjectParticipationRepository;
-use Unilend\Syndication\Service\ProjectParticipation\ProjectParticipationNotifier;
 
 class ProjectParticipationStatusUpdatedHandler implements MessageHandlerInterface
 {

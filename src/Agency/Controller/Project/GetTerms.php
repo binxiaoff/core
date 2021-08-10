@@ -2,20 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Controller\Project;
+namespace KLS\Agency\Controller\Project;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Entity\Term;
+use KLS\Agency\Repository\TermRepository;
+use KLS\Agency\Security\Voter\ProjectRoleVoter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Entity\Term;
-use Unilend\Agency\Repository\TermRepository;
-use Unilend\Agency\Security\Voter\ProjectRoleVoter;
 
 class GetTerms
 {
     private TermRepository $termRepository;
-
     private AuthorizationCheckerInterface $authorizationChecker;
 
     public function __construct(AuthorizationCheckerInterface $authorizationChecker, TermRepository $termRepository)

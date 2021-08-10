@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\DataFixtures\CompanyGroups;
+namespace KLS\Test\Core\DataFixtures\CompanyGroups;
 
-use Unilend\Core\Entity\CompanyGroup;
-use Unilend\Core\Entity\CompanyGroupTag;
+use KLS\Core\Entity\CompanyGroup;
+use KLS\Core\Entity\CompanyGroupTag;
 
 class FooCompanyGroupFixtures extends AbstractCompanyGroupFixtures
 {

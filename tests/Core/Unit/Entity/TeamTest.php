@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Entity;
+namespace KLS\Test\Core\Unit\Entity;
 
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Team;
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Team;
 
 /**
- * @coversDefaultClass \Unilend\Core\Entity\Team
+ * @coversDefaultClass \KLS\Core\Entity\Team
  *
  * @internal
  */

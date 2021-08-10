@@ -2,31 +2,31 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Security\Voter;
+namespace KLS\Core\Security\Voter;
 
 use InvalidArgumentException;
+use KLS\Agency\Entity\Term;
+use KLS\Agency\Repository\TermRepository;
+use KLS\Agency\Security\Voter\TermVoter;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\FileDownload;
+use KLS\Core\Entity\FileVersion;
+use KLS\Core\Entity\Message;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\FileVersionSignatureRepository;
+use KLS\Core\Repository\MessageFileRepository;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectFile;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectStatus;
+use KLS\Syndication\Repository\ProjectFileRepository;
+use KLS\Syndication\Repository\ProjectParticipationRepository;
+use KLS\Syndication\Repository\ProjectRepository;
+use KLS\Syndication\Security\Voter\ProjectParticipationVoter;
+use KLS\Syndication\Security\Voter\ProjectVoter;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Agency\Entity\Term;
-use Unilend\Agency\Repository\TermRepository;
-use Unilend\Agency\Security\Voter\TermVoter;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\FileDownload;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\Message;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\FileVersionSignatureRepository;
-use Unilend\Core\Repository\MessageFileRepository;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectFile;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectStatus;
-use Unilend\Syndication\Repository\ProjectFileRepository;
-use Unilend\Syndication\Repository\ProjectParticipationRepository;
-use Unilend\Syndication\Repository\ProjectRepository;
-use Unilend\Syndication\Security\Voter\ProjectParticipationVoter;
-use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class FileDownloadVoter extends AbstractEntityVoter
 {

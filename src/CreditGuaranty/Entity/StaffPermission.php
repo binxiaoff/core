@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity;
+namespace KLS\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\PermissionTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Model\Bitmask;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\PermissionTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Model\Bitmask;
 
 /**
  * @ApiResource(
@@ -79,7 +79,7 @@ class StaffPermission
     | self::PERMISSION_GRANT_EDIT_RESERVATION;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Staff")
      * @ORM\JoinColumn(name="id_staff", nullable=false, unique=true)
      *
      * @Groups({"creditGuaranty:staffPermission:read", "creditGuaranty:staffPermission:write"})

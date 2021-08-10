@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\CreditGuaranty\Unit\Service;
+namespace KLS\Test\CreditGuaranty\Unit\Service;
 
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Team;
+use KLS\Core\Entity\User;
+use KLS\Core\Model\Bitmask;
+use KLS\CreditGuaranty\Entity\StaffPermission;
+use KLS\CreditGuaranty\Repository\StaffPermissionRepository;
+use KLS\CreditGuaranty\Service\StaffLoginChecker;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Team;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Model\Bitmask;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
-use Unilend\CreditGuaranty\Repository\StaffPermissionRepository;
-use Unilend\CreditGuaranty\Service\StaffLoginChecker;
 
 /**
- * @coversDefaultClass \Unilend\CreditGuaranty\Service\StaffLoginChecker
+ * @coversDefaultClass \KLS\CreditGuaranty\Service\StaffLoginChecker
  *
  * @internal
  */

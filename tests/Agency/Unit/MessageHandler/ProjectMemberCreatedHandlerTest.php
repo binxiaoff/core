@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Agency\Unit\MessageHandler;
+namespace KLS\Test\Agency\Unit\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use JsonException;
+use KLS\Agency\Entity\AbstractProjectMember;
+use KLS\Agency\Entity\AgentMember;
+use KLS\Agency\Entity\BorrowerMember;
+use KLS\Agency\Entity\ParticipationMember;
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Message\ProjectMemberCreated;
+use KLS\Agency\MessageHandler\ProjectMemberCreatedHandler;
+use KLS\Agency\Notifier\ProjectMemberNotifier;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Unilend\Agency\Entity\AbstractProjectMember;
-use Unilend\Agency\Entity\AgentMember;
-use Unilend\Agency\Entity\BorrowerMember;
-use Unilend\Agency\Entity\ParticipationMember;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Message\ProjectMemberCreated;
-use Unilend\Agency\MessageHandler\ProjectMemberCreatedHandler;
-use Unilend\Agency\Notifier\ProjectMemberNotifier;
 
 /**
- * @coversDefaultClass \Unilend\Agency\MessageHandler\ProjectMemberCreatedHandler
+ * @coversDefaultClass \KLS\Agency\MessageHandler\ProjectMemberCreatedHandler
  *
  * @internal
  */

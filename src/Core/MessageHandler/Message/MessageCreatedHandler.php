@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\MessageHandler\Message;
+namespace KLS\Core\MessageHandler\Message;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use InvalidArgumentException;
+use KLS\Core\Entity\Message;
+use KLS\Core\Entity\MessageStatus;
+use KLS\Core\Message\Message\MessageCreated;
+use KLS\Core\Repository\MessageRepository;
+use KLS\Core\Repository\MessageStatusRepository;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Service\Project\ProjectManager;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Unilend\Core\Entity\Message;
-use Unilend\Core\Entity\MessageStatus;
-use Unilend\Core\Message\Message\MessageCreated;
-use Unilend\Core\Repository\MessageRepository;
-use Unilend\Core\Repository\MessageStatusRepository;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Service\Project\ProjectManager;
 
 class MessageCreatedHandler implements MessageHandlerInterface
 {

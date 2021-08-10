@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Security\Voter;
+namespace KLS\CreditGuaranty\Security\Voter;
 
+use KLS\Core\Entity\User;
+use KLS\Core\Security\Voter\AbstractEntityVoter;
+use KLS\CreditGuaranty\Entity\Program;
+use KLS\CreditGuaranty\Entity\StaffPermission;
+use KLS\CreditGuaranty\Service\StaffPermissionManager;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\CreditGuaranty\Entity\Program;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
-use Unilend\CreditGuaranty\Service\StaffPermissionManager;
 
 class ProgramVoter extends AbstractEntityVoter
 {

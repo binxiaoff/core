@@ -2,13 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Service\Project;
+namespace KLS\Syndication\Service\Project;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Http\Client\Exception;
 use InvalidArgumentException;
 use JsonException;
+use KLS\Core\SwiftMailer\MailjetMessage;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectStatus;
+use KLS\Syndication\Repository\ProjectRepository;
 use Nexy\Slack\Attachment;
 use Nexy\Slack\AttachmentField;
 use Nexy\Slack\Client as Slack;
@@ -16,10 +20,6 @@ use Nexy\Slack\Exception\SlackApiException;
 use Nexy\Slack\MessageInterface;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Core\SwiftMailer\MailjetMessage;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectStatus;
-use Unilend\Syndication\Repository\ProjectRepository;
 
 class ProjectNotifier
 {

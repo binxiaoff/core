@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Extension;
+namespace KLS\CreditGuaranty\Extension;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\CreditGuaranty\Entity\StaffPermission;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
 
 class StaffPermissionExtension implements QueryCollectionExtensionInterface
 {

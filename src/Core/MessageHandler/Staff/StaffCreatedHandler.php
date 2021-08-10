@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\MessageHandler\Staff;
+namespace KLS\Core\MessageHandler\Staff;
 
 use Exception;
+use KLS\Core\Message\Staff\StaffCreated;
+use KLS\Core\Repository\StaffRepository;
+use KLS\Core\Service\Staff\StaffNotifier;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use Unilend\Core\Message\Staff\StaffCreated;
-use Unilend\Core\Repository\StaffRepository;
-use Unilend\Core\Service\Staff\StaffNotifier;
 
 class StaffCreatedHandler implements MessageHandlerInterface
 {

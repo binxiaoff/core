@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Service;
+namespace KLS\CreditGuaranty\Service;
 
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Service\Staff\StaffLoginInterface;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
-use Unilend\CreditGuaranty\Repository\StaffPermissionRepository;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Service\Staff\StaffLoginInterface;
+use KLS\CreditGuaranty\Entity\StaffPermission;
+use KLS\CreditGuaranty\Repository\StaffPermissionRepository;
 
 class StaffLoginChecker implements StaffLoginInterface
 {

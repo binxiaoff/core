@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Message\Message;
+namespace KLS\Core\Message\Message;
 
-use Unilend\Core\Entity\Message;
-use Unilend\Core\Message\AsyncMessageInterface;
+use KLS\Core\Entity\Message;
+use KLS\Core\Message\AsyncMessageInterface;
 
 class MessageCreated implements AsyncMessageInterface
 {

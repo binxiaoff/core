@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Doctrine\Lifecycle;
+namespace KLS\Core\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
+use KLS\Core\Entity\User;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\User;
 
 class UpdatedByListener
 {

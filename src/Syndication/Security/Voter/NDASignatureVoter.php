@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Security\Voter;
+namespace KLS\Syndication\Security\Voter;
 
-use Unilend\Core\Entity\User;
-use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\Syndication\Entity\NDASignature;
+use KLS\Core\Entity\User;
+use KLS\Core\Security\Voter\AbstractEntityVoter;
+use KLS\Syndication\Entity\NDASignature;
 
 class NDASignatureVoter extends AbstractEntityVoter
 {

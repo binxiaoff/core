@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationMember;
+namespace KLS\Syndication\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationMember;
 
-use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
-use Unilend\Syndication\Entity\ProjectParticipationMember;
-use Unilend\Syndication\Message\ProjectParticipationMember\ProjectParticipationMemberCreated;
+use KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
+use KLS\Syndication\Entity\ProjectParticipationMember;
+use KLS\Syndication\Message\ProjectParticipationMember\ProjectParticipationMemberCreated;
 
 class ProjectParticipationMemberCreatedListener
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -10,11 +10,11 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
@@ -63,7 +63,7 @@ class MessageStatus
     private int $status;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Message", inversedBy="messageStatuses")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Message", inversedBy="messageStatuses")
      * @ORM\JoinColumn(name="id_message", referencedColumnName="id")
      *
      * @Groups({"messageStatus:read"})
@@ -73,7 +73,7 @@ class MessageStatus
     private Message $message;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Staff")
      * @ORM\JoinColumn(name="id_recipient", nullable=false)
      *
      * @Groups({"messageStatus:read"})

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\ElectronicSignature;
+namespace KLS\Core\Service\ElectronicSignature;
 
 use DOMDocument;
 use Exception;

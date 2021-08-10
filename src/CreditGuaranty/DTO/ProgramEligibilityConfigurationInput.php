@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\DTO;
+namespace KLS\CreditGuaranty\DTO;
 
+use KLS\CreditGuaranty\Entity\ProgramEligibility;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\CreditGuaranty\Entity\ProgramEligibility;
 
 class ProgramEligibilityConfigurationInput
 {
     /**
      * @Assert\NotBlank
      * @Assert\Expression(
-     *     "constant('Unilend\\CreditGuaranty\\Entity\\Field::TYPE_LIST') === value.getField().getType()",
+     *     "constant('KLS\\CreditGuaranty\\Entity\\Field::TYPE_LIST') === value.getField().getType()",
      *     message="CreditGuaranty.ProgramEligibilityConfigurationInput.programEligibility.type.onlyList"
      * )
      *

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Security\Voter;
+namespace KLS\Agency\Security\Voter;
 
 use Exception;
-use Unilend\Agency\Entity\Project;
-use Unilend\Core\Entity\CompanyModule;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Security\Voter\AbstractEntityVoter;
+use KLS\Agency\Entity\Project;
+use KLS\Core\Entity\CompanyModule;
+use KLS\Core\Entity\User;
+use KLS\Core\Security\Voter\AbstractEntityVoter;
 
 class ProjectVoter extends AbstractEntityVoter
 {

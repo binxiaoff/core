@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\DataPersister;
+namespace KLS\Syndication\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Unilend\Syndication\Entity\Request\ProjectParticipationCollection;
-use Unilend\Syndication\Repository\ProjectParticipationRepository;
+use KLS\Syndication\Entity\Request\ProjectParticipationCollection;
+use KLS\Syndication\Repository\ProjectParticipationRepository;
 
 class ProjectParticipationCollectionDataPersister implements DataPersisterInterface
 {

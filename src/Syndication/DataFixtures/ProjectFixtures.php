@@ -2,29 +2,29 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\DataFixtures;
+namespace KLS\Syndication\DataFixtures;
 
 use DateTimeImmutable;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
+use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\Core\DataFixtures\StaffFixtures;
+use KLS\Core\DataFixtures\UserFixtures;
+use KLS\Core\Entity\Constant\CAInternalRating;
+use KLS\Core\Entity\Constant\FundingSpecificity;
+use KLS\Core\Entity\Constant\SyndicationModality\ParticipationType;
+use KLS\Core\Entity\Constant\SyndicationModality\SyndicationType;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullablePerson;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\FileVersion;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectStatus;
 use ReflectionException;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\Core\DataFixtures\StaffFixtures;
-use Unilend\Core\DataFixtures\UserFixtures;
-use Unilend\Core\Entity\Constant\CAInternalRating;
-use Unilend\Core\Entity\Constant\FundingSpecificity;
-use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
-use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullablePerson;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectStatus;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -198,7 +198,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         // This step create each project status the project had been. For each status, the listener StatusCreatedListener set project.currentStatus with.
         $this->createPreviousStatuses($project, $staff);
 
-        // Then we add the project last Status we want and the listener  Unilend\Core\Listener\Doctrine\Lifecycle\StatusCreatedListener set the project.currentStatus with that one.
+        // Then we add the project last Status we want and the listener  KLS\Core\Listener\Doctrine\Lifecycle\StatusCreatedListener set the project.currentStatus with that one.
         $projectStatus = new ProjectStatus($project, $status, $staff);
         $this->manager->persist($projectStatus);
 

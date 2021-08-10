@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Entity\Embeddable;
+namespace KLS\Syndication\Entity\Embeddable;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use KLS\Core\Entity\Embeddable\NullableMoney;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
 
 /**
  * @ORM\Embeddable
@@ -18,7 +18,7 @@ use Unilend\Core\Entity\Embeddable\NullableMoney;
 class Offer
 {
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Assert\Valid
      *

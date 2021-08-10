@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Traits;
+namespace KLS\Core\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\User;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\User;
 
 trait BlamableUserAddedTrait
 {
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\User")
      * @ORM\JoinColumn(name="added_by", referencedColumnName="id", nullable=false)
      *
      * @Groups({"blameable:read"})

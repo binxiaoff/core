@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\ElectronicSignature;
+namespace KLS\Core\Service\ElectronicSignature;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
+use KLS\Core\Entity\FileVersionSignature;
+use KLS\Core\Repository\FileVersionSignatureRepository;
 use League\Flysystem\FilesystemException;
 use Psr\Log\LoggerInterface;
 use SimpleXMLElement;
@@ -17,8 +19,6 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
-use Unilend\Core\Entity\FileVersionSignature;
-use Unilend\Core\Repository\FileVersionSignatureRepository;
 
 class RequestSender
 {

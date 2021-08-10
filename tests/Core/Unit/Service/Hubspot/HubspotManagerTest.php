@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Service\Hubspot;
+namespace KLS\Test\Core\Unit\Service\Hubspot;
 
+use KLS\Core\Entity\HubspotContact;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\HubspotContactRepository;
+use KLS\Core\Repository\UserRepository;
+use KLS\Core\Service\Hubspot\Client\HubspotClient;
+use KLS\Core\Service\Hubspot\HubspotManager;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\ResponseInterface;
-use Unilend\Core\Entity\HubspotContact;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\HubspotContactRepository;
-use Unilend\Core\Repository\UserRepository;
-use Unilend\Core\Service\Hubspot\Client\HubspotClient;
-use Unilend\Core\Service\Hubspot\HubspotManager;
 
 /**
- * @coversDefaultClass \Unilend\Core\Service\Hubspot\HubspotManager
+ * @coversDefaultClass \KLS\Core\Service\Hubspot\HubspotManager
  *
  * @internal
  */

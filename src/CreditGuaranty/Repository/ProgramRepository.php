@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Repository;
+namespace KLS\CreditGuaranty\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\CreditGuaranty\Entity\Program;
+use KLS\CreditGuaranty\Entity\Program;
 
 /**
  * @method Program|null find($id, $lockMode = null, $lockVersion = null)

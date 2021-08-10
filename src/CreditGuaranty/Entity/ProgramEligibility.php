@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity;
+namespace KLS\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\CloneableTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\CloneableTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
@@ -66,7 +66,7 @@ class ProgramEligibility
     use CloneableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programEligibilities")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\Program", inversedBy="programEligibilities")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
      * @ApiProperty(readableLink=false, writableLink=false)
@@ -76,7 +76,7 @@ class ProgramEligibility
     private Program $program;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Field")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\Field")
      * @ORM\JoinColumn(name="id_field", nullable=false)
      *
      * @Groups({"creditGuaranty:programEligibility:read", "creditGuaranty:programEligibility:create"})
@@ -87,7 +87,7 @@ class ProgramEligibility
      * @var Collection|ProgramEligibilityConfiguration[]
      *
      * @ORM\OneToMany(
-     *     targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration",
+     *     targetEntity="KLS\CreditGuaranty\Entity\ProgramEligibilityConfiguration",
      *     mappedBy="programEligibility", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
      * )
      *

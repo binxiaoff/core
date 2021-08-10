@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Serializer\Normalizer;
+namespace KLS\Agency\Serializer\Normalizer;
 
+use KLS\Agency\Entity\BorrowerTrancheShare;
+use KLS\Agency\Entity\ParticipationTrancheAllocation;
+use KLS\Agency\Entity\Tranche;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
-use Unilend\Agency\Entity\BorrowerTrancheShare;
-use Unilend\Agency\Entity\ParticipationTrancheAllocation;
-use Unilend\Agency\Entity\Tranche;
 
 class TrancheNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Command;
+namespace KLS\Agency\Command;
 
 use ArrayIterator;
 use Box\Spout\Common\Exception\IOException;
@@ -15,6 +15,33 @@ use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use InfiniteIterator;
 use InvalidArgumentException;
+use KLS\Agency\Entity\Borrower;
+use KLS\Agency\Entity\BorrowerMember;
+use KLS\Agency\Entity\BorrowerTrancheShare;
+use KLS\Agency\Entity\Covenant;
+use KLS\Agency\Entity\CovenantRule;
+use KLS\Agency\Entity\Embeddable\Inequality;
+use KLS\Agency\Entity\Participation;
+use KLS\Agency\Entity\ParticipationTrancheAllocation;
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Entity\Tranche;
+use KLS\Agency\Repository\ProjectRepository;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Constant\FundingSpecificity;
+use KLS\Core\Entity\Constant\MathOperator;
+use KLS\Core\Entity\Constant\Tranche\CommissionType;
+use KLS\Core\Entity\Constant\Tranche\LoanType;
+use KLS\Core\Entity\Constant\Tranche\RepaymentType;
+use KLS\Core\Entity\Embeddable\LendingRate;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Embeddable\NullablePerson;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\CompanyGroupTagRepository;
+use KLS\Core\Repository\CompanyRepository;
+use KLS\Core\Repository\StaffRepository;
+use KLS\Core\Repository\UserRepository;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
 use Symfony\Component\Console\Command\Command;
@@ -26,33 +53,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Unilend\Agency\Entity\Borrower;
-use Unilend\Agency\Entity\BorrowerMember;
-use Unilend\Agency\Entity\BorrowerTrancheShare;
-use Unilend\Agency\Entity\Covenant;
-use Unilend\Agency\Entity\CovenantRule;
-use Unilend\Agency\Entity\Embeddable\Inequality;
-use Unilend\Agency\Entity\Participation;
-use Unilend\Agency\Entity\ParticipationTrancheAllocation;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Entity\Tranche;
-use Unilend\Agency\Repository\ProjectRepository;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Constant\FundingSpecificity;
-use Unilend\Core\Entity\Constant\MathOperator;
-use Unilend\Core\Entity\Constant\Tranche\CommissionType;
-use Unilend\Core\Entity\Constant\Tranche\LoanType;
-use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
-use Unilend\Core\Entity\Embeddable\LendingRate;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Embeddable\NullablePerson;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\CompanyGroupTagRepository;
-use Unilend\Core\Repository\CompanyRepository;
-use Unilend\Core\Repository\StaffRepository;
-use Unilend\Core\Repository\UserRepository;
 
 class ImportProjectCommand extends Command
 {

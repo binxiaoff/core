@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Serializer\Normalizer\Staff;
+namespace KLS\Core\Serializer\Normalizer\Staff;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\ORM\NonUniqueResultException;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Team;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\StaffRepository;
+use KLS\Core\Repository\UserRepository;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Team;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\StaffRepository;
-use Unilend\Core\Repository\UserRepository;
 
 class StaffDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {
@@ -26,13 +26,9 @@ class StaffDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     private const ALREADY_CALLED = 'STAFF_ATTRIBUTE_DENORMALIZER_ALREADY_CALLED';
 
     private Security $security;
-
     private UserRepository $userRepository;
-
     private IriConverterInterface $iriConverter;
-
     private StaffRepository $staffRepository;
-
     private static array $registeredEmails = [];
 
     public function __construct(Security $security, UserRepository $userRepository, StaffRepository $staffRepository, IriConverterInterface $iriConverter)

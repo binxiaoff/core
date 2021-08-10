@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity;
+namespace KLS\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Service\MoneyCalculator;
+use KLS\CreditGuaranty\Entity\Constant\GrossSubsidyEquivalent;
+use KLS\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
+use KLS\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
+use KLS\CreditGuaranty\Entity\Traits\AddressTrait;
 use RuntimeException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Service\MoneyCalculator;
-use Unilend\CreditGuaranty\Entity\Constant\GrossSubsidyEquivalent;
-use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
-use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
-use Unilend\CreditGuaranty\Entity\Traits\AddressTrait;
 
 /**
  * @ApiResource(
@@ -64,7 +64,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     use TimestampableTrait;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\CreditGuaranty\Entity\Reservation", inversedBy="project")
+     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\Entity\Reservation", inversedBy="project")
      * @ORM\JoinColumn(name="id_reservation", nullable=false)
      *
      * @ApiProperty(readableLink=false, writableLink=false)
@@ -74,7 +74,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private Reservation $reservation;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_investment_thematic", nullable=true)
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
@@ -84,7 +84,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private ?ProgramChoiceOption $investmentThematic = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_investment_type", nullable=true)
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
@@ -101,7 +101,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private ?string $detail;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_aid_intensity", nullable=true)
      *
      * @Assert\Expression("value.getProgram() === this.getProgram()")
@@ -116,7 +116,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private ?ProgramChoiceOption $aidIntensity = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_additional_guaranty", nullable=true)
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
@@ -126,7 +126,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private ?ProgramChoiceOption $additionalGuaranty = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_agricultural_branch", nullable=true)
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
@@ -136,28 +136,28 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private ?ProgramChoiceOption $agriculturalBranch = null;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
     private Money $fundingMoney;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
     private NullableMoney $contribution;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
     private NullableMoney $eligibleFeiCredit;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Assert\AtLeastOneOf({
      *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
@@ -170,28 +170,28 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private NullableMoney $totalFeiCredit;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
     private NullableMoney $tangibleFeiCredit;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
     private NullableMoney $intangibleFeiCredit;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
     private NullableMoney $creditExcludingFei;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Assert\AtLeastOneOf({
      *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
@@ -204,7 +204,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private NullableMoney $grant;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */

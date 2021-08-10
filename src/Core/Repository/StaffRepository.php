@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Staff;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Staff;
 
 /**
  * @method Staff|null find($id, $lockMode = null, $lockVersion = null)

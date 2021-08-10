@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Interfaces;
+namespace KLS\Core\Entity\Interfaces;
 
 interface MoneyInterface
 {

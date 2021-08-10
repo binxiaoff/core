@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
@@ -28,7 +28,7 @@ class CompanyGroup
     private string $name;
 
     /**
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\CompanyGroupTag", mappedBy="companyGroup")
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\CompanyGroupTag", mappedBy="companyGroup")
      */
     private iterable $tags;
 

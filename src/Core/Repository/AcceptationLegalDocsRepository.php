@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+use KLS\Core\Entity\AcceptationsLegalDocs;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Core\Entity\AcceptationsLegalDocs;
 
 /**
  * @method AcceptationsLegalDocs|null find($id, $lockMode = null, $lockVersion = null)

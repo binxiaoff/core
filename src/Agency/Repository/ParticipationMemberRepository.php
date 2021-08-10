@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Repository;
+namespace KLS\Agency\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Agency\Entity\ParticipationMember;
-use Unilend\Agency\Entity\Project;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\User;
+use KLS\Agency\Entity\ParticipationMember;
+use KLS\Agency\Entity\Project;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\User;
 
 /**
  * @method ParticipationMemberRepository|null find($id, $lockMode = null, $lockVersion = null)

@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
@@ -24,7 +24,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         "sign": {
  *             "security": "is_granted('sign', object)",
  *             "method": "POST",
- *             "controller": "Unilend\Core\Controller\FileVersionSignature\Sign",
+ *             "controller": "KLS\Core\Controller\FileVersionSignature\Sign",
  *             "path": "/core/file_version_signatures/{publicId}/sign",
  *             "denormalization_context": {"groups": {"fileVersionSignature:sign"}}
  *         }
@@ -54,7 +54,7 @@ class FileVersionSignature
     /**
      * @var FileVersion
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\FileVersion", inversedBy="signatures")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\FileVersion", inversedBy="signatures")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_file_version", nullable=false)
      * })
@@ -66,7 +66,7 @@ class FileVersionSignature
     /**
      * @var Staff
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Staff")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_signatory", referencedColumnName="id", nullable=false)
      * })

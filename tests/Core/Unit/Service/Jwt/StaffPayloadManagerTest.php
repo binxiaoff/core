@@ -2,27 +2,27 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Service\Jwt;
+namespace KLS\Test\Core\Unit\Service\Jwt;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Exception\ItemNotFoundException;
 use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Team;
+use KLS\Core\Entity\User;
+use KLS\Core\Service\Jwt\StaffPayloadManager;
+use KLS\Core\Service\Staff\StaffLoginChecker;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Team;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Service\Jwt\StaffPayloadManager;
-use Unilend\Core\Service\Staff\StaffLoginChecker;
 
 /**
- * @coversDefaultClass \Unilend\Core\Service\Jwt\StaffPayloadManager
+ * @coversDefaultClass \KLS\Core\Service\Jwt\StaffPayloadManager
  *
  * @internal
  */

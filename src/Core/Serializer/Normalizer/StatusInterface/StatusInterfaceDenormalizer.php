@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Serializer\Normalizer\StatusInterface;
+namespace KLS\Core\Serializer\Normalizer\StatusInterface;
 
+use KLS\Core\Entity\Interfaces\StatusInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
-use Unilend\Core\Entity\Interfaces\StatusInterface;
 
 class StatusInterfaceDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

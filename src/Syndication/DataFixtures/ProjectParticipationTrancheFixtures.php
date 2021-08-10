@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\DataFixtures;
+namespace KLS\Syndication\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\Core\DataFixtures\StaffFixtures;
-use Unilend\Core\Entity\Staff;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectParticipationStatus;
-use Unilend\Syndication\Entity\ProjectParticipationTranche;
-use Unilend\Syndication\Entity\ProjectStatus;
-use Unilend\Syndication\Entity\Tranche;
+use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\Core\DataFixtures\StaffFixtures;
+use KLS\Core\Entity\Staff;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectParticipationStatus;
+use KLS\Syndication\Entity\ProjectParticipationTranche;
+use KLS\Syndication\Entity\ProjectStatus;
+use KLS\Syndication\Entity\Tranche;
 
 class ProjectParticipationTrancheFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

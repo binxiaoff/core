@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\MessageHandler\Project;
+namespace KLS\Syndication\MessageHandler\Project;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Http\Client\Exception;
+use KLS\Syndication\Message\Project\ProjectCreated;
+use KLS\Syndication\Repository\ProjectRepository;
+use KLS\Syndication\Service\Project\ProjectNotifier;
 use Nexy\Slack\Exception\SlackApiException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Unilend\Syndication\Message\Project\ProjectCreated;
-use Unilend\Syndication\Repository\ProjectRepository;
-use Unilend\Syndication\Service\Project\ProjectNotifier;
 
 class ProjectCreatedHandler implements MessageHandlerInterface
 {

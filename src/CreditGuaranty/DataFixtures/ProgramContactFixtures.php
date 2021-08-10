@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\DataFixtures;
+namespace KLS\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Unilend\Core\DataFixtures\{AbstractFixtures};
-use Unilend\CreditGuaranty\Entity\Program;
-use Unilend\CreditGuaranty\Entity\ProgramContact;
+use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\CreditGuaranty\Entity\Program;
+use KLS\CreditGuaranty\Entity\ProgramContact;
 
 class ProgramContactFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

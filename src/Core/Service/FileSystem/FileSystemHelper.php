@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\FileSystem;
+namespace KLS\Core\Service\FileSystem;
 
 use Defuse\Crypto\Exception\BadFormatException;
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
 use Defuse\Crypto\Exception\IOException;
 use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
 use Exception;
+use KLS\Core\Entity\FileVersion;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use RuntimeException;
-use Unilend\Core\Entity\FileVersion;
 use function Symfony\Component\String\s;
 
 class FileSystemHelper

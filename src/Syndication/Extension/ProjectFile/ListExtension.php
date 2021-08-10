@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Extension\ProjectFile;
+namespace KLS\Syndication\Extension\ProjectFile;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Syndication\Entity\ProjectFile;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\ProjectFile;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {

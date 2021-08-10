@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Message\Staff;
+namespace KLS\Core\Message\Staff;
 
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Message\AsyncMessageInterface;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Message\AsyncMessageInterface;
 
 class StaffCreated implements AsyncMessageInterface
 {

@@ -2,24 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\User;
+namespace KLS\Core\Service\User;
 
 use Exception;
+use KLS\Core\Entity\User;
+use KLS\Core\Entity\UserFailedLogin;
+use KLS\Core\Entity\UserSuccessfulLogin;
+use KLS\Core\Exception\Authentication\RecaptchaChallengeFailedException;
+use KLS\Core\Service\UserActivity\IpGeoLocManager;
+use KLS\Core\Service\UserActivity\UserAgentManager;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Throwable;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\UserFailedLogin;
-use Unilend\Core\Entity\UserSuccessfulLogin;
-use Unilend\Core\Exception\Authentication\RecaptchaChallengeFailedException;
-use Unilend\Core\Service\UserActivity\IpGeoLocManager;
-use Unilend\Core\Service\UserActivity\UserAgentManager;
 
 class UserLoginFactory
 {
     private IpGeoLocManager $ipGeoLocManager;
-
     private UserAgentManager $userAgentManager;
-
     private RequestStack $requestStack;
 
     public function __construct(

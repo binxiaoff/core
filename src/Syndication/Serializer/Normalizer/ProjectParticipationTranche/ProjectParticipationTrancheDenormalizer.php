@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Serializer\Normalizer\ProjectParticipationTranche;
+namespace KLS\Syndication\Serializer\Normalizer\ProjectParticipationTranche;
 
+use KLS\Core\Entity\User;
+use KLS\Syndication\Entity\ProjectParticipationTranche;
+use KLS\Syndication\Entity\ProjectStatus;
+use KLS\Syndication\Security\Voter\ProjectParticipationTrancheVoter;
+use KLS\Syndication\Security\Voter\ProjectVoter;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\ProjectParticipationTranche;
-use Unilend\Syndication\Entity\ProjectStatus;
-use Unilend\Syndication\Security\Voter\ProjectParticipationTrancheVoter;
-use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class ProjectParticipationTrancheDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\UserActivity;
+namespace KLS\Core\Service\UserActivity;
 
 use Cravler\MaxMindGeoIpBundle\Service\GeoIpService;
 use Exception;

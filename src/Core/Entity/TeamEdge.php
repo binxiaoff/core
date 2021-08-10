@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -37,7 +37,7 @@ class TeamEdge
     private int $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Team", inversedBy="outgoingEdges", fetch="EAGER")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Team", inversedBy="outgoingEdges", fetch="EAGER")
      * @ORM\JoinColumn(name="id_ancestor")
      *
      * @Assert\NotBlank
@@ -45,7 +45,7 @@ class TeamEdge
     private Team $ancestor;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Team", inversedBy="incomingEdges")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Team", inversedBy="incomingEdges")
      * @ORM\JoinColumn(name="id_descendent")
      *
      * @Assert\NotBlank

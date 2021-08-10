@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\DTO;
+namespace KLS\Core\DTO;
 
 use Symfony\Component\Serializer\Annotation\Groups;
 

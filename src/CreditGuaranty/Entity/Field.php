@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity;
+namespace KLS\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ApiResource(

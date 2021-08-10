@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\DataPersister;
+namespace KLS\Agency\DataPersister;
 
 use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
-use Unilend\Agency\Entity\ParticipationMember;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Repository\StaffRepository;
+use KLS\Agency\Entity\ParticipationMember;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Repository\StaffRepository;
 
 class ParticipationMemberDataPersister implements ContextAwareDataPersisterInterface
 {

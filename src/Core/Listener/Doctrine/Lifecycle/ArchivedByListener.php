@@ -2,20 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Doctrine\Lifecycle;
+namespace KLS\Core\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\ORMException;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\UserRepository;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\UserRepository;
 
 class ArchivedByListener
 {
     private Security $security;
-
     private UserRepository $userRepository;
 
     public function __construct(Security $security, UserRepository $userRepository)

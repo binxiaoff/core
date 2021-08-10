@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Doctrine\Entity\Folder;
+namespace KLS\Core\Listener\Doctrine\Entity\Folder;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\ORMException;
-use Unilend\Core\Entity\Drive;
-use Unilend\Core\Entity\Folder;
+use KLS\Core\Entity\Drive;
+use KLS\Core\Entity\Folder;
 
 class FolderDeletedListener
 {

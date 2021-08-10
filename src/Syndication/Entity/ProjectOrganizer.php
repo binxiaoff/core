@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Entity;
+namespace KLS\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\RoleableTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
-use Unilend\Core\Entity\Traits\RoleableTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
@@ -71,7 +71,7 @@ class ProjectOrganizer
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Project", inversedBy="organizers")
+     * @ORM\ManyToOne(targetEntity="KLS\Syndication\Entity\Project", inversedBy="organizers")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -83,7 +83,7 @@ class ProjectOrganizer
     /**
      * @var Company
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company")
      * @ORM\JoinColumn(name="id_company", nullable=false)
      *
      * @Assert\NotBlank

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Listener\Doctrine\Lifecycle;
+namespace KLS\Syndication\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\UserRepository;
+use KLS\Syndication\Entity\InterestReplyVersion;
+use KLS\Syndication\Entity\ProjectParticipation;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\UserRepository;
-use Unilend\Syndication\Entity\InterestReplyVersion;
-use Unilend\Syndication\Entity\ProjectParticipation;
 
 class ProjectParticipationUpdated
 {

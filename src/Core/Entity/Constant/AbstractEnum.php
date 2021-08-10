@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Constant;
+namespace KLS\Core\Entity\Constant;
 
-use Unilend\Core\Traits\ConstantsAwareTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 
 abstract class AbstractEnum
 {

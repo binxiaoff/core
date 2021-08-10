@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Listener\Doctrine\MessageDispatcher;
+namespace KLS\Agency\Listener\Doctrine\MessageDispatcher;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
-use Unilend\Agency\Entity\AbstractProjectMember;
-use Unilend\Agency\Message\ProjectMemberUpdated;
-use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
+use KLS\Agency\Entity\AbstractProjectMember;
+use KLS\Agency\Message\ProjectMemberUpdated;
+use KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
 
 class ProjectMemberUpdatedListener
 {

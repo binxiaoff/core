@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Security\Voter;
+namespace KLS\Agency\Security\Voter;
 
 use DateTime;
 use Exception;
-use Unilend\Agency\Entity\Term;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Security\Voter\AbstractEntityVoter;
+use KLS\Agency\Entity\Term;
+use KLS\Core\Entity\User;
+use KLS\Core\Security\Voter\AbstractEntityVoter;
 
 class TermVoter extends AbstractEntityVoter
 {

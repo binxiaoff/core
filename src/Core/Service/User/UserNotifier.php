@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\User;
+namespace KLS\Core\Service\User;
 
 use Exception;
+use KLS\Core\Entity\User;
+use KLS\Core\Service\TemporaryTokenGenerator;
+use KLS\Core\SwiftMailer\MailjetMessage;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Service\TemporaryTokenGenerator;
-use Unilend\Core\SwiftMailer\MailjetMessage;
 
 class UserNotifier
 {

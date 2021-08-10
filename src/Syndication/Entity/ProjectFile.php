@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Entity;
+namespace KLS\Syndication\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
@@ -57,7 +57,7 @@ class ProjectFile
     private $type;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\File", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity="KLS\Core\Entity\File", cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="id_file", nullable=false, unique=true)
      *
      * @Groups({"projectFile:read"})
@@ -67,7 +67,7 @@ class ProjectFile
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\Project", inversedBy="projectFiles")
+     * @ORM\ManyToOne(targetEntity="KLS\Syndication\Entity\Project", inversedBy="projectFiles")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      */
     private $project;

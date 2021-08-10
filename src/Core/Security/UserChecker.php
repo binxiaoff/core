@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Security;
+namespace KLS\Core\Security;
 
+use KLS\Core\Entity\User;
 use Symfony\Component\Security\Core\Exception\DisabledException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Core\Entity\User;
 
 class UserChecker implements UserCheckerInterface
 {

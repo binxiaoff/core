@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
+use KLS\Core\Entity\Interfaces\StatusInterface;
+use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Interfaces\StatusInterface;
-use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Table(
@@ -21,7 +21,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         @ORM\Index(columns={"status"}, name="idx_user_status_status")
  *     }
  * )
- * @ORM\Entity(repositoryClass="Unilend\Core\Repository\UserStatusRepository")
+ * @ORM\Entity(repositoryClass="KLS\Core\Repository\UserStatusRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class UserStatus implements StatusInterface

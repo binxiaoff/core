@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\Monolog\Processor;
+namespace KLS\Core\Service\Monolog\Processor;
 
 use Monolog\Processor\ProcessorInterface;
 

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
@@ -28,7 +28,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         },
  *         "download": {
  *             "method": "GET",
- *             "controller": "Unilend\Core\Controller\File\Download",
+ *             "controller": "KLS\Core\Controller\File\Download",
  *             "path": "/core/file_versions/{publicId}/download/{type}"
  *         }
  *     }
@@ -81,7 +81,7 @@ class FileVersion
     private $fileVersionDownloads;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\File", inversedBy="fileVersions")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\File", inversedBy="fileVersions")
      * @ORM\JoinColumn(name="id_file", nullable=false)
      */
     private File $file;
@@ -110,13 +110,13 @@ class FileVersion
     private ?string $mimeType;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\User")
      * @ORM\JoinColumn(name="added_by", referencedColumnName="id", nullable=false)
      */
     private User $addedBy;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company")
      * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=true)
      */
     private ?Company $company;

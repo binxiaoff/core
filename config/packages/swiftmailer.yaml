@@ -9,4 +9,4 @@ swiftmailer:
     - test@kls-platform.com
   spool:
     type: service
-    id: Unilend\Core\SwiftMailer\DatabaseSpool
+    id: KLS\Core\SwiftMailer\DatabaseSpool

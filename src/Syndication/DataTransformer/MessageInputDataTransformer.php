@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\DataTransformer;
+namespace KLS\Syndication\DataTransformer;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use KLS\Core\DTO\MessageInput;
+use KLS\Core\Entity\Message;
+use KLS\Core\Entity\MessageThread;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\MessageThreadRepository;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Security\Voter\ProjectParticipationVoter;
+use KLS\Syndication\Service\Project\ProjectManager;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Core\DTO\MessageInput;
-use Unilend\Core\Entity\Message;
-use Unilend\Core\Entity\MessageThread;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\MessageThreadRepository;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Security\Voter\ProjectParticipationVoter;
-use Unilend\Syndication\Service\Project\ProjectManager;
 
 class MessageInputDataTransformer implements DataTransformerInterface
 {

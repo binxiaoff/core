@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Entity;
+namespace KLS\Syndication\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Syndication\Entity\Embeddable\Offer;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
-use Unilend\Syndication\Entity\Embeddable\Offer;
 
 /**
  * @ORM\Entity
@@ -27,7 +27,7 @@ class InterestReplyVersion
     private int $id;
 
     /**
-     * @ORM\Embedded(class="Unilend\Syndication\Entity\Embeddable\Offer")
+     * @ORM\Embedded(class="KLS\Syndication\Entity\Embeddable\Offer")
      *
      * @Assert\Valid
      *
@@ -36,7 +36,7 @@ class InterestReplyVersion
     private Offer $interestReply;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation", inversedBy="interestReplyVersions")
+     * @ORM\ManyToOne(targetEntity="KLS\Syndication\Entity\ProjectParticipation", inversedBy="interestReplyVersions")
      * @ORM\JoinColumn(name="id_project_participation", nullable=false)
      */
     private ProjectParticipation $projectParticipation;

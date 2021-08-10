@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Serializer\ContextBuilder;
+namespace KLS\Core\Serializer\ContextBuilder;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;

@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\DataTransformer;
+namespace KLS\CreditGuaranty\DataTransformer;
 
 use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use ApiPlatform\Core\Validator\ValidatorInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use KLS\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
+use KLS\CreditGuaranty\Entity\ProgramChoiceOption;
+use KLS\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
+use KLS\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
+use KLS\CreditGuaranty\Security\Voter\ProgramChoiceOptionVoter;
+use KLS\CreditGuaranty\Security\Voter\ProgramEligibilityConfigurationVoter;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\CreditGuaranty\DTO\ProgramEligibilityConfigurationInput;
-use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
-use Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
-use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
-use Unilend\CreditGuaranty\Security\Voter\ProgramChoiceOptionVoter;
-use Unilend\CreditGuaranty\Security\Voter\ProgramEligibilityConfigurationVoter;
 
 class ProgramEligibilityConfigurationInputDataTransformer implements DataTransformerInterface
 {

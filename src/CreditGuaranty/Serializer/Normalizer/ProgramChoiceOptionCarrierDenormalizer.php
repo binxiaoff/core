@@ -2,11 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Serializer\Normalizer;
+namespace KLS\CreditGuaranty\Serializer\Normalizer;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\ORM\ORMException;
 use JsonException;
+use KLS\CreditGuaranty\Entity\Constant\FieldAlias;
+use KLS\CreditGuaranty\Entity\Field;
+use KLS\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
+use KLS\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
+use KLS\CreditGuaranty\Entity\Program;
+use KLS\CreditGuaranty\Entity\ProgramChoiceOption;
+use KLS\CreditGuaranty\Entity\Reservation;
+use KLS\CreditGuaranty\Repository\FieldRepository;
+use KLS\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
+use KLS\CreditGuaranty\Security\Voter\ProgramChoiceOptionVoter;
 use LogicException;
 use RuntimeException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -17,16 +27,6 @@ use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
-use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
-use Unilend\CreditGuaranty\Entity\Field;
-use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
-use Unilend\CreditGuaranty\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
-use Unilend\CreditGuaranty\Entity\Program;
-use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
-use Unilend\CreditGuaranty\Entity\Reservation;
-use Unilend\CreditGuaranty\Repository\FieldRepository;
-use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
-use Unilend\CreditGuaranty\Security\Voter\ProgramChoiceOptionVoter;
 
 class ProgramChoiceOptionCarrierDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

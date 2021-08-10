@@ -5,154 +5,154 @@ services:
 
     # Doctrine Entity listeners
     # General
-    Unilend\Core\Listener\Doctrine\Entity\TemporaryTokenCreatedListener:
+    KLS\Core\Listener\Doctrine\Entity\TemporaryTokenCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Core\Entity\TemporaryToken, method: expireOldTemporaryToken }
+            - { name: doctrine.orm.entity_listener, event: prePersist, entity: KLS\Core\Entity\TemporaryToken, method: expireOldTemporaryToken }
 
-    Unilend\Core\Listener\Doctrine\Entity\UserPlainPasswordSubmittedListener:
+    KLS\Core\Listener\Doctrine\Entity\UserPlainPasswordSubmittedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Core\Entity\User, method: encodePlainPassword }
-            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Core\Entity\User, method: encodePlainPassword }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Core\Entity\User, method: encodePlainPassword }
+            - { name: doctrine.orm.entity_listener, event: prePersist, entity: KLS\Core\Entity\User, method: encodePlainPassword }
 
-    Unilend\Core\Listener\Doctrine\Entity\FileVersion\FileVersionCreatedListener:
+    KLS\Core\Listener\Doctrine\Entity\FileVersion\FileVersionCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Core\Entity\FileVersion, method: encryptKey}
+            - { name: doctrine.orm.entity_listener, event: prePersist, entity: KLS\Core\Entity\FileVersion, method: encryptKey}
 
-    Unilend\Core\Listener\Doctrine\Entity\FileVersion\FileVersionLoadedListener:
+    KLS\Core\Listener\Doctrine\Entity\FileVersion\FileVersionLoadedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postLoad, entity: Unilend\Core\Entity\FileVersion, method: decryptKey }
+            - { name: doctrine.orm.entity_listener, event: postLoad, entity: KLS\Core\Entity\FileVersion, method: decryptKey }
 
-    Unilend\Core\Listener\Doctrine\Entity\FileVersion\FileVersionUpdatedListener:
+    KLS\Core\Listener\Doctrine\Entity\FileVersion\FileVersionUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Core\Entity\FileVersion, method: blockUpdating }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Core\Entity\FileVersion, method: blockUpdating }
 
-    Unilend\Core\Listener\Doctrine\Entity\Folder\FolderDeletedListener:
+    KLS\Core\Listener\Doctrine\Entity\Folder\FolderDeletedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preRemove, entity: Unilend\Core\Entity\Folder, method: cascadeDeletion }
+            - { name: doctrine.orm.entity_listener, event: preRemove, entity: KLS\Core\Entity\Folder, method: cascadeDeletion }
 
-    Unilend\Syndication\Listener\Doctrine\Entity\Project\ProjectCreatedListener:
+    KLS\Syndication\Listener\Doctrine\Entity\Project\ProjectCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Syndication\Entity\Project, method: purify }
+            - { name: doctrine.orm.entity_listener, event: prePersist, entity: KLS\Syndication\Entity\Project, method: purify }
 
-    Unilend\Syndication\Listener\Doctrine\Entity\Project\ProjectUpdatedListener:
+    KLS\Syndication\Listener\Doctrine\Entity\Project\ProjectUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Syndication\Entity\Project, method: purify }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Entity\Project, method: purify }
 
-    Unilend\Syndication\Listener\Doctrine\Entity\ProjectParticipationMember\ProjectParticipationMemberArchivedListener:
+    KLS\Syndication\Listener\Doctrine\Entity\ProjectParticipationMember\ProjectParticipationMemberArchivedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Syndication\Entity\ProjectParticipationMember, method: setArchivedBy }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Entity\ProjectParticipationMember, method: setArchivedBy }
 
-    Unilend\CreditGuaranty\Listener\Doctrine\Entity\ProgramCreatedListener:
+    KLS\CreditGuaranty\Listener\Doctrine\Entity\ProgramCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\CreditGuaranty\Entity\Program, method: createPredefinedChoiceOption }
+            - { name: doctrine.orm.entity_listener, event: prePersist, entity: KLS\CreditGuaranty\Entity\Program, method: createPredefinedChoiceOption }
 
     # Message Dispatcher
-    Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\User\UserUpdatedListener:
+    KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\User\UserUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Core\Entity\User }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Core\Entity\User }
 
-    Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\Staff\StaffCreatedListener:
+    KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\Staff\StaffCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Core\Entity\Staff}
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Core\Entity\Staff}
 
-    Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\CompanyModule\CompanyModuleUpdatedListener:
+    KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\CompanyModule\CompanyModuleUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postUpdate, entity: Unilend\Core\Entity\CompanyModule }
+            - { name: doctrine.orm.entity_listener, event: postUpdate, entity: KLS\Core\Entity\CompanyModule }
 
-    Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\Message\MessageCreatedListener:
+    KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\Message\MessageCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Core\Entity\Message}
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Core\Entity\Message}
 
-    Unilend\Syndication\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectCreatedListener:
+    KLS\Syndication\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Syndication\Entity\Project }
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Entity\Project }
 
-    Unilend\Syndication\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationMember\ProjectParticipationMemberCreatedListener:
+    KLS\Syndication\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationMember\ProjectParticipationMemberCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Syndication\Entity\ProjectParticipationMember }
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Entity\ProjectParticipationMember }
 
-    Unilend\Syndication\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectUpdatedListener:
+    KLS\Syndication\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Syndication\Entity\Project}
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Entity\Project}
 
-    Unilend\Syndication\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipation\ProjectParticipationUpdatedListener:
+    KLS\Syndication\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipation\ProjectParticipationUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Syndication\Entity\ProjectParticipation}
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Entity\ProjectParticipation}
 
-    Unilend\Agency\Listener\Doctrine\MessageDispatcher\ProjectMemberCreatedListener:
+    KLS\Agency\Listener\Doctrine\MessageDispatcher\ProjectMemberCreatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Agency\Entity\BorrowerMember }
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Agency\Entity\AgentMember }
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Agency\Entity\ParticipationMember }
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Agency\Entity\BorrowerMember }
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Agency\Entity\AgentMember }
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Agency\Entity\ParticipationMember }
 
-    Unilend\Agency\Listener\Doctrine\MessageDispatcher\ProjectMemberUpdatedListener:
+    KLS\Agency\Listener\Doctrine\MessageDispatcher\ProjectMemberUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Agency\Entity\BorrowerMember }
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Agency\Entity\AgentMember }
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Agency\Entity\ParticipationMember }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Agency\Entity\BorrowerMember }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Agency\Entity\AgentMember }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Agency\Entity\ParticipationMember }
 
-    Unilend\Agency\Listener\Doctrine\MessageDispatcher\ProjectStatusUpdatedListener:
+    KLS\Agency\Listener\Doctrine\MessageDispatcher\ProjectStatusUpdatedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Agency\Entity\Project }
+            - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Agency\Entity\Project }
 
     # Doctrine Lifecycle Event Listener
-    Unilend\Core\Listener\Doctrine\Lifecycle\UuidListener:
+    KLS\Core\Listener\Doctrine\Lifecycle\UuidListener:
         tags:
             - { name: doctrine.event_listener, event: prePersist }
 
-    Unilend\Core\Listener\Doctrine\Lifecycle\UpdatedByListener:
+    KLS\Core\Listener\Doctrine\Lifecycle\UpdatedByListener:
         tags:
             - { name: doctrine.event_listener, event: preUpdate }
 
-    Unilend\Core\Listener\Doctrine\Lifecycle\ArchivedByListener:
+    KLS\Core\Listener\Doctrine\Lifecycle\ArchivedByListener:
         tags:
             - { name: doctrine.event_listener, event: preRemove }
 
-    Unilend\Core\Listener\Doctrine\Lifecycle\StatusCreatedListener:
+    KLS\Core\Listener\Doctrine\Lifecycle\StatusCreatedListener:
         tags:
             - { name: doctrine.event_listener, event: prePersist }
 
-    Unilend\Core\Listener\Doctrine\Lifecycle\CompanyModuleUpdatedListener:
+    KLS\Core\Listener\Doctrine\Lifecycle\CompanyModuleUpdatedListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\Syndication\Listener\Doctrine\Lifecycle\ProjectStatusUpdatedListener:
+    KLS\Syndication\Listener\Doctrine\Lifecycle\ProjectStatusUpdatedListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\Syndication\Listener\Doctrine\Lifecycle\ProjectParticipationUpdated:
+    KLS\Syndication\Listener\Doctrine\Lifecycle\ProjectParticipationUpdated:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\Syndication\Listener\Doctrine\Lifecycle\ProjectParticipationTrancheUpdatedListener:
+    KLS\Syndication\Listener\Doctrine\Lifecycle\ProjectParticipationTrancheUpdatedListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\Agency\Listener\Doctrine\TermListener:
+    KLS\Agency\Listener\Doctrine\TermListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\Agency\Listener\Doctrine\CovenantListener:
+    KLS\Agency\Listener\Doctrine\CovenantListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
             - { name: doctrine.event_listener, event: postUpdate }
 
-    Unilend\Agency\Listener\Doctrine\ParticipationListener:
+    KLS\Agency\Listener\Doctrine\ParticipationListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\Agency\Listener\Doctrine\ProjectListener:
+    KLS\Agency\Listener\Doctrine\ProjectListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\CreditGuaranty\Listener\Doctrine\ProgramDeleteListener:
+    KLS\CreditGuaranty\Listener\Doctrine\ProgramDeleteListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\CreditGuaranty\Listener\Doctrine\ReservationDeleteListener:
+    KLS\CreditGuaranty\Listener\Doctrine\ReservationDeleteListener:
         tags:
             - { name: doctrine.event_listener, event: onFlush }
 
-    Unilend\Agency\Listener\Doctrine\AgencyModuleActivatedListener:
+    KLS\Agency\Listener\Doctrine\AgencyModuleActivatedListener:
         tags:
            - { name: doctrine.event_listener, event: onFlush }

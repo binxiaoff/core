@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Repository;
+namespace KLS\Agency\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Agency\Entity\Term;
-use Unilend\Agency\Entity\TermHistory;
+use KLS\Agency\Entity\Term;
+use KLS\Agency\Entity\TermHistory;
 
 /**
  * @method TermHistory|null find($id, $lockMode = null, $lockVersion = null)

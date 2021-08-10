@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Listener\Doctrine;
+namespace KLS\Agency\Listener\Doctrine;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
 use Exception;
-use Unilend\Agency\Entity\Covenant;
-use Unilend\Agency\Entity\Term;
+use KLS\Agency\Entity\Covenant;
+use KLS\Agency\Entity\Term;
 
 class CovenantListener
 {

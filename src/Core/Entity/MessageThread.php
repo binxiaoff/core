@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
@@ -12,11 +12,11 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectParticipation;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectParticipation;
 
 /**
  * @ORM\Entity
@@ -54,7 +54,7 @@ class MessageThread
     use TimestampableAddedOnlyTrait;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation")
+     * @ORM\OneToOne(targetEntity="KLS\Syndication\Entity\ProjectParticipation")
      * @ORM\JoinColumn(name="id_project_participation", referencedColumnName="id")
      *
      * @ApiProperty(readableLink=false, writableLink=false)
@@ -66,7 +66,7 @@ class MessageThread
     /**
      * @var ArrayCollection|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\Message", mappedBy="messageThread")
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\Message", mappedBy="messageThread")
      * @ORM\OrderBy({"added": "ASC"})
      *
      * @Groups({"messageThread:read"})

@@ -2,20 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Serializer\Normalizer\User;
+namespace KLS\Core\Serializer\Normalizer\User;
 
+use KLS\Core\Entity\User;
+use KLS\Core\Service\ServiceTerms\ServiceTermsManager;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Service\ServiceTerms\ServiceTermsManager;
 
 class UserNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
     private const ALREADY_CALLED = 'USER_NORMALIZER_ALREADY_CALLED';
 
     private NormalizerInterface $normalizer;
-
     private ServiceTermsManager $serviceTermsManager;
 
     public function __construct(ServiceTermsManager $serviceTermsManager)

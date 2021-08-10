@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Listener\Doctrine\Entity;
+namespace KLS\CreditGuaranty\Listener\Doctrine\Entity;
 
-use Unilend\CreditGuaranty\Entity\Field;
-use Unilend\CreditGuaranty\Entity\Program;
-use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
-use Unilend\CreditGuaranty\Repository\FieldRepository;
+use KLS\CreditGuaranty\Entity\Field;
+use KLS\CreditGuaranty\Entity\Program;
+use KLS\CreditGuaranty\Entity\ProgramChoiceOption;
+use KLS\CreditGuaranty\Repository\FieldRepository;
 
 class ProgramCreatedListener
 {

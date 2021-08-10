@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Service\Staff;
+namespace KLS\Test\Core\Unit\Service\Staff;
 
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\StaffStatus;
+use KLS\Core\Entity\Team;
+use KLS\Core\Entity\User;
+use KLS\Core\Service\Staff\StaffLoginChecker;
+use KLS\Core\Service\Staff\StaffLoginInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\StaffStatus;
-use Unilend\Core\Entity\Team;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Service\Staff\StaffLoginChecker;
-use Unilend\Core\Service\Staff\StaffLoginInterface;
 
 /**
- * @coversDefaultClass \Unilend\Core\Service\Staff\StaffLoginChecker
+ * @coversDefaultClass \KLS\Core\Service\Staff\StaffLoginChecker
  *
  * @internal
  */

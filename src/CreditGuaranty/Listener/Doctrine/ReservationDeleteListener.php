@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Listener\Doctrine;
+namespace KLS\CreditGuaranty\Listener\Doctrine;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
+use KLS\Core\Entity\Staff;
+use KLS\CreditGuaranty\Entity\Reservation;
+use KLS\CreditGuaranty\Entity\ReservationStatus;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\Entity\Staff;
-use Unilend\CreditGuaranty\Entity\Reservation;
-use Unilend\CreditGuaranty\Entity\ReservationStatus;
 
 class ReservationDeleteListener
 {

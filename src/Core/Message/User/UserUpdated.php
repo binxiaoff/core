@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Message\User;
+namespace KLS\Core\Message\User;
 
-use Unilend\Core\Entity\User;
-use Unilend\Core\Message\AsyncMessageInterface;
+use KLS\Core\Entity\User;
+use KLS\Core\Message\AsyncMessageInterface;
 
 class UserUpdated implements AsyncMessageInterface
 {

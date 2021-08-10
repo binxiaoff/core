@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service;
+namespace KLS\Core\Service;
 
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\{NullableMoney};
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
-use Unilend\Core\Exception\Money\DifferentCurrencyException;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
+use KLS\Core\Exception\Money\DifferentCurrencyException;
 
 class MoneyCalculator
 {

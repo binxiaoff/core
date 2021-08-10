@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Service;
+namespace KLS\CreditGuaranty\Service;
 
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Model\Bitmask;
-use Unilend\CreditGuaranty\Entity\Program;
-use Unilend\CreditGuaranty\Repository\StaffPermissionRepository;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Model\Bitmask;
+use KLS\CreditGuaranty\Entity\Program;
+use KLS\CreditGuaranty\Repository\StaffPermissionRepository;
 
 class StaffPermissionManager
 {

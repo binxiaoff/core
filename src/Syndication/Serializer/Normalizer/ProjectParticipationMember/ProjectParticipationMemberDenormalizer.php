@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Serializer\Normalizer\ProjectParticipationMember;
+namespace KLS\Syndication\Serializer\Normalizer\ProjectParticipationMember;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectParticipationMember;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectParticipationMember;
 
 class ProjectParticipationMemberDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

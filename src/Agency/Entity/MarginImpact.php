@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Entity;
+namespace KLS\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ORM\Table(name="agency_margin_impact")
@@ -34,7 +34,7 @@ class MarginImpact
     use PublicizeIdentityTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\MarginRule", inversedBy="impacts")
+     * @ORM\ManyToOne(targetEntity="KLS\Agency\Entity\MarginRule", inversedBy="impacts")
      * @ORM\JoinColumn(name="id_margin_rule", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -47,7 +47,7 @@ class MarginImpact
     private MarginRule $rule;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Tranche")
+     * @ORM\ManyToOne(targetEntity="KLS\Agency\Entity\Tranche")
      * @ORM\JoinColumn(name="id_tranche", onDelete="CASCADE")
      *
      * @Assert\NotBlank

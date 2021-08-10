@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Service\ProjectParticipationMember;
+namespace KLS\Syndication\Service\ProjectParticipationMember;
 
 use Exception;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\TemporaryToken;
+use KLS\Core\Service\TemporaryTokenGenerator;
+use KLS\Core\SwiftMailer\MailjetMessage;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectParticipationMember;
+use KLS\Syndication\Entity\ProjectStatus;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\TemporaryToken;
-use Unilend\Core\Service\TemporaryTokenGenerator;
-use Unilend\Core\SwiftMailer\MailjetMessage;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectParticipationMember;
-use Unilend\Syndication\Entity\ProjectStatus;
 
 class ProjectParticipationMemberNotifier
 {

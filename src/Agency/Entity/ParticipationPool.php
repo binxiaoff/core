@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Entity;
+namespace KLS\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
@@ -11,19 +11,19 @@ use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Controller\Dataroom\Delete;
+use KLS\Core\Controller\Dataroom\Get;
+use KLS\Core\Controller\Dataroom\Post;
+use KLS\Core\Entity\Constant\SyndicationModality\ParticipationType;
+use KLS\Core\Entity\Constant\SyndicationModality\RiskType;
+use KLS\Core\Entity\Constant\SyndicationModality\SyndicationType;
+use KLS\Core\Entity\Drive;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Service\MoneyCalculator;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Controller\Dataroom\Delete;
-use Unilend\Core\Controller\Dataroom\Get;
-use Unilend\Core\Controller\Dataroom\Post;
-use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
-use Unilend\Core\Entity\Constant\SyndicationModality\RiskType;
-use Unilend\Core\Entity\Constant\SyndicationModality\SyndicationType;
-use Unilend\Core\Entity\Drive;
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Service\MoneyCalculator;
 
 /**
  * @ApiResource(

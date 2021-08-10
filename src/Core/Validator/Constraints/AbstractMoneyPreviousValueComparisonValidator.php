@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Validator\Constraints;
+namespace KLS\Core\Validator\Constraints;
 
+use KLS\Core\Entity\Interfaces\MoneyInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
 
 abstract class AbstractMoneyPreviousValueComparisonValidator extends AbstractPreviousValueComparisonValidator
 {

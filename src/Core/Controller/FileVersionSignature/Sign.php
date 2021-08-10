@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Controller\FileVersionSignature;
+namespace KLS\Core\Controller\FileVersionSignature;
 
+use KLS\Core\Entity\FileVersionSignature;
+use KLS\Core\Service\ElectronicSignature\RequestSender;
 use League\Flysystem\FilesystemException;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
-use Unilend\Core\Entity\FileVersionSignature;
-use Unilend\Core\Service\ElectronicSignature\RequestSender;
 
 class Sign
 {

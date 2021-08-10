@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Command;
+namespace KLS\Core\Command;
 
 use Exception;
+use KLS\Core\Entity\CompanyModule;
+use KLS\Core\Entity\CompanyStatus;
+use KLS\Core\Repository\CompanyModuleRepository;
+use KLS\Core\Repository\CompanyRepository;
+use KLS\Core\Service\Staff\StaffNotifier;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Core\Entity\CompanyModule;
-use Unilend\Core\Entity\{CompanyStatus};
-use Unilend\Core\Repository\CompanyModuleRepository;
-use Unilend\Core\Repository\CompanyRepository;
-use Unilend\Core\Service\Staff\StaffNotifier;
 
 class SignCompanyCommand extends Command
 {
@@ -21,9 +21,7 @@ class SignCompanyCommand extends Command
     protected static $defaultName = 'kls:company:sign';
 
     private CompanyRepository $companyRepository;
-
     private StaffNotifier $staffNotifier;
-
     private CompanyModuleRepository $moduleRepository;
 
     public function __construct(

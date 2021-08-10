@@ -2,21 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Serializer\Normalizer\Staff;
+namespace KLS\Core\Serializer\Normalizer\Staff;
 
+use KLS\Core\Entity\Staff;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Unilend\Core\Entity\Staff;
 
 class StaffNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
     private const ALREADY_CALLED = 'STAFF_NORMALIZER_ALREADY_CALLED';
 
     private NormalizerInterface $normalizer;
-
     private Security $security;
 
     public function __construct(Security $security)

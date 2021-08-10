@@ -2,38 +2,34 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\EventSubscriber\ApiPlatform;
+namespace KLS\Core\EventSubscriber\ApiPlatform;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
 use Gesdinet\JWTRefreshTokenBundle\Event\RefreshEvent;
+use KLS\Core\Entity\User;
+use KLS\Core\Entity\UserSuccessfulLogin;
+use KLS\Core\Event\TemporaryToken\TemporaryTokenAuthenticationEvents;
+use KLS\Core\Event\TemporaryToken\TemporaryTokenAuthenticationFailureEvent;
+use KLS\Core\Event\TemporaryToken\TemporaryTokenAuthenticationSuccessEvent;
+use KLS\Core\Repository\UserFailedLoginRepository;
+use KLS\Core\Repository\UserRepository;
+use KLS\Core\Repository\UserSuccessfulLoginRepository;
+use KLS\Core\Service\User\UserLoginFactory;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationFailureEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Core\Exception\AccountStatusException;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\{UserSuccessfulLogin};
-use Unilend\Core\Event\TemporaryToken\TemporaryTokenAuthenticationEvents;
-use Unilend\Core\Event\TemporaryToken\TemporaryTokenAuthenticationFailureEvent;
-use Unilend\Core\Event\TemporaryToken\TemporaryTokenAuthenticationSuccessEvent;
-use Unilend\Core\Repository\UserFailedLoginRepository;
-use Unilend\Core\Repository\UserRepository;
-use Unilend\Core\Repository\UserSuccessfulLoginRepository;
-use Unilend\Core\Service\User\UserLoginFactory;
 
 class LoginLogSubscriber implements EventSubscriberInterface
 {
     private UserLoginFactory $userLoginHistoryFactory;
-
     private UserRepository $userRepository;
-
     private UserSuccessfulLoginRepository $userSuccessfulLoginRepository;
-
     private UserFailedLoginRepository $userFailedLoginRepository;
-
     private bool $alreadyLogged;
 
     public function __construct(

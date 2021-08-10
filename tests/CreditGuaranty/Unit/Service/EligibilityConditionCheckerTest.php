@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\CreditGuaranty\Unit\Service;
+namespace KLS\Test\CreditGuaranty\Unit\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use KLS\CreditGuaranty\Entity\Borrower;
+use KLS\CreditGuaranty\Entity\Field;
+use KLS\CreditGuaranty\Entity\FinancingObject;
+use KLS\CreditGuaranty\Entity\ProgramEligibility;
+use KLS\CreditGuaranty\Entity\ProgramEligibilityCondition;
+use KLS\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
+use KLS\CreditGuaranty\Entity\Project;
+use KLS\CreditGuaranty\Entity\Reservation;
+use KLS\CreditGuaranty\Repository\ProgramEligibilityConditionRepository;
+use KLS\CreditGuaranty\Service\EligibilityConditionChecker;
+use KLS\CreditGuaranty\Service\EligibilityHelper;
 use LogicException;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Unilend\CreditGuaranty\Entity\Borrower;
-use Unilend\CreditGuaranty\Entity\Field;
-use Unilend\CreditGuaranty\Entity\FinancingObject;
-use Unilend\CreditGuaranty\Entity\ProgramEligibility;
-use Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition;
-use Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
-use Unilend\CreditGuaranty\Entity\Project;
-use Unilend\CreditGuaranty\Entity\Reservation;
-use Unilend\CreditGuaranty\Repository\ProgramEligibilityConditionRepository;
-use Unilend\CreditGuaranty\Service\EligibilityConditionChecker;
-use Unilend\CreditGuaranty\Service\EligibilityHelper;
 
 /**
- * @coversDefaultClass \Unilend\CreditGuaranty\Service\EligibilityConditionChecker
+ * @coversDefaultClass \KLS\CreditGuaranty\Service\EligibilityConditionChecker
  *
  * @internal
  */

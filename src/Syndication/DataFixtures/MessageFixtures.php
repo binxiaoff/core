@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\DataFixtures;
+namespace KLS\Syndication\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\Core\DataFixtures\StaffFixtures;
+use KLS\Core\Entity\Message;
+use KLS\Core\Entity\MessageThread;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Repository\StaffRepository;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectStatus;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\Core\DataFixtures\StaffFixtures;
-use Unilend\Core\Entity\Message;
-use Unilend\Core\Entity\MessageThread;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Repository\StaffRepository;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectStatus;
 
 class MessageFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

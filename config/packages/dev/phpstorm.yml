@@ -4,4 +4,4 @@ parameters:
     env(LOCAL_PROJECT_DIR): 'path/to/the/project/in/your/local/host/machine'
 
 framework:
-    ide: 'phpstorm://open?file=%%f&line=%%l&/data/sites/unilend/>%env(LOCAL_PROJECT_DIR)%'
+    ide: 'phpstorm://open?file=%%f&line=%%l&/var/www/>%env(LOCAL_PROJECT_DIR)%'

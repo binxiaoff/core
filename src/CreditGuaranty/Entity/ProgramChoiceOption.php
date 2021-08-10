@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity;
+namespace KLS\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
@@ -10,14 +10,14 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\ArchivableTrait;
+use KLS\Core\Entity\Traits\CloneableTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Traits\ArchivableTrait;
-use Unilend\Core\Entity\Traits\CloneableTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * Pagination need to be enabled (which is the default configuration) on the resource, otherwise it will be out of memory.
@@ -63,7 +63,7 @@ class ProgramChoiceOption
     use ArchivableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programChoiceOptions")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\Program", inversedBy="programChoiceOptions")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
      * @ApiProperty(readableLink=false, writableLink=false)
@@ -82,7 +82,7 @@ class ProgramChoiceOption
     private string $description;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Field")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\Field")
      * @ORM\JoinColumn(name="id_field", nullable=false)
      */
     private Field $field;

@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Serializer\Normalizer\Project;
+namespace KLS\Syndication\Serializer\Normalizer\Project;
 
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Constant\SyndicationModality\ParticipationType;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Security\Voter\ProjectVoter;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Constant\SyndicationModality\ParticipationType;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {

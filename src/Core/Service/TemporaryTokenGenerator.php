@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service;
+namespace KLS\Core\Service;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\{TemporaryToken};
-use Unilend\Core\Repository\TemporaryTokenRepository;
+use KLS\Core\Entity\User;
+use KLS\Core\Entity\TemporaryToken;
+use KLS\Core\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenGenerator
 {

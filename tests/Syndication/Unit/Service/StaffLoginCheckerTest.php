@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Syndication\Unit\Service;
+namespace KLS\Test\Syndication\Unit\Service;
 
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\CompanyGroup;
+use KLS\Core\Entity\CompanyStatus;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Team;
+use KLS\Core\Entity\User;
+use KLS\Syndication\Service\StaffLoginChecker;
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\CompanyGroup;
-use Unilend\Core\Entity\CompanyStatus;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Team;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Service\StaffLoginChecker;
 
 /**
- * @coversDefaultClass \Unilend\Syndication\Service\StaffLoginChecker
+ * @coversDefaultClass \KLS\Syndication\Service\StaffLoginChecker
  *
  * @internal
  */

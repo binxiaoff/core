@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\EventSubscriber\Jwt;
+namespace KLS\Core\EventSubscriber\Jwt;
 
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
 
 interface PermissionProviderInterface
 {

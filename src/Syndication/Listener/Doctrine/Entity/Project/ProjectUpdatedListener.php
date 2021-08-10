@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Listener\Doctrine\Entity\Project;
+namespace KLS\Syndication\Listener\Doctrine\Entity\Project;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use HTMLPurifier;
-use Unilend\Syndication\Entity\Project;
+use KLS\Syndication\Entity\Project;
 
 class ProjectUpdatedListener
 {

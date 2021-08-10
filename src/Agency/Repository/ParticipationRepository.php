@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Repository;
+namespace KLS\Agency\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Agency\Entity\Participation;
+use KLS\Agency\Entity\Participation;
 
 /**
  * @method ParticipationRepository|null find($id, $lockMode = null, $lockVersion = null)

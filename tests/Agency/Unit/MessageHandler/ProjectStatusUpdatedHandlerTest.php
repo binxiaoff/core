@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Agency\Unit\MessageHandler;
+namespace KLS\Test\Agency\Unit\MessageHandler;
 
+use KLS\Agency\Entity\AgentMember;
+use KLS\Agency\Entity\BorrowerMember;
+use KLS\Agency\Entity\ParticipationMember;
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Message\ProjectStatusUpdated;
+use KLS\Agency\MessageHandler\ProjectStatusUpdatedHandler;
+use KLS\Agency\Notifier\ProjectMemberNotifier;
+use KLS\Agency\Repository\ProjectRepository;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Unilend\Agency\Entity\AgentMember;
-use Unilend\Agency\Entity\BorrowerMember;
-use Unilend\Agency\Entity\ParticipationMember;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Message\ProjectStatusUpdated;
-use Unilend\Agency\MessageHandler\ProjectStatusUpdatedHandler;
-use Unilend\Agency\Notifier\ProjectMemberNotifier;
-use Unilend\Agency\Repository\ProjectRepository;
 
 /**
  * @internal
  *
- * @coversDefaultClass \Unilend\Agency\MessageHandler\ProjectStatusUpdatedHandler
+ * @coversDefaultClass \KLS\Agency\MessageHandler\ProjectStatusUpdatedHandler
  */
 class ProjectStatusUpdatedHandlerTest extends TestCase
 {

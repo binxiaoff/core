@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\CreditGuaranty\Unit\Service;
+namespace KLS\Test\CreditGuaranty\Unit\Service;
 
+use KLS\CreditGuaranty\Entity\Borrower;
+use KLS\CreditGuaranty\Entity\Field;
+use KLS\CreditGuaranty\Entity\ProgramChoiceOption;
+use KLS\CreditGuaranty\Entity\Reservation;
+use KLS\CreditGuaranty\Service\EligibilityHelper;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
-use Unilend\CreditGuaranty\Entity\Borrower;
-use Unilend\CreditGuaranty\Entity\Field;
-use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
-use Unilend\CreditGuaranty\Entity\Reservation;
-use Unilend\CreditGuaranty\Service\EligibilityHelper;
 
 /**
- * @coversDefaultClass \Unilend\CreditGuaranty\Service\EligibilityHelper
+ * @coversDefaultClass \KLS\CreditGuaranty\Service\EligibilityHelper
  *
  * @internal
  */

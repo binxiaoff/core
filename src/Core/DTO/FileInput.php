@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\DTO;
+namespace KLS\Core\DTO;
 
+use KLS\Agency\Entity\Term;
+use KLS\Core\Entity\Message;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectFile;
+use KLS\Syndication\Entity\ProjectParticipation;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Agency\Entity\Term;
-use Unilend\Core\Entity\Message;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectFile;
-use Unilend\Syndication\Entity\ProjectParticipation;
 
 class FileInput
 {
@@ -36,7 +36,7 @@ class FileInput
     ];
 
     /**
-     * @Assert\File(maxSize="250Mi", mimeTypes=Unilend\Core\DTO\FileInput::ACCEPTED_MEDIA_TYPE)
+     * @Assert\File(maxSize="250Mi", mimeTypes=KLS\Core\DTO\FileInput::ACCEPTED_MEDIA_TYPE)
      */
     public UploadedFile $uploadedFile;
 

@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Security;
+namespace KLS\Core\Security;
 
 use Exception;
+use KLS\Core\Event\TemporaryToken\TemporaryTokenAuthenticationEvents;
+use KLS\Core\Event\TemporaryToken\TemporaryTokenAuthenticationFailureEvent;
+use KLS\Core\Event\TemporaryToken\TemporaryTokenAuthenticationSuccessEvent;
+use KLS\Core\Exception\TemporaryToken\InvalidTemporaryTokenException;
+use KLS\Core\Repository\TemporaryTokenRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,16 +19,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Unilend\Core\Event\TemporaryToken\TemporaryTokenAuthenticationEvents;
-use Unilend\Core\Event\TemporaryToken\TemporaryTokenAuthenticationFailureEvent;
-use Unilend\Core\Event\TemporaryToken\TemporaryTokenAuthenticationSuccessEvent;
-use Unilend\Core\Exception\TemporaryToken\InvalidTemporaryTokenException;
-use Unilend\Core\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
 {
     private TemporaryTokenRepository $temporaryTokenRepository;
-
     private EventDispatcherInterface $dispatcher;
 
     public function __construct(TemporaryTokenRepository $temporaryTokenRepository, EventDispatcherInterface $dispatcher)

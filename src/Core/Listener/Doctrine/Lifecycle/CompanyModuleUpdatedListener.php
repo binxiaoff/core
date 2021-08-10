@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Doctrine\Lifecycle;
+namespace KLS\Core\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Exception;
+use KLS\Core\Entity\CompanyModule;
+use KLS\Core\Entity\CompanyModuleLog;
+use KLS\Core\Entity\User;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\CompanyModule;
-use Unilend\Core\Entity\CompanyModuleLog;
-use Unilend\Core\Entity\User;
 
 /**
  * TODO Refactor because we should not use doctrine for automatic insert of log.

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Syndication\DataFixtures\Projects;
+namespace KLS\Test\Syndication\DataFixtures\Projects;
 
 use Exception;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Staff;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectParticipationMember;
-use Unilend\Test\Core\DataFixtures\Companies\BasicCompanyFixtures;
-use Unilend\Test\Core\DataFixtures\Companies\ExampleCompanyFixtures;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Staff;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectParticipationMember;
+use KLS\Test\Core\DataFixtures\Companies\BasicCompanyFixtures;
+use KLS\Test\Core\DataFixtures\Companies\ExampleCompanyFixtures;
 
 class ExampleCompanyArrangerProjectFixture extends AbstractProjectFixtures
 {

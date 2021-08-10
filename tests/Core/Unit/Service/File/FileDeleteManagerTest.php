@@ -2,31 +2,31 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Service\File;
+namespace KLS\Test\Core\Unit\Service\File;
 
 use Exception;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Team;
+use KLS\Core\Entity\User;
+use KLS\Core\Service\File\FileDeleteManager;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectFile;
+use KLS\Syndication\Repository\ProjectFileRepository;
+use KLS\Syndication\Repository\ProjectRepository;
+use KLS\Syndication\Security\Voter\ProjectFileVoter;
+use KLS\Syndication\Security\Voter\ProjectVoter;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Team;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Service\File\FileDeleteManager;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectFile;
-use Unilend\Syndication\Repository\ProjectFileRepository;
-use Unilend\Syndication\Repository\ProjectRepository;
-use Unilend\Syndication\Security\Voter\ProjectFileVoter;
-use Unilend\Syndication\Security\Voter\ProjectVoter;
 
 /**
- * @coversDefaultClass \Unilend\Core\Service\File\FileDeleteManager
+ * @coversDefaultClass \KLS\Core\Service\File\FileDeleteManager
  *
  * @internal
  */

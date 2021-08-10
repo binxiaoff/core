@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Entity;
+namespace KLS\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -10,9 +10,9 @@ use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Embeddable\NullableMoney;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
 
 /**
  * @ApiResource(
@@ -93,7 +93,7 @@ class Borrower extends AbstractProjectPartaker
     protected Collection $members;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="borrowers")
+     * @ORM\ManyToOne(targetEntity="KLS\Agency\Entity\Project", inversedBy="borrowers")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank

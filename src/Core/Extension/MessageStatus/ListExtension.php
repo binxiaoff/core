@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Extension\MessageStatus;
+namespace KLS\Core\Extension\MessageStatus;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
+use KLS\Core\Entity\MessageStatus;
+use KLS\Core\Entity\MessageThread;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectStatus;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\MessageStatus;
-use Unilend\Core\Entity\MessageThread;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectStatus;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {

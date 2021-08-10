@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\DataFixtures;
+namespace KLS\Syndication\DataFixtures;
 
 use Exception;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Syndication\Entity\Embeddable\Offer;
-use Unilend\Syndication\Entity\Embeddable\OfferWithFee;
-use Unilend\Syndication\Entity\Embeddable\RangedOfferWithFee;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Syndication\Entity\Embeddable\Offer;
+use KLS\Syndication\Entity\Embeddable\OfferWithFee;
+use KLS\Syndication\Entity\Embeddable\RangedOfferWithFee;
 
 /**
  * Helpers to generate offer objects.

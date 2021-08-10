@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Listener\Doctrine;
+namespace KLS\Agency\Listener\Doctrine;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Entity\ProjectStatusHistory;
+use KLS\Core\Entity\Staff;
 use LogicException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Entity\ProjectStatusHistory;
-use Unilend\Core\Entity\Staff;
 
 class ProjectListener
 {

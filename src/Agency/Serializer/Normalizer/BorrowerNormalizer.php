@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Serializer\Normalizer;
+namespace KLS\Agency\Serializer\Normalizer;
 
+use KLS\Agency\Entity\Borrower;
+use KLS\Agency\Entity\BorrowerMember;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
-use Unilend\Agency\Entity\Borrower;
-use Unilend\Agency\Entity\BorrowerMember;
 
 class BorrowerNormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface
 {

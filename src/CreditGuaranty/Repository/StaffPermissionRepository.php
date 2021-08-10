@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Repository;
+namespace KLS\CreditGuaranty\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\Company;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
+use KLS\Core\Entity\Company;
+use KLS\CreditGuaranty\Entity\StaffPermission;
 
 /**
  * @method StaffPermission|null find($id, $lockMode = null, $lockVersion = null)

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\DataFixtures;
+namespace KLS\Core\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Core\Entity\CompanyGroup;
-use Unilend\Core\Entity\CompanyGroupTag;
+use KLS\Core\Entity\CompanyGroup;
+use KLS\Core\Entity\CompanyGroupTag;
 
 class CompanyGroupFixture extends AbstractFixtures
 {

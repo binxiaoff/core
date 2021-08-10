@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\DataPersister;
+namespace KLS\CreditGuaranty\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation;
-use Unilend\CreditGuaranty\Entity\ProgramEligibility;
-use Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
-use Unilend\CreditGuaranty\Repository\ProgramBorrowerTypeAllocationRepository;
-use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
-use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
-use Unilend\CreditGuaranty\Repository\ProgramRepository;
+use KLS\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation;
+use KLS\CreditGuaranty\Entity\ProgramEligibility;
+use KLS\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
+use KLS\CreditGuaranty\Repository\ProgramBorrowerTypeAllocationRepository;
+use KLS\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
+use KLS\CreditGuaranty\Repository\ProgramEligibilityRepository;
+use KLS\CreditGuaranty\Repository\ProgramRepository;
 
 class ProgramBorrowerTypeDataPersister implements DataPersisterInterface
 {

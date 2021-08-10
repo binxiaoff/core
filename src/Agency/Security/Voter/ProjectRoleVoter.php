@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Security\Voter;
+namespace KLS\Agency\Security\Voter;
 
 use Doctrine\ORM\NonUniqueResultException;
+use KLS\Agency\Entity\Project;
+use KLS\Agency\Repository\AgentMemberRepository;
+use KLS\Agency\Repository\BorrowerMemberRepository;
+use KLS\Agency\Repository\ParticipationMemberRepository;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\UserRepository;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Agency\Entity\Project;
-use Unilend\Agency\Repository\AgentMemberRepository;
-use Unilend\Agency\Repository\BorrowerMemberRepository;
-use Unilend\Agency\Repository\ParticipationMemberRepository;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\UserRepository;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 class ProjectRoleVoter extends Voter
 {

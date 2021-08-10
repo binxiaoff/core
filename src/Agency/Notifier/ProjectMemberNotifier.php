@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Notifier;
+namespace KLS\Agency\Notifier;
 
 use Exception;
 use JsonException;
+use KLS\Agency\Entity\AbstractProjectMember;
+use KLS\Core\Entity\TemporaryToken;
+use KLS\Core\Repository\TemporaryTokenRepository;
+use KLS\Core\SwiftMailer\MailjetMessage;
 use Swift_Mailer;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Agency\Entity\AbstractProjectMember;
-use Unilend\Core\Entity\TemporaryToken;
-use Unilend\Core\Repository\TemporaryTokenRepository;
-use Unilend\Core\SwiftMailer\MailjetMessage;
 
 class ProjectMemberNotifier
 {

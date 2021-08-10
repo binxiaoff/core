@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Service\FileSystem;
+namespace KLS\Test\Core\Unit\Service\FileSystem;
 
 use Faker\Provider\Base;
+use KLS\Core\Service\FileSystem\FileCrypto;
+use KLS\Core\Service\FileSystem\FileSystemHelper;
 use League\Flysystem\FilesystemOperator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use RuntimeException;
-use Unilend\Core\Service\FileSystem\FileCrypto;
-use Unilend\Core\Service\FileSystem\FileSystemHelper;
 
 /**
- * @coversDefaultClass \Unilend\Core\Service\FileSystem\FileSystemHelper
+ * @coversDefaultClass \KLS\Core\Service\FileSystem\FileSystemHelper
  *
  * @internal
  */

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Entity;
+namespace KLS\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Agency\Entity\Embeddable\Inequality;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Agency\Entity\Embeddable\Inequality;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ORM\Table(name="agency_covenant_rule")
@@ -35,7 +35,7 @@ class CovenantRule
     use PublicizeIdentityTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Covenant", inversedBy="covenantRules")
+     * @ORM\ManyToOne(targetEntity="KLS\Agency\Entity\Covenant", inversedBy="covenantRules")
      * @ORM\JoinColumn(name="id_covenant", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -59,7 +59,7 @@ class CovenantRule
     private int $year;
 
     /**
-     * @ORM\Embedded(class="Unilend\Agency\Entity\Embeddable\Inequality")
+     * @ORM\Embedded(class="KLS\Agency\Entity\Embeddable\Inequality")
      *
      * @Assert\NotBlank
      * @Assert\Valid

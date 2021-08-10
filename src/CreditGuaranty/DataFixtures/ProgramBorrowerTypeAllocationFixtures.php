@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\DataFixtures;
+namespace KLS\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
+use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\CreditGuaranty\Entity\Constant\FieldAlias;
+use KLS\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation;
+use KLS\CreditGuaranty\Repository\FieldRepository;
+use KLS\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
+use KLS\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
-use Unilend\CreditGuaranty\Entity\ProgramBorrowerTypeAllocation;
-use Unilend\CreditGuaranty\Repository\FieldRepository;
-use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
-use Unilend\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
 
 class ProgramBorrowerTypeAllocationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ORM\Entity
@@ -21,13 +21,13 @@ class CompanyAdmin
     use PublicizeIdentityTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company", inversedBy="admins")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company", inversedBy="admins")
      * @ORM\JoinColumn(name="id_company")
      */
     private Company $company;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\User")
      * @ORM\JoinColumn(name="id_user")
      */
     private User $user;

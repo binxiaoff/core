@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
@@ -11,12 +11,12 @@ use Doctrine\ORM\ORMException;
 use Doctrine\ORM\Query\{Expr\Join};
 use Doctrine\Persistence\ManagerRegistry;
 use JsonException;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Core\Entity\UserStatus;
+use KLS\Syndication\Entity\ProjectParticipation;
 use PDO;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\UserStatus;
-use Unilend\Syndication\Entity\ProjectParticipation;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)

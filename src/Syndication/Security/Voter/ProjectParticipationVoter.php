@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Security\Voter;
+namespace KLS\Syndication\Security\Voter;
 
+use KLS\Core\Entity\CompanyModule;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Core\Security\Voter\AbstractEntityVoter;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectParticipationMember;
+use KLS\Syndication\Entity\ProjectStatus;
+use KLS\Syndication\Repository\ProjectParticipationMemberRepository;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\CompanyModule;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Security\Voter\AbstractEntityVoter;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectParticipationMember;
-use Unilend\Syndication\Entity\ProjectStatus;
-use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ProjectParticipationVoter extends AbstractEntityVoter
 {

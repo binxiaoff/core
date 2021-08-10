@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity;
+namespace KLS\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\CreditGuaranty\Entity\Interfaces\ProgramAwareInterface;
 
 /**
  * @ApiResource(
@@ -50,7 +50,7 @@ class FinancingObjectUnblocking implements ProgramAwareInterface
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\FinancingObject", inversedBy="financingObjectUnblockings")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\FinancingObject", inversedBy="financingObjectUnblockings")
      * @ORM\JoinColumn(name="id_financing_object", nullable=false)
      *
      * @ApiProperty(readableLink=false, writableLink=false)
@@ -67,7 +67,7 @@ class FinancingObjectUnblocking implements ProgramAwareInterface
     private DateTimeImmutable $unblockingDate;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
      *
      * @Assert\AtLeastOneOf({
      *     @Assert\Expression("null === this.getProgram().isLoanReleasedOnInvoice()"),
@@ -80,7 +80,7 @@ class FinancingObjectUnblocking implements ProgramAwareInterface
     private Money $invoiceMoney;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
      *
      * @Assert\AtLeastOneOf({
      *     @Assert\Expression("null === this.getProgram().isLoanReleasedOnInvoice()"),
@@ -93,7 +93,7 @@ class FinancingObjectUnblocking implements ProgramAwareInterface
     private Money $achievementMoney;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
      *
      * @Groups({"creditGuaranty:financingObjectUnblocking:read", "creditGuaranty:financingObjectUnblocking:write"})
      */

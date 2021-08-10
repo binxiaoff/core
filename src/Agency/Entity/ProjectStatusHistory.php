@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Entity;
+namespace KLS\Agency\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\IdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Traits\BlamableAddedTrait;
-use Unilend\Core\Entity\Traits\IdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
@@ -29,7 +29,7 @@ class ProjectStatusHistory
     use TimestampableAddedOnlyTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="statuses")
+     * @ORM\ManyToOne(targetEntity="KLS\Agency\Entity\Project", inversedBy="statuses")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank

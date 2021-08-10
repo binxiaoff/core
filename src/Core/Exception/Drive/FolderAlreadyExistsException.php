@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Exception\Drive;
+namespace KLS\Core\Exception\Drive;
 
 use Throwable;
 

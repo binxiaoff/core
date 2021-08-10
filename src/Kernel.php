@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend;
+namespace KLS;
 
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;

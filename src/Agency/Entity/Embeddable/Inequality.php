@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Entity\Embeddable;
+namespace KLS\Agency\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Constant\MathOperator;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Constant\MathOperator;
 
 /**
  * @ORM\Embeddable
@@ -48,8 +48,8 @@ class Inequality
      *
      * @Assert\Type("numeric")
      * @Assert\AtLeastOneOf(constraints={
-     *     @Assert\Expression("this.getOperator() === constant('Unilend\\Core\\Entity\\Constant\\MathOperator::BETWEEN') && null !== value"),
-     *     @Assert\Expression("this.getOperator() !== constant('Unilend\\Core\\Entity\\Constant\\MathOperator::BETWEEN') && null === value")
+     *     @Assert\Expression("this.getOperator() === constant('KLS\\Core\\Entity\\Constant\\MathOperator::BETWEEN') && null !== value"),
+     *     @Assert\Expression("this.getOperator() !== constant('KLS\\Core\\Entity\\Constant\\MathOperator::BETWEEN') && null === value")
      * }, message="Inequality.maxValue.incorrectOperator")
      *
      * @Groups({"agency:inequality:read", "agency:inequality:write"})

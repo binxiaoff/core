@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\DataFixtures\CompanyGroups;
+namespace KLS\Test\Core\DataFixtures\CompanyGroups;
 
 use Doctrine\Persistence\ObjectManager;
+use KLS\Core\Entity\CompanyGroup;
+use KLS\Core\Entity\CompanyGroupTag;
+use KLS\Test\Core\DataFixtures\AbstractFixtures;
 use ReflectionException;
-use Unilend\Core\Entity\CompanyGroup;
-use Unilend\Core\Entity\CompanyGroupTag;
-use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 
 abstract class AbstractCompanyGroupFixtures extends AbstractFixtures
 {

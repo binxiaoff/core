@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Repository;
+namespace KLS\CreditGuaranty\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition;
+use KLS\CreditGuaranty\Entity\ProgramEligibilityCondition;
 
 /**
  * @method ProgramEligibilityCondition|null find($id, $lockMode = null, $lockVersion = null)

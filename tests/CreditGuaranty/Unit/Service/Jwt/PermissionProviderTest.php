@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\CreditGuaranty\Unit\Service\Jwt;
+namespace KLS\Test\CreditGuaranty\Unit\Service\Jwt;
 
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Team;
+use KLS\Core\Entity\User;
+use KLS\Core\Model\Bitmask;
+use KLS\CreditGuaranty\Entity\StaffPermission;
+use KLS\CreditGuaranty\Repository\StaffPermissionRepository;
+use KLS\CreditGuaranty\Service\Jwt\PermissionProvider;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Team;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Model\Bitmask;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
-use Unilend\CreditGuaranty\Repository\StaffPermissionRepository;
-use Unilend\CreditGuaranty\Service\Jwt\PermissionProvider;
 
 /**
- * @coversDefaultClass \Unilend\CreditGuaranty\Service\Jwt\PermissionProvider
+ * @coversDefaultClass \KLS\CreditGuaranty\Service\Jwt\PermissionProvider
  *
  * @internal
  */

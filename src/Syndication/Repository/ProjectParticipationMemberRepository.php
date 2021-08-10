@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Repository;
+namespace KLS\Syndication\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\TeamEdge;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectParticipationMember;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\TeamEdge;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectParticipationMember;
 
 /**
  * @method ProjectParticipationMember|null find($id, $lockMode = null, $lockVersion = null)

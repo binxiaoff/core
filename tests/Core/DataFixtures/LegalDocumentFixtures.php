@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\DataFixtures;
+namespace KLS\Test\Core\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Faker\Factory;
+use KLS\Core\Entity\AcceptationsLegalDocs;
+use KLS\Core\Entity\LegalDocument;
+use KLS\Core\Entity\User;
 use ReflectionException;
-use Unilend\Core\Entity\AcceptationsLegalDocs;
-use Unilend\Core\Entity\LegalDocument;
-use Unilend\Core\Entity\User;
 
 class LegalDocumentFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

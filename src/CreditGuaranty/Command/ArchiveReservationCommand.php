@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Command;
+namespace KLS\CreditGuaranty\Command;
 
 use DateTime;
 use Doctrine\ORM\ORMException;
 use Exception;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Repository\StaffRepository;
+use KLS\CreditGuaranty\Entity\Reservation;
+use KLS\CreditGuaranty\Entity\ReservationStatus;
+use KLS\CreditGuaranty\Repository\ReservationRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Repository\StaffRepository;
-use Unilend\CreditGuaranty\Entity\Reservation;
-use Unilend\CreditGuaranty\Entity\ReservationStatus;
-use Unilend\CreditGuaranty\Repository\ReservationRepository;
 
 class ArchiveReservationCommand extends Command
 {

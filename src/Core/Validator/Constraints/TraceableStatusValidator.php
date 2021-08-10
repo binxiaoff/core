@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Validator\Constraints;
+namespace KLS\Core\Validator\Constraints;
 
+use KLS\Core\Entity\Interfaces\StatusInterface;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Interfaces\StatusInterface;
 
 class TraceableStatusValidator
 {

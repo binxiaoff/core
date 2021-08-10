@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Serializer\Normalizer;
+namespace KLS\CreditGuaranty\Serializer\Normalizer;
 
+use KLS\Core\Entity\NafNace;
+use KLS\Core\Repository\NafNaceRepository;
+use KLS\CreditGuaranty\Entity\FinancingObject;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
-use Unilend\Core\Entity\NafNace;
-use Unilend\Core\Repository\NafNaceRepository;
-use Unilend\CreditGuaranty\Entity\FinancingObject;
 
 class FinancingObjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {

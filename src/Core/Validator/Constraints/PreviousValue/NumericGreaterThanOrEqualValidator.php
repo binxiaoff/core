@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Validator\Constraints\PreviousValue;
+namespace KLS\Core\Validator\Constraints\PreviousValue;
 
-use Unilend\Core\Validator\Constraints\AbstractScalarPreviousValueComparisonValidator;
+use KLS\Core\Validator\Constraints\AbstractScalarPreviousValueComparisonValidator;
 
 class NumericGreaterThanOrEqualValidator extends AbstractScalarPreviousValueComparisonValidator
 {

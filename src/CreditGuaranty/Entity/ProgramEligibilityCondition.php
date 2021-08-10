@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity;
+namespace KLS\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Constant\MathOperator;
+use KLS\Core\Entity\Traits\CloneableTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Constant\MathOperator;
-use Unilend\Core\Entity\Traits\CloneableTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
@@ -53,7 +53,7 @@ class ProgramEligibilityCondition
     public const VALUE_TYPE_VALUE = 'value';
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration", inversedBy="programEligibilityConditions")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramEligibilityConfiguration", inversedBy="programEligibilityConditions")
      * @ORM\JoinColumn(name="id_program_eligibility_configuration", nullable=false)
      *
      * @ApiProperty(readableLink=false, writableLink=false)
@@ -63,7 +63,7 @@ class ProgramEligibilityCondition
     private ProgramEligibilityConfiguration $programEligibilityConfiguration;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Field")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\Field")
      * @ORM\JoinColumn(name="id_left_operand_field", nullable=false)
      *
      * @Groups({"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:programEligibilityCondition:write"})
@@ -71,7 +71,7 @@ class ProgramEligibilityCondition
     private Field $leftOperandField;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Field")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\Field")
      * @ORM\JoinColumn(name="id_right_operand_field")
      *
      * @Groups({"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:programEligibilityCondition:write"})
@@ -102,7 +102,7 @@ class ProgramEligibilityCondition
      * @ORM\Column(type="decimal", precision=15, scale=2)
      *
      * @Assert\Expression(
-     *     "(value <= 1 && value >= 0) || constant('Unilend\\CreditGuaranty\\Entity\\ProgramEligibilityCondition::VALUE_TYPE_VALUE') === this.getValueType()",
+     *     "(value <= 1 && value >= 0) || constant('KLS\\CreditGuaranty\\Entity\\ProgramEligibilityCondition::VALUE_TYPE_VALUE') === this.getValueType()",
      *     message="CreditGuaranty.ProgramEligibilityCondition.value.outOfRange"
      * )
      *

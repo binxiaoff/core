@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity;
+namespace KLS\CreditGuaranty\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\CloneableTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\CloneableTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\CreditGuaranty\DTO\ProgramBorrowerTypeAllocationInput;
 
 /**
  * @ApiResource(
@@ -58,7 +58,7 @@ class ProgramBorrowerTypeAllocation
     use CloneableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\Program", inversedBy="programBorrowerTypeAllocations")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\Program", inversedBy="programBorrowerTypeAllocations")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
      * @ApiProperty(readableLink=false, writableLink=false)
@@ -68,7 +68,7 @@ class ProgramBorrowerTypeAllocation
     private Program $program;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\CreditGuaranty\Entity\ProgramChoiceOption")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_program_choice_option", nullable=false, onDelete="CASCADE")
      */
     private ProgramChoiceOption $programChoiceOption;

@@ -14,11 +14,11 @@
         <ini name="error_reporting" value="-1" />
         <server name="APP_ENV" value="test" force="true" />
         <server name="SHELL_VERBOSITY" value="-1" />
-        <server name="KERNEL_CLASS" value="Unilend\Kernel"/>
+        <server name="KERNEL_CLASS" value="KLS\Kernel"/>
     </php>
 
     <extensions>
-        <extension class="Unilend\Test\Hook\BypassFinalHook"/>
+        <extension class="KLS\Test\Hook\BypassFinalHook"/>
         <extension class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension" />
     </extensions>
 

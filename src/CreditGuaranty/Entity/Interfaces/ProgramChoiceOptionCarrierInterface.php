@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity\Interfaces;
+namespace KLS\CreditGuaranty\Entity\Interfaces;
 
 interface ProgramChoiceOptionCarrierInterface
 {

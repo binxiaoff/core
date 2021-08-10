@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Model;
+namespace KLS\Core\Model;
 
 use InvalidArgumentException;
 

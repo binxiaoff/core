@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Syndication\DataFixtures\Projects;
+namespace KLS\Test\Syndication\DataFixtures\Projects;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Faker\Provider as Faker;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Listener\Doctrine\Lifecycle\StatusCreatedListener;
+use KLS\Syndication\Entity\Project;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectParticipationMember;
+use KLS\Syndication\Entity\ProjectParticipationTranche;
+use KLS\Syndication\Entity\ProjectStatus;
+use KLS\Syndication\Entity\Tranche;
+use KLS\Test\Core\DataFixtures\AbstractFixtures;
 use ReflectionException;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Listener\Doctrine\Lifecycle\StatusCreatedListener;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectParticipationMember;
-use Unilend\Syndication\Entity\ProjectParticipationTranche;
-use Unilend\Syndication\Entity\ProjectStatus;
-use Unilend\Syndication\Entity\Tranche;
-use Unilend\Test\Core\DataFixtures\AbstractFixtures;
 
 abstract class AbstractProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

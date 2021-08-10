@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Security;
+namespace KLS\Core\Security;
 
 use JsonException;
+use KLS\Core\DTO\GoogleRecaptchaResult;
+use KLS\Core\Entity\User;
+use KLS\Core\Exception\Authentication\RecaptchaChallengeFailedException;
+use KLS\Core\Service\GoogleRecaptchaManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -16,24 +20,16 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Symfony\Component\Security\Guard\PasswordAuthenticatedInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationFailureHandlerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
-use Unilend\Core\DTO\GoogleRecaptchaResult;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Exception\Authentication\RecaptchaChallengeFailedException;
-use Unilend\Core\Service\GoogleRecaptchaManager;
 
 class UsernamePasswordRecaptchaAuthenticator extends AbstractGuardAuthenticator implements PasswordAuthenticatedInterface
 {
     public const GOOGLE_RECAPTCHA_RESULT_TOKEN_ATTRIBUTE = 'GOOGLE_RECAPTCHA_RESULT';
+
     private GoogleRecaptchaManager $googleRecaptchaManager;
-
     private AuthenticationSuccessHandlerInterface $authenticationSuccessHandler;
-
     private AuthenticationFailureHandlerInterface $authenticationFailureHandler;
-
     private UserPasswordEncoderInterface $passwordEncoder;
-
     private string $path;
-
     private GoogleRecaptchaResult $recaptchaResult;
 
     public function __construct(

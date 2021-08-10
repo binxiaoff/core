@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Extension\ProjectParticipation;
+namespace KLS\Syndication\Extension\ProjectParticipation;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
+use KLS\Core\Entity\Staff;
+use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Entity\ProjectStatus;
+use KLS\Syndication\Repository\ProjectParticipationMemberRepository;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Staff;
-use Unilend\Syndication\Entity\ProjectParticipation;
-use Unilend\Syndication\Entity\ProjectStatus;
-use Unilend\Syndication\Repository\ProjectParticipationMemberRepository;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {

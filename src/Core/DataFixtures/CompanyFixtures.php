@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\DataFixtures;
+namespace KLS\Core\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Gedmo\Sluggable\Util\Urlizer;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\CompanyGroup;
+use KLS\Core\Entity\CompanyStatus;
+use KLS\Core\Entity\Team;
+use KLS\Core\Entity\User;
 use ReflectionException;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\CompanyGroup;
-use Unilend\Core\Entity\CompanyStatus;
-use Unilend\Core\Entity\Team;
-use Unilend\Core\Entity\User;
 
 class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

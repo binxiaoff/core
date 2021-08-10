@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\CreditGuaranty\Unit\Service;
+namespace KLS\Test\CreditGuaranty\Unit\Service;
 
 use DateTimeImmutable;
 use Exception;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\CompanyGroup;
+use KLS\Core\Entity\CompanyGroupTag;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Team;
+use KLS\Core\Entity\User;
+use KLS\CreditGuaranty\Entity\Borrower;
+use KLS\CreditGuaranty\Entity\Field;
+use KLS\CreditGuaranty\Entity\FinancingObject;
+use KLS\CreditGuaranty\Entity\Program;
+use KLS\CreditGuaranty\Entity\ProgramChoiceOption;
+use KLS\CreditGuaranty\Entity\Project;
+use KLS\CreditGuaranty\Entity\Reservation;
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\CompanyGroup;
-use Unilend\Core\Entity\CompanyGroupTag;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Team;
-use Unilend\Core\Entity\User;
-use Unilend\CreditGuaranty\Entity\Borrower;
-use Unilend\CreditGuaranty\Entity\Field;
-use Unilend\CreditGuaranty\Entity\FinancingObject;
-use Unilend\CreditGuaranty\Entity\Program;
-use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
-use Unilend\CreditGuaranty\Entity\Project;
-use Unilend\CreditGuaranty\Entity\Reservation;
 
 abstract class AbstractEligibilityTest extends TestCase
 {

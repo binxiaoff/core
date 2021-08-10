@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\DataFixtures\Companies;
+namespace KLS\Test\Core\DataFixtures\Companies;
 
 use Exception;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Team;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Team;
 
 class FooCompanyFixtures extends AbstractCompanyFixtures
 {

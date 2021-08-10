@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\EventSubscriber\ApiPlatform\Staff;
+namespace KLS\Core\EventSubscriber\ApiPlatform\Staff;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\StaffStatus;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\StaffRepository;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\StaffStatus;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\StaffRepository;
 
 class ArchivedStaffSubscriber implements EventSubscriberInterface
 {

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\EventSubscriber\ApiPlatform\ResetPassword;
+namespace KLS\Core\EventSubscriber\ApiPlatform\ResetPassword;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
+use KLS\Core\Entity\Request\ResetPassword;
+use KLS\Core\Service\UserActivity\IpGeoLocManager;
+use KLS\Core\Service\UserActivity\UserAgentManager;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Unilend\Core\Entity\Request\ResetPassword;
-use Unilend\Core\Service\UserActivity\IpGeoLocManager;
-use Unilend\Core\Service\UserActivity\UserAgentManager;
 
 class AddRequesterData implements EventSubscriberInterface
 {

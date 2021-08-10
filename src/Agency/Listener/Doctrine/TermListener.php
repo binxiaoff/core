@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Listener\Doctrine;
+namespace KLS\Agency\Listener\Doctrine;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
 use Exception;
-use Unilend\Agency\Entity\Term;
-use Unilend\Agency\Entity\TermHistory;
+use KLS\Agency\Entity\Term;
+use KLS\Agency\Entity\TermHistory;
 
 class TermListener
 {

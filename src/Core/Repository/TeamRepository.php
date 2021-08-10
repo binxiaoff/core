@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\Team;
+use KLS\Core\Entity\Team;
 
 /**
  * @method Team|null find($id, $lockMode = null, $lockVersion = null)

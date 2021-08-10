@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Service;
+namespace KLS\CreditGuaranty\Service;
 
 use Doctrine\Common\Collections\Collection;
+use KLS\CreditGuaranty\Entity\Borrower;
+use KLS\CreditGuaranty\Entity\Field;
+use KLS\CreditGuaranty\Entity\ProgramChoiceOption;
+use KLS\CreditGuaranty\Entity\ProgramEligibility;
+use KLS\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
+use KLS\CreditGuaranty\Entity\Project;
+use KLS\CreditGuaranty\Entity\Reservation;
+use KLS\CreditGuaranty\Repository\FieldRepository;
+use KLS\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
+use KLS\CreditGuaranty\Repository\ProgramEligibilityRepository;
 use LogicException;
-use Unilend\CreditGuaranty\Entity\Borrower;
-use Unilend\CreditGuaranty\Entity\Field;
-use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
-use Unilend\CreditGuaranty\Entity\ProgramEligibility;
-use Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
-use Unilend\CreditGuaranty\Entity\Project;
-use Unilend\CreditGuaranty\Entity\Reservation;
-use Unilend\CreditGuaranty\Repository\FieldRepository;
-use Unilend\CreditGuaranty\Repository\ProgramEligibilityConfigurationRepository;
-use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
 
 class EligibilityChecker
 {

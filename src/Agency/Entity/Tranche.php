@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Agency\Entity;
+namespace KLS\Agency\Entity;
 
 use ApiPlatform\Core\Action\NotFoundAction;
 use ApiPlatform\Core\Annotation\ApiFilter;
@@ -13,17 +13,17 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Constant\Tranche\CommissionType;
+use KLS\Core\Entity\Constant\Tranche\LoanType;
+use KLS\Core\Entity\Constant\Tranche\RepaymentType;
+use KLS\Core\Entity\Embeddable\LendingRate;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Constant\Tranche\CommissionType;
-use Unilend\Core\Entity\Constant\Tranche\LoanType;
-use Unilend\Core\Entity\Constant\Tranche\RepaymentType;
-use Unilend\Core\Entity\Embeddable\LendingRate;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ApiResource(
@@ -92,7 +92,7 @@ class Tranche
     use PublicizeIdentityTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Agency\Entity\Project", inversedBy="tranches")
+     * @ORM\ManyToOne(targetEntity="KLS\Agency\Entity\Project", inversedBy="tranches")
      * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -168,7 +168,7 @@ class Tranche
     private int $duration;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -178,7 +178,7 @@ class Tranche
     private Money $money;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Assert\Valid
      *
@@ -187,7 +187,7 @@ class Tranche
     private NullableMoney $draw;
 
     /**
-     * @ORM\Embedded(class="Unilend\Core\Entity\Embeddable\LendingRate")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\LendingRate")
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -227,7 +227,7 @@ class Tranche
     /**
      * @var BorrowerTrancheShare[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="KLS\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche", cascade={"persist", "remove"}, orphanRemoval=true)
      *
      * @Groups({"agency:tranche:read", "agency:tranche:write"})
      *

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use KLS\Kernel;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Kernel;
 
 // With this mask default directory permissions are 775 and default file permissions are 664.
 \umask(0002);

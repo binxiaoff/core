@@ -2,23 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Serializer\ContextBuilder;
+namespace KLS\Core\Serializer\ContextBuilder;
 
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
+use KLS\Core\Entity\AcceptationsLegalDocs;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Core\Entity\AcceptationsLegalDocs;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\UserRepository;
 
 class CurrentUser implements SerializerContextBuilderInterface
 {
     private SerializerContextBuilderInterface $decorated;
-
     private Security $security;
-
     private UserRepository $userRepository;
 
     public function __construct(SerializerContextBuilderInterface $decorated, Security $security, UserRepository $userRepository)

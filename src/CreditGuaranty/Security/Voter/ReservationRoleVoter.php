@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Security\Voter;
+namespace KLS\CreditGuaranty\Security\Voter;
 
+use KLS\Core\Entity\Staff;
+use KLS\Core\Traits\ConstantsAwareTrait;
+use KLS\CreditGuaranty\Entity\Reservation;
+use KLS\CreditGuaranty\Service\StaffPermissionManager;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Traits\ConstantsAwareTrait;
-use Unilend\CreditGuaranty\Entity\Reservation;
-use Unilend\CreditGuaranty\Service\StaffPermissionManager;
 
 class ReservationRoleVoter extends Voter
 {

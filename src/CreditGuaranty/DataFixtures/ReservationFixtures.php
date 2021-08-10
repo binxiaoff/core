@@ -2,33 +2,33 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\DataFixtures;
+namespace KLS\CreditGuaranty\DataFixtures;
 
 use DateTimeImmutable;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\Core\DataFixtures\NafNaceFixtures;
+use KLS\Core\Entity\Constant\CAInternalRating;
+use KLS\Core\Entity\Constant\CAInternalRetailRating;
+use KLS\Core\Entity\Constant\CARatingType;
+use KLS\Core\Entity\Embeddable\Money;
+use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\CreditGuaranty\Entity\Borrower;
+use KLS\CreditGuaranty\Entity\Constant\FieldAlias;
+use KLS\CreditGuaranty\Entity\Field;
+use KLS\CreditGuaranty\Entity\FinancingObject;
+use KLS\CreditGuaranty\Entity\Program;
+use KLS\CreditGuaranty\Entity\ProgramChoiceOption;
+use KLS\CreditGuaranty\Entity\ProgramEligibility;
+use KLS\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
+use KLS\CreditGuaranty\Entity\Project;
+use KLS\CreditGuaranty\Entity\Reservation;
+use KLS\CreditGuaranty\Entity\ReservationStatus;
+use KLS\CreditGuaranty\Repository\FieldRepository;
+use KLS\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
+use KLS\CreditGuaranty\Repository\ProgramEligibilityRepository;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Core\DataFixtures\AbstractFixtures;
-use Unilend\Core\DataFixtures\NafNaceFixtures;
-use Unilend\Core\Entity\Constant\CAInternalRating;
-use Unilend\Core\Entity\Constant\CAInternalRetailRating;
-use Unilend\Core\Entity\Constant\CARatingType;
-use Unilend\Core\Entity\Embeddable\Money;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
-use Unilend\CreditGuaranty\Entity\Borrower;
-use Unilend\CreditGuaranty\Entity\Constant\FieldAlias;
-use Unilend\CreditGuaranty\Entity\Field;
-use Unilend\CreditGuaranty\Entity\FinancingObject;
-use Unilend\CreditGuaranty\Entity\Program;
-use Unilend\CreditGuaranty\Entity\ProgramChoiceOption;
-use Unilend\CreditGuaranty\Entity\ProgramEligibility;
-use Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
-use Unilend\CreditGuaranty\Entity\Project;
-use Unilend\CreditGuaranty\Entity\Reservation;
-use Unilend\CreditGuaranty\Entity\ReservationStatus;
-use Unilend\CreditGuaranty\Repository\FieldRepository;
-use Unilend\CreditGuaranty\Repository\ProgramChoiceOptionRepository;
-use Unilend\CreditGuaranty\Repository\ProgramEligibilityRepository;
 
 class ReservationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

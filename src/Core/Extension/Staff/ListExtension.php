@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Extension\Staff;
+namespace KLS\Core\Extension\Staff;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\StaffStatus;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\StaffStatus;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {

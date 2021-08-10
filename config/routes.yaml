@@ -7,9 +7,9 @@ front:
 
 health_check:
     path: /core/pulse
-    controller: Unilend\Core\Controller\HealthCheck
+    controller: KLS\Core\Controller\HealthCheck
 
 # PSN callback URL
 file-signature-result:
     path: /core/file_version_signatures/{fileSignatureId}/result
-    controller: Unilend\Core\Controller\FileVersionSignature\Result
+    controller: KLS\Core\Controller\FileVersionSignature\Result

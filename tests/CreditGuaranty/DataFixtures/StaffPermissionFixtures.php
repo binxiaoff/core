@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\CreditGuaranty\DataFixtures;
+namespace KLS\Test\CreditGuaranty\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Model\Bitmask;
-use Unilend\CreditGuaranty\Entity\StaffPermission;
-use Unilend\Test\Core\DataFixtures\AbstractFixtures;
-use Unilend\Test\Core\DataFixtures\Companies\BarCompanyFixtures;
-use Unilend\Test\Core\DataFixtures\Companies\BasicCompanyFixtures;
-use Unilend\Test\Core\DataFixtures\UserFixtures;
+use KLS\Core\Entity\Company;
+use KLS\Core\Model\Bitmask;
+use KLS\CreditGuaranty\Entity\StaffPermission;
+use KLS\Test\Core\DataFixtures\AbstractFixtures;
+use KLS\Test\Core\DataFixtures\Companies\BarCompanyFixtures;
+use KLS\Test\Core\DataFixtures\Companies\BasicCompanyFixtures;
+use KLS\Test\Core\DataFixtures\UserFixtures;
 
 class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {

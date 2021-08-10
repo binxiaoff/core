@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service;
+namespace KLS\Core\Service;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
+use KLS\Core\DTO\GoogleRecaptchaResult;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Core\DTO\GoogleRecaptchaResult;
 
 class GoogleRecaptchaManager
 {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Syndication\Service;
+namespace KLS\Syndication\Service;
 
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Service\Staff\StaffLoginInterface;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Service\Staff\StaffLoginInterface;
 
 class StaffLoginChecker implements StaffLoginInterface
 {

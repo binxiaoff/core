@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Entity\Constant;
+namespace KLS\CreditGuaranty\Entity\Constant;
 
-use Unilend\Core\Entity\Constant\AbstractEnum;
+use KLS\Core\Entity\Constant\AbstractEnum;
 
 /**
  * There is a convention that the name of the target class property should be the camel case form of the related constant value in this class.

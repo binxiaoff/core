@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\CreditGuaranty\Service;
+namespace KLS\CreditGuaranty\Service;
 
 use Doctrine\Common\Collections\Collection;
+use KLS\Core\Entity\Constant\MathOperator;
+use KLS\CreditGuaranty\Entity\ProgramEligibilityCondition;
+use KLS\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
+use KLS\CreditGuaranty\Entity\Reservation;
+use KLS\CreditGuaranty\Repository\ProgramEligibilityConditionRepository;
 use LogicException;
-use Unilend\Core\Entity\Constant\MathOperator;
-use Unilend\CreditGuaranty\Entity\ProgramEligibilityCondition;
-use Unilend\CreditGuaranty\Entity\ProgramEligibilityConfiguration;
-use Unilend\CreditGuaranty\Entity\Reservation;
-use Unilend\CreditGuaranty\Repository\ProgramEligibilityConditionRepository;
 
 class EligibilityConditionChecker
 {

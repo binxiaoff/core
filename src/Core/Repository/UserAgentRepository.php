@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\UserAgent;
+use KLS\Core\Entity\User;
+use KLS\Core\Entity\UserAgent;
 use WhichBrowser\Model\Browser;
 use WhichBrowser\Model\Device;
 use WhichBrowser\Model\Version;

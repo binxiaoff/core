@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Controller\FileVersionSignature;
+namespace KLS\Core\Controller\FileVersionSignature;
 
 use Symfony\Component\HttpFoundation\Request;
 

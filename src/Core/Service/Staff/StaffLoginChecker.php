@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\Staff;
+namespace KLS\Core\Service\Staff;
 
-use Unilend\Core\Entity\Staff;
+use KLS\Core\Entity\Staff;
 
 class StaffLoginChecker
 {
