@@ -18,6 +18,7 @@ use KLS\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use KLS\Core\Entity\Constant\SyndicationModality\RiskType;
 use KLS\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use KLS\Core\Entity\Drive;
+use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
 use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Service\MoneyCalculator;
@@ -56,7 +57,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "path": ".+"
  *             },
  *             "defaults": {
- *                 "path": "/"
+ *                 "path": "/",
+ *                 "drive": "sharedDrive"
  *             },
  *         },
  *         "post_dataroom": {
@@ -72,7 +74,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "path": ".+"
  *             },
  *             "defaults": {
- *                 "path": "/"
+ *                 "path": "/",
+ *                 "drive": "sharedDrive"
  *             },
  *         },
  *         "delete_dataroom": {
@@ -84,7 +87,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "path": ".+"
  *             },
  *             "defaults": {
- *                 "path": "/"
+ *                 "path": "/",
+ *                 "drive": "sharedDrive"
  *             },
  *         }
  *     }
@@ -109,7 +113,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @UniqueEntity(fields={"project", "secondary"})
  */
-class ParticipationPool
+class ParticipationPool implements DriveCarrierInterface
 {
     use PublicizeIdentityTrait;
 

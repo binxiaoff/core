@@ -32,6 +32,7 @@ use KLS\Core\Entity\Drive;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\Embeddable\NullablePerson;
+use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\Traits\BlamableAddedTrait;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
@@ -133,7 +134,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "shared"
+ *                 "drive": "borrowerSharedDrive"
  *             },
  *             "normalization_context": {
  *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
@@ -150,7 +151,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "shared"
+ *                 "drive": "borrowerSharedDrive"
  *             },
  *             "normalization_context": {
  *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
@@ -166,7 +167,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "shared"
+ *                 "drive": "borrowerSharedDrive"
  *             }
  *         },
  *         "get_borrower_dataroom_confidential": {
@@ -179,7 +180,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "confidential"
+ *                 "drive": "borrowerConfidentialDrive"
  *             },
  *             "normalization_context": {
  *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
@@ -196,7 +197,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "confidential"
+ *                 "drive": "borrowerConfidentialDrive"
  *             },
  *             "normalization_context": {
  *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
@@ -213,7 +214,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "confidential"
+ *                 "drive": "borrowerConfidentialDrive"
  *             }
  *         }
  *     }
@@ -254,7 +255,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  * @ApiFilter(filterClass=NumericFilter::class, properties={"currentStatus"})
  * @ApiFilter(filterClass=ProjectFilter::class, arguments={})
  */
-class Project
+class Project implements DriveCarrierInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
