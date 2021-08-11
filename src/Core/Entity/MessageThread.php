@@ -55,7 +55,7 @@ class MessageThread
 
     /**
      * @ORM\OneToOne(targetEntity="KLS\Syndication\Entity\ProjectParticipation")
-     * @ORM\JoinColumn(name="id_project_participation", referencedColumnName="id")
+     * @ORM\JoinColumn(name="id_project_participation", referencedColumnName="id", onDelete="CASCADE")
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
