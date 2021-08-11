@@ -16,6 +16,7 @@ use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Drive;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\Embeddable\NullablePerson;
+use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -50,7 +51,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "confidential"
+ *                 "drive": "confidentialDrive"
  *             },
  *             "normalization_context": {
  *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
@@ -67,7 +68,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "confidential"
+ *                 "drive": "confidentialDrive"
  *             },
  *             "normalization_context": {
  *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
@@ -84,7 +85,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "confidential"
+ *                 "drive": "confidentialDrive"
  *             }
  *         }
  *     }
@@ -92,7 +93,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Table(name="agency_agent")
  * @ORM\Entity
  */
-class Agent extends AbstractProjectPartaker
+class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
 {
     /**
      * @var Collection|AgentMember[]

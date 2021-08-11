@@ -20,6 +20,7 @@ use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Drive;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
 use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\Core\Service\MoneyCalculator;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -88,6 +89,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             },
  *             "defaults": {
  *                 "path": "/",
+ *                 "drive": "confidentialDrive"
  *             },
  *         },
  *         "post_dataroom": {
@@ -104,6 +106,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             },
  *             "defaults": {
  *                 "path": "/",
+ *                 "drive": "confidentialDrive"
  *             },
  *         },
  *         "delete_dataroom": {
@@ -116,6 +119,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             },
  *             "defaults": {
  *                 "path": "/",
+ *                 "drive": "confidentialDrive"
  *             },
  *         },
  *     }
@@ -146,7 +150,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *     }
  * )
  */
-class Participation extends AbstractProjectPartaker
+class Participation extends AbstractProjectPartaker implements DriveCarrierInterface
 {
     /**
      * @var Collection|ParticipationMember[]
