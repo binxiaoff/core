@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace KLS\CreditGuaranty\FEI\DataFixtures;
 
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
-use Faker\Provider\Miscellaneous;
 use KLS\Core\DataFixtures\AbstractFixtures;
-use KLS\CreditGuaranty\FEI\Entity\Field;
-use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
+use KLS\Core\Entity\Constant\MathOperator;
+use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityCondition;
 use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
@@ -21,8 +19,6 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class ProgramEligibilityConditionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    private const CHANCE_OF_HAVING_CONDITION = 30;
-
     private FieldRepository $fieldRepository;
     private ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository;
     private ProgramEligibilityRepository $programEligibilityRepository;
@@ -54,67 +50,72 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
      */
     public function load(ObjectManager $manager): void
     {
-        /** @var Collection|Field[] $comparableFields */
-        $comparableFields = $this->fieldRepository->findBy(['comparable' => true]);
-        $comparableFields = \array_filter($comparableFields, static fn (Field $field) => false === empty($field->getReservationPropertyName()));
-
-        $operations = ProgramEligibilityCondition::getAvailableOperations();
-        $valueTypes = ProgramEligibilityCondition::getAvailableValueType();
+        $conditions = $this->createConditions();
 
         /** @var Program $program */
-        foreach ($this->getReferences(ProgramFixtures::ALL_PROGRAMS) as $program) {
-            $programEligibilities             = $this->programEligibilityRepository->findBy(['program' => $program]);
-            $programEligibilityConfigurations = $this->programEligibilityConfigurationRepository->findBy(['programEligibility' => $programEligibilities]);
+        $program                          = $this->getReference('commercialized_program');
+        $programEligibilities             = $this->programEligibilityRepository->findBy(['program' => $program]);
+        $programEligibilityConfigurations = $this->programEligibilityConfigurationRepository->findBy(['programEligibility' => $programEligibilities]);
 
-            foreach ($programEligibilityConfigurations as $programEligibilityConfiguration) {
-                if (false === Miscellaneous::boolean(self::CHANCE_OF_HAVING_CONDITION)) {
-                    continue;
-                }
+        foreach ($programEligibilityConfigurations as $programEligibilityConfiguration) {
+            $fieldAlias = $programEligibilityConfiguration->getProgramEligibility()->getField()->getFieldAlias();
 
-                for ($i = 0; $i <= \random_int(1, \count($comparableFields) - 1); ++$i) {
-                    $leftOperand = $comparableFields[$i];
-                    $rightFields = \array_filter($comparableFields, static fn (Field $field) => FinancingObject::class !== $field->getObjectClass());
-                    \shuffle($rightFields);
-                    $valueType = $valueTypes[\array_rand($valueTypes)];
+            if (false === \array_key_exists($fieldAlias, $conditions)) {
+                continue;
+            }
 
-                    if (ProgramEligibilityCondition::VALUE_TYPE_RATE === $valueType) {
-                        foreach ($rightFields as $rightOperand) {
-                            if ($leftOperand === $rightOperand || $rightOperand->getUnit() !== $leftOperand->getUnit()) {
-                                continue;
-                            }
-
-                            $programEligibilityCondition = new ProgramEligibilityCondition(
-                                $programEligibilityConfiguration,
-                                $leftOperand,
-                                $rightOperand,
-                                $operations[\array_rand($operations)],
-                                $valueType,
-                                (string) (\mt_rand() / \mt_getrandmax())
-                            );
-
-                            $manager->persist($programEligibilityCondition);
-
-                            break 2;
-                        }
-
-                        // need to continue here to break in case there is no condition for rate value type
-                        continue;
-                    }
-
-                    $programEligibilityCondition = new ProgramEligibilityCondition(
-                        $programEligibilityConfiguration,
-                        $leftOperand,
-                        null,
-                        $operations[\array_rand($operations)],
-                        $valueType,
-                        (string) \random_int(1, 9999)
-                    );
-
-                    $manager->persist($programEligibilityCondition);
-                }
+            foreach ($conditions[$fieldAlias] as $condition) {
+                $programEligibilityCondition = new ProgramEligibilityCondition(
+                    $programEligibilityConfiguration,
+                    $condition['leftOperand'],
+                    $condition['rightOperand'],
+                    $condition['operator'],
+                    $condition['type'],
+                    (string) $condition['value']
+                );
+                $manager->persist($programEligibilityCondition);
             }
         }
 
         $manager->flush();
+    }
+
+    private function createConditions(): array
+    {
+        // comparable person
+        $employeesNumberField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::EMPLOYEES_NUMBER]);
+        // comparable money
+        $tangibleFeiCreditField   = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::TANGIBLE_FEI_CREDIT]);
+        $intangibleFeiCreditField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::INTANGIBLE_FEI_CREDIT]);
+        // comparable month
+        $loanDurationField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LOAN_DURATION]);
+
+        return [
+            FieldAlias::LEGAL_FORM => [
+                [
+                    'type'         => ProgramEligibilityCondition::VALUE_TYPE_VALUE,
+                    'leftOperand'  => $employeesNumberField,
+                    'rightOperand' => null,
+                    'operator'     => MathOperator::INFERIOR,
+                    'value'        => 500.00,
+                ],
+                [
+                    'type'         => ProgramEligibilityCondition::VALUE_TYPE_RATE,
+                    'leftOperand'  => $intangibleFeiCreditField,
+                    'rightOperand' => $tangibleFeiCreditField,
+                    'operator'     => MathOperator::INFERIOR,
+                    'value'        => 0.80,
+                ],
+            ],
+            FieldAlias::PROJECT_TOTAL_AMOUNT => [
+                [
+                    'type'         => ProgramEligibilityCondition::VALUE_TYPE_VALUE,
+                    'leftOperand'  => $loanDurationField,
+                    'rightOperand' => null,
+                    'operator'     => MathOperator::EQUAL,
+                    'value'        => 4,
+                ],
+            ],
+        ];
     }
 }

@@ -22,19 +22,6 @@ class ProgramEligibilityFixtures extends AbstractFixtures implements DependentFi
         $this->fieldRepository = $fieldRepository;
     }
 
-    public function load(ObjectManager $manager): void
-    {
-        $fields = $this->fieldRepository->findAll();
-        /** @var Program $program */
-        foreach ($this->getReferences(ProgramFixtures::ALL_PROGRAMS) as $program) {
-            foreach ($fields as $field) {
-                $programEligibility = new ProgramEligibility($program, $field);
-                $manager->persist($programEligibility);
-            }
-        }
-        $manager->flush();
-    }
-
     /**
      * @return string[]
      */
@@ -43,7 +30,21 @@ class ProgramEligibilityFixtures extends AbstractFixtures implements DependentFi
         return [
             ProgramFixtures::class,
             ProgramChoiceOptionFixtures::class,
-            FieldFixtures::class,
         ];
+    }
+
+    public function load(ObjectManager $manager): void
+    {
+        $fields = $this->fieldRepository->findAll();
+
+        /** @var Program $program */
+        foreach ($this->getReferences(ProgramFixtures::ALL_PROGRAMS) as $program) {
+            foreach ($fields as $field) {
+                $programEligibility = new ProgramEligibility($program, $field);
+                $manager->persist($programEligibility);
+            }
+        }
+
+        $manager->flush();
     }
 }
