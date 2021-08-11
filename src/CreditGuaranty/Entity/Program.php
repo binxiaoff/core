@@ -131,7 +131,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     /**
      * @ORM\Column(length=100, unique=true)
      *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:list", "creditGuaranty:program:write"})
+     * @Groups({"creditGuaranty:program:list", "creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private string $name;
 
@@ -195,14 +195,14 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *     @PreviousValue\MoneyGreaterThanOrEqual(message="CreditGuaranty.Program.funds.greater")
      * })
      *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
+     * @Groups({"creditGuaranty:program:list", "creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private Money $funds;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:list", "creditGuaranty:program:write"})
+     * @Groups({"creditGuaranty:program:list", "creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
     private ?DateTimeImmutable $distributionDeadline;
 
@@ -634,6 +634,20 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     public function getStatuses(): Collection
     {
         return $this->statuses;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:program:list", "creditGuaranty:program:read"})
+     */
+    public function getDistributionDate(): ?DateTimeImmutable
+    {
+        foreach ($this->statuses as $status) {
+            if (ProgramStatus::STATUS_DISTRIBUTED === $status->getStatus()) {
+                return $status->getAdded();
+            }
+        }
+
+        return null;
     }
 
     public function getCurrentStatus(): StatusInterface
