@@ -78,8 +78,6 @@ class AuthenticationTokenTest extends ApiTestCase
             static::assertSame(VersionSubscriber::JWT_VERSION, $decodedToken['version']);
             static::assertSame($iriConverter->getIriFromItem($user), $decodedToken['user']);
             static::assertObjectHasAttribute('credit_guaranty', $decodedToken['permissions']);
-            static::assertObjectHasAttribute('permissions', $decodedToken['permissions']->credit_guaranty);
-            static::assertObjectHasAttribute('grant_permissions', $decodedToken['permissions']->credit_guaranty);
 
             if (\in_array('staff', \array_values($decodedToken))) {
                 static::assertSame('staff', $decodedToken['@scope']);

@@ -50,19 +50,19 @@ doctrine:
                             type: annotation
                             dir: '%kernel.project_dir%/src/Syndication/Arrangement/Entity'
                             prefix: 'KLS\Syndication\Arrangement\Entity'
-                            alias: KLS
+                            alias: KLS\Syndication\Arrangement
                         KLS\Syndication\Agency:
                             is_bundle: false
                             type: annotation
                             dir: '%kernel.project_dir%/src/Syndication/Agency/Entity'
                             prefix: 'KLS\Syndication\Agency\Entity'
-                            alias: KLS\Agency
+                            alias: KLS\Syndication\Agency
                         KLS\CreditGuaranty\FEI:
                             is_bundle: false
                             type: annotation
                             dir: '%kernel.project_dir%/src/CreditGuaranty/FEI/Entity'
                             prefix: 'KLS\CreditGuaranty\FEI\Entity'
-                            alias: KLS\CreditGuaranty
+                            alias: KLS\CreditGuaranty\FEI
                     filters:
                         softdeletable:
                             class: 'Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter'
