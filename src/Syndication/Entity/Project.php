@@ -39,6 +39,8 @@ use KLS\Core\Entity\User;
 use KLS\Core\Filter\ArrayFilter;
 use KLS\Core\Service\MoneyCalculator;
 use KLS\Core\Traits\ConstantsAwareTrait;
+use KLS\Syndication\Entity\Embeddable\OfferWithFee;
+use KLS\Syndication\Entity\Embeddable\RangedOfferWithFee;
 use RuntimeException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -1053,10 +1055,23 @@ class Project implements TraceableStatusAwareInterface
         return $this->interestExpressionEnabled;
     }
 
+    /**
+     * @throws Exception
+     */
     public function setInterestExpressionEnabled(?bool $interestExpressionEnabled): Project
     {
         if (null === $this->getCurrentStatus() || ProjectStatus::STATUS_DRAFT === $this->getCurrentStatus()->getStatus()) {
             $this->interestExpressionEnabled = $interestExpressionEnabled;
+
+            foreach ($this->projectParticipations as $participation) {
+                if ($this->interestExpressionEnabled) {
+                    $invitationRequest = $participation->getInvitationRequest();
+                    $participation->setInterestRequest(new RangedOfferWithFee($invitationRequest->getMoney(), $invitationRequest->getFeeRate()));
+                } else {
+                    $interestRequest = $participation->getInterestRequest();
+                    $participation->setInvitationRequest(new OfferWithFee($interestRequest->getMoney(), $interestRequest->getFeeRate()));
+                }
+            }
         }
 
         return $this;
