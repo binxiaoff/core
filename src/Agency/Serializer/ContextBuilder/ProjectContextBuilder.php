@@ -92,6 +92,10 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
             $arrangementProject
         );
 
+        $agencyProject->setInternalRatingScore($arrangementProject->getInternalRatingScore());
+        $agencyProject->setFundingSpecificity($arrangementProject->getFundingSpecificity());
+        $agencyProject->setDescription($arrangementProject->getDescription());
+
         $agencyProject->getPrimaryParticipationPool()->setParticipationType($arrangementProject->getParticipationType());
         $agencyProject->getPrimaryParticipationPool()->setSyndicationType($arrangementProject->getSyndicationType());
         $agencyProject->getPrimaryParticipationPool()->setRiskType($arrangementProject->getRiskType());
@@ -127,10 +131,6 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
         }
 
         foreach ($arrangementProject->getProjectParticipations() as $arrangementParticipation) {
-            $finalAllocation = new Money(
-                $arrangementParticipation->getTotalAllocation()->getCurrency() ?? $agencyProject->getGlobalFundingMoney()->getCurrency(),
-                $arrangementParticipation->getTotalAllocation()->getAmount() ?? '0'
-            );
             $agencyParticipation = $agencyProject->findParticipationByParticipant($arrangementParticipation->getParticipant());
 
             if (null === $agencyParticipation) {
@@ -148,16 +148,14 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
         }
 
         foreach ($allocations as ['participant' => $participant, 'money' => $allocation, 'tranche' => $agencyTranche]) {
-            if ($agencyTranche->isSyndicated()) {
-                $participationTrancheAllocation = new ParticipationTrancheAllocation(
-                    $agencyProject->findParticipationByParticipant($participant),
-                    $agencyTranche,
-                    $allocation
-                );
+            $participationTrancheAllocation = new ParticipationTrancheAllocation(
+                $agencyProject->findParticipationByParticipant($participant),
+                $agencyTranche,
+                $allocation
+            );
 
-                $participationTrancheAllocation->getParticipation()->addAllocation($participationTrancheAllocation);
-                $participationTrancheAllocation->getTranche()->addAllocation($participationTrancheAllocation);
-            }
+            $participationTrancheAllocation->getParticipation()->addAllocation($participationTrancheAllocation);
+            $participationTrancheAllocation->getTranche()->addAllocation($participationTrancheAllocation);
         }
 
         $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $agencyProject;
