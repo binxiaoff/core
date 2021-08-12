@@ -65,17 +65,17 @@ class PermissionProviderTest extends TestCase
 
         yield 'staff without cg permissions' => [
             $staff,
-            ['permissions' => 0, 'grant_permissions' => 0],
+            ['fei' => ['permissions' => 0, 'grant_permissions' => 0]],
             null,
         ];
         yield 'staff with cg permissions' => [
             $staff,
-            ['permissions' => StaffPermission::MANAGING_COMPANY_ADMIN_PERMISSIONS, 'grant_permissions' => 0],
+            ['fei' => ['permissions' => StaffPermission::MANAGING_COMPANY_ADMIN_PERMISSIONS, 'grant_permissions' => 0]],
             new StaffPermission($staff, new Bitmask(StaffPermission::MANAGING_COMPANY_ADMIN_PERMISSIONS)),
         ];
         yield 'staff with cg permissions and grant_permissions' => [
             $staff,
-            ['permissions' => StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS, 'grant_permissions' => StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS],
+            ['fei' => ['permissions' => StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS, 'grant_permissions' => StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS]],
             (new StaffPermission($staff, new Bitmask(StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS)))
                 ->setGrantPermissions(StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS),
         ];
@@ -93,7 +93,7 @@ class PermissionProviderTest extends TestCase
         $permissionProvider = $this->createTestObject();
         $result             = $permissionProvider->provide($user, null);
 
-        static::assertSame(['permissions' => 0, 'grant_permissions' => 0], $result);
+        static::assertSame(['fei' => ['permissions' => 0, 'grant_permissions' => 0]], $result);
     }
 
     /**
@@ -108,7 +108,7 @@ class PermissionProviderTest extends TestCase
         $permissionProvider = $this->createTestObject();
         $result             = $permissionProvider->provide($staff->getUser(), $staff);
 
-        static::assertSame(['permissions' => 0, 'grant_permissions' => 0], $result);
+        static::assertSame(['fei' => ['permissions' => 0, 'grant_permissions' => 0]], $result);
     }
 
     private function createStaff(): Staff

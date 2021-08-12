@@ -12,7 +12,8 @@ use KLS\CreditGuaranty\Repository\StaffPermissionRepository;
 
 class PermissionProvider implements PermissionProviderInterface
 {
-    private const NAME = 'credit_guaranty';
+    private const NAME      = 'credit_guaranty';
+    private const INDEX_FEI = 'fei';
 
     private StaffPermissionRepository $staffPermissionRepository;
 
@@ -29,8 +30,10 @@ class PermissionProvider implements PermissionProviderInterface
     public function provide(User $user, ?Staff $staff = null): array
     {
         $permissions = [
-            'permissions'       => 0,
-            'grant_permissions' => 0,
+            self::INDEX_FEI => [
+                'permissions'       => 0,
+                'grant_permissions' => 0,
+            ],
         ];
 
         if (false === ($staff instanceof Staff)) {
@@ -43,8 +46,8 @@ class PermissionProvider implements PermissionProviderInterface
             return $permissions;
         }
 
-        $permissions['permissions']       = $staffPermission->getPermissions()->get();
-        $permissions['grant_permissions'] = $staffPermission->getGrantPermissions()->get();
+        $permissions[self::INDEX_FEI]['permissions']       = $staffPermission->getPermissions()->get();
+        $permissions[self::INDEX_FEI]['grant_permissions'] = $staffPermission->getGrantPermissions()->get();
 
         return $permissions;
     }
