@@ -64,7 +64,7 @@ class MessageStatus
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Message", inversedBy="messageStatuses")
-     * @ORM\JoinColumn(name="id_message", referencedColumnName="id")
+     * @ORM\JoinColumn(name="id_message", referencedColumnName="id", onDelete="CASCADE")
      *
      * @Groups({"messageStatus:read"})
      *

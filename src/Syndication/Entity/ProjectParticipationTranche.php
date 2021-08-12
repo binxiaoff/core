@@ -75,7 +75,7 @@ class ProjectParticipationTranche
     /**
      * @ORM\ManyToOne(targetEntity="KLS\Syndication\Entity\Tranche", inversedBy="projectParticipationTranches")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_tranche", nullable=false)
+     *     @ORM\JoinColumn(name="id_tranche", nullable=false, onDelete="CASCADE")
      * })
      *
      * @Assert\Expression(

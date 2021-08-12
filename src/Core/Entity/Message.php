@@ -57,7 +57,7 @@ class Message
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\MessageThread", inversedBy="messages")
-     * @ORM\JoinColumn(name="id_message_thread", nullable=false)
+     * @ORM\JoinColumn(name="id_message_thread", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"message:read"})
      *
