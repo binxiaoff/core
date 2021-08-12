@@ -1,0 +1,95 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  #
+  # Arrangement
+  #
+
+  KLS\Syndication\Arrangement\Listener\Doctrine\Entity\Project\ProjectCreatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: prePersist, entity: KLS\Syndication\Arrangement\Entity\Project, method: purify }
+
+  KLS\Syndication\Arrangement\Listener\Doctrine\Entity\Project\ProjectUpdatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Arrangement\Entity\Project, method: purify }
+
+  KLS\Syndication\Arrangement\Listener\Doctrine\Entity\ProjectParticipationMember\ProjectParticipationMemberArchivedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Arrangement\Entity\ProjectParticipationMember, method: setArchivedBy }
+
+  # Message Dispatcher
+
+  KLS\Syndication\Arrangement\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectCreatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Arrangement\Entity\Project }
+
+  KLS\Syndication\Arrangement\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectUpdatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Arrangement\Entity\Project}
+
+  KLS\Syndication\Arrangement\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipation\ProjectParticipationUpdatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Arrangement\Entity\ProjectParticipation}
+
+  KLS\Syndication\Arrangement\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationMember\ProjectParticipationMemberCreatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Arrangement\Entity\ProjectParticipationMember }
+
+  # Lifecycle
+
+  KLS\Syndication\Arrangement\Listener\Doctrine\Lifecycle\ProjectStatusUpdatedListener:
+    tags:
+      - { name: doctrine.event_listener, event: onFlush }
+
+  KLS\Syndication\Arrangement\Listener\Doctrine\Lifecycle\ProjectParticipationUpdated:
+    tags:
+      - { name: doctrine.event_listener, event: onFlush }
+
+  KLS\Syndication\Arrangement\Listener\Doctrine\Lifecycle\ProjectParticipationTrancheUpdatedListener:
+    tags:
+      - { name: doctrine.event_listener, event: onFlush }
+
+  #
+  # Agency
+  #
+
+  KLS\Syndication\Agency\Listener\Doctrine\AgencyModuleActivatedListener:
+    tags:
+      - { name: doctrine.event_listener, event: onFlush }
+
+  KLS\Syndication\Agency\Listener\Doctrine\CovenantListener:
+    tags:
+      - { name: doctrine.event_listener, event: onFlush }
+      - { name: doctrine.event_listener, event: postUpdate }
+
+  KLS\Syndication\Agency\Listener\Doctrine\ParticipationListener:
+    tags:
+      - { name: doctrine.event_listener, event: onFlush }
+
+  KLS\Syndication\Agency\Listener\Doctrine\ProjectListener:
+    tags:
+      - { name: doctrine.event_listener, event: onFlush }
+
+  KLS\Syndication\Agency\Listener\Doctrine\TermListener:
+    tags:
+      - { name: doctrine.event_listener, event: onFlush }
+
+  # Message Dispatcher
+
+  KLS\Syndication\Agency\Listener\Doctrine\MessageDispatcher\ProjectMemberCreatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Agency\Entity\BorrowerMember }
+      - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Agency\Entity\AgentMember }
+      - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Agency\Entity\ParticipationMember }
+
+  KLS\Syndication\Agency\Listener\Doctrine\MessageDispatcher\ProjectMemberUpdatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Agency\Entity\BorrowerMember }
+      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Agency\Entity\AgentMember }
+      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Agency\Entity\ParticipationMember }
+
+  KLS\Syndication\Agency\Listener\Doctrine\MessageDispatcher\ProjectStatusUpdatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Agency\Entity\Project }

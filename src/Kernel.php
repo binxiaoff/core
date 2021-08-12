@@ -13,13 +13,14 @@ class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
 
+    private const DOMAINS = '{syndication,credit_guaranty}';
+
     protected function configureContainer(ContainerConfigurator $container): void
     {
         $container->import('../config/{packages}/*.yaml');
         $container->import('../config/{packages}/' . $this->environment . '/*.yaml');
-        $container->import('../config/{services}.yaml');
+        $container->import('../config/{services}/' . self::DOMAINS . '/services.yaml');
         $container->import('../config/{services}_' . $this->environment . '.yaml');
-        $container->import('../config/{services}/' . 'core.yaml');
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void
