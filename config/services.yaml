@@ -52,7 +52,7 @@ services:
         # The directory KLS contains the legacy bundles. The services are managed by their own configurations.
         exclude: [
             '%kernel.project_dir%/src/Kernel.php',
-            '%kernel.project_dir%/src/{Core,Syndication,Agency,CreditGuaranty}/{Console,Entity,Migrations,Controller,Tests,Traits,Listener/Doctrine}'
+            '%kernel.project_dir%/src/{Core,Syndication/Arrangement,Syndication/Agency,CreditGuaranty/FEI}/{Console,Entity,Migrations,Controller,Tests,Traits,Listener/Doctrine}'
         ]
 
     KLS\Core\Controller\:
@@ -60,13 +60,13 @@ services:
         tags:
             - { name: 'controller.service_arguments' }
 
-    KLS\Agency\Controller\:
-        resource: '%kernel.project_dir%/src/Agency/Controller'
+    KLS\Syndication\Agency\Controller\:
+        resource: '%kernel.project_dir%/src/Syndication/Agency/Controller'
         tags:
             - { name: 'controller.service_arguments' }
 
-    KLS\CreditGuaranty\Controller\:
-        resource: '%kernel.project_dir%/src/CreditGuaranty/Controller'
+    KLS\CreditGuaranty\FEI\Controller\:
+        resource: '%kernel.project_dir%/src/CreditGuaranty/FEI/Controller'
         tags:
             - { name: 'controller.service_arguments' }
 
@@ -167,7 +167,7 @@ services:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
-    KLS\CreditGuaranty\Serializer\ContextBuilder\ProjectContextBuilder:
+    KLS\CreditGuaranty\FEI\Serializer\ContextBuilder\ProjectContextBuilder:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false
 
@@ -208,12 +208,12 @@ services:
             $permissionProviders: !tagged kls.jwt.permission_provider
 
     ### Agency
-    KLS\Agency\Swagger\ProjectDecorator:
+    KLS\Syndication\Agency\Swagger\ProjectDecorator:
         decorates: 'api_platform.swagger.normalizer.api_gateway'
 
-    KLS\Agency\DataPersister\ParticipationMemberDataPersister:
+    KLS\Syndication\Agency\DataPersister\ParticipationMemberDataPersister:
         decorates: 'api_platform.doctrine.orm.data_persister'
 
-    KLS\Agency\Serializer\ContextBuilder\ProjectContextBuilder:
+    KLS\Syndication\Agency\Serializer\ContextBuilder\ProjectContextBuilder:
         decorates: 'api_platform.serializer.context_builder'
         autoconfigure: false

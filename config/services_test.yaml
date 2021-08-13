@@ -9,11 +9,11 @@ services:
   KLS\Test\Core\DataFixtures\:
     resource: '%kernel.project_dir%/tests/Core/DataFixtures'
 
-  KLS\Test\Syndication\DataFixtures\:
-    resource: '%kernel.project_dir%/tests/Syndication/DataFixtures'
+  KLS\Test\Syndication\Arrangement\DataFixtures\:
+    resource: '%kernel.project_dir%/tests/Syndication/Arrangement/DataFixtures'
 
-  KLS\Test\Agency\DataFixtures\:
-    resource: '%kernel.project_dir%/tests/Agency/DataFixtures'
+  KLS\Test\Syndication\Agency\DataFixtures\:
+    resource: '%kernel.project_dir%/tests/Syndication/Agency/DataFixtures'
 
-  KLS\Test\CreditGuaranty\DataFixtures\:
-    resource: '%kernel.project_dir%/tests/CreditGuaranty/DataFixtures'
+  KLS\Test\CreditGuaranty\FEI\DataFixtures\:
+    resource: '%kernel.project_dir%/tests/CreditGuaranty/FEI/DataFixtures'

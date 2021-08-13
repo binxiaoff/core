@@ -96,4 +96,4 @@ There are 2 validation levels:
  - after filled in a form, we check eligibility configurations and return an ineligible fields list.
  - after filled in all forms, we check eligibility configurations with conditions and return an ineligible fields list.
 
-In technical part, there are an entity request ``Eligiblity``, and an endpoint that checks reservation eligibility (see ``src/CreditGuaranty/Service/EligibilityChecker.php`` file for more details).
+In technical part, there are an entity request ``Eligiblity``, and an endpoint that checks reservation eligibility (see ``src/CreditGuaranty/FEI/Service/EligibilityChecker.php`` file for more details).

@@ -14,8 +14,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
-use KLS\Syndication\Entity\Project;
-use KLS\Syndication\Entity\ProjectParticipation;
+use KLS\Syndication\Arrangement\Entity\Project;
+use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
@@ -54,7 +54,7 @@ class MessageThread
     use TimestampableAddedOnlyTrait;
 
     /**
-     * @ORM\OneToOne(targetEntity="KLS\Syndication\Entity\ProjectParticipation")
+     * @ORM\OneToOne(targetEntity="KLS\Syndication\Arrangement\Entity\ProjectParticipation")
      * @ORM\JoinColumn(name="id_project_participation", referencedColumnName="id", onDelete="CASCADE")
      *
      * @ApiProperty(readableLink=false, writableLink=false)
