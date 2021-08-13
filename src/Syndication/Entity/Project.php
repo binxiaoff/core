@@ -1067,10 +1067,12 @@ class Project implements TraceableStatusAwareInterface
                 if ($this->interestExpressionEnabled) {
                     $invitationRequest = $participation->getInvitationRequest();
                     $participation->setInterestRequest(new RangedOfferWithFee($invitationRequest->getMoney(), $invitationRequest->getFeeRate()));
+                    $participation->setInvitationRequest(new OfferWithFee());
                 } else {
                     $interestRequest = $participation->getInterestRequest();
                     $participation->setInvitationRequest(new OfferWithFee($interestRequest->getMoney(), $interestRequest->getFeeRate()));
                     $this->interestExpressionDeadline = null; // Must reset interestExpression deadline as this date should not be filled if there is no interestRequest phase
+                    $participation->setInterestRequest(new RangedOfferWithFee());
                 }
             }
         }
