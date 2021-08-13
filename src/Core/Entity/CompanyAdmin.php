@@ -12,7 +12,7 @@ use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
  * @ORM\Table(
  *     name="core_company_admin",
  *     uniqueConstraints={
- *         @ORM\UniqueConstraint(name="uniq_companyAdmin_companu_user", columns={"id_company", "id_user"})
+ *         @ORM\UniqueConstraint(name="uniq_companyAdmin_company_user", columns={"id_company", "id_user"})
  *     }
  * )
  */

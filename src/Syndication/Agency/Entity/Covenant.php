@@ -157,7 +157,7 @@ class Covenant
     private string $nature;
 
     /**
-     * @ORM\Column(name="startDate", type="date_immutable")
+     * @ORM\Column(type="date_immutable")
      *
      * @Groups({"agency:covenant:read", "agency:covenant:write"})
      */
@@ -174,7 +174,7 @@ class Covenant
     private int $delay;
 
     /**
-     * @ORM\Column(name="endDate", type="date_immutable")
+     * @ORM\Column(type="date_immutable")
      *
      * @Assert\GreaterThanOrEqual(propertyPath="startDate")
      *
