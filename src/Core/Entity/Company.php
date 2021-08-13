@@ -136,7 +136,7 @@ class Company implements TraceableStatusAwareInterface
      *
      * @Groups({"company:read"})
      */
-    private string $companyName;
+    private string $legalName;
 
     /**
      * @ORM\Column(type="string", length=9, unique=true)
@@ -232,10 +232,10 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @throws Exception
      */
-    public function __construct(string $displayName, string $companyName, string $siren)
+    public function __construct(string $displayName, string $legalName, string $siren)
     {
         $this->displayName  = $displayName;
-        $this->companyName  = $companyName;
+        $this->legalName    = $legalName;
         $this->rootTeam     = Team::createRootTeam($this);
         $this->statuses     = new ArrayCollection();
         $this->added        = new DateTimeImmutable();
@@ -269,9 +269,9 @@ class Company implements TraceableStatusAwareInterface
         return $this;
     }
 
-    public function getCompanyName(): string
+    public function getLegalName(): string
     {
-        return $this->companyName;
+        return $this->legalName;
     }
 
     public function getSiren(): string
