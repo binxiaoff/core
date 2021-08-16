@@ -28,10 +28,10 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
         self::REFERENCE_PAUSED,
     ];
 
-    private const REFERENCE_DRAFT          = 'draft_program';
-    private const REFERENCE_CANCELLED      = 'cancelled_program';
-    private const REFERENCE_COMMERCIALIZED = 'commercialized_program';
-    private const REFERENCE_PAUSED         = 'paused_program';
+    public const REFERENCE_COMMERCIALIZED = 'commercialized_program';
+    private const REFERENCE_DRAFT         = 'draft_program';
+    private const REFERENCE_CANCELLED     = 'cancelled_program';
+    private const REFERENCE_PAUSED        = 'paused_program';
 
     /**
      * @return string[]
