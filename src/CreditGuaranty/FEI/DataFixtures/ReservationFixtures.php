@@ -12,6 +12,8 @@ use KLS\Core\DataFixtures\NafNaceFixtures;
 use KLS\Core\Entity\Constant\CAInternalRating;
 use KLS\Core\Entity\Constant\CAInternalRetailRating;
 use KLS\Core\Entity\Constant\CARatingType;
+use KLS\Core\Entity\Constant\LegalForm;
+use KLS\Core\Entity\Constant\Tranche\LoanType;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\CreditGuaranty\FEI\Entity\Borrower;
@@ -90,7 +92,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     private function loadData(): iterable
     {
         /** @var Program $program */
-        $program = $this->getReference('commercialized_program');
+        $program = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
 
         foreach ([ParticipationFixtures::PARTICIPANT_SAVO, ParticipationFixtures::PARTICIPANT_TOUL] as $participationReference) {
             /** @var Participation $participation */
@@ -104,7 +106,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'program'  => $program,
                 'borrower' => [
                     FieldAlias::CREATION_IN_PROGRESS => true,
-                    FieldAlias::LEGAL_FORM           => 'SARL',
+                    FieldAlias::LEGAL_FORM           => LegalForm::SARL,
                     FieldAlias::EMPLOYEES_NUMBER     => 200,
                 ],
                 'addedBy'       => $staff,
@@ -115,7 +117,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'program'  => $program,
                 'borrower' => [
                     FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => 'SA',
+                    FieldAlias::LEGAL_FORM           => LegalForm::SA,
                     FieldAlias::EMPLOYEES_NUMBER     => 200,
                 ],
                 'project' => [
@@ -127,12 +129,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'financingObjects' => [
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'term_loan',
+                        FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'term_loan',
+                        FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                 ],
@@ -144,7 +146,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'program'  => $program,
                 'borrower' => [
                     FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => 'SAS',
+                    FieldAlias::LEGAL_FORM           => LegalForm::SAS,
                     FieldAlias::EMPLOYEES_NUMBER     => 800,
                 ],
                 'project' => [
@@ -156,7 +158,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'financingObjects' => [
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'term_loan',
+                        FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
                         FieldAlias::LOAN_DURATION                  => 6,
                     ],
                 ],
@@ -168,7 +170,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'program'  => $program,
                 'borrower' => [
                     FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => 'SA',
+                    FieldAlias::LEGAL_FORM           => LegalForm::SA,
                     FieldAlias::EMPLOYEES_NUMBER     => 300,
                 ],
                 'project' => [
@@ -180,12 +182,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'financingObjects' => [
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'short_term',
+                        FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'short_term',
+                        FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                 ],
@@ -197,7 +199,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'program'  => $program,
                 'borrower' => [
                     FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => 'SA',
+                    FieldAlias::LEGAL_FORM           => LegalForm::SA,
                     FieldAlias::EMPLOYEES_NUMBER     => 300,
                 ],
                 'project' => [
@@ -209,7 +211,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'financingObjects' => [
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'revolving_credit',
+                        FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                 ],
@@ -221,7 +223,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'program'  => $program,
                 'borrower' => [
                     FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => 'SARL',
+                    FieldAlias::LEGAL_FORM           => LegalForm::SARL,
                     FieldAlias::EMPLOYEES_NUMBER     => 150,
                 ],
                 'project' => [
@@ -233,7 +235,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'financingObjects' => [
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'signature_commitment',
+                        FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                 ],
@@ -245,7 +247,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'program'  => $program,
                 'borrower' => [
                     FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => 'SAS',
+                    FieldAlias::LEGAL_FORM           => LegalForm::SAS,
                     FieldAlias::EMPLOYEES_NUMBER     => 30,
                 ],
                 'project' => [
@@ -257,12 +259,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'financingObjects' => [
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'revolving_credit',
+                        FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'revolving_credit',
+                        FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                 ],
@@ -274,7 +276,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'program'  => $program,
                 'borrower' => [
                     FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => 'SA',
+                    FieldAlias::LEGAL_FORM           => LegalForm::SA,
                     FieldAlias::EMPLOYEES_NUMBER     => 300,
                 ],
                 'project' => [
@@ -286,7 +288,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'financingObjects' => [
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'term_loan',
+                        FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                 ],
@@ -298,7 +300,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'program'  => $program,
                 'borrower' => [
                     FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => 'SA',
+                    FieldAlias::LEGAL_FORM           => LegalForm::SA,
                     FieldAlias::EMPLOYEES_NUMBER     => 450,
                 ],
                 'project' => [
@@ -310,22 +312,22 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'financingObjects' => [
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'term_loan',
+                        FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'short_term',
+                        FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'revolving_credit',
+                        FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'signature_commitment',
+                        FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                 ],
@@ -337,7 +339,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'program'  => $program,
                 'borrower' => [
                     FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => 'SA',
+                    FieldAlias::LEGAL_FORM           => LegalForm::SA,
                     FieldAlias::EMPLOYEES_NUMBER     => 200,
                 ],
                 'project' => [
@@ -349,7 +351,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 'financingObjects' => [
                     [
                         FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => 'short_term',
+                        FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
                         FieldAlias::LOAN_DURATION                  => 4,
                     ],
                 ],

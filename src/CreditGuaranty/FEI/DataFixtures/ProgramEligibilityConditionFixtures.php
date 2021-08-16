@@ -53,7 +53,7 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
         $conditions = $this->createConditions();
 
         /** @var Program $program */
-        $program                          = $this->getReference('commercialized_program');
+        $program                          = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
         $programEligibilities             = $this->programEligibilityRepository->findBy(['program' => $program]);
         $programEligibilityConfigurations = $this->programEligibilityConfigurationRepository->findBy(['programEligibility' => $programEligibilities]);
 

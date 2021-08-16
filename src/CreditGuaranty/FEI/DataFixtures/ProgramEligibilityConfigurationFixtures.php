@@ -7,6 +7,8 @@ namespace KLS\CreditGuaranty\FEI\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\Core\Entity\Constant\LegalForm;
+use KLS\Core\Entity\Constant\Tranche\LoanType;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Repository\ProgramChoiceOptionRepository;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityConfigurationRepository;
@@ -18,13 +20,13 @@ class ProgramEligibilityConfigurationFixtures extends AbstractFixtures implement
     private const INELIGIBLE_FIELDS = [
         // profile
         'creation_in_progress' => true,
-        'legal_form'           => 'SELAS',
+        'legal_form'           => LegalForm::SELAS,
         // project
         'receiving_grant' => false,
         'aid_intensity'   => '0.20',
         // loan
         'supporting_generations_renewal' => false,
-        'loan_type'                      => 'stand_by',
+        'loan_type'                      => LoanType::STAND_BY,
     ];
 
     private ProgramChoiceOptionRepository $programChoiceOptionRepository;
