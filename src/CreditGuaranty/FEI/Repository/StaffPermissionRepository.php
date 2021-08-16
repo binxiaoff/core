@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace KLS\CreditGuaranty\FEI\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use KLS\Core\Entity\Company;
 use KLS\CreditGuaranty\FEI\Entity\StaffPermission;
@@ -23,6 +25,23 @@ class StaffPermissionRepository extends ServiceEntityRepository
     }
 
     /**
+     * @throws ORMException
+     */
+    public function persist(StaffPermission $staffPermission): void
+    {
+        $this->getEntityManager()->persist($staffPermission);
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function flush(): void
+    {
+        $this->getEntityManager()->flush();
+    }
+
+    /**
      * @return StaffPermission[]|array
      */
     public function findParticipationAdmins(Company $company): array
@@ -37,6 +56,6 @@ class StaffPermissionRepository extends ServiceEntityRepository
             ->setParameter('permission', StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS)
             ->getQuery()
             ->getResult()
-            ;
+        ;
     }
 }
