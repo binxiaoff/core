@@ -39,7 +39,7 @@ class PermissionProvider implements PermissionProviderInterface
         return $staffPermission ? $staffPermission->getPermissions()->get() : 0;
     }
 
-    public function getGrantPermission(?User $user = null, ?Staff $staff = null): int
+    public function getGrantPermissions(?User $user = null, ?Staff $staff = null): int
     {
         $staffPermission = $this->getStaffPermission($staff);
 

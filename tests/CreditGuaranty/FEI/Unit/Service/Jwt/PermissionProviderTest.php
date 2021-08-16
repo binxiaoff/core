@@ -134,7 +134,7 @@ class PermissionProviderTest extends TestCase
 
         $permissionProvider = $this->createTestObject();
 
-        static::assertSame($expected, $permissionProvider->getGrantPermission($user, $staff));
+        static::assertSame($expected, $permissionProvider->getGrantPermissions($user, $staff));
     }
 
     private function commonProviderPermission(): iterable

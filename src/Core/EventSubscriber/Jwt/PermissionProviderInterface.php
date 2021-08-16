@@ -15,5 +15,5 @@ interface PermissionProviderInterface
 
     public function getPermissions(?User $user = null, ?Staff $staff = null): ?int;
 
-    public function getGrantPermission(?User $user = null, ?Staff $staff = null): ?int;
+    public function getGrantPermissions(?User $user = null, ?Staff $staff = null): ?int;
 }
