@@ -53,8 +53,8 @@ class ProjectMemberNotifier
         if ($user->isInitializationNeeded()) {
             // Potentially, the same user might receive at the same time multiple email concerning multiple borrower
             // The temporaryToken should be the same
-            $temporaryToken = $this->temporaryTokenRepository->findOneActiveByUser($user) ?? TemporaryToken::generateMediumToken($user);
-            $temporaryToken->extendMedium();
+            $temporaryToken = $this->temporaryTokenRepository->findOneActiveByUser($user) ?? TemporaryToken::generateUltraLongToken($user);
+            $temporaryToken->extendUltraLong();
 
             $this->temporaryTokenRepository->save($temporaryToken);
 
