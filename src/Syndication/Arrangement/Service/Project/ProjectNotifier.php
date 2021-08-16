@@ -11,8 +11,8 @@ use InvalidArgumentException;
 use JsonException;
 use KLS\Core\SwiftMailer\MailjetMessage;
 use KLS\Syndication\Arrangement\Entity\Project;
+use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
 use KLS\Syndication\Arrangement\Entity\ProjectStatus;
-use KLS\Syndication\Arrangement\Repository\ProjectRepository;
 use Nexy\Slack\Attachment;
 use Nexy\Slack\AttachmentField;
 use Nexy\Slack\Client as Slack;
@@ -20,20 +20,25 @@ use Nexy\Slack\Exception\SlackApiException;
 use Nexy\Slack\MessageInterface;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ProjectNotifier
 {
     private Slack $slack;
     private Swift_Mailer $mailer;
     private RouterInterface $router;
-    private ProjectRepository $projectRepository;
+    private TranslatorInterface $translator;
 
-    public function __construct(Slack $client, Swift_Mailer $mailer, RouterInterface $router, ProjectRepository $projectRepository)
-    {
-        $this->slack             = $client;
-        $this->mailer            = $mailer;
-        $this->router            = $router;
-        $this->projectRepository = $projectRepository;
+    public function __construct(
+        Slack $client,
+        Swift_Mailer $mailer,
+        RouterInterface $router,
+        TranslatorInterface $translator
+    ) {
+        $this->slack      = $client;
+        $this->mailer     = $mailer;
+        $this->router     = $router;
+        $this->translator = $translator;
     }
 
     /**
@@ -58,23 +63,52 @@ class ProjectNotifier
         $this->slack->sendMessage($this->createSlackMessage($project));
     }
 
-    /**
-     * @throws NoResultException
-     * @throws NonUniqueResultException
-     */
     public function createSlackMessage(Project $project): MessageInterface
     {
-        return $this->slack->createMessage()
+        $message = $this->slack->createMessage()
             ->enableMarkdown()
             ->setText($this->getSlackMessageText($project))
             ->attach(
                 (new Attachment())
                     ->addField(new AttachmentField('Entité', $project->getSubmitterCompany()->getDisplayName(), true))
-                    ->addField(new AttachmentField('Entités invitées', (string) \count($project->getProjectParticipations()), true))
                     ->addField(new AttachmentField('Utilisateur', $project->getSubmitterUser()->getEmail(), true))
-                    ->addField(new AttachmentField('Utilisateurs invités', (string) $this->projectRepository->countProjectParticipationMembers($project), true))
             )
         ;
+
+        if (ProjectStatus::STATUS_SYNDICATION_CANCELLED === $project->getCurrentStatus()->getStatus()) {
+            return $message;
+        }
+
+        $statusConcerned = [
+            ProjectStatus::STATUS_INTEREST_EXPRESSION,
+            ProjectStatus::STATUS_PARTICIPANT_REPLY,
+            ProjectStatus::STATUS_ALLOCATION,
+            ProjectStatus::STATUS_SYNDICATION_FINISHED,
+        ];
+
+        if (\in_array($project->getCurrentStatus()->getStatus(), $statusConcerned, true)) {
+            $participants         = [];
+            $archivedParticipants = [];
+
+            /** @var ProjectParticipation $participation */
+            foreach ($project->getProjectParticipations() as $participation) {
+                if ($participation->isActive()) {
+                    $participants[] = $participation->getParticipant()->getDisplayName() . ': ' .
+                        $participation->getInterestRequest()->getMoney()->getAmount() . $participation->getInterestRequest()->getMoney()->getCurrency();
+
+                    continue;
+                }
+                $archivedParticipants[] = $participation->getParticipant()->getDisplayName() . ': ' .
+                    $this->translator->trans('project-participation-status.' . $participation->getCurrentStatus()->getStatus());
+            }
+            $message->attach(
+                (new Attachment())
+                    ->addField(new AttachmentField('Participants', \implode(', ', $participants), true))
+                    ->addField(new AttachmentField('Participants archivés', \implode(', ', $archivedParticipants), true))
+            );
+        }
+
+        return $message;
     }
 
     public function getSlackMessageText(Project $project): string
