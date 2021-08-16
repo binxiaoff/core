@@ -12,8 +12,8 @@ use KLS\CreditGuaranty\FEI\Repository\StaffPermissionRepository;
 
 class PermissionProvider implements PermissionProviderInterface
 {
-    private const NAME      = 'credit_guaranty';
-    private const INDEX_FEI = 'fei';
+    private const PRODUCT_NAME = 'credit_guaranty';
+    private const SERVICE_NAME = 'fei';
 
     private StaffPermissionRepository $staffPermissionRepository;
 
@@ -22,33 +22,36 @@ class PermissionProvider implements PermissionProviderInterface
         $this->staffPermissionRepository = $staffPermissionRepository;
     }
 
-    public function getName(): string
+    public function getProductName(): string
     {
-        return self::NAME;
+        return static::PRODUCT_NAME;
     }
 
-    public function provide(User $user, ?Staff $staff = null): array
+    public function getServiceName(): string
     {
-        $permissions = [
-            self::INDEX_FEI => [
-                'permissions'       => 0,
-                'grant_permissions' => 0,
-            ],
-        ];
+        return static::SERVICE_NAME;
+    }
 
+    public function getPermissions(?User $user = null, ?Staff $staff = null): int
+    {
+        $staffPermission = $this->getStaffPermission($staff);
+
+        return $staffPermission ? $staffPermission->getPermissions()->get() : 0;
+    }
+
+    public function getGrantPermission(?User $user = null, ?Staff $staff = null): int
+    {
+        $staffPermission = $this->getStaffPermission($staff);
+
+        return $staffPermission ? $staffPermission->getGrantPermissions()->get() : 0;
+    }
+
+    private function getStaffPermission(?Staff $staff): ?StaffPermission
+    {
         if (false === ($staff instanceof Staff)) {
-            return $permissions;
+            return null;
         }
 
-        $staffPermission = $this->staffPermissionRepository->findOneBy(['staff' => $staff]);
-
-        if (false === ($staffPermission instanceof StaffPermission)) {
-            return $permissions;
-        }
-
-        $permissions[self::INDEX_FEI]['permissions']       = $staffPermission->getPermissions()->get();
-        $permissions[self::INDEX_FEI]['grant_permissions'] = $staffPermission->getGrantPermissions()->get();
-
-        return $permissions;
+        return $this->staffPermissionRepository->findOneBy(['staff' => $staff]);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace KLS\Test\CreditGuaranty\FEI\Unit\Service\Jwt;
 
+use Exception;
 use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\Team;
@@ -37,11 +38,11 @@ class PermissionProviderTest extends TestCase
     }
 
     /**
-     * @covers ::getName
+     * @covers ::getProductName
      */
     public function testGetName(): void
     {
-        static::assertSame('credit_guaranty', $this->createTestObject()->getName());
+        static::assertSame('credit_guaranty', $this->createTestObject()->getProductName());
     }
 
     /**
@@ -51,14 +52,22 @@ class PermissionProviderTest extends TestCase
      */
     public function testProvide(Staff $staff, array $expected, ?StaffPermission $staffPermission = null): void
     {
-        $this->staffPermissionRepository->findOneBy(['staff' => $staff])->shouldBeCalledOnce()->willReturn($staffPermission);
+        $this->staffPermissionRepository->findOneBy(['staff' => $staff])->shouldBeCalledTimes(2)->willReturn($staffPermission);
 
         $permissionProvider = $this->createTestObject();
-        $result             = $permissionProvider->provide($staff->getUser(), $staff);
+        $result             = [
+            $permissionProvider->getServiceName() => [
+                'permissions'       => $permissionProvider->getPermissions($staff->getUser(), $staff),
+                'grant_permissions' => $permissionProvider->getGrantPermission($staff->getUser(), $staff),
+            ],
+        ];
 
         static::assertSame($expected, $result);
     }
 
+    /**
+     * @throws Exception
+     */
     public function staffProvider(): iterable
     {
         $staff = $this->createStaff();
@@ -91,26 +100,41 @@ class PermissionProviderTest extends TestCase
         $this->staffPermissionRepository->findOneBy(['staff' => Argument::any()])->shouldNotBeCalled();
 
         $permissionProvider = $this->createTestObject();
-        $result             = $permissionProvider->provide($user, null);
+        $result             = [
+            $permissionProvider->getServiceName() => [
+                'permissions'       => $permissionProvider->getPermissions($user, null),
+                'grant_permissions' => $permissionProvider->getGrantPermission($user, null),
+            ],
+        ];
 
         static::assertSame(['fei' => ['permissions' => 0, 'grant_permissions' => 0]], $result);
     }
 
     /**
      * @covers ::provide
+     *
+     * @throws Exception
      */
     public function testProvideWithoutStaffPermission(): void
     {
         $staff = $this->createStaff();
 
-        $this->staffPermissionRepository->findOneBy(['staff' => $staff])->shouldBeCalledOnce()->willReturn(null);
+        $this->staffPermissionRepository->findOneBy(['staff' => $staff])->shouldBeCalledTimes(2)->willReturn(null);
 
         $permissionProvider = $this->createTestObject();
-        $result             = $permissionProvider->provide($staff->getUser(), $staff);
+        $result             = [
+            $permissionProvider->getServiceName() => [
+                'permissions'       => $permissionProvider->getPermissions($staff->getUser(), $staff),
+                'grant_permissions' => $permissionProvider->getGrantPermission($staff->getUser(), $staff),
+            ],
+        ];
 
         static::assertSame(['fei' => ['permissions' => 0, 'grant_permissions' => 0]], $result);
     }
 
+    /**
+     * @throws Exception
+     */
     private function createStaff(): Staff
     {
         $teamRoot = Team::createRootTeam(new Company('Company', 'Company', ''));
