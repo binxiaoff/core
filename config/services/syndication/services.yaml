@@ -1,17 +1,10 @@
 imports:
-  - { resource: ../core/services.yaml }
   - { resource: doctrine_listeners.yaml }
 
 services:
   _defaults:
     autowire: true
     autoconfigure: true
-
-  _instanceof:
-    KLS\Core\EventSubscriber\Jwt\PermissionProviderInterface:
-      tags: ['kls.jwt.permission_provider']
-    KLS\Core\Service\Staff\StaffLoginInterface:
-      tags: [ 'kls.staff.login.checker' ]
 
   KLS\Syndication\:
     resource: '%kernel.project_dir%/src/Syndication/*'

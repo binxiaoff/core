@@ -1,5 +1,3 @@
-# This file is shared between the different products' config services
-
 imports:
   - { resource: doctrine_listeners.yaml }
 
@@ -39,12 +37,6 @@ services:
       $senderAddress: '%mailer.sender_address%'
       $templateMessageFQCN: 'KLS\Core\SwiftMailer\TemplateMessage'
       $userAttachmentFilesystem: '@user_attachment_filesystem'
-
-  _instanceof:
-    KLS\Core\EventSubscriber\Jwt\PermissionProviderInterface:
-      tags: ['kls.jwt.permission_provider']
-    KLS\Core\Service\Staff\StaffLoginInterface:
-      tags: [ 'kls.staff.login.checker' ]
 
   KLS\Core\:
     resource: '%kernel.project_dir%/src/Core/*'
@@ -148,7 +140,13 @@ services:
       $enableErrorDelivery: '%env(MAILJET_ERROR_DELIVERY)%'
       $errorReportingEmail: '%mailer.error_reporting_email%'
 
-  # ---
+  # docusign
+
+  docusign.http_client:
+    class: 'Symfony\Contracts\HttpClient\HttpClientInterface'
+    factory: [ 'Symfony\Component\HttpClient\HttpClient', create ]
+
+  # formatter
 
   currency_formatter:
     public: true
@@ -176,10 +174,6 @@ services:
       - '%locale%'
       - !php/const \IntlDateFormatter::MEDIUM
       - !php/const \IntlDateFormatter::SHORT
-
-  docusign.http_client:
-    class: 'Symfony\Contracts\HttpClient\HttpClientInterface'
-    factory: [ 'Symfony\Component\HttpClient\HttpClient', create ]
 
   number_formatter:
     public: true
