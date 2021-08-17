@@ -13,7 +13,7 @@ interface PermissionProviderInterface
 
     public function getServiceName(): string;
 
-    public function getPermissions(?User $user = null, ?Staff $staff = null): ?int;
+    public function getPermissions(?User $user = null, ?Staff $staff = null): int;
 
-    public function getGrantPermissions(?User $user = null, ?Staff $staff = null): ?int;
+    public function getGrantPermissions(?User $user = null, ?Staff $staff = null): int;
 }
