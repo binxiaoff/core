@@ -493,7 +493,7 @@ class Project implements TraceableStatusAwareInterface
     /**
      * @Groups({"project:read", "project:write"})
      *
-     * @ORM\Column(type="string", nullable=true, length=10)
+     * @ORM\Column(type="string", nullable=true, length=30)
      *
      * @Assert\Choice(callback={FundingSpecificity::class, "getConstList"})
      */
