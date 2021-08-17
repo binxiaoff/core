@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace KLS\CreditGuaranty\FEI\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -111,6 +113,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         "get"
  *     }
  * )
+ *
+ * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_program")

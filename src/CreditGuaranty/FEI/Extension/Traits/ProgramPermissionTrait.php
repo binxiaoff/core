@@ -6,6 +6,7 @@ namespace KLS\CreditGuaranty\FEI\Extension\Traits;
 
 use Doctrine\ORM\QueryBuilder;
 use KLS\Core\Entity\Staff;
+use KLS\CreditGuaranty\FEI\Entity\ProgramStatus;
 use KLS\CreditGuaranty\FEI\Service\StaffPermissionManager;
 
 /**
@@ -27,16 +28,21 @@ trait ProgramPermissionTrait
         ;
     }
 
-    private function applyProgramManagerOrParticipantFilter(?Staff $staff, QueryBuilder $queryBuilder, string $programAlias, string $participationAlias): void
-    {
+    private function applyProgramManagerOrParticipantFilter(
+        ?Staff $staff,
+        QueryBuilder $queryBuilder,
+        string $programAlias,
+        string $participationAlias
+    ): void {
         $this->addCommonFilter($staff, $queryBuilder, $programAlias);
 
         $queryBuilder
             ->andWhere($queryBuilder->expr()->orX(
                 "{$programAlias}.managingCompany = :staffCompany",
-                "{$participationAlias}.participant = :staffCompany"
+                "{$participationAlias}.participant = :staffCompany AND {$programAlias}.currentStatus > :status"
             ))
             ->setParameter('staffCompany', $staff->getCompany())
+            ->setParameter('status', ProgramStatus::STATUS_DRAFT)
         ;
     }
 }
