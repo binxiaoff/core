@@ -11,6 +11,14 @@ services:
     exclude: '%kernel.project_dir%/src/Syndication/{Agency,Arrangement}/{Console,Entity,Migrations,Controller,Tests,Traits,Listener/Doctrine}'
 
   #
+  # Arrangement
+  #
+
+  KLS\Syndication\Arrangement\Serializer\ContextBuilder\ProjectAddedByContextBuilder:
+    decorates: 'api_platform.serializer.context_builder'
+    autoconfigure: false
+
+  #
   # Agency
   #
 
