@@ -10,13 +10,13 @@ use Doctrine\ORM\QueryBuilder;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
-use KLS\CreditGuaranty\FEI\Extension\Traits\ProgramPermissionTrait;
+use KLS\CreditGuaranty\FEI\Extension\Traits\ReservationPermissionTrait;
 use KLS\CreditGuaranty\FEI\Service\StaffPermissionManager;
 use Symfony\Component\Security\Core\Security;
 
 class ReservationExtension implements QueryCollectionExtensionInterface
 {
-    use ProgramPermissionTrait;
+    use ReservationPermissionTrait;
 
     private Security $security;
 
@@ -36,7 +36,9 @@ class ReservationExtension implements QueryCollectionExtensionInterface
         /** @var Staff|null $staff */
         $staff        = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
         $programAlias = 'p';
-        $queryBuilder->innerJoin("{$queryBuilder->getRootAliases()[0]}.program", $programAlias);
-        $this->applyProgramManagerFilter($staff, $queryBuilder, $programAlias);
+        $rootAlias    = $queryBuilder->getRootAliases()[0];
+        $queryBuilder->innerJoin("{$rootAlias}.program", $programAlias);
+
+        $this->applyReservationManagerOrParticipantFilter($staff, $queryBuilder, $rootAlias, $programAlias);
     }
 }
