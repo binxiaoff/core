@@ -50,7 +50,10 @@ class PermissionSubscriber implements EventSubscriberInterface
         $permissions = [];
 
         foreach ($this->permissionProviders as $permissionProvider) {
-            $permissions[$permissionProvider->getName()] = $permissionProvider->provide($user, $staff);
+            $permissions[$permissionProvider->getProductName()][$permissionProvider->getServiceName()] = [
+                'permissions'       => $permissionProvider->getPermissions($user, $staff),
+                'grant_permissions' => $permissionProvider->getGrantPermissions($user, $staff),
+            ];
         }
 
         $payload['permissions'] = $permissions;
