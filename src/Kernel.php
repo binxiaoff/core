@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KLS;
 
 use KLS\Core\EventSubscriber\Jwt\PermissionProviderInterface;
+use KLS\Core\Service\File\FileDeleteInterface;
 use KLS\Core\Service\Staff\StaffLoginInterface;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -42,5 +43,6 @@ class Kernel extends BaseKernel
     {
         $container->registerForAutoconfiguration(PermissionProviderInterface::class)->addTag('kls.jwt.permission_provider');
         $container->registerForAutoconfiguration(StaffLoginInterface::class)->addTag('kls.staff.login.checker');
+        $container->registerForAutoconfiguration(FileDeleteInterface::class)->addTag('kls.file.delete');
     }
 }

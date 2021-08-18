@@ -119,6 +119,9 @@ services:
     $apiHost: '%env(DOCUSIGN_API_HOST)%'
     $debug: '%kernel.debug%'
 
+  KLS\Core\Service\File\FileDeleteManager:
+    $managers: !tagged kls.file.delete
+
   KLS\Core\Service\GoogleRecaptchaManager:
     $client: '@eight_points_guzzle.client.google_recaptcha'
     $secret: '%env(GOOGLE_RECAPTCHA_SECRET)%'
