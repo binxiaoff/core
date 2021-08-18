@@ -7,30 +7,20 @@ namespace KLS\Core\MessageHandler\File;
 use InvalidArgumentException;
 use KLS\Core\Message\File\FileUploaded;
 use KLS\Syndication\Arrangement\Repository\ProjectRepository;
-use KLS\Syndication\Arrangement\Service\Project\ProjectNotifier;
+use KLS\Syndication\Arrangement\Service\Project\MailNotifier\ProjectUploadNotifier;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
 
 class FileUploadedHandler implements MessageHandlerInterface
 {
-    /** @var ProjectNotifier */
-    private $projectNotifier;
-    /** @var ProjectRepository */
-    private $projectRepository;
+    private ProjectUploadNotifier $projectUploadNotifier;
+    private ProjectRepository $projectRepository;
 
-    public function __construct(ProjectRepository $projectRepository, ProjectNotifier $projectNotifier)
+    public function __construct(ProjectRepository $projectRepository, ProjectUploadNotifier $projectUploadNotifier)
     {
-        $this->projectRepository = $projectRepository;
-        $this->projectNotifier   = $projectNotifier;
+        $this->projectRepository     = $projectRepository;
+        $this->projectUploadNotifier = $projectUploadNotifier;
     }
 
-    /**
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     */
     public function __invoke(FileUploaded $fileUploaded)
     {
         $context = $fileUploaded->getContext();
@@ -44,6 +34,6 @@ class FileUploadedHandler implements MessageHandlerInterface
             throw new InvalidArgumentException(\sprintf('The project with id %d does not exist', $context['projectId']));
         }
 
-        $this->projectNotifier->notifyUploaded($project);
+        $this->projectUploadNotifier->notify($project);
     }
 }

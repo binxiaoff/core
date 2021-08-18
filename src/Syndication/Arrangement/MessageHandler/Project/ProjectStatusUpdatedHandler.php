@@ -4,44 +4,33 @@ declare(strict_types=1);
 
 namespace KLS\Syndication\Arrangement\MessageHandler\Project;
 
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
-use Http\Client\Exception;
 use KLS\Syndication\Arrangement\Entity\ProjectStatus;
 use KLS\Syndication\Arrangement\Message\Project\ProjectStatusUpdated;
 use KLS\Syndication\Arrangement\Repository\ProjectRepository;
-use KLS\Syndication\Arrangement\Service\Project\ProjectNotifier;
+use KLS\Syndication\Arrangement\Service\Project\SlackNotifier\ProjectUpdateNotifier;
 use KLS\Syndication\Arrangement\Service\ProjectParticipationMember\ProjectParticipationMemberNotifier;
-use Nexy\Slack\Exception\SlackApiException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
 
 class ProjectStatusUpdatedHandler implements MessageHandlerInterface
 {
     private ProjectRepository $projectRepository;
     private ProjectParticipationMemberNotifier $projectParticipationMemberNotifier;
-    private ProjectNotifier $projectNotifier;
+    private ProjectUpdateNotifier $projectUpdateNotifier;
 
     public function __construct(
         ProjectRepository $projectRepository,
-        ProjectNotifier $projectNotifier,
-        ProjectParticipationMemberNotifier $projectParticipationMemberNotifier
+        ProjectParticipationMemberNotifier $projectParticipationMemberNotifier,
+        ProjectUpdateNotifier $projectUpdateNotifier
     ) {
         $this->projectRepository                  = $projectRepository;
         $this->projectParticipationMemberNotifier = $projectParticipationMemberNotifier;
-        $this->projectNotifier                    = $projectNotifier;
+        $this->projectUpdateNotifier              = $projectUpdateNotifier;
     }
 
     /**
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     * @throws NoResultException
-     * @throws NonUniqueResultException
-     * @throws Exception
-     * @throws SlackApiException
+     * @throws \Http\Client\Exception
+     * @throws \Nexy\Slack\Exception\SlackApiException
+     * @throws \Exception
      */
     public function __invoke(ProjectStatusUpdated $projectStatusUpdated)
     {
@@ -59,6 +48,6 @@ class ProjectStatusUpdatedHandler implements MessageHandlerInterface
             }
         }
 
-        $this->projectNotifier->notifyProjectStatusChanged($project);
+        $this->projectUpdateNotifier->notify($project);
     }
 }
