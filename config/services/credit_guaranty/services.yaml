@@ -1,0 +1,24 @@
+imports:
+  - { resource: doctrine_listeners.yaml }
+
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  KLS\CreditGuaranty\:
+    resource: '%kernel.project_dir%/src/CreditGuaranty/*'
+    exclude: '%kernel.project_dir%/src/CreditGuaranty/{FEI}/{Console,Entity,Migrations,Controller,Tests,Traits,Listener/Doctrine}'
+
+  #
+  # FEI
+  #
+
+  KLS\CreditGuaranty\FEI\Controller\:
+    resource: '%kernel.project_dir%/src/CreditGuaranty/FEI/Controller'
+    tags:
+      - { name: 'controller.service_arguments' }
+
+  KLS\CreditGuaranty\FEI\Serializer\ContextBuilder\ProjectContextBuilder:
+    decorates: 'api_platform.serializer.context_builder'
+    autoconfigure: false

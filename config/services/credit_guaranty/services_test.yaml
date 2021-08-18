@@ -1,0 +1,11 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  #
+  # FEI
+  #
+
+  KLS\Test\CreditGuaranty\FEI\DataFixtures\:
+    resource: '%kernel.project_dir%/tests/CreditGuaranty/FEI/DataFixtures'
