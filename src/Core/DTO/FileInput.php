@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace KLS\Core\DTO;
 
-use KLS\Core\Entity\Message;
-use KLS\Syndication\Agency\Entity\Term;
-use KLS\Syndication\Arrangement\Entity\Project;
-use KLS\Syndication\Arrangement\Entity\ProjectFile;
-use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
+use KLS\Core\Entity\Interfaces\FileTypesAwareInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -45,9 +41,6 @@ class FileInput
      */
     public object $targetEntity;
 
-    /**
-     * @Assert\Choice(callback="getFileTypes")
-     */
     public string $type;
 
     public function __construct(UploadedFile $uploadedFile, string $type, object $targetEntity)
@@ -58,48 +51,20 @@ class FileInput
     }
 
     /**
-     * @return array|string[]
-     */
-    public static function getFileTypes(): array
-    {
-        return \array_merge(...\array_values(static::getFileTypesEntityMapping()));
-    }
-
-    /**
      * @Assert\Callback
      *
      * @param mixed $payload
      */
-    public function validateTargetEntity(ExecutionContextInterface $context, $payload)
+    public function validateTargetEntityAndTypeMapping(ExecutionContextInterface $context, $payload): void
     {
-        $fileTypesClassMapping = static::getFileTypesEntityMapping();
-
-        $targetEntityClass = \get_class($this->targetEntity);
-
         if (
-            \is_string($targetEntityClass) && false === \in_array($this->type, $fileTypesClassMapping[$targetEntityClass] ?? [], true)
+            $this->targetEntity instanceof FileTypesAwareInterface
+            && false === \in_array($this->type, $this->targetEntity::getFileTypes(), true)
         ) {
-            $context->buildViolation('Upload.targetEntity.incorrect')
-                ->atPath('targetEntity')
-                ->setParameters([
-                    'targetEntityClass' => $targetEntityClass,
-                    'type'              => $this->type,
-                ])
+            $context->buildViolation('Core.Upload.fileInput.type.not_matching')
+                ->setParameter('%type%', $this->type)
                 ->addViolation()
             ;
         }
-    }
-
-    /**
-     * @return array|array[]
-     */
-    private static function getFileTypesEntityMapping(): array
-    {
-        return [
-            Project::class              => \array_merge(Project::getProjectFileTypes(), ProjectFile::getProjectFileTypes()),
-            ProjectParticipation::class => ProjectParticipation::getFileTypes(),
-            Message::class              => Message::getFileTypes(),
-            Term::class                 => Term::getFileTypes(),
-        ];
     }
 }

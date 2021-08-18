@@ -16,6 +16,7 @@ use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\File;
 use KLS\Core\Entity\FileVersion;
+use KLS\Core\Entity\Interfaces\FileTypesAwareInterface;
 use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\Core\Entity\Interfaces\StatusInterface;
 use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
@@ -175,7 +176,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @UniqueEntity({"participant", "project"})
  */
-class ProjectParticipation implements TraceableStatusAwareInterface
+class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAwareInterface
 {
     use TimestampableTrait;
     use BlamableAddedTrait;
