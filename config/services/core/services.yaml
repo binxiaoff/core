@@ -50,6 +50,9 @@ services:
     tags:
       - { name: 'controller.service_arguments' }
 
+  KLS\Core\DataTransformer\FileInputDataTransformer:
+    $uploaders: !tagged kls.file.input.data.upload
+
   # EventSubscriber
 
   KLS\Core\EventSubscriber\Jwt\PayloadManagerSubscriber:
