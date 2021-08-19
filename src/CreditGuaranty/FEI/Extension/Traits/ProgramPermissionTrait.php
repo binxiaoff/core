@@ -37,9 +37,10 @@ trait ProgramPermissionTrait
         $this->addCommonFilter($staff, $queryBuilder, $programAlias);
 
         $queryBuilder
+            ->innerJoin("{$programAlias}.currentStatus", 'ps')
             ->andWhere($queryBuilder->expr()->orX(
                 "{$programAlias}.managingCompany = :staffCompany",
-                "{$participationAlias}.participant = :staffCompany AND {$programAlias}.currentStatus > :status"
+                "{$participationAlias}.participant = :staffCompany AND ps.status > :status"
             ))
             ->setParameter('staffCompany', $staff->getCompany())
             ->setParameter('status', ProgramStatus::STATUS_DRAFT)
