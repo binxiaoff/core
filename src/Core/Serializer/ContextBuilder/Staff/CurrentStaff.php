@@ -9,8 +9,6 @@ use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\StaffStatus;
 use KLS\Core\Entity\User;
 use KLS\Core\Repository\UserRepository;
-use KLS\Syndication\Arrangement\Entity\ProjectParticipationStatus;
-use KLS\Syndication\Arrangement\Entity\ProjectStatus;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpFoundation\Request;
@@ -47,7 +45,7 @@ class CurrentStaff implements SerializerContextBuilderInterface
             $user = $this->userRepository->findOneBy(['email' => $user->getUsername()]);
         }
 
-        if ($user && $user instanceof User) {
+        if ($user instanceof User) {
             $staff = $user->getCurrentStaff();
 
             if ($resourceClass) {
@@ -65,11 +63,8 @@ class CurrentStaff implements SerializerContextBuilderInterface
                 }
             }
 
-            // Needed for ProjectStatus because we patch project to change status
             // Put here because there is no need for more advance customisation of their denormalisation
-            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectStatus::class]['addedBy']              = $staff;
-            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][StaffStatus::class]['addedBy']                = $staff;
-            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][ProjectParticipationStatus::class]['addedBy'] = $staff;
+            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][StaffStatus::class]['addedBy'] = $staff;
         }
 
         return $context;
