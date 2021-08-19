@@ -11,7 +11,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class VersionSubscriber implements EventSubscriberInterface
 {
-    public const JWT_VERSION = '2021-08-05';
+    public const JWT_VERSION = '2021-08-16';
 
     public static function getSubscribedEvents(): array
     {
