@@ -48,6 +48,11 @@ class NullableMoney implements MoneyInterface
         $this->currency = $currency;
     }
 
+    public function __toString(): string
+    {
+        return false === $this->isNull() ? $this->amount . $this->currency : '';
+    }
+
     public function isValid(): bool
     {
         return $this->currency && $this->amount;

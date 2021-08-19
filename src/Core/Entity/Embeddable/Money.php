@@ -47,6 +47,11 @@ class Money implements MoneyInterface
         $this->amount   = $amount;
     }
 
+    public function __toString(): string
+    {
+        return $this->amount . $this->currency;
+    }
+
     public function getAmount(): string
     {
         return $this->amount;
