@@ -34,13 +34,10 @@ class ProjectCreateNotifier implements ProjectNotifierInterface
 
     public function createSlackMessage(Project $project): MessageInterface
     {
-        if ($project->isInterestExpressionEnabled()) {
-            $partCibleArrangeur = $project->getArrangerProjectParticipation()->getInterestRequest()->getMoney()->getAmount() . ' ' .
-                $project->getArrangerProjectParticipation()->getInterestRequest()->getMoney()->getAmount();
-        } else {
-            $partCibleArrangeur = $project->getArrangerProjectParticipation()->getInvitationRequest()->getMoney()->getAmount() . ' ' .
-                $project->getArrangerProjectParticipation()->getInvitationRequest()->getMoney()->getAmount();
-        }
+        $arrangerParticipation = $project->getArrangerProjectParticipation();
+
+        $targetArrangerMoney = $project->isInterestExpressionEnabled() ?
+            $arrangerParticipation->getInterestRequest()->getMoney() : $arrangerParticipation->getInvitationRequest()->getMoney();
 
         $projectAmount = $project->getGlobalFundingMoney()->getAmount() . ' ' . $project->getGlobalFundingMoney()->getCurrency();
 
@@ -52,7 +49,7 @@ class ProjectCreateNotifier implements ProjectNotifierInterface
                     ->addField(new AttachmentField('Entité', $project->getSubmitterCompany()->getDisplayName(), true))
                     ->addField(new AttachmentField('Utilisateur', $project->getSubmitterUser()->getEmail(), true))
                     ->addField(new AttachmentField('Montant du projet', $projectAmount, true))
-                    ->addField(new AttachmentField('Part cible arrangeur', $partCibleArrangeur, true))
+                    ->addField(new AttachmentField('Part cible arrangeur', (string) $targetArrangerMoney, true))
             )
         ;
     }
