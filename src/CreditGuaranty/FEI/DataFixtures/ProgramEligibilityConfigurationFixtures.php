@@ -8,7 +8,7 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use KLS\Core\DataFixtures\AbstractFixtures;
 use KLS\Core\Entity\Constant\LegalForm;
-use KLS\Core\Entity\Constant\Tranche\LoanType;
+use KLS\Core\Entity\Constant\LoanType;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Repository\ProgramChoiceOptionRepository;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityConfigurationRepository;

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace KLS\Syndication\Arrangement\Serializer\Normalizer\Project;
 
 use KLS\Core\Entity\Company;
-use KLS\Core\Entity\Constant\SyndicationModality\ParticipationType;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
 use KLS\Syndication\Arrangement\Entity\Project;
 use KLS\Syndication\Arrangement\Security\Voter\ProjectVoter;
+use KLS\Syndication\Common\Constant\Modality\ParticipationType;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;

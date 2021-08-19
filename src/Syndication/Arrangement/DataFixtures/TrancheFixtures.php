@@ -9,7 +9,7 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use KLS\Core\DataFixtures\AbstractFixtures;
 use KLS\Core\DataFixtures\CompanyFixtures;
-use KLS\Core\Entity\Constant\Tranche\LoanType;
+use KLS\Core\Entity\Constant\LoanType;
 use KLS\Core\Entity\Embeddable\LendingRate;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Syndication\Arrangement\Entity\Project;

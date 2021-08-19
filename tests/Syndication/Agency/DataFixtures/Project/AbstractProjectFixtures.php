@@ -8,8 +8,7 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Exception;
 use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Constant\LegalForm;
-use KLS\Core\Entity\Constant\Tranche\LoanType;
-use KLS\Core\Entity\Constant\Tranche\RepaymentType;
+use KLS\Core\Entity\Constant\LoanType;
 use KLS\Core\Entity\Embeddable\LendingRate;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
@@ -18,6 +17,7 @@ use KLS\Syndication\Agency\Entity\Covenant;
 use KLS\Syndication\Agency\Entity\Participation;
 use KLS\Syndication\Agency\Entity\Project;
 use KLS\Syndication\Agency\Entity\Tranche;
+use KLS\Syndication\Common\Constant\Tranche\RepaymentType;
 use KLS\Test\Core\DataFixtures\AbstractFixtures;
 
 abstract class AbstractProjectFixtures extends AbstractFixtures implements DependentFixtureInterface
