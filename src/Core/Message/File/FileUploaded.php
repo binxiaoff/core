@@ -9,10 +9,8 @@ use KLS\Core\Message\AsyncMessageInterface;
 
 class FileUploaded implements AsyncMessageInterface
 {
-    /** @var int */
-    private $fileId;
-    /** @var array */
-    private $context;
+    private int $fileId;
+    private array $context;
 
     public function __construct(File $file, array $context)
     {
