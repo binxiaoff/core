@@ -24,8 +24,6 @@ use Symfony\Component\Security\Core\Security;
 
 class FileInputMessageUploader implements FileInputDataUploadInterface
 {
-    use FileInputDataUploadTrait;
-
     private Security $security;
     private FileUploadManager $fileUploadManager;
     private MessageFileRepository $messageFileRepository;
@@ -67,7 +65,9 @@ class FileInputMessageUploader implements FileInputDataUploadInterface
             $file = new File();
         }
 
-        $this->fileUploadManager->upload($fileInput->uploadedFile, $user, $file, [], $this->getCurrentCompany());
+        $token          = $this->security->getToken();
+        $currentCompany = $token && $token->hasAttribute('company') ? $token->getAttribute('company') : null;
+        $this->fileUploadManager->upload($fileInput->uploadedFile, $user, $file, [], $currentCompany);
 
         $messagesToBeAttached = [$targetEntity];
 

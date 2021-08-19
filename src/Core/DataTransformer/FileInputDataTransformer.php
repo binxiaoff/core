@@ -6,17 +6,15 @@ namespace KLS\Core\DataTransformer;
 
 use ApiPlatform\Core\Validator\ValidatorInterface;
 use Exception;
+use InvalidArgumentException;
 use KLS\Core\DTO\FileInput;
 use KLS\Core\Entity\File;
 use KLS\Core\Entity\User;
-use KLS\Core\Service\FileInput\FileInputDataUploadTrait;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Security;
 
 class FileInputDataTransformer
 {
-    use FileInputDataUploadTrait;
-
     private ValidatorInterface $validator;
     private Security $security;
 
@@ -32,6 +30,8 @@ class FileInputDataTransformer
 
     /**
      * @throws Exception
+     * @throws AccessDeniedHttpException
+     * @throws InvalidArgumentException
      */
     public function transform(FileInput $fileInput, ?File $file): File
     {
@@ -47,10 +47,10 @@ class FileInputDataTransformer
 
         foreach ($this->uploaders as $uploader) {
             if ($uploader->supports($targetEntity)) {
-                $file = $uploader->upload($targetEntity, $fileInput, $user, $file);
+                return $uploader->upload($targetEntity, $fileInput, $user, $file);
             }
         }
 
-        return $file;
+        throw new InvalidArgumentException(\sprintf('The targetEntity (%s) is not supported by any uploader', \get_class($targetEntity)));
     }
 }

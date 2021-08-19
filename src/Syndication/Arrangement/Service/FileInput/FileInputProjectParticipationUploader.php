@@ -12,8 +12,8 @@ use KLS\Core\DataTransformer\FileInputDataUploadInterface;
 use KLS\Core\DTO\FileInput;
 use KLS\Core\Entity\File;
 use KLS\Core\Entity\User;
+use KLS\Core\Exception\File\DenyUploadExistingFileException;
 use KLS\Core\Service\File\FileUploadManager;
-use KLS\Core\Service\FileInput\FileInputDataUploadTrait;
 use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
 use KLS\Syndication\Arrangement\Security\Voter\ProjectVoter;
 use League\Flysystem\FilesystemException;
@@ -22,8 +22,6 @@ use Symfony\Component\Security\Core\Security;
 
 class FileInputProjectParticipationUploader implements FileInputDataUploadInterface
 {
-    use FileInputDataUploadTrait;
-
     private Security $security;
     private FileUploadManager $fileUploadManager;
 
@@ -54,20 +52,22 @@ class FileInputProjectParticipationUploader implements FileInputDataUploadInterf
         }
 
         $isPublished = $targetEntity->getProject()->isPublished();
-
         $existingNda = $targetEntity->getNda();
+
         if ($isPublished && null !== $file && null !== $existingNda && $file !== $existingNda) {
-            static::denyUploadExistingFile($fileInput, $existingNda, $targetEntity);
+            throw new DenyUploadExistingFileException($fileInput, $existingNda, $targetEntity);
         }
 
-        $file = $isPublished && $existingNda ? $existingNda : new File();
+        $file           = $isPublished && $existingNda ? $existingNda : new File();
+        $token          = $this->security->getToken();
+        $currentCompany = $token && $token->hasAttribute('company') ? $token->getAttribute('company') : null;
 
         $this->fileUploadManager->upload(
             $fileInput->uploadedFile,
             $user,
             $file,
             ['projectParticipationId' => $targetEntity->getId()],
-            $this->getCurrentCompany()
+            $currentCompany
         );
 
         $targetEntity->setNda($file);

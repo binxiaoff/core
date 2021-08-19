@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KLS\Test\Syndication\Arrangement\Unit\Service\FileInput;
 
 use KLS\Core\Entity\File;
+use KLS\Core\Exception\File\DenyUploadExistingFileException;
 use KLS\Core\Service\File\FileUploadManager;
 use KLS\Syndication\Arrangement\Entity\Project as ArrangementProject;
 use KLS\Syndication\Arrangement\Entity\ProjectFile;
@@ -321,7 +322,7 @@ class FileInputProjectUploaderTest extends TestCase
         $this->fileUploadManager->upload(Argument::cetera())->shouldNotBeCalled();
         $this->projectRepository->save(Argument::any())->shouldNotBeCalled();
 
-        static::expectException(RuntimeException::class);
+        static::expectException(DenyUploadExistingFileException::class);
 
         $uploader = $this->createTestObject();
         $uploader->upload($targetEntity, $fileInput, $user, $file);

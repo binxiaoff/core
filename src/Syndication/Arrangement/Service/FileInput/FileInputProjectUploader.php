@@ -11,11 +11,12 @@ use Doctrine\ORM\ORMException;
 use Exception;
 use KLS\Core\DataTransformer\FileInputDataUploadInterface;
 use KLS\Core\DTO\FileInput;
+use KLS\Core\Entity\Company;
 use KLS\Core\Entity\File;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
+use KLS\Core\Exception\File\DenyUploadExistingFileException;
 use KLS\Core\Service\File\FileUploadManager;
-use KLS\Core\Service\FileInput\FileInputDataUploadTrait;
 use KLS\Syndication\Arrangement\Entity\Project;
 use KLS\Syndication\Arrangement\Entity\ProjectFile;
 use KLS\Syndication\Arrangement\Repository\ProjectFileRepository;
@@ -29,8 +30,6 @@ use Symfony\Component\Security\Core\Security;
 
 class FileInputProjectUploader implements FileInputDataUploadInterface
 {
-    use FileInputDataUploadTrait;
-
     private Security $security;
     private ProjectRepository $projectRepository;
     private ProjectFileRepository $projectFileRepository;
@@ -149,7 +148,7 @@ class FileInputProjectUploader implements FileInputDataUploadInterface
             case Project::PROJECT_FILE_TYPE_DESCRIPTION:
                 $termSheet = $project->getTermSheet();
                 if ($isPublished && null !== $file && null !== $termSheet && $file !== $termSheet) {
-                    static::denyUploadExistingFile($fileInput, $termSheet, $project);
+                    throw new DenyUploadExistingFileException($fileInput, $termSheet, $project);
                 }
                 $file = $isPublished && $termSheet ? $termSheet : new File();
                 $project->setTermSheet($file);
@@ -159,7 +158,7 @@ class FileInputProjectUploader implements FileInputDataUploadInterface
             case Project::PROJECT_FILE_TYPE_NDA:
                 $nda = $project->getNda();
                 if ($isPublished && null !== $file && null !== $nda && $file !== $nda) {
-                    static::denyUploadExistingFile($fileInput, $nda, $project);
+                    throw new DenyUploadExistingFileException($fileInput, $nda, $project);
                 }
                 $file = $isPublished && $nda ? $nda : new File();
                 $project->setNda($file);
@@ -174,5 +173,19 @@ class FileInputProjectUploader implements FileInputDataUploadInterface
         $this->projectRepository->save($project);
 
         return $file;
+    }
+
+    private function getCurrentStaff(): ?Staff
+    {
+        $token = $this->security->getToken();
+
+        return $token && $token->hasAttribute('staff') ? $token->getAttribute('staff') : null;
+    }
+
+    private function getCurrentCompany(): ?Company
+    {
+        $token = $this->security->getToken();
+
+        return $token && $token->hasAttribute('company') ? $token->getAttribute('company') : null;
     }
 }

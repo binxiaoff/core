@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KLS\Test\Syndication\Arrangement\Unit\Service\FileInput;
 
 use KLS\Core\Entity\File;
+use KLS\Core\Exception\File\DenyUploadExistingFileException;
 use KLS\Core\Service\File\FileUploadManager;
 use KLS\Syndication\Arrangement\Entity\ProjectStatus;
 use KLS\Syndication\Arrangement\Security\Voter\ProjectVoter;
@@ -13,7 +14,6 @@ use KLS\Test\Core\Unit\Traits\FileInputEntitiesTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use RuntimeException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 
@@ -139,7 +139,7 @@ class FileInputProjectParticipationUploaderTest extends TestCase
         $this->security->getToken()->shouldNotBeCalled();
         $this->fileUploadManager->upload(Argument::cetera())->shouldNotBeCalled();
 
-        static::expectException(RuntimeException::class);
+        static::expectException(DenyUploadExistingFileException::class);
 
         $uploader = $this->createTestObject();
         $uploader->upload($targetEntity, $fileInput, $user, $file);
