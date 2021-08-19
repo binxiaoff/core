@@ -13,7 +13,7 @@ use KLS\Core\Entity\Constant\CAInternalRating;
 use KLS\Core\Entity\Constant\CAInternalRetailRating;
 use KLS\Core\Entity\Constant\CARatingType;
 use KLS\Core\Entity\Constant\LegalForm;
-use KLS\Core\Entity\Constant\Tranche\LoanType;
+use KLS\Core\Entity\Constant\LoanType;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\CreditGuaranty\FEI\Entity\Borrower;

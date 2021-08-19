@@ -14,8 +14,6 @@ use KLS\Core\DataFixtures\StaffFixtures;
 use KLS\Core\DataFixtures\UserFixtures;
 use KLS\Core\Entity\Constant\CAInternalRating;
 use KLS\Core\Entity\Constant\FundingSpecificity;
-use KLS\Core\Entity\Constant\SyndicationModality\ParticipationType;
-use KLS\Core\Entity\Constant\SyndicationModality\SyndicationType;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullablePerson;
 use KLS\Core\Entity\File;
@@ -24,6 +22,8 @@ use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
 use KLS\Syndication\Arrangement\Entity\Project;
 use KLS\Syndication\Arrangement\Entity\ProjectStatus;
+use KLS\Syndication\Common\Constant\Modality\ParticipationType;
+use KLS\Syndication\Common\Constant\Modality\SyndicationType;
 use ReflectionException;
 
 class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterface

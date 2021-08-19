@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\Core\Entity\Constant\SyndicationModality;
+namespace KLS\Syndication\Common\Constant\Modality;
 
 use KLS\Core\Entity\Constant\AbstractEnum;
 

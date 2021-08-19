@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\Core\Entity\Constant\Tranche;
-
-use KLS\Core\Entity\Constant\AbstractEnum;
+namespace KLS\Core\Entity\Constant;
 
 final class LoanType extends AbstractEnum
 {

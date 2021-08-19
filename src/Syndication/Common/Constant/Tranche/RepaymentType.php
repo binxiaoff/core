@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\Core\Entity\Constant\Tranche;
+namespace KLS\Syndication\Common\Constant\Tranche;
 
 use KLS\Core\Entity\Constant\AbstractEnum;
 
@@ -16,7 +16,7 @@ final class RepaymentType extends AbstractEnum
     /**
      * @return string[]|array
      */
-    public static function getAmortizableRepaymentTypes()
+    public static function getAmortizableRepaymentTypes(): array
     {
         return [
             self::CONSTANT_CAPITAL,
