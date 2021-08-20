@@ -207,7 +207,7 @@ class Folder extends AbstractFolder
         }
 
         if (\str_starts_with(DIRECTORY_SEPARATOR, $test) && false === \str_starts_with($test, $this->path)) {
-            throw new \LogicException();
+            throw new \LogicException(\sprintf('%s is not a descendant of %s', $test, $this->path));
         }
     }
 
