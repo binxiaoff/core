@@ -72,7 +72,7 @@ class Drive extends AbstractFolder
     /**
      * @throws FolderAlreadyExistsException
      */
-    public function createFolder(string $path): Drive
+    public function createFolder(string $path): self
     {
         $path = $this->canonicalizePath($path);
 
@@ -181,7 +181,7 @@ class Drive extends AbstractFolder
         return $parentFolder && $parentFolder->getFile($path);
     }
 
-    public function delete($toDelete): Drive
+    public function delete($toDelete): self
     {
         if (DIRECTORY_SEPARATOR === $toDelete) {
             throw new \LogicException('You cannot delete /, delete the drive instead');
