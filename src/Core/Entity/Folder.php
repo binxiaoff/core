@@ -55,7 +55,7 @@ class Folder extends AbstractFolder
 
     /**
      * used for database unique index (path field is to big for unique index).
-     * unfortunatly it is a hassle to handle virtual column with doctrine so I need to create a true column for this.
+     * unfortunately it is a hassle to handle virtual column with doctrine so I need to create a true column for this.
      *
      * @Assert\NotBlank
      * @Assert\Length(max="10")
@@ -125,7 +125,7 @@ class Folder extends AbstractFolder
     /**
      * @param string|Folder $relativePath
      */
-    public function deleteFolder($relativePath): AbstractFolder
+    public function deleteFolder($relativePath): self
     {
         $this->drive->deleteFolder($this->normalizePath($relativePath));
 
@@ -145,7 +145,7 @@ class Folder extends AbstractFolder
     /**
      * @throws FolderAlreadyExistsException
      */
-    public function createFolder(string $path): AbstractFolder
+    public function createFolder(string $path): self
     {
         $this->drive->createFolder($this->normalizePath($path));
 
@@ -155,7 +155,7 @@ class Folder extends AbstractFolder
     /**
      * @param string|Folder $toDelete
      */
-    public function delete($toDelete): Folder
+    public function delete($toDelete): self
     {
         $this->drive->delete($this->normalizePath($toDelete));
 
@@ -186,7 +186,7 @@ class Folder extends AbstractFolder
         ;
     }
 
-    public function deleteFile($path): Folder
+    public function deleteFile($path): self
     {
         if ($path instanceof File) {
             $this->removeFile($path);
@@ -200,7 +200,7 @@ class Folder extends AbstractFolder
     /**
      * @param string|Folder $test
      */
-    private function assertDescendent($test)
+    private function assertDescendent($test): void
     {
         if ($test instanceof self) {
             $test = $test->getPath();
@@ -214,7 +214,7 @@ class Folder extends AbstractFolder
     /**
      * @param string|Folder $path
      */
-    private function normalizePath($path)
+    private function normalizePath($path): string
     {
         $this->assertDescendent($path);
 

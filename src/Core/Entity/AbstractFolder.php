@@ -90,14 +90,14 @@ abstract class AbstractFolder
      *
      * @throws FolderAlreadyExistsException
      */
-    abstract public function createFolder(string $path): AbstractFolder;
+    abstract public function createFolder(string $path): self;
 
     /**
      * The deletion will only be done if $folder target or is a folder.
      *
      * @param string|Folder $folder
      */
-    abstract public function deleteFolder($folder): AbstractFolder;
+    abstract public function deleteFolder($folder): self;
 
     /**
      * If a File is given, we only try to remove it from current folder.
@@ -108,12 +108,12 @@ abstract class AbstractFolder
      *
      * @param string|File $path
      */
-    abstract public function deleteFile($path): AbstractFolder;
+    abstract public function deleteFile($path): self;
 
     /**
      * @param string|File|Folder $toDelete
      */
-    abstract public function delete($toDelete): AbstractFolder;
+    abstract public function delete($toDelete): self;
 
     abstract public function exist(string $path): bool;
 
