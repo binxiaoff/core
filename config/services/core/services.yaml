@@ -78,6 +78,10 @@ services:
 
   # Security
 
+  KLS\Core\Security\Voter\FileDownloadVoter:
+    arguments:
+      $voters: !tagged kls.file.download.voter
+
   KLS\Core\Security\UsernamePasswordRecaptchaAuthenticator:
     $authenticationSuccessHandler: '@lexik_jwt_authentication.handler.authentication_success'
     $authenticationFailureHandler: '@lexik_jwt_authentication.handler.authentication_failure'

@@ -6,6 +6,7 @@ namespace KLS;
 
 use KLS\Core\DataTransformer\FileInputDataUploadInterface;
 use KLS\Core\EventSubscriber\Jwt\PermissionProviderInterface;
+use KLS\Core\Security\Voter\FileDownloadVoterInterface;
 use KLS\Core\MessageHandler\File\FileUploadedNotifierInterface;
 use KLS\Core\Service\File\FileDeleteInterface;
 use KLS\Core\Service\Staff\StaffLoginInterface;
@@ -49,6 +50,7 @@ class Kernel extends BaseKernel
 
         // File system
         $container->registerForAutoconfiguration(FileInputDataUploadInterface::class)->addTag('kls.file.input.data.upload');
+        $container->registerForAutoconfiguration(FileDownloadVoterInterface::class)->addTag('kls.file.download.voter');
         $container->registerForAutoconfiguration(FileUploadedNotifierInterface::class)->addTag('kls.file.uploaded.notifier');
         $container->registerForAutoconfiguration(FileDeleteInterface::class)->addTag('kls.file.delete');
     }
