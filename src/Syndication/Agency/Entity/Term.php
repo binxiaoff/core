@@ -14,6 +14,7 @@ use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use KLS\Core\Entity\File;
+use KLS\Core\Entity\Interfaces\FileTypesAwareInterface;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use LogicException;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -57,7 +58,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     }
  * )
  */
-class Term
+class Term implements FileTypesAwareInterface
 {
     use PublicizeIdentityTrait;
 
@@ -310,10 +311,7 @@ class Term
         $this->waiverComment       = null;
     }
 
-    /**
-     * @return string[]
-     */
-    public static function getFileTypes()
+    public static function getFileTypes(): array
     {
         return [static::FILE_TYPE_BORROWER_DOCUMENT];
     }

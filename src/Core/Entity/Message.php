@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\DTO\MessageInput;
+use KLS\Core\Entity\Interfaces\FileTypesAwareInterface;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Ramsey\Uuid\Uuid;
@@ -39,7 +40,7 @@ use Throwable;
  *     }
  * )
  */
-class Message
+class Message implements FileTypesAwareInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableAddedOnlyTrait;

@@ -4,23 +4,19 @@ Agency:
             referent: Un membre referent ne peut pas être archivé
             signatory: Un membre signataire ne peut pas être archivé
             draft: Vous ne pouvez pas archiver un membre en draft
-
     AgentMember:
         user:
             missingStaff: L'utilisateur {{ email }} ne peut pas être membre de l'équipe de l'agent sans avoir été habilité pour {{ company }}
-
     Project:
         missingStatus: Vous ne pouvez pas aller de l'état {{ nextStatus }} sans passer par l'état {{ missingStatus }}
         passedStatus: Ce projet est déja passé par l'état {{ status }}
     Contact:
         type:
             unique: Il ne peut y avoir qu'un seul contact agency par projet
-
     Tranche:
         commission:
             incomplete: Ce champ est manquant pour valider la commission de la tranche
             wrongLoanType: Le type de prêt ne permet pas d'avoir de commission sur cette tranche
-
     Participation:
         responsabilities:
             agent: Vous devez être l'agent du projet pour sélectionner activer le bit
@@ -36,36 +32,28 @@ Agency:
             deputyArranger:
                 zero: La commission de co-arrangement doit être à zéro
                 role: La participation doit être marquée comme co-arrangeur
-
     ParticipationMember:
         user:
             missingStaff: L'utilisateur {{ email }} ne peut pas être membre de la participation sans avoir été habilité pour {{ company }}
-
     ParticipantTrancheAllocation:
         project: La tranche et la participation n'ont pas le même projet
         tranche: La tranche doit être syndiquée
-
     Covenant:
         covenantRules:
             financialNature: Le nombre de règles n'est pas correct
             otherNature: Il ne peut y avoir de règle pour cette nature d'engagement
             missingYear: Il manque la règle pour l'année {{ missingYear }}
-
     CovenantRule:
         yearUnicity: Il ne peut y avoir qu'une règle par année
         inconsistentYear: L'année doit être comprise entre la date de départ du covenant et sa date de fin
-
     MarginImpact:
         unicity: Il ne peut y avoir qu'une marge par tranche
-
     MarginRule:
         inconsistentCovenant: On ne peut ajouter de règle d'impact sur les marges qu'aux engagements de nature financière
-
     Inequality:
         maxValue:
             incorrectOperator: Il ne peut y avoir de valeur maximal que si l'operateur est "between"
             greaterThan: La valeur maximale doit être strictement supérieur à la valeur
-
     Term:
         borrowerComment:
             neededBorrowerAction: Il faut que l'emprunteur ait rempli la valeur ou le document pour mettre un commentaire
@@ -90,12 +78,12 @@ Agency:
             agentValidationRequired: Il faut une validation (réussite ou échec) avant de partager le résultat
         archivingDate:
             poolSharingRequired: Il faut partager le resultat au pool avant d'archiver
+
 Core:
     AcceptationsLegalDocs:
         legalDoc:
             unique: Vous ne pouvez pas signé 2 fois les mêmes CGU.
             notCurrent: Vous ne pouvez qu'accepter les dernières CGU.
-
     LendingRate:
         indexType:
             empty: L'indexType est requis.
@@ -123,6 +111,10 @@ Core:
     StatusInterface:
         duplicated: Le nouveau statut est en doublons avec le dernier.
         invalid: Le nouveau statut n'est pas valable.
+    Upload:
+        fileInput:
+            type:
+                not_matching: Le type (%type%) ne correspond pas à la classe de l'objet ciblé.
     Users:
         email:
             unique: Cet utilisateur dispose déjà d'un compte KLS
@@ -136,12 +128,10 @@ Syndication:
             required: La date limite de réponse aux invitations est requise.
         projectParticipations:
             incorrectProject: La participation ne fait pas partie du projet
-
     ProjectOrganizer:
         roles:
             duplicatedUniqueRole: Le rôle {{ value }} est déjà assigné à {{ company }}
             runRole: Le rôle RUN ne peut être assigné qu'à une banque du Crédit Agricole
-
     ProjectParticipation:
         committeeDeadline:
             required: Merci de saisir une date de réponse du comité si la réponse est en attente.
@@ -154,7 +144,6 @@ Syndication:
             incorrectParticipation: La participation de ce projectParticipationTranche est incorrect
         projectParticipationMembers:
             incorrectParticipation: La participation de ce projectParticipationMember est incorrect
-
     ProjectParticipationCollection:
         projectParticipations:
             duplicated: Merci de vérifier l'unicité des participants.
@@ -169,18 +158,15 @@ ProjectParticipationMember:
         empty: La lettre de confidentialité acceptable n'est pas définie.
     archived:
         lastActiveMember: Vous ne pouvez pas archiver la dernier membre de la participation
-
         ProjectParticipationStatus:
             status:
                 invalid: Le statut n'est pas valide.
-
         ProjectParticipationTranche:
             tranche:
                 notOwn: Merci de choisir une tranche du projet.
                 unsyndicated: La tranche ne peut pas être syndiqué par ce participant.
             allocation:
                 aboveInvitationReply: Le montant de l'allocation est au-dessus du montant de réponse du participant
-
     ProjectStatus:
         project:
             syndicationType:
@@ -188,7 +174,6 @@ ProjectParticipationMember:
             participationType:
                 required: Le type de participation est requis.
             oversubscribed: Le projet est en sursouscription.
-
     Tranche:
         color:
             regex: Cette couleur ne correspond pas a un code RGB

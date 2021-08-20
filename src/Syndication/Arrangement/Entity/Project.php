@@ -26,6 +26,7 @@ use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\Embeddable\NullablePerson;
 use KLS\Core\Entity\File;
+use KLS\Core\Entity\Interfaces\FileTypesAwareInterface;
 use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\Core\Entity\Interfaces\StatusInterface;
 use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
@@ -192,7 +193,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @Gedmo\Loggable(logEntryClass="KLS\Syndication\Arrangement\Entity\Versioned\VersionedProject")
  */
-class Project implements TraceableStatusAwareInterface
+class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
@@ -1024,6 +1025,11 @@ class Project implements TraceableStatusAwareInterface
     public static function getProjectFileTypes(): array
     {
         return self::getConstants('PROJECT_FILE_TYPE_');
+    }
+
+    public static function getFileTypes(): array
+    {
+        return \array_merge(static::getProjectFileTypes(), ProjectFile::getProjectFileTypes());
     }
 
     public function getInterestExpressionDeadline(): ?DateTimeImmutable
