@@ -189,7 +189,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     private ?ReservationStatus $currentStatus;
 
     /**
-     * @var Collection|ProgramStatus[]
+     * @var Collection|ReservationStatus[]
      *
      * @Assert\Valid
      *
@@ -292,30 +292,6 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
         return $this->drive;
     }
 
-    /**
-     * @Groups({"creditGuaranty:reservation:read"})
-     */
-    public function getAdded(): DateTimeImmutable
-    {
-        return $this->added;
-    }
-
-    /**
-     * @Groups({"creditGuaranty:reservation:read"})
-     */
-    public function getUpdated(): ?DateTimeImmutable
-    {
-        return $this->updated;
-    }
-
-    /**
-     * @return Collection|ReservationStatus[]
-     */
-    public function getStatuses(): Collection
-    {
-        return $this->statuses;
-    }
-
     public function getCurrentStatus(): StatusInterface
     {
         return $this->currentStatus;
@@ -327,18 +303,6 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     public function setCurrentStatus(StatusInterface $status): Reservation
     {
         $this->currentStatus = $status;
-
-        return $this;
-    }
-
-    public function getSigningDate(): ?DateTimeImmutable
-    {
-        return $this->signingDate;
-    }
-
-    public function setSigningDate(?DateTimeImmutable $signingDate): Reservation
-    {
-        $this->signingDate = $signingDate;
 
         return $this;
     }
@@ -375,6 +339,14 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
         return ReservationStatus::STATUS_ARCHIVED === $this->getCurrentStatus()->getStatus();
     }
 
+    /**
+     * @return Collection|ReservationStatus[]
+     */
+    public function getStatuses(): Collection
+    {
+        return $this->statuses;
+    }
+
     public function getDateByStatus(int $status): ?DateTimeImmutable
     {
         foreach ($this->getStatuses() as $reservationStatus) {
@@ -386,6 +358,34 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
         return null;
     }
 
+    /**
+     * @Groups({"creditGuaranty:reservation:read"})
+     */
+    public function getSentDate(): ?DateTimeImmutable
+    {
+        return $this->getDateByStatus(ReservationStatus::STATUS_SENT);
+    }
+
+    /**
+     * @Groups({"creditGuaranty:reservation:read"})
+     */
+    public function getAcceptedByManagingCompanyDate(): ?DateTimeImmutable
+    {
+        return $this->getDateByStatus(ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY);
+    }
+
+    public function getSigningDate(): ?DateTimeImmutable
+    {
+        return $this->signingDate;
+    }
+
+    public function setSigningDate(?DateTimeImmutable $signingDate): Reservation
+    {
+        $this->signingDate = $signingDate;
+
+        return $this;
+    }
+
     public function isGrossSubsidyEquivalentEligible(): bool
     {
         $grossSubsidyEquivalents = $this->getFinancingObjects()->map(static fn (FinancingObject $financingObject) => $financingObject->getGrossSubsidyEquivalent())->toArray();
@@ -395,5 +395,21 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
         $comparison = MoneyCalculator::compare($esbTotal, $maxFeiCredit);
 
         return 0 >= $comparison;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:reservation:read"})
+     */
+    public function getAdded(): DateTimeImmutable
+    {
+        return $this->added;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:reservation:read"})
+     */
+    public function getUpdated(): ?DateTimeImmutable
+    {
+        return $this->updated;
     }
 }
