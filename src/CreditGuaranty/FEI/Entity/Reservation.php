@@ -358,6 +358,22 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
         return null;
     }
 
+    /**
+     * @Groups({"creditGuaranty:reservation:read"})
+     */
+    public function getSentDate(): ?DateTimeImmutable
+    {
+        return $this->getDateByStatus(ReservationStatus::STATUS_SENT);
+    }
+
+    /**
+     * @Groups({"creditGuaranty:reservation:read"})
+     */
+    public function getAcceptedByManagingCompanyDate(): ?DateTimeImmutable
+    {
+        return $this->getDateByStatus(ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY);
+    }
+
     public function getSigningDate(): ?DateTimeImmutable
     {
         return $this->signingDate;
