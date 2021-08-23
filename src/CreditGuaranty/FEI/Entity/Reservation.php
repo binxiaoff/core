@@ -224,6 +224,14 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
         return $this->program;
     }
 
+    /**
+     * @Groups({"creditGuaranty:reservation:read"})
+     */
+    public function getProgramName(): string
+    {
+        return $this->program->getName();
+    }
+
     public function getName(): ?string
     {
         return $this->name;
