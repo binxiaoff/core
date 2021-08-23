@@ -27,6 +27,9 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *     },
  *     collectionOperations={
