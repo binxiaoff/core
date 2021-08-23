@@ -144,6 +144,7 @@ class FileDownloadVoter extends AbstractEntityVoter
             case ProjectStatus::STATUS_ALLOCATION:
             case ProjectStatus::STATUS_CONTRACTUALISATION:
             case ProjectStatus::STATUS_SYNDICATION_FINISHED:
+            case ProjectStatus::STATUS_SYNDICATION_CANCELLED:
                 return $participation
                     && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $participation)
                     && ($this->hasValidatedOffer($participation) || $this->isAddedBeforeOfferCollected($project, $fileDownload->getFileVersion()));
