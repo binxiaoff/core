@@ -41,8 +41,13 @@ class EligibilityChecker
 
     public function check(Reservation $reservation, bool $withConditions, ?string $category): array
     {
-        $this->supports($reservation, $withConditions, $category);
+        $emptyObjectIneligibles = $this->getEmptyObjectIneligibles($reservation, $withConditions, $category);
 
+        if (false === empty($emptyObjectIneligibles)) {
+            return $emptyObjectIneligibles;
+        }
+
+        /** @var iterable|Field[] $fields */
         $fields = (false === empty($category))
             ? $this->fieldRepository->findBy(['category' => $category])
             : $this->fieldRepository->findAll();
@@ -58,43 +63,38 @@ class EligibilityChecker
         return $ineligibles;
     }
 
-    private function supports(Reservation $reservation, bool $withConditions, ?string $category): void
+    private function getEmptyObjectIneligibles(Reservation $reservation, bool $withConditions, ?string $category): array
     {
+        $ineligibleCategories = [];
+
         if (
             ($withConditions || empty($category) || 'profile' === $category)
             && false === ($reservation->getBorrower() instanceof Borrower)
         ) {
-            throw new LogicException(
-                \sprintf(
-                    'Cannot check conditions without Borrower in reservation #%s',
-                    $reservation->getId()
-                )
-            );
+            $ineligibleCategories[] = 'profile';
         }
 
         if (
             ($withConditions || empty($category) || 'project' === $category)
             && false === ($reservation->getProject() instanceof Project)
         ) {
-            throw new LogicException(
-                \sprintf(
-                    'Cannot check conditions without Project in reservation #%s',
-                    $reservation->getId()
-                )
-            );
+            $ineligibleCategories[] = 'project';
         }
 
         if (
             ($withConditions || empty($category) || 'loan' === $category)
             && 0 === $reservation->getFinancingObjects()->count()
         ) {
-            throw new LogicException(
-                \sprintf(
-                    'Cannot check conditions without FinancingObject(s) in reservation #%s',
-                    $reservation->getId()
-                )
-            );
+            $ineligibleCategories[] = 'loan';
         }
+
+        if (empty($ineligibleCategories)) {
+            return [];
+        }
+
+        $fields = $this->fieldRepository->findBy(['category' => $ineligibleCategories]);
+
+        return \array_merge_recursive(...\array_map(fn (Field $field) => [$field->getCategory() => [$field->getFieldAlias()]], $fields));
     }
 
     private function checkByField(Reservation $reservation, Field $field, bool $withConditions): bool

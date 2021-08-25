@@ -24,7 +24,7 @@ use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
- * @coversDefaultClass \KLS\CreditGuaranty\Service\EligibilityChecker
+ * @coversDefaultClass \KLS\CreditGuaranty\FEI\Service\EligibilityChecker
  *
  * @internal
  */
@@ -68,6 +68,9 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $this->reservation                               = null;
     }
 
+    /**
+     * @covers ::check
+     */
     public function testCheckCategoryWithoutConditions(): void
     {
         $this->reservation->setBorrower($this->createBorrower($this->reservation));
@@ -127,6 +130,9 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         static::assertSame([], $result);
     }
 
+    /**
+     * @covers ::check
+     */
     public function testCheckCategoryWithConditions(): void
     {
         $this->reservation->setBorrower($this->createBorrower($this->reservation));
@@ -138,9 +144,10 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $program        = $this->reservation->getProgram();
         $entity         = $this->reservation->getFinancingObjects();
 
-        $field1                           = new Field('loan_duration', $category, 'other', 'financingObjects', 'loanDuration', FinancingObject::class, false, null, null);
-        $field2                           = new Field('supporting_generations_renewal', $category, 'bool', 'financingObjects', 'supportingGenerationsRenewal', FinancingObject::class, false, null, null);
-        $fields                           = [$field1, $field2];
+        $field1 = new Field('loan_duration', $category, 'other', 'financingObjects', 'loanDuration', FinancingObject::class, false, null, null);
+        $field2 = new Field('supporting_generations_renewal', $category, 'bool', 'financingObjects', 'supportingGenerationsRenewal', FinancingObject::class, false, null, null);
+        $fields = [$field1, $field2];
+
         $programEligibility1              = new ProgramEligibility($program, $field1);
         $programEligibility2              = new ProgramEligibility($program, $field2);
         $programEligibilityConfiguration1 = new ProgramEligibilityConfiguration($programEligibility1, null, null, true);
@@ -174,6 +181,9 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         static::assertSame(['loan' => ['loan_duration']], $result);
     }
 
+    /**
+     * @covers ::check
+     */
     public function testCheckWithoutConditions(): void
     {
         $this->reservation->setBorrower($this->createBorrower($this->reservation));
@@ -184,10 +194,11 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $withConditions = false;
         $program        = $this->reservation->getProgram();
 
-        $field1                           = new Field('activity_post_code', 'profile', 'other', 'borrower', 'addressPostCode', Borrower::class, false, null, null);
-        $field2                           = new Field('receiving_grant', 'project', 'bool', 'project', 'receivingGrant', Project::class, false, null, null);
-        $field3                           = new Field('financing_object_type', 'loan', 'list', 'financingObjects', 'financingObjectType', FinancingObject::class, false, null, null);
-        $fields                           = [$field1, $field2, $field3];
+        $field1 = new Field('activity_post_code', 'profile', 'other', 'borrower', 'addressPostCode', Borrower::class, false, null, null);
+        $field2 = new Field('receiving_grant', 'project', 'bool', 'project', 'receivingGrant', Project::class, false, null, null);
+        $field3 = new Field('financing_object_type', 'loan', 'list', 'financingObjects', 'financingObjectType', FinancingObject::class, false, null, null);
+        $fields = [$field1, $field2, $field3];
+
         $financingObjectTypeOption        = new ProgramChoiceOption($program, 'Object type', $field3);
         $programEligibility1              = new ProgramEligibility($program, $field1);
         $programEligibility2              = new ProgramEligibility($program, $field2);
@@ -234,6 +245,9 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         static::assertSame(['project' => ['receiving_grant']], $result);
     }
 
+    /**
+     * @covers ::check
+     */
     public function testCheckWithConditions(): void
     {
         $this->reservation->setBorrower($this->createBorrower($this->reservation));
@@ -294,22 +308,38 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         static::assertSame(['profile' => ['borrower_type'], 'project' => ['receiving_grant']], $result);
     }
 
-    public function exceptionsProvider(): iterable
+    public function emptyObjectProvider(): iterable
     {
-        yield 'checking profile' => ['profile', false];
-        yield 'checking profile with conditions' => ['profile', true];
-        yield 'checking project' => ['project', false];
-        yield 'checking project with conditions' => ['project', true];
-        yield 'checking loan' => ['loan', false];
-        yield 'checking loan with conditions' => ['loan', true];
+        $categories   = ['profile', 'project', 'loan'];
+        $field1       = new Field('field_alias_1', 'profile', 'other', 'borrower', 'fieldAlias1', Borrower::class, false, null, null);
+        $field2       = new Field('field_alias_2', 'project', 'bool', 'project', 'fieldAlias2', Project::class, false, null, null);
+        $field3       = new Field('field_alias_3', 'loan', 'list', 'loan', 'fieldAlias3', FinancingObject::class, false, null, null);
+        $fields       = [$field1, $field2, $field3];
+        $fieldAliases = ['profile' => ['field_alias_1'], 'project' => ['field_alias_2'], 'loan' => ['field_alias_3']];
+
+        yield 'checking profile' => ['profile', false, ['profile'], [$field1], ['profile' => ['field_alias_1']]];
+        yield 'checking profile with conditions' => ['profile', true, $categories, $fields, $fieldAliases];
+        yield 'checking project' => ['project', false, ['project'], [$field2], ['project' => ['field_alias_2']]];
+        yield 'checking project with conditions' => ['project', true, $categories, $fields, $fieldAliases];
+        yield 'checking loan' => ['loan', false, ['loan'], [$field3], ['loan' => ['field_alias_3']]];
+        yield 'checking loan with conditions' => ['loan', true, $categories, $fields, $fieldAliases];
+        yield 'checking no category' => ['', false, $categories, $fields, $fieldAliases];
+        yield 'checking no category with conditions' => ['', true, $categories, $fields, $fieldAliases];
     }
 
     /**
-     * @dataProvider exceptionsProvider
+     * @covers ::check
+     *
+     * @dataProvider emptyObjectProvider
      */
-    public function testCheckNotSupportsCheckingException(string $category, bool $withConditions): void
-    {
-        $this->fieldRepository->findBy(['category' => $category])->shouldNotBeCalled();
+    public function testCheckWithEmptyObject(
+        string $category,
+        bool $withConditions,
+        array $expectedCategories,
+        array $expectedFields,
+        array $expected
+    ): void {
+        $this->fieldRepository->findBy(['category' => $expectedCategories])->shouldBeCalledOnce()->willReturn($expectedFields);
         $this->fieldRepository->findAll()->shouldNotBeCalled();
         $this->programEligibilityRepository->findOneBy(Argument::any())->shouldNotBeCalled();
         $this->eligibilityHelper->getEntity(Argument::cetera())->shouldNotBeCalled();
@@ -317,12 +347,15 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $this->programEligibilityConfigurationRepository->findOneBy(Argument::any())->shouldNotBeCalled();
         $this->eligibilityConditionChecker->checkByConfiguration(Argument::cetera())->shouldNotBeCalled();
 
-        static::expectException(LogicException::class);
-
         $eligibilityChecker = $this->createTestObject();
-        $eligibilityChecker->check($this->reservation, $withConditions, $category);
+        $result             = $eligibilityChecker->check($this->reservation, $withConditions, $category);
+
+        static::assertSame($expected, $result);
     }
 
+    /**
+     * @covers ::check
+     */
     public function testCheckExceptionWithoutProgramEligibility(): void
     {
         $this->reservation->setBorrower($this->createBorrower($this->reservation));
@@ -365,6 +398,8 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
     }
 
     /**
+     * @covers ::check
+     *
      * @dataProvider configurationExceptionsProvider
      *
      * @param mixed $value
