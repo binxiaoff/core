@@ -751,6 +751,8 @@ class Project
      * @return iterable|Participation[]
      *
      * @ApiProperty(security="is_granted('agent', object)")
+     *
+     * @Groups({"agency:project:read"})
      */
     public function getParticipations(): Generator
     {
