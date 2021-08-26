@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace KLS\Test\Syndication\Agency\Unit\MessageHandler;
 
+use InvalidArgumentException;
+use KLS\Syndication\Agency\Entity\AbstractProjectMember;
 use KLS\Syndication\Agency\Entity\AgentMember;
 use KLS\Syndication\Agency\Entity\BorrowerMember;
 use KLS\Syndication\Agency\Entity\ParticipationMember;
@@ -12,145 +14,139 @@ use KLS\Syndication\Agency\Message\ProjectStatusUpdated;
 use KLS\Syndication\Agency\MessageHandler\ProjectStatusUpdatedHandler;
 use KLS\Syndication\Agency\Notifier\ProjectMemberNotifier;
 use KLS\Syndication\Agency\Repository\ProjectRepository;
+use KLS\Test\Syndication\Agency\Unit\Traits\ProjectMemberSetTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
- * @internal
- *
  * @coversDefaultClass \KLS\Syndication\Agency\MessageHandler\ProjectStatusUpdatedHandler
+ *
+ * @internal
  */
 class ProjectStatusUpdatedHandlerTest extends TestCase
 {
-    /**
-     * @var ProjectRepository|ObjectProphecy
-     */
+    use ProjectMemberSetTrait;
+
+    /** @var ProjectRepository|ObjectProphecy */
     private $projectRepository;
-    /**
-     * @var ProjectMemberNotifier|ObjectProphecy
-     */
+
+    /** @var ProjectMemberNotifier|ObjectProphecy */
     private $projectMemberNotifier;
 
     protected function setUp(): void
     {
-        parent::setUp();
-
-        $this->projectMemberNotifier = $this->prophesize(ProjectMemberNotifier::class);
         $this->projectRepository     = $this->prophesize(ProjectRepository::class);
+        $this->projectMemberNotifier = $this->prophesize(ProjectMemberNotifier::class);
     }
 
     protected function tearDown(): void
     {
-        parent::tearDown();
-
-        $this->projectRepository     = null;
         $this->projectMemberNotifier = null;
+        $this->projectRepository     = null;
     }
 
     /**
-     * @throws \JsonException
-     *
-     * @covers ::__invoke
-     */
-    public function testUnknownProject()
-    {
-        $projectId = 1;
-        $this->projectRepository->find($projectId)->willReturn(null);
-
-        $message = new ProjectStatusUpdated(1, 10, 20);
-
-        $projectStatusHandler = new ProjectStatusUpdatedHandler(
-            $this->projectMemberNotifier->reveal(),
-            $this->projectRepository->reveal()
-        );
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches("/{$projectId}/");
-
-        $projectStatusHandler($message);
-
-        $this->projectRepository->find($projectId)->shouldHaveBeenCalled();
-
-        $this->projectMemberNotifier->notifyProjectPublication(Argument::any())->shouldNotHaveBeenCalled();
-    }
-
-    /**
-     * @throws \JsonException
-     *
      * @covers ::__invoke
      *
-     * @dataProvider providerProjectPublicationNotification
+     * @dataProvider projectMembersProvider
      */
-    public function testProjectPublicationNotification(int $previousStatus, int $nextStatus, array $projectMembers)
+    public function testInvoke(Project $project, int $expectedMembersNb): void
     {
-        $projectId = 1;
+        $this->forcePropertyValue($project, 'id', 42);
+        $message = new ProjectStatusUpdated(42, Project::STATUS_DRAFT, Project::STATUS_PUBLISHED);
 
-        $project = $this->prophesize(Project::class);
-        $project->getMembers()->willReturn($projectMembers);
+        $this->projectRepository->find(42)->shouldBeCalledOnce()->willReturn($project);
+        $this->projectMemberNotifier->notifyProjectPublication(Argument::type(AbstractProjectMember::class))->shouldBeCalledTimes($expectedMembersNb);
 
-        $this->projectRepository->find($projectId)->willReturn($project->reveal());
-
-        $message = new ProjectStatusUpdated($projectId, $previousStatus, $nextStatus);
-
-        $projectStatusHandler = new ProjectStatusUpdatedHandler(
-            $this->projectMemberNotifier->reveal(),
-            $this->projectRepository->reveal()
-        );
-
-        $projectStatusHandler($message);
-
-        $this->projectRepository->find($projectId)->shouldHaveBeenCalled();
-
-        // Each of these condition forbids the sending of the notification
-        if (Project::STATUS_DRAFT !== $previousStatus || Project::STATUS_PUBLISHED !== $nextStatus || 0 === \count($projectMembers)) {
-            $this->projectMemberNotifier->notifyProjectPublication(Argument::any())->shouldNotHaveBeenCalled();
-
-            return;
-        }
-
-        // Case where some notification should have been sent
-        foreach ($projectMembers as $projectMember) {
-            $this->projectMemberNotifier->notifyProjectPublication($projectMember)->shouldHaveBeenCalled();
-        }
+        $this->createTestObject()($message);
     }
 
-    public function providerProjectPublicationNotification(): iterable
+    public function projectMembersProvider(): iterable
     {
-        $transitions = [
-            Project::STATUS_DRAFT     => [Project::STATUS_PUBLISHED],
-            Project::STATUS_PUBLISHED => [Project::STATUS_FINISHED, Project::STATUS_ARCHIVED],
+        yield '0 AgentMember + 0 BorrowerMember + 0 ParticipationMember' => [
+            $this->createProjectWithMembers([]),
+            0,
         ];
-
-        foreach ($transitions as $previousStatus => $nextStatuses) {
-            foreach ($nextStatuses as $nextStatus) {
-                foreach ($this->getProjectMemberCollectionPossibilities() as $projectMemberCollectionPossibilityDescription => $possibility) {
-                    yield \sprintf(
-                        'Test with transition %d to %d and %s',
-                        $previousStatus,
-                        $nextStatus,
-                        $projectMemberCollectionPossibilityDescription
-                    ) => [$previousStatus, $nextStatus, $possibility];
-                }
-            }
-        }
+        yield '3 AgentMember + 0 BorrowerMember + 0 ParticipationMember' => [
+            $this->createProjectWithMembers([AgentMember::class => 3]),
+            3,
+        ];
+        yield '0 AgentMember + 1 BorrowerMember + 0 ParticipationMember' => [
+            $this->createProjectWithMembers([BorrowerMember::class => 1]),
+            1,
+        ];
+        yield '0 AgentMember + 0 BorrowerMember + 2 ParticipationMember' => [
+            $this->createProjectWithMembers([ParticipationMember::class => 2]),
+            2,
+        ];
+        yield '3 AgentMember + 1 BorrowerMember + 0 ParticipationMember' => [
+            $this->createProjectWithMembers([AgentMember::class => 3, BorrowerMember::class => 1]),
+            4,
+        ];
+        yield '0 AgentMember + 1 BorrowerMember + 2 ParticipationMember' => [
+            $this->createProjectWithMembers([BorrowerMember::class => 1, ParticipationMember::class => 2]),
+            3,
+        ];
+        yield '3 AgentMember + 0 BorrowerMember + 2 ParticipationMember' => [
+            $this->createProjectWithMembers([AgentMember::class => 3, ParticipationMember::class => 2]),
+            5,
+        ];
+        yield '3 AgentMember + 1 BorrowerMember + 2 ParticipationMember' => [
+            $this->createProjectWithMembers([AgentMember::class => 3, BorrowerMember::class => 1, ParticipationMember::class => 2]),
+            6,
+        ];
     }
 
-    private function getProjectMemberCollectionPossibilities()
+    /**
+     * @covers ::__invoke
+     */
+    public function testInvokeExceptionWithProjectNotFound(): void
     {
-        $random = \random_int(2, 10);
+        $project = $this->createAgencyProject($this->createStaff());
+        $this->forcePropertyValue($project, 'id', 42);
+        $message = new ProjectStatusUpdated(42, Project::STATUS_DRAFT, Project::STATUS_PUBLISHED);
 
-        // TODO Add more possible combination (e.g. 1 agent member and 0 participation member, 1 agent member and n participation, etc.)
-        $classes = [AgentMember::class, BorrowerMember::class, ParticipationMember::class];
+        $this->projectRepository->find(42)->shouldBeCalledOnce()->willReturn(null);
+        $this->projectMemberNotifier->notifyProjectPublication(Argument::any())->shouldNotBeCalled();
 
-        foreach ($classes as $class) {
-            $projectMember = $this->prophesize($class);
+        static::expectException(InvalidArgumentException::class);
 
-            $class = \ltrim(\mb_substr($class, \mb_strrpos($class, '\\')), '\\');
+        $this->createTestObject()($message);
+    }
 
-            yield "with O {$class}" => [];
-            yield "with 1 {$class}" => [$projectMember];
-            yield "with {$random} {$class}" => \array_fill(1, $random, $projectMember);
-        }
+    /**
+     * @covers ::__invoke
+     *
+     * @dataProvider invalidStatusesProvider
+     */
+    public function testInvokeWithInvalidStatuses(int $previousStatus, int $nextStatus): void
+    {
+        $project = $this->createAgencyProject($this->createStaff());
+        $this->forcePropertyValue($project, 'id', 42);
+        $message = new ProjectStatusUpdated(42, $previousStatus, $nextStatus);
+
+        $this->projectRepository->find(42)->shouldBeCalledOnce()->willReturn($project);
+        $this->projectMemberNotifier->notifyProjectPublication(Argument::any())->shouldNotBeCalled();
+
+        $this->createTestObject()($message);
+    }
+
+    public function invalidStatusesProvider(): iterable
+    {
+        yield 'status draft and draft' => [Project::STATUS_DRAFT, Project::STATUS_DRAFT];
+        yield 'status draft and archived' => [Project::STATUS_DRAFT, Project::STATUS_ARCHIVED];
+        yield 'status draft and finished' => [Project::STATUS_DRAFT, Project::STATUS_FINISHED];
+        yield 'status published and published' => [Project::STATUS_PUBLISHED, Project::STATUS_PUBLISHED];
+        yield 'status archived and published' => [Project::STATUS_ARCHIVED, Project::STATUS_PUBLISHED];
+        yield 'status finished and published' => [Project::STATUS_FINISHED, Project::STATUS_PUBLISHED];
+    }
+
+    private function createTestObject(): ProjectStatusUpdatedHandler
+    {
+        return new ProjectStatusUpdatedHandler(
+            $this->projectMemberNotifier->reveal(),
+            $this->projectRepository->reveal()
+        );
     }
 }
