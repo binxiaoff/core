@@ -41,7 +41,7 @@ class ReservationVoter extends AbstractEntityVoter
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_RESERVATION)
             && (
                 $this->authorizationChecker->isGranted(ReservationRoleVoter::ROLE_MANAGER, $reservation)
-                || $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $program)
+                || $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $program) && false === $reservation->isInDraft()
             )
         ;
     }
