@@ -15,7 +15,13 @@ use KLS\Syndication\Arrangement\Repository\ProjectRepository;
 use KLS\Syndication\Arrangement\Security\Voter\ProjectFileVoter;
 use KLS\Syndication\Arrangement\Security\Voter\ProjectVoter;
 use KLS\Syndication\Arrangement\Service\FileInput\FileInputProjectUploader;
-use KLS\Test\Core\Unit\Traits\FileInputEntitiesTrait;
+use KLS\Test\Core\Unit\Traits\FileInputTrait;
+use KLS\Test\Core\Unit\Traits\MessageTrait;
+use KLS\Test\Core\Unit\Traits\TokenTrait;
+use KLS\Test\Core\Unit\Traits\UserStaffTrait;
+use KLS\Test\Syndication\Agency\Unit\Traits\AgencyProjectTrait;
+use KLS\Test\Syndication\Agency\Unit\Traits\TermTrait;
+use KLS\Test\Syndication\Arrangement\Unit\Traits\ArrangementProjectSetTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -30,7 +36,13 @@ use Symfony\Component\Security\Core\Security;
  */
 class FileInputProjectUploaderTest extends TestCase
 {
-    use FileInputEntitiesTrait;
+    use UserStaffTrait;
+    use TokenTrait;
+    use FileInputTrait;
+    use MessageTrait;
+    use TermTrait;
+    use AgencyProjectTrait;
+    use ArrangementProjectSetTrait;
 
     /** @var Security|ObjectProphecy */
     private $security;
@@ -97,7 +109,7 @@ class FileInputProjectUploaderTest extends TestCase
     {
         $staff        = $this->createStaff();
         $targetEntity = $this->createArrangementProject($staff);
-        $token        = $this->createToken($staff, ['staff' => $staff, 'company' => $staff->getCompany()]);
+        $token        = $this->createToken($staff->getUser(), ['staff' => $staff, 'company' => $staff->getCompany()]);
         $fileInput    = $this->createFileInput($targetEntity, ProjectFile::PROJECT_FILE_TYPE_GENERAL);
         $user         = $staff->getUser();
 
@@ -124,7 +136,7 @@ class FileInputProjectUploaderTest extends TestCase
     {
         $staff        = $this->createStaff();
         $targetEntity = $this->createArrangementProject($staff);
-        $token        = $this->createToken($staff, ['staff' => $staff]);
+        $token        = $this->createToken($staff->getUser(), ['staff' => $staff]);
         $fileInput    = $this->createFileInput($targetEntity, ProjectFile::PROJECT_FILE_TYPE_GENERAL);
         $user         = $staff->getUser();
 
@@ -149,7 +161,7 @@ class FileInputProjectUploaderTest extends TestCase
     {
         $staff        = $this->createStaff();
         $targetEntity = $this->createArrangementProject($staff);
-        $token        = $this->createToken($staff, ['staff' => $staff, 'company' => $staff->getCompany()]);
+        $token        = $this->createToken($staff->getUser(), ['staff' => $staff, 'company' => $staff->getCompany()]);
         $fileInput    = $this->createFileInput($targetEntity, ProjectFile::PROJECT_FILE_TYPE_GENERAL);
         $file         = new File();
         $projectFile  = new ProjectFile($fileInput->type, $file, $targetEntity, $staff);
@@ -176,7 +188,7 @@ class FileInputProjectUploaderTest extends TestCase
     {
         $staff        = $this->createStaff();
         $targetEntity = $this->createArrangementProject($staff);
-        $token        = $this->createToken($staff, ['staff' => $staff]);
+        $token        = $this->createToken($staff->getUser(), ['staff' => $staff]);
         $fileInput    = $this->createFileInput($targetEntity, ProjectFile::PROJECT_FILE_TYPE_GENERAL);
         $file         = new File();
         $projectFile  = new ProjectFile($fileInput->type, $file, $targetEntity, $staff);
@@ -203,12 +215,11 @@ class FileInputProjectUploaderTest extends TestCase
     {
         $staff        = $this->createStaff();
         $targetEntity = $this->createArrangementProject($staff);
-        $token        = $this->createToken($staff, ['staff' => $staff]);
+        $token        = $this->createToken($staff->getUser(), ['staff' => $staff]);
         $fileInput    = $this->createFileInput($targetEntity, ProjectFile::PROJECT_FILE_TYPE_GENERAL);
         $file         = new File();
         $user         = $staff->getUser();
 
-        $targetEntity->setPublicId();
         $file->setPublicId();
 
         // uploadForProjectFile
@@ -234,7 +245,7 @@ class FileInputProjectUploaderTest extends TestCase
     {
         $staff        = $this->createStaff();
         $targetEntity = $this->createArrangementProject($staff);
-        $token        = $this->createToken($staff, ['company' => $staff->getCompany()]);
+        $token        = $this->createToken($staff->getUser(), ['company' => $staff->getCompany()]);
         $fileInput    = $this->createFileInput($targetEntity, $type);
         $user         = $staff->getUser();
 
@@ -306,8 +317,6 @@ class FileInputProjectUploaderTest extends TestCase
         $fileInput    = $this->createFileInput($targetEntity, $type);
         $file         = new File();
         $user         = $staff->getUser();
-
-        $targetEntity->setPublicId();
 
         if (ArrangementProject::PROJECT_FILE_TYPE_DESCRIPTION === $type) {
             $targetEntity->setTermSheet((new File())->setPublicId());

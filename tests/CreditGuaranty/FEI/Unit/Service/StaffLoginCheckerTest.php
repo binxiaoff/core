@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace KLS\Test\CreditGuaranty\FEI\Unit\Service;
 
-use KLS\Core\Entity\Company;
-use KLS\Core\Entity\Staff;
-use KLS\Core\Entity\Team;
-use KLS\Core\Entity\User;
 use KLS\Core\Model\Bitmask;
 use KLS\CreditGuaranty\FEI\Entity\StaffPermission;
 use KLS\CreditGuaranty\FEI\Repository\StaffPermissionRepository;
 use KLS\CreditGuaranty\FEI\Service\StaffLoginChecker;
+use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 
@@ -22,6 +19,8 @@ use Prophecy\Prophecy\ObjectProphecy;
  */
 class StaffLoginCheckerTest extends TestCase
 {
+    use UserStaffTrait;
+
     /** @var StaffPermissionRepository|ObjectProphecy */
     private $staffPermissionRepository;
 
@@ -77,14 +76,6 @@ class StaffLoginCheckerTest extends TestCase
         $this->staffPermissionRepository->findOneBy(['staff' => $staff])->shouldBeCalledOnce()->willReturn($staffPermission);
 
         static::assertFalse($this->createTestObject()->isGrantedLogin($staff));
-    }
-
-    private function createStaff(): Staff
-    {
-        $teamRoot = Team::createRootTeam(new Company('Company', 'Company', ''));
-        $team     = Team::createTeam('Team', $teamRoot);
-
-        return new Staff(new User('user@mail.com'), $team);
     }
 
     private function createTestObject(): StaffLoginChecker

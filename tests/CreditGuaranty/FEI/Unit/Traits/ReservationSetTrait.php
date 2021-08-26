@@ -2,18 +2,14 @@
 
 declare(strict_types=1);
 
-namespace KLS\Test\CreditGuaranty\FEI\Unit\Service;
+namespace KLS\Test\CreditGuaranty\FEI\Unit\Traits;
 
 use DateTimeImmutable;
 use Exception;
-use KLS\Core\Entity\Company;
 use KLS\Core\Entity\CompanyGroup;
 use KLS\Core\Entity\CompanyGroupTag;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
-use KLS\Core\Entity\Staff;
-use KLS\Core\Entity\Team;
-use KLS\Core\Entity\User;
 use KLS\CreditGuaranty\FEI\Entity\Borrower;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
@@ -21,26 +17,25 @@ use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\Project;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
-use PHPUnit\Framework\TestCase;
+use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 
-abstract class AbstractEligibilityTest extends TestCase
+trait ReservationSetTrait
 {
+    use UserStaffTrait;
+
     /**
      * @throws Exception
      */
     protected function createReservation(): Reservation
     {
-        $teamRoot = Team::createRootTeam(new Company('Company', 'Company', ''));
-        $team     = Team::createTeam('Team', $teamRoot);
-
         $program = new Program(
             'Program',
             new CompanyGroupTag(new CompanyGroup('Company Group'), 'code'),
             new Money('EUR', '42'),
-            new Staff(new User('user@mail.com'), $team)
+            $this->createStaff()
         );
 
-        return new Reservation($program, new Staff(new User('user@mail.com'), $team));
+        return new Reservation($program, $this->createStaff());
     }
 
     protected function createBorrower(Reservation $reservation): Borrower
