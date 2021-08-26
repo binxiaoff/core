@@ -37,13 +37,6 @@ class SwaggerDecorator implements NormalizerInterface
         /** @var array $docs */
         $docs = $this->decorated->normalize($object, $format, $context);
 
-        // Definitions
-        $docs['definitions']['Folder'] = [
-            'properties' => [
-                'name' => ['type' => 'string'],
-            ],
-        ];
-
         // Paths
         $authenticationPaths = [
             $this->router->generate('authentication_token')       => $this->generateAuthenticationTokenPath(),
@@ -75,6 +68,14 @@ class SwaggerDecorator implements NormalizerInterface
                 unset($docs['paths'][$route]['get']);
             }
         }
+
+        // Schemas
+        $docs['components']['schemas']['Folder'] = [
+            'properties' => [
+                'name' => ['type' => 'string'],
+            ],
+        ];
+        \ksort($docs['components']['schemas']);
 
         return $docs;
     }
