@@ -40,6 +40,8 @@ class ReservationSentValidator extends ConstraintValidator
                 ->atPath('reservation.borrower')
                 ->addViolation()
             ;
+
+            return;
         }
 
         $project = $reservation->getProject();
@@ -49,6 +51,8 @@ class ReservationSentValidator extends ConstraintValidator
                 ->atPath('reservation.project')
                 ->addViolation()
             ;
+
+            return;
         }
 
         if (0 === $reservation->getFinancingObjects()->count()) {
@@ -56,9 +60,11 @@ class ReservationSentValidator extends ConstraintValidator
                 ->atPath('reservation.financingObjects')
                 ->addViolation()
             ;
+
+            return;
         }
 
-        if ($project->isActivateEsbCalculation()) {
+        if ($project->getProgram()->isEsbCalculationActivated()) {
             if (false === $reservation->isGrossSubsidyEquivalentEligible()) {
                 $this->context->buildViolation('CreditGuaranty.Reservation.esb.ineligible')
                     ->atPath('reservation')
