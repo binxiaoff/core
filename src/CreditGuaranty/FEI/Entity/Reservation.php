@@ -314,6 +314,11 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
         return $this;
     }
 
+    public function isInDraft(): bool
+    {
+        return ReservationStatus::STATUS_DRAFT === $this->getCurrentStatus()->getStatus();
+    }
+
     public function isSent(): bool
     {
         return ReservationStatus::STATUS_SENT <= $this->getCurrentStatus()->getStatus();
