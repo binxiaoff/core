@@ -24,27 +24,30 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *
  * @ApiResource(
  *     attributes={"pagination_enabled": false},
- *     normalizationContext={"groups": {
- *         "messageThread:read",
- *         "message:read",
- *         "messageStatus:read",
- *         "messageFile:read",
- *         "staff:read",
- *         "company:read",
- *         "timestampable:read",
- *         "file:read",
- *         "user:read",
- *         "fileVersion:read",
- *         "companyGroupTag:read"
- *     }},
+ *     normalizationContext={
+ *         "groups": {
+ *             "messageThread:read",
+ *             "message:read",
+ *             "messageStatus:read",
+ *             "messageFile:read",
+ *             "staff:read",
+ *             "company:read",
+ *             "timestampable:read",
+ *             "file:read",
+ *             "user:read",
+ *             "fileVersion:read",
+ *             "companyGroupTag:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object)"
+ *             "security": "is_granted('view', object)",
  *         }
  *     },
  *     collectionOperations={
- *         "get"
- *     }
+ *         "get",
+ *     },
  * )
  * @ApiFilter(SearchFilter::class, properties={"projectParticipation.publicId": "exact"})
  */

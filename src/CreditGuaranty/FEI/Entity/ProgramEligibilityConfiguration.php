@@ -24,27 +24,39 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 /**
  * @ApiResource(
  *     attributes={"pagination_enabled": false},
- *     normalizationContext={"groups": {"creditGuaranty:programEligibilityConfiguration:read", "timestampable:read"}},
- *     denormalizationContext={"groups": {"creditGuaranty:programEligibilityConfiguration:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:programEligibilityConfiguration:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:programEligibilityConfiguration:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "normalization_context": {
  *                 "groups": {
  *                     "creditGuaranty:programEligibilityConfiguration:read",
  *                     "creditGuaranty:programEligibilityCondition:read",
- *                     "timestampable:read"
- *                 }
- *             }
+ *                     "timestampable:read",
+ *                 },
+ *                 "openapi_definition_name": "read",
+ *             },
  *         },
  *         "patch": {"security": "is_granted('edit', object)"},
- *         "delete": {"security": "is_granted('delete', object)"}
+ *         "delete": {"security": "is_granted('delete', object)"},
  *     },
  *     collectionOperations={
  *         "post": {
  *             "input": ProgramEligibilityConfigurationInput::class,
- *             "security_post_denormalize": "is_granted('create', object)"
- *         }
- *     }
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *         },
+ *     },
  * )
  *
  * @ApiFilter(SearchFilter::class, properties={"programEligibility.publicId"})

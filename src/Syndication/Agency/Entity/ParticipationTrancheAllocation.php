@@ -16,10 +16,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ApiResource(
  *     normalizationContext={
- *         "groups": {"agency:participationTrancheAllocation:read"}
+ *         "groups": {
+ *             "agency:participationTrancheAllocation:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     denormalizationContext={
- *         "groups": {"agency:participationTrancheAllocation:write"}
+ *         "groups": {
+ *             "agency:participationTrancheAllocation:write",
+ *         },
+ *         "openapi_definition_name": "write",
  *     },
  *     itemOperations={
  *         "get": {
@@ -29,9 +35,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "openapi_context": {
  *                 "x-visibility": "hide",
  *             },
- *         }
+ *         },
  *     },
- *     collectionOperations={}
+ *     collectionOperations={},
  * )
  *
  * @ORM\Entity

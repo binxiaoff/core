@@ -21,7 +21,15 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Table(name="syndication_project_file")
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"projectFile:read", "file:read", "fileVersion:read", "timestampable:read"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "projectFile:read",
+ *             "file:read",
+ *             "fileVersion:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -31,9 +39,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "x-visibility": "hide",
  *             },
  *         },
- *         "delete": {"security_post_denormalize": "is_granted('delete', previous_object)"}
+ *         "delete": {"security_post_denormalize": "is_granted('delete', previous_object)"},
  *     },
- *     collectionOperations={}
+ *     collectionOperations={},
  * )
  */
 class ProjectFile

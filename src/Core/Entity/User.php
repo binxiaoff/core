@@ -30,19 +30,38 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
+ *     normalizationContext={
+ *         "groups": {
+ *             "user:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "user:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     collectionOperations={
- *         "get"
+ *         "get",
  *     },
  *     itemOperations={
  *         "get": {
  *             "security": "is_granted('view', object)",
- *             "normalization_context": {"groups": {"user:read", "user:item:read", "staff:read", "company:read", "legalDocument:read"}}
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "user:read",
+ *                     "user:item:read",
+ *                     "staff:read",
+ *                     "company:read",
+ *                     "legalDocument:read",
+ *                 },
+ *                 "openapi_definition_name": "read",
+ *             },
  *         },
  *         "put": {"security": "is_granted('edit', object)"},
- *         "patch": {"security": "is_granted('edit', object)"}
+ *         "patch": {"security": "is_granted('edit', object)"},
  *     },
- *     normalizationContext={"groups": {"user:read"}},
- *     denormalizationContext={"groups": {"user:write"}}
  * )
  *
  * @Gedmo\Loggable(logEntryClass="KLS\Core\Entity\Versioned\VersionedUser")

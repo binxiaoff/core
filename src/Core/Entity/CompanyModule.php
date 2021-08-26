@@ -29,8 +29,19 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\HasLifecycleCallbacks
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"companyModule:read", "nullableMoney:read"}},
- *     denormalizationContext={"groups": {"companyModule:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "companyModule:read",
+ *             "nullableMoney:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "companyModule:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -42,9 +53,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "security_post_denormalize": "is_granted('edit', object) && object.isActivated() === true"
- *         }
- *     }
+ *             "security_post_denormalize": "is_granted('edit', object) && object.isActivated() === true",
+ *         },
+ *     },
  * )
  */
 class CompanyModule

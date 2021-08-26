@@ -17,8 +17,18 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": "fileVersionSignature:read"},
- *     denormalizationContext={"groups": "fileVersionSignature:write"},
+ *     normalizationContext={
+ *         "groups": {
+ *             "fileVersionSignature:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "fileVersionSignature:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object"},
  *         "sign": {
@@ -26,12 +36,17 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "method": "POST",
  *             "controller": "KLS\Core\Controller\FileVersionSignature\Sign",
  *             "path": "/core/file_version_signatures/{publicId}/sign",
- *             "denormalization_context": {"groups": {"fileVersionSignature:sign"}}
- *         }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "fileVersionSignature:sign",
+ *                 },
+ *                 "openapi_definition_name": "sign",
+ *             },
+ *         },
  *     },
  *     collectionOperations={
- *         "post"
- *     }
+ *         "post",
+ *     },
  * )
  *
  * @ORM\Entity

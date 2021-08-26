@@ -16,12 +16,12 @@ use KLS\Core\Entity\User;
  * @ApiResource(
  *     collectionOperations={
  *         "get": {"security": "is_granted('view', object.getProject())"},
- *         "post": {"security_post_denormalize": "is_granted('view', object.getProject())"}
+ *         "post": {"security_post_denormalize": "is_granted('view', object.getProject())"},
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object.getProject())"},
- *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)"}
- *     }
+ *         "put": {"security_post_denormalize": "is_granted('edit', previous_object)"},
+ *     },
  * )
  *
  * @Gedmo\Loggable(logEntryClass="KLS\Syndication\Arrangement\Entity\Versioned\VersionedProjectComment")

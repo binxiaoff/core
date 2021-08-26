@@ -22,8 +22,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
- *             "agency:borrowerMember:read"
- *         }
+ *             "agency:borrowerMember:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     collectionOperations={
  *         "post": {
@@ -33,10 +34,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "agency:borrowerMember:create",
  *                     "agency:borrowerMember:write",
  *                     "user:create",
- *                     "user:write"
- *                 }
- *             }
- *         }
+ *                     "user:write",
+ *                 },
+ *                 "openapi_definition_name": "write",
+ *             },
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
@@ -51,11 +53,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
  *                 "groups": {
- *                     "agency:borrowerMember:write"
- *                 }
- *             }
- *         }
- *     }
+ *                     "agency:borrowerMember:write",
+ *                 },
+ *                 "openapi_definition_name": "write",
+ *             },
+ *         },
+ *     },
  * )
  *
  * @ORM\Table(name="agency_borrower_member", uniqueConstraints={

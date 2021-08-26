@@ -18,13 +18,21 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ApiResource(
  *     attributes={"pagination_enabled": false},
- *     normalizationContext={"groups": {
- *         "creditGuaranty:programEligibility:read",
- *         "creditGuaranty:field:read",
- *         "creditGuaranty:programEligibilityConfiguration:read",
- *         "timestampable:read"
- *     }},
- *     denormalizationContext={"groups": {"creditGuaranty:programEligibility:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:programEligibility:read",
+ *             "creditGuaranty:field:read",
+ *             "creditGuaranty:programEligibilityConfiguration:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:programEligibility:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "security": "is_granted('view', object)",
@@ -34,18 +42,25 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *                     "creditGuaranty:field:read",
  *                     "creditGuaranty:programChoiceOption:read",
  *                     "creditGuaranty:programEligibilityConfiguration:read",
- *                     "timestampable:read"
- *                 }
- *             }
+ *                     "timestampable:read",
+ *                 },
+ *                 "openapi_definition_name": "read",
+ *             },
  *         },
- *         "delete": {"security": "is_granted('delete', object)"}
+ *         "delete": {"security": "is_granted('delete', object)"},
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"creditGuaranty:programEligibility:write", "creditGuaranty:programEligibility:create"}}
- *         }
- *     }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "creditGuaranty:programEligibility:write",
+ *                     "creditGuaranty:programEligibility:create",
+ *                 },
+ *                 "openapi_definition_name": "write",
+ *             },
+ *         },
+ *     },
  * )
  *
  * @ORM\Entity

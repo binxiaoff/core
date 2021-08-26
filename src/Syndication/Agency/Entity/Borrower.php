@@ -19,11 +19,13 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     normalizationContext={
  *         "groups": {
  *             "agency:borrower:read",
- *             "nullableMoney:read"
- *         }
+ *             "nullableMoney:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     collectionOperations={
  *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:borrower:create",
@@ -33,11 +35,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "agency:borrowerMember:create",
  *                     "agency:borrowerMember:write",
  *                     "user:create",
- *                     "user:write"
- *                 }
+ *                     "user:write",
+ *                 },
+ *                 "openapi_definition_name": "write",
  *             },
- *             "security_post_denormalize": "is_granted('create', object)",
- *         }
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
@@ -47,6 +49,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('delete', object)",
  *         },
  *         "patch": {
+ *             "security_post_denormalize": "is_granted('edit', object)",
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:borrower:write",
@@ -55,12 +58,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "agency:borrowerMember:write",
  *                     "money:write",
  *                     "user:create",
- *                     "user:write"
- *                 }
+ *                     "user:write",
+ *                 },
+ *                 "openapi_definition_name": "write",
  *             },
- *             "security_post_denormalize": "is_granted('edit', object)",
- *         }
- *     }
+ *         },
+ *     },
  * )
  *
  * @ORM\Table(name="agency_borrower")

@@ -16,7 +16,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"team:read"}},
+ *     normalizationContext={
+ *         "groups": {"
+ *             team:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -28,16 +33,26 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         },
  *         "patch": {
  *             "security_post_denormalize": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {"team:update"}}
- *         }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "team:update",
+ *                 },
+ *                 "openapi_definition_name": "write",
+ *             },
+ *         },
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"team:create"}},
- *             "input": "KLS\Core\DTO\Team\CreateTeam"
- *         }
- *     }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "team:create",
+ *                 },
+ *                 "openapi_definition_name": "write",
+ *             },
+ *             "input": "KLS\Core\DTO\Team\CreateTeam",
+ *         },
+ *     },
  * )
  * @ORM\Table(name="core_team")
  * @ORM\Entity

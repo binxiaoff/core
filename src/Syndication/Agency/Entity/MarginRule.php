@@ -27,9 +27,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "openapi_context": {
  *                 "x-visibility": "hide",
  *             },
- *         }
+ *         },
  *     },
- *     collectionOperations={}
+ *     collectionOperations={},
  * )
  */
 class MarginRule

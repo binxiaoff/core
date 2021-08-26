@@ -23,18 +23,21 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ApiResource(
  *     attributes={"pagination_enabled": false},
- *     normalizationContext={"groups": {
- *         "messageStatus:read",
- *         "message:read"
- *     }},
+ *     normalizationContext={
+ *         "groups": {
+ *             "messageStatus:read",
+ *             "message:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object)"
- *         }
+ *             "security": "is_granted('view', object)",
+ *         },
  *     },
  *     collectionOperations={
- *         "get"
- *     }
+ *         "get",
+ *     },
  * )
  * @ApiFilter(SearchFilter::class, properties={"status": "exact"})
  */

@@ -25,7 +25,14 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @Gedmo\SoftDeleteable(fieldName="archived")
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"file:read", "fileVersion:read", "timestampable:read"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "file:read",
+ *             "fileVersion:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     collectionOperations={
  *         "post": {
  *             "controller": "KLS\Core\Controller\File\Upload",
@@ -39,25 +46,25 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                         "name": "file",
  *                         "type": "file",
  *                         "description": "The uploaded file",
- *                         "required": true
+ *                         "required": true,
  *                     },
  *                     {
  *                         "in": "formData",
  *                         "name": "type",
  *                         "type": "string",
  *                         "description": "The file type",
- *                         "required": true
+ *                         "required": true,
  *                     },
  *                     {
  *                         "in": "formData",
  *                         "name": "targetEntity",
  *                         "type": "string",
  *                         "description": "The target entity as an IRI",
- *                         "required": true
- *                     }
- *                 }
- *             }
- *         }
+ *                         "required": true,
+ *                     },
+ *                 },
+ *             },
+ *         },
  *     },
  *     itemOperations={
  *         "upload_file_version": {
@@ -73,24 +80,24 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                         "name": "file",
  *                         "type": "file",
  *                         "description": "The uploaded file",
- *                         "required": true
+ *                         "required": true,
  *                     },
  *                     {
  *                         "in": "formData",
  *                         "name": "type",
  *                         "type": "string",
  *                         "description": "The file type",
- *                         "required": true
+ *                         "required": true,
  *                     },
  *                     {
  *                         "in": "formData",
  *                         "name": "targetEntity",
  *                         "type": "string",
  *                         "description": "The target entity as an IRI",
- *                         "required": true
- *                     }
- *                 }
- *             }
+ *                         "required": true,
+ *                     },
+ *                 },
+ *             },
  *         },
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -104,7 +111,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "controller": "KLS\Core\Controller\File\Delete",
  *             "path": "/core/files/{publicId}/{type}",
  *         },
- *     }
+ *     },
  * )
  */
 class File

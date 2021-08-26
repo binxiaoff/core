@@ -37,74 +37,86 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {
- *         "projectParticipation:read",
- *         "projectParticipationMember:read",
- *         "projectParticipationTranche:read",
- *         "projectParticipationStatus:read",
- *         "projectStatus:read",
- *         "project:read",
- *         "company:read",
- *         "nullableMoney:read",
- *         "money:read",
- *         "rangedOfferWithFee:read",
- *         "offerWithFee:read",
- *         "offer:read",
- *         "archivable:read",
- *         "timestampable:read",
- *         "companyStatus:read",
- *         "file:read",
- *         "fileVersion:read",
- *         "invitationReplyVersion:read",
- *         "interestReplyVersion:read",
- *         "tranche:read",
- *         "companyGroupTag:read",
- *         "permission:read"
- *     }},
- *     denormalizationContext={"groups": {
- *         "projectParticipation:write",
- *         "nullableMoney:write",
- *         "rangedOfferWithFee:write",
- *         "offerWithFee:write",
- *         "offer:write",
- *         "permission:write"
- *     }},
+ *     normalizationContext={
+ *         "groups": {
+ *             "projectParticipation:read",
+ *             "projectParticipationMember:read",
+ *             "projectParticipationTranche:read",
+ *             "projectParticipationStatus:read",
+ *             "projectStatus:read",
+ *             "project:read",
+ *             "company:read",
+ *             "nullableMoney:read",
+ *             "money:read",
+ *             "rangedOfferWithFee:read",
+ *             "offerWithFee:read",
+ *             "offer:read",
+ *             "archivable:read",
+ *             "timestampable:read",
+ *             "companyStatus:read",
+ *             "file:read",
+ *             "fileVersion:read",
+ *             "invitationReplyVersion:read",
+ *             "interestReplyVersion:read",
+ *             "tranche:read",
+ *             "companyGroupTag:read",
+ *             "permission:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "projectParticipation:write",
+ *             "nullableMoney:write",
+ *             "rangedOfferWithFee:write",
+ *             "offerWithFee:write",
+ *             "offer:write",
+ *             "permission:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     collectionOperations={
  *         "get": {
- *             "normalization_context": {"groups": {
- *                 "projectParticipation:list",
- *                 "project:read",
- *                 "projectParticipation:read",
- *                 "projectParticipationMember:read",
- *                 "projectParticipationTranche:read",
- *                 "projectParticipationStatus:read",
- *                 "projectOrganizer:read",
- *                 "projectStatus:read",
- *                 "company:read",
- *                 "nullableMoney:read",
- *                 "money:read",
- *                 "rangedOfferWithFee:read",
- *                 "offerWithFee:read",
- *                 "offer:read",
- *                 "archivable:read",
- *                 "timestampable:read",
- *                 "companyStatus:read",
- *                 "companyGroupTag:read",
- *                 "permission:read"
- *             }}
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "projectParticipation:list",
+ *                     "project:read",
+ *                     "projectParticipation:read",
+ *                     "projectParticipationMember:read",
+ *                     "projectParticipationTranche:read",
+ *                     "projectParticipationStatus:read",
+ *                     "projectOrganizer:read",
+ *                     "projectStatus:read",
+ *                     "company:read",
+ *                     "nullableMoney:read",
+ *                     "money:read",
+ *                     "rangedOfferWithFee:read",
+ *                     "offerWithFee:read",
+ *                     "offer:read",
+ *                     "archivable:read",
+ *                     "timestampable:read",
+ *                     "companyStatus:read",
+ *                     "companyGroupTag:read",
+ *                     "permission:read",
+ *                 },
+ *                 "openapi_definition_name": "read",
+ *             },
  *         },
  *         "post": {
- *             "denormalization_context": {"groups": {
- *                 "projectParticipation:create",
- *                 "projectParticipation:write",
- *                 "nullableMoney:write",
- *                 "rangedOfferWithFee:write",
- *                 "offerWithFee:write",
- *                 "offer:write",
- *                 "permission:write"
- *             }},
- *             "security_post_denormalize": "is_granted('create', object)"
- *         }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "projectParticipation:create",
+ *                     "projectParticipation:write",
+ *                     "nullableMoney:write",
+ *                     "rangedOfferWithFee:write",
+ *                     "offerWithFee:write",
+ *                     "offer:write",
+ *                     "permission:write",
+ *                 },
+ *                 "openapi_definition_name": "write",
+ *             },
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
@@ -133,27 +145,31 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "invitationReplyVersion:read",
  *                     "interestReplyVersion:read",
  *                     "companyGroupTag:read",
- *                     "permission:read"
- *                 }
- *             }
+ *                     "permission:read",
+ *                 },
+ *                 "openapi_definition_name": "read",
+ *             },
  *         },
  *         "delete": {"security": "is_granted('delete', object)"},
  *         "put": {"security": "is_granted('edit', object)"},
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {
- *                 "projectParticipationTranche:write",
- *                 "projectParticipationMember:write",
- *                 "projectParticipationStatus:create",
- *                 "projectParticipation:write",
- *                 "nullableMoney:write",
- *                 "rangedOfferWithFee:write",
- *                 "offerWithFee:write",
- *                 "offer:write",
- *                 "permission:write"
- *             }},
- *         }
- *     }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "projectParticipationTranche:write",
+ *                     "projectParticipationMember:write",
+ *                     "projectParticipationStatus:create",
+ *                     "projectParticipation:write",
+ *                     "nullableMoney:write",
+ *                     "rangedOfferWithFee:write",
+ *                     "offerWithFee:write",
+ *                     "offer:write",
+ *                     "permission:write",
+ *                 },
+ *                 "openapi_definition_name": "write",
+ *             },
+ *         },
+ *     },
  * )
  *
  * @Gedmo\Loggable(logEntryClass="KLS\Syndication\Arrangement\Entity\Versioned\VersionedProjectParticipation")

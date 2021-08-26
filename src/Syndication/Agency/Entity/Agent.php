@@ -27,19 +27,26 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "agency:agent:read",
  *             "nullablePerson:read",
  *             "nullableMoney:read",
- *             "money:read"
- *         }
+ *             "money:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     collectionOperations={},
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object)"
+ *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
- *                 "groups": {"agency:agent:write", "nullablePerson:write", "nullableMoney:write", "money:write"}
- *             }
+ *                 "groups": {
+ *                     "agency:agent:write",
+ *                     "nullablePerson:write",
+ *                     "nullableMoney:write",
+ *                     "money:write",
+ *                 },
+ *                 "openapi_definition_name": "write",
+ *             },
  *         },
  *         "get_agent_dataroom": {
  *             "method": "GET",
@@ -47,15 +54,21 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('edit', object)",
  *             "controller": Get::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "confidentialDrive"
+ *                 "drive": "confidentialDrive",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
- *             }
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "read",
+ *             },
  *         },
  *         "post_agent_dataroom": {
  *             "method": "POST",
@@ -64,15 +77,21 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "deserialize": false,
  *             "controller": Post::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "confidentialDrive"
+ *                 "drive": "confidentialDrive",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
- *             }
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "read",
+ *             },
  *         },
  *         "delete_agent_dataroom": {
  *             "method": "DELETE",
@@ -81,14 +100,14 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "deserialize": false,
  *             "controller": Delete::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "confidentialDrive"
- *             }
- *         }
- *     }
+ *                 "drive": "confidentialDrive",
+ *             },
+ *         },
+ *     },
  * )
  * @ORM\Table(name="agency_agent")
  * @ORM\Entity

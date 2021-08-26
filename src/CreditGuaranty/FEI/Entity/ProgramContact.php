@@ -18,8 +18,20 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"creditGuaranty:programContact:read", "creditGuaranty:program:read", "timestampable:read"}},
- *     denormalizationContext={"groups": {"creditGuaranty:programContact:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:programContact:read",
+ *             "creditGuaranty:program:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:programContact:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -30,14 +42,20 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             },
  *         },
  *         "patch": {"security": "is_granted('edit', object)"},
- *         "delete": {"security": "is_granted('delete', object)"}
+ *         "delete": {"security": "is_granted('delete', object)"},
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"creditGuaranty:programContact:write", "creditGuaranty:programContact:create"}}
- *         }
- *     }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "creditGuaranty:programContact:write",
+ *                     "creditGuaranty:programContact:create",
+ *                 },
+ *                 "openapi_definition_name": "write",
+ *             },
+ *         },
+ *     },
  * )
  *
  * @ORM\Entity

@@ -27,22 +27,45 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"tranche:read", "fee:read", "lendingRate:read", "money:read"}},
- *     denormalizationContext={"groups": {"tranche:write", "fee:write", "lendingRate:write", "money:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "tranche:read",
+ *             "fee:read",
+ *             "lendingRate:read",
+ *             "money:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "tranche:write",
+ *             "fee:write",
+ *             "lendingRate:write",
+ *             "money:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('edit', object.getProject())",
  *             "denormalization_context": {
- *                 "groups": {"tranche:create", "tranche:write", "fee:write", "lendingRate:write", "money:write"}
- *             }
- *         }
+ *                 "groups": {
+ *                     "tranche:create",
+ *                     "tranche:write",
+ *                     "fee:write",
+ *                     "lendingRate:write",
+ *                     "money:write",
+ *                 },
+ *                 "openapi_definition_name": "write",
+ *             },
+ *         },
  *     },
  *     itemOperations={
  *         "delete": {"security": "is_granted('edit', object.getProject())"},
  *         "get": {"security": "is_granted('view', object.getProject())"},
  *         "put": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())"},
- *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())"}
- *     }
+ *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object.getProject())"},
+ *     },
  * )
  *
  * @ORM\Entity

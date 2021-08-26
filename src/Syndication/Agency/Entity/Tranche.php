@@ -33,8 +33,9 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "agency:tranche:read",
  *             "money:read",
  *             "nullableMoney:read",
- *             "lendingRate:read"
- *         }
+ *             "lendingRate:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     collectionOperations={
  *         "post": {
@@ -45,11 +46,12 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "money:write",
  *                     "nullableMoney:write",
  *                     "lendingRate:write",
- *                     "agency:borrowerTrancheShare:write"
- *                 }
+ *                     "agency:borrowerTrancheShare:write",
+ *                 },
+ *                 "openapi_definition_name": "write",
  *             },
  *             "security_post_denormalize": "is_granted('create', object)",
- *         }
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
@@ -67,15 +69,16 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "agency:tranche:write",
  *                     "money:write", "nullableMoney:write",
  *                     "lendingRate:write",
- *                     "agency:borrowerTrancheShare:write"
- *                 }
+ *                     "agency:borrowerTrancheShare:write",
+ *                 },
+ *                 "openapi_definition_name": "write",
  *             },
  *             "security": "is_granted('edit', object)",
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)",
- *         }
- *     }
+ *         },
+ *     },
  * )
  *
  * @ORM\Entity

@@ -37,8 +37,9 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "agency:participation:read",
  *             "money:read",
  *             "nullableMoney:read",
- *             "lendingRate:read"
- *         }
+ *             "lendingRate:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     collectionOperations={
  *         "get",
@@ -49,16 +50,17 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "agency:participation:write",
  *                     "nullableMoney:write",
  *                     "money:write",
- *                     "agency:participationTrancheAllocation:write"
- *                 }
+ *                     "agency:participationTrancheAllocation:write",
+ *                 },
+ *                 "openapi_definition_name": "write",
  *             },
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
- *         }
+ *             "validation_groups": {Participation::class, "getCurrentValidationGroups"},
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object)"
+ *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
  *             "denormalization_context": {
@@ -67,14 +69,15 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "agency:projectPartaker:write",
  *                     "nullableMoney:write",
  *                     "money:write",
- *                     "agency:participationTrancheAllocation:write"
- *                 }
+ *                     "agency:participationTrancheAllocation:write",
+ *                 },
+ *                 "openapi_definition_name": "write",
  *             },
  *             "security": "is_granted('edit', object)",
- *             "validation_groups": {Participation::class, "getCurrentValidationGroups"}
+ *             "validation_groups": {Participation::class, "getCurrentValidationGroups"},
  *         },
  *         "delete": {
- *             "security": "is_granted('delete', object)"
+ *             "security": "is_granted('delete', object)",
  *         },
  *         "get_dataroom": {
  *             "method": "GET",
@@ -82,14 +85,20 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
  *             "controller": Get::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "read",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "confidentialDrive"
+ *                 "drive": "confidentialDrive",
  *             },
  *         },
  *         "post_dataroom": {
@@ -99,14 +108,20 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
  *             "controller": Post::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "read",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "confidentialDrive"
+ *                 "drive": "confidentialDrive",
  *             },
  *         },
  *         "delete_dataroom": {
@@ -115,14 +130,14 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "path": "/agency/participations/{publicId}/dataroom/{path?}",
  *             "controller": Delete::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "confidentialDrive"
+ *                 "drive": "confidentialDrive",
  *             },
  *         },
- *     }
+ *     },
  * )
  * @ORM\Entity
  * @ORM\Table(name="agency_participation", uniqueConstraints={

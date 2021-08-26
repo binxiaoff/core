@@ -15,26 +15,29 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {
- *         "projectParticipationCollection:read",
- *         "projectParticipation:read",
- *         ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ,
- *         ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
- *         "projectParticipationMember:read",
- *         "projectParticipationTranche:read",
- *         "projectParticipationStatus:read",
- *         "company:read",
- *         "companyStatus:read",
- *         "nullableMoney:read",
- *         "money:read",
- *         "rangedOfferWithFee:read",
- *         "offerWithFee:read",
- *         "offer:read",
- *         "archivable:read",
- *         "timestampable:read"
- *     }},
+ *     normalizationContext={
+ *         "groups": {
+ *             "projectParticipationCollection:read",
+ *             "projectParticipation:read",
+ *             ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ,
+ *             ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
+ *             "projectParticipationMember:read",
+ *             "projectParticipationTranche:read",
+ *             "projectParticipationStatus:read",
+ *             "company:read",
+ *             "companyStatus:read",
+ *             "nullableMoney:read",
+ *             "money:read",
+ *             "rangedOfferWithFee:read",
+ *             "offerWithFee:read",
+ *             "offer:read",
+ *             "archivable:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)"}
+ *         "post": {"security_post_denormalize": "is_granted('create', object)"},
  *     },
  *     itemOperations={
  *         "get": {
@@ -44,8 +47,8 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "openapi_context": {
  *                 "x-visibility": "hide",
  *             },
- *         }
- *     }
+ *         },
+ *     },
  * )
  */
 class ProjectParticipationCollection
