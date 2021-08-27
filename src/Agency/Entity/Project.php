@@ -442,7 +442,7 @@ class Project
     /**
      * @var Collection|Covenant[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Covenant", mappedBy="project", cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="Unilend\Agency\Entity\Covenant", mappedBy="project", cascade={"persist"})
      *
      * @Groups({"agency:project:read", "agency:project:write"})
      *
