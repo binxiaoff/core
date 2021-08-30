@@ -87,7 +87,7 @@ class HubspotCompany
         return $this->synchronized;
     }
 
-    public function synchronized(): void
+    public function synchronize(): void
     {
         $this->synchronized = new DateTimeImmutable();
     }

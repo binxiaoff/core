@@ -4,17 +4,24 @@ declare(strict_types=1);
 
 namespace KLS\Core\Command\Hubspot;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use KLS\Core\Service\Hubspot\HubspotCompanyManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-class SynchronizeCompanyMappingCommand extends Command
+class ImportCompanyCommand extends Command
 {
-    private const DEFAULT_COMPANIES_LIMIT = 100;
+    // numbers of companies we want to import from hubspot
+    private const DEFAULT_COMPANY_IMPORT_LIMIT = 100;
 
-    protected static $defaultName = 'kls:hubspot:synchronize-companies';
+    protected static $defaultName = 'kls:core:hubspot:company:import';
 
     private HubspotCompanyManager $hubspotCompanyManager;
 
@@ -28,15 +35,24 @@ class SynchronizeCompanyMappingCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('Synchronize companies from our database and the hubspot database')
-            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'How many companies we want to synchronize')
+            ->setDescription('Import companies from hubspot to our database')
+            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'How many companies we want to import')
         ;
     }
 
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws \JsonException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $companyAdded  = 0;
-        $limit         = $input->getOption('limit') ?: self::DEFAULT_COMPANIES_LIMIT;
+        $limit         = $input->getOption('limit') ?: self::DEFAULT_COMPANY_IMPORT_LIMIT;
         $lastCompanyId = 0;
 
         do {

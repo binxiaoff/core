@@ -62,8 +62,8 @@ class HubspotCompanyManagerTest extends TestCase
         $response->getStatusCode()->willReturn(Response::HTTP_OK);
         $response->getContent()->willReturn(\json_encode([], JSON_THROW_ON_ERROR));
 
-        $this->hubspotCompanyRepository->findOneBy(['companyId' => Argument::any()])->shouldNotBeCalled();
-        $this->companyRepository->findOneBy(['companyName' => Argument::any(), 'emailDomain' => Argument::any()])->shouldNotBeCalled();
+        $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => Argument::any()])->shouldNotBeCalled();
+        $this->companyRepository->findOneBy(['shortCode' => Argument::any()])->shouldNotBeCalled();
 
         $this->hubspotCompanyRepository->flush()->shouldNotBeCalled();
 
@@ -82,10 +82,10 @@ class HubspotCompanyManagerTest extends TestCase
         $response->getStatusCode()->willReturn(Response::HTTP_OK);
         $response->getContent()->willReturn(\json_encode($this->getHubspotCompanyCreatedResponse(), JSON_THROW_ON_ERROR));
 
-        $this->hubspotCompanyRepository->findOneBy(['companyId' => '6584949386'])->shouldBeCalled()
+        $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => '6584949386'])->shouldBeCalled()
             ->willReturn(new HubspotCompany($this->getCompany(), '6584949386'))
         ;
-        $this->companyRepository->findOneBy(['companyName' => Argument::any(), 'emailDomain' => Argument::any()])->shouldNotBeCalled();
+        $this->companyRepository->findOneBy(['shortCode' => Argument::any()])->shouldNotBeCalled();
 
         $this->hubspotCompanyRepository->flush()->shouldBeCalled();
 
@@ -105,8 +105,8 @@ class HubspotCompanyManagerTest extends TestCase
         $response->getStatusCode()->willReturn(Response::HTTP_OK);
         $response->getContent()->willReturn(\json_encode($this->getHubspotCompanyCreatedResponse(), JSON_THROW_ON_ERROR));
 
-        $this->hubspotCompanyRepository->findOneBy(['companyId' => '6584949386'])->shouldBeCalled()->willReturn(null);
-        $this->companyRepository->findOneBy(['companyName' => 'Biglytics', 'emailDomain' => 'biglytics.net'])->shouldBeCalledOnce()->willReturn(null);
+        $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => '6584949386'])->shouldBeCalled()->willReturn(null);
+        $this->companyRepository->findOneBy(['shortCode' => 'KLS'])->shouldBeCalledOnce()->willReturn(null);
 
         $this->hubspotCompanyRepository->persist(Argument::any())->shouldNotBeCalled();
         $this->hubspotCompanyRepository->flush()->shouldBeCalled();
@@ -129,8 +129,8 @@ class HubspotCompanyManagerTest extends TestCase
         $response->getStatusCode()->willReturn(Response::HTTP_OK);
         $response->getContent()->willReturn(\json_encode($this->getHubspotCompanyCreatedResponse(), JSON_THROW_ON_ERROR));
 
-        $this->hubspotCompanyRepository->findOneBy(['companyId' => '6584949386'])->shouldBeCalled()->willReturn(null);
-        $this->companyRepository->findOneBy(['companyName' => 'Biglytics', 'emailDomain' => 'biglytics.net'])->shouldBeCalledOnce()->willReturn($this->getCompany());
+        $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => '6584949386'])->shouldBeCalled()->willReturn(null);
+        $this->companyRepository->findOneBy(['shortCode' => 'KLS'])->shouldBeCalledOnce()->willReturn($this->getCompany());
 
         $this->hubspotCompanyRepository->persist(Argument::type(HubspotCompany::class));
         $this->hubspotCompanyRepository->flush()->shouldBeCalled();
@@ -154,7 +154,7 @@ class HubspotCompanyManagerTest extends TestCase
                         'domain'              => 'biglytics.net',
                         'hs_lastmodifieddate' => '2021-08-06T10:04:48.250Z',
                         'hs_object_id'        => '6584949386',
-                        'name'                => 'Biglytics',
+                        'kls_short_code'      => 'KLS',
                     ],
                     'createdAt' => '2021-07-16T10:19:04.834Z',
                     'updatedAt' => '2021-08-06T10:04:48.250Z',

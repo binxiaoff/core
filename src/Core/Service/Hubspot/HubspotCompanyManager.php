@@ -52,28 +52,28 @@ class HubspotCompanyManager
     {
         $content = $this->fetchCompanies($lastCompanyId);
 
-        if (!\array_key_exists('results', $content)) {
-            $this->logger->info('No company found on hubspot');
+        if (!\array_key_exists('results', $content) || ((isset($content['results'])) && 0 === \count($content['results']))) {
+            $this->logger->info('There is an error on the request URI or no company found on Hubspot');
 
             return [];
         }
 
         $companiesAddedNb = 0;
 
-        foreach ($content['results'] as $arrCompany) {
-            $userHubspotCompany = $this->hubspotCompanyRepository->findOneBy(['companyId' => (int) $arrCompany['id']]);
+        foreach ($content['results'] as $companyProperties) {
+            $userHubspotCompany = $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => (int) $companyProperties['id']]);
 
             if (true === $userHubspotCompany instanceof HubspotCompany) { // if the company found has already a company id
                 continue;
             }
 
-            $company = $this->companyRepository->findOneBy(['companyName' => $arrCompany['properties']['name'], 'emailDomain' => $arrCompany['properties']['domain']]);
+            $company = $this->companyRepository->findOneBy(['shortCode' => $companyProperties['properties']['kls_short_code']]);
 
             if (false === $company instanceof Company) { //If the company does not exist in our database
                 continue;
             }
 
-            $hubspotCompany = new HubspotCompany($company, $arrCompany['id']);
+            $hubspotCompany = new HubspotCompany($company, $companyProperties['id']);
 
             $this->hubspotCompanyRepository->persist($hubspotCompany);
             ++$companiesAddedNb;
