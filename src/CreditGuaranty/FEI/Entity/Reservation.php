@@ -391,14 +391,30 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
         return $this;
     }
 
+    /**
+     * @Groups({"creditGuaranty:reservation:read"})
+     */
     public function isGrossSubsidyEquivalentEligible(): bool
     {
-        $grossSubsidyEquivalents = $this->getFinancingObjects()->map(static fn (FinancingObject $financingObject) => $financingObject->getGrossSubsidyEquivalent())->toArray();
+        $project = $this->getProject();
+
+        if (false === ($project instanceof Project)) {
+            return false;
+        }
+
+        $financingObjects = $this->getFinancingObjects();
+
+        if ($financingObjects->count() < 1) {
+            return false;
+        }
+
+        $grossSubsidyEquivalents = $financingObjects->map(static fn (FinancingObject $financingObject) => $financingObject->getGrossSubsidyEquivalent())->toArray();
         $esbTotal                = MoneyCalculator::sum($grossSubsidyEquivalents);
-        $maxFeiCredit            = $this->getProject()->getMaxFeiCredit();
+        $maxFeiCredit            = $project->getMaxFeiCredit();
 
         $comparison = MoneyCalculator::compare($esbTotal, $maxFeiCredit);
 
+        // $esbTotal should be superior or equal to $maxFeiCredit
         return 0 >= $comparison;
     }
 
