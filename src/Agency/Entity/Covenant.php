@@ -194,7 +194,7 @@ class Covenant
     /**
      * @var CovenantRule[]|Collection
      *
-     * @ORM\OneToMany(targetEntity=CovenantRule::class, mappedBy="covenant", indexBy="year", cascade={"persist", "remove"}, orphanRemoval=true, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity=CovenantRule::class, mappedBy="covenant", indexBy="year", cascade={"persist", "remove"}, orphanRemoval=true)
      * @ORM\OrderBy({"year": "ASC"})
      *
      * @Assert\Valid
@@ -242,7 +242,7 @@ class Covenant
     /**
      * @var MarginRule[]|Collection
      *
-     * @ORM\OneToMany(targetEntity=MarginRule::class, mappedBy="covenant", cascade={"persist", "remove"}, fetch="EAGER", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=MarginRule::class, mappedBy="covenant", cascade={"persist", "remove"}, orphanRemoval=true)
      *
      * @Assert\Valid
      * @Assert\AtLeastOneOf({
