@@ -13,7 +13,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class GetDailyUsageApiCommand extends Command
 {
-    protected static $defaultName = 'kls:hubspot:get-api-usage';
+    protected static $defaultName = 'kls:core:hubspot:api-usage:show';
 
     private HubspotManager $hubspotManager;
 

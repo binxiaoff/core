@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace KLS\Core\Service\Hubspot;
 
+use DateTimeImmutable;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use JsonException;
 use KLS\Core\Entity\HubspotContact;
 use KLS\Core\Entity\User;
 use KLS\Core\Repository\HubspotContactRepository;
+use KLS\Core\Repository\TemporaryTokenRepository;
 use KLS\Core\Repository\UserRepository;
+use KLS\Core\Repository\UserSuccessfulLoginRepository;
 use KLS\Core\Service\Hubspot\Client\HubspotClient;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,17 +28,23 @@ class HubspotManager
     private UserRepository $userRepository;
     private LoggerInterface $logger;
     private HubspotContactRepository $hubspotContactRepository;
+    private TemporaryTokenRepository $temporaryTokenRepository;
+    private UserSuccessfulLoginRepository $userSuccessfulLoginRepository;
 
     public function __construct(
         HubspotClient $hubspotClient,
         UserRepository $userRepository,
         LoggerInterface $logger,
-        HubspotContactRepository $hubspotContactRepository
+        HubspotContactRepository $hubspotContactRepository,
+        TemporaryTokenRepository $temporaryTokenRepository,
+        UserSuccessfulLoginRepository $userSuccessfulLoginRepository
     ) {
-        $this->hubspotClient            = $hubspotClient;
-        $this->userRepository           = $userRepository;
-        $this->logger                   = $logger;
-        $this->hubspotContactRepository = $hubspotContactRepository;
+        $this->hubspotClient                 = $hubspotClient;
+        $this->userRepository                = $userRepository;
+        $this->logger                        = $logger;
+        $this->hubspotContactRepository      = $hubspotContactRepository;
+        $this->temporaryTokenRepository      = $temporaryTokenRepository;
+        $this->userSuccessfulLoginRepository = $userSuccessfulLoginRepository;
     }
 
     /**
@@ -57,6 +66,8 @@ class HubspotManager
     }
 
     /**
+     * Hubspot contact to our database.
+     *
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws ClientExceptionInterface
@@ -65,14 +76,17 @@ class HubspotManager
      * @throws TransportExceptionInterface
      * @throws JsonException
      */
-    public function synchronizeContacts(?int $lastContactId = null): array
+    public function synchronizeContacts(int $lastContactId = 0): array
     {
         $content = $this->fetchContacts($lastContactId);
 
         if (!\array_key_exists('results', $content)) {
             $this->logger->info('No contacts found, try to add users from our database');
 
-            return [];
+            return [
+                'contactAddedNb' => 0,
+                'lastContactId'  => 0,
+            ];
         }
 
         $contactAddedNb = 0;
@@ -98,7 +112,7 @@ class HubspotManager
 
         $this->hubspotContactRepository->flush();
 
-        $lastContactId = null;
+        $lastContactId = 0;
         if (\array_key_exists('paging', $content)) {
             $lastContactId = $content['paging']['next']['after'];
         }
@@ -110,22 +124,155 @@ class HubspotManager
     }
 
     /**
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \JsonException
+     */
+    public function synchronizeUsers(int $limit): array
+    {
+        $dataReturn   = [];
+        $usersCreated = 0;
+        $usersUpdated = 0;
+
+        // Get all users when a corresponding hubspot id does not exist
+        $users = $this->userRepository->findHubspotUsersToCreate($limit);
+
+        if ($users) {
+            foreach ($users as $user) {
+                if (!$this->createContactOnHubspot($user)) {
+                    continue;
+                }
+                ++$usersCreated;
+            }
+        }
+
+        // Get all users when a corresponding hubspot id exist
+        $users = $this->userRepository->findHubspotUsersToUpdate($limit);
+        if ($users) {
+            foreach ($users as $user) {
+                $hubspotContact = $this->hubspotContactRepository->findOneBy(['user' => $user]);
+
+                if (!$hubspotContact) {
+                    continue;
+                }
+
+                if ($this->updateContactOnHubspot($hubspotContact, $this->formatData($user))) {
+                    ++$usersUpdated;
+                }
+            }
+        }
+
+        $this->hubspotContactRepository->flush();
+        $dataReturn['usersCreated'] = $usersCreated;
+        $dataReturn['usersUpdated'] = $usersUpdated;
+
+        return $dataReturn;
+    }
+
+    /**
      * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws JsonException
      */
-    private function fetchContacts(?int $lastContactId = null): array
+    private function fetchContacts(int $lastContactId = 0): array
     {
         $response = $this->hubspotClient->fetchAllContacts($lastContactId);
 
         if (Response::HTTP_OK !== $response->getStatusCode()) {
-            $this->logger->error(\sprintf('There is an error while fetching %s', $response->getInfo()['url']));
+            $this->logger->error(\sprintf('There is an error while fetching %s : Error is %s', $response->getInfo()['url'], $response->getContent(false)));
 
             return [];
         }
 
         return \json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    private function formatData(User $user): array
+    {
+        $temporaryToken        = $this->temporaryTokenRepository->findOneBy(['user' => $user, 'id' => 'DESC']);
+        $lastLogin             = $this->userSuccessfulLoginRepository->findOneBy(['user' => $user], ['id' => 'DESC']); // get by user order by date desc, prendre le premier
+        $temporaryTokenExpires = $temporaryToken ? $temporaryToken->getExpires() : null;
+        $lastLoginDate         = $lastLogin ? $lastLogin->getAdded() : null;
+
+        $data = [
+            'staffArrangementCreation' => null,
+            'staffAgencyCreation'      => null,
+            'userManager'              => null,
+            'userAdmin'                => null,
+            'userStaff'                => null,
+        ];
+
+        foreach ($user->getStaff() as $staff) {
+            if ($staff->isActive()) {
+                $data['staffArrangementCreation'] = true === $staff->hasArrangementProjectCreationPermission() ? 'true' : 'false';
+                $data['staffAgencyCreation']      = true === $staff->hasAgencyProjectCreationPermission() ? 'true' : 'false';
+            }
+
+            if ($staff->isManager()) {
+                $data['userManager'] .= $staff->getCompany()->getLegalName() . ', ';
+            }
+            if ($staff->isAdmin()) {
+                $data['userAdmin'] .= $staff->getCompany()->getLegalName() . ', ';
+            }
+            $data['userStaff'] .= $staff->getCompany()->getLegalName() . ', ';
+        }
+
+        return [
+            'properties' => [
+                'firstname'                      => $user->getFirstName(),
+                'lastname'                       => $user->getLastName(),
+                'email'                          => $user->getEmail(),
+                'job_function'                   => $user->getJobFunction(),
+                'phone'                          => $user->getPhone(),
+                'kls_user_status'                => 10 === $user->getCurrentStatus()->getStatus() ? 'invited' : 'created',
+                'kls_last_login'                 => $lastLoginDate ? $lastLoginDate->format('Y-m-d') : null,
+                'kls_init_token_expiry'          => $temporaryTokenExpires ? $temporaryTokenExpires->format('Y-m-d') : null,
+                'kls_user_staff'                 => $data['userStaff'],
+                'kls_user_manager'               => $data['userManager'],
+                'kls_user_admin'                 => $data['userAdmin'],
+                'kls_staff_arrangement_creation' => $data['staffArrangementCreation'],
+                'kls_staff_agency_creation'      => $data['staffAgencyCreation'],
+            ],
+        ];
+    }
+
+    private function updateContactOnHubspot(HubspotContact $hubspotContact, array $data): bool
+    {
+        $response = $this->hubspotClient->updateContact($hubspotContact->getContactId(), $data);
+
+        if (Response::HTTP_OK !== $response->getStatusCode()) {
+            $this->logger->info($response->getContent(false));
+
+            return false;
+        }
+
+        $hubspotContact->setSynchronized(new DateTimeImmutable());
+
+        return true;
+    }
+
+    /**
+     * Flow: Post new contact on hubspot. If 201, we create the relation between our user and the contact Id that Hubspot just sent us back.
+     */
+    private function createContactOnHubspot(User $user): bool
+    {
+        $data = $this->formatData($user);
+
+        $response = $this->hubspotClient->postNewContact($data);
+
+        if (Response::HTTP_CREATED !== $response->getStatusCode()) {
+            $this->logger->info($response->getContent(false));
+
+            return false;
+        }
+
+        $content = \json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        $hubspotContact = new HubspotContact($user, (int) $content['id']);
+        $this->hubspotContactRepository->persist($hubspotContact);
+
+        return true;
     }
 }

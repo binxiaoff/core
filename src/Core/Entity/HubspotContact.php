@@ -6,7 +6,7 @@ namespace KLS\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class HubspotContact
 {
-    use TimestampableTrait;
+    use TimestampableAddedOnlyTrait;
 
     /**
      * @ORM\Column(type="integer")
@@ -27,24 +27,31 @@ class HubspotContact
 
     /**
      * @ORM\OneToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(name="id_user")
      *
      * @Assert\NotBlank
      */
     private User $user;
 
     /**
-     * @ORM\Column(type="integer", nullable=false)
+     * @ORM\Column(type="integer", nullable=false, name="id_contact")
      *
      * @Assert\Type("integer")
      * @Assert\Positive
      */
     private int $contactId;
 
+    /**
+     * @ORM\Column(type="datetime_immutable")
+     */
+    private \DateTimeImmutable $synchronized;
+
     public function __construct(User $user, int $contactId)
     {
-        $this->user      = $user;
-        $this->contactId = $contactId;
-        $this->added     = new DateTimeImmutable();
+        $this->user         = $user;
+        $this->contactId    = $contactId;
+        $this->added        = new DateTimeImmutable();
+        $this->synchronized = new DateTimeImmutable();
     }
 
     public function getId(): int
@@ -72,6 +79,18 @@ class HubspotContact
     public function setContactId(int $contactId): HubspotContact
     {
         $this->contactId = $contactId;
+
+        return $this;
+    }
+
+    public function getSynchronized(): DateTimeImmutable
+    {
+        return $this->synchronized;
+    }
+
+    public function setSynchronized(DateTimeImmutable $synchronized): HubspotContact
+    {
+        $this->synchronized = $synchronized;
 
         return $this;
     }

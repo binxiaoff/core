@@ -17,10 +17,10 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-class SynchronizeMappingCommand extends Command
+class ImportContactCommand extends Command
 {
     private const DEFAULT_CONTACTS_LIMIT = 100;
-    protected static $defaultName        = 'kls:hubspot:synchronize-contact';
+    protected static $defaultName        = 'kls:core:hubspot:contact:import';
 
     private HubspotManager $hubspotManager;
 
@@ -33,8 +33,8 @@ class SynchronizeMappingCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('Synchronize users from our database and the hubspot database')
-            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'How many users we want to synchronize')
+            ->setDescription('Synchronize contact from Hubspot to our database')
+            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'How many contact we want to synchronize')
         ;
     }
 
@@ -51,7 +51,7 @@ class SynchronizeMappingCommand extends Command
     {
         $contactAdded  = 0;
         $limit         = $input->getOption('limit') ?: self::DEFAULT_CONTACTS_LIMIT;
-        $lastContactId = null;
+        $lastContactId = 0;
 
         do {
             $data = $this->hubspotManager->synchronizeContacts((int) $lastContactId);
