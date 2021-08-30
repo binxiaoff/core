@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace KLS\CreditGuaranty\FEI\Validator\Constraints;
 
-use KLS\CreditGuaranty\FEI\Entity\Borrower;
-use KLS\CreditGuaranty\FEI\Entity\Project;
 use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityRepository;
 use KLS\CreditGuaranty\FEI\Service\EligibilityChecker;
@@ -34,26 +32,7 @@ class ReservationSentValidator extends ConstraintValidator
         }
 
         $reservation = $value->getReservation();
-
-        if (false === ($reservation->getBorrower() instanceof Borrower)) {
-            $this->context->buildViolation('CreditGuaranty.Reservation.borrower.required')
-                ->atPath('reservation.borrower')
-                ->addViolation()
-            ;
-
-            return;
-        }
-
-        $project = $reservation->getProject();
-
-        if (false === ($project instanceof Project)) {
-            $this->context->buildViolation('CreditGuaranty.Reservation.project.required')
-                ->atPath('reservation.project')
-                ->addViolation()
-            ;
-
-            return;
-        }
+        $program     = $reservation->getProgram();
 
         if (0 === $reservation->getFinancingObjects()->count()) {
             $this->context->buildViolation('CreditGuaranty.Reservation.financingObject.required')
@@ -64,7 +43,7 @@ class ReservationSentValidator extends ConstraintValidator
             return;
         }
 
-        if ($project->getProgram()->isEsbCalculationActivated()) {
+        if ($program->isEsbCalculationActivated()) {
             if (false === $reservation->isGrossSubsidyEquivalentEligible()) {
                 $this->context->buildViolation('CreditGuaranty.Reservation.esb.ineligible')
                     ->atPath('reservation')
@@ -73,7 +52,7 @@ class ReservationSentValidator extends ConstraintValidator
             }
         }
 
-        foreach ($this->programEligibilityRepository->findFieldCategoriesByProgram($reservation->getProgram()) as $category) {
+        foreach ($this->programEligibilityRepository->findFieldCategoriesByProgram($program) as $category) {
             $ineligibles = $this->eligibilityChecker->check($reservation, true, $category);
 
             if (false === empty($ineligibles)) {

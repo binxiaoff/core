@@ -43,19 +43,20 @@ abstract class AbstractEligibilityTest extends TestCase
         return new Reservation($program, new Staff(new User('user@mail.com'), $team));
     }
 
-    protected function createBorrower(Reservation $reservation): Borrower
+    protected function withBorrower(Reservation $reservation): void
     {
         $program              = $reservation->getProgram();
         $borrowerTypeField    = new Field('borrower_type', 'test', 'list', 'borrower', 'borrowerType', Borrower::class, false, null, null);
         $legalFormField       = new Field('legal_form', 'test', 'list', 'borrower', 'legalForm', Borrower::class, false, null, null);
         $activityCountryField = new Field('activity_country', 'test', 'list', 'borrower', 'addressCountry', Borrower::class, false, null, ['FR']);
 
-        return (new Borrower($reservation, 'Borrower Company', 'D'))
+        $reservation->getBorrower()
             ->setBeneficiaryName('Borrower Name')
             ->setBorrowerType(new ProgramChoiceOption($program, 'borrower type', $borrowerTypeField))
             ->setYoungFarmer(true)
             ->setCreationInProgress(false)
             ->setSubsidiary(true)
+            ->setCompanyName('Borrower Company')
             ->setActivityStartDate(new DateTimeImmutable())
             ->setAddressStreet('42 rue de de la paix')
             ->setAddressCity('Paris')
@@ -67,10 +68,11 @@ abstract class AbstractEligibilityTest extends TestCase
             ->setEmployeesNumber(42)
             ->setTurnover(new NullableMoney('EUR', '128'))
             ->setTotalAssets(new NullableMoney('EUR', '2048'))
+            ->setGrade('D')
         ;
     }
 
-    protected function createProject(Reservation $reservation): Project
+    protected function withProject(Reservation $reservation): void
     {
         $program                 = $reservation->getProgram();
         $investmentThematicField = new Field('investment_thematic', 'test', 'list', 'project', 'investmentThematic', Project::class, false, null, null);
@@ -79,12 +81,13 @@ abstract class AbstractEligibilityTest extends TestCase
         $additionalGuaranty      = new Field('additional_guaranty', 'test', 'list', 'project', 'additionalGuaranty', Project::class, false, null, null);
         $agriculturalBranch      = new Field('agricultural_branch', 'test', 'list', 'project', 'agriculturalBranch', Project::class, false, null, null);
 
-        return (new Project($reservation, new Money('EUR', '42')))
+        $reservation->getProject()
             ->setInvestmentThematic(new ProgramChoiceOption($program, 'investment thematic', $investmentThematicField))
             ->setInvestmentType(new ProgramChoiceOption($program, 'investment type', $investmentTypeField))
             ->setAidIntensity(new ProgramChoiceOption($program, '0.42', $aidIntensityField))
             ->setAdditionalGuaranty(new ProgramChoiceOption($program, 'additional guaranty', $additionalGuaranty))
             ->setAgriculturalBranch(new ProgramChoiceOption($program, 'agricultural branch', $agriculturalBranch))
+            ->setFundingMoney(new NullableMoney('EUR', '42'))
         ;
     }
 

@@ -45,11 +45,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         "delete": {
  *             "security": "is_granted('delete', object)"
  *         }
- *     },
- *     collectionOperations={
- *         "post": {
- *             "security_post_denormalize": "is_granted('create', object)"
- *         }
  *     }
  * )
  *
@@ -64,8 +59,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     use TimestampableTrait;
 
     /**
-     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Reservation", inversedBy="project")
-     * @ORM\JoinColumn(name="id_reservation", nullable=false)
+     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Reservation", mappedBy="project")
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
@@ -136,11 +130,11 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private ?ProgramChoiceOption $agriculturalBranch = null;
 
     /**
-     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
-    private Money $fundingMoney;
+    private NullableMoney $fundingMoney;
 
     /**
      * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
@@ -210,10 +204,10 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      */
     private NullableMoney $landValue;
 
-    public function __construct(Reservation $reservation, Money $fundingMoney)
+    public function __construct(Reservation $reservation)
     {
         $this->reservation         = $reservation;
-        $this->fundingMoney        = $fundingMoney;
+        $this->fundingMoney        = new NullableMoney();
         $this->contribution        = new NullableMoney();
         $this->eligibleFeiCredit   = new NullableMoney();
         $this->totalFeiCredit      = new NullableMoney();
@@ -377,12 +371,12 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return null;
     }
 
-    public function getFundingMoney(): Money
+    public function getFundingMoney(): NullableMoney
     {
         return $this->fundingMoney;
     }
 
-    public function setFundingMoney(Money $fundingMoney): Project
+    public function setFundingMoney(NullableMoney $fundingMoney): Project
     {
         $this->fundingMoney = $fundingMoney;
 
