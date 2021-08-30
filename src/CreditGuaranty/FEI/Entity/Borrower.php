@@ -105,6 +105,8 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
     private ?bool $subsidiary = null;
 
@@ -120,7 +122,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"timestampable:read"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
     private ?DateTimeImmutable $activityStartDate = null;
 
