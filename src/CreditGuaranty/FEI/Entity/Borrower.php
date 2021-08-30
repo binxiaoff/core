@@ -105,6 +105,8 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
     private ?bool $subsidiary = null;
 
