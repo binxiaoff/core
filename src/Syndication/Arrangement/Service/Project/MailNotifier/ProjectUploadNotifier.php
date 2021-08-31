@@ -28,17 +28,12 @@ class ProjectUploadNotifier implements FileUploadedNotifierInterface
         $this->projectRepository = $projectRepository;
     }
 
-    public function allowsToNotify(array $context): bool
-    {
-        if (false === \array_key_exists('projectId', $context)) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function notify(array $context): int
     {
+        if (false === $this->supports($context)) {
+            return 0;
+        }
+
         $project = $this->projectRepository->find($context['projectId']);
 
         if (null === $project) {
@@ -78,5 +73,14 @@ class ProjectUploadNotifier implements FileUploadedNotifierInterface
         }
 
         return $sent;
+    }
+
+    private function supports(array $context): bool
+    {
+        if (empty($context['projectId'])) {
+            return false;
+        }
+
+        return true;
     }
 }

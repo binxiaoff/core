@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace KLS\Core\MessageHandler\File;
 
-use InvalidArgumentException;
 use KLS\Core\Message\File\FileUploaded;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
@@ -23,13 +22,7 @@ class FileUploadedHandler implements MessageHandlerInterface
         $context = $fileUploaded->getContext();
 
         foreach ($this->notifiers as $notifier) {
-            if ($notifier->allowsToNotify($context)) {
-                $notifier->notify($context);
-
-                return;
-            }
+            $notifier->notify($context);
         }
-
-        throw new InvalidArgumentException('The context is not supported by any notifier');
     }
 }

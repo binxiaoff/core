@@ -53,22 +53,6 @@ class ProjectUploadNotifierTest extends TestCase
     }
 
     /**
-     * @covers ::allowsToNotify
-     */
-    public function testAllowsToNotify(): void
-    {
-        static::assertTrue($this->createTestObject()->allowsToNotify(['projectId' => 1]));
-    }
-
-    /**
-     * @covers ::allowsToNotify
-     */
-    public function testNotAllowsToNotify(): void
-    {
-        static::assertFalse($this->createTestObject()->allowsToNotify(['id' => 42]));
-    }
-
-    /**
      * @covers ::notify
      */
     public function testNotify(): void
@@ -97,6 +81,21 @@ class ProjectUploadNotifierTest extends TestCase
         $result   = $notifier->notify(['projectId' => 1]);
 
         static::assertSame(2, $result);
+    }
+
+    /**
+     * @covers ::notify
+     */
+    public function testNotifyNotSupports(): void
+    {
+        $this->projectRepository->find(Argument::any())->shouldNotBeCalled();
+        $this->router->generate(Argument::cetera())->shouldNotBeCalled();
+        $this->mailer->send(Argument::any())->shouldNotBeCalled();
+
+        $notifier = $this->createTestObject();
+        $result   = $notifier->notify(['id' => 1]);
+
+        static::assertSame(0, $result);
     }
 
     /**
