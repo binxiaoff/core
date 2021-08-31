@@ -16,7 +16,6 @@ use KLS\Core\Entity\HubspotContact;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
 use KLS\Core\Entity\UserStatus;
-use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
 use PDO;
 
 /**
@@ -98,19 +97,6 @@ class UserRepository extends ServiceEntityRepository
             ->andWhere('s.company = :company')
             ->setParameter('role', \json_encode($roles, JSON_THROW_ON_ERROR))
             ->setParameter('company', $company)
-        ;
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-
-    public function findDefaultConcernedUsers(ProjectParticipation $projectParticipation): array
-    {
-        $queryBuilder = $this->createQueryBuilder('users')
-            ->innerJoin('users.staff', 'staff')
-            ->where('staff.company = :company')
-            ->setParameters([
-                'company' => $projectParticipation->getParticipant(),
-            ])
         ;
 
         return $queryBuilder->getQuery()->getResult();
