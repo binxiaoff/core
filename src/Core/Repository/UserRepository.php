@@ -6,14 +6,19 @@ namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Doctrine\ORM\Query\{Expr\Join};
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
 use JsonException;
 use KLS\Core\Entity\Company;
+use KLS\Core\Entity\CompanyStatus;
 use KLS\Core\Entity\HubspotContact;
 use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\StaffStatus;
+use KLS\Core\Entity\Team;
+use KLS\Core\Entity\TeamEdge;
 use KLS\Core\Entity\User;
 use KLS\Core\Entity\UserStatus;
 use PDO;
@@ -122,5 +127,31 @@ class UserRepository extends ServiceEntityRepository
         ;
 
         return $qb->setMaxResults($limit)->getQuery()->getResult();
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     * @throws NoResultException
+     */
+    public function findActiveUsersPerCompany(Company $company): ?array
+    {
+        return $this->createQueryBuilder('u')
+            ->select('ROUND(100 - (COUNT(u.id) - SUM(case when u.password IS NULL then 0 else 1 end)) / COUNT(u.id) * 100) as user_init_percentage')
+            ->innerJoin(UserStatus::class, 'us', Join::WITH, 'u.currentStatus = us.id')
+            ->innerJoin(Staff::class, 's', Join::WITH, 'u.id = s.user')
+            ->innerJoin(StaffStatus::class, 'ss', Join::WITH, 's.id = ss.staff')
+            ->innerJoin(Team::class, 't', Join::WITH, 's.team = t.id')
+            ->leftJoin(TeamEdge::class, 'te', Join::WITH, 's.team = te.descendent')
+            ->innerJoin(Company::class, 'c', Join::WITH, 's.team = c.rootTeam OR te.ancestor = c.rootTeam')
+            ->innerJoin(CompanyStatus::class, 'cs', Join::WITH, 'c.currentStatus = cs.id')
+            ->where('ss.status = :status')
+            ->andWhere('c = :company')
+            ->setParameters([
+                'status'  => StaffStatus::STATUS_ACTIVE,
+                'company' => $company,
+            ])
+            ->getQuery()
+            ->getSingleResult()
+            ;
     }
 }

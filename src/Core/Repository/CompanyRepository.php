@@ -7,8 +7,10 @@ namespace KLS\Core\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
 use KLS\Core\Entity\Company;
+use KLS\Core\Entity\HubspotCompany;
 use KLS\Core\Repository\Traits\OrderByHandlerTrait;
 
 /**
@@ -20,6 +22,8 @@ use KLS\Core\Repository\Traits\OrderByHandlerTrait;
 class CompanyRepository extends ServiceEntityRepository
 {
     use OrderByHandlerTrait;
+
+    private const MAX_COMPANY_LOAD = 100;
 
     public function __construct(ManagerRegistry $registry)
     {
@@ -34,5 +38,39 @@ class CompanyRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($company);
         $this->getEntityManager()->flush();
+    }
+
+    public function getCompaniesAsc(?int $companyId = null): ?array
+    {
+        $qb = $this->createQueryBuilder('c');
+
+        if ($companyId) {
+            $qb->andWhere('c.id > :companyId');
+            $qb->setParameter('companyId', $companyId);
+        }
+
+        return $qb->setMaxResults(self::MAX_COMPANY_LOAD)->getQuery()->getResult();
+    }
+
+    public function findCompaniesToCreateOnHubspot(int $limit)
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->leftJoin(HubspotCompany::class, 'hc', Join::WITH, 'c.id = hc.company')
+            ->where('hc.id IS NULL')
+        ;
+
+        return $qb->setMaxResults($limit)->getQuery()->getResult();
+    }
+
+    public function findCompaniesToUpdateOnHubspot(int $limit)
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->leftJoin(HubspotCompany::class, 'hc', Join::WITH, 'c.id = hc.company')
+            ->where('hc.id IS NOT NULL')
+            ->andWhere('c.updated > hc.synchronized')
+            ->orderBy('hc.synchronized', 'DESC')
+        ;
+
+        return $qb->setMaxResults($limit)->getQuery()->getResult();
     }
 }

@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace KLS\Test\Core\Unit\Service\Hubspot;
 
 use KLS\Core\Entity\Company;
+use KLS\Core\Entity\CompanyGroup;
+use KLS\Core\Entity\CompanyStatus;
 use KLS\Core\Entity\HubspotCompany;
 use KLS\Core\Repository\CompanyRepository;
 use KLS\Core\Repository\HubspotCompanyRepository;
 use KLS\Core\Service\Hubspot\Client\HubspotClient;
 use KLS\Core\Service\Hubspot\HubspotCompanyManager;
+use KLS\Syndication\Agency\Repository\ProjectRepository as ProjectAgencyRepository;
+use KLS\Syndication\Arrangement\Repository\ProjectRepository as ProjectArrangementRepository;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -36,132 +40,178 @@ class HubspotCompanyManagerTest extends TestCase
     /** @var HubspotClient|ObjectProphecy */
     private $hubspotClient;
 
+    /** @var ProjectAgencyRepository|ObjectProphecy */
+    private $projectAgencyRepository;
+
+    /** @var ProjectArrangementRepository|ObjectProphecy */
+    private $projectArrangementRepository;
+
+    /** @var UserRepository|ObjectProphecy */
+    private $userRepository;
+
     protected function setUp(): void
     {
-        $this->logger                   = $this->prophesize(LoggerInterface::class);
-        $this->hubspotCompanyRepository = $this->prophesize(HubspotCompanyRepository::class);
-        $this->companyRepository        = $this->prophesize(CompanyRepository::class);
-        $this->hubspotClient            = $this->prophesize(HubspotClient::class);
+        $this->companyRepository            = $this->prophesize(CompanyRepository::class);
+        $this->hubspotCompanyRepository     = $this->prophesize(HubspotCompanyRepository::class);
+        $this->hubspotClient                = $this->prophesize(HubspotClient::class);
+        $this->userRepository               = $this->prophesize(UserRepository::class);
+        $this->projectAgencyRepository      = $this->prophesize(ProjectAgencyRepository::class);
+        $this->projectArrangementRepository = $this->prophesize(ProjectArrangementRepository::class);
+        $this->logger                       = $this->prophesize(LoggerInterface::class);
     }
 
     protected function tearDown(): void
     {
-        $this->logger                   = null;
-        $this->hubspotCompanyRepository = null;
-        $this->companyRepository        = null;
-        $this->hubspotClient            = null;
+        $this->companyRepository            = null;
+        $this->hubspotCompanyRepository     = null;
+        $this->hubspotClient                = null;
+        $this->userRepository               = null;
+        $this->projectAgencyRepository      = null;
+        $this->projectArrangementRepository = null;
+        $this->logger                       = null;
     }
 
     /**
-     * @covers ::synchronizeCompany
+     * @covers ::synchronizeCompaniesToHubspot
      */
-    public function testSynchronizeCompaniesWithNoCompany(): void
+    public function testSynchronizeCompaniesToHubspotWithCompanyToCreate(): void
     {
-        $response = $this->prophesize(ResponseInterface::class);
-        $this->hubspotClient->fetchAllCompanies(0)->shouldBeCalledOnce()->willReturn($response->reveal());
-        $response->getStatusCode()->willReturn(Response::HTTP_OK);
-        $response->getContent()->willReturn(\json_encode([], JSON_THROW_ON_ERROR));
+        $response     = $this->prophesize(ResponseInterface::class);
+        $arrCompanies = [
+            $this->createCompany(),
+        ];
 
-        $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => Argument::any()])->shouldNotBeCalled();
-        $this->companyRepository->findOneBy(['shortCode' => Argument::any()])->shouldNotBeCalled();
+        $this->companyRepository->findCompaniesToCreateOnHubspot(10)->shouldBeCalledOnce()->willReturn($arrCompanies);
+        $this->companyRepository->findCompaniesToUpdateOnHubspot(10)->shouldBeCalledOnce()->willReturn(null);
 
-        $this->hubspotCompanyRepository->flush()->shouldNotBeCalled();
+        $response->getStatusCode()->shouldBeCalled()->willReturn(Response::HTTP_CREATED);
+        $response->getContent()->shouldBeCalled()->willReturn(\json_encode([
+            'id'         => '4802581745',
+            'properties' => [
+                'createdate'     => '2021-08-31T16:11:09.412Z',
+                'domain'         => 'test',
+                'kls_short_code' => 'fzefez',
+                'name'           => 'Cambridge',
+            ],
+            'createdAt' => '2021-08-31T16:11:09.412Z',
+            'updatedAt' => '2021-08-31T16:11:09.412Z',
+            'archived'  => false,
+        ], JSON_THROW_ON_ERROR));
+        $this->userRepository->findActiveUsersPerCompany(Argument::type(Company::class))->shouldBeCalled()->willReturn(['user_init_percentage' => 86]);
+        $this->projectAgencyRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
+        $this->projectArrangementRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
 
-        $result = $this->createTestObject()->synchronizeCompanies(0);
+        $this->hubspotClient->postNewCompany($this->getFormatData())->shouldBeCalled()->willReturn($response->reveal());
 
-        static::assertEmpty($result);
-    }
-
-    /**
-     * @covers ::synchronizeCompany
-     */
-    public function testSynchronizeWithHubspotCompaniesAlreadyExisted(): void
-    {
-        $response = $this->prophesize(ResponseInterface::class);
-        $this->hubspotClient->fetchAllCompanies(0)->shouldBeCalledOnce()->willReturn($response->reveal());
-        $response->getStatusCode()->willReturn(Response::HTTP_OK);
-        $response->getContent()->willReturn(\json_encode($this->getHubspotCompanyCreatedResponse(), JSON_THROW_ON_ERROR));
-
-        $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => '6584949386'])->shouldBeCalled()
-            ->willReturn(new HubspotCompany($this->getCompany(), '6584949386'))
-        ;
-        $this->companyRepository->findOneBy(['shortCode' => Argument::any()])->shouldNotBeCalled();
-
+        $this->hubspotCompanyRepository->persist(Argument::type(HubspotCompany::class))->shouldBeCalledOnce();
         $this->hubspotCompanyRepository->flush()->shouldBeCalled();
 
-        $result = $this->createTestObject()->synchronizeCompanies(0);
-
-        static::assertArrayHasKey('lastCompanyId', $result);
-        static::assertArrayHasKey('companyAddedNb', $result);
+        $result = $this->createTestObject()->synchronizeCompaniesToHubspot(10);
+        static::assertArrayHasKey('companiesCreated', $result);
+        static::assertArrayHasKey('companiesUpdated', $result);
     }
 
     /**
-     * @covers ::synchronizeCompany
+     * @covers ::synchronizeCompaniesToHubspot
      */
-    public function testSynchronizeWithCompanyNotFoundInDB(): void
+    public function testSynchronizeCompaniesToHubspotWithCompanyToCreateWithErrorReponse(): void
     {
-        $response = $this->prophesize(ResponseInterface::class);
-        $this->hubspotClient->fetchAllCompanies(0)->shouldBeCalledOnce()->willReturn($response->reveal());
-        $response->getStatusCode()->willReturn(Response::HTTP_OK);
-        $response->getContent()->willReturn(\json_encode($this->getHubspotCompanyCreatedResponse(), JSON_THROW_ON_ERROR));
+        $response     = $this->prophesize(ResponseInterface::class);
+        $arrCompanies = [
+            $this->createCompany(),
+        ];
 
-        $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => '6584949386'])->shouldBeCalled()->willReturn(null);
-        $this->companyRepository->findOneBy(['shortCode' => 'KLS'])->shouldBeCalledOnce()->willReturn(null);
+        $this->companyRepository->findCompaniesToCreateOnHubspot(10)->shouldBeCalledOnce()->willReturn($arrCompanies);
+        $this->companyRepository->findCompaniesToUpdateOnHubspot(10)->shouldBeCalledOnce()->willReturn(null);
 
-        $this->hubspotCompanyRepository->persist(Argument::any())->shouldNotBeCalled();
+        $response->getStatusCode()->shouldBeCalled()->willReturn(Response::HTTP_INTERNAL_SERVER_ERROR);
+        $response->getContent(false)->shouldBeCalledOnce();
+
+        $this->userRepository->findActiveUsersPerCompany(Argument::type(Company::class))->shouldBeCalled()->willReturn(['user_init_percentage' => 86]);
+        $this->projectAgencyRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
+        $this->projectArrangementRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
+
+        $this->hubspotClient->postNewCompany($this->getFormatData())->shouldBeCalled()->willReturn($response->reveal());
+
+        $this->hubspotCompanyRepository->persist(Argument::type(HubspotCompany::class))->shouldNotBeCalled();
         $this->hubspotCompanyRepository->flush()->shouldBeCalled();
 
-        $result = $this->createTestObject()->synchronizeCompanies(0);
-
-        static::assertArrayHasKey('lastCompanyId', $result);
-        static::assertArrayHasKey('companyAddedNb', $result);
-        static::assertSame(0, $result['lastCompanyId']);
-        static::assertSame(0, $result['companyAddedNb']);
+        $result = $this->createTestObject()->synchronizeCompaniesToHubspot(10);
+        static::assertArrayHasKey('companiesCreated', $result);
+        static::assertArrayHasKey('companiesUpdated', $result);
     }
 
-    /**
-     * @covers ::synchronizeCompany
-     */
-    public function testSynchronizeHubspotCompanies(): void
+    public function testSynchronizeCompaniesToHubspotWithCompanyToUpdate(): void
     {
-        $response = $this->prophesize(ResponseInterface::class);
-        $this->hubspotClient->fetchAllCompanies(0)->shouldBeCalledOnce()->willReturn($response->reveal());
-        $response->getStatusCode()->willReturn(Response::HTTP_OK);
-        $response->getContent()->willReturn(\json_encode($this->getHubspotCompanyCreatedResponse(), JSON_THROW_ON_ERROR));
+        $response     = $this->prophesize(ResponseInterface::class);
+        $arrCompanies = [
+            $this->createCompany(),
+        ];
 
-        $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => '6584949386'])->shouldBeCalled()->willReturn(null);
-        $this->companyRepository->findOneBy(['shortCode' => 'KLS'])->shouldBeCalledOnce()->willReturn($this->getCompany());
+        $this->companyRepository->findCompaniesToCreateOnHubspot(10)->shouldBeCalledOnce()->willReturn(null);
+        $this->companyRepository->findCompaniesToUpdateOnHubspot(10)->shouldBeCalledOnce()->willReturn($arrCompanies);
 
-        $this->hubspotCompanyRepository->persist(Argument::type(HubspotCompany::class));
+        $company = $this->createCompany();
+        $this->hubspotCompanyRepository->findOneBy(['company' => $company])->shouldBeCalledOnce()->willReturn($company);
+
+        $response->getStatusCode()->shouldBeCalled()->willReturn(Response::HTTP_OK);
+        $response->getContent()->shouldBeCalled()->willReturn(\json_encode([
+            'id'         => '4802581745',
+            'properties' => [
+                'createdate'     => '2021-08-31T16:11:09.412Z',
+                'domain'         => 'test',
+                'kls_short_code' => 'fzefez',
+                'name'           => 'Cambridge',
+            ],
+            'createdAt' => '2021-08-31T16:11:09.412Z',
+            'updatedAt' => '2021-08-31T16:11:09.412Z',
+            'archived'  => false,
+        ], JSON_THROW_ON_ERROR));
+
+        $this->userRepository->findActiveUsersPerCompany(Argument::type(Company::class))->shouldBeCalled()->willReturn(['user_init_percentage' => 86]);
+        $this->projectAgencyRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
+        $this->projectArrangementRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
+
+        $this->hubspotClient->updateCompany('12344', $this->getFormatData())->shouldBeCalled()->willReturn($response->reveal());
+
+        $this->hubspotCompanyRepository->persist(Argument::type(HubspotCompany::class))->shouldBeCalledOnce();
         $this->hubspotCompanyRepository->flush()->shouldBeCalled();
 
-        $result = $this->createTestObject()->synchronizeCompanies(0);
-
-        static::assertArrayHasKey('lastCompanyId', $result);
-        static::assertArrayHasKey('companyAddedNb', $result);
-        static::assertSame(0, $result['lastCompanyId']);
-        static::assertSame(1, $result['companyAddedNb']);
+        $result = $this->createTestObject()->synchronizeCompaniesToHubspot(10);
+        static::assertArrayHasKey('companiesCreated', $result);
+        static::assertArrayHasKey('companiesUpdated', $result);
     }
 
-    public function getHubspotCompanyCreatedResponse(): array
+    private function getFormatData(): array
     {
+        $company = $this->createCompany();
+
         return [
-            'results' => [
-                0 => [
-                    'id'         => '6584949386',
-                    'properties' => [
-                        'createdate'          => '2021-07-16T10:19:04.834Z',
-                        'domain'              => 'biglytics.net',
-                        'hs_lastmodifieddate' => '2021-08-06T10:04:48.250Z',
-                        'hs_object_id'        => '6584949386',
-                        'kls_short_code'      => 'KLS',
-                    ],
-                    'createdAt' => '2021-07-16T10:19:04.834Z',
-                    'updatedAt' => '2021-08-06T10:04:48.250Z',
-                    'archived'  => false,
-                ],
+            'properties' => [
+                'name'                     => $company->getDisplayName(),
+                'domain'                   => $company->getEmailDomain(),
+                'kls_short_code'           => $company->getShortCode(),
+                'kls_bank_group'           => 'group',
+                'kls_company_status'       => 'Signé',
+                'kls_user_init_percentage' => null,
+                'kls_active_modules'       => '',
+                'kls_agency_projects'      => 11,
+                'kls_arrangement_projects' => 11,
             ],
         ];
+    }
+
+    private function createCompany(): Company
+    {
+        $company      = new Company('displayName', 'CompanyName', 'siren');
+        $companyGroup = new CompanyGroup('group');
+        $status       = new CompanyStatus($company, 10);
+        $company->setCurrentStatus($status);
+        $company->setCompanyGroup($companyGroup);
+        $company->setShortCode('KLS');
+        $company->setEmailDomain('KLS');
+
+        return $company;
     }
 
     public function getCompany(): Company
@@ -172,10 +222,13 @@ class HubspotCompanyManagerTest extends TestCase
     private function createTestObject(): HubspotCompanyManager
     {
         return new HubspotCompanyManager(
-            $this->logger->reveal(),
-            $this->hubspotCompanyRepository->reveal(),
             $this->companyRepository->reveal(),
+            $this->hubspotCompanyRepository->reveal(),
             $this->hubspotClient->reveal(),
+            $this->userRepository->reveal(),
+            $this->projectAgencyRepository->reveal(),
+            $this->projectArrangementRepository->reveal(),
+            $this->logger->reveal(),
         );
     }
 }

@@ -12,8 +12,8 @@ class HubspotClient
 {
     public const RESULT_PER_PAGE       = 100; // Maximum authorised
     private const GET_DAILY_USAGE_PATH = 'v1/limit/daily?';
-    private const CONTACTS_PATH        = 'contact';
-    private const COMPANY_PATH         = 'companies';
+    private const CONTACTS_PATH       = 'contact';
+    private const COMPANY_PATH        = 'companies';
 
     public HttpClientInterface $hubspotIntegrationClient;
     public HttpClientInterface $hubspotCrmClient;
@@ -60,6 +60,20 @@ class HubspotClient
     public function updateContact(int $contactId, array $data): ResponseInterface
     {
         return $this->hubspotCrmClient->request('PATCH', self::CONTACTS_PATH . '/' . $contactId, [
+            'json' => $data,
+        ]);
+    }
+
+    public function postNewCompany(array $data): ResponseInterface
+    {
+        return $this->hubspotCrmClient->request('POST', self::COMPANY_PATH, [
+            'json' => $data,
+        ]);
+    }
+
+    public function updateCompany(string $companyId, array $data): ResponseInterface
+    {
+        return $this->hubspotCrmClient->request('PATCH', self::COMPANY_PATH . '/' . $companyId, [
             'json' => $data,
         ]);
     }

@@ -4,13 +4,20 @@ declare(strict_types=1);
 
 namespace KLS\Core\Service\Hubspot;
 
+use DateTimeImmutable;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use KLS\Core\Entity\Company;
+use KLS\Core\Entity\CompanyStatus;
 use KLS\Core\Entity\HubspotCompany;
 use KLS\Core\Repository\CompanyRepository;
 use KLS\Core\Repository\HubspotCompanyRepository;
+use KLS\Core\Repository\UserRepository;
 use KLS\Core\Service\Hubspot\Client\HubspotClient;
+use KLS\Syndication\Agency\Repository\ProjectRepository as ProjectAgencyRepository;
+use KLS\Syndication\Arrangement\Repository\ProjectRepository as ProjectArrangementRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -20,21 +27,30 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class HubspotCompanyManager
 {
-    private LoggerInterface $logger;
-    private HubspotCompanyRepository $hubspotCompanyRepository;
     private CompanyRepository $companyRepository;
+    private HubspotCompanyRepository $hubspotCompanyRepository;
     private HubspotClient $hubspotClient;
+    private UserRepository $userRepository;
+    private ProjectAgencyRepository $projectAgencyRepository;
+    private ProjectArrangementRepository $projectArrangementRepository;
+    private LoggerInterface $logger;
 
     public function __construct(
-        LoggerInterface $logger,
-        HubspotCompanyRepository $hubspotCompanyRepository,
         CompanyRepository $companyRepository,
-        HubspotClient $hubspotClient
+        HubspotCompanyRepository $hubspotCompanyRepository,
+        HubspotClient $hubspotClient,
+        UserRepository $userRepository,
+        ProjectAgencyRepository $projectAgencyRepository,
+        ProjectArrangementRepository $projectArrangementRepository,
+        LoggerInterface $logger
     ) {
-        $this->logger                   = $logger;
-        $this->hubspotCompanyRepository = $hubspotCompanyRepository;
-        $this->companyRepository        = $companyRepository;
-        $this->hubspotClient            = $hubspotClient;
+        $this->companyRepository            = $companyRepository;
+        $this->hubspotCompanyRepository     = $hubspotCompanyRepository;
+        $this->hubspotClient                = $hubspotClient;
+        $this->userRepository               = $userRepository;
+        $this->projectAgencyRepository      = $projectAgencyRepository;
+        $this->projectArrangementRepository = $projectArrangementRepository;
+        $this->logger                       = $logger;
     }
 
     /**
@@ -92,6 +108,55 @@ class HubspotCompanyManager
     }
 
     /**
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws \JsonException
+     */
+    public function synchronizeCompaniesToHubspot(int $limit): array
+    {
+        $dataReturn       = [];
+        $companiesCreated = 0;
+        $companiesUpdated = 0;
+
+        //Get all companies when a corresponding hubspot id does not exit
+        $companies = $this->companyRepository->findCompaniesToCreateOnHubspot($limit);
+
+        if ($companies) {
+            foreach ($companies as $company) {
+                if (!$this->createCompanyOnHubspot($company)) {
+                    continue;
+                }
+                ++$companiesCreated;
+            }
+        }
+
+        //Get all companies when a corresponding hubspot id exit
+        $companies = $this->companyRepository->findCompaniesToUpdateOnHubspot($limit);
+        if ($companies) {
+            foreach ($companies as $company) {
+                $hubspotCompany = $this->hubspotCompanyRepository->findOneBy(['company' => $company]);
+
+                if (false === $hubspotCompany instanceof HubspotCompany) {
+                    continue;
+                }
+
+                if ($this->updateCompanyOnHubspot($hubspotCompany, $this->formatData($company))) {
+                    ++$companiesUpdated;
+                }
+            }
+        }
+
+        $this->hubspotCompanyRepository->flush();
+
+        $dataReturn['companiesCreated'] = $companiesCreated;
+        $dataReturn['companiesUpdated'] = $companiesUpdated;
+
+        return $dataReturn;
+    }
+
+    /**
      * @throws \JsonException
      * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
@@ -109,5 +174,82 @@ class HubspotCompanyManager
         }
 
         return \json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    private function createCompanyOnHubspot(Company $company): bool
+    {
+        // Create company on hubspot
+        $response = $this->hubspotClient->postNewCompany($this->formatData($company));
+
+        if (Response::HTTP_CREATED !== $response->getStatusCode()) {
+            $this->logger->info($response->getContent(false));
+
+            return false;
+        }
+        $content = \json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        $hubspotCompany = new HubspotCompany($company, (string) $content['id']);
+        $this->hubspotCompanyRepository->persist($hubspotCompany);
+
+        return true;
+    }
+
+    private function updateCompanyOnHubspot(HubspotCompany $hubspotCompany, array $data): bool
+    {
+        $response = $this->hubspotClient->updateCompany($hubspotCompany->getHubspotCompanyId(), $data);
+
+        if (Response::HTTP_OK !== $response->getStatusCode()) {
+            $this->logger->info($response->getContent(false));
+
+            return false;
+        }
+
+        $hubspotCompany->setSynchronized(new DateTimeImmutable());
+
+        return true;
+    }
+
+    /**
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     */
+    private function formatData(Company $company): array
+    {
+        $status = null;
+
+        $activeUsersPercentage = $this->userRepository->findActiveUsersPerCompany($company);
+
+        if ($company->getCurrentStatus()) {
+            switch ($company->getCurrentStatus()->getStatus()) {
+                case CompanyStatus::STATUS_PROSPECT:
+                    $status = 'Non signé';
+
+                    break;
+
+                case CompanyStatus::STATUS_SIGNED:
+                    $status = 'Signé';
+
+                    break;
+
+                case CompanyStatus::STATUS_REFUSED:
+                    $status = 'Refusé';
+
+                    break;
+            }
+        }
+
+        return [
+            'properties' => [
+                'name'                     => $company->getDisplayName(),
+                'domain'                   => $company->getEmailDomain(),
+                'kls_short_code'           => $company->getShortCode(),
+                'kls_bank_group'           => $company->getCompanyGroup() ? $company->getCompanyGroup()->getName() : null,
+                'kls_company_status'       => $status,
+                'kls_user_init_percentage' => $activeUsersPercentage['kls_user_init_percentage'] ?? null,
+                'kls_active_modules'       => \implode(', ', $company->getActivatedModules()),
+                'kls_agency_projects'      => $this->projectAgencyRepository->countProjectsByCompany($company),
+                'kls_arrangement_projects' => $this->projectArrangementRepository->countProjectsByCompany($company),
+            ],
+        ];
     }
 }
