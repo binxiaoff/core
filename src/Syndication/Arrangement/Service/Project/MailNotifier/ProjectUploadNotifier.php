@@ -4,27 +4,42 @@ declare(strict_types=1);
 
 namespace KLS\Syndication\Arrangement\Service\Project\MailNotifier;
 
+use InvalidArgumentException;
+use KLS\Core\MessageHandler\File\FileUploadedNotifierInterface;
 use KLS\Core\SwiftMailer\MailjetMessage;
-use KLS\Syndication\Arrangement\Entity\Project;
 use KLS\Syndication\Arrangement\Entity\ProjectStatus;
+use KLS\Syndication\Arrangement\Repository\ProjectRepository;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 
-class ProjectUploadNotifier
+class ProjectUploadNotifier implements FileUploadedNotifierInterface
 {
     private Swift_Mailer $mailer;
     private RouterInterface $router;
+    private ProjectRepository $projectRepository;
 
     public function __construct(
         Swift_Mailer $mailer,
-        RouterInterface $router
+        RouterInterface $router,
+        ProjectRepository $projectRepository
     ) {
-        $this->mailer = $mailer;
-        $this->router = $router;
+        $this->mailer            = $mailer;
+        $this->router            = $router;
+        $this->projectRepository = $projectRepository;
     }
 
-    public function notify(Project $project): int
+    public function notify(array $context): int
     {
+        if (false === $this->supports($context)) {
+            return 0;
+        }
+
+        $project = $this->projectRepository->find($context['projectId']);
+
+        if (null === $project) {
+            throw new InvalidArgumentException(\sprintf('The project with id %d does not exist', $context['projectId']));
+        }
+
         $sent = 0;
 
         if (ProjectStatus::STATUS_INTEREST_EXPRESSION > $project->getCurrentStatus()->getStatus()) {
@@ -58,5 +73,14 @@ class ProjectUploadNotifier
         }
 
         return $sent;
+    }
+
+    private function supports(array $context): bool
+    {
+        if (empty($context['projectId'])) {
+            return false;
+        }
+
+        return true;
     }
 }

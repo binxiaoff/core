@@ -70,6 +70,12 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
 
+  # MessageHandler
+
+  KLS\Core\MessageHandler\File\FileUploadedHandler:
+    arguments:
+      $notifiers: !tagged kls.file.uploaded.notifier
+
   # Security
 
   KLS\Core\Security\UsernamePasswordRecaptchaAuthenticator:

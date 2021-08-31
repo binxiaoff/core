@@ -6,6 +6,7 @@ namespace KLS;
 
 use KLS\Core\DataTransformer\FileInputDataUploadInterface;
 use KLS\Core\EventSubscriber\Jwt\PermissionProviderInterface;
+use KLS\Core\MessageHandler\File\FileUploadedNotifierInterface;
 use KLS\Core\Service\File\FileDeleteInterface;
 use KLS\Core\Service\Staff\StaffLoginInterface;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -42,9 +43,13 @@ class Kernel extends BaseKernel
      */
     protected function build(ContainerBuilder $container): void
     {
+        // Authentication
         $container->registerForAutoconfiguration(PermissionProviderInterface::class)->addTag('kls.jwt.permission_provider');
         $container->registerForAutoconfiguration(StaffLoginInterface::class)->addTag('kls.staff.login.checker');
+
+        // File system
         $container->registerForAutoconfiguration(FileInputDataUploadInterface::class)->addTag('kls.file.input.data.upload');
+        $container->registerForAutoconfiguration(FileUploadedNotifierInterface::class)->addTag('kls.file.uploaded.notifier');
         $container->registerForAutoconfiguration(FileDeleteInterface::class)->addTag('kls.file.delete');
     }
 }
