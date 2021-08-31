@@ -46,9 +46,9 @@ abstract class AbstractEligibilityTest extends TestCase
     protected function withBorrower(Reservation $reservation): void
     {
         $program              = $reservation->getProgram();
-        $borrowerTypeField    = new Field('borrower_type', 'test', 'list', 'borrower', 'borrowerType', Borrower::class, false, null, null);
-        $legalFormField       = new Field('legal_form', 'test', 'list', 'borrower', 'legalForm', Borrower::class, false, null, null);
-        $activityCountryField = new Field('activity_country', 'test', 'list', 'borrower', 'addressCountry', Borrower::class, false, null, ['FR']);
+        $borrowerTypeField    = new Field('borrower_type', 'test', 'list', 'borrower', 'borrowerType', 'ProgramChoiceOption', Borrower::class, false, null, null);
+        $legalFormField       = new Field('legal_form', 'test', 'list', 'borrower', 'legalForm', 'ProgramChoiceOption', Borrower::class, false, null, null);
+        $activityCountryField = new Field('activity_country', 'test', 'list', 'borrower', 'addressCountry', 'ProgramChoiceOption', Borrower::class, false, null, ['FR']);
 
         $reservation->getBorrower()
             ->setBeneficiaryName('Borrower Name')
@@ -75,11 +75,11 @@ abstract class AbstractEligibilityTest extends TestCase
     protected function withProject(Reservation $reservation): void
     {
         $program                 = $reservation->getProgram();
-        $investmentThematicField = new Field('investment_thematic', 'test', 'list', 'project', 'investmentThematic', Project::class, false, null, null);
-        $investmentTypeField     = new Field('investment_type', 'test', 'list', 'project', 'investmentType', Project::class, false, null, null);
-        $aidIntensityField       = new Field('aid_intensity', 'test', 'list', 'project', 'aidIntensity', Project::class, false, null, null);
-        $additionalGuaranty      = new Field('additional_guaranty', 'test', 'list', 'project', 'additionalGuaranty', Project::class, false, null, null);
-        $agriculturalBranch      = new Field('agricultural_branch', 'test', 'list', 'project', 'agriculturalBranch', Project::class, false, null, null);
+        $investmentThematicField = new Field('investment_thematic', 'test', 'list', 'project', 'investmentThematic', 'ProgramChoiceOption', Project::class, false, null, null);
+        $investmentTypeField     = new Field('investment_type', 'test', 'list', 'project', 'investmentType', 'ProgramChoiceOption', Project::class, false, null, null);
+        $aidIntensityField       = new Field('aid_intensity', 'test', 'list', 'project', 'aidIntensity', 'ProgramChoiceOption', Project::class, false, null, null);
+        $additionalGuaranty      = new Field('additional_guaranty', 'test', 'list', 'project', 'additionalGuaranty', 'ProgramChoiceOption', Project::class, false, null, null);
+        $agriculturalBranch      = new Field('agricultural_branch', 'test', 'list', 'project', 'agriculturalBranch', 'ProgramChoiceOption', Project::class, false, null, null);
 
         $reservation->getProject()
             ->setInvestmentThematic(new ProgramChoiceOption($program, 'investment thematic', $investmentThematicField))
@@ -95,8 +95,30 @@ abstract class AbstractEligibilityTest extends TestCase
     {
         $program = $reservation->getProgram();
 
-        $financingObjectTypeField = new Field('financing_object_type', 'test', 'list', 'financingObjects', 'financingObjectType', FinancingObject::class, false, null, null);
-        $loanTypeField            = new Field('loan_type', 'test', 'list', 'financingObjects', 'loanType', FinancingObject::class, false, null, ['loan type 1', 'loan type 2']);
+        $financingObjectTypeField = new Field(
+            'financing_object_type',
+            'test',
+            'list',
+            'financingObjects',
+            'financingObjectType',
+            'ProgramChoiceOption',
+            FinancingObject::class,
+            false,
+            null,
+            null
+        );
+        $loanTypeField = new Field(
+            'loan_type',
+            'test',
+            'list',
+            'financingObjects',
+            'loanType',
+            'ProgramChoiceOption',
+            FinancingObject::class,
+            false,
+            null,
+            ['loan type 1', 'loan type 2']
+        );
 
         return (new FinancingObject($reservation, new Money('EUR', '42'), false))
             ->setSupportingGenerationsRenewal($supportingGenerationsRenewal)

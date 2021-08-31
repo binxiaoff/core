@@ -52,7 +52,7 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
 
     public function testCheckByEligibilityConfigurationWithoutConditions(): void
     {
-        $field                           = new Field('alias_1', 'test', 'other', 'entity', 'field', 'Name\\Class\\Entity', false, null, null);
+        $field                           = new Field('alias_1', 'test', 'other', 'entity', 'field', 'type', 'Name\\Class\\Entity', false, null, null);
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
 
@@ -71,10 +71,10 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
     public function testCheckByEligibilityConfigurationWithConditionsEligible(): void
     {
         $entity                          = $this->reservation->getBorrower();
-        $field                           = new Field('alias_1', 'test', 'other', 'borrower', 'siret', Borrower::class, false, null, null);
-        $leftField1                      = new Field('left_alias_1', 'test', 'other', 'borrower', 'employeesNumber', Borrower::class, true, 'person', null);
-        $leftField2                      = new Field('left_alias_2', 'test', 'other', 'borrower', 'turnover::amount', Borrower::class, true, 'money', null);
-        $rightField2                     = new Field('right_alias_2', 'test', 'other', 'borrower', 'totalAssets::amount', Borrower::class, true, 'money', null);
+        $field                           = new Field('alias_1', 'test', 'other', 'borrower', 'siret', 'string', Borrower::class, false, null, null);
+        $leftField1                      = new Field('left_alias_1', 'test', 'other', 'borrower', 'employeesNumber', 'int', Borrower::class, true, 'person', null);
+        $leftField2                      = new Field('left_alias_2', 'test', 'other', 'borrower', 'turnover', 'MoneyInterface', Borrower::class, true, 'money', null);
+        $rightField2                     = new Field('right_alias_2', 'test', 'other', 'borrower', 'totalAssets', 'MoneyInterface', Borrower::class, true, 'money', null);
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
         $programEligibilityCondition1    = new ProgramEligibilityCondition($programEligibilityConfiguration, $leftField1, null, 'eq', 'value', '42');
@@ -104,8 +104,8 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
     public function testCheckByEligibilityConfigurationWithValueTypeConditionIneligible(): void
     {
         $entity                          = $this->reservation->getBorrower();
-        $field                           = new Field('alias_1', 'test', 'other', 'borrower', 'siret', Borrower::class, false, null, null);
-        $leftField1                      = new Field('left_alias_1', 'test', 'other', 'borrower', 'totalAssets::amount', Borrower::class, true, 'money', null);
+        $field                           = new Field('alias_1', 'test', 'other', 'borrower', 'siret', 'string', Borrower::class, false, null, null);
+        $leftField1                      = new Field('left_alias_1', 'test', 'other', 'borrower', 'totalAssets', 'MoneyInterface', Borrower::class, true, 'money', null);
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
         $programEligibilityCondition1    = new ProgramEligibilityCondition($programEligibilityConfiguration, $leftField1, null, 'gt', 'value', '2048');
@@ -128,8 +128,8 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
     {
         $entity                          = $this->reservation->getProject();
         $financingObject                 = $this->createFinancingObject($this->reservation, true);
-        $field                           = new Field('alias_1', 'test', 'other', 'financingObjects', 'loanMoney::amount', FinancingObject::class, true, 'money', null);
-        $rightField1                     = new Field('right_alias_1', 'test', 'other', 'project', 'fundingMoney::amount', Project::class, true, 'money', null);
+        $field                           = new Field('alias_1', 'test', 'other', 'financingObjects', 'loanMoney', 'MoneyInterface', FinancingObject::class, true, 'money', null);
+        $rightField1                     = new Field('right_alias_1', 'test', 'other', 'project', 'fundingMoney', 'MoneyInterface', Project::class, true, 'money', null);
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
         $programEligibilityCondition1    = new ProgramEligibilityCondition($programEligibilityConfiguration, $field, $rightField1, 'gte', 'rate', '42');
@@ -152,7 +152,7 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
 
     public function testCheckByEligibilityConfigurationWithoutRightOperandFieldInRateTypeCondition(): void
     {
-        $field                           = new Field('alias_1', 'test', 'other', 'project', 'fundingMoney::amount', Project::class, true, 'money', null);
+        $field                           = new Field('alias_1', 'test', 'other', 'project', 'fundingMoney', 'MoneyInterface', Project::class, true, 'money', null);
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
         $programEligibilityCondition1    = new ProgramEligibilityCondition($programEligibilityConfiguration, $field, null, 'lte', 'rate', '42');
@@ -173,9 +173,20 @@ class EligibilityConditionCheckerTest extends AbstractEligibilityTest
 
     public function testCheckByEligibilityConfigurationWithCollectionRightOperandFieldInRateTypeCondition(): void
     {
-        $financingObject                 = $this->createFinancingObject($this->reservation, true);
-        $field                           = new Field('alias_1', 'test', 'other', 'project', 'fundingMoney::amount', Project::class, true, 'money', null);
-        $rightField1                     = new Field('right_alias_1', 'test', 'other', 'financingObjects', 'loanMoney::amount', FinancingObject::class, true, 'money', null);
+        $financingObject = $this->createFinancingObject($this->reservation, true);
+        $field           = new Field('alias_1', 'test', 'other', 'project', 'fundingMoney', 'MoneyInterface', Project::class, true, 'money', null);
+        $rightField1     = new Field(
+            'right_alias_1',
+            'test',
+            'other',
+            'financingObjects',
+            'loanMoney',
+            'MoneyInterface',
+            FinancingObject::class,
+            true,
+            'money',
+            null
+        );
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
         $programEligibilityCondition1    = new ProgramEligibilityCondition($programEligibilityConfiguration, $field, $rightField1, 'gte', 'rate', '42');

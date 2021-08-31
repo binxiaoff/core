@@ -67,6 +67,11 @@ class Field
     /**
      * @ORM\Column(length=255)
      */
+    private string $propertyType;
+
+    /**
+     * @ORM\Column(length=255)
+     */
     private string $objectClass;
 
     /**
@@ -101,6 +106,7 @@ class Field
         string $type,
         string $reservationPropertyName,
         string $propertyPath,
+        string $propertyType,
         string $objectClass,
         bool $comparable,
         ?string $unit,
@@ -111,6 +117,7 @@ class Field
         $this->type                    = $type;
         $this->reservationPropertyName = $reservationPropertyName;
         $this->propertyPath            = $propertyPath;
+        $this->propertyType            = $propertyType;
         $this->objectClass             = $objectClass;
         $this->comparable              = $comparable;
         $this->unit                    = $unit;
@@ -140,6 +147,11 @@ class Field
     public function getPropertyPath(): string
     {
         return $this->propertyPath;
+    }
+
+    public function getPropertyType(): string
+    {
+        return $this->propertyType;
     }
 
     public function getObjectClass(): string

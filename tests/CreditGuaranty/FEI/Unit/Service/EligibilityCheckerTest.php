@@ -80,9 +80,9 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $program        = $this->reservation->getProgram();
         $entity         = $this->reservation->getBorrower();
 
-        $field1                           = new Field('company_name', $category, 'other', 'borrower', 'companyName', Borrower::class, false, null, null);
-        $field2                           = new Field('creation_in_progress', $category, 'bool', 'borrower', 'creationInProgress', Borrower::class, false, null, null);
-        $field3                           = new Field('legal_form', $category, 'list', 'borrower', 'legalForm', Borrower::class, false, null, null);
+        $field1                           = new Field('company_name', $category, 'other', 'borrower', 'companyName', 'string', Borrower::class, false, null, null);
+        $field2                           = new Field('creation_in_progress', $category, 'bool', 'borrower', 'creationInProgress', 'bool', Borrower::class, false, null, null);
+        $field3                           = new Field('legal_form', $category, 'list', 'borrower', 'legalForm', 'ProgramChoiceOption', Borrower::class, false, null, null);
         $fields                           = [$field1, $field2, $field3];
         $legalFormOption                  = new ProgramChoiceOption($program, 'legal form', $field3);
         $programEligibility1              = new ProgramEligibility($program, $field1);
@@ -144,8 +144,19 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $program        = $this->reservation->getProgram();
         $entity         = $this->reservation->getFinancingObjects();
 
-        $field1 = new Field('loan_duration', $category, 'other', 'financingObjects', 'loanDuration', FinancingObject::class, false, null, null);
-        $field2 = new Field('supporting_generations_renewal', $category, 'bool', 'financingObjects', 'supportingGenerationsRenewal', FinancingObject::class, false, null, null);
+        $field1 = new Field('loan_duration', $category, 'other', 'financingObjects', 'loanDuration', 'int', FinancingObject::class, false, null, null);
+        $field2 = new Field(
+            'supporting_generations_renewal',
+            $category,
+            'bool',
+            'financingObjects',
+            'supportingGenerationsRenewal',
+            'bool',
+            FinancingObject::class,
+            false,
+            null,
+            null
+        );
         $fields = [$field1, $field2];
 
         $programEligibility1              = new ProgramEligibility($program, $field1);
@@ -194,9 +205,9 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $withConditions = false;
         $program        = $this->reservation->getProgram();
 
-        $field1 = new Field('activity_post_code', 'profile', 'other', 'borrower', 'addressPostCode', Borrower::class, false, null, null);
-        $field2 = new Field('receiving_grant', 'project', 'bool', 'project', 'receivingGrant', Project::class, false, null, null);
-        $field3 = new Field('financing_object_type', 'loan', 'list', 'financingObjects', 'financingObjectType', FinancingObject::class, false, null, null);
+        $field1 = new Field('activity_post_code', 'profile', 'other', 'borrower', 'addressPostCode', 'string', Borrower::class, false, null, null);
+        $field2 = new Field('receiving_grant', 'project', 'bool', 'project', 'receivingGrant', 'bool', Project::class, false, null, null);
+        $field3 = new Field('financing_object_type', 'loan', 'list', 'financingObjects', 'financingObjectType', 'ProgramChoiceOption', FinancingObject::class, false, null, null);
         $fields = [$field1, $field2, $field3];
 
         $financingObjectTypeOption        = new ProgramChoiceOption($program, 'Object type', $field3);
@@ -258,9 +269,9 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $withConditions = true;
         $program        = $this->reservation->getProgram();
 
-        $field1                           = new Field('loan_deferral', 'loan', 'other', 'financingObjects', 'loanDeferral', FinancingObject::class, false, null, null);
-        $field2                           = new Field('borrower_type', 'profile', 'list', 'borrower', 'borrowerType', Borrower::class, false, null, null);
-        $field3                           = new Field('receiving_grant', 'project', 'bool', 'project', 'receivingGrant', Project::class, false, null, null);
+        $field1                           = new Field('loan_deferral', 'loan', 'other', 'financingObjects', 'loanDeferral', 'int', FinancingObject::class, false, null, null);
+        $field2                           = new Field('borrower_type', 'profile', 'list', 'borrower', 'borrowerType', 'ProgramChoiceOption', Borrower::class, false, null, null);
+        $field3                           = new Field('receiving_grant', 'project', 'bool', 'project', 'receivingGrant', 'bool', Project::class, false, null, null);
         $fields                           = [$field1, $field2, $field3];
         $borrowerTypeOption               = new ProgramChoiceOption($program, 'borrower type', $field2);
         $programEligibility1              = new ProgramEligibility($program, $field1);
@@ -319,7 +330,7 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
         $withConditions = false;
         $program        = $this->reservation->getProgram();
 
-        $field1 = new Field('beneficiary_name', $category, 'other', 'borrower', 'beneficiaryName', Borrower::class, false, null, null);
+        $field1 = new Field('beneficiary_name', $category, 'other', 'borrower', 'beneficiaryName', 'string', Borrower::class, false, null, null);
         $fields = [$field1];
 
         $this->fieldRepository->findBy(['category' => $category])->shouldBeCalledOnce()->willReturn($fields);
@@ -339,15 +350,15 @@ class EligibilityCheckerTest extends AbstractEligibilityTest
     public function configurationExceptionsProvider(): iterable
     {
         yield 'profile - other type' => [
-            new Field('beneficiary_name', 'profile', 'other', 'borrower', 'beneficiaryName', Borrower::class, false, null, null),
+            new Field('beneficiary_name', 'profile', 'other', 'borrower', 'beneficiaryName', 'string', Borrower::class, false, null, null),
             'Borrower Name',
         ];
         yield 'project - bool type' => [
-            new Field('receiving_grant', 'project', 'other', 'project', 'receivingGrant', Project::class, false, null, null),
+            new Field('receiving_grant', 'project', 'other', 'project', 'receivingGrant', 'bool', Project::class, false, null, null),
             false,
         ];
         yield 'loan - list type' => [
-            new Field('financing_object_type', 'loan', 'list', 'project', 'financingObjectType', FinancingObject::class, false, null, null),
+            new Field('financing_object_type', 'loan', 'list', 'project', 'financingObjectType', 'ProgramChoiceOption', FinancingObject::class, false, null, null),
             null,
         ];
     }
