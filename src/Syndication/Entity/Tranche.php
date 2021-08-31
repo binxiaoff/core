@@ -558,7 +558,9 @@ class Tranche
         $totalAllocation = new NullableMoney();
 
         foreach ($this->projectParticipationTranches as $projectParticipationTranche) {
-            $totalAllocation = MoneyCalculator::add($totalAllocation, $projectParticipationTranche->getAllocation()->getMoney());
+            if ($projectParticipationTranche->getProjectParticipation()->isActive()) {
+                $totalAllocation = MoneyCalculator::add($totalAllocation, $projectParticipationTranche->getAllocation()->getMoney());
+            }
         }
 
         return $totalAllocation;
