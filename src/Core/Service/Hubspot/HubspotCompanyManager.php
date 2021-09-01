@@ -119,7 +119,7 @@ class HubspotCompanyManager
         $companiesCreated = 0;
         $companiesUpdated = 0;
 
-        //Get all companies when a corresponding hubspot id does not exit
+        //Get all companies when a corresponding hubspot id does not exist
         $companies = $this->companyRepository->findCompaniesToCreateOnHubspot($limit);
 
         if ($companies) {
@@ -131,7 +131,7 @@ class HubspotCompanyManager
             }
         }
 
-        //Get all companies when a corresponding hubspot id exit
+        //Get all companies when a corresponding hubspot id exist
         $companies = $this->companyRepository->findCompaniesToUpdateOnHubspot($limit);
 
         if ($companies) {
@@ -141,7 +141,7 @@ class HubspotCompanyManager
                 if (false === $hubspotCompany instanceof HubspotCompany) {
                     continue;
                 }
-                //dd($this->formatData($company));
+
                 if ($this->updateCompanyOnHubspot($hubspotCompany, $this->formatData($company))) {
                     ++$companiesUpdated;
                 }

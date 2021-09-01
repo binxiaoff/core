@@ -31,7 +31,6 @@ class SynchronizeCompanyCommand extends Command
         $this
             ->setDescription('Synchronize companies from our database to hubspot ')
             ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'How many companies we want to synchronize')
-            ->addOption('companyId', null, InputOption::VALUE_OPTIONAL, 'Company Id you want to start (ordered by id asc)')
         ;
     }
 
