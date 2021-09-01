@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace KLS\Core\Service\Hubspot;
 
-use DateTimeImmutable;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use JsonException;
@@ -248,7 +247,7 @@ class HubspotManager
             return false;
         }
 
-        $hubspotContact->setSynchronized(new DateTimeImmutable());
+        $hubspotContact->synchronize();
 
         return true;
     }

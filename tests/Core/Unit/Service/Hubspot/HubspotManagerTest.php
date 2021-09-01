@@ -221,13 +221,10 @@ class HubspotManagerTest extends TestCase
 
         $response = $this->prophesize(ResponseInterface::class);
 
-        $hubspotContact = new HubspotContact($arrUsers[0], 10);
-
         $this->hubspotClient->updateContact(Argument::any(), Argument::any())->shouldNotBeCalled();
 
         $response->getStatusCode()->shouldBeCalledOnce()->willReturn(Response::HTTP_CREATED);
         $this->hubspotClient->postNewContact(Argument::any())->shouldBeCalledOnce()->willReturn($response->reveal());
-        $hubspotContact->setSynchronized(new \DateTimeImmutable('3 days ago'));
         $response->getContent()->shouldBeCalled()->willReturn(\json_encode(
             [
                 'id'         => 1234,
@@ -264,16 +261,12 @@ class HubspotManagerTest extends TestCase
         $response = $this->prophesize(ResponseInterface::class);
 
         $hubspotContact = new HubspotContact($arrUsers[0], 10);
-        $hubspotContact->setSynchronized(new \DateTimeImmutable('3 days ago'));
+
         $this->hubspotContactRepository->findOneBy(['user' => $arrUsers[0]])->shouldBeCalled()->willReturn($hubspotContact);
 
         $response->getStatusCode()->shouldBeCalled()->willReturn(Response::HTTP_OK);
 
         $this->hubspotClient->updateContact($hubspotContact->getContactId(), $this->getFormatData())->shouldBeCalledOnce()->willReturn($response->reveal());
-
-        $this->hubspotClient->updateContact(Argument::type('int'), $this->getFormatData())->shouldBeCalledOnce()->willReturn($response->reveal());
-
-        $hubspotContact->setSynchronized(new \DateTimeImmutable('3 days ago'));
 
         $this->hubspotContactRepository->flush()->shouldBeCalledOnce();
 

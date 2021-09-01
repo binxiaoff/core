@@ -88,10 +88,8 @@ class HubspotContact
         return $this->synchronized;
     }
 
-    public function setSynchronized(DateTimeImmutable $synchronized): HubspotContact
+    public function synchronize(): void
     {
-        $this->synchronized = $synchronized;
-
-        return $this;
+        $this->synchronized = new DateTimeImmutable();
     }
 }
