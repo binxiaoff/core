@@ -45,7 +45,7 @@ class SynchronizeCompanyCommand extends Command
         $limit            = $input->getOption('limit') ?: self::DEFAULT_COMPANIES_LIMIT;
 
         do {
-            $data = $this->hubspotCompanyManager->synchronizeCompaniesToHubspot((int) $limit);
+            $data = $this->hubspotCompanyManager->exportCompaniesToHubspot((int) $limit);
 
             $companiesCreated += $data['companiesCreated'];
             $companiesUpdated += $data['companiesUpdated'];

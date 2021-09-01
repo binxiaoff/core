@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace KLS\Core\Service\Hubspot;
 
-use DateTimeImmutable;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
@@ -114,7 +113,7 @@ class HubspotCompanyManager
      * @throws OptimisticLockException
      * @throws \JsonException
      */
-    public function synchronizeCompaniesToHubspot(int $limit): array
+    public function exportCompaniesToHubspot(int $limit): array
     {
         $dataReturn       = [];
         $companiesCreated = 0;
@@ -134,6 +133,7 @@ class HubspotCompanyManager
 
         //Get all companies when a corresponding hubspot id exit
         $companies = $this->companyRepository->findCompaniesToUpdateOnHubspot($limit);
+
         if ($companies) {
             foreach ($companies as $company) {
                 $hubspotCompany = $this->hubspotCompanyRepository->findOneBy(['company' => $company]);
@@ -141,7 +141,7 @@ class HubspotCompanyManager
                 if (false === $hubspotCompany instanceof HubspotCompany) {
                     continue;
                 }
-
+                //dd($this->formatData($company));
                 if ($this->updateCompanyOnHubspot($hubspotCompany, $this->formatData($company))) {
                     ++$companiesUpdated;
                 }
@@ -204,7 +204,7 @@ class HubspotCompanyManager
             return false;
         }
 
-        $hubspotCompany->setSynchronized(new DateTimeImmutable());
+        $hubspotCompany->synchronize();
 
         return true;
     }
