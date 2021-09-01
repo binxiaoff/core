@@ -86,6 +86,8 @@ class ProgramEligibility
     /**
      * @var Collection|ProgramEligibilityConfiguration[]
      *
+     * @ApiProperty(security="is_granted('manager', object)")
+     *
      * @ORM\OneToMany(
      *     targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityConfiguration",
      *     mappedBy="programEligibility", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
