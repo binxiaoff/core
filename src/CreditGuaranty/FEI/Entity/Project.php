@@ -545,8 +545,13 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $grade      = $this->reservation->getBorrower()->getGrade();
         $gradeFunds = $this->getTotalFunds($program, ['grade' => $grade]);
         $ratio      = MoneyCalculator::ratio($gradeFunds, $program->getFunds());
-        /** @var ProgramGradeAllocation $programGradeAllocation */
+
+        /** @var ProgramGradeAllocation|null $programGradeAllocation */
         $programGradeAllocation = $program->getProgramGradeAllocations()->get($grade);
+
+        if (false === ($programGradeAllocation instanceof ProgramGradeAllocation)) {
+            return false;
+        }
 
         return \bccomp((string) $ratio, $programGradeAllocation->getMaxAllocationRate(), 4) <= 0;
     }
