@@ -9,11 +9,6 @@ use KLS\CreditGuaranty\FEI\Entity\Project;
 
 class ProjectVoter extends AbstractEntityVoter
 {
-    protected function canCreate(Project $project): bool
-    {
-        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $project->getReservation());
-    }
-
     protected function canView(Project $project): bool
     {
         return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_VIEW, $project->getReservation());

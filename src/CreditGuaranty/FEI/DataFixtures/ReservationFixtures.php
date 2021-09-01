@@ -16,7 +16,6 @@ use KLS\Core\Entity\Constant\LegalForm;
 use KLS\Core\Entity\Constant\LoanType;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
-use KLS\CreditGuaranty\FEI\Entity\Borrower;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
@@ -25,7 +24,6 @@ use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityConfiguration;
-use KLS\CreditGuaranty\FEI\Entity\Project;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
 use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
@@ -109,8 +107,10 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                     FieldAlias::LEGAL_FORM           => LegalForm::SARL,
                     FieldAlias::EMPLOYEES_NUMBER     => 200,
                 ],
-                'addedBy'       => $staff,
-                'currentStatus' => ReservationStatus::STATUS_DRAFT,
+                'project'          => [],
+                'financingObjects' => [],
+                'addedBy'          => $staff,
+                'currentStatus'    => ReservationStatus::STATUS_DRAFT,
             ];
             yield self::RESERVATION_DRAFT_ELIGIBLE . '_' . $referenceName => [
                 'name'     => 'Reservation draft eligible by ' . $referenceName,
@@ -366,24 +366,23 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $reservation = new Reservation($reservationData['program'], $reservationData['addedBy']);
         $reservation->setName($reservationData['name']);
 
-        if (\array_key_exists('project', $reservationData)) {
-            $totalAmount = 0;
+        $this->withBorrower($reservation, $reservationData['borrower']);
 
-            if (\array_key_exists('financingObjects', $reservationData)) {
-                for ($i = 0; $i < \count($reservationData['financingObjects']); ++$i) {
-                    $financingObject = $this->createFinancingObject($reservation, $reservationData['financingObjects'][$i]);
-                    $this->entityManager->persist($financingObject);
-                    $totalAmount += (float) $financingObject->getLoanMoney()->getAmount();
-                }
+        $totalAmount = 0;
+
+        if (false === empty($reservationData['financingObjects'])) {
+            for ($i = 0; $i < \count($reservationData['financingObjects']); ++$i) {
+                $financingObject = $this->createFinancingObject($reservation, $reservationData['financingObjects'][$i]);
+                $this->entityManager->persist($financingObject);
+                $totalAmount += (float) $financingObject->getLoanMoney()->getAmount();
             }
-
-            $project = $this->createProject($reservation, $reservationData['project']);
-            $project->setFundingMoney(new Money('EUR', (string) $totalAmount));
-            $reservation->setProject($project);
         }
 
-        $borrower = $this->createBorrower($reservation, $reservationData['borrower'] ?? []);
-        $reservation->setBorrower($borrower);
+        if (false === empty($reservationData['project'])) {
+            $this->withProject($reservation, $reservationData['project']);
+        }
+
+        $reservation->getProject()->setFundingMoney(new NullableMoney('EUR', (string) $totalAmount));
 
         $currentReservationStatus = new ReservationStatus($reservation, $reservationData['currentStatus'], $reservationData['addedBy']);
         $this->createReservationStatuses($currentReservationStatus);
@@ -396,17 +395,18 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         return $reservation;
     }
 
-    private function createBorrower(Reservation $reservation, array $data): Borrower
+    private function withBorrower(Reservation $reservation, array $data): void
     {
         $program = $reservation->getProgram();
         $grades  = CARatingType::CA_INTERNAL_RETAIL_RATING === $program->getRatingType() ? CAInternalRetailRating::getConstList() : CAInternalRating::getConstList();
 
-        return (new Borrower($reservation, $this->faker->company, $grades[\array_rand($grades)]))
+        $reservation->getBorrower()
             ->setBeneficiaryName($this->faker->name)
             ->setBorrowerType($this->findProgramChoiceOption($program, FieldAlias::BORROWER_TYPE))
             ->setYoungFarmer($this->faker->boolean)
             ->setCreationInProgress($data[FieldAlias::CREATION_IN_PROGRESS])
             ->setSubsidiary($this->faker->boolean)
+            ->setCompanyName($this->faker->company)
             ->setActivityStartDate(new DateTimeImmutable())
             ->setSiret((string) $this->faker->numberBetween(10000, 99999))
             ->setTaxNumber('12 23 45 678 987')
@@ -421,15 +421,16 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setExploitationSize($this->findProgramChoiceOption($program, FieldAlias::EXPLOITATION_SIZE))
             ->setTurnover(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setTotalAssets(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setGrade($grades[\array_rand($grades)])
         ;
     }
 
-    private function createProject(Reservation $reservation, array $data): Project
+    private function withProject(Reservation $reservation, array $data): void
     {
-        $program      = $reservation->getProgram();
-        $fundingMoney = new Money('EUR', (string) $this->faker->randomNumber());
+        $program = $reservation->getProgram();
+        $project = $reservation->getProject();
 
-        $project = (new Project($reservation, $fundingMoney))
+        $project
             ->setInvestmentThematic($this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, 'Project : ' . $this->faker->sentence))
             ->setInvestmentType($this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_TYPE, 'Type : ' . $this->faker->sentence))
             ->setDetail($this->faker->sentence)
@@ -441,6 +442,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setAddressPostCode($this->faker->postcode)
             ->setAddressDepartment('department')
             ->setAddressCountry($this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_COUNTRY))
+            ->setFundingMoney(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setContribution(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setEligibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setTotalFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
@@ -453,8 +455,6 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         if ($data[FieldAlias::RECEIVING_GRANT]) {
             $project->setGrant(new NullableMoney('EUR', (string) $this->faker->randomNumber()));
         }
-
-        return $project;
     }
 
     private function createFinancingObject(Reservation $reservation, array $data): FinancingObject

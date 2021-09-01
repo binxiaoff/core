@@ -147,18 +147,20 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     private Company $managingCompany;
 
     /**
-     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Borrower", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Borrower", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\JoinColumn(name="id_borrower", nullable=false)
      *
      * @Groups({"creditGuaranty:reservation:read"})
      */
-    private ?Borrower $borrower = null;
+    private Borrower $borrower;
 
     /**
-     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Project", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Project", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\JoinColumn(name="id_project", nullable=false)
      *
      * @Groups({"creditGuaranty:reservation:read"})
      */
-    private ?Project $project = null;
+    private Project $project;
 
     /**
      * @var Collection|FinancingObject[]
@@ -212,6 +214,8 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     {
         $this->program          = $program;
         $this->managingCompany  = $addedBy->getCompany();
+        $this->borrower         = new Borrower($this);
+        $this->project          = new Project($this);
         $this->financingObjects = new ArrayCollection();
         $this->drive            = new Drive();
         $this->added            = new DateTimeImmutable();
@@ -249,28 +253,14 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
         return $this->managingCompany;
     }
 
-    public function getBorrower(): ?Borrower
+    public function getBorrower(): Borrower
     {
         return $this->borrower;
     }
 
-    public function setBorrower(Borrower $borrower): Reservation
-    {
-        $this->borrower = $borrower;
-
-        return $this;
-    }
-
-    public function getProject(): ?Project
+    public function getProject(): Project
     {
         return $this->project;
-    }
-
-    public function setProject(?Project $project): Reservation
-    {
-        $this->project = $project;
-
-        return $this;
     }
 
     public function getFinancingObjects()

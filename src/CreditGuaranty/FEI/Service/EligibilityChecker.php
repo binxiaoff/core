@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace KLS\CreditGuaranty\FEI\Service;
 
 use Doctrine\Common\Collections\Collection;
-use KLS\CreditGuaranty\FEI\Entity\Borrower;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityConfiguration;
-use KLS\CreditGuaranty\FEI\Entity\Project;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityConfigurationRepository;
@@ -41,12 +39,6 @@ class EligibilityChecker
 
     public function check(Reservation $reservation, bool $withConditions, ?string $category): array
     {
-        $emptyObjectIneligibles = $this->getEmptyObjectIneligibles($reservation, $withConditions, $category);
-
-        if (false === empty($emptyObjectIneligibles)) {
-            return $emptyObjectIneligibles;
-        }
-
         /** @var iterable|Field[] $fields */
         $fields = (false === empty($category))
             ? $this->fieldRepository->findBy(['category' => $category])
@@ -61,40 +53,6 @@ class EligibilityChecker
         }
 
         return $ineligibles;
-    }
-
-    private function getEmptyObjectIneligibles(Reservation $reservation, bool $withConditions, ?string $category): array
-    {
-        $ineligibleCategories = [];
-
-        if (
-            ($withConditions || empty($category) || 'profile' === $category)
-            && false === ($reservation->getBorrower() instanceof Borrower)
-        ) {
-            $ineligibleCategories[] = 'profile';
-        }
-
-        if (
-            ($withConditions || empty($category) || 'project' === $category)
-            && false === ($reservation->getProject() instanceof Project)
-        ) {
-            $ineligibleCategories[] = 'project';
-        }
-
-        if (
-            ($withConditions || empty($category) || 'loan' === $category)
-            && 0 === $reservation->getFinancingObjects()->count()
-        ) {
-            $ineligibleCategories[] = 'loan';
-        }
-
-        if (empty($ineligibleCategories)) {
-            return [];
-        }
-
-        $fields = $this->fieldRepository->findBy(['category' => $ineligibleCategories]);
-
-        return \array_merge_recursive(...\array_map(fn (Field $field) => [$field->getCategory() => [$field->getFieldAlias()]], $fields));
     }
 
     private function checkByField(Reservation $reservation, Field $field, bool $withConditions): bool

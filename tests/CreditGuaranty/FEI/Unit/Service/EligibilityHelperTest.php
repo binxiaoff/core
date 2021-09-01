@@ -40,7 +40,7 @@ class EligibilityHelperTest extends AbstractEligibilityTest
 
     public function testGetEntity(): void
     {
-        $this->reservation->setBorrower($this->createBorrower($this->reservation));
+        $this->withBorrower($this->reservation);
 
         $field = new Field('company_name', 'category', 'type', 'borrower', 'companyName', Borrower::class, false, null, null);
 
@@ -66,7 +66,7 @@ class EligibilityHelperTest extends AbstractEligibilityTest
 
     public function testGetValue(): void
     {
-        $this->reservation->setBorrower($this->createBorrower($this->reservation));
+        $this->withBorrower($this->reservation);
 
         $entity = $this->reservation->getBorrower();
         $field  = new Field('beneficiary_name', 'profile', 'other', 'borrower', 'beneficiaryName', Borrower::class, false, null, null);
@@ -81,7 +81,7 @@ class EligibilityHelperTest extends AbstractEligibilityTest
 
     public function testGetMoneyValue(): void
     {
-        $this->reservation->setBorrower($this->createBorrower($this->reservation));
+        $this->withBorrower($this->reservation);
 
         $entity = $this->reservation->getBorrower();
         $field  = new Field('turnover', 'profile', 'other', 'borrower', 'turnover::amount', Borrower::class, true, 'money', null);
@@ -96,7 +96,7 @@ class EligibilityHelperTest extends AbstractEligibilityTest
 
     public function testGetListValue(): void
     {
-        $this->reservation->setBorrower($this->createBorrower($this->reservation));
+        $this->withBorrower($this->reservation);
 
         $entity              = $this->reservation->getBorrower();
         $field               = new Field('borrower_type', 'profile', 'list', 'borrower', 'borrowerType', Borrower::class, false, null, null);
