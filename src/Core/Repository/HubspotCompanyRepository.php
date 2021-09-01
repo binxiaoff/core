@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use KLS\Core\Entity\HubspotCompany;
 
@@ -19,5 +21,22 @@ class HubspotCompanyRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, HubspotCompany::class);
+    }
+
+    /**
+     * @throws ORMException
+     */
+    public function persist(HubspotCompany $hubspotCompany): void
+    {
+        $this->getEntityManager()->persist($hubspotCompany);
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function flush(): void
+    {
+        $this->getEntityManager()->flush();
     }
 }

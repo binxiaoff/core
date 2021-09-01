@@ -6,7 +6,7 @@ namespace KLS\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class HubspotCompany
 {
-    use TimestampableTrait;
+    use TimestampableAddedOnlyTrait;
 
     /**
      * @ORM\Column(type="integer")
@@ -27,24 +27,30 @@ class HubspotCompany
 
     /**
      * @ORM\OneToOne(targetEntity=Company::class)
+     * @ORM\JoinColumn(name="id_company")
      *
      * @Assert\NotBlank
      */
     private Company $company;
 
     /**
-     * @ORM\Column(type="integer", nullable=false, name="hubspot_company_id")
+     * @ORM\Column(type="string", nullable=false, name="hubspot_company_id")
      *
-     * @Assert\Type("integer")
-     * @Assert\Positive
+     * @Assert\Type("string")
      */
-    private int $companyId;
+    private string $hubspotCompanyId;
 
-    public function __construct(Company $company, int $companyId)
+    /**
+     * @ORM\Column(type="datetime_immutable")
+     */
+    private \DateTimeImmutable $synchronized;
+
+    public function __construct(Company $company, string $companyId)
     {
-        $this->company   = $company;
-        $this->companyId = $companyId;
-        $this->added     = new DateTimeImmutable();
+        $this->company          = $company;
+        $this->hubspotCompanyId = $companyId;
+        $this->added            = new DateTimeImmutable();
+        $this->synchronized     = new DateTimeImmutable();
     }
 
     public function getId(): int
@@ -64,15 +70,25 @@ class HubspotCompany
         return $this;
     }
 
-    public function getCompanyId(): int
+    public function getHubspotCompanyId(): string
     {
-        return $this->companyId;
+        return $this->hubspotCompanyId;
     }
 
-    public function setCompanyId(int $companyId): HubspotCompany
+    public function setHubspotCompanyId(string $hubspotCompanyId): HubspotCompany
     {
-        $this->companyId = $companyId;
+        $this->hubspotCompanyId = $hubspotCompanyId;
 
         return $this;
+    }
+
+    public function getSynchronized(): DateTimeImmutable
+    {
+        return $this->synchronized;
+    }
+
+    public function synchronize(): void
+    {
+        $this->synchronized = new DateTimeImmutable();
     }
 }
