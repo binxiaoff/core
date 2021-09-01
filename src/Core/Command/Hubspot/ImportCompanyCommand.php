@@ -56,7 +56,7 @@ class ImportCompanyCommand extends Command
         $lastCompanyId = 0;
 
         do {
-            $data = $this->hubspotCompanyManager->synchronizeCompanies($lastCompanyId);
+            $data = $this->hubspotCompanyManager->importCompaniesFromHubspot($lastCompanyId);
             $companyAdded += $data['companyAddedNb'];
             $lastCompanyId = $data['lastCompanyId'];
         } while ($companyAdded <= $limit && $lastCompanyId);

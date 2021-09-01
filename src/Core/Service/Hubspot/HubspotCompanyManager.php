@@ -64,7 +64,7 @@ class HubspotCompanyManager
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public function synchronizeCompanies(int $lastCompanyId = 0): array
+    public function importCompaniesFromHubspot(int $lastCompanyId = 0): array
     {
         $content = $this->fetchCompanies($lastCompanyId);
 
