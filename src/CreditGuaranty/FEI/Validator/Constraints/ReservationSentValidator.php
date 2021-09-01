@@ -52,8 +52,8 @@ class ReservationSentValidator extends ConstraintValidator
             }
         }
 
-        foreach ($this->programEligibilityRepository->findFieldCategoriesByProgram($program) as $category) {
-            $ineligibles = $this->eligibilityChecker->check($reservation, true, $category);
+        foreach ($this->programEligibilityRepository->findFieldCategoriesByProgram($program) as $fieldCategory) {
+            $ineligibles = $this->eligibilityChecker->check($reservation, true, $fieldCategory);
 
             if (false === empty($ineligibles)) {
                 foreach ($ineligibles as $category => $fieldAliases) {
