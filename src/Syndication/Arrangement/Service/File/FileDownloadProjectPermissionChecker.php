@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\Syndication\Arrangement\Security\Voter;
+namespace KLS\Syndication\Arrangement\Service\File;
 
 use InvalidArgumentException;
 use KLS\Core\Entity\Company;
@@ -11,7 +11,7 @@ use KLS\Core\Entity\FileDownload;
 use KLS\Core\Entity\FileVersion;
 use KLS\Core\Entity\User;
 use KLS\Core\Repository\FileVersionSignatureRepository;
-use KLS\Core\Security\Voter\FileDownloadVoterInterface;
+use KLS\Core\Service\File\FileDownloadPermissionCheckerInterface;
 use KLS\Syndication\Arrangement\Entity\Project;
 use KLS\Syndication\Arrangement\Entity\ProjectFile;
 use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
@@ -19,10 +19,12 @@ use KLS\Syndication\Arrangement\Entity\ProjectStatus;
 use KLS\Syndication\Arrangement\Repository\ProjectFileRepository;
 use KLS\Syndication\Arrangement\Repository\ProjectParticipationRepository;
 use KLS\Syndication\Arrangement\Repository\ProjectRepository;
+use KLS\Syndication\Arrangement\Security\Voter\ProjectParticipationVoter;
+use KLS\Syndication\Arrangement\Security\Voter\ProjectVoter;
 use LogicException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
-class FileDownloadProjectVoter implements FileDownloadVoterInterface
+class FileDownloadProjectPermissionChecker implements FileDownloadPermissionCheckerInterface
 {
     private AuthorizationCheckerInterface $authorizationChecker;
     private FileVersionSignatureRepository $fileVersionSignatureRepository;
@@ -44,19 +46,12 @@ class FileDownloadProjectVoter implements FileDownloadVoterInterface
         $this->projectParticipationRepository = $projectParticipationRepository;
     }
 
-    public function supports(FileDownload $fileDownload): bool
+    public function check(FileDownload $fileDownload, User $user): bool
     {
-        $type = $fileDownload->getType();
+        if (false === $this->supports($fileDownload)) {
+            return false;
+        }
 
-        return
-            \in_array($type, ProjectFile::getProjectFileTypes(), true)
-            || \in_array($type, Project::getProjectFileTypes(), true)
-            || ProjectParticipation::PROJECT_PARTICIPATION_FILE_TYPE_NDA === $type
-        ;
-    }
-
-    public function canCreate(FileDownload $fileDownload, User $user): bool
-    {
         $staff = $user->getCurrentStaff();
 
         if (null === $staff) {
@@ -135,6 +130,17 @@ class FileDownloadProjectVoter implements FileDownloadVoterInterface
             default:
                 throw new LogicException('This code should not be reached');
         }
+    }
+
+    private function supports(FileDownload $fileDownload): bool
+    {
+        $type = $fileDownload->getType();
+
+        return
+            \in_array($type, ProjectFile::getProjectFileTypes(), true)
+            || \in_array($type, Project::getProjectFileTypes(), true)
+            || ProjectParticipation::PROJECT_PARTICIPATION_FILE_TYPE_NDA === $type
+        ;
     }
 
     private function hasValidatedOffer(ProjectParticipation $projectParticipation): bool

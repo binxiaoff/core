@@ -6,9 +6,9 @@ namespace KLS;
 
 use KLS\Core\DataTransformer\FileInputDataUploadInterface;
 use KLS\Core\EventSubscriber\Jwt\PermissionProviderInterface;
-use KLS\Core\Security\Voter\FileDownloadVoterInterface;
 use KLS\Core\MessageHandler\File\FileUploadedNotifierInterface;
 use KLS\Core\Service\File\FileDeleteInterface;
+use KLS\Core\Service\File\FileDownloadPermissionCheckerInterface;
 use KLS\Core\Service\Staff\StaffLoginInterface;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -50,7 +50,7 @@ class Kernel extends BaseKernel
 
         // File system
         $container->registerForAutoconfiguration(FileInputDataUploadInterface::class)->addTag('kls.file.input.data.upload');
-        $container->registerForAutoconfiguration(FileDownloadVoterInterface::class)->addTag('kls.file.download.voter');
+        $container->registerForAutoconfiguration(FileDownloadPermissionCheckerInterface::class)->addTag('kls.file.download.permission.checker');
         $container->registerForAutoconfiguration(FileUploadedNotifierInterface::class)->addTag('kls.file.uploaded.notifier');
         $container->registerForAutoconfiguration(FileDeleteInterface::class)->addTag('kls.file.delete');
     }

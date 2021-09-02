@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace KLS\Core\Security\Voter;
+namespace KLS\Core\Service\File;
 
 use KLS\Core\Entity\FileDownload;
 use KLS\Core\Entity\Message;
 use KLS\Core\Entity\User;
 use KLS\Core\Repository\MessageFileRepository;
+use KLS\Core\Security\Voter\MessageVoter;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
-class FileDownloadMessageVoter implements FileDownloadVoterInterface
+class FileDownloadMessagePermissionChecker implements FileDownloadPermissionCheckerInterface
 {
     private AuthorizationCheckerInterface $authorizationChecker;
     private MessageFileRepository $messageFileRepository;
@@ -21,13 +22,12 @@ class FileDownloadMessageVoter implements FileDownloadVoterInterface
         $this->messageFileRepository = $messageFileRepository;
     }
 
-    public function supports(FileDownload $fileDownload): bool
+    public function check(FileDownload $fileDownload, User $user): bool
     {
-        return Message::FILE_TYPE_MESSAGE_ATTACHMENT === $fileDownload->getType();
-    }
+        if (false === $this->supports($fileDownload)) {
+            return false;
+        }
 
-    public function canCreate(FileDownload $fileDownload, User $user): bool
-    {
         $staff = $user->getCurrentStaff();
 
         if (null === $staff) {
@@ -43,5 +43,10 @@ class FileDownloadMessageVoter implements FileDownloadVoterInterface
         }
 
         return false;
+    }
+
+    private function supports(FileDownload $fileDownload): bool
+    {
+        return Message::FILE_TYPE_MESSAGE_ATTACHMENT === $fileDownload->getType();
     }
 }

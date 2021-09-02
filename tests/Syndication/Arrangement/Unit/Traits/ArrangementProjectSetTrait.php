@@ -19,7 +19,9 @@ trait ArrangementProjectSetTrait
         $project->setPublicId();
 
         if (null !== $status) {
-            $project->setCurrentStatus(new ProjectStatus($project, $status, $staff));
+            $projectStatus = new ProjectStatus($project, $status, $staff);
+            $project->setCurrentStatus($projectStatus);
+            $project->getStatuses()->add($projectStatus);
         }
 
         return $project;

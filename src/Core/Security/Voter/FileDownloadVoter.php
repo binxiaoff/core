@@ -6,17 +6,18 @@ namespace KLS\Core\Security\Voter;
 
 use KLS\Core\Entity\FileDownload;
 use KLS\Core\Entity\User;
+use KLS\Core\Service\File\FileDownloadPermissionCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class FileDownloadVoter extends AbstractEntityVoter
 {
-    /** @var iterable|FileDownloadVoterInterface[] */
-    private iterable $voters;
+    /** @var iterable|FileDownloadPermissionCheckerInterface[] */
+    private iterable $permissionCheckers;
 
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker, iterable $voters)
+    public function __construct(AuthorizationCheckerInterface $authorizationChecker, iterable $permissionCheckers)
     {
         parent::__construct($authorizationChecker);
-        $this->voters = $voters;
+        $this->permissionCheckers = $permissionCheckers;
     }
 
     /**
@@ -29,12 +30,12 @@ class FileDownloadVoter extends AbstractEntityVoter
 
     protected function canCreate(FileDownload $fileDownload, User $user): bool
     {
-        foreach ($this->voters as $voter) {
-            if ($voter->supports($fileDownload) && false === $voter->canCreate($fileDownload, $user)) {
-                return false;
+        foreach ($this->permissionCheckers as $permissionChecker) {
+            if ($permissionChecker->check($fileDownload, $user)) {
+                return true;
             }
         }
 
-        return true;
+        return false;
     }
 }
