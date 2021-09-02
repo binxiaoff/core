@@ -15,7 +15,7 @@ use KLS\Syndication\Arrangement\Entity\ProjectParticipationMember;
 use KLS\Syndication\Arrangement\Entity\ProjectStatus;
 use KLS\Syndication\Arrangement\Repository\ProjectRepository;
 use KLS\Syndication\Arrangement\Service\Project\MailNotifier\ProjectUploadNotifier;
-use KLS\Test\Core\Unit\Traits\StaffTrait;
+use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -29,7 +29,7 @@ use Symfony\Component\Routing\RouterInterface;
  */
 class ProjectUploadNotifierTest extends TestCase
 {
-    use StaffTrait;
+    use UserStaffTrait;
 
     /** @var Swift_Mailer|ObjectProphecy */
     private $mailer;
