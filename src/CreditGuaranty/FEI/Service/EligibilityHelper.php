@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace KLS\CreditGuaranty\FEI\Service;
 
+use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
@@ -28,8 +29,12 @@ class EligibilityHelper
 
     public function getValue($entity, Field $field)
     {
-        $pathParts = \explode('::', $field->getPropertyPath());
+        $value = $this->propertyAccessor->getValue($entity, $field->getPropertyPath());
 
-        return $this->propertyAccessor->getValue($entity, \implode('.', $pathParts));
+        if ($value instanceof MoneyInterface) {
+            $value = $value->getAmount();
+        }
+
+        return $value;
     }
 }

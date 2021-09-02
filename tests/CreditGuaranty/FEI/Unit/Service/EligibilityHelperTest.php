@@ -42,11 +42,14 @@ class EligibilityHelperTest extends TestCase
         $this->reservation      = null;
     }
 
+    /**
+     * @covers ::getEntity
+     */
     public function testGetEntity(): void
     {
         $this->withBorrower($this->reservation);
 
-        $field = new Field('company_name', 'category', 'type', 'borrower', 'companyName', Borrower::class, false, null, null);
+        $field = new Field('company_name', 'category', 'type', 'borrower', 'companyName', 'string', Borrower::class, false, null, null);
 
         $this->propertyAccessor->getValue($this->reservation, 'borrower')->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
 
@@ -56,9 +59,12 @@ class EligibilityHelperTest extends TestCase
         static::assertInstanceOf(Borrower::class, $result);
     }
 
+    /**
+     * @covers ::getEntity
+     */
     public function testGetEntityExceptionWithUnexistedPath(): void
     {
-        $field = new Field('company_name', 'category', 'type', 'borrow', 'companyName', 'Name\\Class\\Borrow', false, null, null);
+        $field = new Field('company_name', 'category', 'type', 'borrow', 'companyName', 'string', 'Name\\Class\\Borrow', false, null, null);
 
         $this->propertyAccessor->getValue($this->reservation, 'borrow')->shouldBeCalledOnce()->willThrow(AccessException::class);
 
@@ -68,12 +74,15 @@ class EligibilityHelperTest extends TestCase
         $eligibilityHelper->getEntity($this->reservation, $field);
     }
 
+    /**
+     * @covers ::getValue
+     */
     public function testGetValue(): void
     {
         $this->withBorrower($this->reservation);
 
         $entity = $this->reservation->getBorrower();
-        $field  = new Field('beneficiary_name', 'profile', 'other', 'borrower', 'beneficiaryName', Borrower::class, false, null, null);
+        $field  = new Field('beneficiary_name', 'profile', 'other', 'borrower', 'beneficiaryName', 'string', Borrower::class, false, null, null);
 
         $this->propertyAccessor->getValue($entity, 'beneficiaryName')->shouldBeCalledOnce()->willReturn('Borrower Name');
 
@@ -83,14 +92,17 @@ class EligibilityHelperTest extends TestCase
         static::assertSame('Borrower Name', $result);
     }
 
+    /**
+     * @covers ::getValue
+     */
     public function testGetMoneyValue(): void
     {
         $this->withBorrower($this->reservation);
 
         $entity = $this->reservation->getBorrower();
-        $field  = new Field('turnover', 'profile', 'other', 'borrower', 'turnover::amount', Borrower::class, true, 'money', null);
+        $field  = new Field('turnover', 'profile', 'other', 'borrower', 'turnover', 'MoneyInterface', Borrower::class, true, 'money', null);
 
-        $this->propertyAccessor->getValue($entity, 'turnover.amount')->shouldBeCalledOnce()->willReturn('128');
+        $this->propertyAccessor->getValue($entity, 'turnover')->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower()->getTurnover());
 
         $eligibilityHelper = $this->createTestObject();
         $result            = $eligibilityHelper->getValue($entity, $field);
@@ -98,12 +110,15 @@ class EligibilityHelperTest extends TestCase
         static::assertSame('128', $result);
     }
 
+    /**
+     * @covers ::getValue
+     */
     public function testGetListValue(): void
     {
         $this->withBorrower($this->reservation);
 
         $entity              = $this->reservation->getBorrower();
-        $field               = new Field('borrower_type', 'profile', 'list', 'borrower', 'borrowerType', Borrower::class, false, null, null);
+        $field               = new Field('borrower_type', 'profile', 'list', 'borrower', 'borrowerType', 'ProgramChoiceOption', Borrower::class, false, null, null);
         $programChoiceOption = new ProgramChoiceOption($this->reservation->getProgram(), 'borrower type', $field);
 
         $this->propertyAccessor->getValue($entity, 'borrowerType')->shouldBeCalledOnce()->willReturn($programChoiceOption);
