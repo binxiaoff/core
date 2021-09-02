@@ -9,9 +9,6 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use KLS\Core\DataFixtures\AbstractFixtures;
 use KLS\Core\DataFixtures\NafNaceFixtures;
-use KLS\Core\Entity\Constant\CAInternalRating;
-use KLS\Core\Entity\Constant\CAInternalRetailRating;
-use KLS\Core\Entity\Constant\CARatingType;
 use KLS\Core\Entity\Constant\LegalForm;
 use KLS\Core\Entity\Constant\LoanType;
 use KLS\Core\Entity\Embeddable\Money;
@@ -24,6 +21,7 @@ use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityConfiguration;
+use KLS\CreditGuaranty\FEI\Entity\ProgramGradeAllocation;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
 use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
@@ -398,7 +396,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     private function withBorrower(Reservation $reservation, array $data): void
     {
         $program = $reservation->getProgram();
-        $grades  = CARatingType::CA_INTERNAL_RETAIL_RATING === $program->getRatingType() ? CAInternalRetailRating::getConstList() : CAInternalRating::getConstList();
+        $grades  = $program->getProgramGradeAllocations()->map(fn (ProgramGradeAllocation $item) => $item->getGrade())->toArray();
 
         $reservation->getBorrower()
             ->setBeneficiaryName($this->faker->name)
