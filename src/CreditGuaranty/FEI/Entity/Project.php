@@ -98,7 +98,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_aid_intensity", nullable=true)
      *
-     * @Assert\Expression("value.getProgram() === this.getProgram()")
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      * @Assert\AtLeastOneOf({
      *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
      *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
