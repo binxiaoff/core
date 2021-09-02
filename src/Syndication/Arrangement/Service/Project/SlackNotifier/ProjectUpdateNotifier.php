@@ -13,6 +13,7 @@ use Nexy\Slack\Attachment;
 use Nexy\Slack\AttachmentField;
 use Nexy\Slack\Client as Slack;
 use Nexy\Slack\MessageInterface;
+use NumberFormatter;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ProjectUpdateNotifier implements ProjectNotifierInterface
@@ -26,13 +27,16 @@ class ProjectUpdateNotifier implements ProjectNotifierInterface
     ];
     private Slack $slack;
     private TranslatorInterface $translator;
+    private NumberFormatter $formatter;
 
     public function __construct(
         Slack $client,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        NumberFormatter $formatter
     ) {
         $this->slack      = $client;
         $this->translator = $translator;
+        $this->formatter  = $formatter;
     }
 
     /**
@@ -84,13 +88,14 @@ class ProjectUpdateNotifier implements ProjectNotifierInterface
                 $archivedParticipants[] = $participation->getParticipant()->getDisplayName() . ': ' .
                     $this->translator->trans($this->getArchivedProjectParticipationStatusTranslationKey($participation));
             }
+
             $message->attach(
                 (new Attachment())
-                    ->addField(new AttachmentField('Participants', false === empty($archivedParticipants) ? '• ' . \implode(PHP_EOL . '• ', $participants) : '', true))
+                    ->addField(new AttachmentField('Participants', false === empty($participants) ? '• ' . \implode(PHP_EOL . '• ', $participants) : '', true))
                     ->addField(
                         new AttachmentField(
                             'Participants archivés',
-                            false === empty($archivedParticipants) ? '• ' . \implode(PHP_EOL . '• ', $archivedParticipants) : '',
+                            false === empty($archivedParticipants) ? '• ' . \implode(PHP_EOL . '• ', $archivedParticipants) : ' - ',
                             true
                         )
                     )
@@ -104,19 +109,19 @@ class ProjectUpdateNotifier implements ProjectNotifierInterface
     {
         switch ($project->getCurrentStatus()->getStatus()) {
             case ProjectStatus::STATUS_INTEREST_EXPRESSION: //ok
-                return 'Arrangement: les sollicitations des marques d\'intérêt ont été envoyées pour le dossier « ' . $project->getTitle() . ' ».';
+                return '*Arrangement :* les sollicitations des *marques d\'intérêt* ont été envoyées pour le dossier « ' . $project->getTitle() . ' ».';
 
             case ProjectStatus::STATUS_PARTICIPANT_REPLY:
-                return 'Arrangement : les demandes en réponse ferme ont été envoyées pour le dossier « ' . $project->getTitle() . ' ».';
+                return '*Arrangement :* les demandes en *réponse ferme* ont été envoyées pour le dossier « ' . $project->getTitle() . ' ».';
 
             case ProjectStatus::STATUS_ALLOCATION:
-                return 'Arrangement : le dossier « ' . $project->getTitle() . ' » vient de passer en phase d\'allocation.';
+                return '*Arrangement :* le dossier « ' . $project->getTitle() . ' » vient de passer en *phase d\'allocation*.';
 
             case ProjectStatus::STATUS_SYNDICATION_FINISHED:
-                return 'Arrangement : le dossier « ' . $project->getTitle() . ' » vient d\'être cloturé.';
+                return '*Arrangement :* le dossier « ' . $project->getTitle() . ' » vient d\'être *cloturé*.';
 
             case ProjectStatus::STATUS_SYNDICATION_CANCELLED:
-                return 'Arrangement : le dossier « ' . $project->getTitle() . ' » vient d\'être annulé.';
+                return '*Arrangement :* le dossier « ' . $project->getTitle() . ' » vient d\'être *annulé*.';
         }
 
         throw new InvalidArgumentException('The project is in an unknown status');
@@ -129,16 +134,36 @@ class ProjectUpdateNotifier implements ProjectNotifierInterface
         if ($projectCurrentStatus) {
             switch ($projectCurrentStatus->getStatus()) {
                 case ProjectStatus::STATUS_INTEREST_EXPRESSION:
-                    return \implode(' - ', \array_filter([$participation->getInterestRequest()->getMoney(), $participation->getInterestRequest()->getMaxMoney()]));
+                    return \implode(' - ', \array_filter(
+                        [
+                            $this->formatter->formatCurrency(
+                                (float) $participation->getInterestRequest()->getMoney()->getAmount(),
+                                $participation->getInterestRequest()->getMoney()->getCurrency()
+                            ),
+                            $this->formatter->formatCurrency(
+                                (float) $participation->getInterestRequest()->getMaxMoney()->getAmount(),
+                                $participation->getInterestRequest()->getMaxMoney()->getCurrency()
+                            ),
+                        ]
+                    ));
 
                 case ProjectStatus::STATUS_PARTICIPANT_REPLY:
-                    return (string) $participation->getInvitationRequest()->getMoney();
+                    return $this->formatter->formatCurrency(
+                        (float) $participation->getInvitationRequest()->getMoney()->getAmount(),
+                        $participation->getInvitationRequest()->getMoney()->getCurrency()
+                    );
 
                 case ProjectStatus::STATUS_ALLOCATION:
-                    return (string) $participation->getTotalInvitationReply();
+                    return $this->formatter->formatCurrency(
+                        (float) $participation->getTotalInvitationReply()->getAmount(),
+                        $participation->getTotalInvitationReply()->getCurrency()
+                    );
 
                 case ProjectStatus::STATUS_SYNDICATION_FINISHED:
-                    return (string) $participation->getTotalAllocation();
+                    return $this->formatter->formatCurrency(
+                        (float) $participation->getTotalAllocation()->getAmount(),
+                        $participation->getTotalAllocation()->getCurrency()
+                    );
             }
 
             throw new \UnexpectedValueException(
