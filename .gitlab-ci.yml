@@ -116,13 +116,6 @@ deploy:integration:
     refs:
       - develop
 
-deploy:agency:
-  stage: deploy
-  extends: .deploy-api
-  environment:
-    name: agency
-    url: https://api.agency.kls-platform.com
-
 deploy:cg:
   stage: deploy
   extends: .deploy-api
