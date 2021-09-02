@@ -5,12 +5,7 @@ declare(strict_types=1);
 namespace KLS\Test\Syndication\Arrangement\Unit\Service\File;
 
 use Exception;
-use KLS\Core\Entity\Company;
-use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\File;
-use KLS\Core\Entity\Staff;
-use KLS\Core\Entity\Team;
-use KLS\Core\Entity\User;
 use KLS\Syndication\Arrangement\Entity\Project;
 use KLS\Syndication\Arrangement\Entity\ProjectFile;
 use KLS\Syndication\Arrangement\Repository\ProjectFileRepository;
@@ -18,6 +13,8 @@ use KLS\Syndication\Arrangement\Repository\ProjectRepository;
 use KLS\Syndication\Arrangement\Security\Voter\ProjectFileVoter;
 use KLS\Syndication\Arrangement\Security\Voter\ProjectVoter;
 use KLS\Syndication\Arrangement\Service\File\FileDeleteManager;
+use KLS\Test\Core\Unit\Traits\UserStaffTrait;
+use KLS\Test\Syndication\Arrangement\Unit\Traits\ArrangementProjectSetTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -32,6 +29,9 @@ use Symfony\Component\Security\Core\Security;
  */
 class FileDeleteManagerTest extends TestCase
 {
+    use UserStaffTrait;
+    use ArrangementProjectSetTrait;
+
     /** @var Security|ObjectProphecy */
     private $security;
 
@@ -104,7 +104,7 @@ class FileDeleteManagerTest extends TestCase
     public function testDeleteForProjectFile(File $file, string $type): void
     {
         $staff       = $this->createStaff();
-        $project     = $this->createProject($staff);
+        $project     = $this->createArrangementProject($staff);
         $projectFile = new ProjectFile($type, $file, $project, $staff);
 
         $this->projectFileRepository->findOneBy(['file' => $file])->shouldBeCalledOnce()->willReturn($projectFile);
@@ -163,7 +163,7 @@ class FileDeleteManagerTest extends TestCase
         $file = new File();
         $file->setPublicId();
         $staff       = $this->createStaff();
-        $project     = $this->createProject($staff);
+        $project     = $this->createArrangementProject($staff);
         $projectFile = new ProjectFile($type, $file, $project, $staff);
 
         $this->projectFileRepository->findOneBy(['file' => $file])->shouldBeCalledOnce()->willReturn($projectFile);
@@ -185,7 +185,7 @@ class FileDeleteManagerTest extends TestCase
      */
     public function testDeleteProject(File $file, string $type, string $field): void
     {
-        $project = $this->createProject($this->createStaff());
+        $project = $this->createArrangementProject($this->createStaff());
 
         $this->projectFileRepository->findOneBy(Argument::any())->shouldNotBeCalled();
         $this->projectFileRepository->remove(Argument::any())->shouldNotBeCalled();
@@ -240,7 +240,7 @@ class FileDeleteManagerTest extends TestCase
         $file = new File();
         $file->setPublicId();
         $staff   = $this->createStaff();
-        $project = $this->createProject($staff);
+        $project = $this->createArrangementProject($staff);
 
         $this->projectFileRepository->findOneBy(Argument::any())->shouldNotBeCalled();
         $this->projectFileRepository->remove(Argument::any())->shouldNotBeCalled();
@@ -252,23 +252,6 @@ class FileDeleteManagerTest extends TestCase
 
         $fileDeleteManager = $this->createTestObject();
         $fileDeleteManager->delete($file, $type);
-    }
-
-    private function createProject(Staff $staff): Project
-    {
-        return new Project(
-            $staff,
-            'RISK-GROUP-42',
-            new Money('EUR', '42')
-        );
-    }
-
-    private function createStaff(): Staff
-    {
-        $teamRoot = Team::createRootTeam(new Company('Company', 'Company', ''));
-        $team     = Team::createTeam('Team', $teamRoot);
-
-        return new Staff(new User('user@mail.com'), $team);
     }
 
     private function createTestObject(): FileDeleteManager

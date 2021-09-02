@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace KLS\Test\CreditGuaranty\FEI\Unit\Service\Jwt;
 
-use Exception;
-use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
 use KLS\Core\Model\Bitmask;
 use KLS\CreditGuaranty\FEI\Entity\StaffPermission;
 use KLS\CreditGuaranty\FEI\Repository\StaffPermissionRepository;
 use KLS\CreditGuaranty\FEI\Service\Jwt\PermissionProvider;
+use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 
@@ -22,6 +21,8 @@ use Prophecy\Prophecy\ObjectProphecy;
  */
 class PermissionProviderTest extends TestCase
 {
+    use UserStaffTrait;
+
     /** @var StaffPermissionRepository|ObjectProphecy */
     private $staffPermissionRepository;
 
@@ -165,16 +166,6 @@ class PermissionProviderTest extends TestCase
             0,
             null,
         ];
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function createStaff(): Staff
-    {
-        $company = new Company('Company', 'Company', '');
-
-        return new Staff(new User('user@mail.com'), $company->getRootTeam());
     }
 
     private function createTestObject(): PermissionProvider

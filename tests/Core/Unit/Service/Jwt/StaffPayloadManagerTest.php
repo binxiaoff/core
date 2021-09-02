@@ -6,19 +6,13 @@ namespace KLS\Test\Core\Unit\Service\Jwt;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Exception\ItemNotFoundException;
-use Doctrine\Common\Collections\ArrayCollection;
-use Exception;
-use KLS\Core\Entity\Company;
-use KLS\Core\Entity\Staff;
-use KLS\Core\Entity\Team;
-use KLS\Core\Entity\User;
 use KLS\Core\Service\Jwt\StaffPayloadManager;
 use KLS\Core\Service\Staff\StaffLoginChecker;
-use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
+use KLS\Test\Core\Unit\Traits\TokenTrait;
+use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 /**
@@ -28,6 +22,9 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
  */
 class StaffPayloadManagerTest extends TestCase
 {
+    use UserStaffTrait;
+    use TokenTrait;
+
     /** @var IriConverterInterface|ObjectProphecy */
     private $iriConverter;
 
@@ -87,10 +84,10 @@ class StaffPayloadManagerTest extends TestCase
      */
     public function testUpdateSecurityToken(): void
     {
-        $staff    = $this->createUserWithStaff()->getCurrentStaff();
+        $staff    = $this->createStaff();
         $staffIri = 'core/staff/' . $staff->getPublicId();
         $payload  = ['staff' => $staffIri];
-        $token    = $this->createToken($staff);
+        $token    = $this->createToken($staff->getUser());
 
         $this->iriConverter->getItemFromIri($staffIri, [AbstractNormalizer::GROUPS => []])->shouldBeCalledOnce()->willReturn($staff);
 
@@ -109,8 +106,7 @@ class StaffPayloadManagerTest extends TestCase
      */
     public function testUpdateSecurityTokenWithoutStaffInPayload(): void
     {
-        $staff   = $this->createUserWithStaff()->getCurrentStaff();
-        $token   = $this->createToken($staff);
+        $token   = $this->createToken($this->createStaff()->getUser());
         $payload = [];
 
         $this->iriConverter->getItemFromIri(Argument::cetera())->shouldNotBeCalled();
@@ -128,7 +124,7 @@ class StaffPayloadManagerTest extends TestCase
      */
     public function testIsPayloadValidWithStaff(): void
     {
-        $staff    = $this->createUserWithStaff()->getCurrentStaff();
+        $staff    = $this->createStaff();
         $staffIri = 'core/staff/' . $staff->getPublicId();
         $payload  = ['staff' => $staffIri];
 
@@ -144,7 +140,7 @@ class StaffPayloadManagerTest extends TestCase
      */
     public function testIsPayloadValidWithoutStaff(): void
     {
-        $staff   = $this->createUserWithStaff()->getCurrentStaff();
+        $staff   = $this->createStaff();
         $payload = [];
 
         $this->iriConverter->getItemFromIri(Argument::cetera())->shouldNotBeCalled();
@@ -174,8 +170,7 @@ class StaffPayloadManagerTest extends TestCase
      */
     public function testIsPayloadInvalidWithStaffNotGrantedLogin(): void
     {
-        $staff = $this->createUserWithStaff()->getCurrentStaff();
-        $staff->setPublicId();
+        $staff    = $this->createStaff();
         $staffIri = 'core/staff/' . $staff->getPublicId();
         $payload  = ['staff' => $staffIri];
 
@@ -184,41 +179,6 @@ class StaffPayloadManagerTest extends TestCase
 
         $staffPayloadManager = $this->createTestObject();
         static::assertFalse($staffPayloadManager->isPayloadValid($payload));
-    }
-
-    private function createToken(Staff $staff): TokenInterface
-    {
-        $user = $staff->getUser();
-        $user->setCurrentStaff($staff);
-
-        return new JWTUserToken($user->getRoles(), $user);
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function createUserWithStaff(int $staffNb = 1): User
-    {
-        $teamRoot = Team::createRootTeam(new Company('Company', 'Company', ''));
-        $team     = Team::createTeam('Team', $teamRoot);
-        $user     = new User('user@mail.com');
-        $staff    = new ArrayCollection();
-
-        foreach (\range(1, $staffNb) as $index) {
-            $staffItem = new Staff($user, $team);
-            $staffItem->setPublicId();
-            $staff->add($staffItem);
-        }
-
-        $user->setCurrentStaff($staff[0]);
-
-        // force User::setStaff
-        $reflection = new \ReflectionClass(User::class);
-        $property   = $reflection->getProperty('staff');
-        $property->setAccessible(true);
-        $property->setValue($user, $staff);
-
-        return $user;
     }
 
     private function createTestObject(): StaffPayloadManager

@@ -10,7 +10,13 @@ use KLS\Core\Service\File\FileUploadManager;
 use KLS\Syndication\Arrangement\Entity\ProjectStatus;
 use KLS\Syndication\Arrangement\Security\Voter\ProjectVoter;
 use KLS\Syndication\Arrangement\Service\FileInput\FileInputProjectParticipationUploader;
-use KLS\Test\Core\Unit\Traits\FileInputEntitiesTrait;
+use KLS\Test\Core\Unit\Traits\FileInputTrait;
+use KLS\Test\Core\Unit\Traits\MessageTrait;
+use KLS\Test\Core\Unit\Traits\TokenTrait;
+use KLS\Test\Core\Unit\Traits\UserStaffTrait;
+use KLS\Test\Syndication\Agency\Unit\Traits\AgencyProjectTrait;
+use KLS\Test\Syndication\Agency\Unit\Traits\TermTrait;
+use KLS\Test\Syndication\Arrangement\Unit\Traits\ArrangementProjectSetTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -24,7 +30,13 @@ use Symfony\Component\Security\Core\Security;
  */
 class FileInputProjectParticipationUploaderTest extends TestCase
 {
-    use FileInputEntitiesTrait;
+    use UserStaffTrait;
+    use TokenTrait;
+    use FileInputTrait;
+    use MessageTrait;
+    use TermTrait;
+    use AgencyProjectTrait;
+    use ArrangementProjectSetTrait;
 
     /** @var Security|ObjectProphecy */
     private $security;
@@ -84,7 +96,7 @@ class FileInputProjectParticipationUploaderTest extends TestCase
     {
         $staff        = $this->createStaff();
         $targetEntity = $this->createProjectParticipation($staff, $this->createArrangementProject($staff));
-        $token        = $this->createToken($staff, ['company' => $staff->getCompany()]);
+        $token        = $this->createToken($staff->getUser(), ['company' => $staff->getCompany()]);
         $fileInput    = $this->createFileInput($targetEntity);
         $user         = $staff->getUser();
 
@@ -132,7 +144,6 @@ class FileInputProjectParticipationUploaderTest extends TestCase
         $file         = new File();
         $user         = $staff->getUser();
 
-        $targetEntity->setPublicId();
         $targetEntity->setNda((new File())->setPublicId());
 
         $this->security->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $targetEntity->getProject())->shouldBeCalledOnce()->willReturn(true);

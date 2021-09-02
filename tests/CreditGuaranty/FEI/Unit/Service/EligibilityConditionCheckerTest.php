@@ -16,7 +16,9 @@ use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityConditionRepository;
 use KLS\CreditGuaranty\FEI\Service\EligibilityConditionChecker;
 use KLS\CreditGuaranty\FEI\Service\EligibilityHelper;
+use KLS\Test\CreditGuaranty\FEI\Unit\Traits\ReservationSetTrait;
 use LogicException;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 
@@ -25,8 +27,10 @@ use Prophecy\Prophecy\ObjectProphecy;
  *
  * @internal
  */
-class EligibilityConditionCheckerTest extends AbstractEligibilityTest
+class EligibilityConditionCheckerTest extends TestCase
 {
+    use ReservationSetTrait;
+
     /** @var EligibilityHelper|ObjectProphecy */
     private $eligibilityHelper;
 

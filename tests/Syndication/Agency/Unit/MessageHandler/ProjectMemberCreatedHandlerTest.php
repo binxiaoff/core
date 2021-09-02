@@ -6,7 +6,7 @@ namespace KLS\Test\Syndication\Agency\Unit\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
-use JsonException;
+use InvalidArgumentException;
 use KLS\Syndication\Agency\Entity\AbstractProjectMember;
 use KLS\Syndication\Agency\Entity\AgentMember;
 use KLS\Syndication\Agency\Entity\BorrowerMember;
@@ -15,6 +15,7 @@ use KLS\Syndication\Agency\Entity\Project;
 use KLS\Syndication\Agency\Message\ProjectMemberCreated;
 use KLS\Syndication\Agency\MessageHandler\ProjectMemberCreatedHandler;
 use KLS\Syndication\Agency\Notifier\ProjectMemberNotifier;
+use KLS\Test\Syndication\Agency\Unit\Traits\ProjectMemberSetTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -26,168 +27,110 @@ use Prophecy\Prophecy\ObjectProphecy;
  */
 class ProjectMemberCreatedHandlerTest extends TestCase
 {
-    /**
-     * @var EntityManagerInterface|ObjectProphecy
-     */
+    use ProjectMemberSetTrait;
+
+    /** @var ManagerRegistry|ObjectProphecy */
     private $managerRegistry;
-    /**
-     * @var ProjectMemberNotifier|ObjectProphecy
-     */
+
+    /** @var ProjectMemberNotifier|ObjectProphecy */
     private $projectMemberNotifier;
-    /**
-     * @var EntityManagerInterface|ObjectProphecy
-     */
+
+    /** @var EntityManagerInterface|ObjectProphecy */
     private $entityManager;
 
     protected function setUp(): void
     {
-        parent::setUp();
-
         $this->managerRegistry       = $this->prophesize(ManagerRegistry::class);
-        $this->entityManager         = $this->prophesize(EntityManagerInterface::class);
         $this->projectMemberNotifier = $this->prophesize(ProjectMemberNotifier::class);
+        $this->entityManager         = $this->prophesize(EntityManagerInterface::class);
     }
 
     protected function tearDown(): void
     {
-        parent::tearDown();
-
         $this->managerRegistry       = null;
-        $this->entityManager         = null;
         $this->projectMemberNotifier = null;
+        $this->entityManager         = null;
     }
 
     /**
-     * @throws JsonException
-     *
      * @covers ::__invoke
      *
-     * @dataProvider providerUnknownProjectMember
+     * @dataProvider projectMembersProvider
      */
-    public function testUnknownProjectMember(AbstractProjectMember $projectMember)
+    public function testInvoke(AbstractProjectMember $projectMember, string $projectMemberClass): void
     {
+        $projectMember->getProject()->setCurrentStatus(Project::STATUS_PUBLISHED);
         $message = new ProjectMemberCreated($projectMember);
 
-        $this->entityManager->find($message->getProjectMemberClass(), $message->getProjectMemberId())->willReturn(null);
-        $this->managerRegistry->getManagerForClass($message->getProjectMemberClass())->willReturn($this->entityManager->reveal());
+        $this->managerRegistry->getManagerForClass($projectMemberClass)->shouldBeCalledOnce()->willReturn($this->entityManager);
+        $this->entityManager->find($message->getProjectMemberClass(), $message->getProjectMemberId())->shouldBeCalledOnce()->willReturn($projectMember);
+        $this->projectMemberNotifier->notifyProjectPublication($projectMember)->shouldBeCalledOnce();
 
-        $projectMemberCreatedHandler = new ProjectMemberCreatedHandler(
-            $this->managerRegistry->reveal(),
-            $this->projectMemberNotifier->reveal()
-        );
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches("/{$message->getProjectMemberClass()}/");
-        $this->expectExceptionMessageMatches("/{$message->getProjectMemberId()}/");
-
-        $projectMemberCreatedHandler($message);
-
-        $this->entityManager->find($message->getProjectMemberClass(), $message->getProjectMemberId())->shouldHaveBeenCalledOnce();
-        $this->managerRegistry->getManagerForClass($message->getProjectMemberClass())->shouldHaveBeenCalledOnce();
-        $this->projectMemberNotifier->notifyProjectPublication(Argument::any())->shouldNotHaveBeenCalled();
-    }
-
-    public function providerUnknownProjectMember(): iterable
-    {
-        $prefix = 'It should correctly handle an unknown ';
-
-        foreach ($this->getAbstractProjectMemberClasses() as $class) {
-            /** @var AbstractProjectMember|ObjectProphecy $projectMember */
-            $projectMember = $this->prophesize($class);
-            $projectMember->getId()->willReturn(1);
-
-            yield $prefix . $class => [$projectMember->reveal()];
-        }
+        $this->createTestObject()($message);
     }
 
     /**
-     * @throws JsonException
-     *
+     * @covers ::__invoke
+     */
+    public function testInvokeExceptionWithoutManager(): void
+    {
+        $projectMember = $this->createAgentMember();
+        $message       = new ProjectMemberCreated($projectMember);
+
+        $this->managerRegistry->getManagerForClass($message->getProjectMemberClass())->shouldBeCalledOnce()->willReturn(null);
+        $this->entityManager->find(Argument::cetera())->shouldNotBeCalled();
+        $this->projectMemberNotifier->notifyProjectPublication(Argument::any())->shouldNotBeCalled();
+
+        static::expectException(InvalidArgumentException::class);
+
+        $this->createTestObject()($message);
+    }
+
+    /**
+     * @covers ::__invoke
+     */
+    public function testInvokeExceptionWithProjectMemberNotFound(): void
+    {
+        $projectMember = $this->createAgentMember();
+        $message       = new ProjectMemberCreated($projectMember);
+
+        $this->managerRegistry->getManagerForClass($message->getProjectMemberClass())->shouldBeCalledOnce()->willReturn($this->entityManager);
+        $this->entityManager->find($message->getProjectMemberClass(), $message->getProjectMemberId())->shouldBeCalledOnce()->willReturn(null);
+        $this->projectMemberNotifier->notifyProjectPublication(Argument::any())->shouldNotBeCalled();
+
+        static::expectException(InvalidArgumentException::class);
+
+        $this->createTestObject()($message);
+    }
+
+    /**
      * @covers ::__invoke
      *
-     * @dataProvider providerWrongStatusProject
+     * @dataProvider projectMembersProvider
      */
-    public function testWrongStatusProject(AbstractProjectMember $projectMember)
+    public function testInvokeWithProjectMemberNotPublished(AbstractProjectMember $projectMember, string $projectMemberClass): void
     {
         $message = new ProjectMemberCreated($projectMember);
 
-        $this->entityManager->find($message->getProjectMemberClass(), $message->getProjectMemberId())->willReturn($projectMember);
-        $this->managerRegistry->getManagerForClass($message->getProjectMemberClass())->willReturn($this->entityManager->reveal());
+        $this->managerRegistry->getManagerForClass($projectMemberClass)->shouldBeCalledOnce()->willReturn($this->entityManager);
+        $this->entityManager->find($message->getProjectMemberClass(), $message->getProjectMemberId())->shouldBeCalledOnce()->willReturn($projectMember);
+        $this->projectMemberNotifier->notifyProjectPublication(Argument::any())->shouldNotBeCalled();
 
-        $projectMemberCreatedHandler = new ProjectMemberCreatedHandler(
+        $this->createTestObject()($message);
+    }
+
+    public function projectMembersProvider(): iterable
+    {
+        yield 'AgentMember' => [$this->createAgentMember(), AgentMember::class];
+        yield 'BorrowerMember' => [$this->createBorrowerMember(), BorrowerMember::class];
+        yield 'ParticipationMember' => [$this->createParticipationMember(), ParticipationMember::class];
+    }
+
+    private function createTestObject(): ProjectMemberCreatedHandler
+    {
+        return new ProjectMemberCreatedHandler(
             $this->managerRegistry->reveal(),
             $this->projectMemberNotifier->reveal()
         );
-
-        $projectMemberCreatedHandler($message);
-
-        $this->entityManager->find($message->getProjectMemberClass(), $message->getProjectMemberId())->shouldHaveBeenCalledOnce();
-        $this->managerRegistry->getManagerForClass($message->getProjectMemberClass())->shouldHaveBeenCalledOnce();
-        $this->projectMemberNotifier->notifyProjectPublication(Argument::any())->shouldNotHaveBeenCalled();
-    }
-
-    public function providerWrongStatusProject(): iterable
-    {
-        foreach (\array_filter(Project::getAvailableStatuses(), static fn ($status) => Project::STATUS_PUBLISHED !== $status) as $status) {
-            $project = $this->prophesize(Project::class);
-            $project->getCurrentStatus()->willReturn($status);
-            $project->isPublished()->willReturn(false);
-
-            foreach ($this->getAbstractProjectMemberClasses() as $class) {
-                /** @var AbstractProjectMember|ObjectProphecy $projectMember */
-                $projectMember = $this->prophesize($class);
-                $projectMember->getId()->willReturn(1);
-                $projectMember->getProject()->willReturn($project);
-
-                yield \sprintf('It should not notify with status %d and class %s', $status, $class) => [$projectMember->reveal()];
-            }
-        }
-    }
-
-    /**
-     * @throws JsonException
-     *
-     * @dataProvider providerSuccess
-     */
-    public function testSuccess(AbstractProjectMember $projectMember)
-    {
-        $message = new ProjectMemberCreated($projectMember);
-
-        $this->entityManager->find($message->getProjectMemberClass(), $message->getProjectMemberId())->willReturn($projectMember);
-        $this->managerRegistry->getManagerForClass($message->getProjectMemberClass())->willReturn($this->entityManager->reveal());
-
-        $projectMemberCreatedHandler = new ProjectMemberCreatedHandler(
-            $this->managerRegistry->reveal(),
-            $this->projectMemberNotifier->reveal()
-        );
-
-        $projectMemberCreatedHandler($message);
-
-        $this->entityManager->find($message->getProjectMemberClass(), $message->getProjectMemberId())->shouldHaveBeenCalledOnce();
-        $this->managerRegistry->getManagerForClass($message->getProjectMemberClass())->shouldHaveBeenCalledOnce();
-        $this->projectMemberNotifier->notifyProjectPublication($projectMember)->shouldHaveBeenCalledOnce();
-    }
-
-    public function providerSuccess(): iterable
-    {
-        $project = $this->prophesize(Project::class);
-        $project->getCurrentStatus()->willReturn(Project::STATUS_PUBLISHED);
-        $project->isPublished()->willReturn(true);
-
-        foreach ($this->getAbstractProjectMemberClasses() as $class) {
-            /** @var AbstractProjectMember|ObjectProphecy $projectMember */
-            $projectMember = $this->prophesize($class);
-            $projectMember->getId()->willReturn(1);
-            $projectMember->getProject()->willReturn($project);
-
-            yield \sprintf('It should notify with class %s', $class) => [$projectMember->reveal()];
-        }
-    }
-
-    private function getAbstractProjectMemberClasses(): iterable
-    {
-        yield BorrowerMember::class;
-        yield AgentMember::class;
-        yield ParticipationMember::class;
     }
 }

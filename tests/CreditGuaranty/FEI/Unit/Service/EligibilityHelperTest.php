@@ -9,6 +9,8 @@ use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Service\EligibilityHelper;
+use KLS\Test\CreditGuaranty\FEI\Unit\Traits\ReservationSetTrait;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -18,8 +20,10 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
  *
  * @internal
  */
-class EligibilityHelperTest extends AbstractEligibilityTest
+class EligibilityHelperTest extends TestCase
 {
+    use ReservationSetTrait;
+
     /** @var PropertyAccessorInterface|ObjectProphecy */
     private $propertyAccessor;
 
