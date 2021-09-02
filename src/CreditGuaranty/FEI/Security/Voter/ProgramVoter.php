@@ -26,8 +26,9 @@ class ProgramVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff
+            && $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $program)
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_CREATE_PROGRAM)
-            && $this->staffPermissionManager->checkCompanyGroupTag($program, $staff);
+        ;
     }
 
     protected function canView(Program $program, User $user): bool
