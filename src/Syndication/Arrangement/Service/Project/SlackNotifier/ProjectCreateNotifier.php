@@ -10,15 +10,17 @@ use Nexy\Slack\Attachment;
 use Nexy\Slack\AttachmentField;
 use Nexy\Slack\Client as Slack;
 use Nexy\Slack\MessageInterface;
+use NumberFormatter;
 
 class ProjectCreateNotifier implements ProjectNotifierInterface
 {
     private Slack $slack;
+    private NumberFormatter $formatter;
 
-    public function __construct(
-        Slack $client
-    ) {
-        $this->slack = $client;
+    public function __construct(Slack $client, NumberFormatter $formatter)
+    {
+        $this->slack     = $client;
+        $this->formatter = $formatter;
     }
 
     /**
@@ -34,22 +36,18 @@ class ProjectCreateNotifier implements ProjectNotifierInterface
 
     public function createSlackMessage(Project $project): MessageInterface
     {
-        $arrangerParticipation = $project->getArrangerProjectParticipation();
-
-        $targetArrangerMoney = $project->isInterestExpressionEnabled() ?
-            $arrangerParticipation->getInterestRequest()->getMoney() : $arrangerParticipation->getInvitationRequest()->getMoney();
-
-        $projectAmount = $project->getGlobalFundingMoney()->getAmount() . ' ' . $project->getGlobalFundingMoney()->getCurrency();
-
         return $this->slack->createMessage()
             ->enableMarkdown()
-            ->setText("Arrangement : le dossier « {$project->getTitle()} » vient d\\'être créé")
+            ->setText("*Arrangement :* le dossier « {$project->getTitle()} » vient d'être créé")
             ->attach(
                 (new Attachment())
                     ->addField(new AttachmentField('Entité', $project->getSubmitterCompany()->getDisplayName(), true))
                     ->addField(new AttachmentField('Utilisateur', $project->getSubmitterUser()->getEmail(), true))
-                    ->addField(new AttachmentField('Montant du projet', $projectAmount, true))
-                    ->addField(new AttachmentField('Part cible arrangeur', (string) $targetArrangerMoney, true))
+                    ->addField(new AttachmentField(
+                        'Montant du projet',
+                        $this->formatter->formatCurrency((float) $project->getGlobalFundingMoney()->getAmount(), $project->getGlobalFundingMoney()->getCurrency()),
+                        true
+                    ))
             )
         ;
     }
