@@ -109,7 +109,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
-    private ?string $companyName;
+    private ?string $companyName = null;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
