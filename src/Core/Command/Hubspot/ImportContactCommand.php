@@ -7,7 +7,7 @@ namespace KLS\Core\Command\Hubspot;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use JsonException;
-use KLS\Core\Service\Hubspot\HubspotManager;
+use KLS\Core\Service\Hubspot\HubspotContactManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -22,9 +22,9 @@ class ImportContactCommand extends Command
     private const DEFAULT_CONTACTS_LIMIT = 100;
     protected static $defaultName        = 'kls:core:hubspot:contact:import';
 
-    private HubspotManager $hubspotManager;
+    private HubspotContactManager $hubspotManager;
 
-    public function __construct(HubspotManager $hubspotManager)
+    public function __construct(HubspotContactManager $hubspotManager)
     {
         parent::__construct();
         $this->hubspotManager = $hubspotManager;

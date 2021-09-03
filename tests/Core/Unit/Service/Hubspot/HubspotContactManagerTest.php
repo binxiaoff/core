@@ -15,7 +15,7 @@ use KLS\Core\Repository\TemporaryTokenRepository;
 use KLS\Core\Repository\UserRepository;
 use KLS\Core\Repository\UserSuccessfulLoginRepository;
 use KLS\Core\Service\Hubspot\Client\HubspotClient;
-use KLS\Core\Service\Hubspot\HubspotManager;
+use KLS\Core\Service\Hubspot\HubspotContactManager;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -24,11 +24,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
- * @coversDefaultClass \KLS\Core\Service\Hubspot\HubspotManager
+ * @coversDefaultClass \KLS\Core\Service\Hubspot\HubspotContactManager
  *
  * @internal
  */
-class HubspotManagerTest extends TestCase
+class HubspotContactManagerTest extends TestCase
 {
     /** @var ObjectProphecy|HubspotClient */
     private $hubspotClient;
@@ -324,9 +324,9 @@ class HubspotManagerTest extends TestCase
         return $staff;
     }
 
-    private function createTestObject(): HubspotManager
+    private function createTestObject(): HubspotContactManager
     {
-        return new HubspotManager(
+        return new HubspotContactManager(
             $this->hubspotClient->reveal(),
             $this->userRepository->reveal(),
             $this->logger->reveal(),
