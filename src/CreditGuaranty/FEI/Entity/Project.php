@@ -92,7 +92,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
-    private ?string $detail;
+    private ?string $detail = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
