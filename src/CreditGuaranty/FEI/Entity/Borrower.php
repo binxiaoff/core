@@ -203,7 +203,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
-    private ?string $grade;
+    private ?string $grade = null;
 
     public function __construct(Reservation $reservation)
     {
