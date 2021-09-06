@@ -36,3 +36,9 @@ services:
 
   KLS\Syndication\Agency\Swagger\ProjectDecorator:
     decorates: 'api_platform.swagger.normalizer.api_gateway'
+
+  KLS\Syndication\Arrangement\Service\Project\SlackNotifier\ProjectCreateNotifier:
+    $formatter: '@currency_formatter_no_decimal'
+
+  KLS\Syndication\Arrangement\Service\Project\SlackNotifier\ProjectUpdateNotifier:
+    $formatter: '@currency_formatter_no_decimal'
