@@ -66,6 +66,8 @@ class Field
 
     /**
      * @ORM\Column(length=255)
+     *
+     * @Groups({"creditGuaranty:field:read"})
      */
     private string $propertyType;
 
