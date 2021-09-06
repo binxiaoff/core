@@ -36,11 +36,7 @@
         },
         "files": [
             "config/packages/api_platform.yaml",
-            "config/routes/api_platform.yaml",
-            "src/Core/Entity/.gitignore",
-            "src/CreditGuaranty/FEI/Entity/.gitignore",
-            "src/Syndication/Agency/Entity/.gitignore",
-            "src/Syndication/Arrangement/Entity/.gitignore"
+            "config/routes/api_platform.yaml"
         ]
     },
     "aws/aws-sdk-php": {
