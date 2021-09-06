@@ -504,6 +504,10 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     {
         $programMaxFeiCredit = $this->getProgram()->getMaxFeiCredit();
 
+        if (false === ($this->getAidIntensity() instanceof ProgramChoiceOption)) {
+            return new NullableMoney();
+        }
+
         $publicAidLimit      = MoneyCalculator::multiply($this->getTotalFeiCredit(), (float) $this->getAidIntensity()->getDescription());
         $remainingGrantLimit = MoneyCalculator::subtract($publicAidLimit, $this->getGrant());
         $maxFeiCredit        = MoneyCalculator::multiply($remainingGrantLimit, (float) $this->getProgram()->getGuarantyCoverage());
@@ -511,6 +515,22 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $maxFeiCredit        = MoneyCalculator::multiply($maxFeiCredit, (float) $duration);
 
         return MoneyCalculator::max($programMaxFeiCredit, $maxFeiCredit);
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getTotalGrossSubsidyEquivalent(): MoneyInterface
+    {
+        $financingObjects = $this->getReservation()->getFinancingObjects();
+
+        if ($financingObjects->count() < 1) {
+            return new NullableMoney();
+        }
+
+        $grossSubsidyEquivalents = $financingObjects->map(static fn (FinancingObject $financingObject) => $financingObject->getGrossSubsidyEquivalent())->toArray();
+
+        return MoneyCalculator::sum($grossSubsidyEquivalents);
     }
 
     public function checkBalance(): bool
