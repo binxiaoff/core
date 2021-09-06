@@ -458,7 +458,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     private function createFinancingObject(Reservation $reservation, array $data): FinancingObject
     {
         $program   = $reservation->getProgram();
-        $loanMoney = new Money('EUR', (string) $this->faker->randomNumber());
+        $loanMoney = new Money('EUR', (string) $this->faker->randomNumber(4));
 
         return (new FinancingObject($reservation, $loanMoney, $this->faker->boolean))
             ->setSupportingGenerationsRenewal($data[FieldAlias::SUPPORTING_GENERATIONS_RENEWAL])
