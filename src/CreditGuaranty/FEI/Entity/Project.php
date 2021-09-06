@@ -483,6 +483,9 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return $this->updated;
     }
 
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
     public function getMaxFeiCredit(): MoneyInterface
     {
         $programMaxFeiCredit = $this->getProgram()->getMaxFeiCredit();
