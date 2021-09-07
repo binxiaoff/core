@@ -197,26 +197,29 @@ class HubspotManager
         $lastLoginDate         = $lastLogin ? $lastLogin->getAdded() : null;
 
         $data = [
-            'staffArrangementCreation' => null,
-            'staffAgencyCreation'      => null,
-            'userManager'              => null,
-            'userAdmin'                => null,
-            'userStaff'                => null,
+            'staffArrangementCreation' => [],
+            'staffAgencyCreation'      => [],
+            'userManager'              => [],
+            'userAdmin'                => [],
+            'userStaff'                => [],
         ];
 
         foreach ($user->getStaff() as $staff) {
             if ($staff->isActive()) {
-                $data['staffArrangementCreation'] = true === $staff->hasArrangementProjectCreationPermission() ? 'true' : 'false';
-                $data['staffAgencyCreation']      = true === $staff->hasAgencyProjectCreationPermission() ? 'true' : 'false';
+                if ($staff->hasArrangementProjectCreationPermission()) {
+                    $data['staffArrangementCreation'][] = $staff->getCompany()->getDisplayName();
+                }
+                if ($staff->hasAgencyProjectCreationPermission()) {
+                    $data['staffAgencyCreation'][] = $staff->getCompany()->getDisplayName();
+                }
+                if ($staff->isManager()) {
+                    $data['userManager'][] = $staff->getCompany()->getDisplayName();
+                }
+                if ($staff->isAdmin()) {
+                    $data['userAdmin'][] = $staff->getCompany()->getDisplayName();
+                }
+                $data['userStaff'][] = $staff->getCompany()->getDisplayName();
             }
-
-            if ($staff->isManager()) {
-                $data['userManager'] .= $staff->getCompany()->getLegalName() . ', ';
-            }
-            if ($staff->isAdmin()) {
-                $data['userAdmin'] .= $staff->getCompany()->getLegalName() . ', ';
-            }
-            $data['userStaff'] .= $staff->getCompany()->getLegalName() . ', ';
         }
 
         return [
@@ -229,11 +232,11 @@ class HubspotManager
                 'kls_user_status'                => 10 === $user->getCurrentStatus()->getStatus() ? 'invited' : 'created',
                 'kls_last_login'                 => $lastLoginDate ? $lastLoginDate->format('Y-m-d') : null,
                 'kls_init_token_expiry'          => $temporaryTokenExpires ? $temporaryTokenExpires->format('Y-m-d') : null,
-                'kls_user_staff'                 => $data['userStaff'],
-                'kls_user_manager'               => $data['userManager'],
-                'kls_user_admin'                 => $data['userAdmin'],
-                'kls_staff_arrangement_creation' => $data['staffArrangementCreation'],
-                'kls_staff_agency_creation'      => $data['staffAgencyCreation'],
+                'kls_user_staff'                 => \implode("\n", $data['userStaff']),
+                'kls_user_manager'               => \implode("\n", $data['userManager']),
+                'kls_user_admin'                 => \implode("\n", $data['userAdmin']),
+                'kls_staff_arrangement_creation' => \implode("\n", $data['staffArrangementCreation']),
+                'kls_staff_agency_creation'      => \implode("\n", $data['staffAgencyCreation']),
             ],
         ];
     }
