@@ -66,7 +66,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         "post_program_dataroom": {
  *             "method": "POST",
  *             "path": "/credit_guaranty/program/{publicId}/dataroom/{path?}",
- *             "security": "is_granted('edit', object)",
+ *             "security": "is_granted('dataroom', object)",
  *             "deserialize": false,
  *             "controller": Post::class,
  *             "requirements": {
@@ -82,7 +82,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         "delete_program_dataroom": {
  *             "method": "DELETE",
  *             "path": "/credit_guaranty/program/{publicId}/dataroom/{path?}",
- *             "security": "is_granted('edit', object)",
+ *             "security": "is_granted('dataroom', object)",
  *             "controller": Delete::class,
  *             "requirements": {
  *                 "path": ".+"
